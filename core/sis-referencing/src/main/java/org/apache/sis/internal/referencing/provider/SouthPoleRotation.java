@@ -150,8 +150,8 @@ public final class SouthPoleRotation extends AbstractProvider {
      */
     public SouthPoleRotation() {
         super(Conversion.class, PARAMETERS,
-              EllipsoidalCS.class, 2, false,
-              EllipsoidalCS.class, 2, false);
+              EllipsoidalCS.class, false,
+              EllipsoidalCS.class, false);
     }
 
     /**

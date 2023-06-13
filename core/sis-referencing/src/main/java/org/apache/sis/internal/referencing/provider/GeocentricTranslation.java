@@ -51,6 +51,6 @@ public final class GeocentricTranslation extends GeocentricAffine {
      * Constructs the provider.
      */
     public GeocentricTranslation() {
-        super(Type.TRANSLATION, PARAMETERS, 3, 3, null);
+        super(Type.TRANSLATION, PARAMETERS);
     }
 }

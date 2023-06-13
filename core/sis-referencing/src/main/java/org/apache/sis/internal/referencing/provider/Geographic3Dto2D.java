@@ -59,26 +59,38 @@ public final class Geographic3Dto2D extends GeographicRedimension {
             .addIdentifier("9659").addName("Geographic3D to 2D conversion").createGroup();
 
     /**
-     * The unique instance, created when first needed.
+     * The providers for all combinations between 2D and 3D cases.
+     * Conceptually a field of {@link GeographicRedimension} parent class,
+     * but needs to be defined here because of class initialization order.
+     */
+    static final GeographicRedimension[] REDIMENSIONED = new GeographicRedimension[4];
+    static {
+        REDIMENSIONED[0] = new GeographicRedimension(0, "Identity 2D");
+        REDIMENSIONED[1] = new Geographic2Dto3D(1);
+        REDIMENSIONED[2] = new Geographic3Dto2D(2);
+        REDIMENSIONED[3] = new GeographicRedimension(3, "Identity 3D");
+    }
+
+    /**
+     * The unique transform instance, created when first needed.
      */
     private transient MathTransform transform;
 
     /**
-     * Constructs a provider with default parameters.
+     * Constructs a provider that can be resized.
      */
-    public Geographic3Dto2D() {
-        this(new GeodeticOperation[4]);
-        redimensioned[0] = new GeographicRedimension(2, redimensioned);
-        redimensioned[1] = new Geographic2Dto3D(redimensioned);
-        redimensioned[2] = this;
-        redimensioned[3] = new GeographicRedimension(3, redimensioned);
+    private Geographic3Dto2D(final int indexOfDim) {
+        super(PARAMETERS, indexOfDim);
     }
 
     /**
-     * Constructs a provider that can be resized.
+     * Constructs a provider with default parameters.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
      */
-    private Geographic3Dto2D(GeodeticOperation[] redimensioned) {
-        super(PARAMETERS, 3, 2, redimensioned);
+    @Deprecated
+    public Geographic3Dto2D() {
+        super(REDIMENSIONED[2]);
     }
 
     /**
@@ -86,20 +98,7 @@ public final class Geographic3Dto2D extends GeographicRedimension {
      */
     @Override
     public AbstractProvider inverse() {
-        return getMethod(Geographic2Dto3D.PARAMETERS);
-    }
-
-    /**
-     * Workaround while waiting for JDK 9. After migration to Jigsaw, {@link #inverse()}
-     * should return directly the unique provider instance.
-     */
-    static AbstractProvider getMethod(final ParameterDescriptorGroup desc) {
-        try {
-            return (AbstractProvider) org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.provider()
-                    .getOperationMethod(desc.getName().getCode());
-        } catch (FactoryException e) {
-            throw new org.apache.sis.util.collection.BackingStoreException(e);
-        }
+        return REDIMENSIONED[1];
     }
 
     /**

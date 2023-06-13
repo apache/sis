@@ -107,8 +107,8 @@ public final class NTv2 extends AbstractProvider {
      */
     public NTv2() {
         super(Transformation.class, PARAMETERS,
-              EllipsoidalCS.class, 2, false,
-              EllipsoidalCS.class, 2, false);
+              EllipsoidalCS.class, false,
+              EllipsoidalCS.class, false);
     }
 
     /**

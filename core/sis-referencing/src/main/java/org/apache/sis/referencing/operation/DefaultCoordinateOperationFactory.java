@@ -333,27 +333,37 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      * </table>
      *
-     * @param  properties        set of properties. Shall contain at least {@code "name"}.
-     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method, or {@code null}.
-     * @param  targetDimensions  number of dimensions in the target CRS of this operation method, or {@code null}.
-     * @param  parameters        description of parameters expected by this operation.
+     * @param  properties  set of properties. Shall contain at least {@code "name"}.
+     * @param  parameters  description of parameters expected by this operation.
      * @return the operation method created from the given arguments.
      * @throws FactoryException if the object creation failed.
      *
-     * @see DefaultOperationMethod#DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup)
+     * @see DefaultOperationMethod#DefaultOperationMethod(Map, ParameterDescriptorGroup)
+     *
+     * @since 1.4
      */
-    @Override
     public OperationMethod createOperationMethod(final Map<String,?> properties,
-            final Integer sourceDimensions, final Integer targetDimensions,
-            ParameterDescriptorGroup parameters) throws FactoryException
+            final ParameterDescriptorGroup parameters) throws FactoryException
     {
         final OperationMethod method;
         try {
-            method = new DefaultOperationMethod(properties, sourceDimensions, targetDimensions, parameters);
+            method = new DefaultOperationMethod(properties, parameters);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
         return pool.unique(method);
+    }
+
+    /**
+     * @deprecated The dimensions attributes have been removed in ISO 19111:2019 revision.
+     */
+    @Override
+    @Deprecated(since = "1.4", forRemoval = true)
+    public OperationMethod createOperationMethod(final Map<String,?> properties,
+            final Integer sourceDimensions, final Integer targetDimensions,
+            ParameterDescriptorGroup parameters) throws FactoryException
+    {
+        return createOperationMethod(properties, parameters);
     }
 
     /**

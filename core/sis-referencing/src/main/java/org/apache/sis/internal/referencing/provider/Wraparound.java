@@ -113,8 +113,8 @@ public final class Wraparound extends AbstractProvider {
      */
     public Wraparound() {
         super(Conversion.class, PARAMETERS,
-              CoordinateSystem.class, 2, false,
-              CoordinateSystem.class, 2, false);
+              CoordinateSystem.class, false,
+              CoordinateSystem.class, false);
     }
 
     /**

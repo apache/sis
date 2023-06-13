@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Arrays;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import jakarta.xml.bind.annotation.XmlTransient;
@@ -55,32 +56,38 @@ public final class MolodenskyInterpolation extends FranceGeocentricInterpolation
     private static final long serialVersionUID = 4265894749866901286L;
 
     /**
-     * Constructs a provider.
+     * The providers for all combinations between 2D and 3D cases.
      */
+    private static final MolodenskyInterpolation[] REDIMENSIONED = new MolodenskyInterpolation[4];
+    static {
+        final ParameterDescriptorGroup parameters = builder().setCodeSpace(null, Constants.SIS)
+                .addName("Molodensky interpolation").createGroupWithSameParameters(PARAMETERS);
+        Arrays.setAll(REDIMENSIONED, (i) -> new MolodenskyInterpolation(parameters, i));
+    }
+
+    /**
+     * Returns the provider for the specified combination of source and target dimensions.
+     */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public MolodenskyInterpolation() {
-        super(2, 2, builder().setCodeSpace(null, Constants.SIS).addName("Molodensky interpolation")
-                        .createGroupWithSameParameters(PARAMETERS), new MolodenskyInterpolation[4]);
-        final ParameterDescriptorGroup parameters = super.getParameters();
-        redimensioned[0] = this;
-        redimensioned[1] = new MolodenskyInterpolation(2, 3, parameters, redimensioned);
-        redimensioned[2] = new MolodenskyInterpolation(3, 2, parameters, redimensioned);
-        redimensioned[3] = new MolodenskyInterpolation(3, 3, parameters, redimensioned);
+        super(REDIMENSIONED[INDEX_OF_2D]);
     }
 
     /**
      * Constructs a provider for the given number of dimensions.
-     *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param parameters        description of parameters expected by this operation.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    private MolodenskyInterpolation(final int sourceDimensions,
-                                    final int targetDimensions,
-                                    final ParameterDescriptorGroup parameters,
-                                    final GeodeticOperation[] redimensioned)
-    {
-        super(sourceDimensions, targetDimensions, parameters, redimensioned);
+    private MolodenskyInterpolation(ParameterDescriptorGroup parameters, int indexOfDim) {
+        super(parameters, indexOfDim);
     }
 
     /**

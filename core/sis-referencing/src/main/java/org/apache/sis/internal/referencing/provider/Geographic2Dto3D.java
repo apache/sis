@@ -75,27 +75,20 @@ public final class Geographic2Dto3D extends GeographicRedimension {
     }
 
     /**
-     * Constructs a provider with default parameters.
-     */
-    public Geographic2Dto3D() {
-        this(null);
-    }
-
-    /**
      * Constructs a provider that can be resized.
      */
-    Geographic2Dto3D(GeodeticOperation[] redimensioned) {
-        super(PARAMETERS, 2, 3, redimensioned);
+    Geographic2Dto3D(final int indexOfDim) {
+        super(PARAMETERS, indexOfDim);
     }
 
     /**
-     * Returns the tree-dimensional variant of this class.
-     * Used for having a unique instance of this provider.
-     * This hack is not needed on the JDK9 branch.
+     * Constructs a provider with default parameters.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
      */
-    @Override
-    Class<Geographic3Dto2D> variant3D() {
-        return Geographic3Dto2D.class;
+    @Deprecated
+    public Geographic2Dto3D() {
+        super(Geographic3Dto2D.REDIMENSIONED[1]);
     }
 
     /**
@@ -103,7 +96,7 @@ public final class Geographic2Dto3D extends GeographicRedimension {
      */
     @Override
     public AbstractProvider inverse() {
-        return Geographic3Dto2D.getMethod(Geographic3Dto2D.PARAMETERS);
+        return Geographic3Dto2D.REDIMENSIONED[2];
     }
 
     /**

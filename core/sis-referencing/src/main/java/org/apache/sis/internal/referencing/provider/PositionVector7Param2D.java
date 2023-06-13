@@ -57,24 +57,27 @@ public final class PositionVector7Param2D extends GeocentricAffineBetweenGeograp
     }
 
     /**
-     * Constructs the provider.
+     * Returns the provider for the specified combination of source and target dimensions.
      */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return PositionVector7Param3D.REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public PositionVector7Param2D() {
-        this(null);
+        super(PositionVector7Param3D.REDIMENSIONED[INDEX_OF_2D]);
     }
 
     /**
      * Constructs a provider that can be resized.
      */
-    PositionVector7Param2D(GeodeticOperation[] redimensioned) {
-        super(Type.SEVEN_PARAM, PARAMETERS, 2, 2, redimensioned);
-    }
-
-    /**
-     * Returns the three-dimensional variant of this operation method.
-     */
-    @Override
-    Class<PositionVector7Param3D> variant3D() {
-        return PositionVector7Param3D.class;
+    PositionVector7Param2D(int indexOfDim) {
+        super(Type.SEVEN_PARAM, PARAMETERS, indexOfDim);
     }
 }

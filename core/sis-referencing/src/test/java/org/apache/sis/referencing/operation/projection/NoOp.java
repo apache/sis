@@ -33,7 +33,7 @@ import org.apache.sis.util.Workaround;
  * This is used for testing methods other than {@code transform(…)} and {@code inverseTransform(…)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.6
  */
 @SuppressWarnings("serial")
@@ -72,7 +72,6 @@ final class NoOp extends ConformalProjection {
     private NoOp(final Parameters parameters) {
         super(new Initializer(new DefaultOperationMethod(
                 Map.of(DefaultOperationMethod.NAME_KEY, parameters.getDescriptor().getName()),
-                DIMENSION, DIMENSION,
                 parameters.getDescriptor()), parameters, Map.of(), null));
     }
 

@@ -33,7 +33,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
@@ -173,12 +172,8 @@ public abstract class MapProjection extends AbstractProvider {
      * This is created when first needed.
      *
      * @see #redimension(int, int)
-     * @see GeodeticOperation#redimensioned
-     *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated(since="1.1")
-    private OperationMethod redimensioned;
+    private AbstractProvider redimensioned;
 
     /**
      * Constructs a math transform provider from a set of parameters. The provider
@@ -191,8 +186,26 @@ public abstract class MapProjection extends AbstractProvider {
                             final ParameterDescriptorGroup parameters)
     {
         super(operationType, parameters,
-              EllipsoidalCS.class, 2, true,
-              CartesianCS.class,   2, false);
+              EllipsoidalCS.class, true,
+              CartesianCS.class,   false);
+    }
+
+    /**
+     * Returns the number of source dimensions of the transforms created by this provider.
+     */
+    @Override
+    @SuppressWarnings("deprecation")
+    public final Integer getSourceDimensions() {
+        return 2;
+    }
+
+    /**
+     * Returns the number of target dimensions of the transforms created by this provider.
+     */
+    @Override
+    @SuppressWarnings("deprecation")
+    public final Integer getTargetDimensions() {
+        return 2;
     }
 
     /**
@@ -202,12 +215,9 @@ public abstract class MapProjection extends AbstractProvider {
      * @return the redimensioned projection method, or {@code this} if no change is needed.
      *
      * @since 0.8
-     *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
-    @Deprecated(since="1.1")
-    public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
+    public final AbstractProvider redimension(final int sourceDimensions, final int targetDimensions) {
         if (sourceDimensions != 3 || targetDimensions != 3) {
             return super.redimension(sourceDimensions, targetDimensions);
         } else synchronized (this) {

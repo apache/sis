@@ -37,8 +37,6 @@
           <gml:identifier codeSpace="IOGP">urn:ogc:def:method:EPSG::9837</gml:identifier>
           <gml:name codeSpace="EPSG">Geographic/topocentric conversions</gml:name>
           <gml:formula>See IOGP Guidance Note #7-2.</gml:formula>
-          <gml:sourceDimensions>3</gml:sourceDimensions>
-          <gml:targetDimensions>3</gml:targetDimensions>
           <gml:parameter>
             <gml:OperationParameter gml:id="epsg-parameter-8834">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8834</gml:identifier>

@@ -73,7 +73,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
                 HardCodedCRS.TOKYO,             // SourceCRS
                 op.getSourceCRS(),              // TargetCRS
                 null,                           // InterpolationCRS
-                DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2", 3),
+                DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2"),
                 EllipsoidToCentricTransform.createGeodeticConversion(mtFactory, HardCodedDatum.TOKYO.getEllipsoid(), true));
 
         final var after = new DefaultConversion(
@@ -81,7 +81,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
                 op.getTargetCRS(),              // SourceCRS
                 HardCodedCRS.JGD2000,           // TargetCRS
                 null,                           // InterpolationCRS
-                DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2", 3),
+                DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2"),
                 EllipsoidToCentricTransform.createGeodeticConversion(mtFactory, HardCodedDatum.JGD2000.getEllipsoid(), true).inverse());
 
         return new DefaultConcatenatedOperation(

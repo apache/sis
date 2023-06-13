@@ -64,7 +64,6 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.provider.VerticalOffset;
-import org.apache.sis.internal.referencing.provider.Providers;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.Resources;
@@ -301,7 +300,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * Wrapping the ServiceLoader in a LazySet avoid this issue.
          */
-        this(new Providers());
+        this(new LazySet<OperationMethod>(OperationMethod.class));
     }
 
     /**
@@ -1076,14 +1075,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * Get the operation method for the appropriate number of dimensions. For example, the default Molodensky
              * operation expects two-dimensional source and target CRS. If a given CRS is three-dimensional, we need
              * a provider variant which will not concatenate a "geographic 3D to 2D" operation before the Molodensky
-             * one. It is worth to perform this check only if the provider is a subclass of DefaultOperationMethod,
-             * since it needs to override the `redimension(int, int)` method.
+             * one.
              */
-            if (method instanceof DefaultOperationMethod && method.getClass() != DefaultOperationMethod.class) {
+            if (method instanceof AbstractProvider) {
                 final Integer sourceDim = (sourceCS != null) ? sourceCS.getDimension() : method.getSourceDimensions();
                 final Integer targetDim = (targetCS != null) ? targetCS.getDimension() : method.getTargetDimensions();
                 if (sourceDim != null && targetDim != null) {
-                    method = ((DefaultOperationMethod) method).redimension(sourceDim, targetDim);
+                    method = ((AbstractProvider) method).redimension(sourceDim, targetDim);
                     if (method instanceof MathTransformProvider) {
                         provider = method;
                     }
@@ -1281,8 +1279,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * directions and units of measurement.
              */
             transform = unique(transform);
-            method = DefaultOperationMethod.redimension(method, transform.getSourceDimensions(),
-                                                                transform.getTargetDimensions());
+            if (method instanceof AbstractProvider) {
+                method = ((AbstractProvider) method).variantFor(transform);
+            }
             if (context != null) {
                 transform = swapAndScaleAxes(transform, context);
             }

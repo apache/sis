@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * Tests {@link OperationMethodSet}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({
@@ -64,7 +64,7 @@ public final class OperationMethodSetTest extends TestCase {
          * This save us one object creation, and is often the same name anyway.
          */
         properties = Map.of(DefaultOperationMethod.NAME_KEY, parameters.getName());
-        return new DefaultOperationMethod(properties, 2, 2, parameters) {
+        return new DefaultOperationMethod(properties, parameters) {
             @Override public Class<? extends Projection> getOperationType() {
                 return type;
             }

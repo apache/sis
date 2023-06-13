@@ -27,6 +27,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
@@ -43,6 +44,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.referencing.Resources;
 
 
 /**
@@ -105,17 +107,13 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     /**
      * Constructs a math transform provider from the given properties and a set of parameters.
      *
-     * @param properties       set of properties. Shall contain at least {@code "name"}.
-     * @param sourceDimension  number of dimensions in the source CRS of this operation method.
-     * @param targetDimension  number of dimensions in the target CRS of this operation method.
-     * @param parameters       the set of parameters (never {@code null}).
+     * @param properties  set of properties. Shall contain at least {@code "name"}.
+     * @param parameters  the set of parameters (never {@code null}).
      */
     protected AbstractProvider(final Map<String,?> properties,
-                               final int sourceDimension,
-                               final int targetDimension,
                                final ParameterDescriptorGroup parameters)
     {
-        super(properties, sourceDimension, targetDimension, parameters);
+        super(properties, parameters);
         operationType = SingleOperation.class;
         sourceCSType  = CoordinateSystem.class;
         targetCSType  = CoordinateSystem.class;
@@ -129,23 +127,36 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      *
      * @param operationType      base interface of the {@code CoordinateOperation} instances that use this method.
      * @param parameters         description of parameters expected by this operation.
-     * @param sourceDimensions   number of dimensions in the source CRS of this operation method.
      * @param sourceCSType       base interface of the coordinate system of source coordinates.
      * @param sourceOnEllipsoid  whether the operation needs source ellipsoid axis lengths.
-     * @param targetDimensions   number of dimensions in the target CRS of this operation method.
      * @param targetCSType       base interface of the coordinate system of target coordinates.
      * @param targetOnEllipsoid  whether the operation needs target ellipsoid axis lengths.
      */
     AbstractProvider(final Class<? extends SingleOperation> operationType, final ParameterDescriptorGroup parameters,
-                     final Class<? extends CoordinateSystem> sourceCSType, final int sourceDimensions, final boolean sourceOnEllipsoid,
-                     final Class<? extends CoordinateSystem> targetCSType, final int targetDimensions, final boolean targetOnEllipsoid)
+                     final Class<? extends CoordinateSystem> sourceCSType, final boolean sourceOnEllipsoid,
+                     final Class<? extends CoordinateSystem> targetCSType, final boolean targetOnEllipsoid)
     {
-        super(toMap(parameters), sourceDimensions, targetDimensions, parameters);
+        super(toMap(parameters), parameters);
         this.operationType     = operationType;
         this.sourceCSType      = sourceCSType;
         this.targetCSType      = targetCSType;
         this.sourceOnEllipsoid = sourceOnEllipsoid;
         this.targetOnEllipsoid = targetOnEllipsoid;
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
+    AbstractProvider(final AbstractProvider copy) {
+        super(copy);
+        operationType     = copy.operationType;
+        sourceCSType      = copy.sourceCSType;
+        targetCSType      = copy.targetCSType;
+        sourceOnEllipsoid = copy.sourceOnEllipsoid;
+        targetOnEllipsoid = copy.targetOnEllipsoid;
     }
 
     /**
@@ -278,6 +289,51 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     @Override
     public final Class<? extends SingleOperation> getOperationType() {
         return operationType;
+    }
+
+    /**
+     * If this provider has a variant for the specified transform, returns that variant. Otherwise returns {@code this}.
+     * For example the operation method may have different names depending on the number of dimensions.
+     *
+     * @param  transform  the transform for which to get a variant of the operation method.
+     * @return the operation method for the given transform, or {@code this} if there is no specialized variant.
+     */
+    public AbstractProvider variantFor(final MathTransform transform) {
+        return redimension(transform.getSourceDimensions(), transform.getTargetDimensions());
+    }
+
+    /**
+     * Returns an operation method equivalent to this one but with the specified number dimensions.
+     * The default implementation verifies that the arguments are valid, then returns {@code this}.
+     * Subclasses may override this method when the name or the parameters of the operation method
+     * depend on the number of dimensions.
+     *
+     * <h4>Example</h4>
+     * The EPSG database defines the following as two distinct operations.
+     * However they can be understood as two variants of the same operation.
+     *
+     * <ul>
+     *   <li>EPSG:9603 — Geocentric translations (geog2D domain)</li>
+     *   <li>EPSG:1035 — Geocentric translations (geog3D domain)</li>
+     * </ul>
+     *
+     * @param  sourceDimensions  the desired number of input dimensions.
+     * @param  targetDimensions  the desired number of output dimensions.
+     * @return the redimensioned operation method, or {@code this} if no change is needed.
+     * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
+     */
+    public AbstractProvider redimension(final int sourceDimensions, final int targetDimensions) {
+        ArgumentChecks.ensureStrictlyPositive("sourceDimensions", sourceDimensions);
+        ArgumentChecks.ensureStrictlyPositive("targetDimensions", targetDimensions);
+        @SuppressWarnings("deprecation") final Integer src = getSourceDimensions();
+        @SuppressWarnings("deprecation") final Integer tgt = getTargetDimensions();
+        if ((src == null || src == sourceDimensions) &&
+            (tgt == null || tgt == targetDimensions))
+        {
+            return this;
+        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalOperationDimension_3,
+                    getName().getCode(), sourceDimensions, targetDimensions));
     }
 
     /**

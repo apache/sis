@@ -46,6 +46,6 @@ public final class AxisOrderReversal3D extends AxisOrderReversal {
      * Constructs a provider with default parameters.
      */
     public AxisOrderReversal3D() {
-        super(PARAMETERS, 3);
+        super(PARAMETERS, 4);
     }
 }

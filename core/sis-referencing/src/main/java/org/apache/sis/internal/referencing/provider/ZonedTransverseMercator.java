@@ -109,8 +109,8 @@ public final class ZonedTransverseMercator extends AbstractProvider {
      */
     public ZonedTransverseMercator() {
         super(Projection.class, PARAMETERS,
-              EllipsoidalCS.class, 2, true,
-              EllipsoidalCS.class, 2, false);
+              EllipsoidalCS.class, true,
+              EllipsoidalCS.class, false);
     }
 
     /**

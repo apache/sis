@@ -46,7 +46,7 @@ import static java.lang.Math.toRadians;
  * there is no need for a class specifically for this transform.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class GeocentricToTopocentric extends AbstractProvider {
@@ -133,8 +133,26 @@ public final class GeocentricToTopocentric extends AbstractProvider {
      */
     public GeocentricToTopocentric() {
         super(Conversion.class, PARAMETERS,
-              CartesianCS.class, 3, true,
-              CartesianCS.class, 3, false);
+              CartesianCS.class, true,
+              CartesianCS.class, false);
+    }
+
+    /**
+     * Returns the number of source dimensions.
+     */
+    @Override
+    @Deprecated
+    public Integer getSourceDimensions() {
+        return 3;
+    }
+
+    /**
+     * Returns the number of target dimensions.
+     */
+    @Override
+    @Deprecated
+    public Integer getTargetDimensions() {
+        return 3;
     }
 
     /**

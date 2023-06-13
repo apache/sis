@@ -141,7 +141,7 @@ public final class DefaultConversionTest extends TestCase {
         final int sourceDim = sourceCRS.getCoordinateSystem().getDimension();
         final int targetDim = targetCRS.getCoordinateSystem().getDimension();
         final OperationMethod method = DefaultOperationMethodTest.create(
-                "Longitude rotation", "9601", "EPSG guidance note #7-2", sourceDim,
+                "Longitude rotation", "9601", "EPSG guidance note #7-2",
                 DefaultParameterDescriptorTest.createEPSG("Longitude offset", (short) 8602));
         final ParameterValueGroup pg = method.getParameters().createValue();
         pg.parameter("Longitude offset").setValue(OFFSET);

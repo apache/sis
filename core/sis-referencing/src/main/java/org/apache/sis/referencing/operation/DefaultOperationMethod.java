@@ -38,6 +38,7 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterDescriptor;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
@@ -48,7 +49,6 @@ import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.NilReferencingObject;
-import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
@@ -59,8 +59,6 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
-
-import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
@@ -144,7 +142,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 2870579345991143357L;
+    private static final long serialVersionUID = 6612049971779439502L;
 
     /**
      * Formula(s) or procedure used by this operation method. This may be a reference to a publication.
@@ -157,36 +155,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Formula formula;
-
-    /**
-     * Number of dimensions in the source CRS of this operation method.
-     * May be {@code null} if this method can work with any number of
-     * source dimensions (e.g. <cite>Affine Transform</cite>).
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setSourceDimensions(Integer)}</p>
-     *
-     * @see #getSourceDimensions()
-     *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
-     */
-    @Deprecated(since="1.1")
-    private Integer sourceDimensions;
-
-    /**
-     * Number of dimensions in the target CRS of this operation method.
-     * May be {@code null} if this method can work with any number of
-     * target dimensions (e.g. <cite>Affine Transform</cite>).
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setTargetDimensions(Integer)}</p>
-     *
-     * @see #getTargetDimensions()
-     *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
-     */
-    @Deprecated(since="1.1")
-    private Integer targetDimensions;
 
     /**
      * The set of parameters, or {@code null} if none.
@@ -249,32 +217,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     public DefaultOperationMethod(final Map<String,?> properties,
                                   final ParameterDescriptorGroup parameters)
     {
-        this(properties, null, null, parameters);
-    }
-
-    /**
-     * Constructs an operation method for the given number of dimensions.
-     * The source and target dimensions may be {@code null} if this method can work
-     * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
-     *
-     * @param  properties        set of properties. Shall contain at least {@code "name"}.
-     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method, or {@code null}.
-     * @param  targetDimensions  number of dimensions in the target CRS of this operation method, or {@code null}.
-     * @param  parameters        description of parameters expected by this operation.
-     *
-     * @deprecated ISO 19111:2019 removed "source dimensions" and "target dimensions" attributes.
-     */
-    @Deprecated(since="1.1")
-    public DefaultOperationMethod(final Map<String,?> properties,
-                                  final Integer sourceDimensions,
-                                  final Integer targetDimensions,
-                                  final ParameterDescriptorGroup parameters)
-    {
         super(properties);
-        if (sourceDimensions != null) ensurePositive("sourceDimensions", sourceDimensions);
-        if (targetDimensions != null) ensurePositive("targetDimensions", targetDimensions);
-        ensureNonNull("parameters", parameters);
-
+        ArgumentChecks.ensureNonNull("parameters", parameters);
         Object value = properties.get(FORMULA_KEY);
         if (value == null || value instanceof Formula) {
             formula = (Formula) value;
@@ -286,9 +230,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             throw new IllegalArgumentException(Errors.getResources(properties)
                     .getString(Errors.Keys.IllegalPropertyValueClass_2, FORMULA_KEY, value.getClass()));
         }
-        this.parameters       = parameters;
-        this.sourceDimensions = sourceDimensions;
-        this.targetDimensions = targetDimensions;
+        this.parameters = parameters;
     }
 
     /**
@@ -300,8 +242,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     public DefaultOperationMethod(final MathTransform transform) {
         super(getProperties(transform));
-        sourceDimensions = transform.getSourceDimensions();
-        targetDimensions = transform.getTargetDimensions();
         if (transform instanceof Parameterized) {
             parameters = ((Parameterized) transform).getParameterDescriptors();
         }
@@ -313,7 +253,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     @Workaround(library="JDK", version="1.7")
     private static Map<String,?> getProperties(final MathTransform transform) {
-        ensureNonNull("transform", transform);
+        ArgumentChecks.ensureNonNull("transform", transform);
         if (transform instanceof Parameterized) {
             final ParameterDescriptorGroup parameters = ((Parameterized) transform).getParameterDescriptors();
             if (parameters != null) {
@@ -363,10 +303,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     protected DefaultOperationMethod(final OperationMethod method) {
         super(method);
-        formula          = method.getFormula();
-        parameters       = method.getParameters();
-        sourceDimensions = method.getSourceDimensions();
-        targetDimensions = method.getTargetDimensions();
+        formula    = method.getFormula();
+        parameters = method.getParameters();
     }
 
     /**
@@ -382,146 +320,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     public static DefaultOperationMethod castOrCopy(final OperationMethod object) {
         return (object == null) || (object instanceof DefaultOperationMethod)
                ? (DefaultOperationMethod) object : new DefaultOperationMethod(object);
-    }
-
-    /**
-     * Constructs a new operation method with the same values than the specified one except the dimensions.
-     * The source and target dimensions may be {@code null} if this method can work with any number of dimensions
-     * (e.g. <cite>Affine Transform</cite>).
-     *
-     * @param  method            the operation method to copy.
-     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param  targetDimensions  number of dimensions in the target CRS of this operation method.
-     */
-    private DefaultOperationMethod(final OperationMethod method,
-                                   final Integer sourceDimensions,
-                                   final Integer targetDimensions)
-    {
-        super(method);
-        this.formula    = method.getFormula();
-        this.parameters = method.getParameters();
-        this.sourceDimensions = sourceDimensions;
-        this.targetDimensions = targetDimensions;
-    }
-
-    /**
-     * Returns an operation method with different dimensions, if we are allowed to change dimensionality.
-     * This method accepts to change a dimension only if the value specified by the original method
-     * is {@code null}. Otherwise an {@link IllegalArgumentException} is thrown.
-     *
-     * @param  method            the operation method to redimension.
-     * @param  sourceDimensions  the desired new source dimensions.
-     * @param  methodSource      the current number of source dimensions (may be {@code null}).
-     * @param  targetDimensions  the desired new target dimensions.
-     * @param  methodTarget      the current number of target dimensions (may be {@code null}).
-     * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
-     */
-    private static OperationMethod redimension(final OperationMethod method,
-            final int sourceDimensions, final Integer methodSource,
-            final int targetDimensions, final Integer methodTarget)
-    {
-        boolean sourceValids = (methodSource != null) && (methodSource == sourceDimensions);
-        boolean targetValids = (methodTarget != null) && (methodTarget == targetDimensions);
-        if (sourceValids && targetValids) {
-            return method;
-        }
-        sourceValids |= (methodSource == null);
-        targetValids |= (methodTarget == null);
-        ensurePositive("sourceDimensions", sourceDimensions);
-        ensurePositive("targetDimensions", targetDimensions);
-        if (!sourceValids || !targetValids) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalOperationDimension_3,
-                    method.getName().getCode(), sourceDimensions, targetDimensions));
-        }
-        return new DefaultOperationMethod(method, sourceDimensions, targetDimensions);
-    }
-
-    /**
-     * Returns an operation method with different dimensions, if we are allowed to change dimensionality.
-     * The need to change an {@code OperationMethod} dimensionality may occur in two contexts:
-     *
-     * <ul class="verbose">
-     *   <li>When the original method can work with any number of dimensions. Those methods do not know
-     *     in advance the number of dimensions, which is fixed only after the actual {@link MathTransform}
-     *     instance has been created.
-     *     Example: <cite>Affine</cite> conversion.</li>
-     *   <li>When a three-dimensional method can also be used in the two-dimensional case, typically by
-     *     assuming that the ellipsoidal height is zero everywhere.
-     *     Example: <cite>Molodensky</cite> transform.</li>
-     * </ul>
-     *
-     * This {@code redimension(…)} implementation performs the following choice:
-     *
-     * <ul class="verbose">
-     *   <li>If the given method is an instance of {@code DefaultOperationMethod}, then delegate to
-     *     {@link #redimension(int, int)} in order to allow subclasses to defines their own policy.
-     *     For example, the <cite>Molodensky</cite> method needs to override.</li>
-     *   <li>Otherwise for each dimension (<var>source</var> and <var>target</var>):
-     *     <ul>
-     *       <li>If the corresponding dimension of the given method is {@code null}, then
-     *         set that dimension to the given value in a new {@code OperationMethod}.</li>
-     *       <li>Otherwise if the given value is not equal to the corresponding dimension
-     *         in the given method, throw an {@link IllegalArgumentException}.</li>
-     *     </ul>
-     *   </li>
-     * </ul>
-     *
-     * @param  method            the operation method to redimension, or {@code null}.
-     * @param  sourceDimensions  the desired number of input dimensions.
-     * @param  targetDimensions  the desired number of output dimensions.
-     * @return the redimensioned operation method, or {@code null} if the given method was null,
-     *         or {@code method} if no change is needed.
-     * @throws IllegalArgumentException if the given dimensions are illegal for the given operation method.
-     *
-     * @deprecated Not needed anymore since ISO 19111:2019 removed the
-     *             "source dimensions" and "target dimensions" attributes.
-     */
-    @Deprecated(since="1.1")
-    public static OperationMethod redimension(OperationMethod method,
-            final int sourceDimensions, final int targetDimensions)
-    {
-        if (method != null) {
-            if (method instanceof DefaultOperationMethod) {
-                return ((DefaultOperationMethod) method).redimension(sourceDimensions, targetDimensions);
-            } else {
-                method = redimension(method, sourceDimensions, method.getSourceDimensions(),
-                                             targetDimensions, method.getTargetDimensions());
-            }
-        }
-        return method;
-    }
-
-    /**
-     * Returns this operation method with different dimensions, if we are allowed to change dimensionality.
-     * See {@link #redimension(OperationMethod, int, int)} for more information.
-     *
-     * <p>The default implementation performs the following choice:
-     * for each dimension (<var>source</var> and <var>target</var>):</p>
-     * <ul>
-     *   <li>If the corresponding dimension of the given method is {@code null}, then
-     *       set that dimension to the given value in a new {@code OperationMethod}.</li>
-     *   <li>Otherwise if the given value is not equal to the corresponding dimension
-     *       in the given method, throw an {@link IllegalArgumentException}.</li>
-     * </ul>
-     *
-     * Subclasses should override this method if they can work with different number of dimensions.
-     * For example, a <cite>Molodensky</cite> transform usually works in a three-dimensional space,
-     * but can also work in a two-dimensional space by assuming that the ellipsoidal height is zero
-     * everywhere.
-     *
-     * @param  sourceDimensions  the desired number of input dimensions.
-     * @param  targetDimensions  the desired number of output dimensions.
-     * @return the redimensioned operation method, or {@code this} if no change is needed.
-     * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
-     *
-     * @since 0.6
-     *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
-     */
-    @Deprecated(since="1.1")
-    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
-        return redimension(this, sourceDimensions, this.sourceDimensions,
-                                 targetDimensions, this.targetDimensions);
     }
 
     /**
@@ -605,7 +403,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     @XmlElement(name = "sourceDimensions")
     @XmlSchemaType(name = "positiveInteger")
     public Integer getSourceDimensions() {
-        return sourceDimensions;
+        return null;
     }
 
     /**
@@ -623,7 +421,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     @XmlElement(name = "targetDimensions")
     @XmlSchemaType(name = "positiveInteger")
     public Integer getTargetDimensions() {
-        return targetDimensions;
+        return null;
     }
 
     /**
@@ -656,6 +454,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @return {@code true} if both objects are equal.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;                                                // Slight optimization.
@@ -665,10 +464,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                 case STRICT: {
                     // Name and identifiers have been compared by super.equals(object, mode).
                     final DefaultOperationMethod that = (DefaultOperationMethod) object;
-                    return Objects.equals(this.formula,          that.formula) &&
-                           Objects.equals(this.sourceDimensions, that.sourceDimensions) &&
-                           Objects.equals(this.targetDimensions, that.targetDimensions) &&
-                           Objects.equals(this.parameters,       that.parameters);
+                    return Objects.equals(this.formula,    that.formula) &&
+                           Objects.equals(this.parameters, that.parameters);
                 }
                 case BY_CONTRACT: {
                     // Name and identifiers have been compared by super.equals(object, mode).
@@ -717,7 +514,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(sourceDimensions, targetDimensions, parameters);
+        return super.computeHashCode() + Objects.hashCode(parameters);
     }
 
     /**
@@ -821,32 +618,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     private DefaultOperationMethod() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time.
-     *
-     * @see #getSourceDimensions()
-     */
-    private void setSourceDimensions(final Integer value) {
-        if (sourceDimensions == null) {
-            sourceDimensions = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultOperationMethod.class, "setSourceDimensions", "sourceDimensions");
-        }
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time.
-     *
-     * @see #getTargetDimensions()
-     */
-    private void setTargetDimensions(final Integer value) {
-        if (targetDimensions == null) {
-            targetDimensions = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultOperationMethod.class, "setTargetDimensions", "targetDimensions");
-        }
     }
 
     /**

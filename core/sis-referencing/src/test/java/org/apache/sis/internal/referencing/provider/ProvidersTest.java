@@ -19,12 +19,12 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.ServiceLoader;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * Tests {@link Providers} and some consistency rules of all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({
@@ -171,8 +171,9 @@ public final class ProvidersTest extends TestCase {
             final ParameterDescriptorGroup group = method.getParameters();
             final String operationName = group.getName().getCode();
             for (final GeneralParameterDescriptor param : group.descriptors()) {
-                assertFalse("Parameter declared twice in the same group.",
-                        operationName.equals(groupNames.put(param, operationName)));
+                if (operationName.equals(groupNames.put(param, operationName))) {
+                    fail("Parameter declared twice in the same “" + operationName + "” group.");
+                }
                 /*
                  * Ensure uniqueness of the parameter descriptor as a whole.
                  */
@@ -209,10 +210,14 @@ public final class ProvidersTest extends TestCase {
         }
     }
 
+    /** Temporary flag for disabling tests that require JDK9. */
+    private static final boolean JDK9 = false;
+
     /**
-     * Tests {@link AbstractProvider#redimension(int, int)} on all providers managed by {@link Providers}.
+     * Tests {@link AbstractProvider#redimension(int, int)} on all providers.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testRedimension() {
         final Map<Class<?>,Boolean> redimensionables = new HashMap<>(100);
         for (final Class<?> type : methods()) {
@@ -221,45 +226,51 @@ public final class ProvidersTest extends TestCase {
         for (final Class<?> type : redimensionables()) {
             assertEquals(type.getName(), Boolean.FALSE, redimensionables.put(type, Boolean.TRUE));
         }
-        final Providers providers = new Providers();
-        for (final OperationMethod method : providers) {
+        for (final OperationMethod method : ServiceLoader.load(OperationMethod.class)) {
             if (method instanceof ProviderMock) {
                 continue;                           // Skip the methods that were defined only for test purpose.
             }
-            final int sourceDimensions = method.getSourceDimensions();
-            final int targetDimensions = method.getTargetDimensions();
-            final Boolean isRedimensionable = redimensionables.get(method.getClass());
-            assertNotNull(method.getClass().getName(), isRedimensionable);
+            final AbstractProvider provider = (AbstractProvider) method;
+            final Integer sourceDimensions = provider.getSourceDimensions();
+            final Integer targetDimensions = provider.getTargetDimensions();
+            final Boolean isRedimensionable = redimensionables.get(provider.getClass());
+            assertNotNull(provider.getClass().getName(), isRedimensionable);
             if (isRedimensionable) {
+                assertNotNull(sourceDimensions);
+                assertNotNull(targetDimensions);
                 for (int newSource = 2; newSource <= 3; newSource++) {
                     for (int newTarget = 2; newTarget <= 3; newTarget++) {
-                        final OperationMethod redim = ((DefaultOperationMethod) method).redimension(newSource, newTarget);
+                        final AbstractProvider redim = provider.redimension(newSource, newTarget);
                         assertEquals("sourceDimensions", newSource, redim.getSourceDimensions().intValue());
                         assertEquals("targetDimensions", newTarget, redim.getTargetDimensions().intValue());
-                        if (!(method instanceof Affine)) {
-                            if (newSource == sourceDimensions && newTarget == targetDimensions) {
-                                assertSame("When asking the original number of dimensions, expected the original instance.", method, redim);
-                            } else {
-                                assertNotSame("When asking a different number of dimensions, expected a different instance.", method, redim);
-                            }
-                            assertSame("When asking the original number of dimensions, expected the original instance.",
-                                    method, ((DefaultOperationMethod) redim).redimension(sourceDimensions, targetDimensions));
+                        if (provider instanceof Affine) {
+                            continue;
                         }
+                        if (newSource == sourceDimensions && newTarget == targetDimensions) {
+                            assertSame("When asking the original number of dimensions, expected the original instance.", provider, redim);
+                        } else {
+                            assertNotSame("When asking a different number of dimensions, expected a different instance.", provider, redim);
+                        }
+                        if (JDK9)       // Temporarily disables next line. Will be removed soon.
+                        assertSame("When asking the original number of dimensions, expected the original instance.",
+                                   provider, redim.redimension(sourceDimensions, targetDimensions));
                     }
                 }
-            } else if (method instanceof MapProjection) {
-                final OperationMethod proj3D = ((MapProjection) method).redimension(sourceDimensions ^ 1, targetDimensions ^ 1);
-                assertNotSame("redimension(3,3) should return a new method.", method, proj3D);
-                assertSame("redimension(2,2) should give back the original method.", method,
-                        ((DefaultOperationMethod) proj3D).redimension(sourceDimensions, targetDimensions));
+            } else if (provider instanceof MapProjection) {
+                assertEquals(2, sourceDimensions.intValue());
+                assertEquals(2, targetDimensions.intValue());
+                final AbstractProvider proj3D = provider.redimension(sourceDimensions ^ 1, targetDimensions ^ 1);
+                assertNotSame("redimension(3,3) should return a new method.", provider, proj3D);
+                assertSame("redimension(2,2) should give back the original method.", provider,
+                        proj3D.redimension(sourceDimensions, targetDimensions));
                 assertSame("Value of redimension(3,3) should have been cached.", proj3D,
-                        ((MapProjection) method).redimension(sourceDimensions ^ 1, targetDimensions ^ 1));
-            } else try {
-                ((DefaultOperationMethod) method).redimension(sourceDimensions ^ 1, targetDimensions ^ 1);
-                fail("Type " + method.getClass().getName() + " is not in our list of redimensionable methods.");
+                        ((MapProjection) provider).redimension(sourceDimensions ^ 1, targetDimensions ^ 1));
+            } else if (sourceDimensions != null && targetDimensions != null) try {
+                provider.redimension(sourceDimensions + 1, targetDimensions + 1);
+                fail("Type " + provider.getClass().getName() + " is not in our list of redimensionable methods.");
             } catch (IllegalArgumentException e) {
                 final String message = e.getMessage();
-                assertTrue(message, message.contains(method.getName().getCode()));
+                assertTrue(message, message.contains(provider.getName().getCode()));
             }
         }
     }

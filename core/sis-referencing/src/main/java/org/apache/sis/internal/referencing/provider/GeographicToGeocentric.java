@@ -41,7 +41,7 @@ import org.apache.sis.internal.util.Constants;
  * This provider creates transforms from geographic to geocentric coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see GeocentricToGeographic
  *
@@ -100,24 +100,41 @@ public final class GeographicToGeocentric extends GeodeticOperation {
     }
 
     /**
-     * Constructs a provider for the 3-dimensional case.
+     * The providers for all combinations between 2D and 3D cases.
      */
+    private static final GeographicToGeocentric[] REDIMENSIONED = new GeographicToGeocentric[4];
+    static {
+        REDIMENSIONED[1] = new GeographicToGeocentric(1);     // 2D to 3D.
+        REDIMENSIONED[3] = new GeographicToGeocentric(3);
+    }
+
+    /**
+     * Returns the provider for the specified combination of source and target dimensions.
+     */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public GeographicToGeocentric() {
-        this(3, new GeographicToGeocentric[4]);
-        redimensioned[1] = new GeographicToGeocentric(2, redimensioned);
-        redimensioned[3] = this;
+        super(REDIMENSIONED[INDEX_OF_3D]);
     }
 
     /**
      * Constructs a provider for the given dimensions.
      *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases.
+     * @param indexOfDim  number of dimensions as the index in {@link #redimensioned} array.
      */
-    private GeographicToGeocentric(int sourceDimensions, GeodeticOperation[] redimensioned) {
-        super(Conversion.class, PARAMETERS,
-              EllipsoidalCS.class, sourceDimensions, true,
-              CartesianCS.class, 3, false, redimensioned);
+    private GeographicToGeocentric(final int indexOfDim) {
+        super(Conversion.class, PARAMETERS, indexOfDim,
+              EllipsoidalCS.class, true,
+              CartesianCS.class, false);
     }
 
     /**
