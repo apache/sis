@@ -162,9 +162,9 @@ public class SampleDimension implements Serializable {
      *
      * <p>Note that {@link Builder} provides a more convenient way to create sample dimensions.</p>
      *
-     * @param name        an identification for the sample dimension.
-     * @param background  the background value, or {@code null} if none.
-     * @param categories  the list of categories. May be empty if none.
+     * @param  name        an identification for the sample dimension.
+     * @param  background  the background value, or {@code null} if none.
+     * @param  categories  the list of categories. May be empty if none.
      * @throws IllegalSampleDimensionException if two or more categories have overlapping sample value range.
      */
     public SampleDimension(final GenericName name, final Number background, final Collection<? extends Category> categories) {
@@ -544,7 +544,7 @@ public class SampleDimension implements Serializable {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @author  Alexis Manin (Geomatys)
-     * @version 1.2
+     * @version 1.4
      * @since   1.0
      */
     public static class Builder {
@@ -1011,7 +1011,7 @@ public class SampleDimension implements Serializable {
          * @since 1.1
          */
         public Builder mapQualitative(CharSequence name, final NumberRange<?> samples, final float converted) {
-            ArgumentChecks.ensureNonNull("samples", samples);
+            ArgumentChecks.ensureNonEmpty("samples", samples);
             final int ordinal = MathFunctions.toNanOrdinal(converted);
             if (!toNaN.add(ordinal)) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "NaN #" + ordinal));
@@ -1050,8 +1050,8 @@ public class SampleDimension implements Serializable {
          * @throws IllegalArgumentException if the range is invalid.
          */
         public Builder addQuantitative(final CharSequence name, final NumberRange<?> samples, final NumberRange<?> converted) {
-            ArgumentChecks.ensureNonNull("samples", samples);
-            ArgumentChecks.ensureNonNull("converted", converted);
+            ArgumentChecks.ensureNonEmpty("samples", samples);
+            ArgumentChecks.ensureNonEmpty("converted", converted);
             /*
              * We need to perform calculation using the same "included versus excluded" characteristics for sample
              * and converted values. We pickup the characteristics of the sample values range (except for avoiding
@@ -1063,7 +1063,7 @@ public class SampleDimension implements Serializable {
             final double Δvalue    = converted.getMaxDouble(isMaxIncluded) - minValue;
             final double minSample =   samples.getMinDouble(isMinIncluded);
             final double Δsample   =   samples.getMaxDouble(isMaxIncluded) - minSample;
-            final double scale     = Δvalue / Δsample;
+            final double scale     = (Δvalue != 0) ? Δvalue / Δsample : 1;
             final TransferFunction transferFunction = new TransferFunction();
             transferFunction.setScale(scale);
             transferFunction.setOffset(Math.fma(-scale, minSample, minValue));

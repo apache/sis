@@ -216,6 +216,27 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
+     * Makes sure that given object is non-null and non-empty.
+     * If it is null, then a {@link NullArgumentException} is thrown.
+     * Otherwise if it {@linkplain Emptiable#isEmpty() is empty}, then an {@link IllegalArgumentException} is thrown.
+     *
+     * @param  name     the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  toCheck  the user argument to check against null value and empty object.
+     * @throws NullArgumentException if {@code toCheck} is null.
+     * @throws IllegalArgumentException if {@code toCheck} is empty.
+     *
+     * @since 1.4
+     */
+    public static void ensureNonEmpty(final String name, final Emptiable toCheck) {
+        if (toCheck == null) {
+            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+        }
+        if (toCheck.isEmpty()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
+        }
+    }
+
+    /**
      * Ensures that the given {@code values} array is non-null and non-empty. This method can also ensures that all values
      * are between the given bounds (inclusive) and are distinct. The distinct values requirement is useful for validating
      * arrays of spatiotemporal dimension indices, where dimensions cannot be repeated.
