@@ -16,12 +16,13 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
-import java.nio.ByteBuffer;
 import java.util.List;
+import java.nio.ByteBuffer;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import org.opengis.filter.Expression;
@@ -111,7 +112,7 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
     public Object apply(final R input) {
         final Object value = geometry.apply(input);
         try {
-            final GeometryWrapper<G> result;
+            final GeometryWrapper result;
             if (value == null) {
                 return null;
             } else if (value instanceof byte[]) {
@@ -123,11 +124,11 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
             } else {
                 result = library.createFromComponents(operation.getGeometryType().get(), value);
             }
-            final Object   geometry = result.implementation();
+            final Object   geometry = library.getGeometry(result);
             final Class<?> expected = operation.getReturnType(library);
             if (!expected.isInstance(geometry)) {
                 throw new InvalidFilterValueException(Errors.format(
-                        Errors.Keys.IllegalArgumentClass_3, "geom", expected, geometry.getClass()));
+                        Errors.Keys.IllegalArgumentClass_3, "geom", expected, Classes.getClass(geometry)));
             }
             if (srid != null) {
                 final CoordinateReferenceSystem crs = getTargetCRS(input);

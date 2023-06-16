@@ -41,9 +41,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.MultiLineString;
-import org.locationtech.jts.geom.MultiPoint;
-import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
@@ -57,7 +54,7 @@ import org.locationtech.jts.io.WKTReader;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 public final class Factory extends Geometries<Geometry> {
@@ -74,7 +71,7 @@ public final class Factory extends Geometries<Geometry> {
     public static final Factory INSTANCE = new Factory();
 
     /**
-     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
+     * Invoked at deserialization time for obtaining the unique instance of this {@code Factory} class.
      *
      * @return {@link #INSTANCE}.
      * @throws ObjectStreamException if the object state is invalid.
@@ -103,6 +100,23 @@ public final class Factory extends Geometries<Geometry> {
     }
 
     /**
+     * Returns the geometry object to return to the user in public API.
+     *
+     * @param  wrapper  the wrapper for which to get the geometry, or {@code null}.
+     * @return the JTS geometry instance, or {@code null} if the given wrapper was null.
+     * @throws ClassCastException if the given wrapper is not an instance of the class expected by this factory.
+     */
+    @Override
+    public Object getGeometry(final GeometryWrapper wrapper) {
+        if (wrapper instanceof Wrapper) {
+            // Intentionally stronger cast than needed.
+            return ((Wrapper) wrapper).implementation();
+        } else {
+            return super.getGeometry(wrapper);
+        }
+    }
+
+    /**
      * Returns the geometry class of the given instance.
      *
      * @param  type  type of geometry for which the class is desired.
@@ -110,28 +124,23 @@ public final class Factory extends Geometries<Geometry> {
      */
     @Override
     public Class<?> getGeometryClass(final GeometryType type) {
-        switch (type) {
-            default:               return rootClass;
-            case POINT:            return pointClass;
-            case LINESTRING:       return polylineClass;
-            case POLYGON:          return polygonClass;
-            case MULTI_POINT:      return MultiPoint.class;
-            case MULTI_LINESTRING: return MultiLineString.class;
-            case MULTI_POLYGON:    return MultiPolygon.class;
-        }
+        return Wrapper.getGeometryClass(type);
     }
 
     /**
-     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} geometry.
+     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper} geometry.
      *
      * @param  geometry  the geometry instance to wrap (can be {@code null}).
      * @return a wrapper for the given geometry implementation, or {@code null}.
      * @throws ClassCastException if the given geometry is not an instance of valid type.
      */
     @Override
-    public GeometryWrapper<Geometry> castOrWrap(final Object geometry) {
-        return (geometry == null || geometry instanceof Wrapper)
-                ? (Wrapper) geometry : new Wrapper((Geometry) geometry);
+    public GeometryWrapper castOrWrap(final Object geometry) {
+        if (geometry == null || geometry instanceof Wrapper) {
+            return (Wrapper) geometry;
+        } else {
+            return new Wrapper((Geometry) geometry);
+        }
     }
 
     /**
@@ -141,7 +150,7 @@ public final class Factory extends Geometries<Geometry> {
      * @return wrapper for the given geometry.
      */
     @Override
-    protected GeometryWrapper<Geometry> createWrapper(final Geometry geometry) {
+    protected GeometryWrapper createWrapper(final Geometry geometry) {
         return new Wrapper(geometry);
     }
 
@@ -267,11 +276,11 @@ public final class Factory extends Geometries<Geometry> {
      * @throws IllegalArgumentException if an element is a non-closed linear string.
      */
     @Override
-    public GeometryWrapper<Geometry> createMultiPolygon(final Object[] geometries) {
+    public GeometryWrapper createMultiPolygon(final Object[] geometries) {
         final Polygon[] polygons = new Polygon[geometries.length];
         boolean isFloat = true;
         for (int i=0; i < geometries.length; i++) {
-            final Object polyline = unwrap(geometries[i]);
+            final Object polyline = implementation(geometries[i]);
             final Polygon polygon;
             if (polyline instanceof Polygon) {
                 polygon = (Polygon) polyline;
@@ -396,7 +405,7 @@ public final class Factory extends Geometries<Geometry> {
      */
     @Override
     @SuppressWarnings("fallthrough")
-    public GeometryWrapper<Geometry> createFromComponents(final GeometryType type, final Object components) {
+    public GeometryWrapper createFromComponents(final GeometryType type, final Object components) {
         final Geometry geometry;
         switch (type) {
             case GEOMETRY_COLLECTION: {
@@ -483,7 +492,7 @@ public final class Factory extends Geometries<Geometry> {
      * @throws ParseException if the WKT cannot be parsed.
      */
     @Override
-    public GeometryWrapper<Geometry> parseWKT(final String wkt) throws ParseException {
+    public GeometryWrapper parseWKT(final String wkt) throws ParseException {
         // WKTReader(GeometryFactory) constructor is cheap.
         final WKTReader reader = new WKTReader(factory);
         reader.setIsOldJtsCoordinateSyntaxAllowed(false);
@@ -499,7 +508,7 @@ public final class Factory extends Geometries<Geometry> {
      * @throws ParseException if the WKB cannot be parsed.
      */
     @Override
-    public GeometryWrapper<Geometry> parseWKB(final ByteBuffer data) throws ParseException {
+    public GeometryWrapper parseWKB(final ByteBuffer data) throws ParseException {
         byte[] array;
         if (data.hasArray()) {
             /*

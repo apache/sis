@@ -130,7 +130,7 @@ final class Types {
     Types(final NameFactory factory, final Locale locale, final GeometryLibrary library)
             throws FactoryException, IllegalNameException
     {
-        geometries = Geometries.implementation(library);
+        geometries = Geometries.factory(library);
         final Map<String,InternationalString[]> resources = new HashMap<>();
         final Map<String,?> geomInfo = Map.of(AbstractIdentifiedType.NAME_KEY, AttributeConvention.GEOMETRY_PROPERTY);
         final Map<String,?> envpInfo = Map.of(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);

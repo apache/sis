@@ -49,10 +49,10 @@ import org.opengis.filter.SpatialOperatorName;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
-final class Wrapper extends GeometryWithCRS<Shape> {
+final class Wrapper extends GeometryWithCRS {
     /**
      * The wrapped implementation.
      */
@@ -69,7 +69,7 @@ final class Wrapper extends GeometryWithCRS<Shape> {
      * Returns the implementation-dependent factory of geometric object.
      */
     @Override
-    public Geometries<Shape> factory() {
+    protected Geometries<Shape> factory() {
         return Factory.INSTANCE;
     }
 
@@ -77,7 +77,7 @@ final class Wrapper extends GeometryWithCRS<Shape> {
      * Returns the geometry specified at construction time.
      */
     @Override
-    public Object implementation() {
+    protected Object implementation() {
         return geometry;
     }
 
@@ -204,7 +204,7 @@ add:    for (;;) {
      * This method assumes that the two geometries are in the same CRS (this is not verified).
      */
     @Override
-    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<Shape> other) {
+    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper other) {
         final int ordinal = type.ordinal();
         if (ordinal >= 0 && ordinal < PREDICATES.length) {
             final BiPredicate<Wrapper,Object> op = PREDICATES[ordinal];
@@ -241,7 +241,7 @@ add:    for (;;) {
      * @return result of the specified operation.
      */
     @Override
-    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Shape> other, final Object argument) {
+    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper other, final Object argument) {
         final Shape result;
         switch (operation) {
             case ST_Dimension:

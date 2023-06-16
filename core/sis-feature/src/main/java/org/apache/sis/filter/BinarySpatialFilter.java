@@ -41,11 +41,10 @@ import org.opengis.filter.BinarySpatialOperator;
  * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
- * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
  */
-final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> implements BinarySpatialOperator<R> {
+final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> implements BinarySpatialOperator<R> {
     /**
      * For cross-version compatibility.
      */
@@ -64,7 +63,7 @@ final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> implement
      * @param  bounds    the bounds to check geometry against.
      * @return a filter checking for interactions of the bounding boxes.
      */
-    BinarySpatialFilter(final Geometries<G> library, final Expression<R,?> geometry,
+    BinarySpatialFilter(final Geometries<?> library, final Expression<R,?> geometry,
                         final Envelope bounds, final WraparoundMethod wraparound)
     {
         super(library, geometry, new LeafExpression.Transformed<>(library.toGeometry2D(bounds, wraparound),
@@ -82,7 +81,7 @@ final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> implement
      * @return a filter for the specified operation between the two geometries.
      */
     BinarySpatialFilter(final SpatialOperatorName operatorType,
-                        final Geometries<G> library,
+                        final Geometries<?>   library,
                         final Expression<R,?> geometry1,
                         final Expression<R,?> geometry2)
     {
@@ -97,8 +96,8 @@ final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> implement
      * were given in the original call to the constructor.
      */
     @Override
-    protected BinaryGeometryFilter<R,G> recreate(final Expression<R,?> geometry1,
-                                                 final Expression<R,?> geometry2)
+    protected BinaryGeometryFilter<R> recreate(final Expression<R,?> geometry1,
+                                               final Expression<R,?> geometry2)
     {
         return new BinarySpatialFilter<>(operatorType, getGeometryLibrary(expression1), geometry1, geometry2);
     }
@@ -143,9 +142,9 @@ final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> implement
      */
     @Override
     public boolean test(final R object) {
-        final GeometryWrapper<G> left = expression1.apply(object);
+        final GeometryWrapper left = expression1.apply(object);
         if (left != null) {
-            final GeometryWrapper<G> right = expression2.apply(object);
+            final GeometryWrapper right = expression2.apply(object);
             if (right != null) try {
                 return left.predicate(operatorType, right, context);
             } catch (RuntimeException e) {

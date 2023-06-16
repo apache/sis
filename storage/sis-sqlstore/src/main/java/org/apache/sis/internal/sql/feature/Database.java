@@ -279,7 +279,7 @@ public class Database<G> extends Syntax  {
             throws Exception
     {
         final DatabaseMetaData metadata = connection.getMetaData();
-        final Geometries<?> g = Geometries.implementation(geomLibrary);
+        final Geometries<?> g = Geometries.factory(geomLibrary);
         final Dialect dialect = Dialect.guess(metadata);
         final Database<?> db;
         switch (dialect) {

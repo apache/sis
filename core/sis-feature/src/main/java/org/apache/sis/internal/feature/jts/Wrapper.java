@@ -73,10 +73,10 @@ import org.opengis.filter.DistanceOperatorName;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
-final class Wrapper extends GeometryWrapper<Geometry> {
+final class Wrapper extends GeometryWrapper {
     /**
      * The wrapped implementation.
      */
@@ -104,7 +104,7 @@ final class Wrapper extends GeometryWrapper<Geometry> {
      * Returns the implementation-dependent factory of geometric object.
      */
     @Override
-    public Geometries<Geometry> factory() {
+    protected Geometries<Geometry> factory() {
         return Factory.INSTANCE;
     }
 
@@ -112,7 +112,7 @@ final class Wrapper extends GeometryWrapper<Geometry> {
      * Returns the geometry specified at construction time.
      */
     @Override
-    public Object implementation() {
+    protected Object implementation() {
         return geometry;
     }
 
@@ -329,9 +329,11 @@ add:    for (Geometry next = geometry;;) {
      * <p><b>Note:</b> {@link SpatialOperatorName#BBOX} is implemented by {@code NOT DISJOINT}.
      * It is caller's responsibility to ensure that one of the geometries is rectangular,
      * for example by a call to {@link Geometry#getEnvelope()}.</p>
+     *
+     * @throws ClassCastException if the given wrapper is not for the same geometry library.
      */
     @Override
-    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<Geometry> other) {
+    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper other) {
         final int ordinal = type.ordinal();
         if (ordinal >= 0 && ordinal < PREDICATES.length) {
             final BiPredicate<Geometry,Geometry> op = PREDICATES[ordinal];
@@ -365,10 +367,12 @@ add:    for (Geometry next = geometry;;) {
      * Applies a filter predicate between this geometry and another geometry within a given distance.
      * This method assumes that the two geometries are in the same CRS and that the unit of measurement
      * is the same for {@code distance} than for axes (this is not verified).
+     *
+     * @throws ClassCastException if the given wrapper is not for the same geometry library.
      */
     @Override
     protected boolean predicateSameCRS(final DistanceOperatorName type,
-            final GeometryWrapper<Geometry> other, final double distance)
+                    final GeometryWrapper other, final double distance)
     {
         boolean reverse = (type != DistanceOperatorName.WITHIN);
         if (reverse && type != DistanceOperatorName.BEYOND) {
@@ -388,7 +392,7 @@ add:    for (Geometry next = geometry;;) {
      *         (for example geometries that are polylines) and one of the argument is not of that type.
      */
     @Override
-    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Geometry> other, final Object argument) {
+    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper other, final Object argument) {
         /*
          * For all operation producing a geometry, the result is collected for post-processing.
          * For all other kinds of value, the result is returned directly in the switch statement.
@@ -448,7 +452,7 @@ add:    for (Geometry next = geometry;;) {
             case ST_ToMultiPolygon:
             case ST_ToGeomColl: {
                 final GeometryType target = operation.getGeometryType().get();
-                final Class<?> type = factory().getGeometryClass(target);
+                final Class<?> type = getGeometryClass(target);
                 if (type.isInstance(geometry)) {
                     return geometry;
                 }
@@ -529,7 +533,7 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Converts the given geometry to the specified type.
+     * Converts the wrapped geometry to the specified type.
      * If the geometry is already of that type, it is returned unchanged.
      * Otherwise coordinates are copied in a new geometry of the requested type.
      *
@@ -551,8 +555,8 @@ add:    for (Geometry next = geometry;;) {
      * @throws IllegalArgumentException if the geometry cannot be converted to the specified type.
      */
     @Override
-    public GeometryWrapper<Geometry> toGeometryType(final GeometryType target) {
-        if (!factory().getGeometryClass(target).isInstance(geometry)) {
+    public GeometryWrapper toGeometryType(final GeometryType target) {
+        if (!getGeometryClass(target).isInstance(geometry)) {
             final Geometry result = convert(target);
             if (result != geometry) {
                 JTS.copyMetadata(geometry, result);
@@ -560,6 +564,24 @@ add:    for (Geometry next = geometry;;) {
             }
         }
         return this;
+    }
+
+    /**
+     * Returns the geometry class of the given instance.
+     *
+     * @param  type  type of geometry for which the class is desired.
+     * @return implementation class for the geometry of the specified type.
+     */
+    static Class<?> getGeometryClass(final GeometryType type) {
+        switch (type) {
+            default:               return Geometry.class;
+            case POINT:            return Point.class;
+            case LINESTRING:       return LineString.class;
+            case POLYGON:          return Polygon.class;
+            case MULTI_POINT:      return MultiPoint.class;
+            case MULTI_LINESTRING: return MultiLineString.class;
+            case MULTI_POLYGON:    return MultiPolygon.class;
+        }
     }
 
     /**
@@ -624,7 +646,7 @@ add:    for (Geometry next = geometry;;) {
             }
         }
         throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
-                geometry.getClass(), factory().getGeometryClass(target)));
+                geometry.getClass(), getGeometryClass(target)));
     }
 
     /**
@@ -681,7 +703,7 @@ add:    for (Geometry next = geometry;;) {
      * @throws TransformException if the geometry cannot be transformed.
      */
     @Override
-    public GeometryWrapper<Geometry> transform(final CoordinateOperation operation, final boolean validate)
+    public GeometryWrapper transform(final CoordinateOperation operation, final boolean validate)
             throws FactoryException, TransformException
     {
         return rewrap(JTS.transform(geometry, operation, validate));
@@ -697,7 +719,7 @@ add:    for (Geometry next = geometry;;) {
      * @throws TransformException if this geometry cannot be transformed.
      */
     @Override
-    public GeometryWrapper<Geometry> transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
+    public GeometryWrapper transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
         try {
             return rewrap(JTS.transform(geometry, targetCRS));
         } catch (FactoryException e) {
@@ -717,9 +739,10 @@ add:    for (Geometry next = geometry;;) {
      * @param  other  the second geometry.
      * @return {@code true} if the two geometries use equivalent CRS or if the CRS is undefined on both side,
      *         or {@code false} in case of doubt.
+     * @throws ClassCastException if the given wrapper is not for the same geometry library.
      */
     @Override
-    public boolean isSameCRS(final GeometryWrapper<Geometry> other) {
+    public boolean isSameCRS(final GeometryWrapper other) {
         return JTS.isSameCRS(geometry, ((Wrapper) other).geometry);
     }
 

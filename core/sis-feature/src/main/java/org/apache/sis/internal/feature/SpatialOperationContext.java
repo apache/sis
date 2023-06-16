@@ -60,7 +60,7 @@ import org.opengis.filter.DistanceOperatorName;
  * <p>The serialization form is not a committed API and may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public final class SpatialOperationContext implements Serializable {
@@ -118,7 +118,7 @@ public final class SpatialOperationContext implements Serializable {
      * @throws TransformException if a coordinate conversion was required but failed.
      * @throws IncommensurableException if a coordinate system does not use the expected units.
      */
-    public SpatialOperationContext(final GeographicBoundingBox areaOfInterest, final GeometryWrapper<?> literal,
+    public SpatialOperationContext(final GeographicBoundingBox areaOfInterest, final GeometryWrapper literal,
                                    final Unit<?> systemUnit, final int skipIndex)
             throws FactoryException, TransformException, IncommensurableException
     {
@@ -156,13 +156,12 @@ public final class SpatialOperationContext implements Serializable {
      * Geometries with unspecified CRS will be used as-is, without transformation.
      * The common CRS is stored in the {@link #commonCRS} field.
      *
-     * @param  <G>       geometry implementation base class.
      * @param  geometry  the geometry to transform.
      * @return the transformed geometry, or the same instance if no transformation was applied.
      * @throws FactoryException if an error occurred while fetching a CRS.
      * @throws TransformException if a coordinate conversion was required but failed.
      */
-    public <G> GeometryWrapper<G> transform(GeometryWrapper<G> geometry) throws FactoryException, TransformException {
+    public GeometryWrapper transform(GeometryWrapper geometry) throws FactoryException, TransformException {
         if (computationCRS != null) {
             final CoordinateReferenceSystem sourceCRS = to2D(geometry.getCoordinateReferenceSystem());
             if (sourceCRS != null && !Utilities.equalsIgnoreMetadata(computationCRS, sourceCRS)) {
@@ -178,14 +177,13 @@ public final class SpatialOperationContext implements Serializable {
      * Geometries with unspecified CRS will be used as-is, without transformation.
      * The common CRS is stored in the {@link #commonCRS} field.
      *
-     * @param  <G>         geometry implementation base class.
      * @param  geometries  the geometries to transform. Results will be stored in-place.
      * @return whether this method has been able to find a common CRS.
      * @throws FactoryException if an error occurred while fetching a CRS.
      * @throws TransformException if a coordinate conversion was required but failed.
      * @throws IncommensurableException if a geographic CRS does not use angular units (should not happen).
      */
-    final <G> boolean transform(final GeometryWrapper<G>[] geometries)
+    final boolean transform(final GeometryWrapper[] geometries)
             throws FactoryException, TransformException, IncommensurableException
     {
         final CoordinateReferenceSystem[] allCRS = new CoordinateReferenceSystem[geometries.length];
@@ -308,7 +306,7 @@ select: if (commonCRS == null) {
      * @throws TransformException if a coordinate conversion was required but failed.
      * @throws IncommensurableException if a coordinate system does not use the expected units.
      */
-    private static CoordinateReferenceSystem usingSystemUnit(final GeometryWrapper<?>        geometry,
+    private static CoordinateReferenceSystem usingSystemUnit(final GeometryWrapper           geometry,
                                                              final CoordinateReferenceSystem geometryCRS,
                                                                    CoordinateReferenceSystem targetCRS,
                                                              final Unit<?>                   systemUnit)

@@ -122,7 +122,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
     @SuppressWarnings("unchecked")
     protected RegistryTestCase(final Class<G> rootGeometry, final boolean supportCRS) {
         factory = new DefaultFilterFactory.Features<>(rootGeometry, Object.class, WraparoundMethod.SPLIT);
-        library = (Geometries<G>) Geometries.implementation(rootGeometry);
+        library = (Geometries<G>) Geometries.factory(rootGeometry);
         assertEquals(rootGeometry, library.rootClass);
         this.supportCRS = supportCRS;
     }
@@ -202,7 +202,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
      */
     private void assertPointEquals(final Object result, final CoordinateReferenceSystem crs, double x, double y) {
         assertInstanceOf("Expected a point.", library.pointClass, result);
-        final GeometryWrapper<G> wrapped = library.castOrWrap(result);
+        final GeometryWrapper wrapped = library.castOrWrap(result);
         if (supportCRS) {
             assertEquals(crs, wrapped.getCoordinateReferenceSystem());
         }
@@ -222,7 +222,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
         final GeneralEnvelope env;
         if (isPolygon) {
             assertInstanceOf("Expected a polygon.", library.polygonClass, result);
-            final GeometryWrapper<G> wrapped = library.castOrWrap(result);
+            final GeometryWrapper wrapped = library.castOrWrap(result);
             if (supportCRS) {
                 assertEquals(crs, wrapped.getCoordinateReferenceSystem());
             }
@@ -249,7 +249,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
      */
     private void assertPolylineEquals(final Object result, final CoordinateReferenceSystem crs, final double... coordinates) {
         assertInstanceOf("Expected a line string.", library.polylineClass, result);
-        final GeometryWrapper<G> wrapped = library.castOrWrap(result);
+        final GeometryWrapper wrapped = library.castOrWrap(result);
         if (supportCRS) {
             assertEquals(crs, wrapped.getCoordinateReferenceSystem());
         }

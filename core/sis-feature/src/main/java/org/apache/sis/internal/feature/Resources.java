@@ -304,6 +304,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short MismatchedDataType = 42;
 
         /**
+         * Expected a geometry from {0} library but got {1}.
+         */
+        public static final short MismatchedGeometryLibrary_2 = 88;
+
+        /**
          * The two images have different size or pixel coordinates.
          */
         public static final short MismatchedImageLocation = 43;

@@ -52,7 +52,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @since 1.1
  */
-final class GeometryConverter<R,G> extends Node implements Optimization.OnExpression<R, GeometryWrapper<G>> {
+final class GeometryConverter<R,G> extends Node implements Optimization.OnExpression<R, GeometryWrapper> {
     /**
      * For cross-version compatibility.
      */
@@ -94,7 +94,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R, GeometryWrapper<G>> recreate(final Expression<R,?>[] effective) {
+    public Expression<R, GeometryWrapper> recreate(final Expression<R,?>[] effective) {
         return new GeometryConverter<>(library, effective[0]);
     }
 
@@ -151,7 +151,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      * @throws InvalidFilterValueException if the expression result is not an instance of a supported type.
      */
     @Override
-    public GeometryWrapper<G> apply(final R input) {
+    public GeometryWrapper apply(final R input) {
         final Object value = expression.apply(input);
         final Envelope envelope;
         if (value instanceof GeographicBoundingBox) {
@@ -172,7 +172,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
     }
 
     /**
-     * Returns {@code this} if the given type is assignable from the geometry root type,
+     * Returns the wrapped expression if the given type is assignable from the geometry root type,
      * or throws an exception otherwise.
      */
     @Override

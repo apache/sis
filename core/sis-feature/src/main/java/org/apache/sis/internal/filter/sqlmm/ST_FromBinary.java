@@ -75,7 +75,7 @@ final class ST_FromBinary<R,G> extends GeometryParser<R,G> {
      * @throws Exception if parsing failed for another reason. This is an implementation-specific exception.
      */
     @Override
-    protected GeometryWrapper<G> parse(final Object value) throws Exception {
+    protected GeometryWrapper parse(final Object value) throws Exception {
         if (value instanceof ByteBuffer) {
             return library.parseWKB((ByteBuffer) value);
         }

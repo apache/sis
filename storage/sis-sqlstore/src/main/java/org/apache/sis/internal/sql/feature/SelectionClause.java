@@ -101,7 +101,7 @@ public final class SelectionClause extends SQLBuilder {
      * @todo Find a better approximation of desired flatness (the {@code span} local variable).
      *       It could be user-specified resolution.
      */
-    private void appendGeometry(GeometryWrapper<?> wrapper, Envelope bounds) {
+    private void appendGeometry(GeometryWrapper wrapper, Envelope bounds) {
         if (bounds == null) {
             if (wrapper == null) {
                 invalidate();
