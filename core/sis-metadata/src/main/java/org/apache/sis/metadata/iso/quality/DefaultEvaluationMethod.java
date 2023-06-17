@@ -32,6 +32,7 @@ import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.metadata.quality.DataEvaluation;
 import org.opengis.metadata.quality.AggregationDerivation;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -108,7 +109,7 @@ public class DefaultEvaluationMethod extends ISOMetadata implements EvaluationMe
      * The start and end times as a list of O, 1 or 2 elements.
      */
     private static final class Dates extends AbstractList<Temporal>
-            implements CheckedContainer<Temporal>, Cloneable, Serializable
+            implements CheckedContainer<Temporal>, CloneAccess, Serializable
     {
         /**
          * For cross-version compatibility.

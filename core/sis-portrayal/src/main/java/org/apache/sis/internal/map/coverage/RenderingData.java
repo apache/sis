@@ -57,6 +57,7 @@ import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.WraparoundApplicator;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
@@ -106,7 +107,7 @@ import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
  * @version 1.4
  * @since   1.1
  */
-public class RenderingData implements Cloneable {
+public class RenderingData implements CloneAccess {
     /**
      * The logger for portrayal.
      */

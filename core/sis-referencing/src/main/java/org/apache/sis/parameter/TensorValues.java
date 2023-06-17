@@ -36,6 +36,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.io.wkt.Formatter;
@@ -61,7 +62,7 @@ import org.apache.sis.util.resources.Errors;
  */
 @XmlTransient
 final class TensorValues<E> extends AbstractParameterDescriptor
-        implements ParameterDescriptorGroup, ParameterValueGroup, Cloneable
+        implements ParameterDescriptorGroup, ParameterValueGroup, CloneAccess
 {
     /**
      * Serial number for inter-operability with different versions.

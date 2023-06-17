@@ -82,7 +82,7 @@ public final class Cloner {
     }
 
     /**
-     * Clones the given array, then clone all array elements recursively.
+     * Clones the given array, then clones all array elements recursively.
      *
      * @param  array          the array to clone.
      * @param  componentType  value of {@code array.getClass().getComponentType()}.
@@ -107,8 +107,8 @@ public final class Cloner {
     }
 
     /**
-     * Clones the given object. If the given object does not provide a public {@code clone()}
-     * method, then there is a choice:
+     * Clones the given object.
+     * If the given object does not provide a public {@code clone()} method, then there is a choice:
      *
      * <ul>
      *   <li>If {@code isCloneRequired(object)} returns {@code true} (the default),
@@ -128,52 +128,56 @@ public final class Cloner {
         if (result != null) {
             return result;
         }
-        final Class<?> valueType = object.getClass();
-        final Class<?> componentType = valueType.getComponentType();
-        if (componentType != null) {
-            return cloneArray(object, componentType);
-        }
-        RuntimeException security = null;
-        result = object;
-        try {
-            if (valueType != type) {
-                method = valueType.getMethod("clone", (Class<?>[]) null);
-                type = valueType;                                           // Set only if the above line succeed.
-                /*
-                 * If the class implementing the `clone()` method is not public, we may not be able to access that
-                 * method even if it is public. Try to make the method accessible. If we fail for security reason,
-                 * we will still attempt to clone (maybe a parent class is public), but we remember the exception
-                 * in order to report it in case of failure.
-                 */
-                if (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) try {
-                    method.setAccessible(true);
-                } catch (SecurityException | InaccessibleObjectException e) {
-                    security = e;
+        if (object instanceof CloneAccess) {
+            result = ((CloneAccess) object).clone();
+        } else {
+            final Class<?> valueType = object.getClass();
+            final Class<?> componentType = valueType.getComponentType();
+            if (componentType != null) {
+                return cloneArray(object, componentType);
+            }
+            RuntimeException security = null;
+            result = object;
+            try {
+                if (valueType != type) {
+                    method = valueType.getMethod("clone", (Class<?>[]) null);
+                    type = valueType;                                           // Set only if the above line succeed.
+                    /*
+                     * If the class implementing the `clone()` method is not public, we may not be able to access that
+                     * method even if it is public. Try to make the method accessible. If we fail, try to clone anyway
+                     * because maybe a parent class is accessible, but we remember the exception in order to report it
+                     * in case of failure.
+                     */
+                    if (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) try {
+                        method.setAccessible(true);
+                    } catch (SecurityException | InaccessibleObjectException e) {
+                        security = e;
+                    }
                 }
-            }
-            /*
-             * `method` may be null if a previous call to this clone(Object) method threw NoSuchMethodException
-             * (see the first `catch` block below). In this context, `null` means "no public clone() method".
-             */
-            if (method != null) {
-                result = method.invoke(object, (Object[]) null);
-            }
-        } catch (NoSuchMethodException e) {
-            if (isCloneRequired) {
+                /*
+                 * `method` may be null if a previous call to this clone(Object) method threw NoSuchMethodException
+                 * (see the first `catch` block below). In this context, `null` means "no public clone() method".
+                 */
+                if (method != null) {
+                    result = method.invoke(object, (Object[]) null);
+                }
+            } catch (NoSuchMethodException e) {
+                if (isCloneRequired) {
+                    throw fail(e, valueType);
+                }
+                method = null;
+                type = valueType;
+            } catch (IllegalAccessException e) {
+                if (security != null) {
+                    e.addSuppressed(security);
+                }
+                throw fail(e, valueType);
+            } catch (InvocationTargetException e) {
+                rethrow(e.getCause());
+                throw fail(e, valueType);
+            } catch (SecurityException e) {
                 throw fail(e, valueType);
             }
-            method = null;
-            type = valueType;
-        } catch (IllegalAccessException e) {
-            if (security != null) {
-                e.addSuppressed(security);
-            }
-            throw fail(e, valueType);
-        } catch (InvocationTargetException e) {
-            rethrow(e.getCause());
-            throw fail(e, valueType);
-        } catch (SecurityException e) {
-            throw fail(e, valueType);
         }
         if (cloneResults.put(object, result) != null) {
             // Should never happen unless we have a bug.
@@ -219,6 +223,8 @@ public final class Cloner {
      * This method may be convenient when there is only one object to clone, otherwise instantiating a new
      * {@code Cloner} object is more efficient.
      *
+     * <p>Callers should test {@code if (object instanceof Cloneable)} before to invoke this method.</p>
+     *
      * @param  object  the object to clone, or {@code null}.
      * @return the given object (which may be {@code null}) or a clone of the given object.
      * @throws CloneNotSupportedException if the call to {@link Object#clone()} failed.
@@ -227,36 +233,39 @@ public final class Cloner {
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     public static Object cloneIfPublic(final Object object) throws CloneNotSupportedException {
-        if (object != null) {
-            final Class<?> type = object.getClass();
-            final Class<?> componentType = type.getComponentType();
-            if (componentType != null) {
-                if (componentType.isPrimitive()) {
-                    final int length = Array.getLength(object);
-                    final Object copy = Array.newInstance(componentType, length);
-                    System.arraycopy(object, 0, copy, 0, length);
-                    return copy;
-                }
-                return new Cloner().cloneArray(object, componentType);
-            }
-            try {
-                final Method m = type.getMethod("clone", (Class[]) null);
-                if (Modifier.isPublic(m.getModifiers())) {
-                    return m.invoke(object, (Object[]) null);
-                }
-            } catch (NoSuchMethodException | IllegalAccessException e) {
-                /*
-                 * Should never happen because all objects have a clone() method
-                 * and we verified that the method is public.
-                 */
-                throw new AssertionError(e);
-            } catch (InvocationTargetException e) {
-                rethrow(e.getCause());
-                throw fail(e, type);
-            } catch (SecurityException e) {
-                throw fail(e, type);
-            }
+        if (object instanceof CloneAccess) {
+            return ((CloneAccess) object).clone();
         }
-        return object;
+        final Class<?> type = object.getClass();
+        final Class<?> componentType = type.getComponentType();
+        if (componentType != null) {
+            if (componentType.isPrimitive()) {
+                final int length = Array.getLength(object);
+                final Object copy = Array.newInstance(componentType, length);
+                System.arraycopy(object, 0, copy, 0, length);
+                return copy;
+            }
+            return new Cloner().cloneArray(object, componentType);
+        }
+        try {
+            final Method method = type.getMethod("clone", (Class[]) null);
+            return method.invoke(object, (Object[]) null);
+        } catch (NoSuchMethodException e) {
+            /*
+             * May happen if the `clone()` method is not public.
+             * The method inherited from `Object` is protected,
+             * and `getMethod(…)` does not return protected methods.
+             */
+            return object;
+        } catch (SecurityException | IllegalAccessException e) {
+            /*
+             * May happen if the class is defined in a module which
+             * does not export the package containing the class.
+             */
+            throw fail(e, type);
+        } catch (InvocationTargetException e) {
+            rethrow(e.getCause());
+            throw fail(e, type);
+        }
     }
 }
