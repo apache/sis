@@ -29,11 +29,11 @@ import org.apache.sis.measure.NumberRange;
  * @version 1.4
  * @since   1.0
  */
-final class GO_MultiplicityRange extends PropertyType<GO_MultiplicityRange, NumberRange<Integer>> {
+public final class GO_MultiplicityRange extends PropertyType<GO_MultiplicityRange, NumberRange<Integer>> {
     /**
      * Empty constructor used only by JAXB.
      */
-    GO_MultiplicityRange() {
+    public GO_MultiplicityRange() {
     }
 
     /**
@@ -75,7 +75,7 @@ final class GO_MultiplicityRange extends PropertyType<GO_MultiplicityRange, Numb
      * @return the value to be marshalled.
      */
     @XmlElement(name = "MultiplicityRange")
-    private MultiplicityRange getElement() {
+    public MultiplicityRange getElement() {
         return MultiplicityRange.wrap(metadata);
     }
 
@@ -84,7 +84,7 @@ final class GO_MultiplicityRange extends PropertyType<GO_MultiplicityRange, Numb
      *
      * @param  metadata  the unmarshalled value.
      */
-    private void setElement(final MultiplicityRange metadata) {
+    public void setElement(final MultiplicityRange metadata) {
         if (metadata != null) {
             this.metadata = metadata.value();
         }

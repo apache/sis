@@ -41,7 +41,7 @@ public class GO_Integer extends PropertyType<GO_Integer, Integer> {
     /**
      * Empty constructor used only by JAXB.
      */
-    GO_Integer() {
+    public GO_Integer() {
     }
 
     /**

@@ -40,7 +40,7 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      * The Geometry value covered by a {@code gml:**} element.
      */
     @XmlElementRef(name = "AbstractGeometry", namespace = Namespaces.GML, type = JAXBElement.class)
-    protected JAXBElement<? extends Geometry> geometry;
+    public JAXBElement<? extends Geometry> geometry;
 
     /**
      * Empty constructor for JAXB and subclasses only.

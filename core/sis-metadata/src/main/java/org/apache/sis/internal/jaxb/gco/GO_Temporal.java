@@ -65,7 +65,7 @@ public class GO_Temporal extends XmlAdapter<GO_Temporal, Temporal> {
      */
     @XmlElement(name = "DateTime")
     @XmlSchemaType(name = "dateTime")
-    private XMLGregorianCalendar dateTime;
+    public XMLGregorianCalendar dateTime;
 
     /**
      * The date value using the {@code "Date"} name,
@@ -73,7 +73,7 @@ public class GO_Temporal extends XmlAdapter<GO_Temporal, Temporal> {
      */
     @XmlElement(name = "Date")
     @XmlSchemaType(name = "date")
-    private XMLGregorianCalendar date;
+    public XMLGregorianCalendar date;
 
     /**
      * Empty constructor for JAXB.

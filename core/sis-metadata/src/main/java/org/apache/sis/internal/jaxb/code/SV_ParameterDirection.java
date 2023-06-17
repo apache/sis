@@ -36,7 +36,7 @@ public final class SV_ParameterDirection extends EnumAdapter<SV_ParameterDirecti
      * The enumeration value.
      */
     @XmlElement(name = "SV_ParameterDirection", namespace = Namespaces.SRV)
-    private String value;
+    public String value;
 
     /**
      * Empty constructor for JAXB only.

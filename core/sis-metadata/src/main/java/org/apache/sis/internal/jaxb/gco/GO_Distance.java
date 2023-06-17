@@ -41,7 +41,7 @@ public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {
      * A proxy representation of the {@code <gco:Distance>} element.
      */
     @XmlElement(name = "Distance")
-    private Measure distance;
+    public Measure distance;
 
     /**
      * Empty constructor used only by JAXB.

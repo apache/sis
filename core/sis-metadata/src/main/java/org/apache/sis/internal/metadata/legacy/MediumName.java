@@ -148,6 +148,16 @@ public final class MediumName extends CodeList<MediumName> implements Citation {
     }
 
     /**
+     * Disables the search for UML identifiers because we do not export this package to GeoAPI.
+     *
+     * @return {@code null}.
+     */
+    @Override
+    public String identifier() {
+        return null;
+    }
+
+    /**
      * Returns the medium name that matches the given string, or {@code null} if none match it.
      * Contrarily to non-deprecated code list, this method does not create a new code if none match the given name.
      *

@@ -49,7 +49,7 @@ public final class Code {
      * {@link org.apache.sis.metadata.iso.DefaultIdentifier} represents it as an XML element.</p>
      */
     @XmlValue
-    String code;
+    public String code;
 
     /**
      * The code space, which is often {@code "EPSG"} with the version in use.
@@ -58,12 +58,12 @@ public final class Code {
      * {@link org.apache.sis.metadata.iso.DefaultIdentifier} represents it as an XML element.</p>
      */
     @XmlAttribute
-    String codeSpace;
+    public String codeSpace;
 
     /**
      * Empty constructor for JAXB.
      */
-    Code() {
+    public Code() {
     }
 
     /**

@@ -38,7 +38,7 @@ public final class MD_TopicCategoryCode extends EnumAdapter<MD_TopicCategoryCode
      * The enumeration value.
      */
     @XmlElement(name = "MD_TopicCategoryCode", namespace = Namespaces.MRI)
-    private String value;
+    public String value;
 
     /**
      * Empty constructor for JAXB only.

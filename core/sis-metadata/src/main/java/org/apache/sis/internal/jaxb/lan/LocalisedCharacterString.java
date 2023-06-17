@@ -35,7 +35,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @since 0.3
  */
-final class LocalisedCharacterString {
+public final class LocalisedCharacterString {
     /**
      * A prefix to concatenate with the {@linkplain Locale#getISO3Language() language code}.
      * This is a hack for a common pattern found in the way locales are specified in ISO 19139:2007 files.
@@ -53,12 +53,12 @@ final class LocalisedCharacterString {
      * the {@code <LocalisedCharacterString>} elements in the XML tree at marshalling-time.
      */
     @XmlValue
-    String text;
+    public String text;
 
     /**
      * Empty constructor only used by JAXB.
      */
-    LocalisedCharacterString() {
+    public LocalisedCharacterString() {
     }
 
     /**

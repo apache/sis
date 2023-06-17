@@ -35,7 +35,7 @@ public final class SC_DerivedCRSType {
      * The code space (e.g. {@code "EPSG"}).
      */
     @XmlAttribute
-    String codeSpace;
+    public String codeSpace;
 
     /**
      * The derived CRS type. Can be one of the following values (from ISO 19111:2007):
@@ -49,7 +49,7 @@ public final class SC_DerivedCRSType {
      * </ul>
      */
     @XmlValue
-    String value;
+    public String value;
 
     /**
      * Returns an instance from the given WKT keyword.
@@ -88,6 +88,6 @@ public final class SC_DerivedCRSType {
     /**
      * Empty constructor for JAXB only.
      */
-    private SC_DerivedCRSType() {
+    public SC_DerivedCRSType() {
     }
 }

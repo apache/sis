@@ -58,7 +58,7 @@ public final class Multiplicity {
     @XmlElementWrapper(name = "Multiplicity", required = true)
     @XmlElement(name = "range", required = true)
     @XmlJavaTypeAdapter(GO_MultiplicityRange.class)
-    private List<NumberRange<Integer>> range;
+    public List<NumberRange<Integer>> range;
 
     /**
      * Creates a new multiplicity initialized with no ranges.

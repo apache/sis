@@ -96,9 +96,11 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     }
 
     /**
-     * Invoked by JAXB {@link jakarta.xml.bind.Marshaller} before this object is marshalled to XML.
+     * Invoked by JAXB {@code Marshaller} before this object is marshalled to XML.
+     *
+     * @param  marshaller  the invoker.
      */
-    private void beforeMarshal(final Marshaller marshaller) {
+    public void beforeMarshal(final Marshaller marshaller) {
         isLegacyMetadata = !FilterByVersion.CURRENT_METADATA.accept();
     }
 

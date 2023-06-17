@@ -46,6 +46,11 @@ import static org.apache.sis.util.Utilities.deepEquals;
  */
 abstract class Parameter<T> extends SimpleIdentifiedObject implements ParameterDescriptor<T> {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 1120310941894856951L;
+
+    /**
      * A copy of {@code this} as a fully-implemented parameter descriptor.
      * This is created when first needed for implementation of {@link #createValue()}.
      * Should not be created for other purposes — in particular for implementation of getter methods —

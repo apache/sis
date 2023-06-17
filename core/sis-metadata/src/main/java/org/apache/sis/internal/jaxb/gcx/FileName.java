@@ -47,14 +47,14 @@ public final class FileName {
      * The value of the {@code src} attribute, which is the file path.
      */
     @XmlAttribute
-    private String src;
+    public String src;
 
     /**
      * A human-readable description of the filename.
      * If {@link #src} is null, then this will be taken as the file path.
      */
     @XmlValue
-    private String value;
+    public String value;
 
     /**
      * Empty constructor for JAXB only.

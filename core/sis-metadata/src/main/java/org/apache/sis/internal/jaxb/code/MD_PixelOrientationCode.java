@@ -37,7 +37,7 @@ public final class MD_PixelOrientationCode extends EnumAdapter<MD_PixelOrientati
      * The enumeration value.
      */
     @XmlElement(name = "MD_PixelOrientationCode", namespace = Namespaces.MSR)
-    private String value;
+    public String value;
 
     /**
      * Empty constructor for JAXB only.

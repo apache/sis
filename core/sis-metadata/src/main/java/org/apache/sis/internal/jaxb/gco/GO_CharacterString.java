@@ -146,7 +146,7 @@ public class GO_CharacterString {
     /**
      * Empty constructor for JAXB and subclasses.
      */
-    protected GO_CharacterString() {
+    public GO_CharacterString() {
     }
 
     /**
@@ -202,6 +202,8 @@ public class GO_CharacterString {
      * instances, as the latter are handled by {@link #getCodeList()}.
      *
      * <p>This method is invoked by JAXB at marshalling time and should not need to be invoked directly.</p>
+     *
+     * @return the character string value.
      */
     @XmlElements({
         @XmlElement(type = String.class,       name = "CharacterString"),
@@ -210,7 +212,7 @@ public class GO_CharacterString {
         @XmlElement(type = MimeFileType.class, name = "MimeFileType", namespace = Namespaces.GCX),
         @XmlElement(type = GO_URL.class,       name = "URL",          namespace = LegacyNamespaces.GMD)
     })
-    private Object getValue() {
+    public Object getValue() {
         switch (type) {
             case 0:         return StringAdapter.toString(text);
             case URL:       return new GO_URL(text.toString());
@@ -225,9 +227,10 @@ public class GO_CharacterString {
      * Sets the {@code <gco:CharacterString>}, {@code <gcx:FileName>} or {@code <gcx:MimeFileType>} value.
      *
      * <p>This method is invoked by JAXB at unmarshalling time and should not need to be invoked directly.</p>
+     *
+     * @param  value  the character string value.
      */
-    @SuppressWarnings("unused")
-    private void setValue(final Object value) {
+    public void setValue(final Object value) {
         if (value instanceof Anchor) {
             setText((Anchor) value, ANCHOR);
         } else if (value instanceof FileName) {
@@ -250,11 +253,13 @@ public class GO_CharacterString {
      * do not have JAXB annotations. If those annotations are added in a future GeoAPI implementation, then
      * we could replace this mechanism by a simple property annotated with {@code XmlElementRef}.
      *
+     * @return the code list value.
+     *
      * @since 0.7
      */
     @XmlAnyElement
     @Workaround(library = "GeoAPI", version = "3.0")
-    private Object getCodeList() {
+    public Object getCodeList() {
         if (type != ENUM) {
             return null;
         }
@@ -279,9 +284,10 @@ public class GO_CharacterString {
      * Invoked by JAXB for any XML element which is not a {@code <gco:CharacterString>}, {@code <gcx:FileName>}
      * or {@code <gcx:MimeFileType>}. This method presumes that the element name is the CodeList standard name.
      * If not, the element will be ignored.
+     *
+     * @param  value  the code list value.
      */
-    @SuppressWarnings({"unchecked", "unused"})
-    private void setCodeList(final Object value) {
+    public void setCodeList(final Object value) {
         final Element e = (Element) value;
         if (e.getNodeType() == Element.ELEMENT_NODE) {
             final Class<?> ct = Types.forStandardName(e.getLocalName());

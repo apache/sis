@@ -36,7 +36,7 @@ public final class MD_ObligationCode extends EnumAdapter<MD_ObligationCode, Obli
      * The enumeration value.
      */
     @XmlElement(name = "MD_ObligationCode", namespace = Namespaces.MEX)
-    private String value;
+    public String value;
 
     /**
      * Empty constructor for JAXB only.
