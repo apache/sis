@@ -39,7 +39,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
@@ -137,7 +136,7 @@ import org.apache.sis.util.resources.Errors;
  *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param <E>  the type of tensor element values.
  *
@@ -284,8 +283,11 @@ public class TensorParameters<E> implements Serializable {
     /**
      * The cached descriptors for each elements in a tensor. Descriptors do not depend on tensor element values.
      * Consequently, the same descriptors can be reused for all {@link TensorValues} instances.
+     *
+     * <p>Consider this field as final.
+     * It is not final only for {@link #readObject(ObjectInputStream)} implementation.</p>
      */
-    private final transient ParameterDescriptor<E>[] parameters;
+    private transient ParameterDescriptor<E>[] parameters;
 
     /**
      * The elements for the 0 and 1 values, or {@code null} if unknown.
@@ -833,10 +835,6 @@ public class TensorParameters<E> implements Serializable {
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        try {
-            FinalFieldSetter.set(TensorParameters.class, "parameters", this, createCache());
-        } catch (ReflectiveOperationException e) {
-            throw FinalFieldSetter.readFailure(e);
-        }
+        parameters = createCache();
     }
 }

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.logging.Logger;
 import java.io.ObjectStreamException;
+import java.util.concurrent.ConcurrentHashMap;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Classifier;
 import org.opengis.annotation.Stereotype;
@@ -64,6 +65,7 @@ final class StandardImplementation extends MetadataStandard {
 
     /**
      * Implementations for a given interface, computed when first needed then cached.
+     * Consider this field as final. It is not final only for {@link #readResolve()} purpose.
      *
      * <h4>Implementation note</h4>
      * In the particular case of {@code Class} keys, {@code IdentityHashMap} and {@code HashMap} have identical
@@ -72,7 +74,7 @@ final class StandardImplementation extends MetadataStandard {
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
      * implementation doesn't need the chain of objects created by {@code HashMap}.
      */
-    private final transient Map<Class<?>,Class<?>> implementations;     // written by reflection on deserialization.
+    private transient Map<Class<?>,Class<?>> implementations;
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
@@ -185,7 +187,7 @@ final class StandardImplementation extends MetadataStandard {
          * newer version of the Apache SIS library. The newer version could contain constants
          * not yet declared in this older SIS version, so we have to use this instance.
          */
-        setMapForField(StandardImplementation.class, this, "implementations");
+        implementations = new ConcurrentHashMap<>();
         return this;
     }
 }
