@@ -18,43 +18,53 @@ package org.apache.sis.internal.style;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+// Branch-dependent imports
 import org.opengis.style.ContrastMethod;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.ContrastEnhancement}.
+ * Tests for {@link ContrastEnhancement}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class ContrastEnhancementTest extends AbstractStyleTests {
+public final class ContrastEnhancementTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public ContrastEnhancementTest() {
+    }
 
     /**
-     * Test of Method methods.
+     * Test of {@code Method} property.
      */
     @Test
     public void testMethod() {
         ContrastEnhancement cdt = new ContrastEnhancement();
 
-        //check default
+        // Check default
         assertEquals(ContrastMethod.NONE, cdt.getMethod());
 
-        //check get/set
+        // Check get/set
         cdt.setMethod(ContrastMethod.HISTOGRAM);
         assertEquals(ContrastMethod.HISTOGRAM, cdt.getMethod());
     }
 
     /**
-     * Test of GammaValue methods.
+     * Test of {@code GammaValue} property.
      */
     @Test
     public void testGammaValue() {
         ContrastEnhancement cdt = new ContrastEnhancement();
 
-        //check default
-        assertEquals(FF.literal(1.0), cdt.getGammaValue());
+        // Check default
+        assertLiteralEquals(1.0, cdt.getGammaValue());
 
-        //check get/set
-        cdt.setGammaValue(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getGammaValue());
+        // Check get/set
+        cdt.setGammaValue(FF.literal(2));
+        assertLiteralEquals(2, cdt.getGammaValue());
+        assertEquals(ContrastMethod.GAMMA, cdt.getMethod());
     }
-
 }

@@ -19,87 +19,96 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.Style}.
+ * Tests for {@link Style}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class StyleTest extends AbstractStyleTests {
+public final class StyleTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public StyleTest() {
+    }
 
     /**
-     * Test of featureTypeStyles methods.
+     * Test of {@code featureTypeStyles} property.
      */
     @Test
     public void testFeatureTypeStyles() {
         Style cdt = new Style();
 
-        //check defaults
+        // Check defaults
         assertTrue(cdt.featureTypeStyles().isEmpty());
 
-        //check get/set
+        // Check get/set
         cdt.featureTypeStyles().add(new FeatureTypeStyle());
         assertEquals(1, cdt.featureTypeStyles().size());
     }
 
     /**
-     * Test of isDefault methods.
+     * Test of {@code isDefault} property.
      */
     @Test
     public void testIsDefault() {
         Style cdt = new Style();
 
-        //check defaults
+        // Check defaults
         assertFalse(cdt.isDefault());
 
-        //check get/set
+        // Check get/set
         cdt.setDefault(true);
         assertTrue(cdt.isDefault());
     }
 
     /**
-     * Test of DefaultSpecification methods.
+     * Test of {@code DefaultSpecification} property.
      */
     @Test
     public void testDefaultSpecification() {
         Style cdt = new Style();
 
-        //check defaults
-        assertEquals(null, cdt.getDefaultSpecification());
+        // Check defaults
+        assertEmpty(cdt.getDefaultSpecification());
 
-        //check get/set
+        // Check get/set
         Symbolizer value = new LineSymbolizer();
         cdt.setDefaultSpecification(value);
-        assertEquals(value, cdt.getDefaultSpecification());
+        assertOptionalEquals(value, cdt.getDefaultSpecification());
     }
 
     /**
-     * Test of getName methods.
+     * Test of {@code getName} property.
      */
     @Test
     public void testName() {
         Style cdt = new Style();
 
-        //check defaults
-        assertEquals(null, cdt.getName());
+        // Check defaults
+        assertEmpty(cdt.getName());
 
-        //check get/set
-        cdt.setName(SAMPLE_STRING);
-        assertEquals(SAMPLE_STRING, cdt.getName());
+        // Check get/set
+        String value = "A random name";
+        cdt.setName(value);
+        assertOptionalEquals(value, cdt.getName());
     }
 
     /**
-     * Test of Description methods.
+     * Test of {@code Description} property.
      */
     @Test
     public void testDescription() {
         Style cdt = new Style();
 
-        //check defaults
-        assertEquals(null, cdt.getDescription());
+        // Check defaults
+        assertEmpty(cdt.getDescription());
 
-        //check get/set
-        cdt.setDescription(new Description(SAMPLE_ISTRING, SAMPLE_ISTRING));
-        assertEquals(new Description(SAMPLE_ISTRING, SAMPLE_ISTRING), cdt.getDescription());
+        // Check get/set
+        Description desc = anyDescription();
+        cdt.setDescription(desc);
+        assertOptionalEquals(desc, cdt.getDescription());
     }
-
 }

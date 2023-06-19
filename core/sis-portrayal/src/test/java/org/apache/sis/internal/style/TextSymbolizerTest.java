@@ -19,90 +19,101 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.TextSymbolizer}.
+ * Tests for {@link TextSymbolizer}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class TextSymbolizerTest extends AbstractStyleTests {
+public final class TextSymbolizerTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public TextSymbolizerTest() {
+    }
 
     /**
-     * Test of Label methods.
+     * Test of {@code Label} property.
      */
     @Test
     public void testLabel() {
         TextSymbolizer cdt = new TextSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getLabel());
+        // Check default
+        assertNull(cdt.getLabel());
 
-        //check get/set
-        cdt.setLabel(EXP_STRING);
-        assertEquals(EXP_STRING, cdt.getLabel());
+        // Check get/set
+        var value = FF.literal("A random label");
+        cdt.setLabel(value);
+        assertEquals(value, cdt.getLabel());
     }
 
     /**
-     * Test of Font methods.
+     * Test of {@code Font} property.
      */
     @Test
     public void testFont() {
         TextSymbolizer cdt = new TextSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getFont());
+        // Check default
+        Font value = cdt.getFont();
+        assertLiteralEquals("normal", value.getStyle());
 
-        //check get/set
-        Font value = new Font();
+        // Check get/set
+        value = new Font();
+        value.setStyle(FF.literal("italic"));
         cdt.setFont(value);
         assertEquals(value, cdt.getFont());
     }
 
     /**
-     * Test of LabelPlacement methods.
+     * Test of {@code LabelPlacement} property.
      */
     @Test
     public void testLabelPlacement() {
         TextSymbolizer cdt = new TextSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getLabelPlacement());
+        // Check default
+        LabelPlacement value = cdt.getLabelPlacement();
+        assertNotNull(value);
 
-        //check get/set
-        LabelPlacement value = new PointPlacement();
+        // Check get/set
+        value = new PointPlacement();
         cdt.setLabelPlacement(value);
         assertEquals(value, cdt.getLabelPlacement());
     }
 
     /**
-     * Test of Halo methods.
+     * Test of {@code Halo} property.
      */
     @Test
     public void testHalo() {
         TextSymbolizer cdt = new TextSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getHalo());
+        // Check default
+        assertEmpty(cdt.getHalo());
 
-        //check get/set
+        // Check get/set
         Halo value = new Halo();
         cdt.setHalo(value);
-        assertEquals(value, cdt.getHalo());
+        assertOptionalEquals(value, cdt.getHalo());
     }
 
     /**
-     * Test of Fill methods.
+     * Test of {@code Fill} property.
      */
     @Test
     public void testFill() {
         TextSymbolizer cdt = new TextSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getFill());
+        // Check default
+        assertNotNull(cdt.getFill());
 
-        //check get/set
+        // Check get/set
         Fill value = new Fill();
         cdt.setFill(value);
         assertEquals(value, cdt.getFill());
     }
-
 }

@@ -16,106 +16,146 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.LineSymbolizer}.
+ * Instructions about how to draw on a map the lines of a geometry.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Chris Dillard (SYS Technologies)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class LineSymbolizer extends Symbolizer implements org.opengis.style.LineSymbolizer {
+@XmlType(name = "LineSymbolizerType", propOrder = {
+    "stroke",
+    "perpendicularOffset"
+})
+@XmlRootElement(name = "LineSymbolizer")
+public class LineSymbolizer extends Symbolizer {
+    /**
+     * Information about how to draw lines, or {@code null} for lazily constructed default.
+     *
+     * @see #getStroke()
+     * @see #setStroke(Stroke)
+     */
+    @XmlElement(name = "Stroke")
+    protected Stroke stroke;
 
-    private Expression<Feature,? extends Number> perpendicularOffset;
-    private Stroke stroke;
+    /**
+     * Distance to apply for drawing lines in parallel to geometry, or {@code null} for the default value.
+     *
+     * @see #getPerpendicularOffset()
+     * @see #setPerpendicularOffset(Expression)
+     */
+    @XmlElement(name = "PerpendicularOffset")
+    protected Expression<Feature, ? extends Number> perpendicularOffset;
 
-    public static LineSymbolizer createDefault() {
-        return new LineSymbolizer(null, null, new Description(),
-                StyleFactory.DEFAULT_UOM, new Stroke(), StyleFactory.LITERAL_ZERO);
-    }
-
+    /**
+     * Creates a line symbolizer with the default stroke and no perpendicular offset.
+     */
     public LineSymbolizer() {
-        super();
-    }
-
-    public LineSymbolizer(String name, Expression geometry, Description description,
-            Unit<Length> unit, Stroke stroke, Expression offset) {
-        super(name, geometry, description, unit);
-        this.stroke = stroke;
-        this.perpendicularOffset = offset;
-    }
-
-    @Override
-    public Stroke getStroke() {
-        return stroke;
-    }
-
-    public void setStroke(Stroke stroke) {
-        this.stroke = stroke;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getPerpendicularOffset() {
-        return perpendicularOffset;
-    }
-
-    public void setPerpendicularOffset(Expression<Feature, ? extends Number> perpendicularOffset) {
-        this.perpendicularOffset = perpendicularOffset;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + Objects.hash(perpendicularOffset, stroke);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final LineSymbolizer other = (LineSymbolizer) obj;
-        return Objects.equals(this.perpendicularOffset, other.perpendicularOffset)
-            && Objects.equals(this.stroke, other.stroke);
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @param  source  the object to copy.
      */
-    public static LineSymbolizer castOrCopy(org.opengis.style.LineSymbolizer candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof LineSymbolizer) {
-            return (LineSymbolizer) candidate;
-        }
-        return new LineSymbolizer(
-                candidate.getName(),
-                candidate.getGeometry(),
-                Description.castOrCopy(candidate.getDescription()),
-                candidate.getUnitOfMeasure(),
-                Stroke.castOrCopy(candidate.getStroke()),
-                candidate.getPerpendicularOffset());
+    public LineSymbolizer(final LineSymbolizer source) {
+        super(source);
+        stroke = source.stroke;
+        perpendicularOffset = source.perpendicularOffset;
     }
 
+    /**
+     * Returns the object containing all the information necessary to draw styled lines.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this symbolizer, and conversely.
+     *
+     * @return information about how to draw lines.
+     */
+    public Stroke getStroke() {
+        if (stroke == null) {
+            stroke = new Stroke();
+        }
+        return stroke;
+    }
 
+    /**
+     * Sets the object containing all the information necessary to draw styled lines.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is a {@linkplain Stroke#Stroke() default instance}.
+     *
+     * @param  value  new information about how to draw lines, or {@code null} for resetting the default value.
+     */
+    public void setStroke(final Stroke value) {
+        stroke = value;
+    }
+
+    /**
+     * Returns a distance to apply for drawing lines in parallel to the original geometry.
+     * These parallel lines have to be constructed so that the distance between
+     * original geometry and drawn line stays equal.
+     * This construction may result in drawn lines that are
+     * actually smaller or longer than the original geometry.
+     *
+     * <p>The distance units of measurement is given by {@link #getUnitOfMeasure()}.
+     * The value is positive to the left-hand side of the line string.
+     * Negative numbers mean right. The default offset is 0.</p>
+     *
+     * @return distance to apply for drawing lines in parallel to the original geometry.
+     */
+    public Expression<Feature, ? extends Number> getPerpendicularOffset() {
+        return defaultToZero(perpendicularOffset);
+    }
+
+    /**
+     * Sets a distance to apply for drawing lines in parallel to the original geometry.
+     * If this method is never invoked, then the default value is literal 0.
+     * That default value is standardized by OGC 05-077r4.
+     *
+     * @param  value  new distance to apply for drawing lines, or {@code null} for resetting the default value.
+     */
+    public void setPerpendicularOffset(final Expression<Feature, ? extends Number> value) {
+        perpendicularOffset = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {perpendicularOffset, stroke};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public LineSymbolizer clone() {
+        final var clone = (LineSymbolizer) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        stroke = stroke.clone();
+    }
 }

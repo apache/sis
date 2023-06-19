@@ -16,7 +16,8 @@
  */
 package org.apache.sis.internal.map;
 
-import org.opengis.style.Symbolizer;
+import org.apache.sis.internal.style.Symbolizer;
+
 
 /**
  * Resource symbolizers act on a resource as a whole, not on individual features.
@@ -28,9 +29,13 @@ import org.opengis.style.Symbolizer;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.5
+ * @since   1.5
  */
-public interface ResourceSymbolizer extends Symbolizer {
-
+public abstract class ResourceSymbolizer extends Symbolizer {
+    /**
+     * Constructs a new symbolozer.
+     */
+    protected ResourceSymbolizer() {
+    }
 }

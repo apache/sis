@@ -16,104 +16,176 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.GraphicStroke}.
+ * Repeated-linear-graphic stroke.
+ * A graphic stroke can only be used by a {@link Stroke}.
+ * This class contains a {@link Graphic} property,
+ * but its encapsulation in {@code GraphicStroke} means that
+ * the graphic should be bent around the curves of the line string.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class GraphicStroke extends Graphic implements org.opengis.style.GraphicStroke {
+@XmlType(name = "GraphicStrokeType", propOrder = {
+    "graphic",
+    "initialGap",
+    "gap"
+})
+@XmlRootElement(name = "GraphicStroke")
+public class GraphicStroke extends StyleElement implements GraphicalElement {
+    /**
+     * The graphic to be repeated, or {@code null} for lazily constructed default.
+     * This property is mandatory: a null value <em>shall</em> be replaced by a default value when first requested.
+     *
+     * @see #getGraphic()
+     * @see #setGraphic(Graphic)
+     */
+    protected Graphic graphic;
 
-    private Expression<Feature,? extends Number> initialGap;
-    private Expression<Feature,? extends Number> gap;
+    /**
+     * How far away the first graphic will be drawn, or {@code null} for the default value.
+     *
+     * @see #getInitialGap()
+     * @see #setInitialGap(Expression)
+     */
+    @XmlElement(name = "InitialGap")
+    protected Expression<Feature, ? extends Number> initialGap;
 
+    /**
+     * Distance between two graphics, or {@code null} for the default value.
+     *
+     * @see #getGap()
+     * @see #setGap(Expression)
+     */
+    @XmlElement(name = "Gap")
+    protected Expression<Feature, ? extends Number> gap;
+
+    /**
+     * Creates a graphic stroke initialized to a default graphic and no gap.
+     */
     public GraphicStroke() {
     }
 
-    public GraphicStroke(List<GraphicalSymbol> graphicalSymbols,
-            Expression<Feature, ? extends Number> opacity,
-            Expression<Feature, ? extends Number> size,
-            Expression<Feature, ? extends Number> rotation,
-            AnchorPoint anchorPoint,
-            Displacement displacement,
-            Expression<Feature, ? extends Number> initialGap,
-            Expression<Feature, ? extends Number> gap) {
-        super(graphicalSymbols, opacity, size, rotation, anchorPoint, displacement);
-        this.initialGap = initialGap;
-        this.gap = gap;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getInitialGap() {
-        return initialGap;
-    }
-
-    public void setInitialGap(Expression<Feature, ? extends Number> initialGap) {
-        this.initialGap = initialGap;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getGap() {
-        return gap;
-    }
-
-    public void setGap(Expression<Feature, ? extends Number> gap) {
-        this.gap = gap;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + Objects.hash(initialGap, gap);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (!(obj instanceof GraphicStroke)) {
-            return false;
-        }
-        final GraphicStroke other = (GraphicStroke) obj;
-        return Objects.equals(this.initialGap, other.initialGap)
-            && Objects.equals(this.gap, other.gap);
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public GraphicStroke(final GraphicStroke source) {
+        super(source);
+        graphic    = source.graphic;
+        initialGap = source.initialGap;
+        gap        = source.gap;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Returns the graphic to be repeated.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this stroke, and conversely.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @return the graphic to be repeated.
+     *
+     * @see GraphicFill#getGraphic()
      */
-    public static GraphicStroke castOrCopy(org.opengis.style.GraphicStroke candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof GraphicStroke) {
-            return (GraphicStroke) candidate;
+    @Override
+    @XmlElement(name = "Graphic", required = true)
+    public final Graphic getGraphic() {
+        if (graphic == null) {
+            graphic = new Graphic();
         }
-        final List<GraphicalSymbol> cs = new ArrayList<>();
-        for (org.opengis.style.GraphicalSymbol cr : candidate.graphicalSymbols()) {
-            cs.add(GraphicalSymbol.castOrCopy(cr));
-        }
-        return new GraphicStroke(
-                cs,
-                candidate.getOpacity(),
-                candidate.getSize(),
-                candidate.getRotation(),
-                AnchorPoint.castOrCopy(candidate.getAnchorPoint()),
-                Displacement.castOrCopy(candidate.getDisplacement()),
-                candidate.getInitialGap(),
-                candidate.getGap());
+        return graphic;
+    }
+
+    /**
+     * Sets the graphic to be repeated.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     *
+     * @param  value  new graphic, or {@code null} for resetting the default value.
+     *
+     * @see GraphicFill#setGraphic(Graphic)
+     */
+    @Override
+    public final void setGraphic(final Graphic value) {
+        graphic = value;
+    }
+
+    /**
+     * Returns how far away the first graphic will be drawn relative to the start of the rendering line.
+     *
+     * @return distance of first graphic relative to the rendering start.
+     */
+    public Expression<Feature, ? extends Number> getInitialGap() {
+        return defaultToZero(initialGap);
+    }
+
+    /**
+     * Sets how far away the first graphic will be drawn relative to the start of the rendering line.
+     * If this method is never invoked, then the default value is literal 0.
+     *
+     * @param  value  new distance relative to rendering start, or {@code null} for resetting the default value.
+     */
+    public void setInitialGap(final Expression<Feature, ? extends Number> value) {
+        initialGap = value;
+    }
+
+    /**
+     * Returns the distance between two graphics.
+     *
+     * @return distance between two graphics.
+     */
+    public Expression<Feature, ? extends Number> getGap() {
+        return defaultToZero(gap);
+    }
+
+    /**
+     * Sets the distance between two graphics.
+     * If this method is never invoked, then the default value is literal 0.
+     *
+     * @param  value  new distance between two graphics, or {@code null} for resetting the default value.
+     */
+    public void setGap(final Expression<Feature, ? extends Number> value) {
+        gap = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {graphic, initialGap, gap};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public GraphicStroke clone() {
+        final var clone = (GraphicStroke) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (graphic != null) graphic = graphic.clone();
     }
 }

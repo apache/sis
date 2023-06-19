@@ -16,94 +16,142 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import org.apache.sis.util.ArgumentChecks;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.Halo}.
+ * Fill that is applied to the backgrounds of font glyphs.
+ * The use of halos improves the readability of text labels.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Chris Dillard (SYS Technologies)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class Halo implements org.opengis.style.Halo {
+@XmlType(name = "HaloType", propOrder = {
+    "radius",
+    "fill"
+})
+@XmlRootElement(name = "Halo")
+public class Halo extends StyleElement {
+    /**
+     * Radius (in pixels) of the  the halo around the text, or {@code null} for the default value.
+     *
+     * @see #getRadius()
+     * @see #setRadius(Expression)
+     */
+    @XmlElement(name = "Radius")
+    protected Expression<Feature, ? extends Number> radius;
 
-    private Fill fill;
-    private Expression<Feature,? extends Number> radius;
+    /**
+     * How the halo area around the text should be filled, or {@code null} for the default value.
+     *
+     * @see #getFill()
+     * @see #setFill(Fill)
+     */
+    @XmlElement(name = "Fill")
+    protected Fill fill;
 
+    /**
+     * Creates an halo initialized to a white color and a radius of 1 pixel.
+     */
     public Halo() {
-        this(new Fill(null, StyleFactory.LITERAL_WHITE, StyleFactory.DEFAULT_FILL_OPACITY),
-                StyleFactory.DEFAULT_HALO_RADIUS);
-    }
-
-    public Halo(Fill fill, Expression<Feature, ? extends Number> radius) {
-        ArgumentChecks.ensureNonNull("fill", fill);
-        ArgumentChecks.ensureNonNull("radius", radius);
-        this.fill = fill;
-        this.radius = radius;
-    }
-
-    @Override
-    public Fill getFill() {
-        return fill;
-    }
-
-    public void setFill(Fill fill) {
-        ArgumentChecks.ensureNonNull("fill", fill);
-        this.fill = fill;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getRadius() {
-        return radius;
-    }
-
-    public void setRadius(Expression<Feature, ? extends Number> radius) {
-        ArgumentChecks.ensureNonNull("radius", radius);
-        this.radius = radius;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(fill, radius);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Halo other = (Halo) obj;
-        return Objects.equals(this.fill, other.fill)
-            && Objects.equals(this.radius, other.radius);
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @param  source  the object to copy.
      */
-    public static Halo castOrCopy(org.opengis.style.Halo candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof Halo) {
-            return (Halo) candidate;
+    public Halo(final Halo source) {
+        super(source);
+        fill   = source.fill;
+        radius = source.radius;
+    }
+
+    /**
+     * Returns the expression fetching the pixel radius of the halo around the text.
+     * This is the absolute size of a halo radius in pixels.
+     * It extends the area to the outside edge of glyphs and the inside edge of "holes" in the glyphs.
+     * Negative values are not allowed.
+     *
+     * @return radius (in pixels) of the  the halo around the text.
+     */
+    public Expression<Feature, ? extends Number> getRadius() {
+        return defaultToOne(radius);
+    }
+
+    /**
+     * Sets the expression fetching the pixel radius of the halo around the text.
+     * If this method is never invoked, then the default value is 1 pixel.
+     *
+     * @param  value  new radius (in pixels), or {@code null} for resetting the default value.
+     */
+    public void setRadius(Expression<Feature, ? extends Number> value) {
+        radius = value;
+    }
+
+    /**
+     * Returns the fill for the halo area around the text.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this halo, and conversely.
+     *
+     * @return graphic, color and opacity of the text to draw.
+     */
+    public Fill getFill() {
+        if (fill == null) {
+            fill = new Fill(Fill.WHITE);
         }
-        return new Halo(
-                Fill.castOrCopy(candidate.getFill()),
-                candidate.getRadius());
+        return fill;
+    }
+
+    /**
+     * Sets the fill for the halo area around the text.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is a solid white color.
+     * That default value is standardized by OGC 05-077r4.
+     *
+     * @param  value  new fill of the text to draw, or {@code null} for resetting the default value.
+     */
+    public void setFill(final Fill value) {
+        fill = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {radius, fill};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public Halo clone() {
+        final var clone = (Halo) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (fill != null) fill = fill.clone();
     }
 }

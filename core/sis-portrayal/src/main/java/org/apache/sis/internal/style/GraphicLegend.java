@@ -16,64 +16,102 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.opengis.feature.Feature;
-import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.GraphicLegend}.
+ * A graphic to do displayed in a legend for a rule.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class GraphicLegend extends Graphic implements org.opengis.style.GraphicLegend {
+@XmlType(name = "LegendGraphicType")
+@XmlRootElement(name = "LegendGraphic")
+public class GraphicLegend extends StyleElement implements GraphicalElement {
+    /**
+     * The graphic to use as a legend, or {@code null} for lazily constructed default.
+     * This property is mandatory: a null value <em>shall</em> be replaced by a default value when first requested.
+     *
+     * @see #getGraphic()
+     * @see #setGraphic(Graphic)
+     */
+    protected Graphic graphic;
 
+    /**
+     * Creates a legend initialized to the default graphic.
+     */
     public GraphicLegend() {
     }
 
-    public GraphicLegend(List<GraphicalSymbol> graphicalSymbols,
-            Expression<Feature, Number> opacity,
-            Expression<Feature, Number> size,
-            Expression<Feature, Number> rotation,
-            AnchorPoint anchorPoint,
-            Displacement displacement) {
-        super(graphicalSymbols, opacity, size, rotation, anchorPoint, displacement);
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj)
-            && obj instanceof GraphicLegend;
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public GraphicLegend(final GraphicLegend source) {
+        super(source);
+        graphic = source.graphic;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Returns the graphic of the legend.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this fill, and conversely.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @return graphic of the legend.
      */
-    public static GraphicLegend castOrCopy(org.opengis.style.GraphicLegend candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof GraphicLegend) {
-            return (GraphicLegend) candidate;
+    @Override
+    @XmlElement(name = "Graphic", required = true)
+    public final Graphic getGraphic() {
+        if (graphic == null) {
+            graphic = new Graphic();
         }
-        final List<GraphicalSymbol> cs = new ArrayList<>();
-        for (org.opengis.style.GraphicalSymbol cr : candidate.graphicalSymbols()) {
-            cs.add(GraphicalSymbol.castOrCopy(cr));
-        }
-        return new GraphicLegend(
-                cs,
-                candidate.getOpacity(),
-                candidate.getSize(),
-                candidate.getRotation(),
-                AnchorPoint.castOrCopy(candidate.getAnchorPoint()),
-                Displacement.castOrCopy(candidate.getDisplacement()));
+        return graphic;
+    }
+
+    /**
+     * Sets the graphic of the legend.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     *
+     * @param  value  new graphic of the legend, or {@code null} for resetting the default value.
+     */
+    @Override
+    public final void setGraphic(final Graphic value) {
+        graphic = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {graphic};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public GraphicLegend clone() {
+        final var clone = (GraphicLegend) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (graphic != null) graphic = graphic.clone();
     }
 }

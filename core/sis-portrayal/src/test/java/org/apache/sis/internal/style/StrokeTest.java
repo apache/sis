@@ -20,148 +20,168 @@ import java.awt.Color;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.Stroke}.
+ * Tests for {@link Stroke}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class StrokeTest extends AbstractStyleTests {
+public final class StrokeTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public StrokeTest() {
+    }
 
     /**
-     * Test of GraphicFill methods.
+     * Test of {@code GraphicFill} property.
      */
     @Test
     public void testGraphicFill() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(null, cdt.getGraphicFill());
+        // Check default
+        assertEmpty(cdt.getGraphicFill());
 
-        //check get/set
+        // Check get/set
         GraphicFill value = new GraphicFill();
         cdt.setGraphicFill(value);
-        assertEquals(value, cdt.getGraphicFill());
+        assertOptionalEquals(value, cdt.getGraphicFill());
     }
 
     /**
-     * Test of GraphicStroke methods.
+     * Test of {@code GraphicStroke} property.
      */
     @Test
     public void testGraphicStroke() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(null, cdt.getGraphicStroke());
+        // Check default
+        assertEmpty(cdt.getGraphicStroke());
 
-        //check get/set
+        // Check get/set
         GraphicStroke value = new GraphicStroke();
         cdt.setGraphicStroke(value);
-        assertEquals(value, cdt.getGraphicStroke());
+        assertOptionalEquals(value, cdt.getGraphicStroke());
     }
 
     /**
-     * Test of Color methods.
+     * Test of {@code Color} property.
      */
     @Test
     public void testColor() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(FF.literal(Color.BLACK), cdt.getColor());
+        // Check default
+        assertLiteralEquals(Color.BLACK, cdt.getColor());
 
-        //check get/set
-        cdt.setColor(EXP_COLOR);
-        assertEquals(EXP_COLOR, cdt.getColor());
+        // Check get/set
+        cdt.setColor(anyColor());
+        assertLiteralEquals(ANY_COLOR, cdt.getColor());
     }
 
     /**
-     * Test of Opacity methods.
+     * Test of {@code Opacity} property.
      */
     @Test
     public void testOpacity() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(FF.literal(1.0), cdt.getOpacity());
+        // Check default
+        assertLiteralEquals(1.0, cdt.getOpacity());
 
-        //check get/set
-        cdt.setOpacity(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getOpacity());
+        // Check get/set
+        cdt.setOpacity(FF.literal(0.7));
+        assertLiteralEquals(0.7, cdt.getOpacity());
     }
 
     /**
-     * Test of Width methods.
+     * Test of the construct setting {@code Color} and {@code Opacity} together.
+     */
+    @Test
+    public void testColorAndOpacity() {
+        Stroke cdt = new Stroke(new Color(255, 255, 0, 128));
+        assertLiteralEquals(Color.YELLOW, cdt.getColor());
+        assertLiteralEquals(0.5, cdt.getOpacity());
+    }
+
+    /**
+     * Test of {@code Width} property.
      */
     @Test
     public void testWidth() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(FF.literal(1.0), cdt.getWidth());
+        // Check default
+        assertLiteralEquals(1.0, cdt.getWidth());
 
-        //check get/set
-        cdt.setWidth(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getWidth());
+        // Check get/set
+        cdt.setWidth(FF.literal(14));
+        assertLiteralEquals(14, cdt.getWidth());
     }
 
     /**
-     * Test of LineJoin methods.
+     * Test of {@code LineJoin} property.
      */
     @Test
     public void testLineJoin() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(FF.literal("bevel"), cdt.getLineJoin());
+        // Check default
+        assertLiteralEquals("bevel", cdt.getLineJoin());
 
-        //check get/set
-        cdt.setLineJoin(EXP_STRING);
-        assertEquals(EXP_STRING, cdt.getLineJoin());
+        // Check get/set
+        var value = FF.literal("A random join");
+        cdt.setLineJoin(value);
+        assertEquals(value, cdt.getLineJoin());
     }
 
     /**
-     * Test of LineCap methods.
+     * Test of {@code LineCap} property.
      */
     @Test
     public void testLineCap() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(FF.literal("square"), cdt.getLineCap());
+        // Check default
+        assertLiteralEquals("square", cdt.getLineCap());
 
-        //check get/set
-        cdt.setLineCap(EXP_STRING);
-        assertEquals(EXP_STRING, cdt.getLineCap());
+        // Check get/set
+        var value = FF.literal("A random cap");
+        cdt.setLineCap(value);
+        assertEquals(value, cdt.getLineCap());
     }
 
     /**
-     * Test of DashArray methods.
+     * Test of {@code DashArray} property.
      */
     @Test
     public void testDashArray() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(null, cdt.getDashArray());
+        // Check default
+        assertEmpty(cdt.getDashArray());
 
-        //check get/set
-        cdt.setDashArray(new float[]{1,2,3});
-        assertArrayEquals(new float[]{1,2,3}, cdt.getDashArray(), 0.0f);
+        // Check get/set
+        final var value = new float[] {1,2,3};
+        cdt.setDashArray(FF.literal(value));
+        assertLiteralEquals(value, cdt.getDashArray().orElseThrow());
     }
 
     /**
-     * Test of DashOffset methods.
+     * Test of {@code DashOffset} property.
      */
     @Test
     public void testDashOffset() {
         Stroke cdt = new Stroke();
 
-        //check default
-        assertEquals(FF.literal(0.0), cdt.getDashOffset());
+        // Check default
+        assertLiteralEquals(0, cdt.getDashOffset());
 
-        //check get/set
-        cdt.setDashOffset(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getDashOffset());
+        // Check get/set
+        cdt.setDashOffset(FF.literal(21));
+        assertLiteralEquals(21, cdt.getDashOffset());
     }
-
 }

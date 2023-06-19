@@ -16,91 +16,152 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import org.apache.sis.util.ArgumentChecks;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+import org.opengis.filter.Literal;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.AnchorPoint}.
+ * The location inside a graphic or label to use as an "anchor" for positioning it relative to a point.
+ * The coordinates are given as (<var>x</var>,<var>y</var>) floating-point numbers between 0 and 1 inclusive.
+ * The bounding box of the graphic/label to be rendered is considered to be in a coordinate space from 0
+ * (lower-left corner) to 1 (upper-right corner), and the anchor position is specified as a point in this space.
+ * The default anchor point is <var>x</var> = 0.5, <var>y</var> = 0.5,
+ * which is at the middle height and middle length of the graphic/label.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Ian Turton (CCG)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class AnchorPoint implements org.opengis.style.AnchorPoint {
+@XmlType(name = "AnchorPointType", propOrder = {
+    "anchorPointX",
+    "anchorPointY"
+})
+@XmlRootElement(name = "AnchorPoint")
+public class AnchorPoint extends StyleElement {
+    /**
+     * Literal used as default value.
+     */
+    private static final Literal<Feature,Double> LITERAL_HALF = literal(0.5);;
 
-    private Expression<Feature,? extends Number> x;
-    private Expression<Feature,? extends Number> y;
+    /**
+     * The <var>x</var> coordinate of the anchor point.
+     * This property is mandatory.
+     *
+     * @see #getAnchorPointX()
+     * @see #setAnchorPointX(Expression)
+     */
+    @XmlElement(name = "AnchorPointX", required = true)
+    protected Expression<Feature, ? extends Number> anchorPointX;
 
+    /**
+     * The <var>y</var> coordinate of the anchor point.
+     * This property is mandatory.
+     *
+     * @see #getAnchorPointY()
+     * @see #setAnchorPointY(Expression)
+     */
+    @XmlElement(name = "AnchorPointY", required = true)
+    protected Expression<Feature, ? extends Number> anchorPointY;
+
+    /**
+     * Creates a anchor point initialized to <var>x</var> = 0.5 and <var>y</var> = 0.5.
+     * This initial position is the center of the graphic/label.
+     */
     public AnchorPoint() {
-        this(StyleFactory.DEFAULT_ANCHOR_POINT_X, StyleFactory.DEFAULT_ANCHOR_POINT_Y);
-    }
-
-    public AnchorPoint(Expression<Feature,? extends Number> x, Expression<Feature,? extends Number> y) {
-        ArgumentChecks.ensureNonNull("x", x);
-        ArgumentChecks.ensureNonNull("y", y);
-        this.x = x;
-        this.y = y;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getAnchorPointX() {
-        return x;
-    }
-
-    public void setAnchorPointX(Expression<Feature,? extends Number> x) {
-        ArgumentChecks.ensureNonNull("x", x);
-        this.x = x;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getAnchorPointY() {
-        return y;
-    }
-
-    public void setAnchorPointY(Expression<Feature,? extends Number> y) {
-        ArgumentChecks.ensureNonNull("y", y);
-        this.y = y;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AnchorPoint other = (AnchorPoint) obj;
-        return Objects.equals(this.x, other.x)
-            && Objects.equals(this.y, other.y);
+        anchorPointX = LITERAL_HALF;
+        anchorPointY = LITERAL_HALF;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Creates a new anchor point initialized to the given position.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @param  x  the initial <var>x</var> position.
+     * @param  y  the initial <var>y</var> position.
      */
-    public static AnchorPoint castOrCopy(org.opengis.style.AnchorPoint candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof AnchorPoint) {
-            return (AnchorPoint) candidate;
-        }
-        return new AnchorPoint(candidate.getAnchorPointX(), candidate.getAnchorPointY());
+    public AnchorPoint(final double x, final double y) {
+        anchorPointX = literal(x);
+        anchorPointY = literal(y);
+    }
+
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public AnchorPoint(final AnchorPoint source) {
+        super(source);
+        anchorPointX = source.anchorPointX;
+        anchorPointY = source.anchorPointY;
+    }
+
+    /**
+     * Returns the <var>x</var> coordinate of the anchor point.
+     * It should be a floating point number between 0 and 1 inclusive.
+     *
+     * @return the expression fetching the <var>x</var> coordinate.
+     */
+    public Expression<Feature, ? extends Number> getAnchorPointX() {
+        return anchorPointX;
+    }
+
+    /**
+     * Sets the <var>x</var> coordinate of the anchor point.
+     * If this method is never invoked, then the default value is literal 0.5.
+     *
+     * @param  value  new <var>x</var> coordinate, or {@code null} for resetting the default value.
+     */
+    public void setAnchorPointX(final Expression<Feature, ? extends Number> value) {
+        anchorPointX = (value != null) ? value : LITERAL_HALF;
+    }
+
+    /**
+     * Returns the <var>y</var> coordinate of the anchor point.
+     * It should be a floating point number between 0 and 1 inclusive.
+     *
+     * @return the expression fetching the <var>y</var> coordinate.
+     */
+    public Expression<Feature, ? extends Number> getAnchorPointY() {
+        return anchorPointY;
+    }
+
+    /**
+     * Sets the <var>y</var> coordinate of the anchor point.
+     * If this method is never invoked, then the default value is literal 0.5.
+     *
+     * @param  value  new <var>y</var> coordinate, or {@code null} for resetting the default value.
+     */
+    public void setAnchorPointY(final Expression<Feature, ? extends Number> value) {
+        anchorPointY = (value != null) ? value : LITERAL_HALF;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {anchorPointX, anchorPointY};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public AnchorPoint clone() {
+        final var clone = (AnchorPoint) super.clone();
+        return clone;
     }
 }

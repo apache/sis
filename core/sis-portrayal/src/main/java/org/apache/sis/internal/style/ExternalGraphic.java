@@ -16,122 +16,111 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import javax.swing.Icon;
-import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.style.StyleVisitor;
+import java.util.ArrayList;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.ExternalGraphic}.
+ * Reference to an external file that contains an image of some kind, such as a PNG or SVG.
+ * This is an alternative to {@link Mark} for {@linkplain Graphic#graphicalSymbols graphical symbols}.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Chris Dillard (SYS Technologies)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class ExternalGraphic implements org.opengis.style.ExternalGraphic, GraphicalSymbol {
+@XmlType(name = "ExternalGraphicType", propOrder = {
+//  "onlineResource",       // XML encoding not yet available.
+//  "inlineContent",        // Idem.
+    "format",
+    "colorReplacements"
+})
+@XmlRootElement(name = "ExternalGraphic")
+public class ExternalGraphic extends GraphicalSymbol {
+    /**
+     * A list of colors to replace, or {@code null} if none.
+     *
+     * <h4>XML marshalling</h4>
+     * A null value is not synonymous to an empty list.
+     * An empty list causes an empty {@code <ColorReplacement/>} element to be marshalled,
+     * while a {@code null} value results in no element being marshalled.
+     *
+     * @see #colorReplacements()
+     */
+    @XmlElement(name = "ColorReplacement")
+    protected List<ColorReplacement> colorReplacements;
 
-    private OnlineResource onlineResource;
-    private Icon inlineContent;
-    private String format;
-    private Collection<ColorReplacement> colorReplacements;
-
+    /**
+     * Creates an initially empty external graphic.
+     */
     public ExternalGraphic() {
     }
 
-    public ExternalGraphic(OnlineResource onlineResource, Icon inlineContent, String format, Collection<ColorReplacement> colorReplacements) {
-        this.onlineResource = onlineResource;
-        this.inlineContent = inlineContent;
-        this.format = format;
-        this.colorReplacements = colorReplacements;
-    }
-
-    @Override
-    public OnlineResource getOnlineResource() {
-        return onlineResource;
-    }
-
-    public void setOnlineResource(OnlineResource onlineResource) {
-        this.onlineResource = onlineResource;
-    }
-
-    @Override
-    public Icon getInlineContent() {
-        return inlineContent;
-    }
-
-    public void setInlineContent(Icon inlineContent) {
-        this.inlineContent = inlineContent;
-    }
-
-    @Override
-    public String getFormat() {
-        return format;
-    }
-
-    public void setFormat(String format) {
-        this.format = format;
-    }
-
-    @Override
-    public Collection<org.opengis.style.ColorReplacement> getColorReplacements() {
-        return (Collection) colorReplacements;
-    }
-
-    public void setColorReplacements(Collection<ColorReplacement> colorReplacements) {
-        this.colorReplacements = colorReplacements;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(onlineResource, inlineContent, format, colorReplacements);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public ExternalGraphic(final ExternalGraphic source) {
+        super(source);
+        final var value = source.colorReplacements;
+        if (value != null) {
+            colorReplacements = new ArrayList<>(value);
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ExternalGraphic other = (ExternalGraphic) obj;
-        return Objects.equals(this.format, other.format)
-            && Objects.equals(this.onlineResource, other.onlineResource)
-            && Objects.equals(this.inlineContent, other.inlineContent)
-            && Objects.equals(this.colorReplacements, other.colorReplacements);
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Returns a list of colors to replace.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * <p>The returned collection is <em>live</em>:
+     * changes in that collection are reflected into this object, and conversely.</p>
+     *
+     * @return list of colors to replace, as a live collection.
      */
-    public static ExternalGraphic castOrCopy(org.opengis.style.ExternalGraphic candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof ExternalGraphic) {
-            return (ExternalGraphic) candidate;
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public List<ColorReplacement> colorReplacements() {
+        if (colorReplacements == null) {
+            colorReplacements = new ArrayList<>();
         }
+        return colorReplacements;
+    }
 
-        final List<ColorReplacement> cs = new ArrayList<>();
-        for (org.opengis.style.ColorReplacement cr : candidate.getColorReplacements()) {
-            cs.add(ColorReplacement.castOrCopy(cr));
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {onlineResource, inlineContent, format, colorReplacements};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     * ISO 19115 metadata instances are also shared (not cloned).
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public ExternalGraphic clone() {
+        final var clone = (ExternalGraphic) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (colorReplacements != null) {
+            colorReplacements = new ArrayList<>(colorReplacements);
+            colorReplacements.replaceAll(ColorReplacement::clone);
         }
-
-        return new ExternalGraphic(
-                candidate.getOnlineResource(),
-                candidate.getInlineContent(),
-                candidate.getFormat(),
-                cs);
     }
 }

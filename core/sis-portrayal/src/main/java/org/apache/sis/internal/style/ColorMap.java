@@ -16,73 +16,66 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import org.opengis.feature.Feature;
-import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.ColorMap}.
+ * Mapping of fixed-numeric pixel values to colors.
+ * It can be used for defining the colors of a palette-type raster source.
+ * For example, a DEM raster giving elevations in meters above sea level
+ * can be translated to a colored image.
  *
- * @author Johann Sorel (Geomatys)
+ * <p>This is a placeholder for future development.
+ * OGC 05-077r4 standard defines the dependent classes,
+ * but there is too many of them for this initial draft.</p>
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class ColorMap implements org.opengis.style.ColorMap {
-
-    private Expression<Feature,?> function;
-
+@XmlType(name = "ColorMapType", propOrder = {
+//  "categorize",
+//  "interpolate",
+//  "jenks"
+})
+@XmlRootElement(name = "ColorMap")
+public class ColorMap extends StyleElement {
+    /**
+     * Creates a color map.
+     */
     public ColorMap() {
     }
 
-    public ColorMap(Expression<Feature, ?> function) {
-        this.function = function;
-    }
-
-    @Override
-    public Expression<Feature,?> getFunction() {
-        return function;
-    }
-
-    public void setFunction(Expression<Feature, ?> function) {
-        this.function = function;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(function);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ColorMap other = (ColorMap) obj;
-        return Objects.equals(this.function, other.function);
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public ColorMap(final ColorMap source) {
+        super(source);
     }
 
     /**
-     * Cast or copy to an SIS implementation.
-     *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
      */
-    public static ColorMap castOrCopy(org.opengis.style.ColorMap candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof ColorMap) {
-            return (ColorMap) candidate;
-        }
-        return new ColorMap(candidate.getFunction());
+    @Override
+    final Object[] properties() {
+        return new Object[] {};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public ColorMap clone() {
+        final var clone = (ColorMap) super.clone();
+        return clone;
     }
 }

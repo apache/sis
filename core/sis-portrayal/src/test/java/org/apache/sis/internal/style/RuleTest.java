@@ -16,153 +16,170 @@
  */
 package org.apache.sis.internal.style;
 
-import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
-import static org.junit.Assert.*;
+import java.util.List;
 import org.junit.Test;
+import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
+
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.Rule}.
+ * Tests for {@link Rule}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class RuleTest extends AbstractStyleTests {
+public final class RuleTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public RuleTest() {
+    }
 
     /**
-     * Test of Name methods.
+     * Test of {@code Name} property.
      */
     @Test
     public void testGetName() {
-        Rule cdt = new Rule();
+        var cdt = new Rule<Object>();
 
-        //check defaults
-        assertEquals(null, cdt.getName());
+        // Check defaults
+        assertEmpty(cdt.getName());
 
-        //check get/set
-        cdt.setName(SAMPLE_STRING);
-        assertEquals(SAMPLE_STRING, cdt.getName());
+        // Check get/set
+        String value = "A random name";
+        cdt.setName(value);
+        assertOptionalEquals(value, cdt.getName());
     }
 
     /**
-     * Test of Description methods.
+     * Test of {@code Description} property.
      */
     @Test
     public void testDescription() {
-        Rule cdt = new Rule();
+        var cdt = new Rule<Object>();
 
-        //check defaults
-        assertEquals(null, cdt.getDescription());
+        // Check defaults
+        assertEmpty(cdt.getDescription());
 
-        //check get/set
-        cdt.setDescription(new Description(SAMPLE_ISTRING, SAMPLE_ISTRING));
-        assertEquals(new Description(SAMPLE_ISTRING, SAMPLE_ISTRING), cdt.getDescription());
+        // Check get/set
+        Description desc = anyDescription();
+        cdt.setDescription(desc);
+        assertOptionalEquals(desc, cdt.getDescription());
     }
 
     /**
-     * Test of Legend methods.
+     * Test of {@code Legend} property.
      */
     @Test
     public void testLegend() {
-        Rule cdt = new Rule();
+        var cdt = new Rule<Object>();
 
-        //check defaults
-        assertEquals(null, cdt.getLegend());
+        // Check defaults
+        assertEmpty(cdt.getLegend());
 
-        //check get/set
+        // Check get/set
         GraphicLegend value = new GraphicLegend();
         cdt.setLegend(value);
-        assertEquals(value, cdt.getLegend());
+        assertOptionalEquals(value, cdt.getLegend());
     }
 
     /**
-     * Test of Filter methods.
+     * Test of {@code Filter} property.
      */
     @Test
     public void testFilter() {
-        Rule cdt = new Rule();
+        var cdt = new Rule<Feature>();
 
-        //check defaults
-        assertEquals(null, cdt.getFilter());
+        // Check defaults
+        assertEquals(Filter.include(), cdt.getFilter());
 
-        //check get/set
-        Filter value = FF.equal(EXP_STRING, EXP_STRING);
+        // Check get/set
+        var value = FF.equal(FF.literal("A"), FF.literal("B"));
         cdt.setFilter(value);
         assertEquals(value, cdt.getFilter());
     }
 
     /**
-     * Test of ElseFilter methods.
+     * Test of {@code ElseFilter} property.
      */
     @Test
     public void testIsElseFilter() {
-        Rule cdt = new Rule();
+        var cdt = new Rule<Object>();
 
-        //check defaults
+        // Check defaults
         assertFalse(cdt.isElseFilter());
 
-        //check get/set
+        // Check get/set
         cdt.setElseFilter(true);
         assertTrue(cdt.isElseFilter());
     }
 
     /**
-     * Test of MinScaleDenominator methods.
+     * Test of {@code MinScaleDenominator} property.
      */
     @Test
     public void testMinScaleDenominator() {
-        Rule cdt = new Rule();
+        var cdt = new Rule<Object>();
 
-        //check defaults
+        // Check defaults
         assertEquals(0.0, cdt.getMinScaleDenominator(), 0.0);
 
-        //check get/set
+        // Check get/set
         cdt.setMinScaleDenominator(10.0);
         assertEquals(10.0, cdt.getMinScaleDenominator(), 0.0);
     }
 
     /**
-     * Test of MaxScaleDenominator methods.
+     * Test of {@code MaxScaleDenominator} property.
      */
     @Test
     public void testGetMaxScaleDenominator() {
-        Rule cdt = new Rule();
+        var cdt = new Rule<Object>();
 
-        //check defaults
-        assertEquals(Double.MAX_VALUE, cdt.getMaxScaleDenominator(), 0.0);
+        // Check defaults
+        assertEquals(Double.POSITIVE_INFINITY, cdt.getMaxScaleDenominator(), 0.0);
 
-        //check get/set
+        // Check get/set
         cdt.setMaxScaleDenominator(10.0);
         assertEquals(10.0, cdt.getMaxScaleDenominator(), 0.0);
     }
 
     /**
-     * Test of symbolizers methods.
+     * Test of {@code Symbolizer} property.
      */
     @Test
     public void testSymbolizers() {
-        Rule cdt = new Rule();
+        var cdt = new Rule<Object>();
 
-        //check defaults
+        // Check defaults
         assertTrue(cdt.symbolizers().isEmpty());
 
-        //check get/set
-        cdt.symbolizers().add(new LineSymbolizer());
-        assertEquals(1, cdt.symbolizers().size());
+        // Check get/set
+        var value = new LineSymbolizer();
+        cdt.symbolizers().add(value);
+        assertEquals(List.of(value), cdt.symbolizers());
     }
 
     /**
-     * Test of OnlineResource methods.
+     * Test of {@code OnlineSource} property.
      */
     @Test
-    public void testGetOnlineResource() {
-        Rule cdt = new Rule();
+    public void testGetOnlineSource() {
+        var cdt = new Rule<Object>();
 
-        //check defaults
-        assertEquals(null, cdt.getOnlineResource());
+        // Check defaults
+        assertEmpty(cdt.getOnlineSource());
 
-        //check get/set
-        cdt.setOnlineResource(new DefaultOnlineResource());
-        assertEquals(new DefaultOnlineResource(), cdt.getOnlineResource());
+        // Check get/set
+        var r = new DefaultOnlineResource();
+        r.setProtocol("HTTP");
+        cdt.setOnlineSource(r);
+        assertOptionalEquals(r, cdt.getOnlineSource());
     }
-
 }

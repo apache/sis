@@ -28,7 +28,7 @@
  * Synchronization, if desired, must be done by the caller.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.5
+ * @since   1.5
  */
 package org.apache.sis.internal.map;

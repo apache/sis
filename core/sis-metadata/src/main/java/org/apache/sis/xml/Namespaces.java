@@ -90,7 +90,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @author  Guilhem Legal   (Geomatys)
  * @author  Cullen Rombach  (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 public final class Namespaces extends Static {
@@ -496,6 +496,22 @@ public final class Namespaces extends Static {
      * @category OGC
      */
     public static final String CSW = "http://www.opengis.net/cat/csw/3.0";
+
+    /**
+     * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "se"}.
+     *
+     * <p>History</p>
+     * <table class="sis">
+     *   <caption>Change log</caption>
+     *   <tr><th>SIS version</th> <th>URL</th></tr>
+     *   <tr><td>1.4</td>         <td>http://www.opengis.net/se</td></tr>
+     * </table>
+     *
+     * @category OGC
+     * @since 1.4
+     */
+    public static final String SE = "http://www.opengis.net/se";
 
     /**
      * The <code>{@value}</code> URL.

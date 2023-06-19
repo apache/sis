@@ -19,48 +19,57 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.ChannelSelection}.
+ * Tests for {@link ChannelSelection}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class ChannelSelectionTest extends AbstractStyleTests {
+public final class ChannelSelectionTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public ChannelSelectionTest() {
+    }
 
     /**
-     * Test of RGBChannels methods.
+     * Test of {@code RedChannel}, {@code GreenChannel} and {@code BlueChannel} properties.
      */
     @Test
     public void testRGBChannels() {
         ChannelSelection cdt = new ChannelSelection();
 
-        //check default
-        assertArrayEquals(null, cdt.getRGBChannels());
+        // Check default
+        assertNull(cdt.getChannels());
 
-        //check get/set
-        SelectedChannelType[] value = new SelectedChannelType[]{
-            new SelectedChannelType("R", null),
-            new SelectedChannelType("G", null),
-            new SelectedChannelType("B", null)};
-        cdt.setRGBChannels(value);
-        assertArrayEquals(value, cdt.getRGBChannels());
+        // Check get/set
+        var values = new SelectedChannelType[] {
+            new SelectedChannelType("R"),
+            new SelectedChannelType("G"),
+            new SelectedChannelType("B")
+        };
+        cdt.setChannels(values);
+        assertArrayEquals(values, cdt.getChannels());
     }
 
 
     /**
-     * Test of GrayChannel methods.
+     * Test of {@code GrayChannel} property.
      */
     @Test
     public void testGrayChannel() {
-        ChannelSelection cdt = new org.apache.sis.internal.style.ChannelSelection();
+        ChannelSelection cdt = new ChannelSelection();
 
-        //check default
-        assertEquals(null, cdt.getGrayChannel());
+        // Check default
+        assertNull(cdt.getChannels());
 
-        //check get/set
-        cdt.setGray(new SelectedChannelType("Gr", null));
-        assertEquals(new SelectedChannelType("Gr", null), cdt.getGrayChannel());
-
+        // Check get/set
+        var values = new SelectedChannelType[] {
+            new SelectedChannelType("Gray")
+        };
+        cdt.setChannels(values);
+        assertArrayEquals(values, cdt.getChannels());
     }
-
-
 }

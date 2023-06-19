@@ -16,171 +16,332 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
+import java.util.Optional;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.style.OverlapBehavior;
-import org.opengis.style.StyleVisitor;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.RasterSymbolizer}.
+ * Instructions about how to render raster, matrix or coverage data.
+ * It may be satellite photos or DEMs for example.
  *
- * @author Johann Sorel (Geomatys)
+ * <p>In the particular case of raster symbolizer, {@link #getGeometry()}
+ * should return a {@link org.apache.sis.coverage.BandedCoverage} instead
+ * of a geometry.</p>
+ *
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Ian Turton (CCG)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class RasterSymbolizer extends Symbolizer implements org.opengis.style.RasterSymbolizer {
+@XmlType(name = "RasterSymbolizerType", propOrder = {
+    "opacity",
+    "channelSelection",
+    "overlapBehavior",
+    "colorMap",
+    "contrastEnhancement",
+    "shadedRelief",
+    "imageOutline"
+})
+@XmlRootElement(name = "RasterSymbolizer")
+public class RasterSymbolizer extends Symbolizer implements Translucent {
+    /**
+     * Level of translucency as a floating point number between 0 and 1 (inclusive), or {@code null} the default value.
+     * The default value specified by OGC 05-077r4 standard is 1.
+     *
+     * @see #getOpacity()
+     * @see #setOpacity(Expression)
+     */
+    @XmlElement(name = "Opacity")
+    protected Expression<Feature, ? extends Number> opacity;
 
-    private Expression<Feature,? extends Number> opacity;
-    private ChannelSelection channelSelection;
-    private OverlapBehavior overlapBehavior;
-    private ColorMap colorMap;
-    private ContrastEnhancement contrastEnhancement;
-    private ShadedRelief shadedRelief;
-    private org.opengis.style.Symbolizer imageOutline;
+    /**
+     * Selection of false-color channels for a multi-spectral raster source, or {@code null} if none.
+     *
+     * @see #getChannelSelection()
+     * @see #setChannelSelection(ChannelSelection)
+     */
+    @XmlElement(name = "ChannelSelection")
+    protected ChannelSelection channelSelection;
 
-    public static RasterSymbolizer createDefault() {
-        return new RasterSymbolizer();
-    }
+    /**
+     * Behavior when multiple raster images in a layer overlap each other, or {@code null} if unspecified.
+     * The default value is implementation-dependent.
+     *
+     * @see #getOverlapBehavior()
+     * @see #setOverlapBehavior(OverlapBehavior)
+     */
+    @XmlElement(name = "OverlapBehavior")
+    protected OverlapBehavior overlapBehavior;
 
+    /**
+     * Mapping of fixed-numeric pixel values to colors, or {@code null} if none.
+     *
+     * @see #getColorMap()
+     * @see #setColorMap(ColorMap)
+     */
+    @XmlElement(name = "ColorMap")
+    protected ColorMap colorMap;
+
+    /**
+     * Contrast enhancement for the whole image, or {@code null} if none.
+     *
+     * @see #getContrastEnhancement()
+     * @see #setContrastEnhancement(ContrastEnhancement)
+     */
+    @XmlElement(name = "ContrastEnhancement")
+    protected ContrastEnhancement contrastEnhancement;
+
+    /**
+     * Relief shading (or “hill shading”) to apply to the image for a three-dimensional visual effect.
+     *
+     * @see #getShadedRelief()
+     * @see #setShadedRelief(ShadedRelief)
+     */
+    @XmlElement(name = "ShadedRelief")
+    protected ShadedRelief shadedRelief;
+
+    /**
+     * Line or polygon symbolizer to use for outlining source rasters, or {@code null} if none.
+     *
+     * @see #getImageOutline()
+     * @see #setImageOutline(Symbolizer)
+     */
+    @XmlElement(name = "ImageOutline")
+    protected Symbolizer imageOutline;
+
+    /**
+     * Creates an initially opaque raster symbolizer with no contrast enhancement, shaded relief or outline.
+     */
     public RasterSymbolizer() {
     }
 
-    public RasterSymbolizer(String name, Expression geometry, Description description, Unit<Length> unit,
-            Expression opacity, ChannelSelection channelSelection, OverlapBehavior overlapsBehaviour,
-            ColorMap colorMap, ContrastEnhancement contrast, ShadedRelief shaded, org.opengis.style.Symbolizer outline) {
-        super(name, geometry, description, unit);
-        this.opacity = opacity;
-        this.channelSelection = channelSelection;
-        this.overlapBehavior = overlapsBehaviour;
-        this.colorMap = colorMap;
-        this.contrastEnhancement = contrast;
-        this.shadedRelief = shaded;
-        this.imageOutline = outline;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getOpacity() {
-        return opacity;
-    }
-
-    public void setOpacity(Expression<Feature, ? extends Number> opacity) {
-        this.opacity = opacity;
-    }
-
-    @Override
-    public ChannelSelection getChannelSelection() {
-        return channelSelection;
-    }
-
-    public void setChannelSelection(ChannelSelection channelSelection) {
-        this.channelSelection = channelSelection;
-    }
-
-    @Override
-    public OverlapBehavior getOverlapBehavior() {
-        return overlapBehavior;
-    }
-
-    public void setOverlapBehavior(OverlapBehavior overlapBehavior) {
-        this.overlapBehavior = overlapBehavior;
-    }
-
-    @Override
-    public ColorMap getColorMap() {
-        return colorMap;
-    }
-
-    public void setColorMap(ColorMap colorMap) {
-        this.colorMap = colorMap;
-    }
-
-    @Override
-    public ContrastEnhancement getContrastEnhancement() {
-        return contrastEnhancement;
-    }
-
-    public void setContrastEnhancement(ContrastEnhancement contrastEnhancement) {
-        this.contrastEnhancement = contrastEnhancement;
-    }
-
-    @Override
-    public ShadedRelief getShadedRelief() {
-        return shadedRelief;
-    }
-
-    public void setShadedRelief(ShadedRelief shadedRelief) {
-        this.shadedRelief = shadedRelief;
-    }
-
-    @Override
-    public org.opengis.style.Symbolizer getImageOutline() {
-        return imageOutline;
-    }
-
-    public void setImageOutline(org.opengis.style.Symbolizer imageOutline) {
-        this.imageOutline = imageOutline;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + Objects.hash(opacity, channelSelection, overlapBehavior,
-                colorMap, contrastEnhancement, shadedRelief, imageOutline);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final RasterSymbolizer other = (RasterSymbolizer) obj;
-        return Objects.equals(this.opacity, other.opacity)
-            && Objects.equals(this.channelSelection, other.channelSelection)
-            && this.overlapBehavior == other.overlapBehavior
-            && Objects.equals(this.colorMap, other.colorMap)
-            && Objects.equals(this.contrastEnhancement, other.contrastEnhancement)
-            && Objects.equals(this.shadedRelief, other.shadedRelief)
-            && Objects.equals(this.imageOutline, other.imageOutline);
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public RasterSymbolizer(final RasterSymbolizer source) {
+        super(source);
+        opacity             = source.opacity;
+        channelSelection    = source.channelSelection;
+        overlapBehavior     = source.overlapBehavior;
+        colorMap            = source.colorMap;
+        contrastEnhancement = source.contrastEnhancement;
+        shadedRelief        = source.shadedRelief;
+        imageOutline        = source.imageOutline;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Indicates the level of translucency as a floating point number between 0 and 1 (inclusive).
+     * A value of zero means completely transparent. A value of 1.0 means completely opaque.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @return the level of translucency as a floating point number between 0 and 1 (inclusive).
+     *
+     * @see Fill#getOpacity()
+     * @see Stroke#getOpacity()
+     * @see Graphic#getOpacity()
      */
-    public static RasterSymbolizer castOrCopy(org.opengis.style.RasterSymbolizer candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof RasterSymbolizer) {
-            return (RasterSymbolizer) candidate;
-        }
-        return new RasterSymbolizer(
-                candidate.getName(),
-                candidate.getGeometry(),
-                Description.castOrCopy(candidate.getDescription()),
-                candidate.getUnitOfMeasure(),
-                candidate.getOpacity(),
-                ChannelSelection.castOrCopy(candidate.getChannelSelection()),
-                candidate.getOverlapBehavior(),
-                ColorMap.castOrCopy(candidate.getColorMap()),
-                ContrastEnhancement.castOrCopy(candidate.getContrastEnhancement()),
-                ShadedRelief.castOrCopy(candidate.getShadedRelief()),
-                candidate.getImageOutline()
-            );
+    @Override
+    public Expression<Feature, ? extends Number> getOpacity() {
+        return defaultToOne(opacity);
+    }
+
+    /**
+     * Sets the level of translucency as a floating point number between 0 and 1 (inclusive).
+     * If this method is never invoked, then the default value is literal 1 (totally opaque).
+     * That default value is standardized by OGC 05-077r4.
+     *
+     * @param  value  new level of translucency, or {@code null} for resetting the default value.
+     */
+    @Override
+    public void setOpacity(final Expression<Feature, ? extends Number> value) {
+        opacity = value;
+    }
+
+    /**
+     * Returns the selection of false-color channels for a multi-spectral raster source.
+     * Either red, green, and blue channels are selected, or a single grayscale channel is selected.
+     * Contrast enhancement may be applied to each channel in isolation.
+     *
+     * <p>The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this fill, and conversely.</p>
+     *
+     * @return the selection of channels.
+     */
+    public Optional<ChannelSelection> getChannelSelection() {
+        return Optional.ofNullable(channelSelection);
+    }
+
+    /**
+     * Sets the selection of false-color channels for a multi-spectral raster source.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new selection of channels, or {@code null} for none.
+     */
+    public void setChannelSelection(final ChannelSelection value) {
+        channelSelection = value;
+    }
+
+    /**
+     * Returns the behavior when multiple raster images in a layer overlap each other.
+     *
+     * @return behavior when multiple raster images in a layer overlap each other.
+     */
+    public OverlapBehavior getOverlapBehavior() {
+        final var value = overlapBehavior;
+        return (value != null) ? value : OverlapBehavior.LATEST_ON_TOP;
+        // Default value is unspecified, we use LATEST_ON_TOP for now.
+    }
+
+    /**
+     * Set the behavior when multiple raster images in a layer overlap each other.
+     *
+     * @param  value  new behavior, or {@code null} for resetting the default value.
+     */
+    public void setOverlapBehavior(final OverlapBehavior value) {
+        overlapBehavior = value;
+    }
+
+    /**
+     * Returns the mapping of fixed-numeric pixel values to colors.
+     * It can be used for defining the olors of a palette-type raster source.
+     * For example, a DEM raster giving elevations in meters above sea level
+     * can be translated to a colored image.
+     *
+     * <p>The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this fill, and conversely.</p>
+     *
+     * @return color map for the raster.
+     */
+    public Optional<ColorMap> getColorMap() {
+        return Optional.ofNullable(colorMap);
+    }
+
+    /**
+     * Sets the mapping of fixed-numeric pixel values to colors.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new color map for the raster, or {@code null} if none.
+     */
+    public void setColorMap(final ColorMap value) {
+        colorMap = value;
+    }
+
+    /**
+     * Returns the contrast enhancement for the whole image.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this stroke, and conversely.
+     *
+     * @return contrast enhancement for the whole image.
+     *
+     * @see SelectedChannelType#getContrastEnhancement()
+     */
+    public Optional<ContrastEnhancement> getContrastEnhancement() {
+        return Optional.ofNullable(contrastEnhancement);
+    }
+
+    /**
+     * Sets the contrast enhancement applied to the whole image.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new contrast enhancement, or {@code null} if none.
+     *
+     * @see SelectedChannelType#setContrastEnhancement(ContrastEnhancement)
+     */
+    public void setContrastEnhancement(final ContrastEnhancement value) {
+        contrastEnhancement = value;
+    }
+
+    /**
+     * Returns the relief shading to apply to the image for a three-dimensional visual effect.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this stroke, and conversely.
+     *
+     * @return the relief shading to apply.
+     */
+    public Optional<ShadedRelief> getShadedRelief() {
+        return Optional.ofNullable(shadedRelief);
+    }
+
+    /**
+     * Sets the relief shading to apply to the image for a three-dimensional visual effect.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new relief shading to apply, or {@code null} if none.
+     */
+    public void setShadedRelief(final ShadedRelief value) {
+        shadedRelief = value;
+    }
+
+    /**
+     * How to outline individual source rasters in a multi-raster set.
+     * The value should be either a {@link LineSymbolizer} or {@link PolygonSymbolizer}.
+     *
+     * <p>The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this stroke, and conversely.</p>
+     *
+     * @return Line or polygon symbolizer to use for outlining source rasters.
+     */
+    public Optional<Symbolizer> getImageOutline() {
+        return Optional.ofNullable(imageOutline);
+    }
+
+    /**
+     * Sets how to outline individual source rasters in a multi-raster set.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new line or polygon symbolizer to use, or {@code null} if none.
+     */
+    public void setImageOutline(final Symbolizer value) {
+        imageOutline = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {opacity, channelSelection, overlapBehavior,
+                colorMap, contrastEnhancement, shadedRelief, imageOutline};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public RasterSymbolizer clone() {
+        final var clone = (RasterSymbolizer) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (channelSelection    != null) channelSelection    = channelSelection.clone();
+        if (colorMap            != null) colorMap            = colorMap.clone();
+        if (contrastEnhancement != null) contrastEnhancement = contrastEnhancement.clone();
+        if (shadedRelief        != null) shadedRelief        = shadedRelief.clone();
+        if (imageOutline        != null) imageOutline        = imageOutline.clone();
     }
 }

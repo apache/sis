@@ -16,92 +16,143 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import org.apache.sis.util.ArgumentChecks;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.style.ContrastMethod;
-import org.opengis.style.StyleVisitor;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.ContrastEnhancement}.
+ * Contrast enhancement for an image channel.
+ * In the case of a color image, the relative grayscale brightness of a pixel color is used.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Ian Turton (CCG)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class ContrastEnhancement implements org.opengis.style.ContrastEnhancement {
+@XmlType(name = "ContrastEnhancementType", propOrder = {
+//  "normalize",
+//  "histogram",
+    "gammaValue"
+})
+@XmlRootElement(name = "ContrastEnhancement")
+public class ContrastEnhancement extends StyleElement {
+    /**
+     * Method to use for applying contrast enhancement, or {@code null} for the default value.
+     * The default value depends on whether or not a {@linkplain #gammaValue gamma value} is defined.
+     *
+     * @see #getMethod()
+     * @see #setMethod(ContrastMethod)
+     *
+     * @todo Marshall as empty "Normalize" or "Histogram" XML element.
+     */
+    protected ContrastMethod method;
 
-    private ContrastMethod method;
-    private Expression<Feature, ? extends Number> gammaValue;
+    /**
+     * How much to brighten or dim an image, or {@code null} for the default value.
+     *
+     * @see #getGammaValue()
+     * @see #setGammaValue(Expression)
+     *
+     * @todo Add a JAXB adapter for marshalling as a plain number.
+     */
+    @XmlElement(name = "GammaValue")
+    protected Expression<Feature, ? extends Number> gammaValue;
 
+    /**
+     * Creates a contrast enhancement initialized to no operation.
+     */
     public ContrastEnhancement() {
-        this(ContrastMethod.NONE, StyleFactory.LITERAL_ONE);
-    }
-
-    public ContrastEnhancement(ContrastMethod method, Expression<Feature, ? extends Number> gammaValue) {
-        ArgumentChecks.ensureNonNull("method", method);
-        ArgumentChecks.ensureNonNull("gammaValue", gammaValue);
-        this.method = method;
-        this.gammaValue = gammaValue;
-    }
-
-    @Override
-    public ContrastMethod getMethod() {
-        return method;
-    }
-
-    public void setMethod(ContrastMethod method) {
-        ArgumentChecks.ensureNonNull("method", method);
-        this.method = method;
-    }
-
-    @Override
-    public Expression<Feature, ? extends Number> getGammaValue() {
-        return gammaValue;
-    }
-
-    public void setGammaValue(Expression<Feature,? extends Number> gammaValue) {
-        ArgumentChecks.ensureNonNull("gammaValue", gammaValue);
-        this.gammaValue = gammaValue;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(method, gammaValue);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ContrastEnhancement other = (ContrastEnhancement) obj;
-        return Objects.equals(this.method, other.method)
-            && Objects.equals(this.gammaValue, other.gammaValue);
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @param  source  the object to copy.
      */
-    public static ContrastEnhancement castOrCopy(org.opengis.style.ContrastEnhancement candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof ContrastEnhancement) {
-            return (ContrastEnhancement) candidate;
+    public ContrastEnhancement(final ContrastEnhancement source) {
+        super(source);
+        method     = source.method;
+        gammaValue = source.gammaValue;
+    }
+
+    /**
+     * Returns the method to use for applying contrast enhancement.
+     *
+     * @return method to use for applying contrast enhancement.
+     */
+    public ContrastMethod getMethod() {
+        final var value = method;
+        if (value != null) {
+            return value;
         }
-        return new ContrastEnhancement(candidate.getMethod(), candidate.getGammaValue());
+        return (gammaValue != null) ? ContrastMethod.GAMMA : ContrastMethod.NONE;
+    }
+
+    /**
+     * Sets the method to use for applying contrast enhancement.
+     * Setting this method to anything else than {@link ContrastMethod#GAMMA}
+     * clears the {@linkplain #getGammaValue() gamma value}.
+     *
+     * @param  value  new method to use, or {@code null} for none.
+     */
+    public void setMethod(final ContrastMethod value) {
+        method = value;
+        if (value != ContrastMethod.GAMMA) {
+            gammaValue = null;
+        }
+    }
+
+    /**
+     * Tells how much to brighten (values greater than 1) or dim (values less than 1) an image.
+     * A value of 1 means no change.
+     *
+     * @return expression to control gamma adjustment.
+     */
+    public Expression<Feature, ? extends Number> getGammaValue() {
+        return defaultToOne(gammaValue);
+    }
+
+    /**
+     * Sets how much to brighten (values greater than 1) or dim (values less than 1) an image.
+     * Setting a non-null value sets the method to {@link ContrastMethod#GAMMA}.
+     * If this method is never invoked, then the default value is literal 1.
+     *
+     * @param  value  new expression to control gamma adjustment, or {@code null} for the default.
+     */
+    public void setGammaValue(final Expression<Feature, ? extends Number> value) {
+        gammaValue = value;
+        if (value != null) {
+            method = null;
+        }
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {method, gammaValue};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public ContrastEnhancement clone() {
+        final var clone = (ContrastEnhancement) super.clone();
+        return clone;
     }
 }

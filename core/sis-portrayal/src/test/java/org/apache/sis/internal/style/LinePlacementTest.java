@@ -17,103 +17,109 @@
 package org.apache.sis.internal.style;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+
 
 /**
- * Tests for {@link org.apache.sis.internal.style.LinePlacement}.
+ * Tests for {@link LinePlacement}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class LinePlacementTest extends AbstractStyleTests {
+public final class LinePlacementTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public LinePlacementTest() {
+    }
 
     /**
-     * Test of PerpendicularOffset methods.
+     * Test of {@code PerpendicularOffset} property.
      */
     @Test
     public void testPerpendicularOffset() {
         LinePlacement cdt = new LinePlacement();
 
-        //check default
-        assertEquals(null, cdt.getPerpendicularOffset());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getPerpendicularOffset());
 
-        //check get/set
-        cdt.setPerpendicularOffset(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getPerpendicularOffset());
+        // Check get/set
+        cdt.setPerpendicularOffset(FF.literal(15));
+        assertLiteralEquals(15, cdt.getPerpendicularOffset());
     }
 
     /**
-     * Test of InitialGap methods.
+     * Test of {@code InitialGap} property.
      */
     @Test
     public void testInitialGap() {
         LinePlacement cdt = new LinePlacement();
 
-        //check default
-        assertEquals(null, cdt.getInitialGap());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getInitialGap());
 
-        //check get/set
-        cdt.setInitialGap(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getInitialGap());
+        // Check get/set
+        cdt.setInitialGap(FF.literal(6));
+        assertLiteralEquals(6, cdt.getInitialGap());
     }
 
     /**
-     * Test of Gap methods.
+     * Test of {@code Gap} property.
      */
     @Test
     public void testGap() {
         LinePlacement cdt = new LinePlacement();
 
-        //check default
-        assertEquals(null, cdt.getGap());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getGap());
 
-        //check get/set
-        cdt.setGap(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getGap());
+        // Check get/set
+        cdt.setGap(FF.literal(9));
+        assertLiteralEquals(9, cdt.getGap());
     }
 
     /**
-     * Test of isRepeated methods.
+     * Test of {@code IsRepeated} property.
      */
     @Test
     public void testIsRepeated() {
         LinePlacement cdt = new LinePlacement();
 
-        //check default
-        assertFalse(cdt.isRepeated());
+        // Check default
+        assertLiteralEquals(Boolean.FALSE, cdt.isRepeated());
 
-        //check get/set
-        cdt.setRepeated(true);
-        assertTrue(cdt.isRepeated());
+        // Check get/set
+        cdt.setRepeated(FF.literal(true));
+        assertLiteralEquals(Boolean.TRUE, cdt.isRepeated());
     }
 
     /**
-     * Test of IsAligned methods.
+     * Test of {@code IsAligned} property.
      */
     @Test
     public void testIsAligned() {
         LinePlacement cdt = new LinePlacement();
 
-        //check default
-        assertFalse(cdt.IsAligned());
+        // Check default
+        assertLiteralEquals(Boolean.TRUE, cdt.isAligned());
 
-        //check get/set
-        cdt.setAligned(true);
-        assertTrue(cdt.IsAligned());
+        // Check get/set
+        cdt.setAligned(FF.literal(false));
+        assertLiteralEquals(Boolean.FALSE, cdt.isAligned());
     }
 
     /**
-     * Test of isGeneralizeLine methods.
+     * Test of {@code GeneralizeLine} property.
      */
     @Test
-    public void testIsGeneralizeLine() {
+    public void testGeneralizeLine() {
         LinePlacement cdt = new LinePlacement();
 
-        //check default
-        assertFalse(cdt.isGeneralizeLine());
+        // Check default
+        assertLiteralEquals(Boolean.FALSE, cdt.getGeneralizeLine());
 
-        //check get/set
-        cdt.setGeneralizeLine(true);
-        assertTrue(cdt.isGeneralizeLine());
+        // Check get/set
+        cdt.setGeneralizeLine(FF.literal(true));
+        assertLiteralEquals(Boolean.TRUE, cdt.getGeneralizeLine());
     }
-
 }

@@ -16,146 +16,123 @@
  */
 package org.apache.sis.internal.style;
 
+import java.util.Set;
 import java.util.List;
-import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.util.iso.Names;
-import static org.junit.Assert.*;
 import org.junit.Test;
-import org.opengis.filter.InvalidFilterValueException;
-import org.opengis.filter.ResourceId;
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.style.SemanticType;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.FeatureTypeStyle}.
+ * Tests for {@link FeatureTypeStyle}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class FeatureTypeStyleTest extends AbstractStyleTests {
+public final class FeatureTypeStyleTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public FeatureTypeStyleTest() {
+    }
 
     /**
-     * Test of Name methods.
+     * Test of {@code Name} property.
      */
     @Test
     public void testName() {
         FeatureTypeStyle cdt = new FeatureTypeStyle();
 
-        //check defaults
-        assertEquals(null, cdt.getName());
+        // Check defaults
+        assertEmpty(cdt.getName());
 
-        //check get/set
-        cdt.setName(SAMPLE_STRING);
-        assertEquals(SAMPLE_STRING, cdt.getName());
+        // Check get/set
+        String value = "A random name";
+        cdt.setName(value);
+        assertOptionalEquals(value, cdt.getName());
     }
 
     /**
-     * Test of Description methods.
+     * Test of {@code Description} property.
      */
     @Test
     public void testDescription() {
         FeatureTypeStyle cdt = new FeatureTypeStyle();
 
-        //check defaults
-        assertEquals(null, cdt.getDescription());
+        // Check defaults
+        assertEmpty(cdt.getDescription());
 
-        //check get/set
-        cdt.setDescription(new Description(SAMPLE_ISTRING, SAMPLE_ISTRING));
-        assertEquals(new Description(SAMPLE_ISTRING, SAMPLE_ISTRING), cdt.getDescription());
+        // Check get/set
+        Description desc = anyDescription();
+        cdt.setDescription(desc);
+        assertOptionalEquals(desc, cdt.getDescription());
     }
 
     /**
-     * Test of FeatureInstanceIDs methods.
+     * Test of {@code FeatureInstanceID} property.
      */
     @Test
     public void testFeatureInstanceIDs() {
         FeatureTypeStyle cdt = new FeatureTypeStyle();
 
-        //check defaults
-        assertEquals(null, cdt.getFeatureInstanceIDs());
+        // Check defaults
+        assertEmpty(cdt.getFeatureInstanceIDs());
 
-        //check get/set
-        final ResourceId rid = new ResourceId() {
-            @Override
-            public String getIdentifier() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public List getExpressions() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public boolean test(Object object) throws InvalidFilterValueException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public Class getResourceClass() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
+        // Check get/set
+        final var rid = FF.resourceId("A random identifier");
         cdt.setFeatureInstanceIDs(rid);
-        assertEquals(rid, cdt.getFeatureInstanceIDs());
+        assertOptionalEquals(rid, cdt.getFeatureInstanceIDs());
     }
 
     /**
-     * Test of featureTypeNames methods.
+     * Test of {@code FeatureTypeName} property.
      */
     @Test
     public void testFeatureTypeNames() {
         FeatureTypeStyle cdt = new FeatureTypeStyle();
 
-        //check defaults
-        assertTrue(cdt.featureTypeNames().isEmpty());
+        // Check defaults
+        assertEmpty(cdt.getFeatureTypeName());
 
-        //check get/set
-        cdt.featureTypeNames().add(Names.createLocalName(null, null, "test"));
-        assertEquals(1, cdt.featureTypeNames().size());
+        // Check get/set
+        var name = Names.createLocalName(null, null, "A random name");
+        cdt.setFeatureTypeName(name);
+        assertOptionalEquals(name, cdt.getFeatureTypeName());
     }
 
     /**
-     * Test of semanticTypeIdentifiers methods.
+     * Test of {@code SemanticTypeIdentifier} property.
      */
     @Test
     public void testSemanticTypeIdentifiers() {
         FeatureTypeStyle cdt = new FeatureTypeStyle();
 
-        //check defaults
+        // Check defaults
         assertTrue(cdt.semanticTypeIdentifiers().isEmpty());
 
-        //check get/set
+        // Check get/set
         cdt.semanticTypeIdentifiers().add(SemanticType.LINE);
-        assertEquals(1, cdt.semanticTypeIdentifiers().size());
+        assertEquals(Set.of(SemanticType.LINE), cdt.semanticTypeIdentifiers());
     }
 
     /**
-     * Test of rules methods.
+     * Test of {@code Rule} property.
      */
     @Test
     public void testRules() {
         FeatureTypeStyle cdt = new FeatureTypeStyle();
 
-        //check defaults
+        // Check defaults
         assertTrue(cdt.rules().isEmpty());
 
-        //check get/set
-        cdt.rules().add(new Rule());
-        assertEquals(1, cdt.rules().size());
+        // Check get/set
+        var rule = new Rule<Feature>();
+        cdt.rules().add(rule);
+        assertEquals(List.of(rule), cdt.rules());
     }
-
-    /**
-     * Test of OnlineResource methods.
-     */
-    @Test
-    public void testOnlineResource() {
-        FeatureTypeStyle cdt = new FeatureTypeStyle();
-
-        //check defaults
-        assertEquals(null, cdt.getOnlineResource());
-
-        //check get/set
-        cdt.setOnlineResource(new DefaultOnlineResource());
-        assertEquals(new DefaultOnlineResource(), cdt.getOnlineResource());
-    }
-
 }

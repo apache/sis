@@ -16,127 +16,211 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import org.opengis.style.StyleVisitor;
-import org.opengis.style.Symbolizer;
+import java.util.ArrayList;
+import java.util.Optional;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.Style}.
+ * A set of styles to be applied on different types of features.
+ * This class contains a list of {@link FeatureTypeStyle}.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Chris Dillard (SYS Technologies)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class Style implements org.opengis.style.Style {
-
+public class Style extends StyleElement {
+    /**
+     * Name for this style, or {@code null} if none.
+     *
+     * @see #getName()
+     * @see #setName(String)
+     */
     private String name;
+
+    /**
+     * Information for user interfaces, or {@code null} if none.
+     *
+     * @see #getDescription()
+     * @see #setDescription(Description)
+     */
     private Description description;
+
+    /**
+     * Whether this style is the default one.
+     *
+     * @see #isDefault()
+     * @see #setDefault(boolean)
+     */
     private boolean isDefault;
-    private final List<FeatureTypeStyle> fts = new ArrayList<>();
-    private Symbolizer defaultSymbolizer;
 
+    /**
+     * Collection of styles to apply for different types of features.
+     *
+     * @see #featureTypeStyles()
+     */
+    private List<FeatureTypeStyle> fts;
+
+    /**
+     * The default symbolizer to use if no rule return {@code true}.
+     *
+     * @see #getDefaultSpecification()
+     * @see #setDefaultSpecification(Symbolizer)
+     */
+    private Symbolizer defaultSpecification;
+
+    /**
+     * Creates an initially empty style.
+     */
     public Style() {
+        fts = new ArrayList<>();
     }
 
-    public Style(String name, Description description, boolean isDefault, List<FeatureTypeStyle> fts, Symbolizer defaultSymbolizer) {
-        this.name = name;
-        this.description = description;
-        this.isDefault = isDefault;
-        if (fts!=null) this.fts.addAll(fts);
-        this.defaultSymbolizer = defaultSymbolizer;
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public Style(final Style source) {
+        super(source);
+        name        = source.name;
+        description = source.description;
+        isDefault   = source.isDefault;
+        defaultSpecification = source.defaultSpecification;
+        fts = new ArrayList<>(source.fts);
     }
 
-    @Override
+    /**
+     * Returns the name for this style.
+     * This can be any string that uniquely identifies this style within a given canvas.
+     * It is not meant to be human-friendly. For a human-friendly label,
+     * see the {@linkplain Description#getTitle() title} instead.
+     *
+     * @return a name for this style.
+     */
+    public Optional<String> getName() {
+        return Optional.ofNullable(name);
+    }
+
+    /**
+     * Sets a name for this style.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new name for this style, or {@code null} if none.
+     */
+    public void setName(final String value) {
+        name = value;
+    }
+
+    /**
+     * Returns the description of this style.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this style, and conversely.
+     *
+     * @return information for user interfaces.
+     */
+    public Optional<Description> getDescription() {
+        return Optional.ofNullable(description);
+    }
+
+    /**
+     * Sets a description of this style.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new information for user interfaces, or {@code null} if none.
+     */
+    public void setDescription(final Description value) {
+        description = value;
+    }
+
+    /**
+     * Returns the list of styles to apply for different types of features.
+     * The returned collection is <em>live</em>:
+     * changes in that collection are reflected into this object, and conversely.
+     *
+     * @return list of styles, as a live collection.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<FeatureTypeStyle> featureTypeStyles() {
         return fts;
     }
 
-    @Override
+    /**
+     * Returns whether this style is the default one.
+     *
+     * @return Whether this style is the default one.
+     */
     public boolean isDefault() {
         return isDefault;
     }
 
-    public void setDefault(boolean isDefault) {
-        this.isDefault = isDefault;
-    }
-
-    @Override
-    public Symbolizer getDefaultSpecification() {
-        return defaultSymbolizer;
-    }
-
-    public void setDefaultSpecification(Symbolizer defaultSymbolizer) {
-        this.defaultSymbolizer = defaultSymbolizer;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public Description getDescription() {
-        return description;
-    }
-
-    public void setDescription(Description description) {
-        this.description = description;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, description, fts);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Style other = (Style) obj;
-        return Objects.equals(this.name, other.name)
-            && Objects.equals(this.description, other.description)
-            && Objects.equals(this.fts, other.fts);
+    /**
+     * Sets whether this style is the default one.
+     *
+     * @param  value  whether this style is the default one.
+     */
+    public void setDefault(final boolean value) {
+        isDefault = value;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Returns the default symbolizer to use if no rule return {@code true}.
+     * This specification should not use any external functions.
+     * This specification should use at least one spatial attribute.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @return the default symbolizer to use if no rule return {@code true}.
      */
-    public static Style castOrCopy(org.opengis.style.Style candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof Style) {
-            return (Style) candidate;
-        }
+    public Optional<Symbolizer> getDefaultSpecification() {
+        return Optional.ofNullable(defaultSpecification);
+    }
 
-        final List<FeatureTypeStyle> cs = new ArrayList<>();
-        for (org.opengis.style.FeatureTypeStyle cr : candidate.featureTypeStyles()) {
-            cs.add(FeatureTypeStyle.castOrCopy(cr));
+    /**
+     * Sets the default symbolizer to use if no rule return {@code true}.
+     *
+     * @param  value  new default symbolizer to use if no rule return {@code true}.
+     */
+    public void setDefaultSpecification(final Symbolizer value) {
+        defaultSpecification = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {name, description, isDefault, fts, defaultSpecification};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public Style clone() {
+        final var clone = (Style) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (description != null) {
+            description = description.clone();
         }
-        return new Style(
-                candidate.getName(),
-                Description.castOrCopy(candidate.getDescription()),
-                candidate.isDefault(),
-                cs,
-                org.apache.sis.internal.style.Symbolizer.tryCastOrCopy(candidate.getDefaultSpecification())
-                );
+        if (defaultSpecification != null) {
+            defaultSpecification = defaultSpecification.clone();
+        }
+        fts = new ArrayList<>(fts);
+        fts.replaceAll(FeatureTypeStyle::clone);
     }
 }

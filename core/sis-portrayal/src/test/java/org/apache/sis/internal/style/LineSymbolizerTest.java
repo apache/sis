@@ -16,45 +16,54 @@
  */
 package org.apache.sis.internal.style;
 
+import java.awt.Color;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.LineSymbolizer}.
+ * Tests for {@link LineSymbolizer}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class LineSymbolizerTest extends AbstractStyleTests {
+public final class LineSymbolizerTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public LineSymbolizerTest() {
+    }
 
     /**
-     * Test of Stroke methods.
+     * Test of {@code Stroke} property.
      */
     @Test
     public void testStroke() {
         LineSymbolizer cdt = new LineSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getStroke());
+        // Check default
+        Stroke stroke = cdt.getStroke();
+        assertLiteralEquals(Color.BLACK, stroke.getColor());
 
-        //check get/set
+        // Check get/set
         Stroke value = new Stroke();
         cdt.setStroke(value);
         assertEquals(value, cdt.getStroke());
     }
 
     /**
-     * Test of PerpendicularOffset methods.
+     * Test of {@code PerpendicularOffset} property.
      */
     @Test
     public void testPerpendicularOffset() {
         LineSymbolizer cdt = new LineSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getPerpendicularOffset());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getPerpendicularOffset());
 
-        //check get/set
-        cdt.setPerpendicularOffset(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getPerpendicularOffset());
+        // Check get/set
+        cdt.setPerpendicularOffset(FF.literal(20));
+        assertLiteralEquals(20, cdt.getPerpendicularOffset());
     }
-
 }

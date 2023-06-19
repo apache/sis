@@ -16,21 +16,52 @@
  */
 package org.apache.sis.internal.style;
 
-/**
- *
- * @author Johann Sorel (Geomatys)
- */
-public interface LabelPlacement extends org.opengis.style.LabelPlacement{
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 
-    public static LabelPlacement castOrCopy(org.opengis.style.LabelPlacement candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof org.opengis.style.PointPlacement) {
-            return PointPlacement.castOrCopy((org.opengis.style.PointPlacement) candidate);
-        } else if (candidate instanceof org.opengis.style.LinePlacement) {
-            return LinePlacement.castOrCopy((org.opengis.style.LinePlacement) candidate);
-        } else {
-            throw new IllegalArgumentException("Unexpected symbol type " + candidate.getClass().getName());
-        }
+
+/**
+ * Position of a label relative to a point, line string or polygon.
+ * It can be either a {@link PointPlacement} or a {@link LinePlacement}.
+ * The former allows a graphic to be plotted directly at the point,
+ * which might be useful to label a city.
+ * The latter allows to draw a label along a line,
+ * which might be useful for labeling a road or a river.
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
+ */
+@XmlSeeAlso({
+    PointPlacement.class,
+    LinePlacement.class
+})
+public abstract class LabelPlacement extends StyleElement {
+    /**
+     * Creates a new label placement.
+     * Intentionally restricted to this package because {@link #properties()} is package-private.
+     */
+    LabelPlacement() {
+    }
+
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    LabelPlacement(final LabelPlacement source) {
+        super(source);
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public LabelPlacement clone() {
+        return (LabelPlacement) super.clone();
     }
 }

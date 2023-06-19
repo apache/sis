@@ -16,45 +16,56 @@
  */
 package org.apache.sis.internal.style;
 
-import static org.apache.sis.internal.style.StyleFactory.*;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.Halo}.
+ * Tests for {@link Halo}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class HaloTest extends AbstractStyleTests {
+public final class HaloTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public HaloTest() {
+    }
 
     /**
-     * Test of Fill methods.
+     * Test of {@code Fill} property.
      */
     @Test
     public void testFill() {
         Halo cdt = new Halo();
 
-        //check default
-        assertEquals(new Fill(null, LITERAL_WHITE, DEFAULT_FILL_OPACITY), cdt.getFill());
+        // Check default
+        Fill fill = cdt.getFill();
+        assertEquals(Fill.WHITE, fill.getColor());
+        assertLiteralEquals(1.0, fill.getOpacity());
 
-        //check get/set
-        cdt.setFill(new Fill(null, EXP_COLOR, EXP_DOUBLE));
-        assertEquals(new Fill(null, EXP_COLOR, EXP_DOUBLE), cdt.getFill());
+        // Check get/set
+        fill.setColor(anyColor());
+        fill.setOpacity(FF.literal(0.8));
+        cdt.setFill(fill);
+        assertEquals(fill, cdt.getFill());
     }
 
     /**
-     * Test of Radius methods.
+     * Test of {@code Radius} property.
      */
     @Test
     public void testRadius() {
         Halo cdt = new Halo();
 
-        //check default
-        assertEquals(FF.literal(1.0), cdt.getRadius());
+        // Check default
+        assertLiteralEquals(1.0, cdt.getRadius());
 
-        //check get/set
-        cdt.setRadius(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getRadius());
+        // Check get/set
+        cdt.setRadius(FF.literal(40));
+        assertLiteralEquals(40, cdt.getRadius());
     }
-
 }

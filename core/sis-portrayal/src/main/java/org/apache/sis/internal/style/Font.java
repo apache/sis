@@ -16,116 +16,208 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.ArrayList;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+import org.opengis.filter.Literal;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.Font}.
+ * Identification of a font of a certain family, style, and size.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Chris Dillard (SYS Technologies)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class Font implements org.opengis.style.Font {
+@XmlType(name = "FontType")
+@XmlRootElement(name = "Font")
+public class Font extends StyleElement {
+    /**
+     * The "normal" literal, used for default style and weight.
+     */
+    private static final Literal<Feature,String> NORMAL = literal("normal");
 
-    private final List<Expression> family = new ArrayList<>();
-    private Expression<Feature,String> style;
-    private Expression<Feature,String> weight;
-    private Expression<Feature,? extends Number> size;
+    /**
+     * The default font size.
+     */
+    private static final Literal<Feature,Double> DEFAULT_SIZE = literal(10.0);
 
+    /**
+     * Family names of the font to use, in preference order.
+     *
+     * <p>In XML documents, this is encoded inside a {@code <SvgParameter name="font-family">} element.</p>
+     *
+     * @see #family()
+     */
+    private List<Expression<Feature,String>> family;
+
+    /**
+     * Style (normal or italic) to use for a font.
+     *
+     * <p>In XML documents, this is encoded inside a {@code <SvgParameter name="font-style">} element.</p>
+     *
+     * @see #getStyle()
+     * @see #setStyle(Expression)
+     */
+    protected Expression<Feature,String> style;
+
+    /**
+     * Amount of weight or boldness to use for a font.
+     *
+     * <p>In XML documents, this is encoded inside a {@code <SvgParameter name="font-weight">} element.</p>
+     *
+     * @see #getWeight()
+     * @see #setWeight(Expression)
+     */
+    protected Expression<Feature,String> weight;
+
+    /**
+     * Size (in pixels) to use for the font.
+     *
+     * <p>In XML documents, this is encoded inside a {@code <SvgParameter name="font-size">} element.</p>
+     *
+     * @see #getSize()
+     * @see #setSize(Expression)
+     */
+    protected Expression<Feature, ? extends Number> size;
+
+    /**
+     * Creates a font initialized to normal style, normal weight and a size of 10 pixels.
+     */
     public Font() {
-        this(Collections.EMPTY_LIST,
-            StyleFactory.DEFAULT_FONT_STYLE,
-            StyleFactory.DEFAULT_FONT_WEIGHT,
-            StyleFactory.DEFAULT_FONT_SIZE);
-    }
-
-    public Font(List<Expression> family, Expression<Feature, String> style, Expression<Feature, String> weight, Expression<Feature, ? extends Number> size) {
-        if (family != null) this.family.addAll(family);
-        this.style = style;
-        this.weight = weight;
-        this.size = size;
-    }
-
-    @Override
-    public List<Expression> getFamily() {
-        return family;
-    }
-
-    @Override
-    public Expression<Feature, String> getStyle() {
-        return style;
-    }
-
-    public void setStyle(Expression<Feature, String> style) {
-        this.style = style;
-    }
-
-    @Override
-    public Expression<Feature, String> getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Expression<Feature, String> weight) {
-        this.weight = weight;
-    }
-
-    @Override
-    public Expression<Feature, ? extends Number> getSize() {
-        return size;
-    }
-
-    public void setSize(Expression<Feature, ? extends Number> size) {
-        this.size = size;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(family, style, weight, size);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Font other = (Font) obj;
-        return Objects.equals(this.family, other.family)
-            && Objects.equals(this.style, other.style)
-            && Objects.equals(this.weight, other.weight)
-            && Objects.equals(this.size, other.size);
+        family = new ArrayList<>();
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @param  source  the object to copy.
      */
-    public static Font castOrCopy(org.opengis.style.Font candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof Font) {
-            return (Font) candidate;
-        }
-        return new Font(
-                candidate.getFamily(),
-                candidate.getStyle(),
-                candidate.getWeight(),
-                candidate.getSize());
+    public Font(final Font source) {
+        super(source);
+        family = new ArrayList<>(source.family);
+        style  = source.style;
+        weight = source.weight;
+        size   = source.size;
+    }
+
+    /**
+     * Returns the family names of the font to use, in preference order.
+     * Allowed values are system-dependent.
+     *
+     * <p>The returned collection is <em>live</em>:
+     * changes in that collection are reflected into this object, and conversely.</p>
+     *
+     * @return the family names in preference order, as a live collection.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public List<Expression<Feature,String>> family() {
+        return family;
+    }
+
+    /**
+     * Returns the style (normal or italic) to use for a font.
+     * The allowed values are "normal", "italic", and "oblique".
+     *
+     * @return style to use for a font.
+     */
+    public Expression<Feature,String> getStyle() {
+        final var value = style;
+        return (value != null) ? value : NORMAL;
+    }
+
+    /**
+     * Sets the style (normal or italic) to use for a font.
+     * If this method is never invoked, then the default value is the "normal" literal.
+     *
+     * @param  value  new style to use for a font, or {@code null} for resetting the default value.
+     */
+    public void setStyle(final Expression<Feature,String> value) {
+        style = value;
+    }
+
+    /**
+     * Returns the amount of weight or boldness to use for a font.
+     * The allowed values are "normal" and "bold".
+     *
+     * @return amount of weight or boldness to use for a font.
+     */
+    public Expression<Feature,String> getWeight() {
+        final var value = weight;
+        return (value != null) ? value : NORMAL;
+    }
+
+    /**
+     * Sets the amount of weight or boldness to use for a font.
+     * If this method is never invoked, then the default value is the "normal" literal.
+     *
+     * @param  value  new amount of weight to use for a font, or {@code null} for resetting the default value.
+     */
+    public void setWeight(final Expression<Feature,String> value) {
+        weight = value;
+    }
+
+    /**
+     * Returns the size (in pixels) to use for the font.
+     *
+     * @return size (in pixels) to use for the font.
+     */
+    public Expression<Feature, ? extends Number> getSize() {
+        final var value = size;
+        return (value != null) ? value : DEFAULT_SIZE;
+    }
+
+    /**
+     * Sets the size (in pixels) to use for the font.
+     * If this method is never invoked, then the default value is 10 pixels.
+     * That default value is standardized by OGC 05-077r4.
+     *
+     * @param  value  new size to use for the font, or {@code null} for resetting the default value.
+     */
+    public void setSize(final Expression<Feature, ? extends Number> value) {
+        size = value;
+    }
+
+    /*
+     * TODO: we need a private method like below for formatting above SVG parameters:
+     * See Stroke for more detais.
+     */
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {family, style, weight, size};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public Font clone() {
+        final var clone = (Font) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        family = new ArrayList<>(family);
     }
 }

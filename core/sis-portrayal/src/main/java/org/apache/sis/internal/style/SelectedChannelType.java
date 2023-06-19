@@ -16,85 +16,157 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import org.opengis.style.StyleVisitor;
+import java.util.Optional;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import org.apache.sis.util.ArgumentChecks;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Expression;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.SelectedChannelType}.
+ * Information about a channel to use in a multi-spectral source.
+ * Channels are identified by data-dependent character identifiers.
+ * Commonly, channels will be labelled as "1", "2", <i>etc</i>.
+ * A set of selected channels is contained in {@link ChannelSelection}.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Ian Turton (CCG)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class SelectedChannelType implements org.opengis.style.SelectedChannelType {
+@XmlType(name = "SelectedChannelType", propOrder = {
+    "sourceChannelName",
+    "contrastEnhancement"
+})
+// No root element is specified in OGC 05-077r4.
+public class SelectedChannelType extends StyleElement {
+    /**
+     * The channel's name, or {@code null} if unspecified.
+     *
+     * @see #getSourceChannelName()
+     * @see #setSourceChannelName(Expression)
+     *
+     * @todo Needs an adapter from expression to plain string.
+     */
+    @XmlElement(name = "SourceChannelName", required = true)
+    protected Expression<Feature,String> sourceChannelName;
 
-    private String channelName;
-    private ContrastEnhancement contrastEnhancement;
+    /**
+     * Contrast enhancement applied to the selected channel in isolation, or {@code null} if none.
+     *
+     * @see #getContrastEnhancement()
+     * @see #setContrastEnhancement(ContrastEnhancement)
+     */
+    @XmlElement(name = "ContrastEnhancement")
+    protected ContrastEnhancement contrastEnhancement;
 
+    /**
+     * Creates an initially empty selected channel.
+     */
     public SelectedChannelType() {
     }
 
-    public SelectedChannelType(String channelName, ContrastEnhancement contrastEnhancement) {
-        this.channelName = channelName;
-        this.contrastEnhancement = contrastEnhancement;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public void setChannelName(String channelName) {
-        this.channelName = channelName;
-    }
-
-    @Override
-    public ContrastEnhancement getContrastEnhancement() {
-        return contrastEnhancement;
-    }
-
-    public void setContrastEnhancement(ContrastEnhancement contrastEnhancement) {
-        this.contrastEnhancement = contrastEnhancement;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(channelName, contrastEnhancement);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final SelectedChannelType other = (SelectedChannelType) obj;
-        return Objects.equals(this.channelName, other.channelName)
-            && Objects.equals(this.contrastEnhancement, other.contrastEnhancement);
+    /**
+     * Creates a selected channel for the specified name.
+     *
+     * @param  name  source channel name.
+     */
+    public SelectedChannelType(final String name) {
+        ArgumentChecks.ensureNonEmpty("name", name);
+        sourceChannelName = literal(name);
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @param  source  the object to copy.
      */
-    public static SelectedChannelType castOrCopy(org.opengis.style.SelectedChannelType candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof SelectedChannelType) {
-            return (SelectedChannelType) candidate;
+    public SelectedChannelType(final SelectedChannelType source) {
+        super(source);
+        sourceChannelName   = source.sourceChannelName;
+        contrastEnhancement = source.contrastEnhancement;
+    }
+
+    /**
+     * Returns the channel's name.
+     *
+     * @return the channel's name, or {@code null} if unspecified.
+     *
+     * @todo Shall never be {@code null}. We need to think about some default value.
+     */
+    public Expression<Feature,String> getSourceChannelName() {
+        return sourceChannelName;
+    }
+
+    /**
+     * Sets the channel's name.
+     *
+     * @param  value  the channel's name, or {@code null} if unspecified.
+     */
+    public void setSourceChannelName(final Expression<Feature,String> value) {
+        sourceChannelName = value;
+    }
+
+    /**
+     * Returns the contrast enhancement applied to the selected channel in isolation.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this stroke, and conversely.
+     *
+     * @return contrast enhancement for the selected channel.
+     *
+     * @see RasterSymbolizer#getContrastEnhancement()
+     */
+    public Optional<ContrastEnhancement> getContrastEnhancement() {
+        return Optional.ofNullable(contrastEnhancement);
+    }
+
+    /**
+     * Sets the contrast enhancement applied to the selected channel in isolation.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new contrast enhancement, or {@code null} if none.
+     *
+     * @see RasterSymbolizer#setContrastEnhancement(ContrastEnhancement)
+     */
+    public void setContrastEnhancement(final ContrastEnhancement value) {
+        contrastEnhancement = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {sourceChannelName, contrastEnhancement};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public SelectedChannelType clone() {
+        final var clone = (SelectedChannelType) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (contrastEnhancement != null) {
+            contrastEnhancement = contrastEnhancement.clone();
         }
-        return new SelectedChannelType(
-                candidate.getChannelName(),
-                ContrastEnhancement.castOrCopy(candidate.getContrastEnhancement()));
     }
 }

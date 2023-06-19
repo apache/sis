@@ -16,73 +16,59 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import org.opengis.feature.Feature;
-import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.ColorReplacement}.
+ * Replacement of a color in an external graphic.
  *
- * @author Johann Sorel (Geomatys)
+ * <p>This is a placeholder for future development.
+ * OGC 05-077r4 standard defines the dependent classes,
+ * but there is too many of them for this initial draft.</p>
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class ColorReplacement implements org.opengis.style.ColorReplacement {
-
-    private Expression<Feature,?> recoding;
-
+@XmlType(name = "ColorReplacementType")
+@XmlRootElement(name = "ColorReplacement")
+public class ColorReplacement extends StyleElement {
+    /**
+     * Creates a color replacement.
+     */
     public ColorReplacement() {
     }
 
-    public ColorReplacement(Expression<Feature, ?> recoding) {
-        this.recoding = recoding;
-    }
-
-    @Override
-    public Expression<Feature,?> getRecoding() {
-        return recoding;
-    }
-
-    public void setRecoding(Expression<Feature, ?> recoding) {
-        this.recoding = recoding;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(recoding);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ColorReplacement other = (ColorReplacement) obj;
-        return Objects.equals(this.recoding, other.recoding);
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public ColorReplacement(final ColorReplacement source) {
+        super(source);
     }
 
     /**
-     * Cast or copy to an SIS implementation.
-     *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
      */
-    public static ColorReplacement castOrCopy(org.opengis.style.ColorReplacement candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof ColorReplacement) {
-            return (ColorReplacement) candidate;
-        }
-        return new ColorReplacement(candidate.getRecoding());
+    @Override
+    final Object[] properties() {
+        return new Object[] {};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public ColorReplacement clone() {
+        final var clone = (ColorReplacement) super.clone();
+        return clone;
     }
 }

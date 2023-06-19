@@ -19,73 +19,67 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.Mark}.
+ * Tests for {@link Mark}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class MarkTest extends AbstractStyleTests {
+public final class MarkTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public MarkTest() {
+    }
 
     /**
-     * Test of WellKnownName methods.
+     * Test of {@code WellKnownName} property.
      */
     @Test
     public void testWellKnownName() {
         Mark cdt = new Mark();
 
-        //check default
-        assertEquals(FF.literal("square"), cdt.getWellKnownName());
+        // Check default
+        assertLiteralEquals("square", cdt.getWellKnownName());
 
-        //check get/set
-        cdt.setWellKnownName(EXP_STRING);
-        assertEquals(EXP_STRING, cdt.getWellKnownName());
+        // Check get/set
+        var value = FF.literal("A random name");
+        cdt.setWellKnownName(value);
+        assertEquals(value, cdt.getWellKnownName());
     }
 
     /**
-     * Test of ExternalMark methods.
-     */
-    @Test
-    public void testExternalMark() {
-        Mark cdt = new Mark();
-
-        //check default
-        assertEquals(null, cdt.getExternalMark());
-
-        //check get/set
-        ExternalMark value = new ExternalMark();
-        cdt.setExternalMark(value);
-        assertEquals(value, cdt.getExternalMark());
-    }
-
-    /**
-     * Test of Fill methods.
+     * Test of {@code Fill} property.
      */
     @Test
     public void testFill() {
         Mark cdt = new Mark();
 
-        //check default
-        assertEquals(new Fill(), cdt.getFill());
+        // Check default
+        assertOptionalEquals(new Fill(), cdt.getFill());
 
-        //check get/set
-        cdt.setFill(new Fill(null, EXP_COLOR, EXP_DOUBLE));
-        assertEquals(new Fill(null, EXP_COLOR, EXP_DOUBLE), cdt.getFill());
+        // Check get/set
+        var fill = new Fill(ANY_COLOR);
+        cdt.setFill(fill);
+        assertOptionalEquals(fill, cdt.getFill());
     }
 
     /**
-     * Test of getStroke methods.
+     * Test of {@code getStroke} property.
      */
     @Test
     public void testStroke() {
         Mark cdt = new Mark();
 
-        //check default
-        assertEquals(new Stroke(), cdt.getStroke());
+        // Check default
+        assertOptionalEquals(new Stroke(), cdt.getStroke());
 
-        //check get/set
+        // Check get/set
         Stroke value = new Stroke();
+        value.setOpacity(FF.literal(0.75));
         cdt.setStroke(value);
-        assertEquals(value, cdt.getStroke());
+        assertOptionalEquals(value, cdt.getStroke());
     }
-
 }

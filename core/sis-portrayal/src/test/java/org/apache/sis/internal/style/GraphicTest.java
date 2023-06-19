@@ -19,103 +19,110 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.Graphic}.
+ * Tests for {@link Graphic}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class GraphicTest extends AbstractStyleTests {
+public final class GraphicTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public GraphicTest() {
+    }
 
     /**
-     * Test of graphicalSymbols methods.
+     * Test of {@code graphicalSymbols} property.
      */
     @Test
     public void testGraphicalSymbols() {
         Graphic cdt = new Graphic();
 
-        //check defaults
+        // Check defaults
         assertTrue(cdt.graphicalSymbols().isEmpty());
 
-        //check get/set
+        // Check get/set
         cdt.graphicalSymbols().add(new Mark());
         assertEquals(1, cdt.graphicalSymbols().size());
     }
 
     /**
-     * Test of Opacity methods.
+     * Test of {@code Opacity} property.
      */
     @Test
     public void testOpacity() {
         Graphic cdt = new Graphic();
 
-        //check default
-        assertEquals(null, cdt.getOpacity());
+        // Check default
+        assertLiteralEquals(1.0, cdt.getOpacity());
 
-        //check get/set
-        cdt.setOpacity(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getOpacity());
+        // Check get/set
+        cdt.setOpacity(FF.literal(0.4));
+        assertLiteralEquals(0.4, cdt.getOpacity());
     }
 
     /**
-     * Test of Size methods.
+     * Test of {@code Size} property.
      */
     @Test
     public void testSize() {
         Graphic cdt = new Graphic();
 
-        //check default
-        assertEquals(null, cdt.getSize());
+        // Check default
+        assertLiteralEquals(6.0, cdt.getSize());
 
-        //check get/set
-        cdt.setSize(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getSize());
+        // Check get/set
+        cdt.setSize(FF.literal(13));
+        assertLiteralEquals(13, cdt.getSize());
     }
 
     /**
-     * Test of Rotation methods.
+     * Test of {@code Rotation} property.
      */
     @Test
     public void testRotation() {
         Graphic cdt = new Graphic();
 
-        //check default
-        assertEquals(null, cdt.getRotation());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getRotation());
 
-        //check get/set
-        cdt.setRotation(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getRotation());
+        // Check get/set
+        cdt.setRotation(FF.literal(90));
+        assertLiteralEquals(90, cdt.getRotation());
     }
 
     /**
-     * Test of AnchorPoint methods.
+     * Test of {@code AnchorPoint} property.
      */
     @Test
     public void testAnchorPoint() {
         Graphic cdt = new Graphic();
 
-        //check default
-        assertEquals(null, cdt.getAnchorPoint());
+        // Check default
+        assertEquals(new AnchorPoint(), cdt.getAnchorPoint());
 
-        //check get/set
-        AnchorPoint value = new AnchorPoint(EXP_DOUBLE, EXP_DOUBLE_2);
+        // Check get/set
+        var value = new AnchorPoint(-7, 3);
         cdt.setAnchorPoint(value);
         assertEquals(value, cdt.getAnchorPoint());
     }
 
     /**
-     * Test of Displacement methods.
+     * Test of {@code Displacement} property.
      */
     @Test
     public void testDisplacement() {
         Graphic cdt = new Graphic();
 
-        //check default
-        assertEquals(null, cdt.getDisplacement());
+        // Check default
+        assertEquals(new Displacement(), cdt.getDisplacement());
 
-        //check get/set
-        Displacement value = new Displacement(EXP_DOUBLE, EXP_DOUBLE_2);
+        // Check get/set
+        var value = new Displacement(12, -5);
         cdt.setDisplacement(value);
         assertEquals(value, cdt.getDisplacement());
     }
-
 }

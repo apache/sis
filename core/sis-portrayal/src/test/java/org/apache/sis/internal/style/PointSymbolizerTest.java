@@ -19,27 +19,36 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.PointSymbolizer}.
+ * Tests for {@link PointSymbolizer}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class PointSymbolizerTest extends AbstractStyleTests {
+public final class PointSymbolizerTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public PointSymbolizerTest() {
+    }
 
     /**
-     * Test of Graphic methods.
+     * Test of {@code Graphic} property.
      */
     @Test
     public void testGraphic() {
         PointSymbolizer cdt = new PointSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getGraphic());
+        // Check default
+        Graphic value = cdt.getGraphic();
+        assertLiteralEquals(1.0, value.getOpacity());
 
-        //check get/set
-        Graphic value = new Graphic();
+        // Check get/set
+        value = new Graphic();
+        value.setOpacity(FF.literal(0.8));
         cdt.setGraphic(value);
         assertEquals(value, cdt.getGraphic());
     }
-
 }

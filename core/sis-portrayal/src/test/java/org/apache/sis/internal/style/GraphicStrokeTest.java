@@ -17,43 +17,49 @@
 package org.apache.sis.internal.style;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+
 
 /**
- * Tests for {@link org.apache.sis.internal.style.GraphicStroke}.
+ * Tests for {@link GraphicStroke}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class GraphicStrokeTest extends AbstractStyleTests {
+public final class GraphicStrokeTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public GraphicStrokeTest() {
+    }
 
     /**
-     * Test of InitialGap methods.
+     * Test of {@code InitialGap} property.
      */
     @Test
     public void testInitialGap() {
         GraphicStroke cdt = new GraphicStroke();
 
-        //check default
-        assertEquals(null, cdt.getInitialGap());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getInitialGap());
 
-        //check get/set
-        cdt.setInitialGap(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getInitialGap());
+        // Check get/set
+        cdt.setInitialGap(FF.literal(9));
+        assertLiteralEquals(9, cdt.getInitialGap());
     }
 
     /**
-     * Test of Gap methods.
+     * Test of {@code Gap} property.
      */
     @Test
     public void testGap() {
         GraphicStroke cdt = new GraphicStroke();
 
-        //check default
-        assertEquals(null, cdt.getGap());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getGap());
 
-        //check get/set
-        cdt.setGap(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getGap());
+        // Check get/set
+        cdt.setGap(FF.literal(6));
+        assertLiteralEquals(6, cdt.getGap());
     }
-
 }

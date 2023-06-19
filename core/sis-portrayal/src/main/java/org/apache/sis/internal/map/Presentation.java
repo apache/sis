@@ -46,8 +46,8 @@ import org.opengis.feature.Feature;
  *       This would be consistent with legacy GO-1 specification (even if retired, it still have worthy material).
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.5
+ * @since   1.5
  */
 public abstract class Presentation {
 

@@ -16,183 +16,474 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import org.opengis.filter.Filter;
+import java.util.ArrayList;
+import java.util.Optional;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.style.StyleVisitor;
-import org.opengis.style.Symbolizer;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
+
+// Branch-dependent imports
+import org.opengis.filter.Filter;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.Rule}.
+ * Rendering instructions grouped by feature-property conditions and map scales.
+ * A rule consists of two important parts: a {@linkplain Filter filter} and a list of symbols.
+ * When drawing a given feature, the rendering engine examines each rule in the style,
+ * first checking its filter. If the feature is accepted by the filter,
+ * then all {@link Symbolizer} for that rule are applied to the given feature.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Chris Dillard (SYS Technologies)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ *
+ * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) to filter.
+ *
+ * @since 1.5
  */
-public final class Rule implements org.opengis.style.Rule {
+@XmlType(name = "RuleType", propOrder = {
+    "name",
+    "description",
+    "legend",
+//  "filter",           // XML encoding not yet available.
+    "elseFilter",
+    "minScale",
+    "maxScale",
+    "symbolizers"
+})
+@XmlRootElement(name = "Rule")
+public class Rule<R> extends StyleElement {
+    /**
+     * Name for this rule, or {@code null} if none.
+     *
+     * @see #getName()
+     * @see #setName(String)
+     */
+    @XmlElement(name = "Name")
+    protected String name;
 
-    private String name;
-    private Description description;
-    private GraphicLegend legend;
-    private Filter filter;
-    private boolean elseFilter;
-    private double minScale;
-    private double maxScale = Double.MAX_VALUE;
-    private final List<Symbolizer> symbolizers = new ArrayList<>();
-    private OnlineResource onlineResource;
+    /**
+     * Information for user interfaces, or {@code null} if none.
+     *
+     * @see #getDescription()
+     * @see #setDescription(Description)
+     */
+    @XmlElement(name = "Description")
+    protected Description description;
 
+    /**
+     * Small graphic to draw in a legend window, or {@code null} if none.
+     *
+     * @see #getLegend()
+     * @see #setLegend(GraphicLegend)
+     */
+    @XmlElement(name = "LegendGraphic")
+    protected GraphicLegend legend;
+
+    /**
+     * Filter that will limit the features, or {@code null} if none.
+     *
+     * @see #getFilter()
+     * @see #setFilter(Filter)
+     */
+//  @XmlElement(name = "Filter", namespace = "http://www.opengis.net/ogc")
+    protected Filter<R> filter;
+
+    /**
+     * Whether this {@code Rule} will be applied only if no other rules in the containing style apply.
+     *
+     * @see #isElseFilter()
+     * @see #setElseFilter(boolean)
+     */
+    protected boolean isElseFilter;
+
+    /**
+     * Minimum value (inclusive) in the denominator of map scale at which this rule will apply.
+     *
+     * @see #getMinScaleDenominator()
+     * @see #setMaxScaleDenominator(double)
+     */
+    protected double minScale;
+
+    /**
+     * Maximum value (exclusive) in the denominator of map scale at which this rule will apply.
+     *
+     * @see #getMaxScaleDenominator()
+     * @see #setMaxScaleDenominator(double)
+     */
+    protected double maxScale;
+
+    /**
+     * Description of how a feature is to appear on a map.
+     *
+     * @see #symbolizers()
+     */
+    @XmlElementRef(name = "Symbolizer")
+    private List<Symbolizer> symbolizers;
+
+    /**
+     * If the style comes from an external XML file, the original source. Otherwise {@code null}.
+     *
+     * @see #getOnlineResource()
+     * @see #setOnlineSource(OnlineResource)
+     */
+    protected OnlineResource onlineSource;
+
+    /**
+     * Creates a new rule.
+     */
     public Rule() {
+        maxScale = Double.POSITIVE_INFINITY;
+        symbolizers = new ArrayList<>();
     }
 
-    public Rule(String name, Description description, GraphicLegend legend, Filter filter, boolean elseFilter, double minScale, double maxScale, List<Symbolizer> symbolizers, OnlineResource onlineResource) {
-        this.name = name;
-        this.description = description;
-        this.legend = legend;
-        this.filter = filter;
-        this.elseFilter = elseFilter;
-        this.minScale = minScale;
-        this.maxScale = maxScale;
-        if (symbolizers != null) this.symbolizers.addAll(symbolizers);
-        this.onlineResource = onlineResource;
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public Rule(final Rule<R> source) {
+        super(source);
+        name         = source.name;
+        description  = source.description;
+        legend       = source.legend;
+        filter       = source.filter;
+        minScale     = source.minScale;
+        maxScale     = source.maxScale;
+        onlineSource = source.onlineSource;
+        symbolizers  = new ArrayList<>(source.symbolizers);
     }
 
-    @Override
-    public String getName() {
-        return name;
+    /**
+     * Returns the name for this rule.
+     * This can be any string that uniquely identifies this rule within a given canvas.
+     * It is not meant to be human-friendly. For a human-friendly label,
+     * see the {@linkplain Description#getTitle() title} instead.
+     *
+     * @return a name for this rule.
+     */
+    public Optional<String> getName() {
+        return Optional.ofNullable(name);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    /**
+     * Sets a name for this rule.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new name for this rule, or {@code null} if none.
+     */
+    public void setName(final String value) {
+        name = value;
     }
 
-    @Override
-    public Description getDescription() {
-        return description;
+    /**
+     * Returns the description of this rule.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this rule, and conversely.
+     *
+     * @return information for user interfaces.
+     */
+    public Optional<Description> getDescription() {
+        return Optional.ofNullable(description);
     }
 
-    public void setDescription(Description description) {
-        this.description = description;
+    /**
+     * Sets a description of this rule.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new information for user interfaces, or {@code null} if none.
+     */
+    public void setDescription(final Description value) {
+        description = value;
     }
 
-    @Override
-    public GraphicLegend getLegend() {
-        return legend;
+    /**
+     * Returns a small graphic that could be used by the rendering engine to draw a legend window.
+     * User interfaces may present the user with a legend that indicates how features of a given type are being portrayed.
+     * Through its {@code LegendGraphic} property, a {@code Rule} can provide a custom picture to be used in such a legend window.
+     *
+     * <p>The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this rule, and conversely.</p>
+     *
+     * @return small graphic to draw in a legend window.
+     */
+    public Optional<GraphicLegend> getLegend() {
+        return Optional.ofNullable(legend);
     }
 
-    public void setLegend(GraphicLegend legend) {
-        this.legend = legend;
+    /**
+     * Sets a small graphic that could be used by the rendering engine to draw a legend window.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new legend graphic, or {@code null} if none.
+     */
+    public void setLegend(final GraphicLegend value) {
+        legend = value;
     }
 
-    @Override
-    public Filter getFilter() {
-        return filter;
+    /**
+     * Returns the filter that will limit the features for which this rule will apply.
+     * This value should be used only if {@link #isElseFilter()} returns {@code false},
+     * in which case this rule applies to all features.
+     *
+     * @return the filter that will limit the features.
+     */
+    public Filter<R> getFilter() {
+        if (isElseFilter) {
+            return Filter.exclude();
+        }
+        final var value = filter;
+        return (value != null) ? value : Filter.include();
     }
 
-    public void setFilter(Filter filter) {
-        this.filter = filter;
+    /**
+     * Sets the filter that will limit the features for which this rule will apply.
+     * If this method is never invoked, then the default value is {@link Filter#include()}.
+     * Invoking this method forces {@link #isElseFilter()} to {@code false}.
+     *
+     * @param  value  new filter that will limit the features, or {@code null} if none.
+     */
+    public void setFilter(final Filter<R> value) {
+        isElseFilter = false;
+        filter = value;
     }
 
-    @Override
+    /**
+     * Returns true if this {@code Rule} will be applied only if no other rules in the containing style apply.
+     * If this is true, then the {@linkplain #getFilter() filter} should be ignored.
+     *
+     * <p>The "Else Filter" is implicitly a filter with a condition that depends on the enclosing style.
+     * Consequently, it can not be expressed as a standalone {@code Filter} expression in this rule.</p>
+     *
+     * @return true if the filter is an else filter.
+     */
     public boolean isElseFilter() {
-        return elseFilter;
+        return isElseFilter;
     }
 
-    public void setElseFilter(boolean elseFilter) {
-        this.elseFilter = elseFilter;
+    /**
+     * Sets or unset this filter to an else filter.
+     *
+     * @param  value  whether the filter is the "else" filter.
+     */
+    public void setElseFilter(final boolean value) {
+        isElseFilter = value;
     }
 
-    @Override
+    /**
+     * Returns the minimum value (inclusive) in the denominator of map scale at which this rule will apply.
+     * If, for example, this value was 10000, then this rule would only apply at scales of 1:<var>X</var>
+     * where <var>X</var> is greater than 10000. A value of zero indicates that there is no minimum.
+     *
+     * <h4>Relationship with real world lengths</h4>
+     * The values used are scale denominators relative to a “standardized rendering pixel size”.
+     * That size is defined as a square with sides of 0.28 millimeters. If the real pixel size
+     * is different or if the CRS uses angular units instead than linear, then the renderer shall
+     * take those information in account as described in OGC 05-077r4 §10.2.
+     *
+     * @return minimum scale value, inclusive.
+     */
     public double getMinScaleDenominator() {
         return minScale;
     }
 
-    public void setMinScaleDenominator(double minScale) {
-        this.minScale = minScale;
+    /**
+     * Invoked by JAXB for marshalling the minimum scale denominator.
+     * If both the minimum and maximum are the default values, then this property is omitted.
+     * If a maximum value exists, then the zero minimum is explicitly written for clarity.
+     */
+    @XmlElement(name = "MinScaleDenominator")
+    private Double getMinScale() {
+        final var value = minScale;
+        return (value > 0 || maxScale != Double.POSITIVE_INFINITY) ? value : null;
     }
 
-    @Override
+    /**
+     * Sets the minimum value (inclusive) in the denominator of map scale at which this rule will apply.
+     * If the given value is greater than the maximum scale, then that maximum is discarded.
+     * If this method is never invoked, then the default value is 0.
+     *
+     * @param  value  new minimum scale value (inclusive).
+     */
+    public void setMinScaleDenominator(final double value) {
+        ArgumentChecks.ensurePositive("MinScaleDenominator", value);
+        minScale = value;
+        if (value > maxScale) {
+            maxScale = Double.POSITIVE_INFINITY;
+        }
+    }
+
+    /**
+     * Invoked by JAXB for unmarshalling the minimum scale denominator.
+     * The argument validity check assumes that this method is invoked only once.
+     * If this assumption is violated, the check allows range restriction but not expansion.
+     * If the given value is invalid, a warning is reported but the unmarshalling continue.
+     */
+    private void setMinScale(final Double value) {
+        if (isValidScale("MinScaleDenominator", value)) {
+            minScale = value;
+        }
+    }
+
+    /**
+     * Returns the maximum value (exclusive) in the denominator of map scale at which this rule will apply.
+     * If, for example, this value was 10000, then this rule would only apply at scales of 1:<var>X</var>
+     * where <var>X</var> is less than 10000.
+     * An {@linkplain Double#POSITIVE_INFINITY infinite} value indicates that there is no maximum.
+     *
+     * <h4>Relationship with real world lengths</h4>
+     * The same discussion than {@link #getMinScaleDenominator()} applies also to the maximum scale value.
+     *
+     * @return maximum scale value, exclusive.
+     */
     public double getMaxScaleDenominator() {
         return maxScale;
     }
 
-    public void setMaxScaleDenominator(double maxScale) {
-        this.maxScale = maxScale;
+    /**
+     * Invoked by JAXB for marshalling the maximum scale denominator.
+     * If the value is positive infinity, then the property is omitted.
+     */
+    @XmlElement(name = "MaxScaleDenominator")
+    private Double getMaxScale() {
+        final var value = maxScale;
+        return (value != Double.POSITIVE_INFINITY) ? value : null;
     }
 
-    @Override
+    /**
+     * Sets the maximum value (exclusive) in the denominator of map scale at which this rule will apply.
+     * If the given value is less than the minimum scale, then that minimum is discarded.
+     * If this method is never invoked, then the default value is {@link Double#POSITIVE_INFINITY}.
+     *
+     * @param  value  new maximum scale value (exclusive).
+     */
+    public void setMaxScaleDenominator(final double value) {
+        ArgumentChecks.ensureStrictlyPositive("MaxScaleDenominator", value);
+        maxScale = value;
+        if (value < minScale) {
+            minScale = 0;
+        }
+    }
+
+    /**
+     * Invoked by JAXB for unmarshalling the maximum scale denominator.
+     * The argument validity check assumes that this method is invoked only once.
+     * If this assumption is violated, the check allows range restriction but not expansion.
+     * If the given value is invalid, a warning is reported but the unmarshalling continue.
+     */
+    private void setMaxScale(final Double value) {
+        if (isValidScale("MaxScaleDenominator", value)) {
+            maxScale = value;
+        }
+    }
+
+    /**
+     * Indicates whether an unmarshalled minimum or maximum scale denominator is inside the expected range of values.
+     * If the given value is invalid, a warning is emitted to the JAXB unmarshaller and the caller will keep the default value.
+     */
+    private boolean isValidScale(final String name, final Double value) {
+        boolean isValidScale = (value != null);
+        if (isValidScale) {
+            isValidScale = (value >= minScale && value <= maxScale);
+            if (!isValidScale) {
+                Context.warningOccured(Context.current(), Rule.class, "set".concat(name), Errors.class,
+                                       Errors.Keys.ValueOutOfRange_4, name, minScale, maxScale, value);
+            }
+        }
+        return isValidScale;
+    }
+
+    /**
+     * Returns the description of how a feature is to appear on a map.
+     * Each symbolizer describes how the shape should appear,
+     * together with graphical properties such as color and opacity.
+     * The predefined type of symbolizers are
+     * {@linkplain LineSymbolizer line},
+     * {@linkplain PolygonSymbolizer polygon},
+     * {@linkplain PointSymbolizer point},
+     * {@linkplain TextSymbolizer text}, and
+     * {@linkplain RasterSymbolizer raster} symbolizers.
+     *
+     * <p>The returned collection is <em>live</em>:
+     * changes in that collection are reflected into this object, and conversely.</p>
+     *
+     * @return the list of symbolizers, as a live collection.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<Symbolizer> symbolizers() {
         return symbolizers;
     }
 
-    @Override
-    public OnlineResource getOnlineResource() {
-        return onlineResource;
-    }
-
-    public void setOnlineResource(OnlineResource OnlineResource) {
-        this.onlineResource = OnlineResource;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, description, legend, filter, elseFilter, minScale, maxScale, symbolizers, onlineResource);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Rule other = (Rule) obj;
-        return this.elseFilter == other.elseFilter
-            && this.minScale == other.minScale
-            && this.maxScale == other.maxScale
-            && Objects.equals(this.name, other.name)
-            && Objects.equals(this.description, other.description)
-            && Objects.equals(this.legend, other.legend)
-            && Objects.equals(this.filter, other.filter)
-            && Objects.equals(this.symbolizers, other.symbolizers)
-            && Objects.equals(this.onlineResource, other.onlineResource);
+    /**
+     * If the style comes from an external XML file, the original source.
+     * This property may be non-null if a XML document specified this rule
+     * by a link to another XML document.
+     *
+     * @return the original source of this rule.
+     */
+    public Optional<OnlineResource> getOnlineSource() {
+        return Optional.ofNullable(onlineSource);
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * If the style comes from an external XML file, the original source.
+     * If this method is never invoked, then the default value is absence.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * <h4>Effect on XML marshalling</h4>
+     * Setting this property to a non-null value has the following effect:
+     * When this rule is written in a XML document, then instead of writing
+     * the XML elements describing this rule,
+     * the specified link will be written instead.
+     *
+     * @todo Above-describing marshalling is not yet implemented.
+     *
+     * @param  value  new source of this rule, or {@code null} if none.
      */
-    public static Rule castOrCopy(org.opengis.style.Rule candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof Rule) {
-            return (Rule) candidate;
-        }
+    public void setOnlineSource(final OnlineResource value) {
+        onlineSource = value;
+    }
 
-        final List<Symbolizer> symbols = new ArrayList<>();
-        for (org.opengis.style.Symbolizer s : candidate.symbolizers()) {
-            symbols.add(org.apache.sis.internal.style.Symbolizer.tryCastOrCopy(s));
-        }
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {name, description, legend, filter, minScale, maxScale, symbolizers, onlineSource};
+    }
 
-        return new Rule(
-                candidate.getName(),
-                Description.castOrCopy(candidate.getDescription()),
-                GraphicLegend.castOrCopy(candidate.getLegend()),
-                candidate.getFilter(),
-                candidate.isElseFilter(),
-                candidate.getMinScaleDenominator(),
-                candidate.getMaxScaleDenominator(),
-                symbols,
-                candidate.getOnlineResource());
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public Rule<R> clone() {
+        @SuppressWarnings("unchecked")
+        final var clone = (Rule<R>) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (description != null) description = description.clone();
+        if (legend      != null) legend      = legend.clone();
+        symbolizers = new ArrayList<>(symbolizers);
+        symbolizers.replaceAll(Symbolizer::clone);
     }
 }

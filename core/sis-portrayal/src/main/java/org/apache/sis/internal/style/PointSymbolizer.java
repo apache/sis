@@ -16,93 +16,149 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
-import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.PointSymbolizer}.
+ * Instructions about how to draw a graphic at a point.
+ * if a line, polygon, or raster geometry is used with this symbolizer,
+ * then some representative point such as the centroid should be used.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Chris Dillard (SYS Technologies)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class PointSymbolizer extends Symbolizer implements org.opengis.style.PointSymbolizer {
+@XmlType(name = "PointSymbolizerType")
+@XmlRootElement(name = "PointSymbolizer")
+public class PointSymbolizer extends Symbolizer implements GraphicalElement {
+    /**
+     * Information about how to draw graphics, or {@code null} for no graphic.
+     * If no value has been explicitly set (including null value),
+     * then a default graphic will be lazily created when first requested.
+     *
+     * @see #getGraphic()
+     * @see #setGraphic(Graphic)
+     */
+    @XmlElement(name = "Graphic")
+    protected Graphic graphic;
 
-    private Graphic graphic;
+    /**
+     * Whether {@link #graphic} has been explicitly set to some value, including null.
+     * If {@code false}, then a default graphic will be created when first needed.
+     */
+    private boolean isGraphicSet;
 
-    public static PointSymbolizer createDefault() {
-        return new PointSymbolizer(
-                null,
-                null,
-                new Description(),
-                StyleFactory.DEFAULT_UOM,
-                Graphic.createDefault());
-    }
-
-    public PointSymbolizer() {
-    }
-
-    public PointSymbolizer(String name, Expression geometry, Description description, Unit<Length> unit, Graphic graphic) {
-        super(name, geometry, description, unit);
-        this.graphic = graphic;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public Graphic getGraphic() {
-        return graphic;
-    }
-
-    public void setGraphic(Graphic graphic) {
-        this.graphic = graphic;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + Objects.hashCode(this.graphic);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final PointSymbolizer other = (PointSymbolizer) obj;
-        return Objects.equals(this.graphic, other.graphic);
+    /**
+     * Invoked by JAXB before unmarshalling this legend.
+     * OGC 05-077r4 said that if the graphic is not specified, then none should be used.
+     */
+    private void beforeUnmarshal(Unmarshaller caller, Object parent) {
+        isGraphicSet = true;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
-     *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * Invoked by JAXB before marshalling this point symbolizer.
+     * Creates the default graphic if needed.
      */
-    public static PointSymbolizer castOrCopy(org.opengis.style.PointSymbolizer candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof PointSymbolizer) {
-            return (PointSymbolizer) candidate;
+    private void beforeMarshal(Marshaller caller) {
+        if (graphic == null && !isGraphicSet) graphic = new Graphic();
+    }
+
+    /**
+     * Creates a symbolizer initialized to a default graphic.
+     */
+    public PointSymbolizer() {
+    }
+
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public PointSymbolizer(final PointSymbolizer source) {
+        super(source);
+        graphic = source.graphic;
+    }
+
+    /**
+     * Returns the graphic that will be drawn at each point of the geometry.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this fill, and conversely.
+     *
+     * @return information about how to draw graphics.
+     *
+     * @see #isVisible()
+     */
+    @Override
+    public Graphic getGraphic() {
+        if (graphic == null) {
+            graphic = new Graphic();
         }
-        return new PointSymbolizer(
-                candidate.getName(),
-                candidate.getGeometry(),
-                Description.castOrCopy(candidate.getDescription()),
-                candidate.getUnitOfMeasure(),
-                Graphic.castOrCopy(candidate.getGraphic())
-            );
+        return graphic;
+    }
+
+    /**
+     * Specifies the graphic that will be drawn at each point of the geometry.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     * If this method is invoked with an explicit {@code null}, then nothing will be plotted.
+     *
+     * @param  value  new information about how to draw graphics, or {@code null} for none.
+     */
+    @Override
+    public void setGraphic(final Graphic value) {
+        isGraphicSet = true;
+        graphic = value;
+    }
+
+    /**
+     * Returns {@code true} if this symbolizer has a graphic.
+     * If {@code setGraphic(null)} has been explicitly invoked with a null argument value,
+     * then this method returns {@code false}.
+     *
+     * @return whether this symbolizer has a graphic.
+     *
+     * @see #setGraphic(Graphic)
+     */
+    @Override
+    public boolean isVisible() {
+        return graphic != null || !isGraphicSet;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {graphic, isGraphicSet};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public PointSymbolizer clone() {
+        final var clone = (PointSymbolizer) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (graphic != null) graphic = graphic.clone();
     }
 }

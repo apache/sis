@@ -16,36 +16,45 @@
  */
 package org.apache.sis.internal.style;
 
+import org.apache.sis.util.SimpleInternationalString;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
 
 /**
- * Tests for {@link org.apache.sis.internal.style.Description}.
+ * Tests for {@link Description}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class DescriptionTest extends AbstractStyleTests {
+public final class DescriptionTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public DescriptionTest() {
+    }
 
     /**
-     * Test of Title methods.
+     * Test of {@code Title} property.
      */
     @Test
     public void testTitle() {
+        var i18n = new SimpleInternationalString("A random title");
         final Description cdt = new Description();
-        assertEquals(StyleFactory.EMPTY_STRING, cdt.getTitle());
-        cdt.setTitle(SAMPLE_ISTRING);
-        assertEquals(SAMPLE_ISTRING, cdt.getTitle());
+        assertEmpty(cdt.getTitle());
+        cdt.setTitle(i18n);
+        assertOptionalEquals(i18n, cdt.getTitle());
     }
 
     /**
-     * Test of Abstract methods.
+     * Test of {@code Abstract} property.
      */
     @Test
     public void testAbstract() {
+        var i18n = new SimpleInternationalString("A random abstract");
         final Description cdt = new Description();
-        assertEquals(StyleFactory.EMPTY_STRING, cdt.getAbstract());
-        cdt.setAbstract(SAMPLE_ISTRING);
-        assertEquals(SAMPLE_ISTRING, cdt.getAbstract());
+        assertEmpty(cdt.getAbstract());
+        cdt.setAbstract(i18n);
+        assertOptionalEquals(i18n, cdt.getAbstract());
     }
-
 }

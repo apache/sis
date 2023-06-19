@@ -19,42 +19,50 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.SelectedChannelType}.
+ * Tests for {@link SelectedChannelType}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class SelectedChannelTypeTest extends AbstractStyleTests {
+public final class SelectedChannelTypeTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public SelectedChannelTypeTest() {
+    }
 
     /**
-     * Test of ChannelName methods.
+     * Test of {@code ChannelName} property.
      */
     @Test
     public void testChannelName() {
         SelectedChannelType cdt = new SelectedChannelType();
 
-        //check defaults
-        assertEquals(null, cdt.getChannelName());
+        // Check defaults
+        assertNull(cdt.getSourceChannelName());
 
-        //check get/set
-        cdt.setChannelName(SAMPLE_STRING);
-        assertEquals(SAMPLE_STRING, cdt.getChannelName());
+        // Check get/set
+        String value = "A random channel";
+        cdt.setSourceChannelName(FF.literal(value));
+        assertLiteralEquals(value, cdt.getSourceChannelName());
     }
 
     /**
-     * Test of ContrastEnhancement methods.
+     * Test of {@code ContrastEnhancement} property.
      */
     @Test
     public void testContrastEnhancement() {
         SelectedChannelType cdt = new SelectedChannelType();
 
-        //check defaults
-        assertEquals(null, cdt.getContrastEnhancement());
+        // Check defaults
+        assertEmpty(cdt.getContrastEnhancement());
 
-        //check get/set
+        // Check get/set
         ContrastEnhancement value = new ContrastEnhancement();
         cdt.setContrastEnhancement(value);
-        assertEquals(value, cdt.getContrastEnhancement());
+        assertOptionalEquals(value, cdt.getContrastEnhancement());
     }
-
 }

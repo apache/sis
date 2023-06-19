@@ -19,41 +19,48 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.ShadedRelief}.
+ * Tests for {@link ShadedRelief}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class ShadedReliefTest extends AbstractStyleTests {
+public final class ShadedReliefTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public ShadedReliefTest() {
+    }
 
     /**
-     * Test of isBrightnessOnly methods.
+     * Test of {@code isBrightnessOnly} property.
      */
     @Test
     public void testIsBrightnessOnly() {
         ShadedRelief cdt = new ShadedRelief();
 
-        //check default
-        assertFalse(cdt.isBrightnessOnly());
+        // Check default
+        assertLiteralEquals(Boolean.FALSE, cdt.isBrightnessOnly());
 
-        //check get/set
-        cdt.setBrightnessOnly(true);
-        assertTrue(cdt.isBrightnessOnly());
+        // Check get/set
+        cdt.setBrightnessOnly(FF.literal(true));
+        assertLiteralEquals(Boolean.TRUE, cdt.isBrightnessOnly());
     }
 
     /**
-     * Test of ReliefFactor methods.
+     * Test of {@code ReliefFactor} property.
      */
     @Test
     public void testReliefFactor() {
         ShadedRelief cdt = new ShadedRelief();
 
-        //check default
-        assertEquals(null, cdt.getReliefFactor());
+        // Check default
+        assertNotNull(cdt.getReliefFactor());
 
-        //check get/set
-        cdt.setReliefFactor(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getReliefFactor());
+        // Check get/set
+        cdt.setReliefFactor(FF.literal(0.1));
+        assertLiteralEquals(0.1, cdt.getReliefFactor());
     }
-
 }

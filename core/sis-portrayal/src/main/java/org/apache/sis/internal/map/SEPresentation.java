@@ -19,8 +19,11 @@ package org.apache.sis.internal.map;
 import java.util.Objects;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.internal.style.Symbolizer;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
-import org.opengis.style.Symbolizer;
+
 
 /**
  * A presentation build with a standard Symbology Encoding Symbolizer.
@@ -30,8 +33,8 @@ import org.opengis.style.Symbolizer;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.5
+ * @since   1.5
  */
 public final class SEPresentation extends Presentation {
 

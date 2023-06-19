@@ -16,72 +16,85 @@
  */
 package org.apache.sis.internal.style;
 
+import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+
 /**
- * Tests for {@link org.apache.sis.internal.style.Font}.
+ * Tests for {@link Font}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class FontTest extends AbstractStyleTests {
+public final class FontTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public FontTest() {
+    }
 
     /**
-     * Test of Family methods.
+     * Test of {@code Family} property.
      */
     @Test
     public void testFamily() {
         Font cdt = new Font();
 
-        //check default
-        assertTrue(cdt.getFamily().isEmpty());
+        // Check default
+        assertTrue(cdt.family().isEmpty());
 
-        //check get/set
-        cdt.getFamily().add(EXP_STRING);
-        assertEquals(1, cdt.getFamily().size());
+        // Check get/set
+        var value = FF.literal("A random family");
+        cdt.family().add(value);
+        assertEquals(List.of(value), cdt.family());
     }
     /**
-     * Test of Style methods.
+     * Test of {@code Style} property.
      */
     @Test
     public void testStyle() {
         Font cdt = new Font();
 
-        //check default
-        assertEquals(FF.literal("normal"), cdt.getStyle());
+        // Check default
+        assertLiteralEquals("normal", cdt.getStyle());
 
-        //check get/set
-        cdt.setStyle(EXP_STRING);
-        assertEquals(EXP_STRING, cdt.getStyle());
+        // Check get/set
+        var value = FF.literal("A random style");
+        cdt.setStyle(value);
+        assertEquals(value, cdt.getStyle());
     }
 
     /**
-     * Test of Weight methods.
+     * Test of {@code Weight} property.
      */
     @Test
     public void testWeight() {
         Font cdt = new Font();
 
-        //check default
-        assertEquals(FF.literal("normal"), cdt.getWeight());
+        // Check default
+        assertLiteralEquals("normal", cdt.getWeight());
 
-        //check get/set
-        cdt.setWeight(EXP_STRING);
-        assertEquals(EXP_STRING, cdt.getWeight());
+        // Check get/set
+        var value = FF.literal("A random weight");
+        cdt.setWeight(value);
+        assertEquals(value, cdt.getWeight());
     }
 
     /**
-     * Test of Size methods.
+     * Test of {@code Size} property.
      */
     @Test
     public void testSize() {
         Font cdt = new Font();
 
-        //check default
-        assertEquals(FF.literal(10.0), cdt.getSize());
+        // Check default
+        assertLiteralEquals(10.0, cdt.getSize());
 
-        //check get/set
-        cdt.setSize(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getSize());
+        // Check get/set
+        var value = FF.literal(12);
+        cdt.setSize(value);
+        assertEquals(value, cdt.getSize());
     }
-
 }

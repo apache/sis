@@ -19,58 +19,69 @@ package org.apache.sis.internal.style;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.PointPlacement}.
+ * Tests for {@link PointPlacement}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class PointPlacementTest extends AbstractStyleTests {
+public final class PointPlacementTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public PointPlacementTest() {
+    }
 
     /**
-     * Test of AnchorPoint methods.
+     * Test of {@code AnchorPoint} property.
      */
     @Test
     public void testAnchorPoint() {
         PointPlacement cdt = new PointPlacement();
 
-        //check default
-        assertEquals(null, cdt.getAnchorPoint());
+        // Check default
+        AnchorPoint value = cdt.getAnchorPoint();
+        assertLiteralEquals(0.5, value.getAnchorPointX());
+        assertLiteralEquals(0.5, value.getAnchorPointY());
 
-        //check get/set
-        AnchorPoint value = new AnchorPoint(EXP_DOUBLE, EXP_DOUBLE_2);
+        // Check get/set
+        value = new AnchorPoint(3, 1);
         cdt.setAnchorPoint(value);
         assertEquals(value, cdt.getAnchorPoint());
     }
 
     /**
-     * Test of Displacement methods.
+     * Test of {@code Displacement} property.
      */
     @Test
     public void testDisplacement() {
         PointPlacement cdt = new PointPlacement();
 
-        //check default
-        assertEquals(null, cdt.getDisplacement());
+        // Check default
+        Displacement value = cdt.getDisplacement();
+        assertLiteralEquals(0.0, value.getDisplacementX());
+        assertLiteralEquals(0.0, value.getDisplacementY());
 
-        //check get/set
-        Displacement value = new Displacement(EXP_DOUBLE, EXP_DOUBLE_2);
+        // Check get/set
+        value = new Displacement(1, 2);
         cdt.setDisplacement(value);
         assertEquals(value, cdt.getDisplacement());
     }
 
     /**
-     * Test of Rotation methods.
+     * Test of {@code Rotation} property.
      */
     @Test
     public void testRotation() {
         PointPlacement cdt = new PointPlacement();
 
-        //check default
-        assertEquals(null, cdt.getRotation());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getRotation());
 
-        //check get/set
-        cdt.setRotation(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getRotation());
+        // Check get/set
+        cdt.setRotation(FF.literal(180));
+        assertLiteralEquals(180, cdt.getRotation());
     }
-
 }

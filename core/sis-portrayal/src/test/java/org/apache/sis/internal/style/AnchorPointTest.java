@@ -17,31 +17,37 @@
 package org.apache.sis.internal.style;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+
 
 /**
- * Tests for {@link org.apache.sis.internal.style.AnchorPoint}.
+ * Tests for {@link AnchorPoint}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class AnchorPointTest extends AbstractStyleTests {
+public final class AnchorPointTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public AnchorPointTest() {
+    }
 
     /**
-     * Test of AnchorPointXY methods.
+     * Test of {@code AnchorPointXY} property.
      */
     @Test
     public void testAnchorPointXY() {
         AnchorPoint cdt = new AnchorPoint();
 
-        //check defaults
-        assertEquals(FF.literal(0.5), cdt.getAnchorPointX());
-        assertEquals(FF.literal(0.5), cdt.getAnchorPointY());
+        // Check defaults
+        assertLiteralEquals(0.5, cdt.getAnchorPointX());
+        assertLiteralEquals(0.5, cdt.getAnchorPointY());
 
-        //check get/set
-        cdt.setAnchorPointX(EXP_DOUBLE);
-        cdt.setAnchorPointY(EXP_DOUBLE_2);
-        assertEquals(EXP_DOUBLE, cdt.getAnchorPointX());
-        assertEquals(EXP_DOUBLE_2, cdt.getAnchorPointY());
+        // Check get/set
+        cdt.setAnchorPointX(FF.literal(8));
+        cdt.setAnchorPointY(FF.literal(3));
+        assertLiteralEquals(8, cdt.getAnchorPointX());
+        assertLiteralEquals(3, cdt.getAnchorPointY());
     }
-
 }

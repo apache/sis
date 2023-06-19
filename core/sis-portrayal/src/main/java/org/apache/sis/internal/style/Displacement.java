@@ -16,91 +16,149 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import org.apache.sis.util.ArgumentChecks;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.Displacement}.
+ * A two-dimensional displacements from the original geometry.
+ * Displacements may be used to avoid over-plotting, or for supplying shadows.
+ * The displacements units depend on the context:
+ * in {@linkplain Symbolizer#getUnitOfMeasure() symbolizer unit of measurements}
+ * when the displacement is applied by a {@link PolygonSymbolizer},
+ * but in pixels when the displacement is applied by a {@link TextSymbolizer}.
+ * The displacements are to the right of the point.
+ * The default displacement is <var>x</var> = 0, <var>y</var> = 0,
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Ian Turton (CCG)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
+ *
+ * @see PointPlacement#getDisplacement()
+ * @see Graphic#getDisplacement()
+ * @see PolygonSymbolizer#getDisplacement()
  */
-public final class Displacement implements org.opengis.style.Displacement {
+@XmlType(name = "DisplacementType", propOrder = {
+    "displacementX",
+    "displacementY"
+})
+@XmlRootElement(name = "Displacement")
+public class Displacement extends StyleElement {
+    /**
+     * The <var>x</var> offset from the geometry point.
+     * This property is mandatory.
+     *
+     * @see #getDisplacementX()
+     * @see #setDisplacementX(Expression)
+     */
+    @XmlElement(name = "DisplacementX", required = true)
+    protected Expression<Feature, ? extends Number> displacementX;
 
-    private Expression<Feature,? extends Number> displacementX;
-    private Expression<Feature,? extends Number> displacementY;
+    /**
+     * The <var>y</var> offset from the geometry point.
+     * This property is mandatory.
+     *
+     * @see #getDisplacementY()
+     * @see #setDisplacementY(Expression)
+     */
+    @XmlElement(name = "DisplacementY", required = true)
+    protected Expression<Feature, ? extends Number> displacementY;
 
+    /**
+     * Creates a displacement initialized to zero offsets.
+     */
     public Displacement() {
-        this(StyleFactory.DEFAULT_DISPLACEMENT_X, StyleFactory.DEFAULT_DISPLACEMENT_Y);
-    }
-
-    public Displacement(Expression<Feature, ? extends Number> displacementX, Expression<Feature, ? extends Number> displacementY) {
-        ArgumentChecks.ensureNonNull("displacementX", displacementX);
-        ArgumentChecks.ensureNonNull("displacementY", displacementY);
-        this.displacementX = displacementX;
-        this.displacementY = displacementY;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getDisplacementX() {
-        return displacementX;
-    }
-
-    public void setDisplacementX(Expression<Feature, ? extends Number> displacementX) {
-        ArgumentChecks.ensureNonNull("displacementX", displacementX);
-        this.displacementX = displacementX;
-    }
-
-    @Override
-    public Expression<Feature,? extends Number> getDisplacementY() {
-        return displacementY;
-    }
-
-    public void setDisplacementY(Expression<Feature, ? extends Number> displacementY) {
-        ArgumentChecks.ensureNonNull("displacementY", displacementY);
-        this.displacementY = displacementY;
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(displacementX, displacementY);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Displacement other = (Displacement) obj;
-        return Objects.equals(this.displacementX, other.displacementX)
-            && Objects.equals(this.displacementY, other.displacementY);
+        displacementX = LITERAL_ZERO;
+        displacementY = LITERAL_ZERO;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Creates a new displacement initialized to the given offsets.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @param  x  the initial <var>x</var> displacement.
+     * @param  y  the initial <var>y</var> displacement.
      */
-    public static Displacement castOrCopy(org.opengis.style.Displacement candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof Displacement) {
-            return (Displacement) candidate;
-        }
-        return new Displacement(candidate.getDisplacementX(), candidate.getDisplacementY());
+    public Displacement(final double x, final double y) {
+        displacementX = literal(x);
+        displacementY = literal(y);
+    }
+
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public Displacement(final Displacement source) {
+        super(source);
+        displacementX = source.displacementX;
+        displacementY = source.displacementY;
+    }
+
+    /**
+     * Returns an expression fetching an <var>x</var> offset from the geometry point.
+     *
+     * @return <var>x</var> offset from the geometry point.
+     */
+    public Expression<Feature, ? extends Number> getDisplacementX() {
+        return displacementX;
+    }
+
+    /**
+     * Sets the expression fetching an <var>x</var> offset.
+     * If this method is never invoked, then the default value is literal 0.
+     *
+     * @param  value  new <var>x</var> offset, or {@code null} for resetting the default value.
+     */
+    public void setDisplacementX(final Expression<Feature, ? extends Number> value) {
+        displacementX = defaultToZero(value);
+    }
+
+    /**
+     * Returns an expression fetching an <var>y</var> offset from the geometry point.
+     *
+     * @return <var>y</var> offset from the geometry point.
+     */
+    public Expression<Feature, ? extends Number> getDisplacementY() {
+        return displacementY;
+    }
+
+    /**
+     * Sets the expression fetching an <var>y</var> offset.
+     * If this method is never invoked, then the default value is literal 0.
+     *
+     * @param  value  new <var>y</var> offset, or {@code null} for resetting the default value.
+     */
+    public void setDisplacementY(final Expression<Feature, ? extends Number> value) {
+        displacementY = defaultToZero(value);
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {displacementX, displacementY};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public Displacement clone() {
+        final var clone = (Displacement) super.clone();
+        return clone;
     }
 }

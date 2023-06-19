@@ -18,59 +18,75 @@ package org.apache.sis.internal.style;
 
 import java.awt.Color;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
 
 /**
- * Tests for {@link org.apache.sis.internal.style.Fill}.
+ * Tests for {@link Fill}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class FillTest extends AbstractStyleTests {
+public final class FillTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public FillTest() {
+    }
 
     /**
-     * Test of GraphicFill methods.
+     * Test of {@code GraphicFill} property.
      */
     @Test
     public void testGraphicFill() {
         Fill cdt = new Fill();
 
-        //check default
-        assertEquals(null, cdt.getGraphicFill());
+        // Check default
+        assertEmpty(cdt.getGraphicFill());
 
-        //check get/set
+        // Check get/set
         final GraphicFill value = new GraphicFill();
         cdt.setGraphicFill(value);
-        assertEquals(value, cdt.getGraphicFill());
+        assertOptionalEquals(value, cdt.getGraphicFill());
     }
 
     /**
-     * Test of Color methods.
+     * Test of {@code Color} property.
      */
     @Test
     public void testColor() {
         Fill cdt = new Fill();
 
-        //check default
-        assertEquals(FF.literal(Color.GRAY), cdt.getColor());
+        // Check default
+        assertLiteralEquals(Color.GRAY, cdt.getColor());
 
-        //check get/set
-        cdt.setColor(EXP_COLOR);
-        assertEquals(EXP_COLOR, cdt.getColor());
+        // Check get/set
+        cdt.setColor(anyColor());
+        assertLiteralEquals(ANY_COLOR, cdt.getColor());
     }
 
     /**
-     * Test of Opacity methods.
+     * Test of {@code Opacity} property.
      */
     @Test
     public void testOpacity() {
         Fill cdt = new Fill();
 
-        //check default
-        assertEquals(FF.literal(1.0), cdt.getOpacity());
+        // Check default
+        assertLiteralEquals(1.0, cdt.getOpacity());
 
-        //check get/set
-        cdt.setOpacity(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getOpacity());
+        // Check get/set
+        cdt.setOpacity(FF.literal(0.75));
+        assertLiteralEquals(0.75, cdt.getOpacity());
     }
 
+    /**
+     * Test of the construct setting {@code Color} and {@code Opacity} together.
+     */
+    @Test
+    public void testColorAndOpacity() {
+        Fill cdt = new Fill(new Color(255, 255, 0, 128));
+        assertLiteralEquals(Color.YELLOW, cdt.getColor());
+        assertLiteralEquals(0.5, cdt.getOpacity());
+    }
 }

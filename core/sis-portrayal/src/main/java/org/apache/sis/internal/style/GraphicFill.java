@@ -16,64 +16,110 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.opengis.feature.Feature;
-import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.GraphicFill}.
+ * Stipple-fill repeated graphic.
+ * A graphic fill can be used by a {@link Fill} or by a {@link Stroke}.
+ * This class contains only a {@link Graphic} property,
+ * but its encapsulation in {@code GraphicFill} means that the graphic
+ * should be repeated in all the interior of the shape to be drawn.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class GraphicFill extends Graphic implements org.opengis.style.GraphicFill {
+@XmlType(name = "GraphicFillType")
+@XmlRootElement(name = "GraphicFill")
+public class GraphicFill extends StyleElement implements GraphicalElement {
+    /**
+     * The graphic to be repeated, or {@code null} for lazily constructed default.
+     * This property is mandatory: a null value <em>shall</em> be replaced by a default value when first requested.
+     *
+     * @see #getGraphic()
+     * @see #setGraphic(Graphic)
+     */
+    protected Graphic graphic;
 
+    /**
+     * Creates a graphic fill initialized to a default graphic.
+     */
     public GraphicFill() {
     }
 
-    public GraphicFill(List<GraphicalSymbol> graphicalSymbols,
-            Expression<Feature, Number> opacity,
-            Expression<Feature, Number> size,
-            Expression<Feature, Number> rotation,
-            AnchorPoint anchorPoint,
-            Displacement displacement) {
-        super(graphicalSymbols, opacity, size, rotation, anchorPoint, displacement);
-    }
-
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj)
-            && obj instanceof GraphicFill;
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public GraphicFill(final GraphicFill source) {
+        super(source);
+        graphic = source.graphic;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Returns the graphic to be repeated.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this fill, and conversely.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @return the graphic to be repeated.
+     *
+     * @see GraphicStroke#getGraphic()
      */
-    public static GraphicFill castOrCopy(org.opengis.style.GraphicFill candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof GraphicFill) {
-            return (GraphicFill) candidate;
+    @Override
+    @XmlElement(name = "Graphic", required = true)
+    public final Graphic getGraphic() {
+        if (graphic == null) {
+            graphic = new Graphic();
         }
-        final List<org.apache.sis.internal.style.GraphicalSymbol> cs = new ArrayList<>();
-        for (org.opengis.style.GraphicalSymbol cr : candidate.graphicalSymbols()) {
-            cs.add(org.apache.sis.internal.style.GraphicalSymbol.castOrCopy(cr));
-        }
-        return new GraphicFill(
-                cs,
-                candidate.getOpacity(),
-                candidate.getSize(),
-                candidate.getRotation(),
-                AnchorPoint.castOrCopy(candidate.getAnchorPoint()),
-                Displacement.castOrCopy(candidate.getDisplacement()));
+        return graphic;
+    }
+
+    /**
+     * Sets the graphic to be repeated.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is a {@linkplain Graphic#Graphic() default instance}.
+     *
+     * @param  value  new graphic, or {@code null} for resetting the default value.
+     *
+     * @see GraphicStroke#setGraphic(Graphic)
+     */
+    @Override
+    public final void setGraphic(final Graphic value) {
+        graphic = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {graphic};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public GraphicFill clone() {
+        final var clone = (GraphicFill) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (graphic != null) graphic = graphic.clone();
     }
 }

@@ -25,6 +25,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
@@ -52,12 +56,13 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import org.apache.sis.internal.style.Symbolizer;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.BinaryComparisonOperator;
@@ -65,12 +70,12 @@ import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.style.SemanticType;
-import org.opengis.style.Symbolizer;
-import org.opengis.util.GenericName;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
  *
@@ -191,7 +196,7 @@ public class SEPortrayerTest extends TestCase {
     public void testSanity() {
         final Style style = new Style();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
@@ -228,7 +233,7 @@ public class SEPortrayerTest extends TestCase {
 
         final Style style = new Style();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
@@ -257,7 +262,7 @@ public class SEPortrayerTest extends TestCase {
     public void testUserQuery() {
         final Style style = new Style();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
@@ -295,8 +300,8 @@ public class SEPortrayerTest extends TestCase {
     public void testFeatureTypeStyleTypeNames() {
         final Style style = new Style();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
-        fts.featureTypeNames().add(Names.createLocalName(null, null, "boat"));
-        final Rule rule = new Rule();
+        fts.setFeatureTypeName(Names.createLocalName(null, null, "boat"));
+        final var rule = new Rule<Feature>();
         final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
@@ -327,7 +332,7 @@ public class SEPortrayerTest extends TestCase {
         final Style style = new Style();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         fts.semanticTypeIdentifiers().add(SemanticType.POINT);
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
@@ -360,7 +365,7 @@ public class SEPortrayerTest extends TestCase {
 
         final Style style = new Style();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         rule.setFilter(filter);
         final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
@@ -393,15 +398,15 @@ public class SEPortrayerTest extends TestCase {
         final LineSymbolizer symbolizerMatch = new LineSymbolizer();
 
         //Symbology rendering scale here is 3.944391406060875E8
-        final Rule ruleAbove = new Rule();
+        final var ruleAbove = new Rule<Feature>();
         ruleAbove.symbolizers().add(symbolizerAbove);
         ruleAbove.setMinScaleDenominator(4e8);
         ruleAbove.setMaxScaleDenominator(Double.MAX_VALUE);
-        final Rule ruleUnder = new Rule();
+        final var ruleUnder = new Rule<Feature>();
         ruleUnder.symbolizers().add(symbolizerUnder);
         ruleUnder.setMinScaleDenominator(0.0);
         ruleUnder.setMaxScaleDenominator(3e8);
-        final Rule ruleMatch = new Rule();
+        final var ruleMatch = new Rule<Feature>();
         ruleMatch.symbolizers().add(symbolizerMatch);
         ruleMatch.setMinScaleDenominator(3e8);
         ruleMatch.setMaxScaleDenominator(4e8);
@@ -446,7 +451,7 @@ public class SEPortrayerTest extends TestCase {
 
         final Style style = new Style();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         rule.setFilter(filter);
         final LineSymbolizer symbolizer = new LineSymbolizer();
         style.featureTypeStyles().add(fts);
@@ -481,10 +486,10 @@ public class SEPortrayerTest extends TestCase {
         final LineSymbolizer symbolizerBase = new LineSymbolizer();
         final LineSymbolizer symbolizerElse = new LineSymbolizer();
 
-        final Rule ruleBase = new Rule();
+        final var ruleBase = new Rule<Feature>();
         ruleBase.symbolizers().add(symbolizerBase);
         ruleBase.setFilter(filter);
-        final Rule ruleOther = new Rule();
+        final var ruleOther = new Rule<Feature>();
         ruleOther.setElseFilter(true);
         ruleOther.symbolizers().add(symbolizerElse);
 
@@ -521,7 +526,7 @@ public class SEPortrayerTest extends TestCase {
     public void testAggregateResource() {
         final LineSymbolizer symbolizerBase = new LineSymbolizer();
 
-        final Rule ruleBase = new Rule();
+        final var ruleBase = new Rule<Feature>();
         ruleBase.symbolizers().add(symbolizerBase);
 
         final Style style = new Style();
@@ -576,7 +581,7 @@ public class SEPortrayerTest extends TestCase {
         final Filter<Feature> filter = filterFactory.resourceId("2");
         final LineSymbolizer symbolizer = new LineSymbolizer();
 
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         rule.symbolizers().add(symbolizer);
         rule.setFilter(filter);
 
@@ -641,8 +646,9 @@ public class SEPortrayerTest extends TestCase {
 
         final LineSymbolizer symbolizer = new LineSymbolizer();
         symbolizer.setPerpendicularOffset((Expression)filterFactory.property("description", String.class));
+        // TODO: use a numeric property above.
 
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         rule.symbolizers().add(symbolizer);
         rule.setFilter(filter);
 
@@ -684,7 +690,7 @@ public class SEPortrayerTest extends TestCase {
         final LineSymbolizer symbolizer = new LineSymbolizer();
         symbolizer.setGeometry(filterFactory.function("ST_Centroid", filterFactory.property("geom")));
 
-        final Rule rule = new Rule();
+        final var rule = new Rule<Feature>();
         rule.symbolizers().add(symbolizer);
 
         final Style style = new Style();

@@ -16,143 +16,260 @@
  */
 package org.apache.sis.internal.style;
 
-import java.util.Objects;
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
+import java.util.Optional;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.style.StyleVisitor;
+
 
 /**
- * Mutable implementation of {@link org.opengis.style.TextSymbolizer}.
+ * Instructions about how to drawn text on a map.
+ * The {@linkplain #getGeometry() geometry} is interpreted as being either a point
+ * or a line as needed by the {@linkplain #getLabelPlacement() label placement}.
+ * If a given geometry is not of point or line, it shall be transformed into the appropriate type.
  *
- * @author Johann Sorel (Geomatys)
+ * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
+ * @author  Johann Sorel (Geomatys)
+ * @author  Chris Dillard (SYS Technologies)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public final class TextSymbolizer extends Symbolizer implements org.opengis.style.TextSymbolizer {
+@XmlType(name = "TextSymbolizerType", propOrder = {
+    "label",
+    "font",
+    "labelPlacement",
+    "halo",
+    "fill"
+})
+@XmlRootElement(name = "TextSymbolizer")
+public class TextSymbolizer extends Symbolizer {
+    /**
+     * Text to display, or {@code null} if none.
+     *
+     * @see #getLabel()
+     * @see #setLabel(Expression)
+     */
+    @XmlElement(name = "Label")
+    protected Expression<Feature,String> label;
 
-    private Expression<Feature,String> label;
-    private Font font;
-    private LabelPlacement labelPlacement;
-    private Halo halo;
-    private Fill fill;
+    /**
+     * Font to apply on the text, or {@code null} for lazily constructed default.
+     *
+     * @see #getFont()
+     * @see #setFont(Font)
+     */
+    @XmlElement(name = "Font")
+    protected Font font;
 
-    public static TextSymbolizer createDefault() {
-        return new TextSymbolizer(null, null, new Description(), StyleFactory.DEFAULT_UOM,
-            StyleFactory.DEFAULT_TEXT_LABEL, new Font(),
-                new PointPlacement(new AnchorPoint(), new Displacement(), StyleFactory.LITERAL_ZERO),
-                null, new Fill());
-    }
+    /**
+     * Indications about how the text should be placed with respect to the feature geometry.
+     * If {@code null}, it will be lazily created when first needed.
+     *
+     * @see #getLabelPlacement()
+     * @see #setLabelPlacement(LabelPlacement)
+     */
+    @XmlElementRef(name = "LabelPlacement")
+    protected LabelPlacement labelPlacement;
 
+    /**
+     * Indication about a halo to draw around the text, or {@code null} if none.
+     *
+     * @see #getHalo()
+     * @see #setHalo(Halo)
+     */
+    @XmlElement(name = "Halo")
+    protected Halo halo;
+
+    /**
+     * Graphic, color and opacity of the text to draw, or {@code null} for lazily constructed default.
+     *
+     * @see #getFill()
+     * @see #setFill(Fill)
+     */
+    @XmlElement(name = "Fill")
+    protected Fill fill;
+
+    /**
+     * Creates a text symbolizer with default placement and default font.
+     * The new symbolizer has no initial label.
+     */
     public TextSymbolizer() {
     }
 
-    public TextSymbolizer(String name, Expression geometry,
-            Description description,
-            Unit<Length> unit,
-            Expression label,
-            Font font,
-            LabelPlacement placement,
-            Halo halo,
-            Fill fill) {
-        super(name, geometry, description, unit);
-        this.label = label;
-        this.font = font;
-        this.labelPlacement = placement;
-        this.halo = halo;
-        this.fill = fill;
+    /**
+     * Creates a shallow copy of the given object.
+     * For a deep copy, see {@link #clone()} instead.
+     *
+     * @param  source  the object to copy.
+     */
+    public TextSymbolizer(final TextSymbolizer source) {
+        super(source);
+        label          = source.label;
+        font           = source.font;
+        labelPlacement = source.labelPlacement;
+        halo           = source.halo;
+        fill           = source.fill;
     }
 
-    @Override
-    public Object accept(StyleVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    @Override
+    /**
+     * Returns the expression that will be evaluated to determine what text is displayed.
+     * If {@code null}, then no text will be rendered.
+     *
+     * @return text to display, or {@code null} if none.
+     *
+     * @todo Replace {@code null} by a default expression searching for a default text property in the feature.
+     */
     public Expression<Feature,String> getLabel() {
         return label;
     }
 
-    public void setLabel(Expression<Feature, String> label) {
-        this.label = label;
-    }
-
-    @Override
-    public Font getFont() {
-        return font;
-    }
-
-    public void setFont(Font font) {
-        this.font = font;
-    }
-
-    @Override
-    public LabelPlacement getLabelPlacement() {
-        return labelPlacement;
-    }
-
-    public void setLabelPlacement(LabelPlacement labelPlacement) {
-        this.labelPlacement = labelPlacement;
-    }
-
-    @Override
-    public Halo getHalo() {
-        return halo;
-    }
-
-    public void setHalo(Halo halo) {
-        this.halo = halo;
-    }
-
-    @Override
-    public Fill getFill() {
-        return fill;
-    }
-
-    public void setFill(Fill fill) {
-        this.fill = fill;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + Objects.hash(label, font, labelPlacement, halo, fill);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (!(obj instanceof TextSymbolizer)) {
-            return false;
-        }
-        final TextSymbolizer other = (TextSymbolizer) obj;
-        return Objects.equals(this.label, other.label)
-            && Objects.equals(this.font, other.font)
-            && Objects.equals(this.labelPlacement, other.labelPlacement)
-            && Objects.equals(this.halo, other.halo)
-            && Objects.equals(this.fill, other.fill);
+    /**
+     * Sets the expression that will be evaluated to determine what text is displayed.
+     * If this method is never invoked, then the default value is {@code null}.
+     *
+     * @param  value  new text to display, or {@code null} if none.
+     */
+    public void setLabel(final Expression<Feature,String> value) {
+        label = value;
     }
 
     /**
-     * Cast or copy to an SIS implementation.
+     * Returns the font to apply on the text.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this symbolizer, and conversely.
      *
-     * @param candidate to copy, can be null.
-     * @return cast or copied object.
+     * @return font to apply on the text.
      */
-    public static TextSymbolizer castOrCopy(org.opengis.style.TextSymbolizer candidate) {
-        if (candidate == null) {
-            return null;
-        } else if (candidate instanceof TextSymbolizer) {
-            return (TextSymbolizer) candidate;
+    public Font getFont() {
+        if (font == null) {
+            font = new Font();
         }
-        return new TextSymbolizer(candidate.getName(),
-                candidate.getGeometry(),
-                org.apache.sis.internal.style.Description.castOrCopy(candidate.getDescription()),
-                candidate.getUnitOfMeasure(),
-                candidate.getLabel(),
-                org.apache.sis.internal.style.Font.castOrCopy(candidate.getFont()),
-                LabelPlacement.castOrCopy(candidate.getLabelPlacement()),
-                org.apache.sis.internal.style.Halo.castOrCopy(candidate.getHalo()),
-                org.apache.sis.internal.style.Fill.castOrCopy(candidate.getFill()));
+        return font;
+    }
+
+    /**
+     * Sets the font to apply on the text.
+     * The given instance is stored by reference, it is not cloned. If this method is never invoked,
+     * then the default value is a {@linkplain Font#Font() default font}.
+     *
+     * @param  value  new font to apply on the text, or {@code null} for resetting the default value.
+     */
+    public void setFont(final Font value) {
+        font = value;
+    }
+
+    /**
+     * Returns indications about how the text should be placed with respect to the feature geometry.
+     * This object will either be an instance of {@link LinePlacement} or {@link PointPlacement}.
+     *
+     * <p>The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this symbolizer, and conversely.</p>
+     *
+     * @return how the text should be placed with respect to the feature geometry.
+     */
+    public LabelPlacement getLabelPlacement() {
+        if (labelPlacement == null) {
+            labelPlacement = new PointPlacement();
+        }
+        return labelPlacement;
+    }
+
+    /**
+     * Sets indications about how the text should be placed with respect to the feature geometry.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is a
+     * {@linkplain PointPlacement#PointPlacement() default point placement}.
+     *
+     * @param  value  new indications about text placement, or {@code null} for resetting the default value.
+     */
+    public void setLabelPlacement(final LabelPlacement value) {
+        labelPlacement = value;
+    }
+
+    /**
+     * Returns indication about a halo to draw around the text.
+     *
+     * <p>The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this symbolizer, and conversely.</p>
+     *
+     * @return indication about a halo to draw around the text.
+     */
+    public Optional<Halo> getHalo() {
+        return Optional.ofNullable(halo);
+    }
+
+    /**
+     * Sets indication about a halo to draw around the text.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is absence.
+     *
+     * @param  value  new indication about a halo to draw around the text, or {@code null} if none.
+     */
+    public void setHalo(final Halo value) {
+        halo = value;
+    }
+
+    /**
+     * Returns the graphic, color and opacity of the text to draw.
+     * The returned object is <em>live</em>:
+     * changes in the returned instance will be reflected in this symbolizer, and conversely.
+     *
+     * @return graphic, color and opacity of the text to draw.
+     */
+    public Fill getFill() {
+        if (fill == null) {
+            fill = new Fill(Fill.BLACK);
+        }
+        return fill;
+    }
+
+    /**
+     * Sets the graphic, color and opacity of the text to draw.
+     * The given instance is stored by reference, it is not cloned.
+     * If this method is never invoked, then the default value is a solid black color.
+     * That default value is standardized by OGC 05-077r4.
+     *
+     * @param  value  new fill of the text to draw, or {@code null} for resetting the default value.
+     */
+    public void setFill(final Fill value) {
+        fill = value;
+    }
+
+    /**
+     * Returns all properties contained in this class.
+     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
+     */
+    @Override
+    final Object[] properties() {
+        return new Object[] {label, font, labelPlacement, halo, fill};
+    }
+
+    /**
+     * Returns a deep clone of this object. All style elements are cloned,
+     * but expressions are not on the assumption that they are immutable.
+     *
+     * @return deep clone of all style elements.
+     */
+    @Override
+    public TextSymbolizer clone() {
+        final var clone = (TextSymbolizer) super.clone();
+        clone.selfClone();
+        return clone;
+    }
+
+    /**
+     * Clones the mutable style fields of this element.
+     */
+    private void selfClone() {
+        if (font           != null) font           = font.clone();
+        if (labelPlacement != null) labelPlacement = labelPlacement.clone();
+        if (halo           != null) halo           = halo.clone();
+        if (fill           != null) fill           = fill.clone();
     }
 }

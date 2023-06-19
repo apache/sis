@@ -19,72 +19,85 @@ package org.apache.sis.internal.style;
 import org.apache.sis.measure.Units;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+
+// Branch-dependent imports
+import org.opengis.filter.ValueReference;
+
 
 /**
- * Tests for {@link org.apache.sis.internal.style.Symbolizer}.
+ * Tests for {@link Symbolizer}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class SymbolizerTest extends AbstractStyleTests {
+public final class SymbolizerTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public SymbolizerTest() {
+    }
 
     /**
-     * Test of UnitOfMeasure methods.
+     * Test of {@code UnitOfMeasure} property.
      */
     @Test
     public void testUnitOfMeasure() {
         Symbolizer cdt = new LineSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getUnitOfMeasure());
+        // Check default
+        assertEquals(Units.PIXEL, cdt.getUnitOfMeasure());
 
-        //check get/set
+        // Check get/set
         cdt.setUnitOfMeasure(Units.INCH);
         assertEquals(Units.INCH, cdt.getUnitOfMeasure());
     }
 
     /**
-     * Test of Geometry methods.
+     * Test of {@code Geometry} property.
      */
     @Test
     public void testGeometry() {
         Symbolizer cdt = new LineSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getGeometry());
+        // Check default
+        assertInstanceOf("geometry", ValueReference.class, cdt.getGeometry());
 
-        //check get/set
-        cdt.setGeometry(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getGeometry());
+        // Check get/set
+        cdt.setGeometry(FF.literal(8));
+        assertLiteralEquals(8, cdt.getGeometry());
     }
 
     /**
-     * Test of Name methods.
+     * Test of {@code Name} property.
      */
     @Test
     public void testName() {
         Symbolizer cdt = new LineSymbolizer();
 
-        //check defaults
-        assertEquals(null, cdt.getName());
+        // Check defaults
+        assertEmpty(cdt.getName());
 
-        //check get/set
-        cdt.setName(SAMPLE_STRING);
-        assertEquals(SAMPLE_STRING, cdt.getName());
+        // Check get/set
+        String value = "A random name";
+        cdt.setName(value);
+        assertOptionalEquals(value, cdt.getName());
     }
 
     /**
-     * Test of getDescription methods.
+     * Test of {@code getDescription} property.
      */
     @Test
     public void testDescription() {
         Symbolizer cdt = new LineSymbolizer();
 
-        //check defaults
-        assertEquals(null, cdt.getDescription());
+        // Check defaults
+        assertEmpty(cdt.getDescription());
 
-        //check get/set
-        cdt.setDescription(new Description(SAMPLE_ISTRING, SAMPLE_ISTRING));
-        assertEquals(new Description(SAMPLE_ISTRING, SAMPLE_ISTRING), cdt.getDescription());
+        // Check get/set
+        Description desc = anyDescription();
+        cdt.setDescription(desc);
+        assertOptionalEquals(desc, cdt.getDescription());
     }
-
 }

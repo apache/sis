@@ -16,125 +16,134 @@
  */
 package org.apache.sis.internal.style;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
 import org.opengis.style.OverlapBehavior;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.RasterSymbolizer}.
+ * Tests for {@link RasterSymbolizer}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class RasterSymbolizerTest extends AbstractStyleTests {
+public final class RasterSymbolizerTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public RasterSymbolizerTest() {
+    }
 
     /**
-     * Test of Opacity methods.
+     * Test of {@code Opacity} property.
      */
     @Test
     public void testOpacity() {
         RasterSymbolizer cdt = new RasterSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getOpacity());
+        // Check default
+        assertLiteralEquals(1.0, cdt.getOpacity());
 
-        //check get/set
-        cdt.setOpacity(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getOpacity());
+        // Check get/set
+        cdt.setOpacity(FF.literal(0.7));
+        assertLiteralEquals(0.7, cdt.getOpacity());
     }
 
     /**
-     * Test of ChannelSelection methods.
+     * Test of {@code ChannelSelection} property.
      */
     @Test
     public void testChannelSelection() {
         RasterSymbolizer cdt = new RasterSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getChannelSelection());
+        // Check default
+        assertEmpty(cdt.getChannelSelection());
 
-        //check get/set
+        // Check get/set
         ChannelSelection value = new ChannelSelection();
         cdt.setChannelSelection(value);
-        assertEquals(value, cdt.getChannelSelection());
+        assertOptionalEquals(value, cdt.getChannelSelection());
     }
 
     /**
-     * Test of OverlapBehavior methods.
+     * Test of {@code OverlapBehavior} property.
      */
     @Test
     public void testOverlapBehavior() {
         RasterSymbolizer cdt = new RasterSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getOverlapBehavior());
+        // Check default
+        assertNotNull(cdt.getOverlapBehavior());
 
-        //check get/set
+        // Check get/set
         cdt.setOverlapBehavior(OverlapBehavior.EARLIEST_ON_TOP);
         assertEquals(OverlapBehavior.EARLIEST_ON_TOP, cdt.getOverlapBehavior());
     }
 
     /**
-     * Test of ColorMap methods.
+     * Test of {@code ColorMap} property.
      */
     @Test
     public void testColorMap() {
         RasterSymbolizer cdt = new RasterSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getColorMap());
+        // Check default
+        assertEmpty(cdt.getColorMap());
 
-        //check get/set
+        // Check get/set
         ColorMap value = new ColorMap();
         cdt.setColorMap(value);
-        assertEquals(value, cdt.getColorMap());
+        assertOptionalEquals(value, cdt.getColorMap());
     }
 
     /**
-     * Test of ContrastEnhancement methods.
+     * Test of {@code ContrastEnhancement} property.
      */
     @Test
     public void testGetContrastEnhancement() {
         RasterSymbolizer cdt = new RasterSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getContrastEnhancement());
+        // Check default
+        assertEmpty(cdt.getContrastEnhancement());
 
-        //check get/set
+        // Check get/set
         ContrastEnhancement value = new ContrastEnhancement();
         cdt.setContrastEnhancement(value);
-        assertEquals(value, cdt.getContrastEnhancement());
+        assertOptionalEquals(value, cdt.getContrastEnhancement());
     }
 
     /**
-     * Test of ShadedRelief methods.
+     * Test of {@code ShadedRelief} property.
      */
     @Test
     public void testGetShadedRelief() {
         RasterSymbolizer cdt = new RasterSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getShadedRelief());
+        // Check default
+        assertEmpty(cdt.getShadedRelief());
 
-        //check get/set
+        // Check get/set
         ShadedRelief value = new ShadedRelief();
         cdt.setShadedRelief(value);
-        assertEquals(value, cdt.getShadedRelief());
+        assertOptionalEquals(value, cdt.getShadedRelief());
     }
 
     /**
-     * Test of ImageOutline methods.
+     * Test of {@code ImageOutline} property.
      */
     @Test
     public void testImageOutline() {
         RasterSymbolizer cdt = new RasterSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getImageOutline());
+        // Check default
+        assertEmpty(cdt.getImageOutline());
 
-        //check get/set
+        // Check get/set
         Symbolizer value = new LineSymbolizer();
         cdt.setImageOutline(value);
-        assertEquals(value, cdt.getImageOutline());
+        assertOptionalEquals(value, cdt.getImageOutline());
     }
-
 }

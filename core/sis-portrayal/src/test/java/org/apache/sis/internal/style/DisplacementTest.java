@@ -17,31 +17,37 @@
 package org.apache.sis.internal.style;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+
 
 /**
- * Tests for {@link org.apache.sis.internal.style.Displacement}.
+ * Tests for {@link Displacement}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class DisplacementTest extends AbstractStyleTests {
+public final class DisplacementTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public DisplacementTest() {
+    }
 
     /**
-     * Test of DisplacementXY methods.
+     * Test of {@code DisplacementXY} property.
      */
     @Test
     public void testGetDisplacementXY() {
         Displacement cdt = new Displacement();
 
-        //check defaults
-        assertEquals(FF.literal(0.0), cdt.getDisplacementX());
-        assertEquals(FF.literal(0.0), cdt.getDisplacementY());
+        // Check defaults
+        assertLiteralEquals(0.0, cdt.getDisplacementX());
+        assertLiteralEquals(0.0, cdt.getDisplacementY());
 
-        //check get/set
-        cdt.setDisplacementX(EXP_DOUBLE);
-        cdt.setDisplacementY(EXP_DOUBLE_2);
-        assertEquals(EXP_DOUBLE, cdt.getDisplacementX());
-        assertEquals(EXP_DOUBLE_2, cdt.getDisplacementY());
+        // Check get/set
+        cdt.setDisplacementX(FF.literal(-7));
+        cdt.setDisplacementY(FF.literal(15));
+        assertLiteralEquals(-7, cdt.getDisplacementX());
+        assertLiteralEquals(15, cdt.getDisplacementY());
     }
-
 }

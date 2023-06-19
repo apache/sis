@@ -16,77 +16,90 @@
  */
 package org.apache.sis.internal.style;
 
+import java.awt.Color;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
 /**
- * Tests for {@link org.apache.sis.internal.style.PolygonSymbolizer}.
+ * Tests for {@link PolygonSymbolizer}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class PolygonSymbolizerTest extends AbstractStyleTests {
+public final class PolygonSymbolizerTest extends StyleTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public PolygonSymbolizerTest() {
+    }
 
     /**
-     * Test of Stroke methods.
+     * Test of {@code Stroke} property.
      */
     @Test
     public void testStroke() {
         PolygonSymbolizer cdt = new PolygonSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getStroke());
+        // Check default
+        Stroke value = cdt.getStroke().orElseThrow();
+        assertLiteralEquals("bevel",  value.getLineJoin());
+        assertLiteralEquals("square", value.getLineCap());
 
-        //check get/set
-        Stroke value = new Stroke();
+        // Check get/set
+        value = new Stroke();
         cdt.setStroke(value);
-        assertEquals(value, cdt.getStroke());
+        assertOptionalEquals(value, cdt.getStroke());
     }
 
     /**
-     * Test of Fill methods.
+     * Test of {@code Fill} property.
      */
     @Test
     public void testFill() {
         PolygonSymbolizer cdt = new PolygonSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getFill());
+        // Check default
+        Fill value = cdt.getFill().orElseThrow();
+        assertLiteralEquals(Color.GRAY, value.getColor());
 
-        //check get/set
-        Fill value = new Fill();
+        // Check get/set
+        value = new Fill(ANY_COLOR);
         cdt.setFill(value);
-        assertEquals(value, cdt.getFill());
+        assertOptionalEquals(value, cdt.getFill());
     }
 
     /**
-     * Test of Displacement methods.
+     * Test of {@code Displacement} property.
      */
     @Test
     public void testDisplacement() {
         PolygonSymbolizer cdt = new PolygonSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getDisplacement());
+        // Check default
+        Displacement value = cdt.getDisplacement();
+        assertLiteralEquals(0.0, value.getDisplacementX());
+        assertLiteralEquals(0.0, value.getDisplacementY());
 
-        //check get/set
-        Displacement value = new Displacement(EXP_DOUBLE, EXP_DOUBLE_2);
+        // Check get/set
+        value = new Displacement(4, 1);
         cdt.setDisplacement(value);
         assertEquals(value, cdt.getDisplacement());
     }
 
     /**
-     * Test of PerpendicularOffset methods.
+     * Test of {@code PerpendicularOffset} property.
      */
     @Test
     public void testPerpendicularOffset() {
         PolygonSymbolizer cdt = new PolygonSymbolizer();
 
-        //check default
-        assertEquals(null, cdt.getPerpendicularOffset());
+        // Check default
+        assertLiteralEquals(0.0, cdt.getPerpendicularOffset());
 
-        //check get/set
-        cdt.setPerpendicularOffset(EXP_DOUBLE);
-        assertEquals(EXP_DOUBLE, cdt.getPerpendicularOffset());
+        // Check get/set
+        cdt.setPerpendicularOffset(FF.literal(10));
+        assertLiteralEquals(10, cdt.getPerpendicularOffset());
     }
-
 }
