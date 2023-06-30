@@ -282,6 +282,21 @@ public class Rule<R> extends StyleElement {
     }
 
     /**
+     * Invoked by JAXB at marshalling time for expressing the boolean {@code isElseFilter} value as an XML element.
+     */
+    @XmlElement(name = "ElseFilter")
+    private ElseFilter getElseFilter() {
+        return isElseFilter ? ElseFilter.INSTANCE : null;
+    }
+
+    /**
+     * Invoked at JAXB unmarshalling time when an {@code <ElseFilter/>} element is found.
+     */
+    private void setElseFilter(final ElseFilter value) {
+        isElseFilter = (value != null);
+    }
+
+    /**
      * Returns the minimum value (inclusive) in the denominator of map scale at which this rule will apply.
      * If, for example, this value was 10000, then this rule would only apply at scales of 1:<var>X</var>
      * where <var>X</var> is greater than 10000. A value of zero indicates that there is no minimum.
