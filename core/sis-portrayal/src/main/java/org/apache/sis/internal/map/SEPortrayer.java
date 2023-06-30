@@ -57,9 +57,9 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.style.FeatureTypeStyle;
-import org.apache.sis.internal.style.Rule;
-import org.apache.sis.internal.style.Symbolizer;
+import org.apache.sis.style.se1.FeatureTypeStyle;
+import org.apache.sis.style.se1.Rule;
+import org.apache.sis.style.se1.Symbolizer;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;

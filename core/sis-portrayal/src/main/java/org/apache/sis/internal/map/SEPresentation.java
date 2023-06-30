@@ -19,7 +19,7 @@ package org.apache.sis.internal.map;
 import java.util.Objects;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.internal.style.Symbolizer;
+import org.apache.sis.style.se1.Symbolizer;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

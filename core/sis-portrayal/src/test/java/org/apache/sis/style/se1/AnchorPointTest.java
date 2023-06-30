@@ -14,28 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.map;
+package org.apache.sis.style.se1;
 
-import org.apache.sis.style.se1.Symbolizer;
+import org.junit.Test;
 
 
 /**
- * Resource symbolizers act on a resource as a whole, not on individual features.
- * Such symbolizers are not defined by the Symbology Encoding specification but are
- * often required to produce uncommon presentations.
- *
- * <p>
- * NOTE: this class is a first draft subject to modifications.
- * </p>
+ * Tests for {@link AnchorPoint}.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.5
  * @since   1.5
  */
-public abstract class ResourceSymbolizer extends Symbolizer {
+public final class AnchorPointTest extends StyleTestCase {
     /**
-     * Constructs a new symbolozer.
+     * Creates a new test case.
      */
-    protected ResourceSymbolizer() {
+    public AnchorPointTest() {
+    }
+
+    /**
+     * Test of {@code AnchorPointXY} property.
+     */
+    @Test
+    public void testAnchorPointXY() {
+        AnchorPoint cdt = new AnchorPoint();
+
+        // Check defaults
+        assertLiteralEquals(0.5, cdt.getAnchorPointX());
+        assertLiteralEquals(0.5, cdt.getAnchorPointY());
+
+        // Check get/set
+        cdt.setAnchorPointX(FF.literal(8));
+        cdt.setAnchorPointY(FF.literal(3));
+        assertLiteralEquals(8, cdt.getAnchorPointX());
+        assertLiteralEquals(3, cdt.getAnchorPointY());
     }
 }

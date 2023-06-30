@@ -21,7 +21,7 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
-import org.apache.sis.internal.style.*;
+import org.apache.sis.style.se1.*;
 
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
@@ -248,7 +248,7 @@ public abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final GraphicLegend candidate) {
+    protected void visit(final LegendGraphic candidate) {
         visit((GraphicalElement) candidate);
     }
 
@@ -273,16 +273,16 @@ public abstract class SymbologyVisitor {
 
     protected void visit(final ChannelSelection candidate) {
         if (candidate != null) {
-            SelectedChannelType[] channels = candidate.getChannels();
+            SelectedChannel[] channels = candidate.getChannels();
             if (channels != null) {
-                for (final SelectedChannelType sct : channels) {
+                for (final SelectedChannel sct : channels) {
                     visit(sct);
                 }
             }
         }
     }
 
-    protected void visit(final SelectedChannelType candidate) {
+    protected void visit(final SelectedChannel candidate) {
         if (candidate != null) {
             candidate.getContrastEnhancement().ifPresent(this::visit);
         }

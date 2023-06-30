@@ -14,28 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.map;
+package org.apache.sis.style.se1;
 
-import org.apache.sis.style.se1.Symbolizer;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 
 /**
- * Resource symbolizers act on a resource as a whole, not on individual features.
- * Such symbolizers are not defined by the Symbology Encoding specification but are
- * often required to produce uncommon presentations.
- *
- * <p>
- * NOTE: this class is a first draft subject to modifications.
- * </p>
+ * Tests for {@link PointSymbolizer}.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.5
  * @since   1.5
  */
-public abstract class ResourceSymbolizer extends Symbolizer {
+public final class PointSymbolizerTest extends StyleTestCase {
     /**
-     * Constructs a new symbolozer.
+     * Creates a new test case.
      */
-    protected ResourceSymbolizer() {
+    public PointSymbolizerTest() {
+    }
+
+    /**
+     * Test of {@code Graphic} property.
+     */
+    @Test
+    public void testGraphic() {
+        PointSymbolizer cdt = new PointSymbolizer();
+
+        // Check default
+        Graphic value = cdt.getGraphic();
+        assertLiteralEquals(1.0, value.getOpacity());
+
+        // Check get/set
+        value = new Graphic();
+        value.setOpacity(FF.literal(0.8));
+        cdt.setGraphic(value);
+        assertEquals(value, cdt.getGraphic());
     }
 }

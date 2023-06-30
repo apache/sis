@@ -24,7 +24,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.style.Style;
+import org.apache.sis.style.se1.Style;
 import org.opengis.coverage.Coverage;
 import org.opengis.feature.Feature;
 import org.opengis.geometry.Envelope;
