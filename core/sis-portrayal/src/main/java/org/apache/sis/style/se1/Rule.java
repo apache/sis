@@ -45,7 +45,7 @@ import org.opengis.filter.Filter;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  *
- * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) to filter.
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
  *
  * @since 1.5
  */
@@ -60,7 +60,7 @@ import org.opengis.filter.Filter;
     "symbolizers"
 })
 @XmlRootElement(name = "Rule")
-public class Rule<R> extends StyleElement {
+public class Rule<R> extends StyleElement<R> {
     /**
      * Name for this rule, or {@code null} if none.
      *
@@ -77,7 +77,7 @@ public class Rule<R> extends StyleElement {
      * @see #setDescription(Description)
      */
     @XmlElement(name = "Description")
-    protected Description description;
+    protected Description<R> description;
 
     /**
      * Small graphic to draw in a legend window, or {@code null} if none.
@@ -86,7 +86,7 @@ public class Rule<R> extends StyleElement {
      * @see #setLegend(LegendGraphic)
      */
     @XmlElement(name = "LegendGraphic")
-    protected LegendGraphic legend;
+    protected LegendGraphic<R> legend;
 
     /**
      * Filter that will limit the features, or {@code null} if none.
@@ -127,7 +127,7 @@ public class Rule<R> extends StyleElement {
      * @see #symbolizers()
      */
     @XmlElementRef(name = "Symbolizer")
-    private List<Symbolizer> symbolizers;
+    private List<Symbolizer<R>> symbolizers;
 
     /**
      * If the style comes from an external XML file, the original source. Otherwise {@code null}.
@@ -138,9 +138,19 @@ public class Rule<R> extends StyleElement {
     protected OnlineResource onlineSource;
 
     /**
-     * Creates a new rule.
+     * For JAXB unmarshalling only.
      */
-    public Rule() {
+    private Rule() {
+        // Thread-local factory will be used.
+    }
+
+    /**
+     * Creates an initially empty rule.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
+     */
+    public Rule(final StyleFactory<R> factory) {
+        super(factory);
         maxScale = Double.POSITIVE_INFINITY;
         symbolizers = new ArrayList<>();
     }
@@ -192,7 +202,7 @@ public class Rule<R> extends StyleElement {
      *
      * @return information for user interfaces.
      */
-    public Optional<Description> getDescription() {
+    public Optional<Description<R>> getDescription() {
         return Optional.ofNullable(description);
     }
 
@@ -203,7 +213,7 @@ public class Rule<R> extends StyleElement {
      *
      * @param  value  new information for user interfaces, or {@code null} if none.
      */
-    public void setDescription(final Description value) {
+    public void setDescription(final Description<R> value) {
         description = value;
     }
 
@@ -217,7 +227,7 @@ public class Rule<R> extends StyleElement {
      *
      * @return small graphic to draw in a legend window.
      */
-    public Optional<LegendGraphic> getLegend() {
+    public Optional<LegendGraphic<R>> getLegend() {
         return Optional.ofNullable(legend);
     }
 
@@ -228,7 +238,7 @@ public class Rule<R> extends StyleElement {
      *
      * @param  value  new legend graphic, or {@code null} if none.
      */
-    public void setLegend(final LegendGraphic value) {
+    public void setLegend(final LegendGraphic<R> value) {
         legend = value;
     }
 
@@ -436,7 +446,7 @@ public class Rule<R> extends StyleElement {
      * @return the list of symbolizers, as a live collection.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<Symbolizer> symbolizers() {
+    public List<Symbolizer<R>> symbolizers() {
         return symbolizers;
     }
 
@@ -486,7 +496,6 @@ public class Rule<R> extends StyleElement {
      */
     @Override
     public Rule<R> clone() {
-        @SuppressWarnings("unchecked")
         final var clone = (Rule<R>) super.clone();
         clone.selfClone();
         return clone;

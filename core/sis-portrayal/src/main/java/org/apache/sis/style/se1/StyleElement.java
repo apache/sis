@@ -16,15 +16,14 @@
  */
 package org.apache.sis.style.se1;
 
+import java.awt.Color;
 import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.apache.sis.filter.DefaultFilterFactory;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Literal;
 
 
@@ -35,50 +34,31 @@ import org.opengis.filter.Literal;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlTransient
-public abstract class StyleElement implements Cloneable {
+public abstract class StyleElement<R> implements Cloneable {
     /**
-     * Version number of the Symbology Encoding Implementation Specification standard currently implemented.
-     * This version number may change in future Apache SIS releases if new standards are published.
-     * The current value is {@value}.
-     */
-    public static final String VERSION = "1.1.0";
-
-    /**
-     * Literal commonly used as a default value.
+     * The factory to use for creating expressions and child elements.
+     * This is typically the same factory than the one used for creating this element.
      *
-     * @see #defaultToFalse(Expression)
+     * @see FeatureTypeStyle#FACTORY
+     * @see CoverageStyle#FACTORY
      */
-    private static final Literal<Feature,Boolean> FALSE = literal(Boolean.FALSE);
-
-    /**
-     * Literal commonly used as a default value.
-     *
-     * @see #defaultToTrue(Expression)
-     */
-    private static final Literal<Feature,Boolean> TRUE = literal(Boolean.TRUE);
-
-    /**
-     * Literal commonly used as a default value.
-     *
-     * @see #defaultToZero(Expression)
-     */
-    static final Literal<Feature,Double> LITERAL_ZERO = literal(0.0);
-
-    /**
-     * Literal commonly used as a default value.
-     *
-     * @see #defaultToOne(Expression)
-     */
-    private static final Literal<Feature,Double> LITERAL_ONE = literal(1.0);
+    protected final StyleFactory<R> factory;
 
     /**
      * Creates a new style element.
      * Intentionally restricted to this package because {@link #properties()} is package-private.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    StyleElement() {
+    StyleElement(final StyleFactory<R> factory) {
+        ArgumentChecks.ensureNonNull("factory", factory);
+        this.factory = factory;
     }
 
     /**
@@ -87,55 +67,104 @@ public abstract class StyleElement implements Cloneable {
      *
      * @param  source  the object to copy.
      */
-    StyleElement(final StyleElement source) {
-        // No property to copy yet, but some may be added in the future.
+    StyleElement(final StyleElement<R> source) {
+        factory = source.factory;
     }
 
     /**
-     * The factory for creating default expressions.
+     * Creates a style element for XML unmarshalling.
+     * <em>This constructor is unsafe</em> and should be used only by JAXB reflection.
+     *
+     * @todo Allow the factory to be set according the parent {@link AbstractStyle} being unmarshalled.
+     *       We will need to use {@link ThreadLocal}.
      */
-    static FilterFactory<Feature,Object,Object> FF() {
-        return DefaultFilterFactory.forFeatures();
+    StyleElement() {
+        factory = null;     // TODO
     }
 
     /**
      * Returns a literal for the given value.
-     * This is used by convenience constructors.
+     * This is a convenience method for use with setter methods that expect an expression.
      *
-     * @param  <E>     type of value.
-     * @param  value   the value for which to return a literal.
-     * @return literal for the given value.
+     * @param  <E>    type of value.
+     * @param  value  the value for which to return a literal, or {@code null} if none.
+     * @return literal for the given value, or {@code null} if the given value was null.
      */
-    static <E> Literal<Feature,E> literal(final E value) {
-        return FF().literal(value);
+    public final <E> Literal<R,E> literal(final E value) {
+        return (value == null) ? null : factory.filterFactory.literal(value);
     }
 
     /**
-     * Returns the given expression if non-null, or {@link #FALSE} otherwise.
+     * Returns the given expression if non-null, or literal {@code true} otherwise.
+     * This is a convenience method for the implementation of getter methods when
+     * a default value exists.
+     *
+     * @param  value  the value for which to apply a default value if {@code null}.
+     * @return the given value if non-null, or {@code true} literal otherwise.
      */
-    static Expression<Feature,Boolean> defaultToFalse(Expression<Feature,Boolean> value) {
-        return (value != null) ? value : FALSE;
+    protected final Expression<R,Boolean> defaultToTrue(final Expression<R,Boolean> value) {
+        return (value != null) ? value : factory.enabled;
     }
 
     /**
-     * Returns the given expression if non-null, or {@link #TRUE} otherwise.
+     * Returns the given expression if non-null, or literal {@code false} otherwise.
+     * This is a convenience method for the implementation of getter methods when
+     * a default value exists.
+     *
+     * @param  value  the value for which to apply a default value if {@code null}.
+     * @return the given value if non-null, or a {@code false} literal otherwise.
      */
-    static Expression<Feature,Boolean> defaultToTrue(Expression<Feature,Boolean> value) {
-        return (value != null) ? value : TRUE;
+    protected final Expression<R,Boolean> defaultToFalse(final Expression<R,Boolean> value) {
+        return (value != null) ? value : factory.disabled;
     }
 
     /**
-     * Returns the given expression if non-null, or {@link #LITERAL_ZERO} otherwise.
+     * Returns the given expression if non-null, or literal {@code 0.0} otherwise.
+     * This is a convenience method for the implementation of getter methods when
+     * a default value exists.
+     *
+     * @param  value  the value for which to apply a default value if {@code null}.
+     * @return the given value if non-null, or {@code 0.0} literal otherwise.
      */
-    static Expression<Feature, ? extends Number> defaultToZero(Expression<Feature, ? extends Number> value) {
-        return (value != null) ? value : LITERAL_ZERO;
+    protected final Expression<R, ? extends Number> defaultToZero(final Expression<R, ? extends Number> value) {
+        return (value != null) ? value : factory.zero;
     }
 
     /**
-     * Returns the given expression if non-null, or {@link #LITERAL_ONE} otherwise.
+     * Returns the given expression if non-null, or literal {@code 0.5} otherwise.
+     * This is a convenience method for the implementation of getter methods when
+     * a default value exists.
+     *
+     * @param  value  the value for which to apply a default value if {@code null}.
+     * @return the given value if non-null, or {@code 0.5} literal otherwise.
      */
-    static Expression<Feature, ? extends Number> defaultToOne(Expression<Feature, ? extends Number> value) {
-        return (value != null) ? value : LITERAL_ONE;
+    protected final Expression<R, ? extends Number> defaultToHalf(final Expression<R, ? extends Number> value) {
+        return (value != null) ? value : factory.half;
+    }
+
+    /**
+     * Returns the given expression if non-null, or literal {@code 1.0} otherwise.
+     * This is a convenience method for the implementation of getter methods when
+     * a default value exists.
+     *
+     * @param  value  the value for which to apply a default value if {@code null}.
+     * @return the given value if non-null, or {@code 1.0} literal otherwise.
+     */
+    protected final Expression<R, ? extends Number> defaultToOne(final Expression<R, ? extends Number> value) {
+        return (value != null) ? value : factory.one;
+    }
+
+    /**
+     * Returns the opacity of the alpha value of the given color.
+     * If the color is totally opaque, then this method returns {@code null}.
+     *
+     * @param  color  color from which to get the opacity.
+     * @return opacity derived from the alpha value of the color, or {@code null} if totally opaque.
+     */
+    final Expression<R, ? extends Number> opacity(final Color color) {
+        final int alpha = color.getAlpha();
+        return (alpha != 255) ? literal(alpha / 256d) : null;
+        // Divide by 256 instead of 255 in order to get round numbers for alpha values 64, 128, etc.
     }
 
     /**
@@ -180,9 +209,10 @@ public abstract class StyleElement implements Cloneable {
      * @return a clone of this element.
      */
     @Override
-    public StyleElement clone() {
+    @SuppressWarnings("unchecked")
+    public StyleElement<R> clone() {
         try {
-            return (StyleElement) super.clone();
+            return (StyleElement<R>) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);    // Should never happen since we are cloneable.
         }

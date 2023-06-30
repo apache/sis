@@ -23,7 +23,6 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 
 
@@ -46,7 +45,7 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testGetName() {
-        var cdt = new Rule<Object>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertEmpty(cdt.getName());
@@ -62,13 +61,13 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testDescription() {
-        var cdt = new Rule<Object>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertEmpty(cdt.getDescription());
 
         // Check get/set
-        Description desc = anyDescription();
+        var desc = anyDescription();
         cdt.setDescription(desc);
         assertOptionalEquals(desc, cdt.getDescription());
     }
@@ -78,13 +77,13 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testLegend() {
-        var cdt = new Rule<Object>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertEmpty(cdt.getLegend());
 
         // Check get/set
-        LegendGraphic value = new LegendGraphic();
+        var value = factory.createLegendGraphic();
         cdt.setLegend(value);
         assertOptionalEquals(value, cdt.getLegend());
     }
@@ -94,13 +93,13 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testFilter() {
-        var cdt = new Rule<Feature>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertEquals(Filter.include(), cdt.getFilter());
 
         // Check get/set
-        var value = FF.equal(FF.literal("A"), FF.literal("B"));
+        var value = factory.filterFactory.equal(literal("A"), literal("B"));
         cdt.setFilter(value);
         assertEquals(value, cdt.getFilter());
     }
@@ -110,7 +109,7 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testIsElseFilter() {
-        var cdt = new Rule<Object>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertFalse(cdt.isElseFilter());
@@ -125,7 +124,7 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testMinScaleDenominator() {
-        var cdt = new Rule<Object>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertEquals(0.0, cdt.getMinScaleDenominator(), 0.0);
@@ -140,7 +139,7 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testGetMaxScaleDenominator() {
-        var cdt = new Rule<Object>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertEquals(Double.POSITIVE_INFINITY, cdt.getMaxScaleDenominator(), 0.0);
@@ -155,13 +154,13 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testSymbolizers() {
-        var cdt = new Rule<Object>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertTrue(cdt.symbolizers().isEmpty());
 
         // Check get/set
-        var value = new LineSymbolizer();
+        var value = factory.createLineSymbolizer();
         cdt.symbolizers().add(value);
         assertEquals(List.of(value), cdt.symbolizers());
     }
@@ -171,7 +170,7 @@ public final class RuleTest extends StyleTestCase {
      */
     @Test
     public void testGetOnlineSource() {
-        var cdt = new Rule<Object>();
+        final var cdt = factory.createRule();
 
         // Check defaults
         assertEmpty(cdt.getOnlineSource());

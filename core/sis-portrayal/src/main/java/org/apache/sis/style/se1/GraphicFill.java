@@ -31,11 +31,14 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "GraphicFillType")
 @XmlRootElement(name = "GraphicFill")
-public class GraphicFill extends StyleElement implements GraphicalElement {
+public class GraphicFill<R> extends StyleElement<R> implements GraphicalElement<R> {
     /**
      * The graphic to be repeated, or {@code null} for lazily constructed default.
      * This property is mandatory: a null value <em>shall</em> be replaced by a default value when first requested.
@@ -43,12 +46,22 @@ public class GraphicFill extends StyleElement implements GraphicalElement {
      * @see #getGraphic()
      * @see #setGraphic(Graphic)
      */
-    protected Graphic graphic;
+    protected Graphic<R> graphic;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private GraphicFill() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a graphic fill initialized to a default graphic.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public GraphicFill() {
+    public GraphicFill(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -57,7 +70,7 @@ public class GraphicFill extends StyleElement implements GraphicalElement {
      *
      * @param  source  the object to copy.
      */
-    public GraphicFill(final GraphicFill source) {
+    public GraphicFill(final GraphicFill<R> source) {
         super(source);
         graphic = source.graphic;
     }
@@ -73,9 +86,9 @@ public class GraphicFill extends StyleElement implements GraphicalElement {
      */
     @Override
     @XmlElement(name = "Graphic", required = true)
-    public final Graphic getGraphic() {
+    public final Graphic<R> getGraphic() {
         if (graphic == null) {
-            graphic = new Graphic();
+            graphic = factory.createGraphic();
         }
         return graphic;
     }
@@ -90,7 +103,7 @@ public class GraphicFill extends StyleElement implements GraphicalElement {
      * @see GraphicStroke#setGraphic(Graphic)
      */
     @Override
-    public final void setGraphic(final Graphic value) {
+    public final void setGraphic(final Graphic<R> value) {
         graphic = value;
     }
 
@@ -110,8 +123,8 @@ public class GraphicFill extends StyleElement implements GraphicalElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public GraphicFill clone() {
-        final var clone = (GraphicFill) super.clone();
+    public GraphicFill<R> clone() {
+        final var clone = (GraphicFill<R>) super.clone();
         clone.selfClone();
         return clone;
     }

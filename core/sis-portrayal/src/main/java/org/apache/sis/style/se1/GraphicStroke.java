@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -35,7 +34,10 @@ import org.opengis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "GraphicStrokeType", propOrder = {
     "graphic",
@@ -43,7 +45,7 @@ import org.opengis.filter.Expression;
     "gap"
 })
 @XmlRootElement(name = "GraphicStroke")
-public class GraphicStroke extends StyleElement implements GraphicalElement {
+public class GraphicStroke<R> extends StyleElement<R> implements GraphicalElement<R> {
     /**
      * The graphic to be repeated, or {@code null} for lazily constructed default.
      * This property is mandatory: a null value <em>shall</em> be replaced by a default value when first requested.
@@ -51,7 +53,7 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      * @see #getGraphic()
      * @see #setGraphic(Graphic)
      */
-    protected Graphic graphic;
+    protected Graphic<R> graphic;
 
     /**
      * How far away the first graphic will be drawn, or {@code null} for the default value.
@@ -60,7 +62,7 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      * @see #setInitialGap(Expression)
      */
     @XmlElement(name = "InitialGap")
-    protected Expression<Feature, ? extends Number> initialGap;
+    protected Expression<R, ? extends Number> initialGap;
 
     /**
      * Distance between two graphics, or {@code null} for the default value.
@@ -69,12 +71,22 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      * @see #setGap(Expression)
      */
     @XmlElement(name = "Gap")
-    protected Expression<Feature, ? extends Number> gap;
+    protected Expression<R, ? extends Number> gap;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private GraphicStroke() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a graphic stroke initialized to a default graphic and no gap.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public GraphicStroke() {
+    public GraphicStroke(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -83,7 +95,7 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      *
      * @param  source  the object to copy.
      */
-    public GraphicStroke(final GraphicStroke source) {
+    public GraphicStroke(final GraphicStroke<R> source) {
         super(source);
         graphic    = source.graphic;
         initialGap = source.initialGap;
@@ -101,9 +113,9 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      */
     @Override
     @XmlElement(name = "Graphic", required = true)
-    public final Graphic getGraphic() {
+    public final Graphic<R> getGraphic() {
         if (graphic == null) {
-            graphic = new Graphic();
+            graphic = factory.createGraphic();
         }
         return graphic;
     }
@@ -118,7 +130,7 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      * @see GraphicFill#setGraphic(Graphic)
      */
     @Override
-    public final void setGraphic(final Graphic value) {
+    public final void setGraphic(final Graphic<R> value) {
         graphic = value;
     }
 
@@ -127,7 +139,7 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      *
      * @return distance of first graphic relative to the rendering start.
      */
-    public Expression<Feature, ? extends Number> getInitialGap() {
+    public Expression<R, ? extends Number> getInitialGap() {
         return defaultToZero(initialGap);
     }
 
@@ -137,7 +149,7 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      *
      * @param  value  new distance relative to rendering start, or {@code null} for resetting the default value.
      */
-    public void setInitialGap(final Expression<Feature, ? extends Number> value) {
+    public void setInitialGap(final Expression<R, ? extends Number> value) {
         initialGap = value;
     }
 
@@ -146,7 +158,7 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      *
      * @return distance between two graphics.
      */
-    public Expression<Feature, ? extends Number> getGap() {
+    public Expression<R, ? extends Number> getGap() {
         return defaultToZero(gap);
     }
 
@@ -156,7 +168,7 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      *
      * @param  value  new distance between two graphics, or {@code null} for resetting the default value.
      */
-    public void setGap(final Expression<Feature, ? extends Number> value) {
+    public void setGap(final Expression<R, ? extends Number> value) {
         gap = value;
     }
 
@@ -176,8 +188,8 @@ public class GraphicStroke extends StyleElement implements GraphicalElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public GraphicStroke clone() {
-        final var clone = (GraphicStroke) super.clone();
+    public GraphicStroke<R> clone() {
+        final var clone = (GraphicStroke<R>) super.clone();
         clone.selfClone();
         return clone;
     }

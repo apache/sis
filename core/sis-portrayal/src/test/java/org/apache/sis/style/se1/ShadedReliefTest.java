@@ -39,13 +39,13 @@ public final class ShadedReliefTest extends StyleTestCase {
      */
     @Test
     public void testIsBrightnessOnly() {
-        ShadedRelief cdt = new ShadedRelief();
+        final var cdt = factory.createShadedRelief();
 
         // Check default
         assertLiteralEquals(Boolean.FALSE, cdt.isBrightnessOnly());
 
         // Check get/set
-        cdt.setBrightnessOnly(FF.literal(true));
+        cdt.setBrightnessOnly(literal(true));
         assertLiteralEquals(Boolean.TRUE, cdt.isBrightnessOnly());
     }
 
@@ -54,13 +54,13 @@ public final class ShadedReliefTest extends StyleTestCase {
      */
     @Test
     public void testReliefFactor() {
-        ShadedRelief cdt = new ShadedRelief();
+        final var cdt = factory.createShadedRelief();
 
         // Check default
         assertNotNull(cdt.getReliefFactor());
 
         // Check get/set
-        cdt.setReliefFactor(FF.literal(0.1));
+        cdt.setReliefFactor(literal(0.1));
         assertLiteralEquals(0.1, cdt.getReliefFactor());
     }
 }

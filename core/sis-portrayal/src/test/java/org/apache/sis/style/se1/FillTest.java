@@ -39,13 +39,13 @@ public final class FillTest extends StyleTestCase {
      */
     @Test
     public void testGraphicFill() {
-        Fill cdt = new Fill();
+        final var cdt = factory.createFill();
 
         // Check default
         assertEmpty(cdt.getGraphicFill());
 
         // Check get/set
-        final GraphicFill value = new GraphicFill();
+        var value = factory.createGraphicFill();
         cdt.setGraphicFill(value);
         assertOptionalEquals(value, cdt.getGraphicFill());
     }
@@ -55,7 +55,7 @@ public final class FillTest extends StyleTestCase {
      */
     @Test
     public void testColor() {
-        Fill cdt = new Fill();
+        final var cdt = factory.createFill();
 
         // Check default
         assertLiteralEquals(Color.GRAY, cdt.getColor());
@@ -70,13 +70,13 @@ public final class FillTest extends StyleTestCase {
      */
     @Test
     public void testOpacity() {
-        Fill cdt = new Fill();
+        final var cdt = factory.createFill();
 
         // Check default
         assertLiteralEquals(1.0, cdt.getOpacity());
 
         // Check get/set
-        cdt.setOpacity(FF.literal(0.75));
+        cdt.setOpacity(literal(0.75));
         assertLiteralEquals(0.75, cdt.getOpacity());
     }
 
@@ -85,7 +85,8 @@ public final class FillTest extends StyleTestCase {
      */
     @Test
     public void testColorAndOpacity() {
-        Fill cdt = new Fill(new Color(255, 255, 0, 128));
+        final var cdt = factory.createFill();
+        cdt.setColorAndOpacity(new Color(255, 255, 0, 128));
         assertLiteralEquals(Color.YELLOW, cdt.getColor());
         assertLiteralEquals(0.5, cdt.getOpacity());
     }

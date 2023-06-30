@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -38,7 +37,10 @@ import org.opengis.filter.Expression;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "TextSymbolizerType", propOrder = {
     "label",
@@ -48,7 +50,7 @@ import org.opengis.filter.Expression;
     "fill"
 })
 @XmlRootElement(name = "TextSymbolizer")
-public class TextSymbolizer extends Symbolizer {
+public class TextSymbolizer<R> extends Symbolizer<R> {
     /**
      * Text to display, or {@code null} if none.
      *
@@ -56,7 +58,7 @@ public class TextSymbolizer extends Symbolizer {
      * @see #setLabel(Expression)
      */
     @XmlElement(name = "Label")
-    protected Expression<Feature,String> label;
+    protected Expression<R,String> label;
 
     /**
      * Font to apply on the text, or {@code null} for lazily constructed default.
@@ -65,7 +67,7 @@ public class TextSymbolizer extends Symbolizer {
      * @see #setFont(Font)
      */
     @XmlElement(name = "Font")
-    protected Font font;
+    protected Font<R> font;
 
     /**
      * Indications about how the text should be placed with respect to the feature geometry.
@@ -75,7 +77,7 @@ public class TextSymbolizer extends Symbolizer {
      * @see #setLabelPlacement(LabelPlacement)
      */
     @XmlElementRef(name = "LabelPlacement")
-    protected LabelPlacement labelPlacement;
+    protected LabelPlacement<R> labelPlacement;
 
     /**
      * Indication about a halo to draw around the text, or {@code null} if none.
@@ -84,7 +86,7 @@ public class TextSymbolizer extends Symbolizer {
      * @see #setHalo(Halo)
      */
     @XmlElement(name = "Halo")
-    protected Halo halo;
+    protected Halo<R> halo;
 
     /**
      * Graphic, color and opacity of the text to draw, or {@code null} for lazily constructed default.
@@ -93,13 +95,23 @@ public class TextSymbolizer extends Symbolizer {
      * @see #setFill(Fill)
      */
     @XmlElement(name = "Fill")
-    protected Fill fill;
+    protected Fill<R> fill;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private TextSymbolizer() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a text symbolizer with default placement and default font.
      * The new symbolizer has no initial label.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public TextSymbolizer() {
+    public TextSymbolizer(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -108,7 +120,7 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @param  source  the object to copy.
      */
-    public TextSymbolizer(final TextSymbolizer source) {
+    public TextSymbolizer(final TextSymbolizer<R> source) {
         super(source);
         label          = source.label;
         font           = source.font;
@@ -125,7 +137,7 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @todo Replace {@code null} by a default expression searching for a default text property in the feature.
      */
-    public Expression<Feature,String> getLabel() {
+    public Expression<R,String> getLabel() {
         return label;
     }
 
@@ -135,7 +147,7 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @param  value  new text to display, or {@code null} if none.
      */
-    public void setLabel(final Expression<Feature,String> value) {
+    public void setLabel(final Expression<R,String> value) {
         label = value;
     }
 
@@ -146,9 +158,9 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @return font to apply on the text.
      */
-    public Font getFont() {
+    public Font<R> getFont() {
         if (font == null) {
-            font = new Font();
+            font = factory.createFont();
         }
         return font;
     }
@@ -160,7 +172,7 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @param  value  new font to apply on the text, or {@code null} for resetting the default value.
      */
-    public void setFont(final Font value) {
+    public void setFont(final Font<R> value) {
         font = value;
     }
 
@@ -173,9 +185,9 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @return how the text should be placed with respect to the feature geometry.
      */
-    public LabelPlacement getLabelPlacement() {
+    public LabelPlacement<R> getLabelPlacement() {
         if (labelPlacement == null) {
-            labelPlacement = new PointPlacement();
+            labelPlacement = factory.createPointPlacement();
         }
         return labelPlacement;
     }
@@ -188,7 +200,7 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @param  value  new indications about text placement, or {@code null} for resetting the default value.
      */
-    public void setLabelPlacement(final LabelPlacement value) {
+    public void setLabelPlacement(final LabelPlacement<R> value) {
         labelPlacement = value;
     }
 
@@ -200,7 +212,7 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @return indication about a halo to draw around the text.
      */
-    public Optional<Halo> getHalo() {
+    public Optional<Halo<R>> getHalo() {
         return Optional.ofNullable(halo);
     }
 
@@ -211,7 +223,7 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @param  value  new indication about a halo to draw around the text, or {@code null} if none.
      */
-    public void setHalo(final Halo value) {
+    public void setHalo(final Halo<R> value) {
         halo = value;
     }
 
@@ -222,9 +234,10 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @return graphic, color and opacity of the text to draw.
      */
-    public Fill getFill() {
+    public Fill<R> getFill() {
         if (fill == null) {
-            fill = new Fill(Fill.BLACK);
+            fill = factory.createFill();
+            fill.setColor(factory.black);
         }
         return fill;
     }
@@ -237,7 +250,7 @@ public class TextSymbolizer extends Symbolizer {
      *
      * @param  value  new fill of the text to draw, or {@code null} for resetting the default value.
      */
-    public void setFill(final Fill value) {
+    public void setFill(final Fill<R> value) {
         fill = value;
     }
 
@@ -257,8 +270,8 @@ public class TextSymbolizer extends Symbolizer {
      * @return deep clone of all style elements.
      */
     @Override
-    public TextSymbolizer clone() {
-        final var clone = (TextSymbolizer) super.clone();
+    public TextSymbolizer<R> clone() {
+        final var clone = (TextSymbolizer<R>) super.clone();
         clone.selfClone();
         return clone;
     }

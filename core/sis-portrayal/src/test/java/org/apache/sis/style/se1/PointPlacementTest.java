@@ -19,6 +19,9 @@ package org.apache.sis.style.se1;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+
 
 /**
  * Tests for {@link PointPlacement}.
@@ -39,15 +42,15 @@ public final class PointPlacementTest extends StyleTestCase {
      */
     @Test
     public void testAnchorPoint() {
-        PointPlacement cdt = new PointPlacement();
+        final var cdt = factory.createPointPlacement();
 
         // Check default
-        AnchorPoint value = cdt.getAnchorPoint();
+        AnchorPoint<Feature> value = cdt.getAnchorPoint();
         assertLiteralEquals(0.5, value.getAnchorPointX());
         assertLiteralEquals(0.5, value.getAnchorPointY());
 
         // Check get/set
-        value = new AnchorPoint(3, 1);
+        value = factory.createAnchorPoint(3, 1);
         cdt.setAnchorPoint(value);
         assertEquals(value, cdt.getAnchorPoint());
     }
@@ -57,15 +60,15 @@ public final class PointPlacementTest extends StyleTestCase {
      */
     @Test
     public void testDisplacement() {
-        PointPlacement cdt = new PointPlacement();
+        final var cdt = factory.createPointPlacement();
 
         // Check default
-        Displacement value = cdt.getDisplacement();
+        Displacement<Feature> value = cdt.getDisplacement();
         assertLiteralEquals(0.0, value.getDisplacementX());
         assertLiteralEquals(0.0, value.getDisplacementY());
 
         // Check get/set
-        value = new Displacement(1, 2);
+        value = factory.createDisplacement(1, 2);
         cdt.setDisplacement(value);
         assertEquals(value, cdt.getDisplacement());
     }
@@ -75,13 +78,13 @@ public final class PointPlacementTest extends StyleTestCase {
      */
     @Test
     public void testRotation() {
-        PointPlacement cdt = new PointPlacement();
+        final var cdt = factory.createPointPlacement();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getRotation());
 
         // Check get/set
-        cdt.setRotation(FF.literal(180));
+        cdt.setRotation(literal(180));
         assertLiteralEquals(180, cdt.getRotation());
     }
 }

@@ -19,6 +19,9 @@ package org.apache.sis.style.se1;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+
 
 /**
  * Tests for {@link PointSymbolizer}.
@@ -39,15 +42,15 @@ public final class PointSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testGraphic() {
-        PointSymbolizer cdt = new PointSymbolizer();
+        final var cdt = factory.createPointSymbolizer();
 
         // Check default
-        Graphic value = cdt.getGraphic();
+        Graphic<Feature> value = cdt.getGraphic();
         assertLiteralEquals(1.0, value.getOpacity());
 
         // Check get/set
-        value = new Graphic();
-        value.setOpacity(FF.literal(0.8));
+        value = factory.createGraphic();
+        value.setOpacity(literal(0.8));
         cdt.setGraphic(value);
         assertEquals(value, cdt.getGraphic());
     }

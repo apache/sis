@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -34,14 +33,17 @@ import org.opengis.filter.Expression;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "HaloType", propOrder = {
     "radius",
     "fill"
 })
 @XmlRootElement(name = "Halo")
-public class Halo extends StyleElement {
+public class Halo<R> extends StyleElement<R> {
     /**
      * Radius (in pixels) of the  the halo around the text, or {@code null} for the default value.
      *
@@ -49,7 +51,7 @@ public class Halo extends StyleElement {
      * @see #setRadius(Expression)
      */
     @XmlElement(name = "Radius")
-    protected Expression<Feature, ? extends Number> radius;
+    protected Expression<R, ? extends Number> radius;
 
     /**
      * How the halo area around the text should be filled, or {@code null} for the default value.
@@ -58,12 +60,22 @@ public class Halo extends StyleElement {
      * @see #setFill(Fill)
      */
     @XmlElement(name = "Fill")
-    protected Fill fill;
+    protected Fill<R> fill;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private Halo() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates an halo initialized to a white color and a radius of 1 pixel.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public Halo() {
+    public Halo(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -72,7 +84,7 @@ public class Halo extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public Halo(final Halo source) {
+    public Halo(final Halo<R> source) {
         super(source);
         fill   = source.fill;
         radius = source.radius;
@@ -86,7 +98,7 @@ public class Halo extends StyleElement {
      *
      * @return radius (in pixels) of the  the halo around the text.
      */
-    public Expression<Feature, ? extends Number> getRadius() {
+    public Expression<R, ? extends Number> getRadius() {
         return defaultToOne(radius);
     }
 
@@ -96,7 +108,7 @@ public class Halo extends StyleElement {
      *
      * @param  value  new radius (in pixels), or {@code null} for resetting the default value.
      */
-    public void setRadius(Expression<Feature, ? extends Number> value) {
+    public void setRadius(Expression<R, ? extends Number> value) {
         radius = value;
     }
 
@@ -107,9 +119,10 @@ public class Halo extends StyleElement {
      *
      * @return graphic, color and opacity of the text to draw.
      */
-    public Fill getFill() {
+    public Fill<R> getFill() {
         if (fill == null) {
-            fill = new Fill(Fill.WHITE);
+            fill = factory.createFill();
+            fill.setColor(factory.white);
         }
         return fill;
     }
@@ -122,7 +135,7 @@ public class Halo extends StyleElement {
      *
      * @param  value  new fill of the text to draw, or {@code null} for resetting the default value.
      */
-    public void setFill(final Fill value) {
+    public void setFill(final Fill<R> value) {
         fill = value;
     }
 
@@ -142,8 +155,8 @@ public class Halo extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public Halo clone() {
-        final var clone = (Halo) super.clone();
+    public Halo<R> clone() {
+        final var clone = (Halo<R>) super.clone();
         clone.selfClone();
         return clone;
     }

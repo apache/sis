@@ -38,13 +38,13 @@ public final class LinePlacementTest extends StyleTestCase {
      */
     @Test
     public void testPerpendicularOffset() {
-        LinePlacement cdt = new LinePlacement();
+        final var cdt = factory.createLinePlacement();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getPerpendicularOffset());
 
         // Check get/set
-        cdt.setPerpendicularOffset(FF.literal(15));
+        cdt.setPerpendicularOffset(literal(15));
         assertLiteralEquals(15, cdt.getPerpendicularOffset());
     }
 
@@ -53,13 +53,13 @@ public final class LinePlacementTest extends StyleTestCase {
      */
     @Test
     public void testInitialGap() {
-        LinePlacement cdt = new LinePlacement();
+        final var cdt = factory.createLinePlacement();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getInitialGap());
 
         // Check get/set
-        cdt.setInitialGap(FF.literal(6));
+        cdt.setInitialGap(literal(6));
         assertLiteralEquals(6, cdt.getInitialGap());
     }
 
@@ -68,13 +68,13 @@ public final class LinePlacementTest extends StyleTestCase {
      */
     @Test
     public void testGap() {
-        LinePlacement cdt = new LinePlacement();
+        final var cdt = factory.createLinePlacement();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getGap());
 
         // Check get/set
-        cdt.setGap(FF.literal(9));
+        cdt.setGap(literal(9));
         assertLiteralEquals(9, cdt.getGap());
     }
 
@@ -83,13 +83,13 @@ public final class LinePlacementTest extends StyleTestCase {
      */
     @Test
     public void testIsRepeated() {
-        LinePlacement cdt = new LinePlacement();
+        final var cdt = factory.createLinePlacement();
 
         // Check default
         assertLiteralEquals(Boolean.FALSE, cdt.isRepeated());
 
         // Check get/set
-        cdt.setRepeated(FF.literal(true));
+        cdt.setRepeated(literal(true));
         assertLiteralEquals(Boolean.TRUE, cdt.isRepeated());
     }
 
@@ -98,13 +98,13 @@ public final class LinePlacementTest extends StyleTestCase {
      */
     @Test
     public void testIsAligned() {
-        LinePlacement cdt = new LinePlacement();
+        final var cdt = factory.createLinePlacement();
 
         // Check default
         assertLiteralEquals(Boolean.TRUE, cdt.isAligned());
 
         // Check get/set
-        cdt.setAligned(FF.literal(false));
+        cdt.setAligned(literal(false));
         assertLiteralEquals(Boolean.FALSE, cdt.isAligned());
     }
 
@@ -113,13 +113,13 @@ public final class LinePlacementTest extends StyleTestCase {
      */
     @Test
     public void testGeneralizeLine() {
-        LinePlacement cdt = new LinePlacement();
+        final var cdt = factory.createLinePlacement();
 
         // Check default
         assertLiteralEquals(Boolean.FALSE, cdt.getGeneralizeLine());
 
         // Check get/set
-        cdt.setGeneralizeLine(FF.literal(true));
+        cdt.setGeneralizeLine(literal(true));
         assertLiteralEquals(Boolean.TRUE, cdt.getGeneralizeLine());
     }
 }

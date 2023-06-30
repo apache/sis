@@ -26,19 +26,17 @@
  * {@link org.apache.sis.style.se1.CoverageStyle}.
  * Those classes include different kinds of {@link org.apache.sis.style.se1.Symbolizer}.
  *
- * @todo Add {@code CoverageStyle}. May require a common parent with {@code FeatureTypeStyle}.
- *
  * <h2>Future evolution</h2>
- * This package defines a XML encoding.
+ * This package defines an XML encoding.
  * It is not an abstract model for sophisticated styling.
  * Apache SIS temporarily uses the classes of the XML encoding as a style API,
  * but a future version may replace this API by a more abstract one.
- * A good candidate may be ISO 19117:2012 — Portrayal.
- * As of 2023, various OGC working groups are also working on new style API.
+ * A good candidate may be <cite>ISO 19117:2012 — Portrayal</cite>.
+ * As of 2023, various OGC working groups are also working on new style APIs.
  * The final form of such API has not yet been settled down.
  *
  * <h2>Synchronization</h2>
- * Classes in this package are not thread-safe.
+ * Unless otherwise specified in the Javadoc, classes in this package are not thread-safe.
  * Synchronization, if desired, must be done by the caller.
  *
  * @author  Johann Sorel (Geomatys)

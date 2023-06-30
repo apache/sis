@@ -18,47 +18,30 @@ package org.apache.sis.style.se1;
 
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.apache.sis.coverage.BandedCoverage;
 
 
 /**
- * Mapping of fixed-numeric pixel values to colors.
- * It can be used for defining the colors of a palette-type raster source.
- * For example, a DEM raster giving elevations in meters above sea level
- * can be translated to a colored image.
+ * Defines the styling that is to be applied to a coverage.
  *
- * <p>This is a placeholder for future development.
- * OGC 05-077r4 standard defines the dependent classes,
- * but there is too many of them for this initial draft.</p>
- *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- *
- * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
- *
- * @since 1.5
+ * @since   1.5
  */
-@XmlType(name = "ColorMapType", propOrder = {
-//  "categorize",
-//  "interpolate",
-//  "jenks"
-})
-@XmlRootElement(name = "ColorMap")
-public class ColorMap<R> extends StyleElement<R> {
+@XmlType(name = "CoverageStyleType")
+@XmlRootElement(name = "CoverageStyle")
+public class CoverageStyle extends AbstractStyle<BandedCoverage> {
     /**
-     * For JAXB unmarshalling only.
+     * The default style factory for coverages.
      */
-    private ColorMap() {
-        // Thread-local factory will be used.
-    }
+    public static final StyleFactory<BandedCoverage> FACTORY =
+            new StyleFactory<>(FeatureTypeStyle.FACTORY);
 
     /**
-     * Creates an initially empty color map.
-     *
-     * @param  factory  the factory to use for creating expressions and child elements.
+     * Creates an initially empty coverage style.
      */
-    public ColorMap(final StyleFactory<R> factory) {
-        super(factory);
+    public CoverageStyle() {
+        super(FACTORY);
     }
 
     /**
@@ -67,17 +50,8 @@ public class ColorMap<R> extends StyleElement<R> {
      *
      * @param  source  the object to copy.
      */
-    public ColorMap(final ColorMap<R> source) {
+    public CoverageStyle(final CoverageStyle source) {
         super(source);
-    }
-
-    /**
-     * Returns all properties contained in this class.
-     * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
-     */
-    @Override
-    final Object[] properties() {
-        return new Object[] {};
     }
 
     /**
@@ -87,8 +61,8 @@ public class ColorMap<R> extends StyleElement<R> {
      * @return deep clone of all style elements.
      */
     @Override
-    public ColorMap<R> clone() {
-        final var clone = (ColorMap<R>) super.clone();
+    public CoverageStyle clone() {
+        final var clone = (CoverageStyle) super.clone();
         return clone;
     }
 }

@@ -21,12 +21,11 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
 /**
- * A two-dimensional displacements from the original geometry.
+ * A two-dimensional offset from the original geometry.
  * Displacements may be used to avoid over-plotting, or for supplying shadows.
  * The displacements units depend on the context:
  * in {@linkplain Symbolizer#getUnitOfMeasure() symbolizer unit of measurements}
@@ -40,7 +39,10 @@ import org.opengis.filter.Expression;
  * @author  Ian Turton (CCG)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  *
  * @see PointPlacement#getDisplacement()
  * @see Graphic#getDisplacement()
@@ -51,7 +53,7 @@ import org.opengis.filter.Expression;
     "displacementY"
 })
 @XmlRootElement(name = "Displacement")
-public class Displacement extends StyleElement {
+public class Displacement<R> extends StyleElement<R> {
     /**
      * The <var>x</var> offset from the geometry point.
      * This property is mandatory.
@@ -60,7 +62,7 @@ public class Displacement extends StyleElement {
      * @see #setDisplacementX(Expression)
      */
     @XmlElement(name = "DisplacementX", required = true)
-    protected Expression<Feature, ? extends Number> displacementX;
+    protected Expression<R, ? extends Number> displacementX;
 
     /**
      * The <var>y</var> offset from the geometry point.
@@ -70,25 +72,23 @@ public class Displacement extends StyleElement {
      * @see #setDisplacementY(Expression)
      */
     @XmlElement(name = "DisplacementY", required = true)
-    protected Expression<Feature, ? extends Number> displacementY;
+    protected Expression<R, ? extends Number> displacementY;
 
     /**
-     * Creates a displacement initialized to zero offsets.
+     * For JAXB unmarshalling only.
      */
-    public Displacement() {
-        displacementX = LITERAL_ZERO;
-        displacementY = LITERAL_ZERO;
+    private Displacement() {
+        // Thread-local factory will be used.
     }
 
     /**
-     * Creates a new displacement initialized to the given offsets.
+     * Creates a displacement initialized to zero offsets.
      *
-     * @param  x  the initial <var>x</var> displacement.
-     * @param  y  the initial <var>y</var> displacement.
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public Displacement(final double x, final double y) {
-        displacementX = literal(x);
-        displacementY = literal(y);
+    public Displacement(final StyleFactory<R> factory) {
+        super(factory);
+        displacementX = displacementY = factory.zero;
     }
 
     /**
@@ -97,7 +97,7 @@ public class Displacement extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public Displacement(final Displacement source) {
+    public Displacement(final Displacement<R> source) {
         super(source);
         displacementX = source.displacementX;
         displacementY = source.displacementY;
@@ -108,7 +108,7 @@ public class Displacement extends StyleElement {
      *
      * @return <var>x</var> offset from the geometry point.
      */
-    public Expression<Feature, ? extends Number> getDisplacementX() {
+    public Expression<R, ? extends Number> getDisplacementX() {
         return displacementX;
     }
 
@@ -118,7 +118,7 @@ public class Displacement extends StyleElement {
      *
      * @param  value  new <var>x</var> offset, or {@code null} for resetting the default value.
      */
-    public void setDisplacementX(final Expression<Feature, ? extends Number> value) {
+    public void setDisplacementX(final Expression<R, ? extends Number> value) {
         displacementX = defaultToZero(value);
     }
 
@@ -127,7 +127,7 @@ public class Displacement extends StyleElement {
      *
      * @return <var>y</var> offset from the geometry point.
      */
-    public Expression<Feature, ? extends Number> getDisplacementY() {
+    public Expression<R, ? extends Number> getDisplacementY() {
         return displacementY;
     }
 
@@ -137,7 +137,7 @@ public class Displacement extends StyleElement {
      *
      * @param  value  new <var>y</var> offset, or {@code null} for resetting the default value.
      */
-    public void setDisplacementY(final Expression<Feature, ? extends Number> value) {
+    public void setDisplacementY(final Expression<R, ? extends Number> value) {
         displacementY = defaultToZero(value);
     }
 
@@ -157,8 +157,7 @@ public class Displacement extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public Displacement clone() {
-        final var clone = (Displacement) super.clone();
-        return clone;
+    public Displacement<R> clone() {
+        return (Displacement<R>) super.clone();
     }
 }

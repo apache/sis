@@ -18,15 +18,12 @@ package org.apache.sis.style.se1;
 
 import java.util.Optional;
 import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.filter.Literal;
 
 
 /**
@@ -41,7 +38,10 @@ import org.opengis.filter.Literal;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "MarkType", propOrder = {
     "wellKnownName",
@@ -53,21 +53,7 @@ import org.opengis.filter.Literal;
     "stroke"
 })
 @XmlRootElement(name = "Mark")
-public class Mark extends GraphicalSymbol {
-    /**
-     * Literal for a predefined well-known name which can be used as a mark.
-     */
-    public static final Literal<Feature,String> SQUARE, CIRCLE, TRIANGLE, STAR, CROSS, X;
-    static {
-        final var FF = FF();
-        SQUARE   = FF.literal("square");
-        CIRCLE   = FF.literal("circle");
-        TRIANGLE = FF.literal("triangle");
-        STAR     = FF.literal("star");
-        CROSS    = FF.literal("cross");
-        X        = FF.literal("x");
-    }
-
+public class Mark<R> extends GraphicalSymbol<R> {
     /**
      * Expression whose value will indicate the symbol to draw, or {@code null} for the default value.
      *
@@ -75,7 +61,7 @@ public class Mark extends GraphicalSymbol {
      * @see #setWellKnownName(Expression)
      */
     @XmlElement(name = "WellKnownName")
-    protected Expression<Feature,String> wellKnownName;
+    protected Expression<R,String> wellKnownName;
 
     /**
      * Information about how the interior of marks should be filled, or {@code null} for no fill.
@@ -86,7 +72,7 @@ public class Mark extends GraphicalSymbol {
      * @see #setFill(Fill)
      */
     @XmlElement(name = "Fill")
-    protected Fill fill;
+    protected Fill<R> fill;
 
     /**
      * Whether {@link #fill} has been explicitly set to some value, including null.
@@ -103,7 +89,7 @@ public class Mark extends GraphicalSymbol {
      * @see #setStroke(Stroke)
      */
     @XmlElement(name = "Stroke")
-    protected Stroke stroke;
+    protected Stroke<R> stroke;
 
     /**
      * Whether {@link #stroke} has been explicitly set to some value, including null.
@@ -118,32 +104,36 @@ public class Mark extends GraphicalSymbol {
      * @see #setMarkIndex(Expression)
      */
     @XmlElement(name = "MarkIndex")
-    protected Expression<Feature,Integer> markIndex;
-
-    /**
-     * Invoked by JAXB before unmarshalling this mark.
-     * OGC 05-077r4 said that if the fill or the stroke is not specified,
-     * then no fill or stroke should be applied.
-     */
-    private void beforeUnmarshal(Unmarshaller caller, Object parent) {
-        isFillSet   = true;
-        isStrokeSet = true;
-    }
+    protected Expression<R,Integer> markIndex;
 
     /**
      * Invoked by JAXB before marshalling this mark.
      * Creates the default fill and stroke if needed.
      */
     private void beforeMarshal(Marshaller caller) {
-        if (fill   == null && !isFillSet)   fill   = new Fill();
-        if (stroke == null && !isStrokeSet) stroke = new Stroke();
+        if (fill   == null && !isFillSet)   fill   = factory.createFill();
+        if (stroke == null && !isStrokeSet) stroke = factory.createStroke();
+    }
+
+    /**
+     * For JAXB unmarshalling only. This constructor disables the lazy creation of default values.
+     * This is because OGC 05-077r4 said that if the fill or the stroke is not specified,
+     * then no fill or stroke should be applied.
+     */
+    private Mark() {
+        // Thread-local factory will be used.
+        isFillSet   = true;
+        isStrokeSet = true;
     }
 
     /**
      * Creates a mark initialized to a gray square with black outline.
      * The size is specified by {@link Graphic#getSize()} and should be 6 pixels by default.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public Mark() {
+    public Mark(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -152,7 +142,7 @@ public class Mark extends GraphicalSymbol {
      *
      * @param  source  the object to copy.
      */
-    public Mark(final Mark source) {
+    public Mark(final Mark<R> source) {
         super(source);
         wellKnownName = source.wellKnownName;
         fill          = source.fill;
@@ -174,18 +164,18 @@ public class Mark extends GraphicalSymbol {
      * @see #getOnlineResource()
      * @see #getInlineContent()
      */
-    public Expression<Feature,String> getWellKnownName() {
+    public Expression<R,String> getWellKnownName() {
         final var value = wellKnownName;
-        return (value != null) ? value : SQUARE;
+        return (value != null) ? value : factory.square;
     }
 
     /**
      * Sets the expression whose value will indicate the symbol to draw.
-     * If this method is never invoked, then the default value is {@link #SQUARE}.
+     * If this method is never invoked, then the default value is literal "square".
      *
      * @param  value  well-known name of the mark to render, or {@code null} for resetting the default.
      */
-    public void setWellKnownName(final Expression<Feature,String> value) {
+    public void setWellKnownName(final Expression<R,String> value) {
         wellKnownName = value;
     }
 
@@ -200,10 +190,10 @@ public class Mark extends GraphicalSymbol {
      *
      * @see #getStroke()
      */
-    public Optional<Fill> getFill() {
+    public Optional<Fill<R>> getFill() {
         if (!isFillSet) {
             isFillSet = true;
-            fill = new Fill();
+            fill = factory.createFill();
         }
         return Optional.ofNullable(fill);
     }
@@ -215,7 +205,7 @@ public class Mark extends GraphicalSymbol {
      *
      * @param  value  new information about the fill, or {@code null} for no fill.
      */
-    public void setFill(final Fill value) {
+    public void setFill(final Fill<R> value) {
         isFillSet = true;
         fill = value;
     }
@@ -232,10 +222,10 @@ public class Mark extends GraphicalSymbol {
      *
      * @see #getFill()
      */
-    public Optional<Stroke> getStroke() {
+    public Optional<Stroke<R>> getStroke() {
         if (!isStrokeSet) {
             isStrokeSet = true;
-            stroke = new Stroke();
+            stroke = factory.createStroke();
         }
         return Optional.ofNullable(stroke);
     }
@@ -247,7 +237,7 @@ public class Mark extends GraphicalSymbol {
      *
      * @param  value  new information about styled lines, or {@code null} if lines should not be drawn.
      */
-    public void setStroke(final Stroke value) {
+    public void setStroke(final Stroke<R> value) {
         isStrokeSet = true;
         stroke = value;
     }
@@ -258,7 +248,7 @@ public class Mark extends GraphicalSymbol {
      *
      * @return individual mark to select in a mark archive.
      */
-    public Optional<Expression<Feature,Integer>> getMarkIndex() {
+    public Optional<Expression<R,Integer>> getMarkIndex() {
         return Optional.ofNullable(markIndex);
     }
 
@@ -267,7 +257,7 @@ public class Mark extends GraphicalSymbol {
      *
      * @param  value  new index of an individual mark to select, or {@code null} if none.
      */
-    public void setMarkIndex(final Expression<Feature,Integer> value) {
+    public void setMarkIndex(final Expression<R,Integer> value) {
         markIndex = value;
     }
 
@@ -287,8 +277,8 @@ public class Mark extends GraphicalSymbol {
      * @return deep clone of all style elements.
      */
     @Override
-    public Mark clone() {
-        final var clone = (Mark) super.clone();
+    public Mark<R> clone() {
+        final var clone = (Mark<R>) super.clone();
         clone.selfClone();
         return clone;
     }

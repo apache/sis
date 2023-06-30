@@ -39,13 +39,13 @@ public final class GraphicTest extends StyleTestCase {
      */
     @Test
     public void testGraphicalSymbols() {
-        Graphic cdt = new Graphic();
+        final var cdt = factory.createGraphic();
 
         // Check defaults
         assertTrue(cdt.graphicalSymbols().isEmpty());
 
         // Check get/set
-        cdt.graphicalSymbols().add(new Mark());
+        cdt.graphicalSymbols().add(factory.createMark());
         assertEquals(1, cdt.graphicalSymbols().size());
     }
 
@@ -54,13 +54,13 @@ public final class GraphicTest extends StyleTestCase {
      */
     @Test
     public void testOpacity() {
-        Graphic cdt = new Graphic();
+        final var cdt = factory.createGraphic();
 
         // Check default
         assertLiteralEquals(1.0, cdt.getOpacity());
 
         // Check get/set
-        cdt.setOpacity(FF.literal(0.4));
+        cdt.setOpacity(literal(0.4));
         assertLiteralEquals(0.4, cdt.getOpacity());
     }
 
@@ -69,13 +69,13 @@ public final class GraphicTest extends StyleTestCase {
      */
     @Test
     public void testSize() {
-        Graphic cdt = new Graphic();
+        final var cdt = factory.createGraphic();
 
         // Check default
         assertLiteralEquals(6.0, cdt.getSize());
 
         // Check get/set
-        cdt.setSize(FF.literal(13));
+        cdt.setSize(literal(13));
         assertLiteralEquals(13, cdt.getSize());
     }
 
@@ -84,13 +84,13 @@ public final class GraphicTest extends StyleTestCase {
      */
     @Test
     public void testRotation() {
-        Graphic cdt = new Graphic();
+        final var cdt = factory.createGraphic();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getRotation());
 
         // Check get/set
-        cdt.setRotation(FF.literal(90));
+        cdt.setRotation(literal(90));
         assertLiteralEquals(90, cdt.getRotation());
     }
 
@@ -99,13 +99,13 @@ public final class GraphicTest extends StyleTestCase {
      */
     @Test
     public void testAnchorPoint() {
-        Graphic cdt = new Graphic();
+        final var cdt = factory.createGraphic();
 
         // Check default
-        assertEquals(new AnchorPoint(), cdt.getAnchorPoint());
+        assertEquals(factory.createAnchorPoint(), cdt.getAnchorPoint());
 
         // Check get/set
-        var value = new AnchorPoint(-7, 3);
+        var value = factory.createAnchorPoint(-7, 3);
         cdt.setAnchorPoint(value);
         assertEquals(value, cdt.getAnchorPoint());
     }
@@ -115,13 +115,13 @@ public final class GraphicTest extends StyleTestCase {
      */
     @Test
     public void testDisplacement() {
-        Graphic cdt = new Graphic();
+        final var cdt = factory.createGraphic();
 
         // Check default
-        assertEquals(new Displacement(), cdt.getDisplacement());
+        assertEquals(factory.createDisplacement(), cdt.getDisplacement());
 
         // Check get/set
-        var value = new Displacement(12, -5);
+        var value = factory.createDisplacement(12, -5);
         cdt.setDisplacement(value);
         assertEquals(value, cdt.getDisplacement());
     }

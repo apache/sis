@@ -21,13 +21,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.style.ContrastMethod;
 
 
 /**
- * Contrast enhancement for an image channel.
+ * Contrast enhancement for an image or an individual image channel.
  * In the case of a color image, the relative grayscale brightness of a pixel color is used.
  *
  * <!-- Following list of authors contains credits to OGC GeoAPI 2 contributors. -->
@@ -35,7 +34,10 @@ import org.opengis.style.ContrastMethod;
  * @author  Ian Turton (CCG)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "ContrastEnhancementType", propOrder = {
 //  "normalize",
@@ -43,7 +45,7 @@ import org.opengis.style.ContrastMethod;
     "gammaValue"
 })
 @XmlRootElement(name = "ContrastEnhancement")
-public class ContrastEnhancement extends StyleElement {
+public class ContrastEnhancement<R> extends StyleElement<R> {
     /**
      * Method to use for applying contrast enhancement, or {@code null} for the default value.
      * The default value depends on whether or not a {@linkplain #gammaValue gamma value} is defined.
@@ -64,12 +66,22 @@ public class ContrastEnhancement extends StyleElement {
      * @todo Add a JAXB adapter for marshalling as a plain number.
      */
     @XmlElement(name = "GammaValue")
-    protected Expression<Feature, ? extends Number> gammaValue;
+    protected Expression<R, ? extends Number> gammaValue;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private ContrastEnhancement() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a contrast enhancement initialized to no operation.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public ContrastEnhancement() {
+    public ContrastEnhancement(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -78,7 +90,7 @@ public class ContrastEnhancement extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public ContrastEnhancement(final ContrastEnhancement source) {
+    public ContrastEnhancement(final ContrastEnhancement<R> source) {
         super(source);
         method     = source.method;
         gammaValue = source.gammaValue;
@@ -117,7 +129,7 @@ public class ContrastEnhancement extends StyleElement {
      *
      * @return expression to control gamma adjustment.
      */
-    public Expression<Feature, ? extends Number> getGammaValue() {
+    public Expression<R, ? extends Number> getGammaValue() {
         return defaultToOne(gammaValue);
     }
 
@@ -128,7 +140,7 @@ public class ContrastEnhancement extends StyleElement {
      *
      * @param  value  new expression to control gamma adjustment, or {@code null} for the default.
      */
-    public void setGammaValue(final Expression<Feature, ? extends Number> value) {
+    public void setGammaValue(final Expression<R, ? extends Number> value) {
         gammaValue = value;
         if (value != null) {
             method = null;
@@ -151,8 +163,7 @@ public class ContrastEnhancement extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public ContrastEnhancement clone() {
-        final var clone = (ContrastEnhancement) super.clone();
-        return clone;
+    public ContrastEnhancement<R> clone() {
+        return (ContrastEnhancement<R>) super.clone();
     }
 }

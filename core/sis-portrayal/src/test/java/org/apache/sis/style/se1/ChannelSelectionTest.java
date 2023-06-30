@@ -39,19 +39,17 @@ public final class ChannelSelectionTest extends StyleTestCase {
      */
     @Test
     public void testRGBChannels() {
-        ChannelSelection cdt = new ChannelSelection();
+        final var cdt = factory.createChannelSelection();
 
         // Check default
         assertNull(cdt.getChannels());
 
         // Check get/set
-        var values = new SelectedChannel[] {
-            new SelectedChannel("R"),
-            new SelectedChannel("G"),
-            new SelectedChannel("B")
-        };
-        cdt.setChannels(values);
-        assertArrayEquals(values, cdt.getChannels());
+        final var red   = factory.createSelectedChannel("R");
+        final var green = factory.createSelectedChannel("G");
+        final var blue  = factory.createSelectedChannel("B");
+        cdt.setChannels(red, green, blue);
+        assertArrayEquals(new Object[] {red, green, blue}, cdt.getChannels());
     }
 
 
@@ -60,16 +58,14 @@ public final class ChannelSelectionTest extends StyleTestCase {
      */
     @Test
     public void testGrayChannel() {
-        ChannelSelection cdt = new ChannelSelection();
+        final var cdt = factory.createChannelSelection();
 
         // Check default
         assertNull(cdt.getChannels());
 
         // Check get/set
-        var values = new SelectedChannel[] {
-            new SelectedChannel("Gray")
-        };
-        cdt.setChannels(values);
-        assertArrayEquals(values, cdt.getChannels());
+        final var gray = factory.createSelectedChannel("Gray");
+        cdt.setChannels(gray);
+        assertArrayEquals(new Object[] {gray}, cdt.getChannels());
     }
 }

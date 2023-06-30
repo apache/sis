@@ -16,7 +16,6 @@
  */
 package org.apache.sis.style.se1;
 
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -25,16 +24,19 @@ import org.opengis.filter.Expression;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
-public interface Translucent {
+public interface Translucent<R> {
     /**
      * Indicates the level of translucency as a floating point number between 0 and 1 (inclusive).
      * A value of zero means completely transparent. A value of 1.0 means completely opaque.
      *
      * @return the level of translucency as a floating point number between 0 and 1 (inclusive).
      */
-    Expression<Feature, ? extends Number> getOpacity();
+    Expression<R, ? extends Number> getOpacity();
 
     /**
      * Sets the level of translucency as a floating point number between 0 and 1 (inclusive).
@@ -43,5 +45,5 @@ public interface Translucent {
      *
      * @param  value  new level of translucency, or {@code null} for resetting the default value.
      */
-    void setOpacity(Expression<Feature, ? extends Number> value);
+    void setOpacity(Expression<R, ? extends Number> value);
 }

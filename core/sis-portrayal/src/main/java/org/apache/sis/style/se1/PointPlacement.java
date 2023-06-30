@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -33,7 +32,10 @@ import org.opengis.filter.Expression;
  * @author  Ian Turton (CCG)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "PointPlacementType", propOrder = {
     "anchorPoint",
@@ -41,7 +43,7 @@ import org.opengis.filter.Expression;
     "rotation"
 })
 @XmlRootElement(name = "PointPlacement")
-public class PointPlacement extends LabelPlacement {
+public class PointPlacement<R> extends LabelPlacement<R> {
     /**
      * Location to use for anchoring the label to the point, or {@code null} for lazily constructed default.
      *
@@ -49,7 +51,7 @@ public class PointPlacement extends LabelPlacement {
      * @see #setAnchorPoint(AnchorPoint)
      */
     @XmlElement(name = "AnchorPoint")
-    protected AnchorPoint anchorPoint;
+    protected AnchorPoint<R> anchorPoint;
 
     /**
      * Two-dimensional displacements from the "hot-spot" point, or {@code null} for lazily constructed default.
@@ -58,7 +60,7 @@ public class PointPlacement extends LabelPlacement {
      * @see #setDisplacement(Displacement)
      */
     @XmlElement(name = "Displacement")
-    protected Displacement displacement;
+    protected Displacement<R> displacement;
 
     /**
      * Expression fetching the rotation of the label when it is drawn.
@@ -67,12 +69,22 @@ public class PointPlacement extends LabelPlacement {
      * @see #setRotation(Expression)
      */
     @XmlElement(name = "Rotation")
-    protected Expression<Feature, ? extends Number> rotation;
+    protected Expression<R, ? extends Number> rotation;
 
     /**
-     * Creates a new point placement.
+     * For JAXB unmarshalling only.
      */
-    public PointPlacement() {
+    private PointPlacement() {
+        // Thread-local factory will be used.
+    }
+
+    /**
+     * Creates a point placement initialized to anchor at the middle and no displacement.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
+     */
+    public PointPlacement(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -81,7 +93,7 @@ public class PointPlacement extends LabelPlacement {
      *
      * @param  source  the object to copy.
      */
-    public PointPlacement(final PointPlacement source) {
+    public PointPlacement(final PointPlacement<R> source) {
         super(source);
         anchorPoint  = source.anchorPoint;
         displacement = source.displacement;
@@ -99,9 +111,9 @@ public class PointPlacement extends LabelPlacement {
      *
      * @return the anchor point.
      */
-    public AnchorPoint getAnchorPoint() {
+    public AnchorPoint<R> getAnchorPoint() {
         if (anchorPoint == null) {
-            anchorPoint = new AnchorPoint();
+            anchorPoint = factory.createAnchorPoint();
         }
         return anchorPoint;
     }
@@ -113,7 +125,7 @@ public class PointPlacement extends LabelPlacement {
      *
      * @param  value  new anchor point, or {@code null} for resetting the default value.
      */
-    public void setAnchorPoint(final AnchorPoint value) {
+    public void setAnchorPoint(final AnchorPoint<R> value) {
         anchorPoint = value;
     }
 
@@ -126,9 +138,9 @@ public class PointPlacement extends LabelPlacement {
      * @see Graphic#getDisplacement()
      * @see PolygonSymbolizer#getDisplacement()
      */
-    public Displacement getDisplacement() {
+    public Displacement<R> getDisplacement() {
         if (displacement == null) {
-            displacement = new Displacement();
+            displacement = factory.createDisplacement();
         }
         return displacement;
     }
@@ -140,7 +152,7 @@ public class PointPlacement extends LabelPlacement {
      *
      * @param  value  new displacements from the "hot-spot" point, or {@code null} for resetting the default value.
      */
-    public void setDisplacement(final Displacement value) {
+    public void setDisplacement(final Displacement<R> value) {
         displacement = value;
     }
 
@@ -151,7 +163,7 @@ public class PointPlacement extends LabelPlacement {
      *
      * @return rotation of the label when it is drawn.
      */
-    public Expression<Feature, ? extends Number> getRotation() {
+    public Expression<R, ? extends Number> getRotation() {
         return defaultToZero(rotation);
     }
 
@@ -161,7 +173,7 @@ public class PointPlacement extends LabelPlacement {
      *
      * @param  value  new rotation of the label, or {@code null} for resetting the default value.
      */
-    public void setRotation(final Expression<Feature, ? extends Number> value) {
+    public void setRotation(final Expression<R, ? extends Number> value) {
         rotation = value;
     }
 
@@ -181,8 +193,8 @@ public class PointPlacement extends LabelPlacement {
      * @return deep clone of all style elements.
      */
     @Override
-    public PointPlacement clone() {
-        final var clone = (PointPlacement) super.clone();
+    public PointPlacement<R> clone() {
+        final var clone = (PointPlacement<R>) super.clone();
         clone.selfClone();
         return clone;
     }

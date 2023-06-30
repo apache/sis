@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -33,14 +32,17 @@ import org.opengis.filter.Expression;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "LineSymbolizerType", propOrder = {
     "stroke",
     "perpendicularOffset"
 })
 @XmlRootElement(name = "LineSymbolizer")
-public class LineSymbolizer extends Symbolizer {
+public class LineSymbolizer<R> extends Symbolizer<R> {
     /**
      * Information about how to draw lines, or {@code null} for lazily constructed default.
      *
@@ -48,7 +50,7 @@ public class LineSymbolizer extends Symbolizer {
      * @see #setStroke(Stroke)
      */
     @XmlElement(name = "Stroke")
-    protected Stroke stroke;
+    protected Stroke<R> stroke;
 
     /**
      * Distance to apply for drawing lines in parallel to geometry, or {@code null} for the default value.
@@ -57,12 +59,22 @@ public class LineSymbolizer extends Symbolizer {
      * @see #setPerpendicularOffset(Expression)
      */
     @XmlElement(name = "PerpendicularOffset")
-    protected Expression<Feature, ? extends Number> perpendicularOffset;
+    protected Expression<R, ? extends Number> perpendicularOffset;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private LineSymbolizer() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a line symbolizer with the default stroke and no perpendicular offset.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public LineSymbolizer() {
+    public LineSymbolizer(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -71,7 +83,7 @@ public class LineSymbolizer extends Symbolizer {
      *
      * @param  source  the object to copy.
      */
-    public LineSymbolizer(final LineSymbolizer source) {
+    public LineSymbolizer(final LineSymbolizer<R> source) {
         super(source);
         stroke = source.stroke;
         perpendicularOffset = source.perpendicularOffset;
@@ -84,9 +96,9 @@ public class LineSymbolizer extends Symbolizer {
      *
      * @return information about how to draw lines.
      */
-    public Stroke getStroke() {
+    public Stroke<R> getStroke() {
         if (stroke == null) {
-            stroke = new Stroke();
+            stroke = factory.createStroke();
         }
         return stroke;
     }
@@ -98,7 +110,7 @@ public class LineSymbolizer extends Symbolizer {
      *
      * @param  value  new information about how to draw lines, or {@code null} for resetting the default value.
      */
-    public void setStroke(final Stroke value) {
+    public void setStroke(final Stroke<R> value) {
         stroke = value;
     }
 
@@ -115,7 +127,7 @@ public class LineSymbolizer extends Symbolizer {
      *
      * @return distance to apply for drawing lines in parallel to the original geometry.
      */
-    public Expression<Feature, ? extends Number> getPerpendicularOffset() {
+    public Expression<R, ? extends Number> getPerpendicularOffset() {
         return defaultToZero(perpendicularOffset);
     }
 
@@ -126,7 +138,7 @@ public class LineSymbolizer extends Symbolizer {
      *
      * @param  value  new distance to apply for drawing lines, or {@code null} for resetting the default value.
      */
-    public void setPerpendicularOffset(final Expression<Feature, ? extends Number> value) {
+    public void setPerpendicularOffset(final Expression<R, ? extends Number> value) {
         perpendicularOffset = value;
     }
 
@@ -146,8 +158,8 @@ public class LineSymbolizer extends Symbolizer {
      * @return deep clone of all style elements.
      */
     @Override
-    public LineSymbolizer clone() {
-        final var clone = (LineSymbolizer) super.clone();
+    public LineSymbolizer<R> clone() {
+        final var clone = (LineSymbolizer<R>) super.clone();
         clone.selfClone();
         return clone;
     }

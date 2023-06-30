@@ -22,9 +22,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.filter.Literal;
 
 
 /**
@@ -35,21 +33,14 @@ import org.opengis.filter.Literal;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "FontType")
 @XmlRootElement(name = "Font")
-public class Font extends StyleElement {
-    /**
-     * The "normal" literal, used for default style and weight.
-     */
-    private static final Literal<Feature,String> NORMAL = literal("normal");
-
-    /**
-     * The default font size.
-     */
-    private static final Literal<Feature,Double> DEFAULT_SIZE = literal(10.0);
-
+public class Font<R> extends StyleElement<R> {
     /**
      * Family names of the font to use, in preference order.
      *
@@ -57,7 +48,7 @@ public class Font extends StyleElement {
      *
      * @see #family()
      */
-    private List<Expression<Feature,String>> family;
+    private List<Expression<R,String>> family;
 
     /**
      * Style (normal or italic) to use for a font.
@@ -67,7 +58,7 @@ public class Font extends StyleElement {
      * @see #getStyle()
      * @see #setStyle(Expression)
      */
-    protected Expression<Feature,String> style;
+    protected Expression<R,String> style;
 
     /**
      * Amount of weight or boldness to use for a font.
@@ -77,7 +68,7 @@ public class Font extends StyleElement {
      * @see #getWeight()
      * @see #setWeight(Expression)
      */
-    protected Expression<Feature,String> weight;
+    protected Expression<R,String> weight;
 
     /**
      * Size (in pixels) to use for the font.
@@ -87,12 +78,22 @@ public class Font extends StyleElement {
      * @see #getSize()
      * @see #setSize(Expression)
      */
-    protected Expression<Feature, ? extends Number> size;
+    protected Expression<R, ? extends Number> size;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private Font() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a font initialized to normal style, normal weight and a size of 10 pixels.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public Font() {
+    public Font(final StyleFactory<R> factory) {
+        super(factory);
         family = new ArrayList<>();
     }
 
@@ -102,7 +103,7 @@ public class Font extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public Font(final Font source) {
+    public Font(final Font<R> source) {
         super(source);
         family = new ArrayList<>(source.family);
         style  = source.style;
@@ -120,7 +121,7 @@ public class Font extends StyleElement {
      * @return the family names in preference order, as a live collection.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<Expression<Feature,String>> family() {
+    public List<Expression<R,String>> family() {
         return family;
     }
 
@@ -130,9 +131,9 @@ public class Font extends StyleElement {
      *
      * @return style to use for a font.
      */
-    public Expression<Feature,String> getStyle() {
+    public Expression<R,String> getStyle() {
         final var value = style;
-        return (value != null) ? value : NORMAL;
+        return (value != null) ? value : factory.normal;
     }
 
     /**
@@ -141,7 +142,7 @@ public class Font extends StyleElement {
      *
      * @param  value  new style to use for a font, or {@code null} for resetting the default value.
      */
-    public void setStyle(final Expression<Feature,String> value) {
+    public void setStyle(final Expression<R,String> value) {
         style = value;
     }
 
@@ -151,9 +152,9 @@ public class Font extends StyleElement {
      *
      * @return amount of weight or boldness to use for a font.
      */
-    public Expression<Feature,String> getWeight() {
+    public Expression<R,String> getWeight() {
         final var value = weight;
-        return (value != null) ? value : NORMAL;
+        return (value != null) ? value : factory.normal;
     }
 
     /**
@@ -162,7 +163,7 @@ public class Font extends StyleElement {
      *
      * @param  value  new amount of weight to use for a font, or {@code null} for resetting the default value.
      */
-    public void setWeight(final Expression<Feature,String> value) {
+    public void setWeight(final Expression<R,String> value) {
         weight = value;
     }
 
@@ -171,9 +172,9 @@ public class Font extends StyleElement {
      *
      * @return size (in pixels) to use for the font.
      */
-    public Expression<Feature, ? extends Number> getSize() {
+    public Expression<R, ? extends Number> getSize() {
         final var value = size;
-        return (value != null) ? value : DEFAULT_SIZE;
+        return (value != null) ? value : factory.ten;
     }
 
     /**
@@ -183,7 +184,7 @@ public class Font extends StyleElement {
      *
      * @param  value  new size to use for the font, or {@code null} for resetting the default value.
      */
-    public void setSize(final Expression<Feature, ? extends Number> value) {
+    public void setSize(final Expression<R, ? extends Number> value) {
         size = value;
     }
 
@@ -208,8 +209,8 @@ public class Font extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public Font clone() {
-        final var clone = (Font) super.clone();
+    public Font<R> clone() {
+        final var clone = (Font<R>) super.clone();
         clone.selfClone();
         return clone;
     }

@@ -30,18 +30,31 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlSeeAlso({
     PointPlacement.class,
     LinePlacement.class
 })
-public abstract class LabelPlacement extends StyleElement {
+public abstract class LabelPlacement<R> extends StyleElement<R> {
     /**
      * Creates a new label placement.
      * Intentionally restricted to this package because {@link #properties()} is package-private.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
+     */
+    public LabelPlacement(final StyleFactory<R> factory) {
+        super(factory);
+    }
+
+    /**
+     * For JAXB unmarshalling only.
      */
     LabelPlacement() {
+        // Thread-local factory will be used.
     }
 
     /**
@@ -50,7 +63,7 @@ public abstract class LabelPlacement extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    LabelPlacement(final LabelPlacement source) {
+    LabelPlacement(final LabelPlacement<R> source) {
         super(source);
     }
 
@@ -61,7 +74,7 @@ public abstract class LabelPlacement extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public LabelPlacement clone() {
-        return (LabelPlacement) super.clone();
+    public LabelPlacement<R> clone() {
+        return (LabelPlacement<R>) super.clone();
     }
 }

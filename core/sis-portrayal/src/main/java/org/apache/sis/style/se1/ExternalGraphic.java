@@ -32,7 +32,10 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "ExternalGraphicType", propOrder = {
 //  "onlineResource",       // XML encoding not yet available.
@@ -41,7 +44,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
     "colorReplacements"
 })
 @XmlRootElement(name = "ExternalGraphic")
-public class ExternalGraphic extends GraphicalSymbol {
+public class ExternalGraphic<R> extends GraphicalSymbol<R> {
     /**
      * A list of colors to replace, or {@code null} if none.
      *
@@ -53,12 +56,22 @@ public class ExternalGraphic extends GraphicalSymbol {
      * @see #colorReplacements()
      */
     @XmlElement(name = "ColorReplacement")
-    protected List<ColorReplacement> colorReplacements;
+    protected List<ColorReplacement<R>> colorReplacements;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private ExternalGraphic() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates an initially empty external graphic.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public ExternalGraphic() {
+    public ExternalGraphic(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -67,7 +80,7 @@ public class ExternalGraphic extends GraphicalSymbol {
      *
      * @param  source  the object to copy.
      */
-    public ExternalGraphic(final ExternalGraphic source) {
+    public ExternalGraphic(final ExternalGraphic<R> source) {
         super(source);
         final var value = source.colorReplacements;
         if (value != null) {
@@ -84,7 +97,7 @@ public class ExternalGraphic extends GraphicalSymbol {
      * @return list of colors to replace, as a live collection.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<ColorReplacement> colorReplacements() {
+    public List<ColorReplacement<R>> colorReplacements() {
         if (colorReplacements == null) {
             colorReplacements = new ArrayList<>();
         }
@@ -108,8 +121,8 @@ public class ExternalGraphic extends GraphicalSymbol {
      * @return deep clone of all style elements.
      */
     @Override
-    public ExternalGraphic clone() {
-        final var clone = (ExternalGraphic) super.clone();
+    public ExternalGraphic<R> clone() {
+        final var clone = (ExternalGraphic<R>) super.clone();
         clone.selfClone();
         return clone;
     }

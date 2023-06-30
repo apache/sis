@@ -33,7 +33,10 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "ChannelSelectionType", propOrder = {
     "red",
@@ -42,39 +45,49 @@ import org.apache.sis.util.resources.Errors;
     "gray"
 })
 @XmlRootElement(name = "ChannelSelection")
-public class ChannelSelection extends StyleElement {
+public class ChannelSelection<R> extends StyleElement<R> {
     /**
      * The red channel, or {@code null} if none.
      * This property is mutually exclusive with {@link #gray}.
      */
     @XmlElement(name = "RedChannel")
-    protected SelectedChannel red;
+    protected SelectedChannel<R> red;
 
     /**
      * The green channel, or {@code null} if none.
      * This property is mutually exclusive with {@link #gray}.
      */
     @XmlElement(name = "GreenChannel")
-    protected SelectedChannel green;
+    protected SelectedChannel<R> green;
 
     /**
      * The blue channel, or {@code null} if none.
      * This property is mutually exclusive with {@link #gray}.
      */
     @XmlElement(name = "BlueChannel")
-    protected SelectedChannel blue;
+    protected SelectedChannel<R> blue;
 
     /**
      * The gray channel, or {@code null} if none.
      * This property is mutually exclusive with {@link #red}, {@link #green} and {@link #blue}.
      */
     @XmlElement(name = "GrayChannel")
-    protected SelectedChannel gray;
+    protected SelectedChannel<R> gray;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private ChannelSelection() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates an initially empty channel selection.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public ChannelSelection() {
+    public ChannelSelection(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -83,7 +96,7 @@ public class ChannelSelection extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public ChannelSelection(final ChannelSelection source) {
+    public ChannelSelection(final ChannelSelection<R> source) {
         super(source);
         red   = source.red;
         green = source.green;
@@ -101,7 +114,8 @@ public class ChannelSelection extends StyleElement {
      *
      * @todo Replace null value by some default value.
      */
-    public SelectedChannel[] getChannels() {
+    @SuppressWarnings({"rawtypes", "unchecked"})        // Generic array creation.
+    public SelectedChannel<R>[] getChannels() {
         if (red != null || green != null || blue != null) {
             return new SelectedChannel[] {red, green, blue};
         } else if (gray != null) {
@@ -122,7 +136,8 @@ public class ChannelSelection extends StyleElement {
      * @param  values  array of channels, or {@code null} if none.
      * @throws IllegalArgumentException if the length of the specified array is not 0, 1 or 3.
      */
-    public void setChannels(final SelectedChannel... values) {
+    @SafeVarargs
+    public final void setChannels(final SelectedChannel<R>... values) {
         red   = null;
         green = null;
         blue  = null;
@@ -160,8 +175,8 @@ public class ChannelSelection extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public ChannelSelection clone() {
-        final var clone = (ChannelSelection) super.clone();
+    public ChannelSelection<R> clone() {
+        final var clone = (ChannelSelection<R>) super.clone();
         clone.selfClone();
         return clone;
     }

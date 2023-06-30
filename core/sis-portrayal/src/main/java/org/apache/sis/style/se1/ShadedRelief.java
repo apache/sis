@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -33,20 +32,17 @@ import org.opengis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "ShadedReliefType", propOrder = {
     "brightnessOnly",
     "reliefFactor"
 })
 @XmlRootElement(name = "ShadedRelief")
-public class ShadedRelief extends StyleElement {
-    /**
-     * Default value for {@link #getReliefFactor()}.
-     * No standard value is specified by OGC 05-077r4.
-     */
-    private static final Expression<Feature,Double> DEFAULT_VALUE = literal(55.0);
-
+public class ShadedRelief<R> extends StyleElement<R> {
     /**
      * Whether to apply the shading to the image generated so far by other layers.
      *
@@ -56,7 +52,7 @@ public class ShadedRelief extends StyleElement {
      * @todo Needs an adapter from expression to plain boolean.
      */
     @XmlElement(name = "BrightnessOnly")
-    protected Expression<Feature,Boolean> brightnessOnly;
+    protected Expression<R,Boolean> brightnessOnly;
 
     /**
      * Amount of exaggeration to use for the height of the hills, or {@code null} for the default value.
@@ -65,12 +61,22 @@ public class ShadedRelief extends StyleElement {
      * @see #setReliefFactor(Expression)
      */
     @XmlElement(name = "ReliefFactor")
-    protected Expression<Feature, ? extends Number> reliefFactor;
+    protected Expression<R, ? extends Number> reliefFactor;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private ShadedRelief() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a shaded relief initialized to implementation-specific default values.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public ShadedRelief() {
+    public ShadedRelief(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -79,7 +85,7 @@ public class ShadedRelief extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public ShadedRelief(final ShadedRelief source) {
+    public ShadedRelief(final ShadedRelief<R> source) {
         super(source);
         brightnessOnly = source.brightnessOnly;
         reliefFactor   = source.reliefFactor;
@@ -92,7 +98,7 @@ public class ShadedRelief extends StyleElement {
      *
      * @return whether to apply the shading to the image generated so far by other layers.
      */
-    public Expression<Feature,Boolean> isBrightnessOnly() {
+    public Expression<R,Boolean> isBrightnessOnly() {
         return defaultToFalse(brightnessOnly);
     }
 
@@ -102,7 +108,7 @@ public class ShadedRelief extends StyleElement {
      *
      * @param  value  new policy, or {@code null} for resetting the default value.
      */
-    public void setBrightnessOnly(final Expression<Feature,Boolean> value) {
+    public void setBrightnessOnly(final Expression<R,Boolean> value) {
         brightnessOnly = value;
     }
 
@@ -112,9 +118,9 @@ public class ShadedRelief extends StyleElement {
      *
      * @return amount of exaggeration to use for the height of the hills.
      */
-    public Expression<Feature, ? extends Number> getReliefFactor() {
+    public Expression<R, ? extends Number> getReliefFactor() {
         final var value = reliefFactor;
-        return (value != null) ? value : DEFAULT_VALUE;
+        return (value != null) ? value : factory.relief;
     }
 
     /**
@@ -123,7 +129,7 @@ public class ShadedRelief extends StyleElement {
      *
      * @param  value  new amount of exaggeration, or {@code null} for resetting the default value.
      */
-    public void setReliefFactor(final Expression<Feature, ? extends Number> value) {
+    public void setReliefFactor(final Expression<R, ? extends Number> value) {
         reliefFactor = value;
     }
 
@@ -143,8 +149,7 @@ public class ShadedRelief extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public ShadedRelief clone() {
-        final var clone = (ShadedRelief) super.clone();
-        return clone;
+    public ShadedRelief<R> clone() {
+        return (ShadedRelief<R>) super.clone();
     }
 }

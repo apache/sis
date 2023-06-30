@@ -40,7 +40,7 @@ public final class DescriptionTest extends StyleTestCase {
     @Test
     public void testTitle() {
         var i18n = new SimpleInternationalString("A random title");
-        final Description cdt = new Description();
+        final var cdt = factory.createDescription();
         assertEmpty(cdt.getTitle());
         cdt.setTitle(i18n);
         assertOptionalEquals(i18n, cdt.getTitle());
@@ -52,7 +52,7 @@ public final class DescriptionTest extends StyleTestCase {
     @Test
     public void testAbstract() {
         var i18n = new SimpleInternationalString("A random abstract");
-        final Description cdt = new Description();
+        final var cdt = factory.createDescription();
         assertEmpty(cdt.getAbstract());
         cdt.setAbstract(i18n);
         assertOptionalEquals(i18n, cdt.getAbstract());

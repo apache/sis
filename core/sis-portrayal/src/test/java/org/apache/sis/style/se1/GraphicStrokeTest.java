@@ -38,13 +38,13 @@ public final class GraphicStrokeTest extends StyleTestCase {
      */
     @Test
     public void testInitialGap() {
-        GraphicStroke cdt = new GraphicStroke();
+        final var cdt = factory.createGraphicStroke();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getInitialGap());
 
         // Check get/set
-        cdt.setInitialGap(FF.literal(9));
+        cdt.setInitialGap(literal(9));
         assertLiteralEquals(9, cdt.getInitialGap());
     }
 
@@ -53,13 +53,13 @@ public final class GraphicStrokeTest extends StyleTestCase {
      */
     @Test
     public void testGap() {
-        GraphicStroke cdt = new GraphicStroke();
+        final var cdt = factory.createGraphicStroke();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getGap());
 
         // Check get/set
-        cdt.setGap(FF.literal(6));
+        cdt.setGap(literal(6));
         assertLiteralEquals(6, cdt.getGap());
     }
 }

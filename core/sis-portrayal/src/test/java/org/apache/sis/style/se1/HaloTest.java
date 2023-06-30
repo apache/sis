@@ -17,8 +17,10 @@
 package org.apache.sis.style.se1;
 
 import org.junit.Test;
-
 import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
 
 
 /**
@@ -40,18 +42,18 @@ public final class HaloTest extends StyleTestCase {
      */
     @Test
     public void testFill() {
-        Halo cdt = new Halo();
+        final var cdt = factory.createHalo();
 
         // Check default
-        Fill fill = cdt.getFill();
-        assertEquals(Fill.WHITE, fill.getColor());
-        assertLiteralEquals(1.0, fill.getOpacity());
+        Fill<Feature> value = cdt.getFill();
+        assertEquals(factory.white, value.getColor());
+        assertLiteralEquals(1.0, value.getOpacity());
 
         // Check get/set
-        fill.setColor(anyColor());
-        fill.setOpacity(FF.literal(0.8));
-        cdt.setFill(fill);
-        assertEquals(fill, cdt.getFill());
+        value.setColor(anyColor());
+        value.setOpacity(literal(0.8));
+        cdt.setFill(value);
+        assertEquals(value, cdt.getFill());
     }
 
     /**
@@ -59,13 +61,13 @@ public final class HaloTest extends StyleTestCase {
      */
     @Test
     public void testRadius() {
-        Halo cdt = new Halo();
+        final var cdt = factory.createHalo();
 
         // Check default
         assertLiteralEquals(1.0, cdt.getRadius());
 
         // Check get/set
-        cdt.setRadius(FF.literal(40));
+        cdt.setRadius(literal(40));
         assertLiteralEquals(40, cdt.getRadius());
     }
 }

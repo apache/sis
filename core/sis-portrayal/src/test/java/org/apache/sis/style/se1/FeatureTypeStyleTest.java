@@ -23,7 +23,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.style.SemanticType;
 
 
@@ -46,7 +45,7 @@ public final class FeatureTypeStyleTest extends StyleTestCase {
      */
     @Test
     public void testName() {
-        FeatureTypeStyle cdt = new FeatureTypeStyle();
+        final var cdt = new FeatureTypeStyle();
 
         // Check defaults
         assertEmpty(cdt.getName());
@@ -62,13 +61,13 @@ public final class FeatureTypeStyleTest extends StyleTestCase {
      */
     @Test
     public void testDescription() {
-        FeatureTypeStyle cdt = new FeatureTypeStyle();
+        final var cdt = new FeatureTypeStyle();
 
         // Check defaults
         assertEmpty(cdt.getDescription());
 
         // Check get/set
-        Description desc = anyDescription();
+        var desc = anyDescription();
         cdt.setDescription(desc);
         assertOptionalEquals(desc, cdt.getDescription());
     }
@@ -78,13 +77,13 @@ public final class FeatureTypeStyleTest extends StyleTestCase {
      */
     @Test
     public void testFeatureInstanceIDs() {
-        FeatureTypeStyle cdt = new FeatureTypeStyle();
+        final var cdt = new FeatureTypeStyle();
 
         // Check defaults
         assertEmpty(cdt.getFeatureInstanceIDs());
 
         // Check get/set
-        final var rid = FF.resourceId("A random identifier");
+        final var rid = factory.filterFactory.resourceId("A random identifier");
         cdt.setFeatureInstanceIDs(rid);
         assertOptionalEquals(rid, cdt.getFeatureInstanceIDs());
     }
@@ -94,7 +93,7 @@ public final class FeatureTypeStyleTest extends StyleTestCase {
      */
     @Test
     public void testFeatureTypeNames() {
-        FeatureTypeStyle cdt = new FeatureTypeStyle();
+        final var cdt = new FeatureTypeStyle();
 
         // Check defaults
         assertEmpty(cdt.getFeatureTypeName());
@@ -110,7 +109,7 @@ public final class FeatureTypeStyleTest extends StyleTestCase {
      */
     @Test
     public void testSemanticTypeIdentifiers() {
-        FeatureTypeStyle cdt = new FeatureTypeStyle();
+        final var cdt = new FeatureTypeStyle();
 
         // Check defaults
         assertTrue(cdt.semanticTypeIdentifiers().isEmpty());
@@ -125,13 +124,13 @@ public final class FeatureTypeStyleTest extends StyleTestCase {
      */
     @Test
     public void testRules() {
-        FeatureTypeStyle cdt = new FeatureTypeStyle();
+        final var cdt = new FeatureTypeStyle();
 
         // Check defaults
         assertTrue(cdt.rules().isEmpty());
 
         // Check get/set
-        var rule = new Rule<Feature>();
+        var rule = factory.createRule();
         cdt.rules().add(rule);
         assertEquals(List.of(rule), cdt.rules());
     }

@@ -21,12 +21,9 @@ import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.filter.Literal;
 
 
 /**
@@ -44,7 +41,10 @@ import org.opengis.filter.Literal;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "StrokeType", propOrder = {
     "graphicFill",
@@ -52,37 +52,7 @@ import org.opengis.filter.Literal;
 //  "svgParameter"
 })
 @XmlRootElement(name = "Stroke")
-public class Stroke extends StyleElement implements Translucent {
-    /**
-     * Literal for a predefined join which can be used in strokes.
-     *
-     * @see #getLineJoin()
-     */
-    public static final Literal<Feature,String> JOIN_MITRE, JOIN_ROUND, JOIN_BEVEL;
-
-    /**
-     * Literal for a predefined cap which can be used in strokes.
-     *
-     * @see #getLineCap()
-     */
-    public static final Literal<Feature,String> CAP_BUTT, CAP_ROUND, CAP_SQUARE;
-
-    /**
-     * Literal for the default dash offset.
-     */
-    private static final Literal<Feature,Integer> ZERO;
-
-    static {
-        final var FF = FF();
-        ZERO       = FF.literal(0);
-        JOIN_MITRE = FF.literal("mitre");
-        JOIN_ROUND = FF.literal("round");
-        JOIN_BEVEL = FF.literal("bevel");
-        CAP_BUTT   = FF.literal("butt");
-        CAP_ROUND  = FF.literal("round");
-        CAP_SQUARE = FF.literal("square");
-    }
-
+public class Stroke<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * Graphic for tiling the (thin) area of the line, or {@code null} if none.
      * This property and {@link #graphicStroke} are mutually exclusive.
@@ -91,7 +61,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #setGraphicFill(GraphicFill)
      */
     @XmlElement(name = "GraphicFill")
-    protected GraphicFill graphicFill;
+    protected GraphicFill<R> graphicFill;
 
     /**
      * Graphic to repeat along the path of the lines, or {@code null} if none.
@@ -101,7 +71,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #setGraphicStroke(GraphicStroke)
      */
     @XmlElement(name = "GraphicStroke")
-    protected GraphicStroke graphicStroke;
+    protected GraphicStroke<R> graphicStroke;
 
     /**
      * Color of the line if it is to be solid-color filled, or {@code null} for the default value.
@@ -113,7 +83,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #getColor()
      * @see #setColor(Expression)
      */
-    protected Expression<Feature,Color> color;
+    protected Expression<R,Color> color;
 
     /**
      * Level of translucency as a floating point number between 0 and 1 (inclusive), or {@code null} the default value.
@@ -124,7 +94,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #getOpacity()
      * @see #setOpacity(Expression)
      */
-    protected Expression<Feature, ? extends Number> opacity;
+    protected Expression<R, ? extends Number> opacity;
 
     /**
      * Absolute width of the line stroke as a positive floating point number, or {@code null} for the default value.
@@ -135,7 +105,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #getWidth()
      * @see #setWidth(Expression)
      */
-    protected Expression<Feature, ? extends Number> width;
+    protected Expression<R, ? extends Number> width;
 
     /**
      * How the various segments of a (thick) line string should be joined, or {@code null} the default value.
@@ -146,7 +116,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #getLineJoin()
      * @see #setLineJoin(Expression)
      */
-    protected Expression<Feature,String> lineJoin;
+    protected Expression<R,String> lineJoin;
 
     /**
      * How the beginning and ending segments of a line string will be terminated, or {@code null} the default value.
@@ -157,7 +127,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #getLineCap()
      * @see #setLineCap(Expression)
      */
-    protected Expression<Feature,String> lineCap;
+    protected Expression<R,String> lineCap;
 
     /**
      * Dash pattern as a space-separated sequence of numbers, or {@code null} for a solid line.
@@ -167,7 +137,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #getDashArray()
      * @see #setDashArray(Expression)
      */
-    protected Expression<Feature,float[]> dashArray;
+    protected Expression<R,float[]> dashArray;
 
     /**
      * Distance offset into the dash array to begin drawing, or {@code null} for the default value.
@@ -178,26 +148,22 @@ public class Stroke extends StyleElement implements Translucent {
      * @see #getDashOffset()
      * @see #setDashOffset(Expression)
      */
-    protected Expression<Feature,Integer> dashOffset;
+    protected Expression<R,Integer> dashOffset;
 
     /**
-     * Creates a stroke initialized to solid line of black opaque color, 1 pixel width.
+     * For JAXB unmarshalling only.
      */
-    public Stroke() {
+    private Stroke() {
+        // Thread-local factory will be used.
     }
 
     /**
-     * Creates a stroke initialized to the given color.
-     * The opacity is derived from the alpha value of the given color.
+     * Creates a stroke initialized to solid line of black opaque color, 1 pixel width.
      *
-     * @param  color  the initial color.
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public Stroke(Color color) {
-        ArgumentChecks.ensureNonNull("color", color);
-        if ((opacity = Fill.opacity(color)) != null) {
-            color = new Color(color.getRGB() | 0xFF000000);
-        }
-        this.color = literal(color);
+    public Stroke(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -206,7 +172,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @param  source  the object to copy.
      */
-    public Stroke(final Stroke source) {
+    public Stroke(final Stroke<R> source) {
         super(source);
         graphicFill   = source.graphicFill;
         graphicStroke = source.graphicStroke;
@@ -231,7 +197,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @see Fill#getGraphicFill()
      */
-    public Optional<GraphicFill> getGraphicFill() {
+    public Optional<GraphicFill<R>> getGraphicFill() {
         return Optional.ofNullable(graphicFill);
     }
 
@@ -247,7 +213,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @see Fill#setGraphicFill(GraphicFill)
      */
-    public void setGraphicFill(final GraphicFill value) {
+    public void setGraphicFill(final GraphicFill<R> value) {
         graphicFill = value;
         if (value != null) {
             graphicStroke = null;
@@ -265,7 +231,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @return graphic to repeat along the path of the lines.
      */
-    public Optional<GraphicStroke> getGraphicStroke() {
+    public Optional<GraphicStroke<R>> getGraphicStroke() {
         return Optional.ofNullable(graphicStroke);
     }
 
@@ -279,7 +245,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @param  value  new graphic to repeat along the path of the lines, or {@code null} if none.
      */
-    public void setGraphicStroke(final GraphicStroke value) {
+    public void setGraphicStroke(final GraphicStroke<R> value) {
         graphicStroke = value;
         if (value != null) {
             graphicFill = null;
@@ -295,9 +261,9 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @see Fill#getColor()
      */
-    public Expression<Feature,Color> getColor() {
+    public Expression<R,Color> getColor() {
         final var value = color;
-        return (value != null) ? value : Fill.BLACK;
+        return (value != null) ? value : factory.black;
     }
 
     /**
@@ -312,11 +278,29 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @see Fill#setColor(Expression)
      */
-    public void setColor(final Expression<Feature,Color> value) {
+    public void setColor(final Expression<R,Color> value) {
         color = value;
         if (value != null) {
             graphicFill   = null;
             graphicStroke = null;
+        }
+    }
+
+    /**
+     * Sets the color and opacity together.
+     * The opacity is derived from the alpha value of the given color.
+     *
+     * @param  value  new color and opacity, or {@code null} for resetting the defaults.
+     */
+    public void setColorAndOpacity(Color value) {
+        if (value  == null) {
+            color   = null;
+            opacity = null;
+        } else {
+            if ((opacity = opacity(value)) != null) {
+                value = new Color(value.getRGB() | 0xFF000000);
+            }
+            color = literal(value);
         }
     }
 
@@ -331,7 +315,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @see RasterSymbolizer#getOpacity()
      */
     @Override
-    public Expression<Feature, ? extends Number> getOpacity() {
+    public Expression<R, ? extends Number> getOpacity() {
         return defaultToOne(opacity);
     }
 
@@ -343,7 +327,7 @@ public class Stroke extends StyleElement implements Translucent {
      * @param  value  new level of translucency, or {@code null} for resetting the default value.
      */
     @Override
-    public void setOpacity(final Expression<Feature, ? extends Number> value) {
+    public void setOpacity(final Expression<R, ? extends Number> value) {
         opacity = value;
     }
 
@@ -354,7 +338,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @return absolute width of the line stroke as a positive floating point number.
      */
-    public Expression<Feature, ? extends Number> getWidth() {
+    public Expression<R, ? extends Number> getWidth() {
         return defaultToOne(width);
     }
 
@@ -365,7 +349,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @param  value  new width of the line stroke, or {@code null} for resetting the default value.
      */
-    public void setWidth(final Expression<Feature, ? extends Number> value) {
+    public void setWidth(final Expression<R, ? extends Number> value) {
         width = value;
     }
 
@@ -375,19 +359,19 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @return how segments of a (thick) line string should be joined.
      */
-    public Expression<Feature,String> getLineJoin() {
+    public Expression<R,String> getLineJoin() {
         final var value = lineJoin;
-        return (value != null) ? value : JOIN_BEVEL;
+        return (value != null) ? value : factory.bevel;
     }
 
     /**
      * Sets how the various segments of a (thick) line string should be joined.
-     * If this method is never invoked, then the default value is {@link #JOIN_BEVEL}.
+     * If this method is never invoked, then the default value is literal "bevel".
      * That default value is implementation-specific.
      *
      * @param  value  how segments of a line string should be joined, or {@code null} for resetting the default value.
      */
-    public void setLineJoin(final Expression<Feature,String> value) {
+    public void setLineJoin(final Expression<R,String> value) {
         lineJoin = value;
     }
 
@@ -397,19 +381,19 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @return how the beginning and ending segments of a line string will be terminated.
      */
-    public Expression<Feature,String> getLineCap() {
+    public Expression<R,String> getLineCap() {
         final var value = lineCap;
-        return (value != null) ? value : CAP_SQUARE;
+        return (value != null) ? value : factory.square;
     }
 
     /**
      * Sets how the beginning and ending segments of a line string will be terminated.
-     * If this method is never invoked, then the default value is {@link #CAP_SQUARE}.
+     * If this method is never invoked, then the default value is literal "square".
      * That default value is implementation-specific.
      *
      * @param  value  how a line string should be terminated, or {@code null} for resetting the default value.
      */
-    public void setLineCap(final Expression<Feature,String> value) {
+    public void setLineCap(final Expression<R,String> value) {
         lineCap = value;
     }
 
@@ -422,7 +406,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @return dash pattern as a space-separated sequence of numbers, or empty for a solid line.
      */
-    public Optional<Expression<Feature,float[]>> getDashArray() {
+    public Optional<Expression<R,float[]>> getDashArray() {
         return Optional.ofNullable(dashArray);
     }
 
@@ -432,7 +416,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @param  value  new dash pattern as a space-separated sequence of numbers, or {@code null} for a solid line.
      */
-    public void setDashArray(final Expression<Feature,float[]> value) {
+    public void setDashArray(final Expression<R,float[]> value) {
         dashArray = value;
     }
 
@@ -441,9 +425,9 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @return distance offset into the dash array to begin drawing.
      */
-    public Expression<Feature,Integer> getDashOffset() {
+    public Expression<R,Integer> getDashOffset() {
         final var value = dashOffset;
-        return (value != null) ? value : ZERO;
+        return (value != null) ? value : factory.zeroAsInt;
     }
 
     /**
@@ -452,7 +436,7 @@ public class Stroke extends StyleElement implements Translucent {
      *
      * @param  value  new distance offset into the dash array, or {@code null} for resetting the default value.
      */
-    public void setDashOffset(final Expression<Feature,Integer> value) {
+    public void setDashOffset(final Expression<R,Integer> value) {
         dashOffset = value;
     }
 
@@ -492,8 +476,8 @@ public class Stroke extends StyleElement implements Translucent {
      * @return deep clone of all style elements.
      */
     @Override
-    public Stroke clone() {
-        final var clone = (Stroke) super.clone();
+    public Stroke<R> clone() {
+        final var clone = (Stroke<R>) super.clone();
         clone.selfClone();
         return clone;
     }

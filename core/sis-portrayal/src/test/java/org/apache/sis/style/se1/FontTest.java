@@ -40,13 +40,13 @@ public final class FontTest extends StyleTestCase {
      */
     @Test
     public void testFamily() {
-        Font cdt = new Font();
+        final var cdt = factory.createFont();
 
         // Check default
         assertTrue(cdt.family().isEmpty());
 
         // Check get/set
-        var value = FF.literal("A random family");
+        var value = literal("A random family");
         cdt.family().add(value);
         assertEquals(List.of(value), cdt.family());
     }
@@ -55,13 +55,13 @@ public final class FontTest extends StyleTestCase {
      */
     @Test
     public void testStyle() {
-        Font cdt = new Font();
+        final var cdt = factory.createFont();
 
         // Check default
         assertLiteralEquals("normal", cdt.getStyle());
 
         // Check get/set
-        var value = FF.literal("A random style");
+        var value = literal("A random style");
         cdt.setStyle(value);
         assertEquals(value, cdt.getStyle());
     }
@@ -71,13 +71,13 @@ public final class FontTest extends StyleTestCase {
      */
     @Test
     public void testWeight() {
-        Font cdt = new Font();
+        final var cdt = factory.createFont();
 
         // Check default
         assertLiteralEquals("normal", cdt.getWeight());
 
         // Check get/set
-        var value = FF.literal("A random weight");
+        var value = literal("A random weight");
         cdt.setWeight(value);
         assertEquals(value, cdt.getWeight());
     }
@@ -87,13 +87,13 @@ public final class FontTest extends StyleTestCase {
      */
     @Test
     public void testSize() {
-        Font cdt = new Font();
+        final var cdt = factory.createFont();
 
         // Check default
         assertLiteralEquals(10.0, cdt.getSize());
 
         // Check get/set
-        var value = FF.literal(12);
+        var value = literal(12);
         cdt.setSize(value);
         assertEquals(value, cdt.getSize());
     }

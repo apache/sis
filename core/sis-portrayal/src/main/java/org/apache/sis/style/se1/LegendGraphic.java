@@ -27,11 +27,14 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "LegendGraphicType")
 @XmlRootElement(name = "LegendGraphic")
-public class LegendGraphic extends StyleElement implements GraphicalElement {
+public class LegendGraphic<R> extends StyleElement<R> implements GraphicalElement<R> {
     /**
      * The graphic to use as a legend, or {@code null} for lazily constructed default.
      * This property is mandatory: a null value <em>shall</em> be replaced by a default value when first requested.
@@ -39,12 +42,22 @@ public class LegendGraphic extends StyleElement implements GraphicalElement {
      * @see #getGraphic()
      * @see #setGraphic(Graphic)
      */
-    protected Graphic graphic;
+    protected Graphic<R> graphic;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private LegendGraphic() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a legend initialized to the default graphic.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public LegendGraphic() {
+    public LegendGraphic(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -53,7 +66,7 @@ public class LegendGraphic extends StyleElement implements GraphicalElement {
      *
      * @param  source  the object to copy.
      */
-    public LegendGraphic(final LegendGraphic source) {
+    public LegendGraphic(final LegendGraphic<R> source) {
         super(source);
         graphic = source.graphic;
     }
@@ -67,9 +80,9 @@ public class LegendGraphic extends StyleElement implements GraphicalElement {
      */
     @Override
     @XmlElement(name = "Graphic", required = true)
-    public final Graphic getGraphic() {
+    public final Graphic<R> getGraphic() {
         if (graphic == null) {
-            graphic = new Graphic();
+            graphic = factory.createGraphic();
         }
         return graphic;
     }
@@ -82,7 +95,7 @@ public class LegendGraphic extends StyleElement implements GraphicalElement {
      * @param  value  new graphic of the legend, or {@code null} for resetting the default value.
      */
     @Override
-    public final void setGraphic(final Graphic value) {
+    public final void setGraphic(final Graphic<R> value) {
         graphic = value;
     }
 
@@ -102,8 +115,8 @@ public class LegendGraphic extends StyleElement implements GraphicalElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public LegendGraphic clone() {
-        final var clone = (LegendGraphic) super.clone();
+    public LegendGraphic<R> clone() {
+        final var clone = (LegendGraphic<R>) super.clone();
         clone.selfClone();
         return clone;
     }

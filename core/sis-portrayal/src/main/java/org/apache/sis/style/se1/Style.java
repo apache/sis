@@ -17,6 +17,7 @@
 package org.apache.sis.style.se1;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -32,7 +33,7 @@ import java.util.Optional;
  * @version 1.5
  * @since   1.5
  */
-public class Style extends StyleElement {
+public class Style implements Cloneable {
     /**
      * Name for this style, or {@code null} if none.
      *
@@ -47,7 +48,7 @@ public class Style extends StyleElement {
      * @see #getDescription()
      * @see #setDescription(Description)
      */
-    private Description description;
+    private Description<?> description;
 
     /**
      * Whether this style is the default one.
@@ -70,7 +71,7 @@ public class Style extends StyleElement {
      * @see #getDefaultSpecification()
      * @see #setDefaultSpecification(Symbolizer)
      */
-    private Symbolizer defaultSpecification;
+    private Symbolizer<?> defaultSpecification;
 
     /**
      * Creates an initially empty style.
@@ -86,7 +87,6 @@ public class Style extends StyleElement {
      * @param  source  the object to copy.
      */
     public Style(final Style source) {
-        super(source);
         name        = source.name;
         description = source.description;
         isDefault   = source.isDefault;
@@ -123,7 +123,7 @@ public class Style extends StyleElement {
      *
      * @return information for user interfaces.
      */
-    public Optional<Description> getDescription() {
+    public Optional<Description<?>> getDescription() {
         return Optional.ofNullable(description);
     }
 
@@ -134,7 +134,7 @@ public class Style extends StyleElement {
      *
      * @param  value  new information for user interfaces, or {@code null} if none.
      */
-    public void setDescription(final Description value) {
+    public void setDescription(final Description<?> value) {
         description = value;
     }
 
@@ -175,7 +175,7 @@ public class Style extends StyleElement {
      *
      * @return the default symbolizer to use if no rule return {@code true}.
      */
-    public Optional<Symbolizer> getDefaultSpecification() {
+    public Optional<Symbolizer<?>> getDefaultSpecification() {
         return Optional.ofNullable(defaultSpecification);
     }
 
@@ -184,7 +184,7 @@ public class Style extends StyleElement {
      *
      * @param  value  new default symbolizer to use if no rule return {@code true}.
      */
-    public void setDefaultSpecification(final Symbolizer value) {
+    public void setDefaultSpecification(final Symbolizer<?> value) {
         defaultSpecification = value;
     }
 
@@ -192,9 +192,33 @@ public class Style extends StyleElement {
      * Returns all properties contained in this class.
      * This is used for {@link #equals(Object)} and {@link #hashCode()} implementations.
      */
-    @Override
-    final Object[] properties() {
+    private Object[] properties() {
         return new Object[] {name, description, isDefault, fts, defaultSpecification};
+    }
+
+    /**
+     * Returns a hash code value for this object.
+     *
+     * @return a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        return getClass().hashCode() + Arrays.hashCode(properties());
+    }
+
+    /**
+     * Compares this style with the given object for equality.
+     *
+     * @param  obj  the other object to compare with this.
+     * @return whether the other object is equal to this.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        return (obj != null) && (obj.getClass() == getClass()) &&
+                Arrays.equals(properties(), ((Style) obj).properties());
     }
 
     /**
@@ -205,9 +229,13 @@ public class Style extends StyleElement {
      */
     @Override
     public Style clone() {
-        final var clone = (Style) super.clone();
-        clone.selfClone();
-        return clone;
+        try {
+            final var clone = (Style) super.clone();
+            clone.selfClone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**

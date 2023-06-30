@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -33,7 +32,10 @@ import org.opengis.filter.Expression;
  * @author  Ian Turton (CCG)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "LinePlacementType", propOrder = {
     "perpendicularOffset",
@@ -44,7 +46,7 @@ import org.opengis.filter.Expression;
     "generalizeLine"
 })
 @XmlRootElement(name = "LinePlacement")
-public class LinePlacement extends LabelPlacement {
+public class LinePlacement<R> extends LabelPlacement<R> {
     /**
      * Perpendicular distance away from a line where to draw a label, or {@code null} for the default value.
      *
@@ -52,7 +54,7 @@ public class LinePlacement extends LabelPlacement {
      * @see #setPerpendicularOffset(Expression)
      */
     @XmlElement(name = "PerpendicularOffset")
-    protected Expression<Feature, ? extends Number> perpendicularOffset;
+    protected Expression<R, ? extends Number> perpendicularOffset;
 
     /**
      * Whether the label will be repeatedly drawn along the line, or {@code null} for the default value.
@@ -63,7 +65,7 @@ public class LinePlacement extends LabelPlacement {
      * @todo Needs an adapter from expression to plain boolean.
      */
     @XmlElement(name = "IsRepeated")
-    protected Expression<Feature,Boolean> isRepeated;
+    protected Expression<R,Boolean> isRepeated;
 
     /**
      * How far away the first label will be drawn, or {@code null} for the default value.
@@ -72,7 +74,7 @@ public class LinePlacement extends LabelPlacement {
      * @see #setInitialGap(Expression)
      */
     @XmlElement(name = "InitialGap")
-    protected Expression<Feature, ? extends Number> initialGap;
+    protected Expression<R, ? extends Number> initialGap;
 
     /**
      * Distance between two labels, or {@code null} for the default value.
@@ -81,7 +83,7 @@ public class LinePlacement extends LabelPlacement {
      * @see #setGap(Expression)
      */
     @XmlElement(name = "Gap")
-    protected Expression<Feature, ? extends Number> gap;
+    protected Expression<R, ? extends Number> gap;
 
     /**
      * Whether labels are aligned to the line geometry, or {@code null} for the default value.
@@ -93,7 +95,7 @@ public class LinePlacement extends LabelPlacement {
      * @todo Needs an adapter from expression to plain boolean.
      */
     @XmlElement(name = "IsAligned")
-    protected Expression<Feature,Boolean> isAligned;
+    protected Expression<R,Boolean> isAligned;
 
     /**
      * Whether to allow the geometry to be generalized, or {@code null} for the default value.
@@ -104,12 +106,22 @@ public class LinePlacement extends LabelPlacement {
      * @todo Needs an adapter from expression to plain boolean.
      */
     @XmlElement(name = "GeneralizeLine")
-    protected Expression<Feature,Boolean> generalizeLine;
+    protected Expression<R,Boolean> generalizeLine;
 
     /**
-     * Creates a new line placement.
+     * For JAXB unmarshalling only.
      */
-    public LinePlacement() {
+    private LinePlacement() {
+        // Thread-local factory will be used.
+    }
+
+    /**
+     * Creates a line placement initialized to no offset, no repetition and no gap.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
+     */
+    public LinePlacement(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -118,7 +130,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @param  source  the object to copy.
      */
-    public LinePlacement(final LinePlacement source) {
+    public LinePlacement(final LinePlacement<R> source) {
         super(source);
         perpendicularOffset = source.perpendicularOffset;
         isRepeated          = source.isRepeated;
@@ -136,7 +148,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @return perpendicular distance away from a line where to draw a label.
      */
-    public Expression<Feature, ? extends Number> getPerpendicularOffset() {
+    public Expression<R, ? extends Number> getPerpendicularOffset() {
         return defaultToZero(perpendicularOffset);
     }
 
@@ -147,7 +159,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @param  value  new distance to apply for drawing label, or {@code null} for resetting the default value.
      */
-    public void setPerpendicularOffset(final Expression<Feature, ? extends Number> value) {
+    public void setPerpendicularOffset(final Expression<R, ? extends Number> value) {
         perpendicularOffset = value;
     }
 
@@ -158,7 +170,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @return whether the label will be repeatedly drawn along the line.
      */
-    public Expression<Feature,Boolean> isRepeated() {
+    public Expression<R,Boolean> isRepeated() {
         return defaultToFalse(isRepeated);
     }
 
@@ -168,7 +180,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @param  value  whether the label will be repeated, or {@code null} for resetting the default value.
      */
-    public void setRepeated(final Expression<Feature,Boolean> value) {
+    public void setRepeated(final Expression<R,Boolean> value) {
         isRepeated = value;
     }
 
@@ -177,7 +189,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @return distance of first label relative to the rendering start.
      */
-    public Expression<Feature, ? extends Number> getInitialGap() {
+    public Expression<R, ? extends Number> getInitialGap() {
         return defaultToZero(initialGap);
     }
 
@@ -187,7 +199,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @param  value  new distance relative to rendering start, or {@code null} for resetting the default value.
      */
-    public void setInitialGap(final Expression<Feature, ? extends Number> value) {
+    public void setInitialGap(final Expression<R, ? extends Number> value) {
         initialGap = value;
     }
 
@@ -196,7 +208,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @return distance between two labels.
      */
-    public Expression<Feature, ? extends Number> getGap() {
+    public Expression<R, ? extends Number> getGap() {
         return defaultToZero(gap);
     }
 
@@ -206,7 +218,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @param  value  new distance between two labels, or {@code null} for resetting the default value.
      */
-    public void setGap(final Expression<Feature, ? extends Number> value) {
+    public void setGap(final Expression<R, ? extends Number> value) {
         gap = value;
     }
 
@@ -215,7 +227,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @return whether labels are aligned to the line geometry or drawn horizontally.
      */
-    public Expression<Feature,Boolean> isAligned() {
+    public Expression<R,Boolean> isAligned() {
         return defaultToTrue(isAligned);
     }
 
@@ -226,7 +238,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @param  value  whether labels are aligned to the line geometry, or {@code null} for resetting the default value.
      */
-    public void setAligned(final Expression<Feature,Boolean> value) {
+    public void setAligned(final Expression<R,Boolean> value) {
         isAligned = value;
     }
 
@@ -235,7 +247,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @return whether to allow the geometry to be generalized for label placement.
      */
-    public Expression<Feature,Boolean> getGeneralizeLine() {
+    public Expression<R,Boolean> getGeneralizeLine() {
         return defaultToFalse(generalizeLine);
     }
 
@@ -245,7 +257,7 @@ public class LinePlacement extends LabelPlacement {
      *
      * @param  value whether to allow the geometry to be generalized, or {@code null} for resetting the default value.
      */
-    public void setGeneralizeLine(final Expression<Feature,Boolean> value) {
+    public void setGeneralizeLine(final Expression<R,Boolean> value) {
         generalizeLine = value;
     }
 
@@ -265,8 +277,7 @@ public class LinePlacement extends LabelPlacement {
      * @return deep clone of all style elements.
      */
     @Override
-    public LinePlacement clone() {
-        final var clone = (LinePlacement) super.clone();
-        return clone;
+    public LinePlacement<R> clone() {
+        return (LinePlacement<R>) super.clone();
     }
 }

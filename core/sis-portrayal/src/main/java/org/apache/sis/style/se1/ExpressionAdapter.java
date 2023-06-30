@@ -19,7 +19,6 @@ package org.apache.sis.style.se1;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -29,9 +28,12 @@ import org.opengis.filter.Expression;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
-final class ExpressionAdapter extends XmlAdapter<String, Expression<Feature,?>> {
+final class ExpressionAdapter<R> extends XmlAdapter<String, Expression<R,?>> {
     /**
      * Creates an adapter.
      */
@@ -39,12 +41,12 @@ final class ExpressionAdapter extends XmlAdapter<String, Expression<Feature,?>> 
     }
 
     @Override
-    public String marshal(Expression<Feature,?> value) {
+    public String marshal(Expression<R,?> value) {
         return null;
     }
 
     @Override
-    public Expression<Feature,?> unmarshal(String value) {
+    public Expression<R,?> unmarshal(String value) {
         return null;
     }
 }

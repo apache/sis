@@ -35,12 +35,14 @@ import org.opengis.metadata.citation.OnlineResource;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
  * @see Graphic#graphicalSymbols()
  *
  * @since 1.5
  */
 @XmlTransient
-public abstract class GraphicalSymbol extends StyleElement {
+public abstract class GraphicalSymbol<R> extends StyleElement<R> {
     /**
      * URL to the image or mark, or {@code null} if none.
      *
@@ -71,10 +73,20 @@ public abstract class GraphicalSymbol extends StyleElement {
     protected String format;
 
     /**
-     * Creates a new graphical symbol.
-     * Intentionally restricted to this package because {@link #properties()} is package-private.
+     * For JAXB unmarshalling only.
      */
     GraphicalSymbol() {
+        // Thread-local factory will be used.
+    }
+
+    /**
+     * Creates a new graphical symbol.
+     * Intentionally restricted to this package because {@link #properties()} is package-private.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
+     */
+    GraphicalSymbol(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -83,7 +95,7 @@ public abstract class GraphicalSymbol extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    GraphicalSymbol(final GraphicalSymbol source) {
+    GraphicalSymbol(final GraphicalSymbol<R> source) {
         super(source);
         onlineResource = source.onlineResource;
         inlineContent  = source.inlineContent;
@@ -163,7 +175,7 @@ public abstract class GraphicalSymbol extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public GraphicalSymbol clone() {
-        return (GraphicalSymbol) super.clone();
+    public GraphicalSymbol<R> clone() {
+        return (GraphicalSymbol<R>) super.clone();
     }
 }

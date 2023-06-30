@@ -22,7 +22,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.style.OverlapBehavior;
 
@@ -40,7 +39,10 @@ import org.opengis.style.OverlapBehavior;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "RasterSymbolizerType", propOrder = {
     "opacity",
@@ -52,7 +54,7 @@ import org.opengis.style.OverlapBehavior;
     "imageOutline"
 })
 @XmlRootElement(name = "RasterSymbolizer")
-public class RasterSymbolizer extends Symbolizer implements Translucent {
+public class RasterSymbolizer<R> extends Symbolizer<R> implements Translucent<R> {
     /**
      * Level of translucency as a floating point number between 0 and 1 (inclusive), or {@code null} the default value.
      * The default value specified by OGC 05-077r4 standard is 1.
@@ -61,7 +63,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @see #setOpacity(Expression)
      */
     @XmlElement(name = "Opacity")
-    protected Expression<Feature, ? extends Number> opacity;
+    protected Expression<R, ? extends Number> opacity;
 
     /**
      * Selection of false-color channels for a multi-spectral raster source, or {@code null} if none.
@@ -70,7 +72,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @see #setChannelSelection(ChannelSelection)
      */
     @XmlElement(name = "ChannelSelection")
-    protected ChannelSelection channelSelection;
+    protected ChannelSelection<R> channelSelection;
 
     /**
      * Behavior when multiple raster images in a layer overlap each other, or {@code null} if unspecified.
@@ -89,7 +91,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @see #setColorMap(ColorMap)
      */
     @XmlElement(name = "ColorMap")
-    protected ColorMap colorMap;
+    protected ColorMap<R> colorMap;
 
     /**
      * Contrast enhancement for the whole image, or {@code null} if none.
@@ -98,7 +100,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @see #setContrastEnhancement(ContrastEnhancement)
      */
     @XmlElement(name = "ContrastEnhancement")
-    protected ContrastEnhancement contrastEnhancement;
+    protected ContrastEnhancement<R> contrastEnhancement;
 
     /**
      * Relief shading (or “hill shading”) to apply to the image for a three-dimensional visual effect.
@@ -107,7 +109,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @see #setShadedRelief(ShadedRelief)
      */
     @XmlElement(name = "ShadedRelief")
-    protected ShadedRelief shadedRelief;
+    protected ShadedRelief<R> shadedRelief;
 
     /**
      * Line or polygon symbolizer to use for outlining source rasters, or {@code null} if none.
@@ -116,12 +118,22 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @see #setImageOutline(Symbolizer)
      */
     @XmlElement(name = "ImageOutline")
-    protected Symbolizer imageOutline;
+    protected Symbolizer<R> imageOutline;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private RasterSymbolizer() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates an initially opaque raster symbolizer with no contrast enhancement, shaded relief or outline.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public RasterSymbolizer() {
+    public RasterSymbolizer(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -130,7 +142,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @param  source  the object to copy.
      */
-    public RasterSymbolizer(final RasterSymbolizer source) {
+    public RasterSymbolizer(final RasterSymbolizer<R> source) {
         super(source);
         opacity             = source.opacity;
         channelSelection    = source.channelSelection;
@@ -152,7 +164,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @see Graphic#getOpacity()
      */
     @Override
-    public Expression<Feature, ? extends Number> getOpacity() {
+    public Expression<R, ? extends Number> getOpacity() {
         return defaultToOne(opacity);
     }
 
@@ -164,7 +176,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @param  value  new level of translucency, or {@code null} for resetting the default value.
      */
     @Override
-    public void setOpacity(final Expression<Feature, ? extends Number> value) {
+    public void setOpacity(final Expression<R, ? extends Number> value) {
         opacity = value;
     }
 
@@ -178,7 +190,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @return the selection of channels.
      */
-    public Optional<ChannelSelection> getChannelSelection() {
+    public Optional<ChannelSelection<R>> getChannelSelection() {
         return Optional.ofNullable(channelSelection);
     }
 
@@ -189,7 +201,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @param  value  new selection of channels, or {@code null} for none.
      */
-    public void setChannelSelection(final ChannelSelection value) {
+    public void setChannelSelection(final ChannelSelection<R> value) {
         channelSelection = value;
     }
 
@@ -224,7 +236,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @return color map for the raster.
      */
-    public Optional<ColorMap> getColorMap() {
+    public Optional<ColorMap<R>> getColorMap() {
         return Optional.ofNullable(colorMap);
     }
 
@@ -235,7 +247,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @param  value  new color map for the raster, or {@code null} if none.
      */
-    public void setColorMap(final ColorMap value) {
+    public void setColorMap(final ColorMap<R> value) {
         colorMap = value;
     }
 
@@ -248,7 +260,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @see SelectedChannel#getContrastEnhancement()
      */
-    public Optional<ContrastEnhancement> getContrastEnhancement() {
+    public Optional<ContrastEnhancement<R>> getContrastEnhancement() {
         return Optional.ofNullable(contrastEnhancement);
     }
 
@@ -261,7 +273,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @see SelectedChannel#setContrastEnhancement(ContrastEnhancement)
      */
-    public void setContrastEnhancement(final ContrastEnhancement value) {
+    public void setContrastEnhancement(final ContrastEnhancement<R> value) {
         contrastEnhancement = value;
     }
 
@@ -272,7 +284,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @return the relief shading to apply.
      */
-    public Optional<ShadedRelief> getShadedRelief() {
+    public Optional<ShadedRelief<R>> getShadedRelief() {
         return Optional.ofNullable(shadedRelief);
     }
 
@@ -283,7 +295,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @param  value  new relief shading to apply, or {@code null} if none.
      */
-    public void setShadedRelief(final ShadedRelief value) {
+    public void setShadedRelief(final ShadedRelief<R> value) {
         shadedRelief = value;
     }
 
@@ -296,7 +308,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @return Line or polygon symbolizer to use for outlining source rasters.
      */
-    public Optional<Symbolizer> getImageOutline() {
+    public Optional<Symbolizer<R>> getImageOutline() {
         return Optional.ofNullable(imageOutline);
     }
 
@@ -307,7 +319,7 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      *
      * @param  value  new line or polygon symbolizer to use, or {@code null} if none.
      */
-    public void setImageOutline(final Symbolizer value) {
+    public void setImageOutline(final Symbolizer<R> value) {
         imageOutline = value;
     }
 
@@ -328,8 +340,8 @@ public class RasterSymbolizer extends Symbolizer implements Translucent {
      * @return deep clone of all style elements.
      */
     @Override
-    public RasterSymbolizer clone() {
-        final var clone = (RasterSymbolizer) super.clone();
+    public RasterSymbolizer<R> clone() {
+        final var clone = (RasterSymbolizer<R>) super.clone();
         clone.selfClone();
         return clone;
     }

@@ -19,6 +19,9 @@ package org.apache.sis.style.se1;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+
 
 /**
  * Tests for {@link TextSymbolizer}.
@@ -39,13 +42,13 @@ public final class TextSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testLabel() {
-        TextSymbolizer cdt = new TextSymbolizer();
+        final var cdt = factory.createTextSymbolizer();
 
         // Check default
         assertNull(cdt.getLabel());
 
         // Check get/set
-        var value = FF.literal("A random label");
+        var value = literal("A random label");
         cdt.setLabel(value);
         assertEquals(value, cdt.getLabel());
     }
@@ -55,15 +58,15 @@ public final class TextSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testFont() {
-        TextSymbolizer cdt = new TextSymbolizer();
+        final var cdt = factory.createTextSymbolizer();
 
         // Check default
-        Font value = cdt.getFont();
+        var value = cdt.getFont();
         assertLiteralEquals("normal", value.getStyle());
 
         // Check get/set
-        value = new Font();
-        value.setStyle(FF.literal("italic"));
+        value = factory.createFont();
+        value.setStyle(literal("italic"));
         cdt.setFont(value);
         assertEquals(value, cdt.getFont());
     }
@@ -73,14 +76,14 @@ public final class TextSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testLabelPlacement() {
-        TextSymbolizer cdt = new TextSymbolizer();
+        final var cdt = factory.createTextSymbolizer();
 
         // Check default
-        LabelPlacement value = cdt.getLabelPlacement();
+        LabelPlacement<Feature> value = cdt.getLabelPlacement();
         assertNotNull(value);
 
         // Check get/set
-        value = new PointPlacement();
+        value = factory.createPointPlacement();
         cdt.setLabelPlacement(value);
         assertEquals(value, cdt.getLabelPlacement());
     }
@@ -90,13 +93,13 @@ public final class TextSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testHalo() {
-        TextSymbolizer cdt = new TextSymbolizer();
+        final var cdt = factory.createTextSymbolizer();
 
         // Check default
         assertEmpty(cdt.getHalo());
 
         // Check get/set
-        Halo value = new Halo();
+        var value = factory.createHalo();
         cdt.setHalo(value);
         assertOptionalEquals(value, cdt.getHalo());
     }
@@ -106,13 +109,13 @@ public final class TextSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testFill() {
-        TextSymbolizer cdt = new TextSymbolizer();
+        final var cdt = factory.createTextSymbolizer();
 
         // Check default
         assertNotNull(cdt.getFill());
 
         // Check get/set
-        Fill value = new Fill();
+        var value = factory.createFill();
         cdt.setFill(value);
         assertEquals(value, cdt.getFill());
     }

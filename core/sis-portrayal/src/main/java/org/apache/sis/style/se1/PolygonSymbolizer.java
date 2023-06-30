@@ -18,13 +18,11 @@ package org.apache.sis.style.se1;
 
 import java.util.Optional;
 import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -46,7 +44,10 @@ import org.opengis.filter.Expression;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "PolygonSymbolizerType", propOrder = {
     "fill",
@@ -55,7 +56,7 @@ import org.opengis.filter.Expression;
     "perpendicularOffset"
 })
 @XmlRootElement(name = "PolygonSymbolizer")
-public class PolygonSymbolizer extends Symbolizer {
+public class PolygonSymbolizer<R> extends Symbolizer<R> {
     /**
      * Information about how the interior of polygons should be filled, or {@code null} for no fill.
      * If no value has been explicitly set (including null value),
@@ -65,7 +66,7 @@ public class PolygonSymbolizer extends Symbolizer {
      * @see #setFill(Fill)
      */
     @XmlElement(name = "Fill")
-    protected Fill fill;
+    protected Fill<R> fill;
 
     /**
      * Whether {@link #fill} has been explicitly set to some value, including null.
@@ -82,7 +83,7 @@ public class PolygonSymbolizer extends Symbolizer {
      * @see #setStroke(Stroke)
      */
     @XmlElement(name = "Stroke")
-    protected Stroke stroke;
+    protected Stroke<R> stroke;
 
     /**
      * Whether {@link #stroke} has been explicitly set to some value, including null.
@@ -97,7 +98,7 @@ public class PolygonSymbolizer extends Symbolizer {
      * @see #setDisplacement(Displacement)
      */
     @XmlElement(name = "Displacement")
-    protected Displacement displacement;
+    protected Displacement<R> displacement;
 
     /**
      * Distance to apply for drawing lines in parallel to geometry, or {@code null} for the default value.
@@ -106,31 +107,35 @@ public class PolygonSymbolizer extends Symbolizer {
      * @see #setPerpendicularOffset(Expression)
      */
     @XmlElement(name = "PerpendicularOffset")
-    protected Expression<Feature, ? extends Number> perpendicularOffset;
-
-    /**
-     * Invoked by JAXB before unmarshalling this polyogon symbolizer.
-     * OGC 05-077r4 said that if the fill or the stroke is not specified,
-     * then no fill or stroke should be applied.
-     */
-    private void beforeUnmarshal(Unmarshaller caller, Object parent) {
-        isFillSet   = true;
-        isStrokeSet = true;
-    }
+    protected Expression<R, ? extends Number> perpendicularOffset;
 
     /**
      * Invoked by JAXB before marshalling this polyogon symbolizer.
      * Creates the default fill and stroke if needed.
      */
     private void beforeMarshal(Marshaller caller) {
-        if (fill   == null && !isFillSet)   fill   = new Fill();
-        if (stroke == null && !isStrokeSet) stroke = new Stroke();
+        if (fill   == null && !isFillSet)   fill   = factory.createFill();
+        if (stroke == null && !isStrokeSet) stroke = factory.createStroke();
+    }
+
+    /**
+     * For JAXB unmarshalling only. This constructor disables the lazy creation of default values.
+     * This is because OGC 05-077r4 said that if the fill or the stroke is not specified,
+     * then no fill or stroke should be applied.
+     */
+    private PolygonSymbolizer() {
+        // Thread-local factory will be used.
+        isFillSet   = true;
+        isStrokeSet = true;
     }
 
     /**
      * Creates a polygon symbolizer initialized to the default fill and default stroke.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public PolygonSymbolizer() {
+    public PolygonSymbolizer(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -139,7 +144,7 @@ public class PolygonSymbolizer extends Symbolizer {
      *
      * @param  source  the object to copy.
      */
-    public PolygonSymbolizer(final PolygonSymbolizer source) {
+    public PolygonSymbolizer(final PolygonSymbolizer<R> source) {
         super(source);
         fill                = source.fill;
         stroke              = source.stroke;
@@ -161,10 +166,10 @@ public class PolygonSymbolizer extends Symbolizer {
      * @see #getStroke()
      * @see #isVisible()
      */
-    public Optional<Fill> getFill() {
+    public Optional<Fill<R>> getFill() {
         if (!isFillSet) {
             isFillSet = true;
-            fill = new Fill();
+            fill = factory.createFill();
         }
         return Optional.ofNullable(fill);
     }
@@ -176,7 +181,7 @@ public class PolygonSymbolizer extends Symbolizer {
      *
      * @param  value  new information about the fill, or {@code null} for no fill.
      */
-    public void setFill(final Fill value) {
+    public void setFill(final Fill<R> value) {
         isFillSet = true;
         fill = value;
     }
@@ -194,10 +199,10 @@ public class PolygonSymbolizer extends Symbolizer {
      * @see #getFill()
      * @see #isVisible()
      */
-    public Optional<Stroke> getStroke() {
+    public Optional<Stroke<R>> getStroke() {
         if (!isStrokeSet) {
             isStrokeSet = true;
-            stroke = new Stroke();
+            stroke = factory.createStroke();
         }
         return Optional.ofNullable(stroke);
     }
@@ -209,7 +214,7 @@ public class PolygonSymbolizer extends Symbolizer {
      *
      * @param  value  new information about styled lines, or {@code null} if lines should not be drawn.
      */
-    public void setStroke(final Stroke value) {
+    public void setStroke(final Stroke<R> value) {
         isStrokeSet = true;
         stroke = value;
     }
@@ -230,9 +235,9 @@ public class PolygonSymbolizer extends Symbolizer {
      * @see Graphic#getDisplacement()
      * @see PointPlacement#getDisplacement()
      */
-    public Displacement getDisplacement() {
+    public Displacement<R> getDisplacement() {
         if (displacement == null) {
-            displacement = new Displacement();
+            displacement = factory.createDisplacement();
         }
         return displacement;
     }
@@ -244,7 +249,7 @@ public class PolygonSymbolizer extends Symbolizer {
      *
      * @param  value  new displacement from the "hot-spot" point, or {@code null} for resetting the default value.
      */
-    public void setDisplacement(final Displacement value) {
+    public void setDisplacement(final Displacement<R> value) {
         displacement = value;
     }
 
@@ -256,7 +261,7 @@ public class PolygonSymbolizer extends Symbolizer {
      *
      * @return distance to apply for drawing lines in parallel to the original geometry.
      */
-    public Expression<Feature, ? extends Number> getPerpendicularOffset() {
+    public Expression<R, ? extends Number> getPerpendicularOffset() {
         return defaultToZero(perpendicularOffset);
     }
 
@@ -267,7 +272,7 @@ public class PolygonSymbolizer extends Symbolizer {
      *
      * @param  value  new distance to apply for drawing lines, or {@code null} for resetting the default value.
      */
-    public void setPerpendicularOffset(final Expression<Feature, ? extends Number> value) {
+    public void setPerpendicularOffset(final Expression<R, ? extends Number> value) {
         perpendicularOffset = value;
     }
 
@@ -302,8 +307,8 @@ public class PolygonSymbolizer extends Symbolizer {
      * @return deep clone of all style elements.
      */
     @Override
-    public PolygonSymbolizer clone() {
-        final var clone = (PolygonSymbolizer) super.clone();
+    public PolygonSymbolizer<R> clone() {
+        final var clone = (PolygonSymbolizer<R>) super.clone();
         clone.selfClone();
         return clone;
     }

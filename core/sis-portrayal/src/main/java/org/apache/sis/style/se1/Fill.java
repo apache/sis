@@ -21,12 +21,9 @@ import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.filter.Literal;
 
 
 /**
@@ -38,25 +35,17 @@ import org.opengis.filter.Literal;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "FillType", propOrder = {
     "graphicFill",
 //  "svgParameter"
 })
 @XmlRootElement(name = "Fill")
-public class Fill extends StyleElement implements Translucent {
-    /**
-     * Literal for a predefined color which can be used as fill color.
-     */
-    public static final Literal<Feature,Color> BLACK, GRAY, WHITE;
-    static {
-        final var FF = FF();
-        BLACK = FF.literal(Color.BLACK);
-        GRAY  = FF.literal(Color.GRAY);
-        WHITE = FF.literal(Color.WHITE);
-    }
-
+public class Fill<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * The image to use for filling the area, or {@code null} if a solid color should be used.
      *
@@ -64,7 +53,7 @@ public class Fill extends StyleElement implements Translucent {
      * @see #setGraphicFill(GraphicFill)
      */
     @XmlElement(name = "GraphicFill")
-    protected GraphicFill graphicFill;
+    protected GraphicFill<R> graphicFill;
 
     /**
      * Color of the interior if it is to be solid-color filled, or {@code null} for the default value.
@@ -76,7 +65,7 @@ public class Fill extends StyleElement implements Translucent {
      * @see #getColor()
      * @see #setColor(Expression)
      */
-    protected Expression<Feature,Color> color;
+    protected Expression<R,Color> color;
 
     /**
      * Level of translucency as a floating point number between 0 and 1 (inclusive), or {@code null} the default value.
@@ -87,48 +76,22 @@ public class Fill extends StyleElement implements Translucent {
      * @see #getOpacity()
      * @see #setOpacity(Expression)
      */
-    protected Expression<Feature, ? extends Number> opacity;
+    protected Expression<R, ? extends Number> opacity;
 
     /**
-     * Returns the opacity of the alpha value of the given color.
-     * If the color is totally opaque, then this method returns {@code null}.
-     *
-     * @param  color  color from which to get the opacity.
-     * @return opacity derived from the alpha value of the color, or {@code null} if totally opaque.
+     * For JAXB unmarshalling only.
      */
-    static Expression<Feature, ? extends Number> opacity(final Color color) {
-        final int alpha = color.getAlpha();
-        return (alpha != 255) ? literal(alpha / 256d) : null;
-        // Divide by 256 instead of 255 in order to get round numbers for alpha values 64, 128, etc.
+    private Fill() {
+        // Thread-local factory will be used.
     }
 
     /**
      * Creates an opaque fill initialized to the gray color.
-     */
-    public Fill() {
-    }
-
-    /**
-     * Creates a fill initialized to the given color.
-     * The opacity is derived from the alpha value of the given color.
      *
-     * @param  color  the initial color.
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public Fill(Color color) {
-        ArgumentChecks.ensureNonNull("color", color);
-        if ((opacity = opacity(color)) != null) {
-            color = new Color(color.getRGB() | 0xFF000000);
-        }
-        this.color = literal(color);
-    }
-
-    /**
-     * Creates an opaque fill initialized to the specified color.
-     *
-     * @param  color  the initial color.
-     */
-    Fill(final Expression<Feature,Color> color) {
-        this.color = color;
+    public Fill(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -137,7 +100,7 @@ public class Fill extends StyleElement implements Translucent {
      *
      * @param  source  the object to copy.
      */
-    public Fill(final Fill source) {
+    public Fill(final Fill<R> source) {
         super(source);
         graphicFill = source.graphicFill;
         color       = source.color;
@@ -155,7 +118,7 @@ public class Fill extends StyleElement implements Translucent {
      *
      * @see Stroke#getGraphicFill()
      */
-    public Optional<GraphicFill> getGraphicFill() {
+    public Optional<GraphicFill<R>> getGraphicFill() {
         return Optional.ofNullable(graphicFill);
     }
 
@@ -168,7 +131,7 @@ public class Fill extends StyleElement implements Translucent {
      *
      * @see Stroke#setGraphicFill(GraphicFill)
      */
-    public void setGraphicFill(final GraphicFill value) {
+    public void setGraphicFill(final GraphicFill<R> value) {
         graphicFill = value;
     }
 
@@ -180,9 +143,9 @@ public class Fill extends StyleElement implements Translucent {
      *
      * @see Stroke#getColor()
      */
-    public Expression<Feature,Color> getColor() {
+    public Expression<R,Color> getColor() {
         final var value = color;
-        return (value != null) ? value : GRAY;
+        return (value != null) ? value : factory.gray;
     }
 
     /**
@@ -197,10 +160,28 @@ public class Fill extends StyleElement implements Translucent {
      *
      * @see Stroke#setColor(Expression)
      */
-    public void setColor(final Expression<Feature,Color> value) {
+    public void setColor(final Expression<R,Color> value) {
         color = value;
         if (value != null) {
             graphicFill = null;
+        }
+    }
+
+    /**
+     * Sets the color and opacity together.
+     * The opacity is derived from the alpha value of the given color.
+     *
+     * @param  value  new color and opacity, or {@code null} for resetting the defaults.
+     */
+    public void setColorAndOpacity(Color value) {
+        if (value  == null) {
+            color   = null;
+            opacity = null;
+        } else {
+            if ((opacity = opacity(value)) != null) {
+                value = new Color(value.getRGB() | 0xFF000000);
+            }
+            color = literal(value);
         }
     }
 
@@ -215,7 +196,7 @@ public class Fill extends StyleElement implements Translucent {
      * @see RasterSymbolizer#getOpacity()
      */
     @Override
-    public Expression<Feature, ? extends Number> getOpacity() {
+    public Expression<R, ? extends Number> getOpacity() {
         return defaultToOne(opacity);
     }
 
@@ -227,7 +208,7 @@ public class Fill extends StyleElement implements Translucent {
      * @param  value  new level of translucency, or {@code null} for resetting the default value.
      */
     @Override
-    public void setOpacity(final Expression<Feature, ? extends Number> value) {
+    public void setOpacity(final Expression<R, ? extends Number> value) {
         opacity = value;
     }
 
@@ -252,8 +233,8 @@ public class Fill extends StyleElement implements Translucent {
      * @return deep clone of all style elements.
      */
     @Override
-    public Fill clone() {
-        final var clone = (Fill) super.clone();
+    public Fill<R> clone() {
+        final var clone = (Fill<R>) super.clone();
         clone.selfClone();
         return clone;
     }

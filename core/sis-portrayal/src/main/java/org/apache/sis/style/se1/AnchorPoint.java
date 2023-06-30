@@ -21,9 +21,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
-import org.opengis.filter.Literal;
 
 
 /**
@@ -39,19 +37,17 @@ import org.opengis.filter.Literal;
  * @author  Ian Turton (CCG)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "AnchorPointType", propOrder = {
     "anchorPointX",
     "anchorPointY"
 })
 @XmlRootElement(name = "AnchorPoint")
-public class AnchorPoint extends StyleElement {
-    /**
-     * Literal used as default value.
-     */
-    private static final Literal<Feature,Double> LITERAL_HALF = literal(0.5);;
-
+public class AnchorPoint<R> extends StyleElement<R> {
     /**
      * The <var>x</var> coordinate of the anchor point.
      * This property is mandatory.
@@ -60,7 +56,7 @@ public class AnchorPoint extends StyleElement {
      * @see #setAnchorPointX(Expression)
      */
     @XmlElement(name = "AnchorPointX", required = true)
-    protected Expression<Feature, ? extends Number> anchorPointX;
+    protected Expression<R, ? extends Number> anchorPointX;
 
     /**
      * The <var>y</var> coordinate of the anchor point.
@@ -70,26 +66,24 @@ public class AnchorPoint extends StyleElement {
      * @see #setAnchorPointY(Expression)
      */
     @XmlElement(name = "AnchorPointY", required = true)
-    protected Expression<Feature, ? extends Number> anchorPointY;
+    protected Expression<R, ? extends Number> anchorPointY;
 
     /**
-     * Creates a anchor point initialized to <var>x</var> = 0.5 and <var>y</var> = 0.5.
-     * This initial position is the center of the graphic/label.
+     * For JAXB unmarshalling only.
      */
-    public AnchorPoint() {
-        anchorPointX = LITERAL_HALF;
-        anchorPointY = LITERAL_HALF;
+    private AnchorPoint() {
+        // Thread-local factory will be used.
     }
 
     /**
-     * Creates a new anchor point initialized to the given position.
+     * Creates an anchor point initialized to <var>x</var> = 0.5 and <var>y</var> = 0.5.
+     * This initial position is the center of the graphic/label.
      *
-     * @param  x  the initial <var>x</var> position.
-     * @param  y  the initial <var>y</var> position.
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public AnchorPoint(final double x, final double y) {
-        anchorPointX = literal(x);
-        anchorPointY = literal(y);
+    public AnchorPoint(final StyleFactory<R> factory) {
+        super(factory);
+        anchorPointX = anchorPointY = factory.half;
     }
 
     /**
@@ -98,7 +92,7 @@ public class AnchorPoint extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public AnchorPoint(final AnchorPoint source) {
+    public AnchorPoint(final AnchorPoint<R> source) {
         super(source);
         anchorPointX = source.anchorPointX;
         anchorPointY = source.anchorPointY;
@@ -110,7 +104,7 @@ public class AnchorPoint extends StyleElement {
      *
      * @return the expression fetching the <var>x</var> coordinate.
      */
-    public Expression<Feature, ? extends Number> getAnchorPointX() {
+    public Expression<R, ? extends Number> getAnchorPointX() {
         return anchorPointX;
     }
 
@@ -120,8 +114,8 @@ public class AnchorPoint extends StyleElement {
      *
      * @param  value  new <var>x</var> coordinate, or {@code null} for resetting the default value.
      */
-    public void setAnchorPointX(final Expression<Feature, ? extends Number> value) {
-        anchorPointX = (value != null) ? value : LITERAL_HALF;
+    public void setAnchorPointX(final Expression<R, ? extends Number> value) {
+        anchorPointX = defaultToHalf(value);
     }
 
     /**
@@ -130,7 +124,7 @@ public class AnchorPoint extends StyleElement {
      *
      * @return the expression fetching the <var>y</var> coordinate.
      */
-    public Expression<Feature, ? extends Number> getAnchorPointY() {
+    public Expression<R, ? extends Number> getAnchorPointY() {
         return anchorPointY;
     }
 
@@ -140,8 +134,8 @@ public class AnchorPoint extends StyleElement {
      *
      * @param  value  new <var>y</var> coordinate, or {@code null} for resetting the default value.
      */
-    public void setAnchorPointY(final Expression<Feature, ? extends Number> value) {
-        anchorPointY = (value != null) ? value : LITERAL_HALF;
+    public void setAnchorPointY(final Expression<R, ? extends Number> value) {
+        anchorPointY = defaultToHalf(value);
     }
 
     /**
@@ -160,8 +154,7 @@ public class AnchorPoint extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public AnchorPoint clone() {
-        final var clone = (AnchorPoint) super.clone();
-        return clone;
+    public AnchorPoint<R> clone() {
+        return (AnchorPoint<R>) super.clone();
     }
 }

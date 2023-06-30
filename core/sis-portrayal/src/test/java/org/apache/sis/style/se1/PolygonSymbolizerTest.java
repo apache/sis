@@ -20,6 +20,9 @@ import java.awt.Color;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+
 
 /**
  * Tests for {@link PolygonSymbolizer}.
@@ -40,15 +43,15 @@ public final class PolygonSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testStroke() {
-        PolygonSymbolizer cdt = new PolygonSymbolizer();
+        final var cdt = factory.createPolygonSymbolizer();
 
         // Check default
-        Stroke value = cdt.getStroke().orElseThrow();
+        var value = cdt.getStroke().orElseThrow();
         assertLiteralEquals("bevel",  value.getLineJoin());
         assertLiteralEquals("square", value.getLineCap());
 
         // Check get/set
-        value = new Stroke();
+        value = factory.createStroke();
         cdt.setStroke(value);
         assertOptionalEquals(value, cdt.getStroke());
     }
@@ -58,14 +61,15 @@ public final class PolygonSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testFill() {
-        PolygonSymbolizer cdt = new PolygonSymbolizer();
+        final var cdt = factory.createPolygonSymbolizer();
 
         // Check default
-        Fill value = cdt.getFill().orElseThrow();
+        Fill<Feature> value = cdt.getFill().orElseThrow();
         assertLiteralEquals(Color.GRAY, value.getColor());
 
         // Check get/set
-        value = new Fill(ANY_COLOR);
+        value = factory.createFill();
+        value.setColorAndOpacity(ANY_COLOR);
         cdt.setFill(value);
         assertOptionalEquals(value, cdt.getFill());
     }
@@ -75,15 +79,15 @@ public final class PolygonSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testDisplacement() {
-        PolygonSymbolizer cdt = new PolygonSymbolizer();
+        final var cdt = factory.createPolygonSymbolizer();
 
         // Check default
-        Displacement value = cdt.getDisplacement();
+        Displacement<Feature> value = cdt.getDisplacement();
         assertLiteralEquals(0.0, value.getDisplacementX());
         assertLiteralEquals(0.0, value.getDisplacementY());
 
         // Check get/set
-        value = new Displacement(4, 1);
+        value = factory.createDisplacement(4, 1);
         cdt.setDisplacement(value);
         assertEquals(value, cdt.getDisplacement());
     }
@@ -93,13 +97,13 @@ public final class PolygonSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testPerpendicularOffset() {
-        PolygonSymbolizer cdt = new PolygonSymbolizer();
+        final var cdt = factory.createPolygonSymbolizer();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getPerpendicularOffset());
 
         // Check get/set
-        cdt.setPerpendicularOffset(FF.literal(10));
+        cdt.setPerpendicularOffset(literal(10));
         assertLiteralEquals(10, cdt.getPerpendicularOffset());
     }
 }

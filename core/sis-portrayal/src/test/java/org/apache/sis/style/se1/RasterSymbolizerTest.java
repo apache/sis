@@ -42,13 +42,13 @@ public final class RasterSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testOpacity() {
-        RasterSymbolizer cdt = new RasterSymbolizer();
+        final var cdt = factory.createRasterSymbolizer();
 
         // Check default
         assertLiteralEquals(1.0, cdt.getOpacity());
 
         // Check get/set
-        cdt.setOpacity(FF.literal(0.7));
+        cdt.setOpacity(literal(0.7));
         assertLiteralEquals(0.7, cdt.getOpacity());
     }
 
@@ -57,13 +57,13 @@ public final class RasterSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testChannelSelection() {
-        RasterSymbolizer cdt = new RasterSymbolizer();
+        final var cdt = factory.createRasterSymbolizer();
 
         // Check default
         assertEmpty(cdt.getChannelSelection());
 
         // Check get/set
-        ChannelSelection value = new ChannelSelection();
+        var value = factory.createChannelSelection();
         cdt.setChannelSelection(value);
         assertOptionalEquals(value, cdt.getChannelSelection());
     }
@@ -73,7 +73,7 @@ public final class RasterSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testOverlapBehavior() {
-        RasterSymbolizer cdt = new RasterSymbolizer();
+        final var cdt = factory.createRasterSymbolizer();
 
         // Check default
         assertNotNull(cdt.getOverlapBehavior());
@@ -88,13 +88,13 @@ public final class RasterSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testColorMap() {
-        RasterSymbolizer cdt = new RasterSymbolizer();
+        final var cdt = factory.createRasterSymbolizer();
 
         // Check default
         assertEmpty(cdt.getColorMap());
 
         // Check get/set
-        ColorMap value = new ColorMap();
+        var value = factory.createColorMap();
         cdt.setColorMap(value);
         assertOptionalEquals(value, cdt.getColorMap());
     }
@@ -104,13 +104,13 @@ public final class RasterSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testGetContrastEnhancement() {
-        RasterSymbolizer cdt = new RasterSymbolizer();
+        final var cdt = factory.createRasterSymbolizer();
 
         // Check default
         assertEmpty(cdt.getContrastEnhancement());
 
         // Check get/set
-        ContrastEnhancement value = new ContrastEnhancement();
+        var value = factory.createContrastEnhancement();
         cdt.setContrastEnhancement(value);
         assertOptionalEquals(value, cdt.getContrastEnhancement());
     }
@@ -120,13 +120,13 @@ public final class RasterSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testGetShadedRelief() {
-        RasterSymbolizer cdt = new RasterSymbolizer();
+        final var cdt = factory.createRasterSymbolizer();
 
         // Check default
         assertEmpty(cdt.getShadedRelief());
 
         // Check get/set
-        ShadedRelief value = new ShadedRelief();
+        var value = factory.createShadedRelief();
         cdt.setShadedRelief(value);
         assertOptionalEquals(value, cdt.getShadedRelief());
     }
@@ -136,13 +136,13 @@ public final class RasterSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testImageOutline() {
-        RasterSymbolizer cdt = new RasterSymbolizer();
+        final var cdt = factory.createRasterSymbolizer();
 
         // Check default
         assertEmpty(cdt.getImageOutline());
 
         // Check get/set
-        Symbolizer value = new LineSymbolizer();
+        var value = factory.createLineSymbolizer();
         cdt.setImageOutline(value);
         assertOptionalEquals(value, cdt.getImageOutline());
     }

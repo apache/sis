@@ -20,6 +20,9 @@ import java.awt.Color;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+
 
 /**
  * Tests for {@link LineSymbolizer}.
@@ -40,14 +43,14 @@ public final class LineSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testStroke() {
-        LineSymbolizer cdt = new LineSymbolizer();
+        final var cdt = factory.createLineSymbolizer();
 
         // Check default
-        Stroke stroke = cdt.getStroke();
-        assertLiteralEquals(Color.BLACK, stroke.getColor());
+        Stroke<Feature> value = cdt.getStroke();
+        assertLiteralEquals(Color.BLACK, value.getColor());
 
         // Check get/set
-        Stroke value = new Stroke();
+        value = factory.createStroke();
         cdt.setStroke(value);
         assertEquals(value, cdt.getStroke());
     }
@@ -57,13 +60,13 @@ public final class LineSymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testPerpendicularOffset() {
-        LineSymbolizer cdt = new LineSymbolizer();
+        final var cdt = factory.createLineSymbolizer();
 
         // Check default
         assertLiteralEquals(0.0, cdt.getPerpendicularOffset());
 
         // Check get/set
-        cdt.setPerpendicularOffset(FF.literal(20));
+        cdt.setPerpendicularOffset(literal(20));
         assertLiteralEquals(20, cdt.getPerpendicularOffset());
     }
 }

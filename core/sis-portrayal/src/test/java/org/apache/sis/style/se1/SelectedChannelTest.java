@@ -39,14 +39,14 @@ public final class SelectedChannelTest extends StyleTestCase {
      */
     @Test
     public void testChannelName() {
-        SelectedChannel cdt = new SelectedChannel();
+        final var cdt = factory.createSelectedChannel();
 
         // Check defaults
         assertNull(cdt.getSourceChannelName());
 
         // Check get/set
         String value = "A random channel";
-        cdt.setSourceChannelName(FF.literal(value));
+        cdt.setSourceChannelName(literal(value));
         assertLiteralEquals(value, cdt.getSourceChannelName());
     }
 
@@ -55,13 +55,13 @@ public final class SelectedChannelTest extends StyleTestCase {
      */
     @Test
     public void testContrastEnhancement() {
-        SelectedChannel cdt = new SelectedChannel();
+        final var cdt = factory.createSelectedChannel();
 
         // Check defaults
         assertEmpty(cdt.getContrastEnhancement());
 
         // Check get/set
-        ContrastEnhancement value = new ContrastEnhancement();
+        var value = factory.createContrastEnhancement();
         cdt.setContrastEnhancement(value);
         assertOptionalEquals(value, cdt.getContrastEnhancement());
     }

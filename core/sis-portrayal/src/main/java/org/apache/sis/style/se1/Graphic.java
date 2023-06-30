@@ -24,7 +24,6 @@ import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -38,7 +37,10 @@ import org.opengis.filter.Expression;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "GraphicType", propOrder = {
     "graphicalSymbols",
@@ -49,14 +51,7 @@ import org.opengis.filter.Expression;
     "displacement"
 })
 @XmlRootElement(name = "Graphic")
-public class Graphic extends StyleElement implements Translucent {
-    /**
-     * The default mark size, which is 6 pixels according the OGC 05-077r4 standard.
-     *
-     * @see #getSize()
-     */
-    private static final Expression<Feature,Double> DEFAULT_SIZE = literal(6.0);
-
+public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * List of external image files or marks that comprise this graphic.
      * All elements of the list must be instances of either {@link Mark} or {@link ExternalGraphic}.
@@ -68,7 +63,7 @@ public class Graphic extends StyleElement implements Translucent {
         @XmlElement(name = "Mark", type = Mark.class),
         @XmlElement(name = "ExternalGraphic", type = ExternalGraphic.class)
     })
-    private List<GraphicalSymbol> graphicalSymbols;
+    private List<GraphicalSymbol<R>> graphicalSymbols;
 
     /**
      * Level of translucency as a floating point number, or {@code null} for the default value.
@@ -79,7 +74,7 @@ public class Graphic extends StyleElement implements Translucent {
      * @todo Needs a JAXB adapter to {@code ParameterValueType}.
      */
     @XmlElement(name = "Opacity")
-    protected Expression<Feature, ? extends Number> opacity;
+    protected Expression<R, ? extends Number> opacity;
 
     /**
      * Absolute size of the graphic as a floating point number, or {@code null} for the default value.
@@ -90,7 +85,7 @@ public class Graphic extends StyleElement implements Translucent {
      * @todo Needs a JAXB adapter to {@code ParameterValueType}.
      */
     @XmlElement(name = "Size")
-    protected Expression<Feature, ? extends Number> size;
+    protected Expression<R, ? extends Number> size;
 
     /**
      * Rotation angle of the graphic when it is drawn, or {@code null} for the default value.
@@ -101,7 +96,7 @@ public class Graphic extends StyleElement implements Translucent {
      * @todo Needs a JAXB adapter to {@code ParameterValueType}.
      */
     @XmlElement(name = "Rotation")
-    protected Expression<Feature, ? extends Number> rotation;
+    protected Expression<R, ? extends Number> rotation;
 
     /**
      * Location to use for anchoring the graphic to the geometry, or {@code null} for lazily constructed default.
@@ -110,7 +105,7 @@ public class Graphic extends StyleElement implements Translucent {
      * @see #setAnchorPoint(AnchorPoint)
      */
     @XmlElement(name = "AnchorPoint")
-    protected AnchorPoint anchorPoint;
+    protected AnchorPoint<R> anchorPoint;
 
     /**
      * Displacement from the "hot-spot" point, or {@code null} for lazily constructed default.
@@ -119,12 +114,22 @@ public class Graphic extends StyleElement implements Translucent {
      * @see #setDisplacement(Displacement)
      */
     @XmlElement(name = "Displacement")
-    protected Displacement displacement;
+    protected Displacement<R> displacement;
+
+    /**
+     * For JAXB unmarshalling only.
+     */
+    private Graphic() {
+        // Thread-local factory will be used.
+    }
 
     /**
      * Creates a graphic initialized to opaque default mark, default size and no rotation.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public Graphic() {
+    public Graphic(final StyleFactory<R> factory) {
+        super(factory);
         graphicalSymbols = new ArrayList<>();
     }
 
@@ -134,7 +139,7 @@ public class Graphic extends StyleElement implements Translucent {
      *
      * @param  source  the object to copy.
      */
-    public Graphic(final Graphic source) {
+    public Graphic(final Graphic<R> source) {
         super(source);
         graphicalSymbols = new ArrayList<>(source.graphicalSymbols);
         opacity          = source.opacity;
@@ -160,7 +165,7 @@ public class Graphic extends StyleElement implements Translucent {
      * @return list of marks or external graphics, as a live collection.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<GraphicalSymbol> graphicalSymbols() {
+    public List<GraphicalSymbol<R>> graphicalSymbols() {
         return graphicalSymbols;
     }
 
@@ -175,7 +180,7 @@ public class Graphic extends StyleElement implements Translucent {
      * @see RasterSymbolizer#getOpacity()
      */
     @Override
-    public Expression<Feature, ? extends Number> getOpacity() {
+    public Expression<R, ? extends Number> getOpacity() {
         return defaultToOne(opacity);
     }
 
@@ -187,7 +192,7 @@ public class Graphic extends StyleElement implements Translucent {
      * @param  value  new level of translucency, or {@code null} for resetting the default value.
      */
     @Override
-    public void setOpacity(final Expression<Feature, ? extends Number> value) {
+    public void setOpacity(final Expression<R, ? extends Number> value) {
         opacity = value;
     }
 
@@ -207,10 +212,10 @@ public class Graphic extends StyleElement implements Translucent {
      *
      * @return absolute size of the graphic as a floating point number, or {@code null} for the default value.
      */
-    public Expression<Feature, ? extends Number> getSize() {
+    public Expression<R, ? extends Number> getSize() {
         final var value = size;
         if (value == null && graphicalSymbols.isEmpty()) {
-            return DEFAULT_SIZE;
+            return factory.six;
         }
         return value;
     }
@@ -221,7 +226,7 @@ public class Graphic extends StyleElement implements Translucent {
      *
      * @param  value  new absolute size of the graphic, or {@code null} for the default value.
      */
-    public void setSize(final Expression<Feature, ? extends Number> value) {
+    public void setSize(final Expression<R, ? extends Number> value) {
         size = value;
     }
 
@@ -236,7 +241,7 @@ public class Graphic extends StyleElement implements Translucent {
      *
      * @return the rotation angle of the graphic when it is drawn.
      */
-    public Expression<Feature, ? extends Number> getRotation() {
+    public Expression<R, ? extends Number> getRotation() {
         return defaultToZero(rotation);
     }
 
@@ -246,7 +251,7 @@ public class Graphic extends StyleElement implements Translucent {
      *
      * @param  value  new rotation angle of the graphic, or {@code null} for resetting the default value.
      */
-    public void setRotation(final Expression<Feature, ? extends Number> value) {
+    public void setRotation(final Expression<R, ? extends Number> value) {
         rotation = value;
     }
 
@@ -261,9 +266,9 @@ public class Graphic extends StyleElement implements Translucent {
      *
      * @return the anchor point.
      */
-    public AnchorPoint getAnchorPoint() {
+    public AnchorPoint<R> getAnchorPoint() {
         if (anchorPoint == null) {
-            anchorPoint = new AnchorPoint();
+            anchorPoint = factory.createAnchorPoint();
         }
         return anchorPoint;
     }
@@ -275,7 +280,7 @@ public class Graphic extends StyleElement implements Translucent {
      *
      * @param  value  new anchor point, or {@code null} for resetting the default value.
      */
-    public void setAnchorPoint(final AnchorPoint value) {
+    public void setAnchorPoint(final AnchorPoint<R> value) {
         anchorPoint = value;
     }
 
@@ -294,9 +299,9 @@ public class Graphic extends StyleElement implements Translucent {
      * @see PolygonSymbolizer#getDisplacement()
      * @see PointPlacement#getDisplacement()
      */
-    public Displacement getDisplacement() {
+    public Displacement<R> getDisplacement() {
         if (displacement == null) {
-            displacement = new Displacement();
+            displacement = factory.createDisplacement();
         }
         return displacement;
     }
@@ -308,7 +313,7 @@ public class Graphic extends StyleElement implements Translucent {
      *
      * @param  value  new displacement from the "hot-spot" point, or {@code null} for resetting the default value.
      */
-    public void setDisplacement(final Displacement value) {
+    public void setDisplacement(final Displacement<R> value) {
         displacement = value;
     }
 
@@ -328,8 +333,8 @@ public class Graphic extends StyleElement implements Translucent {
      * @return deep clone of all style elements.
      */
     @Override
-    public Graphic clone() {
-        final var clone = (Graphic) super.clone();
+    public Graphic<R> clone() {
+        final var clone = (Graphic<R>) super.clone();
         clone.selfClone();
         return clone;
     }

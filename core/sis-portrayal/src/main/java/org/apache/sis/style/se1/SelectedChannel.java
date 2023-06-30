@@ -19,10 +19,8 @@ package org.apache.sis.style.se1;
 import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
-import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 
 
@@ -37,14 +35,17 @@ import org.opengis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "SelectedChannelType", propOrder = {
     "sourceChannelName",
     "contrastEnhancement"
 })
 // No root element is specified in OGC 05-077r4.
-public class SelectedChannel extends StyleElement {
+public class SelectedChannel<R> extends StyleElement<R> {
     /**
      * The channel's name, or {@code null} if unspecified.
      *
@@ -54,7 +55,7 @@ public class SelectedChannel extends StyleElement {
      * @todo Needs an adapter from expression to plain string.
      */
     @XmlElement(name = "SourceChannelName", required = true)
-    protected Expression<Feature,String> sourceChannelName;
+    protected Expression<R,String> sourceChannelName;
 
     /**
      * Contrast enhancement applied to the selected channel in isolation, or {@code null} if none.
@@ -63,22 +64,22 @@ public class SelectedChannel extends StyleElement {
      * @see #setContrastEnhancement(ContrastEnhancement)
      */
     @XmlElement(name = "ContrastEnhancement")
-    protected ContrastEnhancement contrastEnhancement;
+    protected ContrastEnhancement<R> contrastEnhancement;
 
     /**
-     * Creates an initially empty selected channel.
+     * For JAXB unmarshalling only.
      */
-    public SelectedChannel() {
+    private SelectedChannel() {
+        // Thread-local factory will be used.
     }
 
     /**
-     * Creates a selected channel for the specified name.
+     * Creates an initially empty selected channel.
      *
-     * @param  name  source channel name.
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public SelectedChannel(final String name) {
-        ArgumentChecks.ensureNonEmpty("name", name);
-        sourceChannelName = literal(name);
+    public SelectedChannel(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -87,7 +88,7 @@ public class SelectedChannel extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public SelectedChannel(final SelectedChannel source) {
+    public SelectedChannel(final SelectedChannel<R> source) {
         super(source);
         sourceChannelName   = source.sourceChannelName;
         contrastEnhancement = source.contrastEnhancement;
@@ -100,7 +101,7 @@ public class SelectedChannel extends StyleElement {
      *
      * @todo Shall never be {@code null}. We need to think about some default value.
      */
-    public Expression<Feature,String> getSourceChannelName() {
+    public Expression<R,String> getSourceChannelName() {
         return sourceChannelName;
     }
 
@@ -109,7 +110,7 @@ public class SelectedChannel extends StyleElement {
      *
      * @param  value  the channel's name, or {@code null} if unspecified.
      */
-    public void setSourceChannelName(final Expression<Feature,String> value) {
+    public void setSourceChannelName(final Expression<R,String> value) {
         sourceChannelName = value;
     }
 
@@ -122,7 +123,7 @@ public class SelectedChannel extends StyleElement {
      *
      * @see RasterSymbolizer#getContrastEnhancement()
      */
-    public Optional<ContrastEnhancement> getContrastEnhancement() {
+    public Optional<ContrastEnhancement<R>> getContrastEnhancement() {
         return Optional.ofNullable(contrastEnhancement);
     }
 
@@ -135,7 +136,7 @@ public class SelectedChannel extends StyleElement {
      *
      * @see RasterSymbolizer#setContrastEnhancement(ContrastEnhancement)
      */
-    public void setContrastEnhancement(final ContrastEnhancement value) {
+    public void setContrastEnhancement(final ContrastEnhancement<R> value) {
         contrastEnhancement = value;
     }
 
@@ -155,8 +156,8 @@ public class SelectedChannel extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public SelectedChannel clone() {
-        final var clone = (SelectedChannel) super.clone();
+    public SelectedChannel<R> clone() {
+        final var clone = (SelectedChannel<R>) super.clone();
         clone.selfClone();
         return clone;
     }

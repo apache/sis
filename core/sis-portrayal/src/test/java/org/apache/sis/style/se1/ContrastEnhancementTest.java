@@ -42,7 +42,7 @@ public final class ContrastEnhancementTest extends StyleTestCase {
      */
     @Test
     public void testMethod() {
-        ContrastEnhancement cdt = new ContrastEnhancement();
+        final var cdt = factory.createContrastEnhancement();
 
         // Check default
         assertEquals(ContrastMethod.NONE, cdt.getMethod());
@@ -57,13 +57,13 @@ public final class ContrastEnhancementTest extends StyleTestCase {
      */
     @Test
     public void testGammaValue() {
-        ContrastEnhancement cdt = new ContrastEnhancement();
+        final var cdt = factory.createContrastEnhancement();
 
         // Check default
         assertLiteralEquals(1.0, cdt.getGammaValue());
 
         // Check get/set
-        cdt.setGammaValue(FF.literal(2));
+        cdt.setGammaValue(literal(2));
         assertLiteralEquals(2, cdt.getGammaValue());
         assertEquals(ContrastMethod.GAMMA, cdt.getMethod());
     }

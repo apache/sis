@@ -42,7 +42,7 @@ public final class ExternalGraphicTest extends StyleTestCase {
      */
     @Test
     public void testOnlineResource() {
-        ExternalGraphic cdt = new ExternalGraphic();
+        final var cdt = factory.createExternalGraphic();
 
         // Check defaults
         assertEmpty(cdt.getOnlineResource());
@@ -57,7 +57,7 @@ public final class ExternalGraphicTest extends StyleTestCase {
      */
     @Test
     public void testInlineContent() {
-        ExternalGraphic cdt = new ExternalGraphic();
+        final var cdt = factory.createExternalGraphic();
 
         // Check defaults
         assertEmpty(cdt.getInlineContent());
@@ -73,7 +73,7 @@ public final class ExternalGraphicTest extends StyleTestCase {
      */
     @Test
     public void testFormat() {
-        ExternalGraphic cdt = new ExternalGraphic();
+        final var cdt = factory.createExternalGraphic();
 
         // Check defaults
         assertEmpty(cdt.getFormat());
@@ -89,13 +89,13 @@ public final class ExternalGraphicTest extends StyleTestCase {
      */
     @Test
     public void testColorReplacements() {
-        ExternalGraphic cdt = new ExternalGraphic();
+        final var cdt = factory.createExternalGraphic();
 
         // Check defaults
         assertTrue(cdt.colorReplacements().isEmpty());
 
         // Check get/set
-        List<ColorReplacement> value = List.of(new ColorReplacement());
+        var value = List.of(factory.createColorReplacement());
         cdt.colorReplacements().addAll(value);
         assertEquals(value, cdt.colorReplacements());
     }

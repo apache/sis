@@ -30,15 +30,28 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "ColorReplacementType")
 @XmlRootElement(name = "ColorReplacement")
-public class ColorReplacement extends StyleElement {
+public class ColorReplacement<R> extends StyleElement<R> {
     /**
-     * Creates a color replacement.
+     * For JAXB unmarshalling only.
      */
-    public ColorReplacement() {
+    private ColorReplacement() {
+        // Thread-local factory will be used.
+    }
+
+    /**
+     * Creates an initially empty color replacement.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
+     */
+    public ColorReplacement(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -47,7 +60,7 @@ public class ColorReplacement extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public ColorReplacement(final ColorReplacement source) {
+    public ColorReplacement(final ColorReplacement<R> source) {
         super(source);
     }
 
@@ -67,8 +80,8 @@ public class ColorReplacement extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public ColorReplacement clone() {
-        final var clone = (ColorReplacement) super.clone();
+    public ColorReplacement<R> clone() {
+        final var clone = (ColorReplacement<R>) super.clone();
         return clone;
     }
 }

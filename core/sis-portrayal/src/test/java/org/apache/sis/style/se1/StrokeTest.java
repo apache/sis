@@ -40,13 +40,13 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testGraphicFill() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertEmpty(cdt.getGraphicFill());
 
         // Check get/set
-        GraphicFill value = new GraphicFill();
+        var value = factory.createGraphicFill();
         cdt.setGraphicFill(value);
         assertOptionalEquals(value, cdt.getGraphicFill());
     }
@@ -56,13 +56,13 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testGraphicStroke() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertEmpty(cdt.getGraphicStroke());
 
         // Check get/set
-        GraphicStroke value = new GraphicStroke();
+        var value = factory.createGraphicStroke();
         cdt.setGraphicStroke(value);
         assertOptionalEquals(value, cdt.getGraphicStroke());
     }
@@ -72,7 +72,7 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testColor() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertLiteralEquals(Color.BLACK, cdt.getColor());
@@ -87,13 +87,13 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testOpacity() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertLiteralEquals(1.0, cdt.getOpacity());
 
         // Check get/set
-        cdt.setOpacity(FF.literal(0.7));
+        cdt.setOpacity(literal(0.7));
         assertLiteralEquals(0.7, cdt.getOpacity());
     }
 
@@ -102,7 +102,7 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testColorAndOpacity() {
-        Stroke cdt = new Stroke(new Color(255, 255, 0, 128));
+        final var cdt = factory.createStroke(new Color(255, 255, 0, 128));
         assertLiteralEquals(Color.YELLOW, cdt.getColor());
         assertLiteralEquals(0.5, cdt.getOpacity());
     }
@@ -112,13 +112,13 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testWidth() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertLiteralEquals(1.0, cdt.getWidth());
 
         // Check get/set
-        cdt.setWidth(FF.literal(14));
+        cdt.setWidth(literal(14));
         assertLiteralEquals(14, cdt.getWidth());
     }
 
@@ -127,13 +127,13 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testLineJoin() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertLiteralEquals("bevel", cdt.getLineJoin());
 
         // Check get/set
-        var value = FF.literal("A random join");
+        var value = literal("A random join");
         cdt.setLineJoin(value);
         assertEquals(value, cdt.getLineJoin());
     }
@@ -143,13 +143,13 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testLineCap() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertLiteralEquals("square", cdt.getLineCap());
 
         // Check get/set
-        var value = FF.literal("A random cap");
+        var value = literal("A random cap");
         cdt.setLineCap(value);
         assertEquals(value, cdt.getLineCap());
     }
@@ -159,14 +159,14 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testDashArray() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertEmpty(cdt.getDashArray());
 
         // Check get/set
         final var value = new float[] {1,2,3};
-        cdt.setDashArray(FF.literal(value));
+        cdt.setDashArray(literal(value));
         assertLiteralEquals(value, cdt.getDashArray().orElseThrow());
     }
 
@@ -175,13 +175,13 @@ public final class StrokeTest extends StyleTestCase {
      */
     @Test
     public void testDashOffset() {
-        Stroke cdt = new Stroke();
+        final var cdt = factory.createStroke();
 
         // Check default
         assertLiteralEquals(0, cdt.getDashOffset());
 
         // Check get/set
-        cdt.setDashOffset(FF.literal(21));
+        cdt.setDashOffset(literal(21));
         assertLiteralEquals(21, cdt.getDashOffset());
     }
 }

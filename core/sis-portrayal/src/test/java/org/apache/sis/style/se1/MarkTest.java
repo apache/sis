@@ -39,13 +39,13 @@ public final class MarkTest extends StyleTestCase {
      */
     @Test
     public void testWellKnownName() {
-        Mark cdt = new Mark();
+        final var cdt = factory.createMark();
 
         // Check default
         assertLiteralEquals("square", cdt.getWellKnownName());
 
         // Check get/set
-        var value = FF.literal("A random name");
+        var value = literal("A random name");
         cdt.setWellKnownName(value);
         assertEquals(value, cdt.getWellKnownName());
     }
@@ -55,15 +55,16 @@ public final class MarkTest extends StyleTestCase {
      */
     @Test
     public void testFill() {
-        Mark cdt = new Mark();
+        final var cdt = factory.createMark();
 
         // Check default
-        assertOptionalEquals(new Fill(), cdt.getFill());
+        assertOptionalEquals(factory.createFill(), cdt.getFill());
 
         // Check get/set
-        var fill = new Fill(ANY_COLOR);
-        cdt.setFill(fill);
-        assertOptionalEquals(fill, cdt.getFill());
+        var value = factory.createFill();
+        value.setColorAndOpacity(ANY_COLOR);
+        cdt.setFill(value);
+        assertOptionalEquals(value, cdt.getFill());
     }
 
     /**
@@ -71,14 +72,14 @@ public final class MarkTest extends StyleTestCase {
      */
     @Test
     public void testStroke() {
-        Mark cdt = new Mark();
+        final var cdt = factory.createMark();
 
         // Check default
-        assertOptionalEquals(new Stroke(), cdt.getStroke());
+        assertOptionalEquals(factory.createStroke(), cdt.getStroke());
 
         // Check get/set
-        Stroke value = new Stroke();
-        value.setOpacity(FF.literal(0.75));
+        var value = factory.createStroke();
+        value.setOpacity(literal(0.75));
         cdt.setStroke(value);
         assertOptionalEquals(value, cdt.getStroke());
     }

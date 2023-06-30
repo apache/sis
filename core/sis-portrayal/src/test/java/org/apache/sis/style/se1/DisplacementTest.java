@@ -38,15 +38,15 @@ public final class DisplacementTest extends StyleTestCase {
      */
     @Test
     public void testGetDisplacementXY() {
-        Displacement cdt = new Displacement();
+        final var cdt = factory.createDisplacement();
 
         // Check defaults
         assertLiteralEquals(0.0, cdt.getDisplacementX());
         assertLiteralEquals(0.0, cdt.getDisplacementY());
 
         // Check get/set
-        cdt.setDisplacementX(FF.literal(-7));
-        cdt.setDisplacementY(FF.literal(15));
+        cdt.setDisplacementX(literal(-7));
+        cdt.setDisplacementY(literal(15));
         assertLiteralEquals(-7, cdt.getDisplacementX());
         assertLiteralEquals(15, cdt.getDisplacementY());
     }

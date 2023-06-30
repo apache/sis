@@ -24,7 +24,7 @@ import org.opengis.util.InternationalString;
 
 
 /**
- * Informative description of a style object being defined.
+ * Informative (human-readable) description of a style object being defined.
  * Description values are mostly used in User Interfaces (lists, trees, …).
  *
  * <p>Note that most style object also have a name.
@@ -36,14 +36,19 @@ import org.opengis.util.InternationalString;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
+ *
+ * @todo Consider replacing this class by {@link org.opengis.metadata.identification.Identification}.
  */
 @XmlType(name = "DescriptionType", propOrder = {
     "title",
     "summary"
 })
 @XmlRootElement(name = "Description")
-public class Description extends StyleElement {
+public class Description<R> extends StyleElement<R> {
     /**
      * Human readable title of the style, or {@code null} if none.
      *
@@ -64,9 +69,19 @@ public class Description extends StyleElement {
     protected InternationalString summary;
 
     /**
-     * Creates an initially empty description.
+     * For JAXB unmarshalling only.
      */
-    public Description() {
+    private Description() {
+        // Thread-local factory will be used.
+    }
+
+    /**
+     * Creates an initially empty description.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
+     */
+    public Description(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -75,7 +90,7 @@ public class Description extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    public Description(final Description source) {
+    public Description(final Description<R> source) {
         super(source);
         title   = source.title;
         summary = source.summary;
@@ -138,8 +153,8 @@ public class Description extends StyleElement {
      * @return a clone of this object.
      */
     @Override
-    public Description clone() {
-        final var clone = (Description) super.clone();
+    public Description<R> clone() {
+        final var clone = (Description<R>) super.clone();
         return clone;
     }
 }

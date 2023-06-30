@@ -22,9 +22,12 @@ package org.apache.sis.style.se1;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
-public interface GraphicalElement {
+public interface GraphicalElement<R> {
     /**
      * Returns the graphic.
      * The returned object is <em>live</em>:
@@ -32,7 +35,7 @@ public interface GraphicalElement {
      *
      * @return the picture.
      */
-    Graphic getGraphic();
+    Graphic<R> getGraphic();
 
     /**
      * Sets the graphic.
@@ -45,5 +48,5 @@ public interface GraphicalElement {
      *
      * @param  value  new picture, or {@code null} for none or for resetting the default value.
      */
-    void setGraphic(Graphic value);
+    void setGraphic(Graphic<R> value);
 }

@@ -18,7 +18,6 @@ package org.apache.sis.style.se1;
 
 import java.awt.Color;
 import java.util.Optional;
-import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.test.TestCase;
 
@@ -29,7 +28,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
-import org.opengis.filter.FilterFactory;
 
 
 /**
@@ -41,21 +39,33 @@ import org.opengis.filter.FilterFactory;
  */
 abstract class StyleTestCase extends TestCase {
     /**
-     * The factory to use for creating literal values.
+     * The factory to use for creating style elements.
      */
-    static final FilterFactory<Feature,Object,Object> FF = DefaultFilterFactory.forFeatures();
+    final StyleFactory<Feature> factory;
 
     /**
      * Creates a new test case.
      */
     StyleTestCase() {
+        factory = FeatureTypeStyle.FACTORY;
+    }
+
+    /**
+     * Returns a literal for the given value.
+     *
+     * @param  <E>    type of value.
+     * @param  value  the value for which to return a literal.
+     * @return literal for the given value.
+     */
+    final <E> Literal<Feature,E> literal(final E value) {
+        return factory.filterFactory.literal(value);
     }
 
     /**
      * Creates a dummy description with arbitrary title and abstract.
      */
-    static Description anyDescription() {
-        var value = new Description();
+    final Description<Feature> anyDescription() {
+        final var value = factory.createDescription();
         value.setTitle(new SimpleInternationalString("A random title"));
         value.setAbstract(new SimpleInternationalString("A random abstract"));
         return value;
@@ -65,8 +75,8 @@ abstract class StyleTestCase extends TestCase {
      * Returns an expression with a random color.
      * The color is {@link #ANY_COLOR}.
      */
-    static Expression<Feature,Color> anyColor() {
-        return FF.literal(ANY_COLOR);
+    final Expression<Feature,Color> anyColor() {
+        return literal(ANY_COLOR);
     }
 
     /**

@@ -27,10 +27,6 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.feature.AttributeConvention;
-
-// Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ValueReference;
 
@@ -53,7 +49,10 @@ import org.opengis.filter.ValueReference;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "SymbolizerType", propOrder = {
     "name",
@@ -68,16 +67,7 @@ import org.opengis.filter.ValueReference;
     RasterSymbolizer.class
 })
 @XmlRootElement(name = "Symbolizer")
-public abstract class Symbolizer extends StyleElement {
-    /**
-     * An expression for fetching the default geometry.
-     *
-     * @todo According SE specification, the default expression in the context of some symbolizers should
-     *       fetch all geometries, not only a default one. The default seems to depend on the symbolizer type.
-     */
-    private static final ValueReference<Feature,?> DEFAULT_GEOMETRY =
-                            FF().property(AttributeConvention.GEOMETRY);
-
+public abstract class Symbolizer<R> extends StyleElement<R> {
     /**
      * Name for this style, or {@code null} if none.
      *
@@ -94,7 +84,7 @@ public abstract class Symbolizer extends StyleElement {
      * @see #setDescription(Description)
      */
     @XmlElement(name = "Description")
-    protected Description description;
+    protected Description<R> description;
 
     /**
      * Expression fetching the geometry to draw, or {@code null} for the default geometries.
@@ -105,7 +95,7 @@ public abstract class Symbolizer extends StyleElement {
      * @see #setGeometry(Expression)
      */
     @XmlElement(name = "Geometry")
-    protected Expression<Feature,?> geometry;
+    protected Expression<R,?> geometry;
 
     /**
      * Unit of measurement for all lengths inside this symbolizer, or {@code null} for the default value.
@@ -127,9 +117,19 @@ public abstract class Symbolizer extends StyleElement {
     protected Unit<?> unit;
 
     /**
-     * Creates a symbolizer initialized to default geometries and pixel unit of measurement.
+     * For JAXB unmarshalling only.
      */
-    protected Symbolizer() {
+    Symbolizer() {
+        // Thread-local factory will be used.
+    }
+
+    /**
+     * Creates a symbolizer initialized to default geometries and pixel unit of measurement.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
+     */
+    public Symbolizer(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -138,7 +138,7 @@ public abstract class Symbolizer extends StyleElement {
      *
      * @param  source  the object to copy.
      */
-    protected Symbolizer(final Symbolizer source) {
+    protected Symbolizer(final Symbolizer<R> source) {
         super(source);
         name        = source.name;
         geometry    = source.geometry;
@@ -175,7 +175,7 @@ public abstract class Symbolizer extends StyleElement {
      *
      * @return information for user interfaces.
      */
-    public Optional<Description> getDescription() {
+    public Optional<Description<R>> getDescription() {
         return Optional.ofNullable(description);
     }
 
@@ -186,7 +186,7 @@ public abstract class Symbolizer extends StyleElement {
      *
      * @param  value  new information for user interfaces, or {@code null} if none.
      */
-    public void setDescription(final Description value) {
+    public void setDescription(final Description<R> value) {
         description = value;
     }
 
@@ -233,9 +233,9 @@ public abstract class Symbolizer extends StyleElement {
      *
      * @return expression fetching the geometry or the coverage to draw.
      */
-    public Expression<Feature,?> getGeometry() {
+    public Expression<R,?> getGeometry() {
         final var value = geometry;
-        return (value != null) ? value : DEFAULT_GEOMETRY;
+        return (value != null) ? value : factory.defaultGeometry;
     }
 
     /**
@@ -248,7 +248,7 @@ public abstract class Symbolizer extends StyleElement {
      *
      * @param  value  new expression fetching the geometry to draw, or {@code null} for resetting the default value.
      */
-    public void setGeometry(final Expression<Feature, ?> value) {
+    public void setGeometry(final Expression<R,?> value) {
         geometry = value;
     }
 
@@ -299,8 +299,8 @@ public abstract class Symbolizer extends StyleElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public Symbolizer clone() {
-        final var clone = (Symbolizer) super.clone();
+    public Symbolizer<R> clone() {
+        final var clone = (Symbolizer<R>) super.clone();
         clone.selfClone();
         return clone;
     }

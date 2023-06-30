@@ -75,7 +75,7 @@ public final class StyleTest extends StyleTestCase {
         assertEmpty(cdt.getDefaultSpecification());
 
         // Check get/set
-        Symbolizer value = new LineSymbolizer();
+        var value = factory.createLineSymbolizer();
         cdt.setDefaultSpecification(value);
         assertOptionalEquals(value, cdt.getDefaultSpecification());
     }
@@ -107,7 +107,7 @@ public final class StyleTest extends StyleTestCase {
         assertEmpty(cdt.getDescription());
 
         // Check get/set
-        Description desc = anyDescription();
+        var desc = anyDescription();
         cdt.setDescription(desc);
         assertOptionalEquals(desc, cdt.getDescription());
     }

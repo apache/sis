@@ -38,15 +38,15 @@ public final class AnchorPointTest extends StyleTestCase {
      */
     @Test
     public void testAnchorPointXY() {
-        AnchorPoint cdt = new AnchorPoint();
+        final var cdt = factory.createAnchorPoint();
 
         // Check defaults
         assertLiteralEquals(0.5, cdt.getAnchorPointX());
         assertLiteralEquals(0.5, cdt.getAnchorPointY());
 
         // Check get/set
-        cdt.setAnchorPointX(FF.literal(8));
-        cdt.setAnchorPointY(FF.literal(3));
+        cdt.setAnchorPointX(literal(8));
+        cdt.setAnchorPointY(literal(3));
         assertLiteralEquals(8, cdt.getAnchorPointX());
         assertLiteralEquals(3, cdt.getAnchorPointY());
     }

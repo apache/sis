@@ -44,7 +44,7 @@ public final class SymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testUnitOfMeasure() {
-        Symbolizer cdt = new LineSymbolizer();
+        final var cdt = factory.createLineSymbolizer();
 
         // Check default
         assertEquals(Units.PIXEL, cdt.getUnitOfMeasure());
@@ -59,13 +59,13 @@ public final class SymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testGeometry() {
-        Symbolizer cdt = new LineSymbolizer();
+        final var cdt = factory.createLineSymbolizer();
 
         // Check default
         assertInstanceOf("geometry", ValueReference.class, cdt.getGeometry());
 
         // Check get/set
-        cdt.setGeometry(FF.literal(8));
+        cdt.setGeometry(literal(8));
         assertLiteralEquals(8, cdt.getGeometry());
     }
 
@@ -74,7 +74,7 @@ public final class SymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testName() {
-        Symbolizer cdt = new LineSymbolizer();
+        final var cdt = factory.createLineSymbolizer();
 
         // Check defaults
         assertEmpty(cdt.getName());
@@ -90,13 +90,13 @@ public final class SymbolizerTest extends StyleTestCase {
      */
     @Test
     public void testDescription() {
-        Symbolizer cdt = new LineSymbolizer();
+        final var cdt = factory.createLineSymbolizer();
 
         // Check defaults
         assertEmpty(cdt.getDescription());
 
         // Check get/set
-        Description desc = anyDescription();
+        var desc = anyDescription();
         cdt.setDescription(desc);
         assertOptionalEquals(desc, cdt.getDescription());
     }

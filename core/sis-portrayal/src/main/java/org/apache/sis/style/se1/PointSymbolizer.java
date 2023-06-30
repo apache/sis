@@ -17,7 +17,6 @@
 package org.apache.sis.style.se1;
 
 import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -33,11 +32,14 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
 @XmlType(name = "PointSymbolizerType")
 @XmlRootElement(name = "PointSymbolizer")
-public class PointSymbolizer extends Symbolizer implements GraphicalElement {
+public class PointSymbolizer<R> extends Symbolizer<R> implements GraphicalElement<R> {
     /**
      * Information about how to draw graphics, or {@code null} for no graphic.
      * If no value has been explicitly set (including null value),
@@ -47,7 +49,7 @@ public class PointSymbolizer extends Symbolizer implements GraphicalElement {
      * @see #setGraphic(Graphic)
      */
     @XmlElement(name = "Graphic")
-    protected Graphic graphic;
+    protected Graphic<R> graphic;
 
     /**
      * Whether {@link #graphic} has been explicitly set to some value, including null.
@@ -56,25 +58,31 @@ public class PointSymbolizer extends Symbolizer implements GraphicalElement {
     private boolean isGraphicSet;
 
     /**
-     * Invoked by JAXB before unmarshalling this legend.
-     * OGC 05-077r4 said that if the graphic is not specified, then none should be used.
-     */
-    private void beforeUnmarshal(Unmarshaller caller, Object parent) {
-        isGraphicSet = true;
-    }
-
-    /**
      * Invoked by JAXB before marshalling this point symbolizer.
      * Creates the default graphic if needed.
      */
     private void beforeMarshal(Marshaller caller) {
-        if (graphic == null && !isGraphicSet) graphic = new Graphic();
+        if (graphic == null && !isGraphicSet) {
+            graphic = factory.createGraphic();
+        }
+    }
+
+    /**
+     * For JAXB unmarshalling only. This constructor disables the lazy creation of default values.
+     * This is because OGC 05-077r4 said that if the graphic is not specified, then none should be used.
+     */
+    private PointSymbolizer() {
+        // Thread-local factory will be used.
+        isGraphicSet = true;
     }
 
     /**
      * Creates a symbolizer initialized to a default graphic.
+     *
+     * @param  factory  the factory to use for creating expressions and child elements.
      */
-    public PointSymbolizer() {
+    public PointSymbolizer(final StyleFactory<R> factory) {
+        super(factory);
     }
 
     /**
@@ -83,7 +91,7 @@ public class PointSymbolizer extends Symbolizer implements GraphicalElement {
      *
      * @param  source  the object to copy.
      */
-    public PointSymbolizer(final PointSymbolizer source) {
+    public PointSymbolizer(final PointSymbolizer<R> source) {
         super(source);
         graphic = source.graphic;
     }
@@ -98,9 +106,9 @@ public class PointSymbolizer extends Symbolizer implements GraphicalElement {
      * @see #isVisible()
      */
     @Override
-    public Graphic getGraphic() {
+    public Graphic<R> getGraphic() {
         if (graphic == null) {
-            graphic = new Graphic();
+            graphic = factory.createGraphic();
         }
         return graphic;
     }
@@ -114,7 +122,7 @@ public class PointSymbolizer extends Symbolizer implements GraphicalElement {
      * @param  value  new information about how to draw graphics, or {@code null} for none.
      */
     @Override
-    public void setGraphic(final Graphic value) {
+    public void setGraphic(final Graphic<R> value) {
         isGraphicSet = true;
         graphic = value;
     }
@@ -149,8 +157,8 @@ public class PointSymbolizer extends Symbolizer implements GraphicalElement {
      * @return deep clone of all style elements.
      */
     @Override
-    public PointSymbolizer clone() {
-        final var clone = (PointSymbolizer) super.clone();
+    public PointSymbolizer<R> clone() {
+        final var clone = (PointSymbolizer<R>) super.clone();
         clone.selfClone();
         return clone;
     }
