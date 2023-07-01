@@ -54,7 +54,7 @@ public abstract class MarshalContext {
      * A {@code null} value means that the locale is unspecified. Callers are encouraged
      * to use the root locale as the default value, but some flexibility is allowed.
      *
-     * @return the locale for the XML fragment being (un)marshalled, or {@code null} is unspecified.
+     * @return the locale for the XML fragment being (un)marshalled, or {@code null} if unspecified.
      *
      * @see org.apache.sis.util.DefaultInternationalString#toString(Locale)
      */

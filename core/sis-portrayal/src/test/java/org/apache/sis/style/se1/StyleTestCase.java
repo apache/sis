@@ -96,7 +96,7 @@ abstract class StyleTestCase extends TestCase {
     }
 
     /**
-     * Asserts that the value of the given optional is equals to the expected value.
+     * Asserts that the value of the given optional is equal to the expected value.
      *
      * @param <E>       type of object to compare.
      * @param expected  the expected value.

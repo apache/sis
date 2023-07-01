@@ -27,6 +27,8 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
+
+// Branch-depend imports
 import org.opengis.filter.Expression;
 import org.opengis.filter.ValueReference;
 

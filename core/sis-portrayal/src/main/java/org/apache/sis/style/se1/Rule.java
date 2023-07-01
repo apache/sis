@@ -274,7 +274,7 @@ public class Rule<R> extends StyleElement<R> {
      * If this is true, then the {@linkplain #getFilter() filter} should be ignored.
      *
      * <p>The "Else Filter" is implicitly a filter with a condition that depends on the enclosing style.
-     * Consequently, it can not be expressed as a standalone {@code Filter} expression in this rule.</p>
+     * Consequently, it cannot be expressed as a standalone {@code Filter} expression in this rule.</p>
      *
      * @return true if the filter is an else filter.
      */
@@ -314,7 +314,7 @@ public class Rule<R> extends StyleElement<R> {
      * <h4>Relationship with real world lengths</h4>
      * The values used are scale denominators relative to a “standardized rendering pixel size”.
      * That size is defined as a square with sides of 0.28 millimeters. If the real pixel size
-     * is different or if the CRS uses angular units instead than linear, then the renderer shall
+     * is different or if the CRS uses angular units instead of linear, then the renderer shall
      * take those information in account as described in OGC 05-077r4 §10.2.
      *
      * @return minimum scale value, inclusive.

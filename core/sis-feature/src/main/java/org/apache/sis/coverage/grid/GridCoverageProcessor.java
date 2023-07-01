@@ -651,7 +651,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @return the reduced grid coverage, or {@code source} if no grid dimensions was specified.
      * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
      * @throws SubspaceNotSpecifiedException if at least one removed dimension has a grid extent size larger than 1 cell.
-     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      *
      * @see DimensionalityReduction#remove(GridGeometry, int...)
      *
@@ -702,7 +702,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @return the reduced grid coverage, or {@code source} if all grid dimensions where specified.
      * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
      * @throws SubspaceNotSpecifiedException if at least one removed dimension has a grid extent size larger than 1 cell.
-     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      *
      * @see DimensionalityReduction#select(GridGeometry, int...)
      *

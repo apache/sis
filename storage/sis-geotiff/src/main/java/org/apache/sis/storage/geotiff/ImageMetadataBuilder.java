@@ -47,7 +47,7 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 final class ImageMetadataBuilder extends MetadataBuilder {
     /**
      * The number of pixels per {@link #resolutionUnit} in the image width and Height directions,
-     * or {@link Double#NaN} is unspecified. Since ISO 19115 does not have separated resolution
+     * or {@link Double#NaN} if unspecified. Since ISO 19115 does not have separated resolution
      * fields for image width and height, Apache SIS stores only the maximal value.
      */
     private double resolution = Double.NaN;
