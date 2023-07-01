@@ -19,17 +19,16 @@ package org.apache.sis.style.se1;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Optional;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.collection.CodeListSet;
 
 // Branch-dependent imports
 import org.opengis.filter.ResourceId;
-import org.opengis.style.SemanticType;
 
 
 /**
@@ -114,7 +113,7 @@ public abstract class AbstractStyle<R> extends StyleElement<R> {
      * @see #semanticTypeIdentifiers()
      */
 //  @XmlElement(name = "SemanticTypeIdentifier")
-    private CodeListSet<SemanticType> semanticTypeIdentifiers;
+    private EnumSet<SemanticType> semanticTypeIdentifiers;
 
     /**
      * List of rules.
@@ -156,7 +155,7 @@ public abstract class AbstractStyle<R> extends StyleElement<R> {
     public AbstractStyle(final StyleFactory<R> factory) {
         super(factory);
         version = VERSION;
-        semanticTypeIdentifiers = new CodeListSet<>(SemanticType.class);
+        semanticTypeIdentifiers = EnumSet.noneOf(SemanticType.class);
         rules = new ArrayList<>();
     }
 

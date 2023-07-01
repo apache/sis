@@ -19,9 +19,6 @@ package org.apache.sis.style.se1;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
-import org.opengis.style.OverlapBehavior;
-
 
 /**
  * Tests for {@link RasterSymbolizer}.

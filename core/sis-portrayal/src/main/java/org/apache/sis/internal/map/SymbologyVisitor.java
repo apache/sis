@@ -22,6 +22,7 @@ import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.style.se1.*;
+import org.apache.sis.style.Style;
 
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
@@ -43,6 +44,12 @@ public abstract class SymbologyVisitor {
     }
 
     protected void visit(final Style candidate) {
+        if (candidate instanceof Symbology) {
+            visit((Symbology) candidate);
+        }
+    }
+
+    protected void visit(final Symbology candidate) {
         if (candidate != null) {
             nonNull(candidate.featureTypeStyles()).forEach(this::visit);
         }

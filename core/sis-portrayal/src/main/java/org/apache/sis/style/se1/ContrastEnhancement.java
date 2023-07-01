@@ -22,7 +22,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 // Branch-dependent imports
 import org.opengis.filter.Expression;
-import org.opengis.style.ContrastMethod;
 
 
 /**

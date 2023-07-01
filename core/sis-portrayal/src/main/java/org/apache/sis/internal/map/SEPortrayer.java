@@ -60,6 +60,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.style.se1.FeatureTypeStyle;
 import org.apache.sis.style.se1.Rule;
 import org.apache.sis.style.se1.Symbolizer;
+import org.apache.sis.style.se1.SemanticType;
+import org.apache.sis.style.se1.Symbology;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
@@ -71,7 +73,6 @@ import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Expression;
-import org.opengis.style.SemanticType;
 
 // Optional-dependencies (TODO: make library-independent)
 import org.locationtech.jts.geom.Geometry;
@@ -244,7 +245,8 @@ public final class SEPortrayer {
             return stream;
         }
         final double seScale = getSEScale(canvas, objToDisp);
-        for (FeatureTypeStyle fts : layer.getStyle().featureTypeStyles()) {
+        final Symbology style = (Symbology) layer.getStyle();     // TODO: we do not yet support other implementations.
+        for (FeatureTypeStyle fts : style.featureTypeStyles()) {
             final List<Rule<Feature>> rules = getValidRules(fts, seScale, type);
             if (rules.isEmpty()) continue;
 

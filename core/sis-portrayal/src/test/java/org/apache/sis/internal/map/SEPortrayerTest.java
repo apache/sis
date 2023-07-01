@@ -39,7 +39,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.style.se1.FeatureTypeStyle;
-import org.apache.sis.style.se1.Style;
+import org.apache.sis.style.se1.Symbology;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
@@ -56,6 +56,7 @@ import org.apache.sis.style.se1.StyleFactory;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.style.se1.Symbolizer;
+import org.apache.sis.style.se1.SemanticType;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -69,7 +70,6 @@ import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
-import org.opengis.style.SemanticType;
 
 import org.junit.Test;
 
@@ -197,7 +197,7 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testSanity() {
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         final var rule = factory.createRule();
         final var symbolizer = factory.createLineSymbolizer();
@@ -234,7 +234,7 @@ public class SEPortrayerTest extends TestCase {
         env.setRange(0, 9, 11);
         env.setRange(1, 19, 21);
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         final var rule = factory.createRule();
         final var symbolizer = factory.createLineSymbolizer();
@@ -263,7 +263,7 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testUserQuery() {
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         final var rule = factory.createRule();
         final var symbolizer = factory.createLineSymbolizer();
@@ -301,7 +301,7 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testFeatureTypeStyleTypeNames() {
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         fts.setFeatureTypeName(Names.createLocalName(null, null, "boat"));
         final var rule = factory.createRule();
@@ -332,7 +332,7 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testFeatureTypeStyleSemanticType() {
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         fts.semanticTypeIdentifiers().add(SemanticType.POINT);
         final var rule = factory.createRule();
@@ -366,7 +366,7 @@ public class SEPortrayerTest extends TestCase {
     public void testRuleFilter() {
         final Filter<Feature> filter = filterFactory.resourceId("2");
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         final var rule = factory.createRule();
         rule.setFilter(filter);
@@ -414,7 +414,7 @@ public class SEPortrayerTest extends TestCase {
         ruleMatch.setMinScaleDenominator(3e8);
         ruleMatch.setMaxScaleDenominator(4e8);
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleAbove);
@@ -452,7 +452,7 @@ public class SEPortrayerTest extends TestCase {
                 filterFactory.literal("White Shark"),
                 true, MatchAction.ANY);
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         final var rule = factory.createRule();
         rule.setFilter(filter);
@@ -496,7 +496,7 @@ public class SEPortrayerTest extends TestCase {
         ruleOther.setElseFilter(true);
         ruleOther.symbolizers().add(symbolizerElse);
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleBase);
@@ -532,7 +532,7 @@ public class SEPortrayerTest extends TestCase {
         final var ruleBase = factory.createRule();
         ruleBase.symbolizers().add(symbolizerBase);
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleBase);
@@ -588,7 +588,7 @@ public class SEPortrayerTest extends TestCase {
         rule.symbolizers().add(symbolizer);
         rule.setFilter(filter);
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
@@ -655,7 +655,7 @@ public class SEPortrayerTest extends TestCase {
         rule.symbolizers().add(symbolizer);
         rule.setFilter(filter);
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
@@ -696,7 +696,7 @@ public class SEPortrayerTest extends TestCase {
         final var rule = factory.createRule();
         rule.symbolizers().add(symbolizer);
 
-        final Style style = new Style();
+        final Symbology style = new Symbology();
         final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);

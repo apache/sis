@@ -21,17 +21,17 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests for {@link Style}.
+ * Tests for {@link Symbology}.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.5
  * @since   1.5
  */
-public final class StyleTest extends StyleTestCase {
+public final class SymbologyTest extends StyleTestCase {
     /**
      * Creates a new test case.
      */
-    public StyleTest() {
+    public SymbologyTest() {
     }
 
     /**
@@ -39,7 +39,7 @@ public final class StyleTest extends StyleTestCase {
      */
     @Test
     public void testFeatureTypeStyles() {
-        Style cdt = new Style();
+        Symbology cdt = new Symbology();
 
         // Check defaults
         assertTrue(cdt.featureTypeStyles().isEmpty());
@@ -54,7 +54,7 @@ public final class StyleTest extends StyleTestCase {
      */
     @Test
     public void testIsDefault() {
-        Style cdt = new Style();
+        Symbology cdt = new Symbology();
 
         // Check defaults
         assertFalse(cdt.isDefault());
@@ -69,7 +69,7 @@ public final class StyleTest extends StyleTestCase {
      */
     @Test
     public void testDefaultSpecification() {
-        Style cdt = new Style();
+        Symbology cdt = new Symbology();
 
         // Check defaults
         assertEmpty(cdt.getDefaultSpecification());
@@ -85,7 +85,7 @@ public final class StyleTest extends StyleTestCase {
      */
     @Test
     public void testName() {
-        Style cdt = new Style();
+        Symbology cdt = new Symbology();
 
         // Check defaults
         assertEmpty(cdt.getName());
@@ -101,7 +101,7 @@ public final class StyleTest extends StyleTestCase {
      */
     @Test
     public void testDescription() {
-        Style cdt = new Style();
+        Symbology cdt = new Symbology();
 
         // Check defaults
         assertEmpty(cdt.getDescription());

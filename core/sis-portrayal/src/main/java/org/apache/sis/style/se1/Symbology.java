@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Optional;
+import org.apache.sis.style.Style;
 
 
 /**
@@ -33,7 +34,7 @@ import java.util.Optional;
  * @version 1.5
  * @since   1.5
  */
-public class Style implements Cloneable {
+public class Symbology implements Style, Cloneable {
     /**
      * Name for this style, or {@code null} if none.
      *
@@ -76,7 +77,7 @@ public class Style implements Cloneable {
     /**
      * Creates an initially empty style.
      */
-    public Style() {
+    public Symbology() {
         fts = new ArrayList<>();
     }
 
@@ -86,7 +87,7 @@ public class Style implements Cloneable {
      *
      * @param  source  the object to copy.
      */
-    public Style(final Style source) {
+    public Symbology(final Symbology source) {
         name        = source.name;
         description = source.description;
         isDefault   = source.isDefault;
@@ -218,7 +219,7 @@ public class Style implements Cloneable {
             return true;
         }
         return (obj != null) && (obj.getClass() == getClass()) &&
-                Arrays.equals(properties(), ((Style) obj).properties());
+                Arrays.equals(properties(), ((Symbology) obj).properties());
     }
 
     /**
@@ -228,9 +229,9 @@ public class Style implements Cloneable {
      * @return deep clone of all style elements.
      */
     @Override
-    public Style clone() {
+    public Symbology clone() {
         try {
-            final var clone = (Style) super.clone();
+            final var clone = (Symbology) super.clone();
             clone.selfClone();
             return clone;
         } catch (CloneNotSupportedException e) {
