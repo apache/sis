@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -56,6 +57,11 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.style.se1.FeatureTypeStyle;
+import org.apache.sis.style.se1.Rule;
+import org.apache.sis.style.se1.Symbolizer;
+import org.apache.sis.style.se1.SemanticType;
+import org.apache.sis.style.se1.Symbology;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
@@ -67,10 +73,6 @@ import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Expression;
-import org.opengis.style.FeatureTypeStyle;
-import org.opengis.style.Rule;
-import org.opengis.style.SemanticType;
-import org.opengis.style.Symbolizer;
 
 // Optional-dependencies (TODO: make library-independent)
 import org.locationtech.jts.geom.Geometry;
@@ -99,8 +101,8 @@ import org.locationtech.jts.geom.Polygon;
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.5
+ * @since   1.5
  */
 public final class SEPortrayer {
     /**
@@ -243,8 +245,9 @@ public final class SEPortrayer {
             return stream;
         }
         final double seScale = getSEScale(canvas, objToDisp);
-        for (FeatureTypeStyle fts : layer.getStyle().featureTypeStyles()) {
-            final List<Rule> rules = getValidRules(fts, seScale, type);
+        final Symbology style = (Symbology) layer.getStyle();     // TODO: we do not yet support other implementations.
+        for (FeatureTypeStyle fts : style.featureTypeStyles()) {
+            final List<Rule<Feature>> rules = getValidRules(fts, seScale, type);
             if (rules.isEmpty()) continue;
 
             // Prepare the renderers.
@@ -253,7 +256,7 @@ public final class SEPortrayer {
                 //resource symbolizers must be alone in a FTS
                 ResourceSymbolizer resourceSymbolizer = null;
                 int count = 0;
-                for (final Rule r : rules) {
+                for (final Rule<Feature> r : rules) {
                     for (final Symbolizer s : r.symbolizers()) {
                         count++;
                         if (s instanceof ResourceSymbolizer) {
@@ -308,7 +311,7 @@ public final class SEPortrayer {
                 final FeatureSet fs = (FeatureSet) resource;
                 // Calculate max symbol size, to expand search envelope.
                 double symbolsMargin = 0.0;
-                for (Rule rule : rules) {
+                for (Rule<Feature> rule : rules) {
                     for (Symbolizer symbolizer : rule.symbolizers()) {
                         symbolsMargin = Math.max(symbolsMargin, marginSolver.apply(canvas, symbolizer));
                     }
@@ -356,12 +359,12 @@ public final class SEPortrayer {
         return stream;
     }
 
-    private static Stream<Presentation> present(Rule rule, MapLayer layer,
+    private static Stream<Presentation> present(Rule<Feature> rule, MapLayer layer,
             Resource resource, Resource refResource, Feature feature)
     {
-        final Filter ruleFilter = rule.getFilter();             // TODO: type.
+        final Filter<Feature> ruleFilter = rule.getFilter();
         //test if the rule is valid for this resource/feature
-        if (ruleFilter == null || ruleFilter.test(feature == null ? resource : feature)) {
+        if (rule.isElseFilter() || ((Filter) ruleFilter).test(feature == null ? resource : feature)) {       // TODO: unsafe cast.
             Stream<Presentation> stream = Stream.empty();
             for (final Symbolizer symbolizer : rule.symbolizers()) {
                 final SEPresentation presentation = new SEPresentation(layer, refResource, feature, symbolizer);
@@ -377,7 +380,7 @@ public final class SEPortrayer {
      * the appropriate bounding box to filter.
      */
     private FeatureQuery prepareQuery(GridGeometry canvas, FeatureSet fs, Set<String> requiredProperties,
-            List<Rule> rules, double symbolsMargin) throws DataStoreException, TransformException
+            List<Rule<Feature>> rules, double symbolsMargin) throws DataStoreException, TransformException
     {
         final FeatureQuery query = new FeatureQuery();
         final FeatureType schema = fs.getType();
@@ -399,7 +402,7 @@ public final class SEPortrayer {
         boolean allDefined = true;
         final Set<Expression<Feature,?>> geomProperties = new HashSet<>();
         if (rules != null) {
-            for (final Rule r : rules) {
+            for (final Rule<Feature> r : rules) {
                 for (final Symbolizer s : r.symbolizers()) {
                     final Expression<Feature,?> expGeom = s.getGeometry();
                     if (expGeom != null) {
@@ -446,13 +449,13 @@ public final class SEPortrayer {
         ruleOpti:
         if (rules != null) {
             final List<Filter<Feature>> rulefilters = new ArrayList<>();
-            for (final Rule rule : rules) {
+            for (final Rule<Feature> rule : rules) {
                 if (rule.isElseFilter()) {
                     // We cannot append styling filters, an else rule match all features.
                     break ruleOpti;
                 } else {
                     final Filter<Feature> rf = rule.getFilter();
-                    if (rf == null || rf == Filter.<Feature>include()) {
+                    if (rf == Filter.<Feature>include()) {
                         // We cannot append styling filters, this rule matchs all features.
                         break ruleOpti;
                     }
@@ -549,18 +552,11 @@ public final class SEPortrayer {
     /**
      * List the valid rules for current scale and type.
      */
-    private static List<Rule> getValidRules(final FeatureTypeStyle fts, final double scale, final FeatureType type) {
-        final Set<GenericName> names = fts.featureTypeNames();
-        if (!names.isEmpty()) {
+    private static List<Rule<Feature>> getValidRules(final FeatureTypeStyle fts, final double scale, final FeatureType type) {
+        final Optional<GenericName> name = fts.getFeatureTypeName();
+        if (name.isPresent()) {
             // TODO: should we check parent types?
-            boolean found = false;
-            for (GenericName name : names) {
-                if (name.equals(type.getName())) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
+            if (!name.get().equals(type.getName())) {
                 return List.of();
             }
         }
@@ -611,9 +607,9 @@ public final class SEPortrayer {
         //we move to next feature  type if not valid
         //if (typeName != null && !(typeName.equalsIgnoreCase(fts.getFeatureTypeName())) ) continue;
 
-        final List<? extends Rule> rules = fts.rules();
-        final List<Rule> validRules = new ArrayList<>();
-        for (final Rule rule : rules) {
+        final List<? extends Rule<Feature>> rules = fts.rules();
+        final List<Rule<Feature>> validRules = new ArrayList<>();
+        for (final Rule<Feature> rule : rules) {
             //test if the scale is valid for this rule
             if (rule.getMinScaleDenominator() - SE_EPSILON <= scale && rule.getMaxScaleDenominator() + SE_EPSILON > scale) {
                 validRules.add(rule);
@@ -625,9 +621,9 @@ public final class SEPortrayer {
     /**
      * Lists all properties used in given rules.
      */
-    private static Set<String> propertiesNames(final Collection<? extends Rule> rules) {
+    private static Set<String> propertiesNames(final Collection<? extends Rule<Feature>> rules) {
         final PropertyNameCollector collector = new PropertyNameCollector();
-        for (final Rule r : rules) {
+        for (final Rule<Feature> r : rules) {
             collector.visit(r);
             collector.visit(r.getFilter());
         }
@@ -639,10 +635,10 @@ public final class SEPortrayer {
      *
      * @return index of starting else rules.
      */
-    private static int sortByElseRule(final List<Rule> sortedRules){
+    private static int sortByElseRule(final List<Rule<Feature>> sortedRules){
         int elseRuleIndex = sortedRules.size();
         for (int i = 0; i < elseRuleIndex; i++) {
-            final Rule r = sortedRules.get(i);
+            final Rule<Feature> r = sortedRules.get(i);
             if (r.isElseFilter()) {
                 elseRuleIndex--;
                 // Move the rule at the end

@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.map;
 
-import org.opengis.style.Symbolizer;
+import org.apache.sis.style.se1.StyleFactory;
+import org.apache.sis.style.se1.Symbolizer;
+
 
 /**
  * Resource symbolizers act on a resource as a whole, not on individual features.
@@ -28,9 +30,19 @@ import org.opengis.style.Symbolizer;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
-public interface ResourceSymbolizer extends Symbolizer {
-
+public abstract class ResourceSymbolizer<R> extends Symbolizer<R> {
+    /**
+     * Constructs a new symbolozer.
+     *
+     * @param  context  context (features or coverages) in which this style element will be used.
+     */
+    public ResourceSymbolizer(final StyleFactory<R> context) {
+        super(context);
+    }
 }

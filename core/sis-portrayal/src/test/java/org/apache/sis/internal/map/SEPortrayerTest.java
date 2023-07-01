@@ -25,6 +25,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
@@ -34,6 +38,8 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.style.se1.FeatureTypeStyle;
+import org.apache.sis.style.se1.Symbology;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
@@ -46,32 +52,39 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.style.se1.StyleFactory;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import org.apache.sis.style.se1.Symbolizer;
+import org.apache.sis.style.se1.SemanticType;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.BinaryComparisonOperator;
+import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.style.SemanticType;
-import org.opengis.style.Symbolizer;
-import org.opengis.util.GenericName;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
 public class SEPortrayerTest extends TestCase {
+    /**
+     * The factory to use for creating style elements.
+     */
+    private final StyleFactory<Feature> factory = FeatureTypeStyle.FACTORY;
 
     private final FilterFactory<Feature,Object,Object> filterFactory;
     private final FeatureSet fishes;
@@ -184,10 +197,10 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testSanity() {
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final var rule = factory.createRule();
+        final var symbolizer = factory.createLineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -221,10 +234,10 @@ public class SEPortrayerTest extends TestCase {
         env.setRange(0, 9, 11);
         env.setRange(1, 19, 21);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final var rule = factory.createRule();
+        final var symbolizer = factory.createLineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -250,10 +263,10 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testUserQuery() {
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final var rule = factory.createRule();
+        final var symbolizer = factory.createLineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -288,11 +301,11 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testFeatureTypeStyleTypeNames() {
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        fts.featureTypeNames().add(Names.createLocalName(null, null, "boat"));
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        fts.setFeatureTypeName(Names.createLocalName(null, null, "boat"));
+        final var rule = factory.createRule();
+        final var symbolizer = factory.createLineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -319,11 +332,11 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testFeatureTypeStyleSemanticType() {
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         fts.semanticTypeIdentifiers().add(SemanticType.POINT);
-        final MockRule rule = new MockRule();
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final var rule = factory.createRule();
+        final var symbolizer = factory.createLineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -353,11 +366,11 @@ public class SEPortrayerTest extends TestCase {
     public void testRuleFilter() {
         final Filter<Feature> filter = filterFactory.resourceId("2");
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final var rule = factory.createRule();
         rule.setFilter(filter);
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final var symbolizer = factory.createLineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -383,26 +396,26 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testRuleScale() {
-        final MockLineSymbolizer symbolizerAbove = new MockLineSymbolizer();
-        final MockLineSymbolizer symbolizerUnder = new MockLineSymbolizer();
-        final MockLineSymbolizer symbolizerMatch = new MockLineSymbolizer();
+        final var symbolizerAbove = factory.createLineSymbolizer();
+        final var symbolizerUnder = factory.createLineSymbolizer();
+        final var symbolizerMatch = factory.createLineSymbolizer();
 
         //Symbology rendering scale here is 3.944391406060875E8
-        final MockRule ruleAbove = new MockRule();
+        final var ruleAbove = factory.createRule();
         ruleAbove.symbolizers().add(symbolizerAbove);
         ruleAbove.setMinScaleDenominator(4e8);
         ruleAbove.setMaxScaleDenominator(Double.MAX_VALUE);
-        final MockRule ruleUnder = new MockRule();
+        final var ruleUnder = factory.createRule();
         ruleUnder.symbolizers().add(symbolizerUnder);
         ruleUnder.setMinScaleDenominator(0.0);
         ruleUnder.setMaxScaleDenominator(3e8);
-        final MockRule ruleMatch = new MockRule();
+        final var ruleMatch = factory.createRule();
         ruleMatch.symbolizers().add(symbolizerMatch);
         ruleMatch.setMinScaleDenominator(3e8);
         ruleMatch.setMaxScaleDenominator(4e8);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleAbove);
         fts.rules().add(ruleUnder);
@@ -420,11 +433,11 @@ public class SEPortrayerTest extends TestCase {
 
         final Set<Match> presentations = present(layers);
         assertEquals(5, presentations.size());
-        assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizerMatch)));
-        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizerMatch)));
+        assertTrue(presentations.contains(new Match(  "1", fishLayer, fishes, symbolizerMatch)));
+        assertTrue(presentations.contains(new Match(  "2", fishLayer, fishes, symbolizerMatch)));
         assertTrue(presentations.contains(new Match("100", fishLayer, fishes, symbolizerMatch)));
-        assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizerMatch)));
-        assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizerMatch)));
+        assertTrue(presentations.contains(new Match( "10", boatLayer, boats,  symbolizerMatch)));
+        assertTrue(presentations.contains(new Match( "20", boatLayer, boats,  symbolizerMatch)));
     }
 
     /**
@@ -439,11 +452,11 @@ public class SEPortrayerTest extends TestCase {
                 filterFactory.literal("White Shark"),
                 true, MatchAction.ANY);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
-        final MockRule rule = new MockRule();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
+        final var rule = factory.createRule();
         rule.setFilter(filter);
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final var symbolizer = factory.createLineSymbolizer();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
@@ -473,18 +486,18 @@ public class SEPortrayerTest extends TestCase {
     public void testRuleElseCondition() {
         final Filter<Feature> filter = filterFactory.resourceId("10");
 
-        final MockLineSymbolizer symbolizerBase = new MockLineSymbolizer();
-        final MockLineSymbolizer symbolizerElse = new MockLineSymbolizer();
+        final var symbolizerBase = factory.createLineSymbolizer();
+        final var symbolizerElse = factory.createLineSymbolizer();
 
-        final MockRule ruleBase = new MockRule();
+        final var ruleBase = factory.createRule();
         ruleBase.symbolizers().add(symbolizerBase);
         ruleBase.setFilter(filter);
-        final MockRule ruleOther = new MockRule();
-        ruleOther.setIsElseFilter(true);
+        final var ruleOther = factory.createRule();
+        ruleOther.setElseFilter(true);
         ruleOther.symbolizers().add(symbolizerElse);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleBase);
         fts.rules().add(ruleOther);
@@ -501,11 +514,11 @@ public class SEPortrayerTest extends TestCase {
 
         final Set<Match> presentations = present(layers);
         assertEquals(5, presentations.size());
-        assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizerElse)));
-        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizerElse)));
+        assertTrue(presentations.contains(new Match(  "1", fishLayer, fishes, symbolizerElse)));
+        assertTrue(presentations.contains(new Match(  "2", fishLayer, fishes, symbolizerElse)));
         assertTrue(presentations.contains(new Match("100", fishLayer, fishes, symbolizerElse)));
-        assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizerBase)));
-        assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizerElse)));
+        assertTrue(presentations.contains(new Match( "10", boatLayer, boats,  symbolizerBase)));
+        assertTrue(presentations.contains(new Match( "20", boatLayer, boats,  symbolizerElse)));
     }
 
     /**
@@ -514,13 +527,13 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testAggregateResource() {
-        final MockLineSymbolizer symbolizerBase = new MockLineSymbolizer();
+        final var symbolizerBase = factory.createLineSymbolizer();
 
-        final MockRule ruleBase = new MockRule();
+        final var ruleBase = factory.createRule();
         ruleBase.symbolizers().add(symbolizerBase);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleBase);
 
@@ -556,11 +569,11 @@ public class SEPortrayerTest extends TestCase {
 
         final Set<Match> presentations = present(layers);
         assertEquals(5, presentations.size());
-        assertTrue(presentations.contains(new Match("1", aggLayer, fishes, symbolizerBase)));
-        assertTrue(presentations.contains(new Match("2", aggLayer, fishes, symbolizerBase)));
+        assertTrue(presentations.contains(new Match(  "1", aggLayer, fishes, symbolizerBase)));
+        assertTrue(presentations.contains(new Match(  "2", aggLayer, fishes, symbolizerBase)));
         assertTrue(presentations.contains(new Match("100", aggLayer, fishes, symbolizerBase)));
-        assertTrue(presentations.contains(new Match("10", aggLayer, boats, symbolizerBase)));
-        assertTrue(presentations.contains(new Match("20", aggLayer, boats, symbolizerBase)));
+        assertTrue(presentations.contains(new Match( "10", aggLayer, boats,  symbolizerBase)));
+        assertTrue(presentations.contains(new Match( "20", aggLayer, boats,  symbolizerBase)));
     }
 
     /**
@@ -569,14 +582,14 @@ public class SEPortrayerTest extends TestCase {
     @Test
     public void testPreserveProperties() {
         final Filter<Feature> filter = filterFactory.resourceId("2");
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        final var symbolizer = factory.createLineSymbolizer();
 
-        final MockRule rule = new MockRule();
+        final var rule = factory.createRule();
         rule.symbolizers().add(symbolizer);
         rule.setFilter(filter);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
 
@@ -634,15 +647,16 @@ public class SEPortrayerTest extends TestCase {
                 filterFactory.literal("2"),
                 true, MatchAction.ANY);
 
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
-        symbolizer.perpendicularOffset = filterFactory.property("description", String.class);
+        final var symbolizer = factory.createLineSymbolizer();
+        symbolizer.setPerpendicularOffset((Expression)filterFactory.property("description", String.class));
+        // TODO: use a numeric property above.
 
-        final MockRule rule = new MockRule();
+        final var rule = factory.createRule();
         rule.symbolizers().add(symbolizer);
         rule.setFilter(filter);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
 
@@ -676,14 +690,14 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testGeometryExpression() {
-        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
-        symbolizer.geometry = filterFactory.function("ST_Centroid", filterFactory.property("geom"));
+        final var symbolizer = factory.createLineSymbolizer();
+        symbolizer.setGeometry(filterFactory.function("ST_Centroid", filterFactory.property("geom")));
 
-        final MockRule rule = new MockRule();
+        final var rule = factory.createRule();
         rule.symbolizers().add(symbolizer);
 
-        final MockStyle style = new MockStyle();
-        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final Symbology style = new Symbology();
+        final FeatureTypeStyle fts = new FeatureTypeStyle();
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
 
@@ -710,10 +724,10 @@ public class SEPortrayerTest extends TestCase {
         private final String identifier;
         private final MapLayer layer;
         private final Resource resource;
-        private final Symbolizer symbolizer;
+        private final Symbolizer<?> symbolizer;
         private final Exception exception;
 
-        public Match(String identifier, MapLayer layer, Resource resource, Symbolizer symbolizer) {
+        public Match(String identifier, MapLayer layer, Resource resource, Symbolizer<?> symbolizer) {
             this.identifier = identifier;
             this.layer = layer;
             this.resource = resource;

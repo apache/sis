@@ -21,40 +21,8 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
-import org.opengis.style.AnchorPoint;
-import org.opengis.style.ChannelSelection;
-import org.opengis.style.ColorMap;
-import org.opengis.style.ColorReplacement;
-import org.opengis.style.ContrastEnhancement;
-import org.opengis.style.Description;
-import org.opengis.style.Displacement;
-import org.opengis.style.ExtensionSymbolizer;
-import org.opengis.style.ExternalGraphic;
-import org.opengis.style.ExternalMark;
-import org.opengis.style.FeatureTypeStyle;
-import org.opengis.style.Fill;
-import org.opengis.style.Font;
-import org.opengis.style.Graphic;
-import org.opengis.style.GraphicFill;
-import org.opengis.style.GraphicLegend;
-import org.opengis.style.GraphicStroke;
-import org.opengis.style.GraphicalSymbol;
-import org.opengis.style.Halo;
-import org.opengis.style.LabelPlacement;
-import org.opengis.style.LinePlacement;
-import org.opengis.style.LineSymbolizer;
-import org.opengis.style.Mark;
-import org.opengis.style.PointPlacement;
-import org.opengis.style.PointSymbolizer;
-import org.opengis.style.PolygonSymbolizer;
-import org.opengis.style.RasterSymbolizer;
-import org.opengis.style.Rule;
-import org.opengis.style.SelectedChannelType;
-import org.opengis.style.ShadedRelief;
-import org.opengis.style.Stroke;
-import org.opengis.style.Style;
-import org.opengis.style.Symbolizer;
-import org.opengis.style.TextSymbolizer;
+import org.apache.sis.style.se1.*;
+import org.apache.sis.style.Style;
 
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
@@ -68,14 +36,20 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.5
+ * @since   1.5
  */
 public abstract class SymbologyVisitor {
     protected SymbologyVisitor() {
     }
 
     protected void visit(final Style candidate) {
+        if (candidate instanceof Symbology) {
+            visit((Symbology) candidate);
+        }
+    }
+
+    protected void visit(final Symbology candidate) {
         if (candidate != null) {
             nonNull(candidate.featureTypeStyles()).forEach(this::visit);
         }
@@ -87,13 +61,13 @@ public abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final Rule candidate) {
+    protected void visit(final Rule<?> candidate) {
         if (candidate != null) {
             nonNull(candidate.symbolizers()).forEach(this::visit);
         }
     }
 
-    protected void visit(final Symbolizer candidate) {
+    protected void visit(final Symbolizer<?> candidate) {
         if (candidate instanceof PointSymbolizer) {
             visit((PointSymbolizer) candidate);
         } else if (candidate instanceof LineSymbolizer) {
@@ -104,21 +78,19 @@ public abstract class SymbologyVisitor {
             visit((TextSymbolizer) candidate);
         } else if (candidate instanceof RasterSymbolizer) {
             visit((RasterSymbolizer) candidate);
-        } else if (candidate instanceof ExtensionSymbolizer) {
-            visit((ExtensionSymbolizer) candidate);
         } else if (candidate != null) {
             throw new IllegalArgumentException("Unexpected symbolizer " + candidate);
         }
     }
 
-    protected void visit(final PointSymbolizer candidate) {
+    protected void visit(final PointSymbolizer<?> candidate) {
         if (candidate != null) {
             visit(candidate.getGeometry());
             visit(candidate.getGraphic());
         }
     }
 
-    protected void visit(final LineSymbolizer candidate) {
+    protected void visit(final LineSymbolizer<?> candidate) {
         if (candidate != null) {
             visit(candidate.getGeometry());
             visit(candidate.getPerpendicularOffset());
@@ -126,47 +98,46 @@ public abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final PolygonSymbolizer candidate) {
+    protected void visit(final PolygonSymbolizer<?> candidate) {
         if (candidate != null) {
             visit(candidate.getGeometry());
             visit(candidate.getPerpendicularOffset());
             visit(candidate.getDisplacement());
-            visit(candidate.getFill());
-            visit(candidate.getStroke());
+            candidate.getFill().ifPresent(this::visit);
+            candidate.getStroke().ifPresent(this::visit);
         }
     }
 
-    protected void visit(final TextSymbolizer candidate) {
+    protected void visit(final TextSymbolizer<?> candidate) {
         if (candidate != null) {
             visit(candidate.getGeometry());
             visit(candidate.getLabel());
             visit(candidate.getFill());
             visit(candidate.getFont());
-            visit(candidate.getHalo());
+            candidate.getHalo().ifPresent(this::visit);
             visit(candidate.getLabelPlacement());
         }
     }
 
-    protected void visit(final RasterSymbolizer candidate) {
+    protected void visit(final RasterSymbolizer<?> candidate) {
         if (candidate != null) {
             visit(candidate.getGeometry());
             visit(candidate.getOpacity());
-            visit(candidate.getChannelSelection());
-            visit(candidate.getColorMap());
-            visit(candidate.getContrastEnhancement());
-            visit(candidate.getImageOutline());
-            visit(candidate.getShadedRelief());
+            candidate.getChannelSelection().ifPresent(this::visit);
+            candidate.getColorMap().ifPresent(this::visit);
+            candidate.getContrastEnhancement().ifPresent(this::visit);
+            candidate.getImageOutline().ifPresent(this::visit);
+            candidate.getShadedRelief().ifPresent(this::visit);
         }
     }
 
-    protected void visit(final ExtensionSymbolizer candidate) {
+    protected void visit(final GraphicalElement<?> candidate) {
         if (candidate != null) {
-            visit(candidate.getGeometry());
-            candidate.getParameters().values().forEach(this::visit);
+            visit(candidate.getGraphic());
         }
     }
 
-    protected void visit(final Graphic candidate) {
+    protected void visit(final Graphic<?> candidate) {
         if (candidate != null) {
             visit(candidate.getOpacity());
             visit(candidate.getRotation());
@@ -187,28 +158,24 @@ public abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final Mark candidate) {
+    protected void visit(final Mark<?> candidate) {
         if (candidate != null) {
-            visit(candidate.getExternalMark());
-            visit(candidate.getFill());
-            visit(candidate.getStroke());
+            candidate.getFill().ifPresent(this::visit);
+            candidate.getStroke().ifPresent(this::visit);
             visit(candidate.getWellKnownName());
         }
     }
 
-    protected void visit(final ExternalGraphic candidate) {
-        nonNull(candidate.getColorReplacements()).forEach(this::visit);
+    protected void visit(final ExternalGraphic<?> candidate) {
+        nonNull(candidate.colorReplacements()).forEach(this::visit);
     }
 
-    protected void visit(final ExternalMark candidate) {
-    }
-
-    protected void visit(final Stroke candidate) {
+    protected void visit(final Stroke<?> candidate) {
         if (candidate != null) {
             visit(candidate.getColor());
             visit(candidate.getDashOffset());
-            visit(candidate.getGraphicFill());
-            visit(candidate.getGraphicStroke());
+            candidate.getGraphicFill().ifPresent(this::visit);
+            candidate.getGraphicStroke().ifPresent(this::visit);
             visit(candidate.getLineCap());
             visit(candidate.getLineJoin());
             visit(candidate.getOpacity());
@@ -219,37 +186,37 @@ public abstract class SymbologyVisitor {
     protected void visit(final Description candidate) {
     }
 
-    protected void visit(final Displacement candidate) {
+    protected void visit(final Displacement<?> candidate) {
         if (candidate != null) {
             visit(candidate.getDisplacementX());
             visit(candidate.getDisplacementY());
         }
     }
 
-    protected void visit(final Fill candidate) {
+    protected void visit(final Fill<?> candidate) {
         if (candidate != null) {
-            visit(candidate.getGraphicFill());
+            candidate.getGraphicFill().ifPresent(this::visit);
             visit(candidate.getColor());
             visit(candidate.getOpacity());
         }
     }
 
-    protected void visit(final Font candidate) {
+    protected void visit(final Font<?> candidate) {
         if (candidate != null) {
-            candidate.getFamily().forEach(this::visit);
+            candidate.family().forEach(this::visit);
             visit(candidate.getSize());
             visit(candidate.getStyle());
             visit(candidate.getWeight());
         }
     }
 
-    protected void visit(final GraphicFill candidate) {
-        visit((Graphic) candidate);
+    protected void visit(final GraphicFill<?> candidate) {
+        visit((GraphicalElement) candidate);
     }
 
-    protected void visit(final GraphicStroke candidate) {
+    protected void visit(final GraphicStroke<?> candidate) {
         if (candidate != null) {
-            visit((Graphic) candidate);
+            visit((GraphicalElement) candidate);
             visit(candidate.getGap());
             visit(candidate.getInitialGap());
         }
@@ -265,7 +232,7 @@ public abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final PointPlacement candidate) {
+    protected void visit(final PointPlacement<?> candidate) {
         if (candidate != null) {
             visit(candidate.getAnchorPoint());
             visit(candidate.getDisplacement());
@@ -273,14 +240,14 @@ public abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final AnchorPoint candidate) {
+    protected void visit(final AnchorPoint<?> candidate) {
         if (candidate != null) {
             visit(candidate.getAnchorPointX());
             visit(candidate.getAnchorPointY());
         }
     }
 
-    protected void visit(final LinePlacement candidate) {
+    protected void visit(final LinePlacement<?> candidate) {
         if (candidate != null) {
             visit(candidate.getGap());
             visit(candidate.getInitialGap());
@@ -288,54 +255,47 @@ public abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final GraphicLegend candidate) {
-        visit((Graphic) candidate);
+    protected void visit(final LegendGraphic<?> candidate) {
+        visit((GraphicalElement) candidate);
     }
 
-    protected void visit(final Halo candidate) {
+    protected void visit(final Halo<?> candidate) {
         if (candidate != null) {
             visit(candidate.getFill());
             visit(candidate.getRadius());
         }
     }
 
-    protected void visit(final ColorMap candidate) {
-        if (candidate != null) {
-            visit(candidate.getFunction());
-        }
+    protected void visit(final ColorMap<?> candidate) {
     }
 
-    protected void visit(final ColorReplacement candidate) {
-        if (candidate != null) {
-            visit(candidate.getRecoding());
-        }
+    protected void visit(final ColorReplacement<?> candidate) {
     }
 
-    protected void visit(final ContrastEnhancement candidate) {
+    protected void visit(final ContrastEnhancement<?> candidate) {
         if (candidate != null) {
             visit(candidate.getGammaValue());
         }
     }
 
-    protected void visit(final ChannelSelection candidate) {
+    protected void visit(final ChannelSelection<?> candidate) {
         if (candidate != null) {
-            visit(candidate.getGrayChannel());
-            final SelectedChannelType[] rgbChannels = candidate.getRGBChannels();
-            if (rgbChannels != null) {
-                for (final SelectedChannelType sct : rgbChannels) {
+            SelectedChannel[] channels = candidate.getChannels();
+            if (channels != null) {
+                for (final SelectedChannel<?> sct : channels) {
                     visit(sct);
                 }
             }
         }
     }
 
-    protected void visit(final SelectedChannelType candidate) {
+    protected void visit(final SelectedChannel<?> candidate) {
         if (candidate != null) {
-            visit(candidate.getContrastEnhancement());
+            candidate.getContrastEnhancement().ifPresent(this::visit);
         }
     }
 
-    protected void visit(final ShadedRelief candidate) {
+    protected void visit(final ShadedRelief<?> candidate) {
         if (candidate != null) {
             visit(candidate.getReliefFactor());
         }

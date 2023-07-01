@@ -25,8 +25,8 @@ import org.apache.sis.measure.NumberRange;
  * Decorate a CopyOnWriteArrayList and notify changes when elements are added or removed.
  *
  * @author Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
+ * @version 1.5
+ * @since   1.5
  */
 public abstract class NotifiedList<T> extends AbstractList<T> {
 
