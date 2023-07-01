@@ -314,7 +314,7 @@ public final class FeatureOperations extends Static {
     /**
      * Creates an operation which delegates the computation to a given expression.
      * The {@code expression} argument should generally be an instance of
-     * {@link org.opengis.filter.Expression},
+     * {@link org.apache.sis.filter.Expression},
      * but more generic functions are accepted as well.
      *
      * <h4>Read/write behavior</h4>
