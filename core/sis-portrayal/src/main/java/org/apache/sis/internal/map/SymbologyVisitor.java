@@ -39,7 +39,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * @version 1.5
  * @since   1.5
  */
-public abstract class SymbologyVisitor {
+abstract class SymbologyVisitor {
     protected SymbologyVisitor() {
     }
 
