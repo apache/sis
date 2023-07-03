@@ -34,7 +34,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -233,16 +232,15 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
         }
         this.valueClass   = valueClass;
         this.valueDomain  = valueDomain;
-        this.defaultValue = Numerics.cached(defaultValue);
+        this.defaultValue = defaultValue;
         /*
          * If the caller specified a set of valid values, then copy the values in
          * a new set and verify their type and inclusion in the [min … max] range.
          */
         if (validValues != null) {
             final Set<T> valids = CollectionsExt.createSetForType(valueClass, validValues.length);
-            for (T value : validValues) {
+            for (final T value : validValues) {
                 if (value != null) {
-                    value = Numerics.cached(value);
                     final Verifier error = Verifier.ensureValidValue(valueClass, null, valueDomain, value);
                     if (error != null) {
                         throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), value));

@@ -16,12 +16,10 @@
  */
 package org.apache.sis.internal.util;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.text.Format;
 import java.text.DecimalFormat;
-import java.util.function.BiFunction;
 import java.math.BigInteger;
+import java.util.function.BiFunction;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
@@ -46,35 +44,6 @@ import org.apache.sis.internal.system.Configuration;
  * @since   0.3
  */
 public final class Numerics extends Static {
-    /**
-     * Some frequently used {@link Double} values. As of Java 11, those values do not
-     * seem to be cached by {@link Double#valueOf(double)} like JDK does for integers.
-     */
-    private static final Map<Object,Object> CACHE = new HashMap<>(32);
-    static {
-        cache(   0);
-        cache(   1);
-        cache(  10);
-        cache(  60);
-        cache(  90);
-        cache( 100);
-        cache( 180);
-        cache( 180*60*60);
-        cache( 360);
-        cache(1000);
-        cache(Double.POSITIVE_INFINITY);
-        // Do not cache NaN values because Double.equals(Object) consider all NaN as equal.
-    }
-
-    /**
-     * Helper method for the construction of the {@link #CACHE} map.
-     */
-    private static void cache(final double value) {
-        Double boxed;
-        boxed =  value; CACHE.put(boxed, boxed);
-        boxed = -value; CACHE.put(boxed, boxed);
-    }
-
     /**
      * Maximum number of rows or columns in Apache SIS matrices. We define a maximum because SIS is expected to work
      * mostly with small matrices, because their sizes are related to the number of dimensions in coordinate systems.
@@ -348,32 +317,8 @@ public final class Numerics extends Static {
         try {
             return Fraction.valueOf(numerator, denominator).unique();
         } catch (ArithmeticException e) {
-            return valueOf(numerator / (double) denominator);
+            return numerator / (double) denominator;
         }
-    }
-
-    /**
-     * If the given value is presents in the cache, returns the cached value.
-     * Otherwise returns the given value as-is.
-     *
-     * @param  <T>    the type of the given value.
-     * @param  value  the given value for which to get a cached instance, if one exists.
-     * @return an object equals to the given value (may be the given instance itself).
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T cached(final T value) {
-        return (T) CACHE.getOrDefault(value, value);
-    }
-
-    /**
-     * Wraps the given {@code value} in a {@link Double} wrapper, using one of the cached instance if possible.
-     *
-     * @param  value  the value to get as a {@code Double}.
-     * @return the given value as a {@code Double}.
-     */
-    public static Double valueOf(final double value) {
-        final Double boxed = value;
-        return (Double) CACHE.getOrDefault(boxed, boxed);
     }
 
     /**
