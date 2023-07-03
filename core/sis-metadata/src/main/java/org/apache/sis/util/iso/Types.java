@@ -468,8 +468,8 @@ public final class Types extends Static {
     /**
      * Returns the resource name for the given GeoAPI type, or {@code null} if none.
      * The non-null resource name is only informative in this implementation.
-     * However we need {@code null} value is still necessary for telling that
-     * no resource is expected to exist for the given class.
+     * We need to allow {@code null} return value for telling that no resource
+     * is expected to exist for the given class.
      *
      * @param  classname  the fully qualified name of the GeoAPI type.
      * @return the resource bundle to load, or {@code null} if none.
