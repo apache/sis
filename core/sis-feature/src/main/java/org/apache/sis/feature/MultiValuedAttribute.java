@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Collection;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
@@ -47,7 +48,7 @@ import org.opengis.feature.MultiValuedPropertyException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @param <V>  the type of the attribute values.
  *
@@ -55,7 +56,7 @@ import org.opengis.feature.MultiValuedPropertyException;
  *
  * @since 0.5
  */
-final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Cloneable {
+final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements CloneAccess {
     /**
      * For cross-version compatibility.
      */

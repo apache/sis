@@ -19,12 +19,11 @@ package org.apache.sis.internal.referencing.provider;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -38,7 +37,7 @@ import static org.junit.Assert.*;
  * Tests {@link PositionVector7Param} and {@link PositionVector7Param3D}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -96,7 +95,7 @@ public final class PositionVector7ParamTest extends MathTransformTestCase {
         if (method instanceof GeocentricAffineBetweenGeographic) {
             GeocentricTranslationTest.setEllipsoids(values, CommonCRS.WGS72.ellipsoid(), CommonCRS.WGS84.ellipsoid());
         }
-        return method.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
+        return method.createMathTransform(DefaultMathTransformFactory.provider(), values);
     }
 
     /**

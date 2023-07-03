@@ -29,7 +29,7 @@ import org.opengis.filter.Literal;
 
 /**
  * Base class of all style objects.
- * This base class can not be extended directly.
+ * This base class cannot be extended directly.
  * Instead, one of the subclasses can be extended.
  *
  * @author  Martin Desruisseaux (Geomatys)

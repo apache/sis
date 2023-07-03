@@ -35,7 +35,7 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
-import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -52,7 +52,7 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Olivier Lhemann (OSDU)
  * @author  Michael Arneson (OSDU)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 @DependsOn({
@@ -72,7 +72,7 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
      * Creates the test suite.
      */
     public CoordinateOperationTest() {
-        opFactory = CoordinateOperations.factory();
+        opFactory = DefaultCoordinateOperationFactory.provider();
     }
 
     /**

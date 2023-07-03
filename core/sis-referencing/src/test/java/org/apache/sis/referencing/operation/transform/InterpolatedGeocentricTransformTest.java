@@ -20,10 +20,8 @@ import java.net.URL;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
@@ -40,7 +38,7 @@ import org.junit.Test;
  * Tests {@link InterpolatedGeocentricTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -71,7 +69,7 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
         values.parameter("tgt_semi_major").setValue(target.getSemiMajorAxis());
         values.parameter("tgt_semi_minor").setValue(target.getSemiMinorAxis());
         values.parameter("Geocentric translation file").setValue(file);    // Automatic conversion from URL to Path.
-        transform = provider.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
+        transform = provider.createMathTransform(DefaultMathTransformFactory.provider(), values);
         tolerance = FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE;
     }
 

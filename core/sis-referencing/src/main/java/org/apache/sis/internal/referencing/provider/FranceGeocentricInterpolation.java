@@ -218,32 +218,58 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     }
 
     /**
-     * Constructs a provider.
+     * The providers for all combinations between 2D and 3D cases.
      */
+    private static final FranceGeocentricInterpolation[] REDIMENSIONED = new FranceGeocentricInterpolation[4];
+    static {
+        Arrays.setAll(REDIMENSIONED, FranceGeocentricInterpolation::new);
+    }
+
+    /**
+     * Returns the provider for the specified combination of source and target dimensions.
+     */
+    // TODO: make final after removal of deprecated `MolodenskyInterpolation` subclass.
+    @Override
+    GeodeticOperation redimensioned(int indexOfDim) {
+        return REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public FranceGeocentricInterpolation() {
-        this(2, 2, PARAMETERS, new FranceGeocentricInterpolation[4]);
-        redimensioned[0] = this;
-        redimensioned[1] = new FranceGeocentricInterpolation(2, 3, PARAMETERS, redimensioned);
-        redimensioned[2] = new FranceGeocentricInterpolation(3, 2, PARAMETERS, redimensioned);
-        redimensioned[3] = new FranceGeocentricInterpolation(3, 3, PARAMETERS, redimensioned);
+        super(REDIMENSIONED[INDEX_OF_2D]);
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
+    public FranceGeocentricInterpolation(FranceGeocentricInterpolation copy) {
+        super(copy);
     }
 
     /**
      * Constructs a provider for the given number of dimensions.
      *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param parameters        description of parameters expected by this operation.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
+     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array.
      */
-    FranceGeocentricInterpolation(final int sourceDimensions,
-                                  final int targetDimensions,
-                                  final ParameterDescriptorGroup parameters,
-                                  final GeodeticOperation[] redimensioned)
-    {
-        super(Transformation.class, parameters,
-              EllipsoidalCS.class, sourceDimensions, true,
-              EllipsoidalCS.class, targetDimensions, true, redimensioned);
+    FranceGeocentricInterpolation(int indexOfDim) {
+        super(Transformation.class, PARAMETERS, indexOfDim,
+              EllipsoidalCS.class, true,
+              EllipsoidalCS.class, true);
+    }
+
+    @Deprecated(forRemoval = true)
+    FranceGeocentricInterpolation(ParameterDescriptorGroup parameters, int indexOfDim) {
+        super(Transformation.class, parameters, indexOfDim,
+              EllipsoidalCS.class, true,
+              EllipsoidalCS.class, true);
     }
 
     /**

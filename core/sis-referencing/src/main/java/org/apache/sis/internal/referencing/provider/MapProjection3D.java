@@ -20,21 +20,17 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.util.FactoryException;
 
 
 /**
- * The three-dimensional counter-part of a map projection. This is the same than two-dimensional map projections
- * with only the ellipsoidal height which pass through.
+ * The three-dimensional counter-part of a map projection.
+ * This is the same than two-dimensional map projections with only the ellipsoidal height which pass through.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
- *
- * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
  */
-@Deprecated(since="1.1")
 @XmlTransient
 final class MapProjection3D extends AbstractProvider {
     /**
@@ -44,10 +40,7 @@ final class MapProjection3D extends AbstractProvider {
 
     /**
      * The two-dimensional counterpart of this three-dimensional map projection.
-     *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated(since="1.1")
     private final MapProjection redimensioned;
 
     /**
@@ -55,20 +48,35 @@ final class MapProjection3D extends AbstractProvider {
      */
     MapProjection3D(final MapProjection proj) {
         super(proj.getOperationType(), proj.getParameters(),
-              proj.sourceCSType, 3, proj.sourceOnEllipsoid,
-              proj.targetCSType, 3, proj.targetOnEllipsoid);
+              proj.sourceCSType, proj.sourceOnEllipsoid,
+              proj.targetCSType, proj.targetOnEllipsoid);
         redimensioned = proj;
+    }
+
+    /**
+     * Returns the number of source dimensions of the transforms created by this provider.
+     */
+    @Override
+    @SuppressWarnings("deprecation")
+    public final Integer getSourceDimensions() {
+        return 3;
+    }
+
+    /**
+     * Returns the number of target dimensions of the transforms created by this provider.
+     */
+    @Override
+    @SuppressWarnings("deprecation")
+    public final Integer getTargetDimensions() {
+        return 3;
     }
 
     /**
      * Returns this operation method with the specified number of dimensions.
      * The number of dimensions can be only 2 or 3, and must be the same for source and target CRS.
-     *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
-    @Deprecated(since="1.1")
-    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
+    public AbstractProvider redimension(final int sourceDimensions, final int targetDimensions) {
         if (sourceDimensions == 2 && targetDimensions == 2) {
             return redimensioned;
         }

@@ -23,7 +23,7 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
 
@@ -32,7 +32,7 @@ import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
  * Definition of a resource (table, view or query) to include in a {@link SQLStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class ResourceDefinition {
@@ -95,7 +95,7 @@ public final class ResourceDefinition {
                 Object p = entry.getKey();
                 ArgumentChecks.ensureNonNullElement("queries[#].key", i, p);
                 final GenericName name = (p instanceof GenericName) ? (GenericName) p :
-                        DefaultFactories.forBuildin(NameFactory.class).createLocalName(null, p.toString());
+                        DefaultNameFactory.provider().createLocalName(null, p.toString());
                 /*
                  * Values shall be non-empty strings.
                  */
@@ -161,7 +161,7 @@ public final class ResourceDefinition {
             case 2: names[i++] = schemaPattern;     // Fall through
             case 1: names[i]   = tablePattern;
         }
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         NameSpace ns = tableNS;
         if (ns == null) {
             var properties = Map.of("separator",      ".",
@@ -183,7 +183,7 @@ public final class ResourceDefinition {
     public static ResourceDefinition query(final String name, final String query) {
         ArgumentChecks.ensureNonEmpty("name",  name);
         ArgumentChecks.ensureNonEmpty("query", query);
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         return new ResourceDefinition(factory.createLocalName(null, name), query);
     }
 

@@ -227,7 +227,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.getProvider(DIMENSION, DIMENSION, true).getParameters();
+        return Affine.provider().getParameters();
     }
 
     /**

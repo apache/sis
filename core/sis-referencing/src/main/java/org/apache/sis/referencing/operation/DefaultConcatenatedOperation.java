@@ -33,9 +33,9 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
@@ -434,6 +434,6 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Invoked by JAXB for setting the operations.
      */
     private void setSteps(final CoordinateOperation[] steps) throws FactoryException {
-        initialize(null, steps, DefaultFactories.forBuildin(MathTransformFactory.class));
+        initialize(null, steps, DefaultMathTransformFactory.provider());
     }
 }

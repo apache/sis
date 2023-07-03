@@ -30,13 +30,13 @@ import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.InaccessibleObjectException;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
 import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
-import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.MathFunctions;
@@ -71,7 +71,7 @@ import org.apache.sis.util.logging.Logging;
  * each thread should have its own {@code UnitFormat} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see Units#valueOf(String)
  *
@@ -1625,23 +1625,27 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
     public UnitFormat clone() {
         final UnitFormat f = (UnitFormat) super.clone();
         try {
-            FinalFieldSetter.set(UnitFormat.class, "unitToLabel", "labelToUnit",
-                                 f, clone(unitToLabel), clone(labelToUnit));
+            f.clone("unitToLabel");
+            f.clone("labelToUnit");
         } catch (ReflectiveOperationException e) {
-            throw FinalFieldSetter.cloneFailure(e);
+            throw (InaccessibleObjectException) new InaccessibleObjectException().initCause(e);
         }
         return f;
     }
 
     /**
-     * Clones the given map, which can be either a {@link HashMap}
-     * or the instance returned by {@link Map#of()}.
+     * Clones the map in the specified field.
+     * The map can be either a {@link HashMap} or the instance returned by {@link Map#of()}.
      */
-    private static Object clone(final Map<?,?> value) {
+    private void clone(final String field) throws ReflectiveOperationException {
+        final var f = UnitFormat.class.getDeclaredField(field);
+        f.setAccessible(true);
+        Object value = f.get(this);
         if (value instanceof HashMap<?,?>) {
-            return ((HashMap<?,?>) value).clone();
+            value = ((HashMap<?,?>) value).clone();
         } else {
-            return new HashMap<>();
+            value = new HashMap<>();
         }
+        f.set(this, value);
     }
 }

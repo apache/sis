@@ -101,7 +101,7 @@ public class MapLayers extends MapItem {
     };
 
     /**
-     * The area of interest, or {@code null} is unspecified.
+     * The area of interest, or {@code null} if unspecified.
      */
     private ImmutableEnvelope areaOfInterest;
 
@@ -137,7 +137,7 @@ public class MapLayers extends MapItem {
      * of data. The returned envelope may have {@linkplain org.apache.sis.geometry.GeneralEnvelope#isAllNaN()
      * all its coordinates set to NaN} if only the {@link CoordinateReferenceSystem} is specified.</p>
      *
-     * @return map area to show by default, or {@code null} is unspecified.
+     * @return map area to show by default, or {@code null} if unspecified.
      *
      * @see DataSet#getEnvelope()
      */
@@ -150,7 +150,7 @@ public class MapLayers extends MapItem {
      * The given envelope is not necessarily related to the data contained in this group.
      * It may be wider, or smaller, and in a different {@link CoordinateReferenceSystem}.
      *
-     * @param  newValue  new map area to show by default, or {@code null} is unspecified.
+     * @param  newValue  new map area to show by default, or {@code null} if unspecified.
      */
     public void setAreaOfInterest(final Envelope newValue) {
         final ImmutableEnvelope imenv = ImmutableEnvelope.castOrCopy(newValue);

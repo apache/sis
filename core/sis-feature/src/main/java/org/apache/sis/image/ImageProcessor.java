@@ -409,7 +409,7 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns the colors to use for given categories of sample values, or {@code null} is unspecified.
+     * Returns the colors to use for given categories of sample values, or {@code null} if unspecified.
      * This method returns the function set by the last call to {@link #setCategoryColors(Function)}.
      *
      * @return colors to use for arbitrary categories of sample values, or {@code null} for default.
@@ -422,7 +422,7 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Sets the colors to use for given categories in image, or {@code null} is unspecified.
+     * Sets the colors to use for given categories in image, or {@code null} if unspecified.
      * This function provides a way to colorize images without knowing in advance the numerical values of pixels.
      * For example, instead of specifying <cite>"pixel value 0 is blue, 1 is green, 2 is yellow"</cite>,
      * this function allows to specify <cite>"Lakes are blue, Forests are green, Sand is yellow"</cite>.

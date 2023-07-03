@@ -27,7 +27,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.AbridgedMolodensky;
 import org.apache.sis.internal.referencing.provider.Molodensky;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.math.StatisticsFormat;
@@ -63,7 +62,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * @author  Tara Athan
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -104,7 +103,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
             throws FactoryException, TransformException, IOException
     {
         final MathTransform reference;
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         transform = MolodenskyTransform.createGeodeticTransformation(factory, source, true, target, true, tX, tY, tZ, false);
         reference = GeocentricTranslationTest.createDatumShiftForGeographic3D(factory, source, target, tX, tY, tZ);
         final float[] srcPts = verifyInDomain(
@@ -153,7 +152,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
         final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
         final Ellipsoid target = CommonCRS.ED50.ellipsoid();
         transform = MolodenskyTransform.createGeodeticTransformation(
-                DefaultFactories.forBuildin(MathTransformFactory.class),
+                DefaultMathTransformFactory.provider(),
                 source, true, target, true,
                 GeocentricTranslationTest.TX,
                 GeocentricTranslationTest.TY,
@@ -268,7 +267,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
     @DependsOnMethod("testMolodensky")
     public void testFranceGeocentricInterpolationPoint() throws FactoryException, TransformException {
         transform = MolodenskyTransform.createGeodeticTransformation(
-                DefaultFactories.forBuildin(MathTransformFactory.class),
+                DefaultMathTransformFactory.provider(),
                 HardCodedDatum.NTF.getEllipsoid(), true,        // Clarke 1880 (IGN)
                 CommonCRS.ETRS89.ellipsoid(), true,             // GRS 1980 ellipsoid
                -FranceGeocentricInterpolation.TX,
@@ -398,7 +397,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
     public void testIdentity() throws FactoryException {
         final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
         transform = MolodenskyTransform.createGeodeticTransformation(
-                DefaultFactories.forBuildin(MathTransformFactory.class), source, false, source, false, 0, 0, 0, false);
+                DefaultMathTransformFactory.provider(), source, false, source, false, 0, 0, 0, false);
         assertInstanceOf("Expected optimized type.", LinearTransform.class, transform);
         assertTrue(transform.isIdentity());
         validate();

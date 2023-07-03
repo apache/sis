@@ -33,17 +33,10 @@ import org.opengis.util.ControlledVocabulary;
  * This class opportunistically implements {@link Predicate} interface, but this is an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 public final class CodeLists implements Predicate<CodeList<?>> {
-    /**
-     * The name of bundle resources for code list titles. The resources should be loaded with
-     * the same class loader than {@code org.opengis.annotation.UML.class.getClassLoader()}.
-     * Keys are {@link CodeList#identifier()}.
-     */
-    public static final String RESOURCES = "org.opengis.metadata.CodeLists";
-
     /**
      * The name to compare during filtering operation.
      */

@@ -191,7 +191,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.getProvider(getSourceDimensions(), getTargetDimensions(), isAffine()).getParameters();
+        return Affine.provider(getSourceDimensions(), getTargetDimensions(), isAffine()).getParameters();
     }
 
     /**

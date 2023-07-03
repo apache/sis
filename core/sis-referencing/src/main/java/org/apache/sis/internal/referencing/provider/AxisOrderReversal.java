@@ -42,7 +42,7 @@ public class AxisOrderReversal extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -663548119085488844L;
+    private static final long serialVersionUID = 7027181359241386097L;
 
     /**
      * The group of all parameters expected by this coordinate operation (in this case, none).
@@ -56,22 +56,28 @@ public class AxisOrderReversal extends AbstractProvider {
     private transient MathTransform transform;
 
     /**
+     * The matrix size, which is the number of dimensions plus one.
+     */
+    private final int size;
+
+    /**
      * Constructs a provider with default parameters.
      */
     public AxisOrderReversal() {
-        this(PARAMETERS, 2);
+        this(PARAMETERS, 3);
     }
 
     /**
      * For {@link AxisOrderReversal3D} subclass only.
      *
-     * @param dimensions  number of dimensions in the source and target CRS of this operation method.
      * @param parameters  description of parameters expected by this operation.
+     * @param size  the matrix size, which is the number of dimensions plus one.
      */
-    AxisOrderReversal(final ParameterDescriptorGroup parameters, final int dimensions) {
+    AxisOrderReversal(final ParameterDescriptorGroup parameters, final int size) {
         super(Conversion.class, parameters,
-              CoordinateSystem.class, dimensions, false,
-              CoordinateSystem.class, dimensions, false);
+              CoordinateSystem.class, false,
+              CoordinateSystem.class, false);
+        this.size = size;
     }
 
     /**
@@ -84,9 +90,12 @@ public class AxisOrderReversal extends AbstractProvider {
     @Override
     public synchronized MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup values) {
         if (transform == null) {
-            final MatrixSIS m = Matrices.createZero(getTargetDimensions() + 1, getSourceDimensions() + 1);
+            final MatrixSIS m = Matrices.createZero(size, size);
             m.setElement(0, 1, 1);
             m.setElement(1, 0, 1);
+            for (int i=2; i<size; i++) {
+                m.setElement(i, i, 1);
+            }
             transform = MathTransforms.linear(m);
         }
         return transform;

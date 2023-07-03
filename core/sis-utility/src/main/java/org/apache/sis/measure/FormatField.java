@@ -24,7 +24,7 @@ import java.text.Format;
  * Base class of format fields.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 class FormatField extends Format.Field {
@@ -68,7 +68,7 @@ class FormatField extends Format.Field {
         final Class<?> type = getClass();
         try {
             return type.cast(type.getField(getName()).get(null));
-        } catch (Exception cause) {                                 // Many exceptions, including unchecked ones.
+        } catch (ReflectiveOperationException | ClassCastException cause) {
             throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
         }
     }

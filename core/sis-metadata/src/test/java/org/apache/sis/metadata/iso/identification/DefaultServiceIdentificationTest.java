@@ -28,8 +28,8 @@ import org.opengis.metadata.identification.OperationMetadata;
 import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.xml.TestUsingFile;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
      * Creates the service identification to use for testing purpose.
      */
     private static DefaultServiceIdentification create() {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final DefaultCoupledResource resource = DefaultCoupledResourceTest.create(factory);
         resource.setResourceReferences(Set.of(new DefaultCitation("WMS specification")));
         final DefaultServiceIdentification id = new DefaultServiceIdentification(

@@ -23,7 +23,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -48,7 +47,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link EllipsoidToCentricTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -60,7 +59,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
      * Convenience method for creating an instance from an ellipsoid.
      */
     private void createGeodeticConversion(final Ellipsoid ellipsoid, boolean is3D) throws FactoryException {
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         transform = EllipsoidToCentricTransform.createGeodeticConversion(factory, ellipsoid, is3D);
         /*
          * If the ellipsoid is a sphere, then EllipsoidToCentricTransform.createGeodeticConversion(…) created a
@@ -151,8 +150,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
      */
     @Test
     public void testHighEccentricity() throws FactoryException, TransformException, FactoryException {
-        transform = EllipsoidToCentricTransform.createGeodeticConversion(
-                DefaultFactories.forBuildin(MathTransformFactory.class),
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(DefaultMathTransformFactory.provider(),
                 6000000, 4000000, Units.METRE, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
 
         final double delta = toRadians(100.0 / 60) / 1852;
@@ -253,8 +251,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
      */
     @Test
     public void testConcatenate() throws FactoryException {
-        transform = GeocentricTranslationTest.createDatumShiftForGeographic2D(
-                DefaultFactories.forBuildin(MathTransformFactory.class));
+        transform = GeocentricTranslationTest.createDatumShiftForGeographic2D(DefaultMathTransformFactory.provider());
         final Iterator<MathTransform> it = MathTransforms.getSteps(transform).iterator();
         MathTransform step;
 

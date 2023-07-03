@@ -36,6 +36,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.Temporal;
 import java.time.Instant;
 import javax.measure.Unit;
+import java.lang.reflect.InaccessibleObjectException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
@@ -43,7 +44,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.Numerics;
 
 
@@ -98,7 +98,7 @@ import org.apache.sis.internal.util.Numerics;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see Range#toString()
  * @see <a href="https://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
@@ -1077,11 +1077,20 @@ public class RangeFormat extends Format implements Localized {
     public RangeFormat clone() {
         final RangeFormat f = (RangeFormat) super.clone();
         try {
-            FinalFieldSetter.set(RangeFormat.class, "elementFormat", "unitFormat",
-                                 f, elementFormat.clone(), unitFormat.clone());
+            f.clone("elementFormat");
+            f.clone("unitFormat");
         } catch (ReflectiveOperationException e) {
-            throw FinalFieldSetter.cloneFailure(e);
+            throw (InaccessibleObjectException) new InaccessibleObjectException().initCause(e);
         }
         return f;
+    }
+
+    /**
+     * Clones the value in the specified field.
+     */
+    private void clone(final String field) throws ReflectiveOperationException {
+        final var f = RangeFormat.class.getDeclaredField(field);
+        f.setAccessible(true);
+        f.set(this, ((Format) f.get(this)).clone());
     }
 }

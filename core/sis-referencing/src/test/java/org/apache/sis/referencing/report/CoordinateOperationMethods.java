@@ -32,7 +32,6 @@ import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.provider.AlbersEqualArea;
@@ -45,6 +44,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArraysExt;
@@ -68,7 +68,7 @@ import org.opengis.metadata.Identifier;
  * first, no HTML characters to escape in non-EPSG identifiers, etc.).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 public class CoordinateOperationMethods extends HTMLGenerator {
@@ -79,7 +79,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      * @throws IOException if an error occurred while writing the HTML file.
      */
     public static void main(final String[] args) throws IOException {
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         final List<OperationMethod> methods = new ArrayList<>(factory.getAvailableMethods(SingleOperation.class));
         methods.removeIf((method) -> method.getClass().getName().endsWith("Mock"));
         Collections.sort(methods, (final OperationMethod o1, final OperationMethod o2) -> {

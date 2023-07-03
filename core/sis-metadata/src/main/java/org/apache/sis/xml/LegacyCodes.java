@@ -61,7 +61,7 @@ final class LegacyCodes {
         for (final Map.Entry<Object,Object> entry : codes.entrySet()) {
             final String legacy = ((String) entry.getKey()).intern();
             final String name   = ((String) entry.getValue()).intern();
-            IANA_TO_LEGACY.put(name  .toUpperCase(Locale.US), legacy); // IANA names are restricted to US-ASCII.
+            IANA_TO_LEGACY.put(name  .toUpperCase(Locale.US), legacy);      // IANA names are restricted to US-ASCII.
             LEGACY_TO_IANA.put(legacy.toLowerCase(Locale.US), name);
             IANA_TO_LEGACY.put(name, legacy);
             LEGACY_TO_IANA.put(legacy, name);

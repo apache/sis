@@ -118,7 +118,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
      *
      * @param targetDatum       the target datum (usually WGS 84) for this set of parameters.
      * @param domainOfValidity  area or region in which a coordinate transformation based on those Bursa-Wolf parameters
-     *                          is valid, or {@code null} is unspecified.
+     *                          is valid, or {@code null} if unspecified.
      * @param timeReference     the reference epoch for time-dependent parameters.
      */
     public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Date timeReference) {

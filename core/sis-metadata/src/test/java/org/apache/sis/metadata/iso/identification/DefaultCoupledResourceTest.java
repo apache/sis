@@ -24,7 +24,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.OperationMetadata;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameterTest;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * Tests {@link DefaultCoupledResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn(ServiceParameterTest.class)
@@ -62,7 +62,7 @@ public final class DefaultCoupledResourceTest extends TestCase {
      */
     @Test
     public void testOperationNameResolve() {
-        final DefaultCoupledResource resource  = create(DefaultFactories.forBuildin(NameFactory.class));
+        final DefaultCoupledResource resource  = create(DefaultNameFactory.provider());
         final OperationMetadata      operation = resource.getOperation();
         /*
          * Test OperationName replacement when the name matches.

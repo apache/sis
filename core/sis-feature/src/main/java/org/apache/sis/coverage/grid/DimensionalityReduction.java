@@ -172,7 +172,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @param  gridAxes  bitmask of indices of source grid dimensions to keep in the reduced grid.
      *                   Will be modified by this constructor for internal purpose.
      * @param  factory   the factory to use for creating new math transforms, or {@code null} if none.
-     * @throws FactoryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws FactoryException if the dimensions to keep cannot be separated from the dimensions to omit.
      */
     protected DimensionalityReduction(final GridGeometry source, final BitSet gridAxes, final MathTransformFactory factory)
             throws FactoryException
@@ -318,7 +318,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @param  gridAxesToPass  the grid axes to retain, ignoring order and duplicated values.
      * @return reduced grid geometry together with other information.
      * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
-     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      */
     public static DimensionalityReduction select(final GridGeometry source, final int... gridAxesToPass) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -342,7 +342,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @param  source  the grid geometry to reduce.
      * @return reduced grid geometry together with other information.
      * @throws IndexOutOfBoundsException if the grid geometry does not have at least two dimensions.
-     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      *
      * @see org.apache.sis.storage.CoverageQuery#setAxisSelection(Function)
      */
@@ -359,7 +359,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @param  gridAxesToRemove  the grid axes to remove, ignoring order and duplicated values.
      * @return reduced grid geometry together with other information.
      * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
-     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      */
     public static DimensionalityReduction remove(final GridGeometry source, final int... gridAxesToRemove) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -380,7 +380,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @param  source  the grid geometry to reduce.
      * @return reduced grid geometry together with other information.
      * @throws IncompleteGridGeometryException if the grid geometry has no extent.
-     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      *
      * @see #select2D(GridGeometry)
      */

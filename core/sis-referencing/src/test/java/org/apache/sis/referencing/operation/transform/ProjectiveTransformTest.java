@@ -277,7 +277,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
                 Matrices.equals(matrix, tm, tolerance, false));
 
         assertSame("ParameterDescriptor",
-                Affine.getProvider(transform.getSourceDimensions(), transform.getTargetDimensions(), true).getParameters(),
+                Affine.provider(transform.getSourceDimensions(), transform.getTargetDimensions(), true).getParameters(),
                 ((Parameterized) transform).getParameterDescriptors());
     }
 }

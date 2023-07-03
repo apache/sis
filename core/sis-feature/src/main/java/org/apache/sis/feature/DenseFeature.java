@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Arrays;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -37,14 +38,14 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
- * @version 1.1
+ * @version 1.4
  *
  * @see SparseFeature
  * @see DefaultFeatureType
  *
  * @since 0.5
  */
-final class DenseFeature extends AbstractFeature implements Cloneable {
+final class DenseFeature extends AbstractFeature implements CloneAccess {
     /**
      * For cross-version compatibility.
      */

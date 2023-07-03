@@ -17,8 +17,9 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
-import jakarta.xml.bind.annotation.XmlTransient;
+import java.util.Arrays;
 import javax.measure.Unit;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -150,25 +151,38 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     }
 
     /**
-     * Constructs a new provider.
+     * The providers for all combinations between 2D and 3D cases.
      */
+    private static final Molodensky[] REDIMENSIONED = new Molodensky[4];
+    static {
+        Arrays.setAll(REDIMENSIONED, Molodensky::new);
+    }
+
+    /**
+     * Returns the provider for the specified combination of source and target dimensions.
+     */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public Molodensky() {
-        this(3, 3, new Molodensky[4]);
-        redimensioned[0] = new Molodensky(2, 2, redimensioned);
-        redimensioned[1] = new Molodensky(2, 3, redimensioned);
-        redimensioned[2] = new Molodensky(3, 2, redimensioned);
-        redimensioned[3] = this;
+        super(REDIMENSIONED[INDEX_OF_3D]);
     }
 
     /**
      * Constructs a provider for the given dimensions.
      *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases.
+     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array.
      */
-    private Molodensky(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(Type.MOLODENSKY, PARAMETERS, sourceDimensions, targetDimensions, redimensioned);
+    private Molodensky(int indexOfDim) {
+        super(Type.MOLODENSKY, PARAMETERS, indexOfDim);
     }
 
     /**

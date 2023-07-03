@@ -45,7 +45,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.internal.referencing.provider.MapProjection;
-import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.PositionTransformer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
@@ -1190,7 +1189,7 @@ public class GeodeticCalculator {
                 crsUnit               = ReferencingUtilities.getUnit(positionCRS);
                 toLinearUnit          = ellipsoid.getAxisUnit().getConverterTo(Units.isLinear(crsUnit) ? crsUnit.asType(Length.class) : Units.METRE);
                 toProjectionBase      = CRS.findOperation(positionCRS, baseCRS, null).getMathTransform();
-                projectionFactory     = CoordinateOperations.factoryMT().caching(false);
+                projectionFactory     = DefaultMathTransformFactory.provider().caching(false);
                 projectionProvider    = (MapProjection) projectionFactory.getOperationMethod(getProjectionMethod());
                 projectionParameters  = Parameters.castOrWrap(projectionProvider.getParameters().createValue());
                 projectionParameters.parameter(Constants.SEMI_MAJOR).setValue(toLinearUnit.convert(ellipsoid.getSemiMajorAxis()));

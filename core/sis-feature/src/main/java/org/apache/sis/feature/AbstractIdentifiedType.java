@@ -24,8 +24,8 @@ import java.io.Serializable;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.iso.Types;
@@ -209,7 +209,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
             throw new IllegalArgumentException(Errors.getResources(identification)
                     .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
         } else if (value instanceof String) {
-            name = createName(DefaultFactories.forBuildin(NameFactory.class), (String) value);
+            name = createName(DefaultNameFactory.provider(), (String) value);
         } else if (value instanceof GenericName) {
             name = (GenericName) value;
         } else {

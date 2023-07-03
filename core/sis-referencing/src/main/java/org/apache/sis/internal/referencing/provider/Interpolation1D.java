@@ -35,7 +35,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  * The provider for interpolation of one-dimensional coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 public final class Interpolation1D extends AbstractProvider {
@@ -74,8 +74,26 @@ public final class Interpolation1D extends AbstractProvider {
      */
     public Interpolation1D() {
         super(Conversion.class, PARAMETERS,
-              CoordinateSystem.class, 1, false,
-              CoordinateSystem.class, 1, false);
+              CoordinateSystem.class, false,
+              CoordinateSystem.class, false);
+    }
+
+    /**
+     * Returns the number of source dimensions.
+     */
+    @Override
+    @Deprecated
+    public Integer getSourceDimensions() {
+        return 1;
+    }
+
+    /**
+     * Returns the number of target dimensions.
+     */
+    @Override
+    @Deprecated
+    public Integer getTargetDimensions() {
+        return 1;
     }
 
     /**

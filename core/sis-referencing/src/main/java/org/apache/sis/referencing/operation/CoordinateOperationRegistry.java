@@ -31,7 +31,6 @@ import java.util.function.Predicate;
 import javax.measure.IncommensurableException;
 
 import org.opengis.util.FactoryException;
-import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
@@ -70,6 +69,7 @@ import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -257,7 +257,8 @@ class CoordinateOperationRegistry {
         this.registry = registry;
         this.factory  = factory;
         factorySIS    = (factory instanceof DefaultCoordinateOperationFactory)
-                        ? (DefaultCoordinateOperationFactory) factory : CoordinateOperations.factory();
+                        ? (DefaultCoordinateOperationFactory) factory
+                        : DefaultCoordinateOperationFactory.provider();
         Map<CoordinateReferenceSystem, List<String>> authorityCodes = Collections.emptyMap();
         IdentifiedObjectFinder codeFinder = null;
         if (registry != null) {
@@ -927,27 +928,16 @@ class CoordinateOperationRegistry {
                 ReferencingUtilities.getInterface(CoordinateOperation.class, operation));
         /*
          * Reuse the same operation method, but we may need to change its number of dimension.
-         * The capability to resize an OperationMethod is specific to Apache SIS, so we must
-         * be prepared to see the `redimension` call fails. In such case, we will try to get
-         * the SIS implementation of the operation method and try again.
+         * For example the "Affine" set of parameters depend on the number of dimensions.
+         * The capability to resize an operation method is specific to Apache SIS.
          */
         if (SubTypes.isSingleOperation(operation)) {
             final SingleOperation single = (SingleOperation) operation;
             properties.put(CoordinateOperations.PARAMETERS_KEY, single.getParameterValues());
             if (method == null) {
-                final int sourceDimensions = transform.getSourceDimensions();
-                final int targetDimensions = transform.getTargetDimensions();
                 method = single.getMethod();
-                try {
-                    method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
-                } catch (IllegalArgumentException ex) {
-                    try {
-                        method = factory.getOperationMethod(method.getName().getCode());
-                        method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
-                    } catch (NoSuchIdentifierException | IllegalArgumentException se) {
-                        ex.addSuppressed(se);
-                        throw ex;
-                    }
+                if (method instanceof AbstractProvider) {
+                    method = ((AbstractProvider) method).variantFor(transform);
                 }
             }
         }
@@ -1170,7 +1160,7 @@ class CoordinateOperationRegistry {
                 return candidate;               // Keep the existing instance since it may contain useful metadata.
             }
         }
-        final EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
+        final EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.crsFactory, factorySIS.csFactory, factory);
         return toAuthorityDefinition(CoordinateReferenceSystem.class, c.createCompoundCRS(derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
     }
 
@@ -1284,7 +1274,7 @@ class CoordinateOperationRegistry {
         if (method == null) {
             final Matrix matrix = MathTransforms.getMatrix(transform);
             if (matrix != null) {
-                method = Affine.getProvider(transform.getSourceDimensions(), transform.getTargetDimensions(), Matrices.isAffine(matrix));
+                method = Affine.provider(transform.getSourceDimensions(), transform.getTargetDimensions(), Matrices.isAffine(matrix));
             } else {
                 final ParameterDescriptorGroup descriptor = AbstractCoordinateOperation.getParameterDescriptors(transform);
                 if (descriptor != null) {

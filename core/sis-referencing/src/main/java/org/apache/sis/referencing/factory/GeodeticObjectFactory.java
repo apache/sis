@@ -46,9 +46,9 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.MergedProperties;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -213,14 +213,6 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     private final Map<String,?> defaultProperties;
 
     /**
-     * The math transform factory. Will be created only when first needed.
-     * This is normally not needed by this factory, except when constructing derived and projected CRS.
-     *
-     * @see #getMathTransformFactory()
-     */
-    private volatile MathTransformFactory mtFactory;
-
-    /**
      * Weak references to existing objects (CRS, CS, Datum, Ellipsoid or PrimeMeridian).
      * This set is used in order to return a pre-existing object instead of creating a new one.
      */
@@ -233,7 +225,30 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     private final AtomicReference<Parser> parser;
 
     /**
+     * The default factory instance.
+     */
+    private static final GeodeticObjectFactory INSTANCE = new GeodeticObjectFactory();
+
+    /**
+     * Returns the default provider of {@code IdentifiedObject} instances.
+     * This is the factory used by the Apache SIS library when no non-null
+     * {@link CRSFactory}, {@link CSFactory} or {@link DatumFactory} has been explicitly specified.
+     * This method can be invoked directly, or indirectly through
+     * {@code ServiceLoader.load(T)} where <var>T</var> is one of above-cited interfaces.
+     *
+     * @return the default provider of geodetic objects.
+     *
+     * @see java.util.ServiceLoader
+     * @since 1.4
+     */
+    public static GeodeticObjectFactory provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Constructs a factory with no default properties.
+     *
+     * @see #provider()
      */
     public GeodeticObjectFactory() {
         this(null);
@@ -292,11 +307,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * For this reason, we will fetch this dependency only if really requested.
      */
     final MathTransformFactory getMathTransformFactory() {
-        MathTransformFactory factory = mtFactory;
-        if (factory == null) {
-            mtFactory = factory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        }
-        return factory;
+        return DefaultMathTransformFactory.provider();
     }
 
     /**

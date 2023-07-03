@@ -67,8 +67,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      * <p>We do not provide default value for this parameter (neither we do for other OGC-specific parameters
      * in this class) because this parameter is used with both two- and three-dimensional operation methods.
      * If we want to provide a default value, we could but it would complicate a little bit the code since we
-     * could no longer reuse the same {@code PARAMETERS} constant for operation methods of any number of dimensions.
-     * TODO: this paragraph will not apply anymore after {@link #redimensioned} is removed.</p>
+     * could no longer reuse the same {@code PARAMETERS} constant for operation methods of any number of dimensions.</p>
      *
      * @see GeographicToGeocentric#DIMENSION
      *
@@ -164,20 +163,26 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     }
 
     /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
+    GeocentricAffineBetweenGeographic(final GeocentricAffineBetweenGeographic copy) {
+        super(copy);
+    }
+
+    /**
      * Constructs a provider with the specified parameters.
      *
-     * @param type              the operation type as an enumeration value.
-     * @param parameters        description of parameters expected by this operation.
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
+     * @param type        the operation type as an enumeration value.
+     * @param parameters  description of parameters expected by this operation.
+     * @param indexOfDim  number of dimensions as the index in {@link #redimensioned} array.
      */
-    GeocentricAffineBetweenGeographic(Type operationType, ParameterDescriptorGroup parameters,
-            int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned)
-    {
-        super(operationType, parameters,
-              EllipsoidalCS.class, sourceDimensions, true,
-              EllipsoidalCS.class, targetDimensions, true, redimensioned);
+    GeocentricAffineBetweenGeographic(Type operationType, ParameterDescriptorGroup parameters, int indexOfDim) {
+        super(operationType, parameters, indexOfDim,
+              EllipsoidalCS.class, true,
+              EllipsoidalCS.class, true);
     }
 
     /**

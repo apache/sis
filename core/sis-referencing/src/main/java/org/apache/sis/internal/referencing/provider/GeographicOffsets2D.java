@@ -49,25 +49,20 @@ public final class GeographicOffsets2D extends GeographicOffsets {
     }
 
     /**
-     * Constructs a provider with default parameters.
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
      */
+    @Deprecated
     public GeographicOffsets2D() {
-        this(null);
+        super(provider2D());
     }
 
     /**
      * Constructs a provider that can be resized.
      */
-    GeographicOffsets2D(GeodeticOperation[] redimensioned) {
-        super(2, 2, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * Returns the three-dimensional variant of this operation method.
-     */
-    @Override
-    Class<GeographicOffsets> variant3D() {
-        return GeographicOffsets.class;
+    GeographicOffsets2D(final int indexOfDim) {
+        super(PARAMETERS, indexOfDim);
     }
 
     /**

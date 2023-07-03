@@ -36,7 +36,6 @@ import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
@@ -47,9 +46,9 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.referencing.GeodeticException;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -472,7 +471,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
-            transform = ReferencingUtilities.createBaseToDerived(DefaultFactories.forBuildin(MathTransformFactory.class),
+            transform = ReferencingUtilities.createBaseToDerived(DefaultMathTransformFactory.provider(),
                                                                  sourceCRS, parameters, targetCRS);
         } catch (FactoryException e) {
             Context.warningOccured(Context.current(), AbstractSingleOperation.class, "afterUnmarshal", e, true);

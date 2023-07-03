@@ -37,7 +37,7 @@ import org.apache.sis.parameter.Parameters;
  * there is no need for a class specifically for this transform.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class GeographicToTopocentric extends AbstractProvider {
@@ -122,8 +122,26 @@ public final class GeographicToTopocentric extends AbstractProvider {
      */
     public GeographicToTopocentric() {
         super(Conversion.class, PARAMETERS,
-              EllipsoidalCS.class, 3, true,
-              CartesianCS.class, 3, false);
+              EllipsoidalCS.class, true,
+              CartesianCS.class, false);
+    }
+
+    /**
+     * Returns the number of source dimensions.
+     */
+    @Override
+    @Deprecated
+    public Integer getSourceDimensions() {
+        return 3;
+    }
+
+    /**
+     * Returns the number of target dimensions.
+     */
+    @Override
+    @Deprecated
+    public Integer getTargetDimensions() {
+        return 3;
     }
 
     /**

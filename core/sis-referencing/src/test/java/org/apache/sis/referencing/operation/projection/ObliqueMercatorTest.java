@@ -21,9 +21,8 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOn;
@@ -38,7 +37,7 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Emmanuel Giasson (Thales)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 @DependsOn(MercatorTest.class)
@@ -109,7 +108,7 @@ public final class ObliqueMercatorTest extends MapProjectionTestCase {
     @Test
     public void testPole() throws TransformException, FactoryException {
         tolerance = 0.01;
-        transform = create(179.8, 89.8, -174).createMapProjection(DefaultFactories.forBuildin(MathTransformFactory.class));
+        transform = create(179.8, 89.8, -174).createMapProjection(DefaultMathTransformFactory.provider());
         transform = transform.inverse();
         validate();
         /*

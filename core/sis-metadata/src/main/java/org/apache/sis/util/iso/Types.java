@@ -28,7 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.io.IOException;
-import java.io.InputStream;
+import org.opengis.annotation.ResourceBundles;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
@@ -295,7 +295,7 @@ public final class Types extends Static {
     @OptionalCandidate
     public static InternationalString getDescription(final ControlledVocabulary code) {
         if (code != null) {
-            final String resources = getResources(code.getClass().getName());
+            final String resources = toResourceName(code.getClass().getName());
             if (resources != null) {
                 return new Description(resources, Description.resourceKey(code));
             }
@@ -316,7 +316,7 @@ public final class Types extends Static {
     public static InternationalString getDescription(final Class<?> type) {
         final String name = getStandardName(type);
         if (name != null) {
-            final String resources = getResources(type.getName());
+            final String resources = toResourceName(type.getName());
             if (resources != null) {
                 return new Description(resources, name);
             }
@@ -338,7 +338,7 @@ public final class Types extends Static {
         if (property != null) {
             final String name = getStandardName(type);
             if (name != null) {
-                final String resources = getResources(type.getName());
+                final String resources = toResourceName(type.getName());
                 if (resources != null) {
                     return new Description(resources, name + SEPARATOR + property);
                 }
@@ -361,14 +361,9 @@ public final class Types extends Static {
         private static final long serialVersionUID = -6202647167398898834L;
 
         /**
-         * The class loader to use for fetching GeoAPI resources.
-         * Since the resources are bundled in the GeoAPI JAR file,
-         * we use the instance that loaded GeoAPI for more determinist behavior.
-         */
-        private static final ClassLoader CLASSLOADER = UML.class.getClassLoader();
-
-        /**
          * Creates a new international string from the specified resource bundle and key.
+         * The {@code resources} argument is only informative since this class overrides
+         * the {@link #getBundle(Locale)} method.
          *
          * @param resources  the name of the resource bundle, as a fully qualified class name.
          * @param key        the key for the resource to fetch.
@@ -378,11 +373,12 @@ public final class Types extends Static {
         }
 
         /**
-         * Loads the resources using the class loader used for loading GeoAPI interfaces.
+         * Loads the GeoAPI resources. A cache is managed by {@link ResourceBundle}.
+         * Note that the {@link #resources} field value is ignored.
          */
         @Override
-        protected final ResourceBundle getBundle(final Locale locale) {
-            return ResourceBundle.getBundle(resources, locale, CLASSLOADER);
+        protected ResourceBundle getBundle(final Locale locale) {
+            return ResourceBundles.descriptions(locale);
         }
 
         /**
@@ -423,7 +419,7 @@ public final class Types extends Static {
      * The code below is a duplicated - in a different way - of {@code CodeListUID(CodeList)}
      * constructor ({@link org.apache.sis.internal.jaxb.code package}). This duplication exists
      * because {@code CodeListUID} constructor stores more information in an opportunist way.
-     * If this method is updated, please update {@code CodeListUID(CodeList)} accordingly.
+     * If this class is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
@@ -447,8 +443,17 @@ public final class Types extends Static {
          * @param  code  the code list for which to create a title.
          */
         CodeTitle(final ControlledVocabulary code) {
-            super(CodeLists.RESOURCES, resourceKey(code));
+            super("org.opengis.metadata.CodeLists", resourceKey(code));
             this.code = code;
+        }
+
+        /**
+         * Loads the GeoAPI resources. A cache is managed by {@link ResourceBundle}.
+         * Note that the {@link #resources} field value is ignored.
+         */
+        @Override
+        protected ResourceBundle getBundle(final Locale locale) {
+            return ResourceBundles.codeLists(locale);
         }
 
         /**
@@ -462,11 +467,14 @@ public final class Types extends Static {
 
     /**
      * Returns the resource name for the given GeoAPI type, or {@code null} if none.
+     * The non-null resource name is only informative in this implementation.
+     * However we need {@code null} value is still necessary for telling that
+     * no resource is expected to exist for the given class.
      *
      * @param  classname  the fully qualified name of the GeoAPI type.
      * @return the resource bundle to load, or {@code null} if none.
      */
-    static String getResources(final String classname) {
+    static String toResourceName(final String classname) {
         String resources = "org.opengis.metadata.Descriptions";
         if (classname.regionMatches(0, resources, 0, 21)) {             // 21 is the location after the last dot.
             return resources;
@@ -531,16 +539,10 @@ public final class Types extends Static {
             return null;
         }
         if (typeForNames == null) {
-            final Class<UML> c = UML.class;
-            final InputStream in = c.getResourceAsStream("class-index.properties");
-            if (in == null) {
-                throw new MissingResourceException("class-index.properties", c.getName(), identifier);
-            }
-            final Properties props = new Properties();
+            final Properties props;
             try {
-                props.load(in);
-                in.close();
-            } catch (IOException | IllegalArgumentException e) {
+                props = ResourceBundles.classIndex();
+            } catch (IOException e) {
                 throw new BackingStoreException(e);
             }
             /*

@@ -30,7 +30,7 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * A buffered image which can notify tile observers when tile are acquired fir write operations.
+ * A buffered image which cannotify tile observers when tile are acquired fir write operations.
  * Provides also helper methods for {@link WritableRenderedImage} implementations.
  *
  * <p>This class should be used in preference to {@link BufferedImage} when the image may be the

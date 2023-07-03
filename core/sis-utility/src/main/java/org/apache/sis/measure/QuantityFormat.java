@@ -22,13 +22,13 @@ import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.io.IOException;
+import java.lang.reflect.InaccessibleObjectException;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.FinalFieldSetter;
 
 
 /**
@@ -238,13 +238,22 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      */
     @Override
     public QuantityFormat clone() {
-        final QuantityFormat clone = (QuantityFormat) super.clone();
+        final QuantityFormat f = (QuantityFormat) super.clone();
         try {
-            FinalFieldSetter.set(QuantityFormat.class, "numberFormat", "unitFormat",
-                                 clone, numberFormat.clone(), unitFormat.clone());
+            f.clone("numberFormat");
+            f.clone("unitFormat");
         } catch (ReflectiveOperationException e) {
-            throw FinalFieldSetter.cloneFailure(e);
+            throw (InaccessibleObjectException) new InaccessibleObjectException().initCause(e);
         }
-        return clone;
+        return f;
+    }
+
+    /**
+     * Clones the value in the specified field.
+     */
+    private void clone(final String field) throws ReflectiveOperationException {
+        final var f = QuantityFormat.class.getDeclaredField(field);
+        f.setAccessible(true);
+        f.set(this, ((Format) f.get(this)).clone());
     }
 }

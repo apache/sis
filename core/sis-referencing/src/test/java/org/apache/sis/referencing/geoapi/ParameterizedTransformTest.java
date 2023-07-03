@@ -19,9 +19,8 @@ package org.apache.sis.referencing.geoapi;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.After;
@@ -34,7 +33,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Runs a suite of tests provided in the GeoAPI project.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 @RunWith(JUnit4.class)
@@ -43,7 +42,7 @@ public final class ParameterizedTransformTest extends org.opengis.test.referenci
      * Creates a new test suite using the singleton factory instance.
      */
     public ParameterizedTransformTest() {
-        super(DefaultFactories.forBuildin(MathTransformFactory.class));
+        super(DefaultMathTransformFactory.provider());
     }
 
     /**

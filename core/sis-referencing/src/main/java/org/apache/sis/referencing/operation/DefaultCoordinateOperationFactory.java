@@ -39,12 +39,12 @@ import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.URLs;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
@@ -82,8 +82,12 @@ import org.apache.sis.util.Debug;
  *
  * The second approach is the most frequently used.
  *
+ *
+ * <h2>Thread safety</h2>
+ * This class is safe for multi-thread usage if all referenced factories are thread-safe.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
@@ -102,26 +106,20 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 
     /**
      * The factory to use if {@link CoordinateOperationFinder} needs to create CRS for intermediate steps.
-     * Will be created only when first needed.
-     *
-     * @see #getCRSFactory()
      */
-    private volatile CRSFactory crsFactory;
+    final CRSFactory crsFactory;
 
     /**
      * The factory to use if {@link CoordinateOperationFinder} needs to create CS for intermediate steps.
-     * Will be created only when first needed.
-     *
-     * @see #getCSFactory()
      */
-    private volatile CSFactory csFactory;
+    final CSFactory csFactory;
 
     /**
-     * The math transform factory. Will be created only when first needed.
+     * The math transform factory.
      *
      * @see #getMathTransformFactory()
      */
-    private volatile MathTransformFactory mtFactory;
+    private final MathTransformFactory mtFactory;
 
     /**
      * Weak references to existing objects.
@@ -141,7 +139,30 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     final Cache<CRSPair,CoordinateOperation> cache;
 
     /**
+     * The default factory instance.
+     */
+    private static final DefaultCoordinateOperationFactory INSTANCE = new DefaultCoordinateOperationFactory();
+
+    /**
+     * Returns the default provider of {@code CoordinateOperation} instances.
+     * This is the factory used by the Apache SIS library when no non-null
+     * {@link CoordinateOperationFactory} has been explicitly specified.
+     * This method can be invoked directly, or indirectly through
+     * {@code ServiceLoader.load(CoordinateOperationFactory.class)}.
+     *
+     * @return the default provider of coordinate operations.
+     *
+     * @see java.util.ServiceLoader
+     * @since 1.4
+     */
+    public static DefaultCoordinateOperationFactory provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Constructs a factory with no default properties.
+     *
+     * @see #provider()
      */
     public DefaultCoordinateOperationFactory() {
         this(null, null);
@@ -157,13 +178,18 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *                    or {@code null} for the default factory.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory factory) {
+    public DefaultCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory factory) {
+        final CSFactory  csFactory;
+        final CRSFactory crsFactory;
         if (properties == null || properties.isEmpty()) {
             properties = Map.of();
+            crsFactory = null;
+            csFactory  = null;
         } else {
             String key   = null;
             Object value = null;
             properties   = new HashMap<>(properties);
+            final MathTransformFactory mtFactory;
             /*
              * Following use of properties is an undocumented feature for now. Current version documents only
              * MathTransformFactory because math transforms are intimately related to coordinate operations.
@@ -178,11 +204,14 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             }
             properties.remove(ReferencingFactoryContainer.DATUM_FACTORY);
             properties = Map.copyOf(properties);
+            if (factory == null) {
+                factory = mtFactory;
+            }
         }
+        this.mtFactory  = (   factory != null) ?    factory : DefaultMathTransformFactory.provider();
+        this.csFactory  = ( csFactory != null) ?  csFactory : GeodeticObjectFactory.provider();
+        this.crsFactory = (crsFactory != null) ? crsFactory : GeodeticObjectFactory.provider();
         defaultProperties = properties;
-        if (factory != null) {
-            mtFactory = factory;
-        }
         pool = new WeakHashSet<>(IdentifiedObject.class);
         cache = new Cache<>(12, 50, true);
     }
@@ -209,28 +238,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the factory to use if {@link CoordinateOperationFinder} needs to create CRS for intermediate steps.
-     */
-    final CRSFactory getCRSFactory() {
-        CRSFactory factory = crsFactory;
-        if (factory == null) {
-            crsFactory = factory = DefaultFactories.forBuildin(CRSFactory.class);
-        }
-        return factory;
-    }
-
-    /**
-     * Returns the factory to use if {@link CoordinateOperationFinder} needs to create CS for intermediate steps.
-     */
-    final CSFactory getCSFactory() {
-        CSFactory factory = csFactory;
-        if (factory == null) {
-            csFactory = factory = DefaultFactories.forBuildin(CSFactory.class);
-        }
-        return factory;
-    }
-
-    /**
      * Returns the underlying math transform factory. This factory is used for constructing the {@link MathTransform}
      * instances doing the actual mathematical work of {@linkplain AbstractCoordinateOperation coordinate operations}
      * instances.
@@ -240,11 +247,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @since 1.1
      */
     public final MathTransformFactory getMathTransformFactory() {
-        MathTransformFactory factory = mtFactory;
-        if (factory == null) {
-            mtFactory = factory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        }
-        return factory;
+        return mtFactory;
     }
 
     /**
@@ -256,7 +259,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         if (factory instanceof DefaultMathTransformFactory) {
             return (DefaultMathTransformFactory) factory;
         }
-        return DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
+        return DefaultMathTransformFactory.provider();
     }
 
     /**
@@ -330,27 +333,37 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      * </table>
      *
-     * @param  properties        set of properties. Shall contain at least {@code "name"}.
-     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method, or {@code null}.
-     * @param  targetDimensions  number of dimensions in the target CRS of this operation method, or {@code null}.
-     * @param  parameters        description of parameters expected by this operation.
+     * @param  properties  set of properties. Shall contain at least {@code "name"}.
+     * @param  parameters  description of parameters expected by this operation.
      * @return the operation method created from the given arguments.
      * @throws FactoryException if the object creation failed.
      *
-     * @see DefaultOperationMethod#DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup)
+     * @see DefaultOperationMethod#DefaultOperationMethod(Map, ParameterDescriptorGroup)
+     *
+     * @since 1.4
      */
-    @Override
     public OperationMethod createOperationMethod(final Map<String,?> properties,
-            final Integer sourceDimensions, final Integer targetDimensions,
-            ParameterDescriptorGroup parameters) throws FactoryException
+            final ParameterDescriptorGroup parameters) throws FactoryException
     {
         final OperationMethod method;
         try {
-            method = new DefaultOperationMethod(properties, sourceDimensions, targetDimensions, parameters);
+            method = new DefaultOperationMethod(properties, parameters);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
         return pool.unique(method);
+    }
+
+    /**
+     * @deprecated The dimensions attributes have been removed in ISO 19111:2019 revision.
+     */
+    @Override
+    @Deprecated(since = "1.4", forRemoval = true)
+    public OperationMethod createOperationMethod(final Map<String,?> properties,
+            final Integer sourceDimensions, final Integer targetDimensions,
+            ParameterDescriptorGroup parameters) throws FactoryException
+    {
+        return createOperationMethod(properties, parameters);
     }
 
     /**

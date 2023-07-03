@@ -17,12 +17,12 @@
 package org.apache.sis.io.wkt;
 
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.FactoryException;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.test.TestRunner;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.6
  */
 @RunWith(TestRunner.class)
@@ -54,7 +54,7 @@ public final class WKTParserTest extends CRSParserTest {
      * Creates a new test case using the default {@code CRSFactory} implementation.
      */
     public WKTParserTest() {
-        super(org.apache.sis.internal.system.DefaultFactories.forClass(CRSFactory.class));
+        super(GeodeticObjectFactory.provider());
     }
 
     /**

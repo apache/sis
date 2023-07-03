@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Set;
 import java.util.LinkedHashSet;
+import java.util.ServiceLoader;
 import javax.measure.Unit;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -43,7 +44,6 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Fallback;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.Constants;
@@ -63,7 +63,7 @@ import org.apache.sis.measure.Units;
  * The EPSG identifiers are provided as references where to find the complete definitions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 @Fallback
@@ -364,8 +364,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
     private synchronized String getInstallationURL() {
         if (installationURL == null) {
             installationURL = URLs.EPSG_INSTALL;            // To be used as fallback.
-            final Iterable<InstallationResources> services =
-                    DefaultFactories.createServiceLoader(InstallationResources.class);
+            final ServiceLoader<InstallationResources> services = InstallationResources.load();
             /*
              * Following loop will be executed one or two times. First, we check for resources that are
              * specifically for EPSG geodetic dataset. If none are found, fallback on embedded database.

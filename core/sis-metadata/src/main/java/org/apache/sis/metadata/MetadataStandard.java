@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
-import java.io.InvalidClassException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
@@ -39,7 +38,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
-import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.Strings;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -91,7 +89,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * by a large amount of {@link ModifiableMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see AbstractMetadata
  *
@@ -203,8 +201,11 @@ public class MetadataStandard implements Serializable {
      *   <li>{@link Class} if we found the interface for the type but did not yet created the {@link PropertyAccessor}.</li>
      *   <li>{@link PropertyAccessor} otherwise.</li>
      * </ul>
+     *
+     * Consider this field as final.
+     * It is not final only for {@link #readObject(ObjectInputStream)} purpose.
      */
-    private final transient ConcurrentMap<CacheKey,Object> accessors;      // Written by reflection on deserialization.
+    private transient ConcurrentMap<CacheKey,Object> accessors;
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
@@ -1094,20 +1095,6 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Assigns a {@link ConcurrentMap} instance to the given field.
-     * Used on deserialization only.
-     */
-    static <T extends MetadataStandard> void setMapForField(final Class<T> classe, final T instance, final String name)
-            throws InvalidClassException
-    {
-        try {
-            FinalFieldSetter.set(classe, name, instance, new ConcurrentHashMap<>());
-        } catch (ReflectiveOperationException e) {
-            throw FinalFieldSetter.readFailure(e);
-        }
-    }
-
-    /**
      * Invoked during deserialization for restoring the transient fields.
      *
      * @param  in  the input stream from which to deserialize a metadata standard.
@@ -1116,6 +1103,6 @@ public class MetadataStandard implements Serializable {
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        setMapForField(MetadataStandard.class, this, "accessors");
+        accessors = new ConcurrentHashMap<>();
     }
 }

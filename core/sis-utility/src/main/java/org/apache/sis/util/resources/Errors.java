@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util.resources;
 
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -35,10 +35,10 @@ import org.opengis.util.InternationalString;
  * as they want.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
-public final class Errors extends IndexedResourceBundle {
+public class Errors extends IndexedResourceBundle {
     /**
      * Resource keys. This class is used when compiling sources, but no dependencies to
      * {@code Keys} should appear in any resulting class files. Since the Java compiler
@@ -1072,13 +1072,21 @@ public final class Errors extends IndexedResourceBundle {
     }
 
     /**
-     * Constructs a new resource bundle loading data from the given UTF file.
-     *
-     * @param resources  the path of the binary file containing resources, or {@code null} if
-     *        there are no resources. The resources may be a file or an entry in a JAR file.
+     * Constructs a new resource bundle loading data from
+     * the resource file of the same name than this class.
      */
-    Errors(final URL resources) {
-        super(resources);
+    public Errors() {
+    }
+
+    /**
+     * Opens the binary file containing the localized resources to load.
+     * This method delegates to {@link Class#getResourceAsStream(String)},
+     * but this delegation must be done from the same module than the one
+     * that provides the binary file.
+     */
+    @Override
+    protected InputStream getResourceAsStream(final String name) {
+        return getClass().getResourceAsStream(name);
     }
 
     /**
@@ -1098,8 +1106,13 @@ public final class Errors extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
      */
-    public static Errors getResources(final Locale locale) throws MissingResourceException {
-        return getBundle(Errors.class, locale);
+    public static Errors getResources(final Locale locale) {
+        /*
+         * We cannot factorize this method into the parent class, because we need to call
+         * `ResourceBundle.getBundle(String)` from the module that provides the resources.
+         * We do not cache the result because `ResourceBundle` already provides a cache.
+         */
+        return (Errors) getBundle(Errors.class.getName(), nonNull(locale));
     }
 
     /**

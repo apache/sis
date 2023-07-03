@@ -26,8 +26,8 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.simple.SimpleIdentifier;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * Tests {@link Builder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn(AbstractIdentifiedObjectTest.class)
@@ -105,7 +105,7 @@ public final class BuilderTest extends TestCase {
      */
     @Test
     public void testAddName() {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
 
         // Expected values to be used later in the test.
         final String    name   = "Mercator (variant A)";
@@ -161,7 +161,7 @@ public final class BuilderTest extends TestCase {
     @Test
     @DependsOnMethod({"testAddName", "testSetCodeSpace"})
     public void testAddNameWithScope() {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
 
         // Expected values to be used later in the test.
         final String      name   = "Mercator (variant A)";

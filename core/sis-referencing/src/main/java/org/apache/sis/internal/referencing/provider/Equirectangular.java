@@ -276,8 +276,8 @@ public final class Equirectangular extends AbstractProvider {
      */
     public Equirectangular() {
         super(CylindricalProjection.class, PARAMETERS,
-              EllipsoidalCS.class, 2, true,
-              CartesianCS.class,   2, false);
+              EllipsoidalCS.class, true,
+              CartesianCS.class,   false);
     }
 
     /**

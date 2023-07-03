@@ -51,6 +51,7 @@ import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -75,7 +76,7 @@ import static java.util.logging.Logger.getLogger;
  * Implements the referencing services needed by the {@code "sis-metadata"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
  */
 public final class ServicesForMetadata extends ReferencingServices {
@@ -141,7 +142,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                 !Utilities.equalsIgnoreMetadata(cs2.getAxis(1), cs1.getAxis(1)))
             {
                 final CoordinateOperation operation;
-                final CoordinateOperationFactory factory = CoordinateOperations.factory();
+                final CoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
                 try {
                     operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
@@ -490,7 +491,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      */
     @Override
     public CoordinateOperationFactory getCoordinateOperationFactory() {
-        return CoordinateOperations.factory();
+        return DefaultCoordinateOperationFactory.provider();
     }
 
     /**
