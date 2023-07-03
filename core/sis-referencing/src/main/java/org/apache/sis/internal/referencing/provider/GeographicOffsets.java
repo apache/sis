@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -93,25 +94,64 @@ public class GeographicOffsets extends GeodeticOperation {
     }
 
     /**
-     * Constructs a provider with default parameters.
+     * The providers for all combinations between 2D and 3D cases.
      */
+    private static final GeographicOffsets[] REDIMENSIONED = new GeographicOffsets[4];
+    static {
+        Arrays.setAll(REDIMENSIONED, (i) -> (i == INDEX_OF_2D)
+                ? new GeographicOffsets2D(i)
+                : new GeographicOffsets(i));
+    }
+
+    /**
+     * Returns the provider for the specified combination of source and target dimensions.
+     */
+    @Override
+    GeodeticOperation redimensioned(int indexOfDim) {
+        return REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Returns the two-dimensional case of this provider.
+     */
+    static GeographicOffsets provider2D() {
+        return REDIMENSIONED[INDEX_OF_2D];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public GeographicOffsets() {
-        this(3, 3, PARAMETERS, new GeographicOffsets[4]);
-        redimensioned[0] = new GeographicOffsets2D(redimensioned);
-        redimensioned[1] = new GeographicOffsets(2, 3, PARAMETERS, redimensioned);
-        redimensioned[2] = new GeographicOffsets(3, 2, PARAMETERS, redimensioned);
-        redimensioned[3] = this;
+        super(REDIMENSIONED[INDEX_OF_3D]);
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
+    GeographicOffsets(final GeographicOffsets copy) {
+        super(copy);
+    }
+
+    /**
+     * Creates a provider with the parameters of this base class.
+     */
+    private GeographicOffsets(int indexOfDim) {
+        this(PARAMETERS, indexOfDim);
     }
 
     /**
      * For default constructors in this class and subclasses.
      */
-    GeographicOffsets(int sourceDimensions, int targetDimensions,
-                      ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned)
-    {
-        super(Transformation.class, parameters,
-              EllipsoidalCS.class, sourceDimensions, false,
-              EllipsoidalCS.class, targetDimensions, false, redimensioned);
+    GeographicOffsets(ParameterDescriptorGroup parameters, int indexOfDim) {
+        super(Transformation.class, parameters, indexOfDim,
+              EllipsoidalCS.class, false,
+              EllipsoidalCS.class, false);
     }
 
     /**

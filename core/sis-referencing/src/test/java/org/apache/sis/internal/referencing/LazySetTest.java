@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * Tests {@link LazySet}
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 public final class LazySetTest extends TestCase {
@@ -42,7 +42,11 @@ public final class LazySetTest extends TestCase {
      * Creates the set to use for testing purpose.
      */
     private static LazySet<String> create() {
-        return new LazySet<>(Arrays.asList(LABELS).iterator());
+        return new LazySet<>() {
+            @Override protected Iterator<String> createSourceIterator() {
+                return Arrays.asList(LABELS).iterator();
+            }
+        };
     }
 
     /**

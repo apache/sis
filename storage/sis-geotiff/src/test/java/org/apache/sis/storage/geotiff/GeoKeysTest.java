@@ -22,9 +22,9 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * {@link org.apache.sis.internal.referencing.provider} package than a verification of {@code GeoKeys}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 public final class GeoKeysTest extends TestCase {
@@ -59,7 +59,7 @@ public final class GeoKeysTest extends TestCase {
     @Test
     @DependsOnMethod("testName")
     public void verifyProjectionNames() {
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         for (final OperationMethod method : factory.getAvailableMethods(SingleOperation.class)) {
             final Identifier identifier = IdentifiedObjects.getIdentifier(method, Citations.GEOTIFF);
             final Set<String> names = IdentifiedObjects.getNames(method, Citations.GEOTIFF);
@@ -84,7 +84,7 @@ public final class GeoKeysTest extends TestCase {
     @Test
     @DependsOnMethod("testName")
     public void verifyParameterNames() {
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         for (final OperationMethod method : factory.getAvailableMethods(SingleOperation.class)) {
             for (final GeneralParameterDescriptor param : method.getParameters().descriptors()) {
                 final Identifier identifier = IdentifiedObjects.getIdentifier(param, Citations.GEOTIFF);

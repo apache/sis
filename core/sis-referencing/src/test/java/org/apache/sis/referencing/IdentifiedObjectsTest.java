@@ -21,7 +21,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.test.TestCase;
@@ -40,7 +40,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.*;
  * Those tests will be executed by {@link CRSTest} instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.4
  */
 public final class IdentifiedObjectsTest extends TestCase {
@@ -49,7 +49,7 @@ public final class IdentifiedObjectsTest extends TestCase {
      */
     @Test
     public void testIsHeuristicMatchForName() {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final GenericName name = factory.createGenericName(null, "myScope", "myName");
         IdentifiedObjectMock object = new IdentifiedObjectMock("myCode ", name); // Intentional trailing space.
 

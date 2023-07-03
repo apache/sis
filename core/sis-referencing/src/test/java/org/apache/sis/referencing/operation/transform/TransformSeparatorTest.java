@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -47,7 +46,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests {@link TransformSeparator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -282,7 +281,7 @@ public final class TransformSeparatorTest extends TestCase {
     @Test
     @DependsOnMethod("testLinearTransform")
     public void testConcatenatedTransform() throws FactoryException {
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         final TransformSeparator s = new TransformSeparator(EllipsoidToCentricTransform.createGeodeticConversion(
                 factory, HardCodedDatum.WGS84.getEllipsoid(), false), factory);
 

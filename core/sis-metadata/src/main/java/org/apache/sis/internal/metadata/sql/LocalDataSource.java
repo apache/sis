@@ -33,7 +33,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.DataDirectory;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.internal.util.Strings;
 
 
@@ -203,7 +203,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
             case HSQL:  classname = "org.hsqldb.jdbc.JDBCDataSource"; break;
             default:    throw new IllegalArgumentException(dialect.toString());
         }
-        final ClassLoader loader = DefaultFactories.getContextClassLoader();
+        final ClassLoader loader = Reflect.getContextClassLoader();
         final Class<?> c = Class.forName(classname, true, loader);
         source = (DataSource) c.getConstructor().newInstance();
         final Class<?>[] args = {String.class};
@@ -258,7 +258,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                 default: enabler = null; break;
             }
             try (Connection c = source.getConnection()) {
-                for (Initializer init : DefaultFactories.createServiceLoader(Initializer.class)) {
+                for (Initializer init : Initializer.load()) {
                     init.createSchema(c);
                 }
             } finally {

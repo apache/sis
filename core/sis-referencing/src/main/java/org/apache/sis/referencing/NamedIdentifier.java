@@ -35,8 +35,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.metadata.NameToIdentifier;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -85,7 +85,7 @@ import org.apache.sis.util.ArgumentChecks;
  * any public {@code NamedIdentifier} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see org.apache.sis.metadata.iso.DefaultIdentifier
  * @see org.apache.sis.util.iso.AbstractName
@@ -322,7 +322,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
         if (codeSpace == null) {
             codeSpace = Citations.toCodeSpace(authority);           // Whitespaces trimed by Citations.
         }
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         if (codeSpace != null) {
             return factory.createGenericName(null, codeSpace, code);
         } else {

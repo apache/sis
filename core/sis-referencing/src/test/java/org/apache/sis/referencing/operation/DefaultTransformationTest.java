@@ -46,7 +46,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests {@link DefaultTransformation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({
@@ -79,7 +79,7 @@ public final class DefaultTransformationTest extends TestCase {
          */
         final Matrix4 translation = new Matrix4();
         final OperationMethod method = DefaultOperationMethodTest.create(
-                "Geocentric translations", "1031", "EPSG guidance note #7-2", 3,
+                "Geocentric translations", "1031", "EPSG guidance note #7-2",
                 DefaultParameterDescriptorTest.createEPSG("X-axis translation", (short) 8605),
                 DefaultParameterDescriptorTest.createEPSG("Y-axis translation", (short) 8606),
                 DefaultParameterDescriptorTest.createEPSG("Z-axis translation", (short) 8607));

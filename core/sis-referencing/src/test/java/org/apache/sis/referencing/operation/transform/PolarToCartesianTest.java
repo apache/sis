@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.internal.system.DefaultFactories;
 
 import static java.lang.StrictMath.*;
 
@@ -33,7 +32,7 @@ import org.junit.Test;
  * Tests {@link PolarToCartesian}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 public final class PolarToCartesianTest extends TransformTestCase {
@@ -83,7 +82,7 @@ public final class PolarToCartesianTest extends TransformTestCase {
      * Returns the factory to use for testing purpose.
      */
     static MathTransformFactory factory() {
-        return DefaultFactories.forBuildin(MathTransformFactory.class);
+        return DefaultMathTransformFactory.provider();
     }
 
     /**

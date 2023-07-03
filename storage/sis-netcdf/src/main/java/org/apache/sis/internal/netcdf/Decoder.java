@@ -31,7 +31,6 @@ import java.util.logging.Level;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opengis.util.NameSpace;
-import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.GeometryLibrary;
@@ -44,13 +43,10 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
-import ucar.nc2.constants.CF;
-
-// Branch-dependent imports
 import org.apache.sis.util.iso.DefaultNameFactory;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -170,7 +166,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
         Objects.requireNonNull(listeners);
         this.geomlib      = geomlib;
         this.listeners    = listeners;
-        this.nameFactory  = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        this.nameFactory  = DefaultNameFactory.provider();
         this.datumCache   = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
         this.gridMapping  = new HashMap<>();
         localizationGrids = new HashMap<>();

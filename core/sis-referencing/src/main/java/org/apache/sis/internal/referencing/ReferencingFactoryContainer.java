@@ -17,8 +17,8 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Map;
-import org.opengis.util.Factory;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NameFactory;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CSAuthorityFactory;
@@ -29,10 +29,12 @@ import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
@@ -49,13 +51,38 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * <p>This class is not thread safe. Synchronization, if needed, is caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
  *
  * @since 1.0
  */
 public class ReferencingFactoryContainer {
+    /**
+     * The key for specifying a {@link NameFactory} instance to use for geodetic object constructions.
+     */
+    public static final String NAME_FACTORY = "nameFactory";
+
+    /**
+     * The key for specifying a {@link DatumFactory} instance to use for geodetic object constructions.
+     */
+    public static final String DATUM_FACTORY = "datumFactory";
+
+    /**
+     * The key for specifying a {@link CSFactory} instance to use for geodetic object constructions.
+     */
+    public static final String CS_FACTORY = "csFactory";
+
+    /**
+     * The key for specifying a {@link CRSFactory} instance to use for geodetic object constructions.
+     */
+    public static final String CRS_FACTORY = "crsFactory";
+
+    /**
+     * The key for specifying a {@link CoordinateOperationFactory} instance to use for geodetic object constructions.
+     */
+    public static final String OPERATION_FACTORY = "copFactory";
+
     /**
      * The key for specifying a {@link MathTransformFactory} instance to use for geodetic object constructions.
      * This is usually not needed for CRS construction, except in the special case of a derived CRS created
@@ -64,25 +91,16 @@ public class ReferencingFactoryContainer {
     public static final String MT_FACTORY = "mtFactory";
 
     /**
-     * The key for specifying a {@link CRSFactory} instance to use for geodetic object constructions.
-     */
-    public static final String CRS_FACTORY = "crsFactory";
-
-    /**
-     * The key for specifying a {@link CSFactory} instance to use for geodetic object constructions.
-     */
-    public static final String CS_FACTORY = "csFactory";
-
-    /**
-     * The key for specifying a {@link DatumFactory} instance to use for geodetic object constructions.
-     */
-    public static final String DATUM_FACTORY = "datumFactory";
-
-    /**
      * The factory for creating coordinate reference systems from authority codes.
      * If null, then a default factory will be created only when first needed.
      */
     private CRSAuthorityFactory crsAuthorityFactory;
+
+    /**
+     * The {@linkplain org.opengis.util.GenericName name} factory.
+     * If null, then a default factory will be created only when first needed.
+     */
+    private NameFactory nameFactory;
 
     /**
      * The {@linkplain org.opengis.referencing.datum.Datum datum} factory.
@@ -127,6 +145,23 @@ public class ReferencingFactoryContainer {
     }
 
     /**
+     * Creates a new instance with factories fetched from the given map of properties.
+     * Factories that are not present in the map will be left to their default value.
+     * This method recognizes the keys declared as static {@link String} constants in this class.
+     * Other entries are ignored.
+     *
+     * @param  properties  the factories.
+     */
+    public ReferencingFactoryContainer(final Map<String,?> properties) {
+        nameFactory      = (NameFactory)                properties.get(NAME_FACTORY);
+        datumFactory     = (DatumFactory)               properties.get(DATUM_FACTORY);
+        csFactory        = (CSFactory)                  properties.get(CS_FACTORY);
+        crsFactory       = (CRSFactory)                 properties.get(CRS_FACTORY);
+        operationFactory = (DefaultCoordinateOperationFactory) properties.get(OPERATION_FACTORY);
+        mtFactory        = (MathTransformFactory)       properties.get(MT_FACTORY);
+    }
+
+    /**
      * Creates a new instance which will use the given factories.
      * Any factory given in argument may be {@code null} if lazy instantiation is desired.
      *
@@ -157,9 +192,10 @@ public class ReferencingFactoryContainer {
      * The given {@code type} argument can be one of the following values:
      *
      * <ul>
-     *   <li><code>{@linkplain CRSFactory}.class</code></li>
-     *   <li><code>{@linkplain CSFactory}.class</code></li>
+     *   <li><code>{@linkplain NameFactory}.class</code></li>
      *   <li><code>{@linkplain DatumFactory}.class</code></li>
+     *   <li><code>{@linkplain CSFactory}.class</code></li>
+     *   <li><code>{@linkplain CRSFactory}.class</code></li>
      *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
      *   <li><code>{@linkplain MathTransformFactory}.class</code></li>
      * </ul>
@@ -173,10 +209,11 @@ public class ReferencingFactoryContainer {
      * @return {@code true} if the factory changed as a result of this method call.
      * @throws IllegalArgumentException if the {@code type} argument is not one of the valid values.
      */
-    public final <T extends Factory> boolean setFactory(final Class<T> type, final T factory) {
-        if (type == CRSFactory.class)                 return crsFactory       != (crsFactory       = (CRSFactory)                 factory);
-        if (type == CSFactory.class)                  return csFactory        != (csFactory        = (CSFactory)                  factory);
+    public final <T> boolean setFactory(final Class<T> type, final T factory) {
+        if (type == NameFactory.class)                return nameFactory      != (nameFactory      = (NameFactory)                factory);
         if (type == DatumFactory.class)               return datumFactory     != (datumFactory     = (DatumFactory)               factory);
+        if (type == CSFactory.class)                  return csFactory        != (csFactory        = (CSFactory)                  factory);
+        if (type == CRSFactory.class)                 return crsFactory       != (crsFactory       = (CRSFactory)                 factory);
         if (type == CoordinateOperationFactory.class) return operationFactory != (operationFactory = (DefaultCoordinateOperationFactory) factory);
         if (type == MathTransformFactory.class)       return mtFactory        != (mtFactory        = (MathTransformFactory)       factory);
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
@@ -187,9 +224,10 @@ public class ReferencingFactoryContainer {
      * The given {@code type} argument can be one of the following values:
      *
      * <ul>
-     *   <li><code>{@linkplain CRSFactory}.class</code></li>
-     *   <li><code>{@linkplain CSFactory}.class</code></li>
+     *   <li><code>{@linkplain NameFactory}.class</code></li>
      *   <li><code>{@linkplain DatumFactory}.class</code></li>
+     *   <li><code>{@linkplain CSFactory}.class</code></li>
+     *   <li><code>{@linkplain CRSFactory}.class</code></li>
      *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
      *   <li><code>{@linkplain MathTransformFactory}.class</code></li>
      * </ul>
@@ -202,11 +240,12 @@ public class ReferencingFactoryContainer {
      * @return the factory for the given type.
      * @throws IllegalArgumentException if the {@code type} argument is not one of the valid values.
      */
-    public final <T extends Factory> T getFactory(final Class<T> type) {
-        final Factory f;
-             if (type == CRSFactory.class)                 f = getCRSFactory();
-        else if (type == CSFactory.class)                  f = getCSFactory();
+    public final <T> T getFactory(final Class<T> type) {
+        final Object f;
+             if (type == NameFactory.class)                f = getNameFactory();
         else if (type == DatumFactory.class)               f = getDatumFactory();
+        else if (type == CSFactory.class)                  f = getCSFactory();
+        else if (type == CRSFactory.class)                 f = getCRSFactory();
         else if (type == CoordinateOperationFactory.class) f = getCoordinateOperationFactory();
         else if (type == MathTransformFactory.class)       f = getMathTransformFactory();
         else {
@@ -216,32 +255,83 @@ public class ReferencingFactoryContainer {
     }
 
     /**
-     * Returns the factory for creating coordinate reference systems from authority codes.
-     * Currently only EPSG codes are supported.
+     * Returns the factory for creating generic name.
      *
-     * @return the Coordinate Reference System authority factory (never {@code null}).
-     * @throws FactoryException if the authority factory cannot be obtained.
+     * @return the Generic Name factory (never {@code null}).
      */
-    public final CRSAuthorityFactory getCRSAuthorityFactory() throws FactoryException {
-        if (crsAuthorityFactory == null) {
-            crsAuthorityFactory = CRS.getAuthorityFactory(Constants.EPSG);
+    public final NameFactory getNameFactory() {
+        if (nameFactory == null) {
+            nameFactory = DefaultNameFactory.provider();
         }
-        return crsAuthorityFactory;
+        return nameFactory;
     }
 
     /**
-     * Returns the factory for creating coordinate systems from authority codes.
-     * Currently only EPSG codes are supported.
+     * Returns the factory for creating datum, prime meridians and ellipsoids.
      *
-     * @return the Coordinate System authority factory (never {@code null}).
-     * @throws FactoryException if the authority factory cannot be obtained.
+     * @return the Datum factory (never {@code null}).
      */
-    public final CSAuthorityFactory getCSAuthorityFactory() throws FactoryException {
-        final CRSAuthorityFactory factory = getCRSAuthorityFactory();
-        if (factory instanceof CSAuthorityFactory) {                    // This is the case for SIS implementation.
-            return (CSAuthorityFactory) factory;
+    public final DatumFactory getDatumFactory() {
+        if (datumFactory == null) {
+            datumFactory = GeodeticObjectFactory.provider();
         }
-        throw new NoSuchAuthorityFactoryException(null, Constants.EPSG);
+        return datumFactory;
+    }
+
+    /**
+     * Returns the factory for creating coordinate systems and their axes.
+     *
+     * @return the Coordinate System factory (never {@code null}).
+     */
+    public final CSFactory getCSFactory() {
+        if (csFactory == null) {
+            csFactory = GeodeticObjectFactory.provider();
+        }
+        return csFactory;
+    }
+
+    /**
+     * Returns the factory for creating coordinate reference systems.
+     *
+     * @return the Coordinate Reference System factory (never {@code null}).
+     */
+    public final CRSFactory getCRSFactory() {
+        if (crsFactory == null) {
+            crsFactory = GeodeticObjectFactory.provider();
+        }
+        return crsFactory;
+    }
+
+    /**
+     * Returns the factory for fetching operation methods and creating defining conversions.
+     * This is needed only for user-defined projected coordinate reference system.
+     * The factory is fetched when first needed.
+     *
+     * @return the Coordinate Operation factory (never {@code null}).
+     */
+    public final DefaultCoordinateOperationFactory getCoordinateOperationFactory() {
+        if (operationFactory == null) {
+            CoordinateOperationFactory op = CoordinateOperations.getCoordinateOperationFactory(defaultProperties, mtFactory, crsFactory, csFactory);
+            defaultProperties = null;       // Not needed anymore.
+            if (op instanceof DefaultCoordinateOperationFactory) {
+                operationFactory = (DefaultCoordinateOperationFactory) op;
+            } else {
+                operationFactory = DefaultCoordinateOperationFactory.provider();
+            }
+        }
+        return operationFactory;
+    }
+
+    /**
+     * Returns the factory for creating parameterized transforms.
+     *
+     * @return the Math Transform factory (never {@code null}).
+     */
+    public final MathTransformFactory getMathTransformFactory() {
+        if (mtFactory == null) {
+            mtFactory = DefaultMathTransformFactory.provider();
+        }
+        return mtFactory;
     }
 
     /**
@@ -260,6 +350,35 @@ public class ReferencingFactoryContainer {
     }
 
     /**
+     * Returns the factory for creating coordinate systems from authority codes.
+     * Currently only EPSG codes are supported.
+     *
+     * @return the Coordinate System authority factory (never {@code null}).
+     * @throws FactoryException if the authority factory cannot be obtained.
+     */
+    public final CSAuthorityFactory getCSAuthorityFactory() throws FactoryException {
+        final CRSAuthorityFactory factory = getCRSAuthorityFactory();
+        if (factory instanceof CSAuthorityFactory) {                    // This is the case for SIS implementation.
+            return (CSAuthorityFactory) factory;
+        }
+        throw new NoSuchAuthorityFactoryException(null, Constants.EPSG);
+    }
+
+    /**
+     * Returns the factory for creating coordinate reference systems from authority codes.
+     * Currently only EPSG codes are supported.
+     *
+     * @return the Coordinate Reference System authority factory (never {@code null}).
+     * @throws FactoryException if the authority factory cannot be obtained.
+     */
+    public final CRSAuthorityFactory getCRSAuthorityFactory() throws FactoryException {
+        if (crsAuthorityFactory == null) {
+            crsAuthorityFactory = CRS.getAuthorityFactory(Constants.EPSG);
+        }
+        return crsAuthorityFactory;
+    }
+
+    /**
      * Returns the factory for creating coordinate operations from authority codes.
      * Currently only EPSG codes are supported.
      *
@@ -272,74 +391,6 @@ public class ReferencingFactoryContainer {
             return (CoordinateOperationAuthorityFactory) factory;
         }
         throw new NoSuchAuthorityFactoryException(null, Constants.EPSG);
-    }
-
-    /**
-     * Returns the factory for creating coordinate reference systems.
-     *
-     * @return the Coordinate Reference System factory (never {@code null}).
-     */
-    public final CRSFactory getCRSFactory() {
-        if (crsFactory == null) {
-            crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
-        }
-        return crsFactory;
-    }
-
-    /**
-     * Returns the factory for creating coordinate systems and their axes.
-     *
-     * @return the Coordinate System factory (never {@code null}).
-     */
-    public final CSFactory getCSFactory() {
-        if (csFactory == null) {
-            csFactory = DefaultFactories.forBuildin(CSFactory.class);
-        }
-        return csFactory;
-    }
-
-    /**
-     * Returns the factory for creating datum, prime meridians and ellipsoids.
-     *
-     * @return the Datum factory (never {@code null}).
-     */
-    public final DatumFactory getDatumFactory() {
-        if (datumFactory == null) {
-            datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
-        }
-        return datumFactory;
-    }
-
-    /**
-     * Returns the factory for fetching operation methods and creating defining conversions.
-     * This is needed only for user-defined projected coordinate reference system.
-     * The factory is fetched when first needed.
-     *
-     * @return the Coordinate Operation factory (never {@code null}).
-     */
-    public final DefaultCoordinateOperationFactory getCoordinateOperationFactory() {
-        if (operationFactory == null) {
-            CoordinateOperationFactory op = CoordinateOperations.getCoordinateOperationFactory(defaultProperties, mtFactory, crsFactory, csFactory);
-            defaultProperties = null;       // Not needed anymore.
-            if (op instanceof DefaultCoordinateOperationFactory) {
-                operationFactory = (DefaultCoordinateOperationFactory) op;
-            } else {
-                operationFactory = CoordinateOperations.factory();
-            }
-        }
-        return operationFactory;
-    }
-
-    /**
-     * Returns the factory for creating parameterized transforms.
-     *
-     * @return the Math Transform factory (never {@code null}).
-     */
-    public final MathTransformFactory getMathTransformFactory() {
-        if (mtFactory == null) {
-            mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        }
-        return mtFactory;
     }
 
     /**

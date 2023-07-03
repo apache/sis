@@ -52,9 +52,9 @@ import org.apache.sis.util.logging.Logging;
  * Those methods may or may not include a Geographic/Geocentric conversion before the operation in geocentric domain,
  * depending on whether or not implementations extend the {@link GeocentricAffineBetweenGeographic} subclass.
  *
- * <div class="note"><b>Note on class name:</b>
- * the {@code GeocentricAffine} class name is chosen as a generalization of {@link GeocentricTranslation}.
- * "Geocentric translations" is an operation name defined by EPSG.</div>
+ * <h2>Note on class name</h2>
+ * The {@code GeocentricAffine} class name is chosen as a generalization of {@link GeocentricTranslation}.
+ * "Geocentric translations" is an operation name defined by EPSG.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
@@ -218,36 +218,44 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     private final Type type;
 
     /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
+    GeocentricAffine(final GeocentricAffine copy) {
+        super(copy);
+        type = copy.type;
+    }
+
+    /**
      * Constructs a provider with the specified parameters.
      *
      * @param type               the operation type as an enumeration value.
      * @param parameters         description of parameters expected by this operation.
-     * @param sourceDimensions   number of dimensions in the source CRS of this operation method.
+     * @param indexOfDim         number of dimensions as the index in {@link #redimensioned} array.
      * @param sourceCSType       base interface of the coordinate system of source coordinates.
      * @param sourceOnEllipsoid  whether the operation needs source ellipsoid axis lengths.
-     * @param targetDimensions   number of dimensions in the target CRS of this operation method.
      * @param targetCSType       base interface of the coordinate system of target coordinates.
      * @param targetOnEllipsoid  whether the operation needs target ellipsoid axis lengths.
-     * @param redimensioned      providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters,
-                     Class<? extends CoordinateSystem> sourceCSType, int sourceDimensions, boolean sourceOnEllipsoid,
-                     Class<? extends CoordinateSystem> targetCSType, int targetDimensions, boolean targetOnEllipsoid,
-                     GeodeticOperation[] redimensioned)
+    GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters, int indexOfDim,
+                     Class<? extends CoordinateSystem> sourceCSType, boolean sourceOnEllipsoid,
+                     Class<? extends CoordinateSystem> targetCSType, boolean targetOnEllipsoid)
     {
-        super((operationType == Type.CONVERSION) ? Conversion.class : Transformation.class, parameters,
-              sourceCSType, sourceDimensions, sourceOnEllipsoid,
-              targetCSType, targetDimensions, targetOnEllipsoid, redimensioned);
+        super((operationType == Type.CONVERSION) ? Conversion.class : Transformation.class, parameters, indexOfDim,
+              sourceCSType, sourceOnEllipsoid,
+              targetCSType, targetOnEllipsoid);
         type = operationType;
     }
 
     /**
      * Constructs a provider with the specified parameters for an operation in Cartesian space.
      */
-    GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters, int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        this(operationType, parameters,
-             CartesianCS.class, sourceDimensions, false,
-             CartesianCS.class, targetDimensions, false, redimensioned);
+    GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters) {
+        this(operationType, parameters, INDEX_OF_3D,
+             CartesianCS.class, false,
+             CartesianCS.class, false);
     }
 
     /**

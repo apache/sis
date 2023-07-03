@@ -77,7 +77,7 @@ public final class CopyTransformTest extends MathTransformTestCase {
     public void testIdentity() throws TransformException {
         create(3, 0, 1, 2);
         assertIsIdentity(transform);
-        assertParameterEquals(Affine.getProvider(3, 3, true).getParameters(), null);
+        assertParameterEquals(Affine.provider(3, 3, true).getParameters(), null);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = source.clone();

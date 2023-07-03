@@ -168,7 +168,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
         }
 
         /**
-         * Delegates the computation to the user-supplied expression.
+         * Delegates the computation to the user supplied expression.
          */
         @Override
         public V getValue() {

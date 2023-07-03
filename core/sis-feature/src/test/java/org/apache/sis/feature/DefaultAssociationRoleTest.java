@@ -19,7 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -35,7 +35,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link DefaultAssociationRole}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn(DefaultFeatureTypeTest.class)
@@ -51,7 +51,7 @@ public final class DefaultAssociationRoleTest extends TestCase {
     static DefaultAssociationRole twinTown(final boolean cyclic) {
         final Map<String,?> properties = Map.of(NAME_KEY, "twin town");
         if (cyclic) {
-            final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+            final NameFactory factory = DefaultNameFactory.provider();
             final GenericName valueType = factory.createTypeName(null, "Twin town");
             return new DefaultAssociationRole(properties, valueType, 0, 1);
         } else {
@@ -143,7 +143,7 @@ public final class DefaultAssociationRoleTest extends TestCase {
     @Test
     @DependsOnMethod("testBidirectionalAssociation")
     public void testCyclicAssociation() {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final GenericName nameOfA = factory.createTypeName(null, "A");
         final GenericName nameOfB = factory.createTypeName(null, "B");
         final GenericName nameOfC = factory.createTypeName(null, "C");

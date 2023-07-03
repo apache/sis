@@ -20,7 +20,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Units;
 
@@ -35,7 +34,7 @@ import org.junit.Test;
  * Tests the {@link GeographicOffsets}, {@link GeographicOffsets2D} and {@link VerticalOffset} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn(AffineTest.class)
@@ -119,7 +118,7 @@ public final class GeographicOffsetsTest extends TransformTestCase {
      */
     @Test
     public void testCreateWithContext() throws FactoryException, TransformException {
-        final DefaultMathTransformFactory factory = CoordinateOperations.factoryMT();
+        final DefaultMathTransformFactory factory = DefaultMathTransformFactory.provider();
         final ParameterValueGroup pv = factory.getDefaultParameters("Vertical Offset");
         pv.parameter("Vertical Offset").setValue(15.55, Units.FOOT);
         /*

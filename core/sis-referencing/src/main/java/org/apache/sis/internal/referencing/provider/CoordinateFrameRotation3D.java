@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 
@@ -53,24 +54,39 @@ public final class CoordinateFrameRotation3D extends GeocentricAffineBetweenGeog
     }
 
     /**
-     * Constructs the provider.
+     * The providers for all combinations between 2D and 3D cases.
      */
+    static final GeocentricAffineBetweenGeographic[] REDIMENSIONED = new GeocentricAffineBetweenGeographic[4];
+    static {
+        Arrays.setAll(REDIMENSIONED, (i) -> (i == INDEX_OF_2D)
+                ? new CoordinateFrameRotation2D(i)
+                : new CoordinateFrameRotation3D(i));
+    }
+
+    /**
+     * Returns the provider for the specified combination of source and target dimensions.
+     */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public CoordinateFrameRotation3D() {
-        this(3, 3, new GeocentricAffineBetweenGeographic[4]);
-        redimensioned[0] = new CoordinateFrameRotation2D(      redimensioned);
-        redimensioned[1] = new CoordinateFrameRotation3D(2, 3, redimensioned);
-        redimensioned[2] = new CoordinateFrameRotation3D(3, 2, redimensioned);
-        redimensioned[3] = this;
+        super(REDIMENSIONED[INDEX_OF_3D]);
     }
 
     /**
      * Constructs a provider for the given dimensions.
      *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
+     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array.
      */
-    private CoordinateFrameRotation3D(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(Type.FRAME_ROTATION, PARAMETERS, sourceDimensions, targetDimensions, redimensioned);
+    private CoordinateFrameRotation3D(int indexOfDim) {
+        super(Type.FRAME_ROTATION, PARAMETERS, indexOfDim);
     }
 }

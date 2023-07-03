@@ -179,8 +179,6 @@
           <gml:identifier codeSpace="IOGP">urn:ogc:def:method:EPSG::9601</gml:identifier>
           <gml:name>Longitude rotation</gml:name>
           <gml:formula>Target longitude = Source longitude + longitude offset.</gml:formula>
-          <gml:sourceDimensions>2</gml:sourceDimensions>
-          <gml:targetDimensions>2</gml:targetDimensions>
           <gml:parameter>
             <gml:OperationParameter gml:id="epsg-parameter-8602">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8602</gml:identifier>

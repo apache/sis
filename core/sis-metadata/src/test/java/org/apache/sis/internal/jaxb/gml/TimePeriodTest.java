@@ -68,7 +68,7 @@ public final class TimePeriodTest extends TestCase {
      * Creates a GeoAPI instant object for the given date.
      */
     private static Instant instant(final String date) {
-        return DefaultTemporalFactory.INSTANCE.createInstant(date(date));
+        return DefaultTemporalFactory.provider().createInstant(date(date));
     }
 
     /**

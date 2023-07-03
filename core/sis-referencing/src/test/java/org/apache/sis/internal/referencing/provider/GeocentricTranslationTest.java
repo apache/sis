@@ -23,7 +23,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CommonCRS;
@@ -32,6 +31,7 @@ import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -45,7 +45,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link GeocentricTranslation} and {@link GeocentricTranslation3D}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -142,7 +142,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
         if (method instanceof GeocentricAffineBetweenGeographic) {
             setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
         }
-        transform = method.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
+        transform = method.createMathTransform(DefaultMathTransformFactory.provider(), values);
     }
 
     /**
@@ -384,7 +384,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
     @Test
     @DependsOnMethod("testWKT2D")
     public void testIntegration() throws FactoryException {
-        transform = createDatumShiftForGeographic2D(DefaultFactories.forBuildin(MathTransformFactory.class));
+        transform = createDatumShiftForGeographic2D(DefaultMathTransformFactory.provider());
         verifyWKT2D();
     }
 }

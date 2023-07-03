@@ -70,9 +70,9 @@ public final class VerticalOffset extends GeodeticOperation {
      * Constructs a provider with default parameters.
      */
     public VerticalOffset() {
-        super(Transformation.class, PARAMETERS,
-              VerticalCS.class, 1, false,
-              VerticalCS.class, 1, false, null);
+        super(Transformation.class, PARAMETERS, INDEX_OF_1D,
+              VerticalCS.class, false,
+              VerticalCS.class, false);
     }
 
     /**

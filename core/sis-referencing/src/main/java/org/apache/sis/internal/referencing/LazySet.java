@@ -16,46 +16,32 @@
  */
 package org.apache.sis.internal.referencing;
 
-import java.util.List;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Iterator;
-import java.util.ServiceLoader;
 import java.util.NoSuchElementException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.SetOfUnknownSize;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
- * An immutable set built from an iterator, which will be filled only when needed.
+ * An unmodifiable set built from an iterator, which will be filled only when needed.
  * This implementation does <strong>not</strong> check if all elements in the iterator
  * are really unique; we assume that this condition was already verified by the caller.
- *
- * <p>One usage of {@code LazySet} is to workaround a {@link java.util.ServiceLoader} bug which blocks usage of two
- * {@link Iterator} instances together: the first iteration must be fully completed or abandoned before we can start
- * a new iteration. See
- * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#DefaultMathTransformFactory()}.</p>
  *
  * <p>Some usages for this class are to prepend some values before the elements given by the source {@code Iterable},
  * or to replace some values when they are loaded. It may also be used for creating filtered sets when used together
  * with {@link org.apache.sis.internal.util.CollectionsExt#filter CollectionsExt.filter(…)}.</p>
  *
- * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
+ * <h2>Thread-safety</h2>
+ * This class is thread safe. The synchronization lock is {@code this}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @param <E>  the type of elements in the set.
  *
  * @since 0.6
  */
-public class LazySet<E> extends SetOfUnknownSize<E> {
-    /**
-     * The type of service to request with {@link ServiceLoader}, or {@code null} if unknown.
-     */
-    private final Class<E> service;
-
+public abstract class LazySet<E> extends SetOfUnknownSize<E> {
     /**
      * The iterator to use for filling this set, or {@code null} if the iteration did not started yet or is finished.
      * Those two cases can be distinguished by looking whether the {@link #cachedElements} array is null or not.
@@ -78,39 +64,19 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     private int numCached;
 
     /**
-     * Constructs a set to be filled by the elements from the specified source. Iteration will start only when
-     * first needed, and at most one iteration will be performed (unless {@link #reload()} is invoked).
-     *
-     * @param  service  the type of service to request with {@link ServiceLoader}.
+     * Creates a new set.
      */
-    public LazySet(final Class<E> service) {
-        Objects.requireNonNull(service);
-        this.service = service;
+    protected LazySet() {
     }
 
     /**
-     * Constructs a set to be filled using the specified iterator.
-     * Iteration with the given iterator will occur only when needed.
+     * Creates the iterator which will provide the elements of this set before filtering.
+     * This method will be invoked only when first needed and at most once, unless {@link #reload()} is invoked.
+     * After creation, calls to {@link Iterator#next()} will also be done only when first needed.
      *
-     * @param  iterator  the iterator to use for filling this set.
+     * @return iterator over the elements of this set before filtering.
      */
-    public LazySet(final Iterator<? extends E> iterator) {
-        Objects.requireNonNull(iterator);
-        sourceIterator = iterator;
-        service = null;
-        createCache();
-    }
-
-    /**
-     * Notifies this {@code LazySet} that it should re-fetch the elements from the source given at construction time.
-     */
-    public void reload() {
-        if (service != null) {
-            sourceIterator = null;
-            cachedElements = null;
-            numCached = 0;
-        }
-    }
+    protected abstract Iterator<? extends E> createSourceIterator();
 
     /**
      * Hook for subclasses that want to prepend some values before the source {@code Iterable}.
@@ -151,7 +117,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      */
     private boolean canPullMore() {
         if (sourceIterator == null && cachedElements == null) {
-            sourceIterator = DefaultFactories.createServiceLoader(service).iterator();
+            sourceIterator = createSourceIterator();
             if (createCache()) {
                 return true;
             }
@@ -171,7 +137,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * @return {@code true} if this set has no element.
      */
     @Override
-    public final boolean isEmpty() {
+    public final synchronized boolean isEmpty() {
         return (numCached == 0) && !canPullMore();
     }
 
@@ -182,7 +148,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * @return number of elements in the iterator.
      */
     @Override
-    public final int size() {
+    public final synchronized int size() {
         if (canPullMore()) {
             while (sourceIterator.hasNext()) {
                 cache(next(sourceIterator));
@@ -206,12 +172,12 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     }
 
     /**
-     * Caches a new element. Subclasses can override this method if they want to substitute the given value
-     * by another value.
+     * Caches a new element. This method is invoked by {@code LazySet} inside a synchronized block.
+     * Subclasses could override this method if they want to substitute the given value by another value.
      *
      * @param  element  the element to add to the cache.
      */
-    protected void cache(final E element) {
+    private void cache(final E element) {
         if (cachedElements == null) {
             createCache();
         }
@@ -222,16 +188,6 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     }
 
     /**
-     * Returns an unmodifiable view over the elements cached so far.
-     * The returned list does not contain any elements that were not yet fetched from the source.
-     *
-     * @return the elements cached so far.
-     */
-    protected final List<E> cached() {
-        return UnmodifiableArrayList.wrap(cachedElements, 0, numCached);
-    }
-
-    /**
      * Returns {@code true} if an element exists at the given index.
      * The element is not loaded immediately.
      *
@@ -239,7 +195,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * It is not suited for more general usage since it does not check for
      * negative index and for skipped elements.</p>
      */
-    final boolean exists(final int index) {
+    private synchronized boolean exists(final int index) {
         assert index <= numCached : index;
         return (index < numCached) || canPullMore();
     }
@@ -250,7 +206,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * @param  index  the index at which to get an element.
      * @return the element at the requested index.
      */
-    final E get(final int index) {
+    private synchronized E get(final int index) {
         assert numCached <= cachedElements.length : numCached;
         assert index <= numCached : index;
         if (index >= numCached) {
@@ -284,5 +240,14 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
                 return get(cursor++);
             }
         };
+    }
+
+    /**
+     * Notifies this {@code LazySet} that it should re-fetch the elements from the source.
+     */
+    public synchronized void reload() {
+        sourceIterator = null;
+        cachedElements = null;
+        numCached = 0;
     }
 }

@@ -28,6 +28,7 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 // Branch-dependent imports
@@ -40,13 +41,13 @@ import org.opengis.referencing.ReferenceIdentifier;
  * is an object of a type constrained by the authority.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @param <T>  the value type, typically {@link XLink}, {@link UUID} or {@link String}.
  *
  * @since 0.3
  */
-public final class SpecializedIdentifier<T> implements ReferenceIdentifier, Cloneable, Serializable {
+public final class SpecializedIdentifier<T> implements ReferenceIdentifier, CloneAccess, Serializable {
     /**
      * For cross-version compatibility.
      */

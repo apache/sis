@@ -77,7 +77,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Vocabulary;
@@ -97,7 +96,7 @@ import org.opengis.util.TypeName;
  * Implements the referencing services needed by the {@code "sis-metadata"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
  */
 public final class ServicesForMetadata extends ReferencingServices {
@@ -163,7 +162,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                 !Utilities.equalsIgnoreMetadata(cs2.getAxis(1), cs1.getAxis(1)))
             {
                 final CoordinateOperation operation;
-                final CoordinateOperationFactory factory = CoordinateOperations.factory();
+                final CoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
                 try {
                     operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
@@ -520,7 +519,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             CSFactory factory) throws FactoryException
     {
         if (!(factory instanceof GeodeticObjectFactory)) {
-            factory = DefaultFactories.forBuildin(CSFactory.class, GeodeticObjectFactory.class);
+            factory = GeodeticObjectFactory.provider();
         }
         return ((GeodeticObjectFactory) factory).createParametricCS(properties, axis);
     }
@@ -544,7 +543,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             throws FactoryException
     {
         if (!(factory instanceof GeodeticObjectFactory)) {
-            factory = DefaultFactories.forBuildin(DatumFactory.class, GeodeticObjectFactory.class);
+            factory = GeodeticObjectFactory.provider();
         }
         return ((GeodeticObjectFactory) factory).createParametricDatum(properties);
     }
@@ -570,7 +569,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             final CoordinateSystem cs, CRSFactory factory) throws FactoryException
     {
         if (!(factory instanceof GeodeticObjectFactory)) {
-            factory = DefaultFactories.forBuildin(CRSFactory.class, GeodeticObjectFactory.class);
+            factory = GeodeticObjectFactory.provider();
         }
         try {
             return ((GeodeticObjectFactory) factory).createParametricCRS(properties,
@@ -601,7 +600,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      */
     @Override
     public CoordinateOperationFactory getCoordinateOperationFactory() {
-        return CoordinateOperations.factory();
+        return DefaultCoordinateOperationFactory.provider();
     }
 
     /**

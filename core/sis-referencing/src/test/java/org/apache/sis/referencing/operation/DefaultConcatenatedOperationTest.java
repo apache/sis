@@ -24,10 +24,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.Convention;
 
 import org.opengis.test.Validators;
@@ -67,7 +67,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
      * @see DefaultTransformationTest#createGeocentricTranslation()
      */
     private static DefaultConcatenatedOperation createGeocentricTranslation() throws FactoryException, NoninvertibleTransformException {
-        final MathTransformFactory mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory mtFactory = DefaultMathTransformFactory.provider();
         final DefaultTransformation op = DefaultTransformationTest.createGeocentricTranslation();
 
         final var before = new DefaultConversion(
@@ -75,7 +75,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
                 HardCodedCRS.TOKYO,             // SourceCRS
                 op.getSourceCRS(),              // TargetCRS
                 null,                           // InterpolationCRS
-                DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2", 3),
+                DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2"),
                 EllipsoidToCentricTransform.createGeodeticConversion(mtFactory, HardCodedDatum.TOKYO.getEllipsoid(), true));
 
         final var after = new DefaultConversion(
@@ -83,7 +83,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
                 op.getTargetCRS(),              // SourceCRS
                 HardCodedCRS.JGD2000,           // TargetCRS
                 null,                           // InterpolationCRS
-                DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2", 3),
+                DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2"),
                 EllipsoidToCentricTransform.createGeodeticConversion(mtFactory, HardCodedDatum.JGD2000.getEllipsoid(), true).inverse());
 
         return new DefaultConcatenatedOperation(

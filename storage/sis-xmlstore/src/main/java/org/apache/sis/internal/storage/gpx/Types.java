@@ -42,7 +42,6 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.storage.FeatureCatalogBuilder;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.ResourceInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
@@ -114,7 +113,7 @@ final class Types {
     static final Types DEFAULT;
     static {
         try {
-            DEFAULT = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null, null);
+            DEFAULT = new Types(DefaultNameFactory.provider(), null, null);
         } catch (FactoryException | IllegalNameException e) {
             throw new AssertionError(e);        // Should never happen with DefaultNameFactory implementation.
         }

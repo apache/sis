@@ -26,10 +26,10 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 import org.apache.sis.internal.jaxb.Context;
@@ -180,7 +180,7 @@ public class MarshallerPool {
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
-        replacements = DefaultFactories.createServiceLoader(AdapterReplacement.class);
+        replacements = ServiceLoader.load(AdapterReplacement.class, Reflect.getContextClassLoader());
         implementation = Implementation.detect(context);
         /*
          * Prepares a copy of the property map (if any), then removes the

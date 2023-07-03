@@ -33,10 +33,10 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FeatureOperations;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
@@ -99,7 +99,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.parameter.ParameterBuilder
  *
@@ -228,7 +228,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     public FeatureTypeBuilder(NameFactory factory, final GeometryLibrary library, final Locale locale) {
         super(locale);
         if (factory == null) {
-            factory = DefaultFactories.forBuildin(NameFactory.class);
+            factory = DefaultNameFactory.provider();
         }
         nameFactory          = factory;
         geometries           = Geometries.implementation(library);

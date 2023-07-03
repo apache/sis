@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.net.URISyntaxException;
-import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -30,7 +29,6 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.ArgumentChecks;
@@ -54,7 +52,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 public class Store extends StaxDataStore implements FeatureSet {
@@ -97,7 +95,7 @@ public class Store extends StaxDataStore implements FeatureSet {
         if (library == null || Types.DEFAULT.geometries.library == library) {
             types = Types.DEFAULT;
         } else try {
-            types = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null, library);
+            types = new Types(DefaultNameFactory.provider(), null, library);
         } catch (FactoryException e) {
             throw new DataStoreException(e);
         }

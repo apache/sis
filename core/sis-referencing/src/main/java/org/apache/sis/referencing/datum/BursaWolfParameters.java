@@ -217,7 +217,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @param targetDatum       the target datum (usually WGS 84) for this set of parameters, or {@code null} if unknown.
      * @param domainOfValidity  area or region in which a coordinate transformation based on those Bursa-Wolf parameters
-     *                          is valid, or {@code null} is unspecified.
+     *                          is valid, or {@code null} if unspecified.
      */
     public BursaWolfParameters(final GeodeticDatum targetDatum, final Extent domainOfValidity) {
         this.targetDatum = targetDatum;

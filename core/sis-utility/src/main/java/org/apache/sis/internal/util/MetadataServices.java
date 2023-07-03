@@ -19,12 +19,9 @@ package org.apache.sis.internal.util;
 import java.text.Format;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OptionalDependency;
@@ -40,7 +37,7 @@ import org.opengis.util.CodeList;
  * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.6
  */
 public class MetadataServices extends OptionalDependency {
@@ -124,22 +121,6 @@ public class MetadataServices extends OptionalDependency {
      * @see org.apache.sis.util.iso.Types#getCodeTitle(CodeList)
      */
     public String getCodeTitle(final CodeList<?> code, final Locale locale) {
-        /*
-         * Following code reproduces the work done by org.apache.sis.util.iso.Types.getCodeList(…)
-         * with less handling of special cases. It is executed only if the sis-metadata module is
-         * not on the classpath, otherwise the sis-metadata implementation will be used.
-         */
-        final UML uml = code.getClass().getAnnotation(UML.class);
-        if (uml != null) try {
-            return ResourceBundle.getBundle(CodeLists.RESOURCES, locale, UML.class.getClassLoader())
-                                 .getString(uml.identifier() + '.' + code.identifier());
-        } catch (MissingResourceException e) {
-            /*
-             * Ignore. The reason for not finding the resource may because of above code not covering enough cases.
-             * Usually the sis-metadata module will be present on the classpath, in which case this implementation
-             * will not be used. We need just enough code for allowing sis-utility tests to pass.
-             */
-        }
         return CharSequences.camelCaseToSentence(code.identifier()).toString();
     }
 

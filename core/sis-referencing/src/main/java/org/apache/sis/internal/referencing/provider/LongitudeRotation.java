@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -62,25 +63,38 @@ public final class LongitudeRotation extends GeographicOffsets {
     }
 
     /**
-     * Constructs a provider with default parameters.
+     * The providers for all combinations between 2D and 3D cases.
      */
+    private static final LongitudeRotation[] REDIMENSIONED = new LongitudeRotation[4];
+    static {
+        Arrays.setAll(REDIMENSIONED, LongitudeRotation::new);
+    }
+
+    /**
+     * Returns the provider for the specified combination of source and target dimensions.
+     */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public LongitudeRotation() {
-        this(2, 2, new LongitudeRotation[4]);
-        redimensioned[0] = this;
-        redimensioned[1] = new LongitudeRotation(2, 3, redimensioned);
-        redimensioned[2] = new LongitudeRotation(3, 2, redimensioned);
-        redimensioned[3] = new LongitudeRotation(3, 3, redimensioned);
+        super(REDIMENSIONED[INDEX_OF_2D]);
     }
 
     /**
      * Constructs a provider for the given dimensions.
      *
-     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
-     * @param redimensioned     providers for all combinations between 2D and 3D cases.
+     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array (see above).
      */
-    private LongitudeRotation(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
-        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
+    private LongitudeRotation(int indexOfDim) {
+        super(PARAMETERS, indexOfDim);
     }
 
     /**

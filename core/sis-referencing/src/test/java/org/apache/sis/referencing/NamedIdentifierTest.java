@@ -24,8 +24,8 @@ import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.test.Validators;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.DefaultInternationalString;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link NamedIdentifier} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.4
  */
 public final class NamedIdentifierTest extends TestCase {
@@ -72,7 +72,7 @@ public final class NamedIdentifierTest extends TestCase {
      */
     @Test
     public void testCreateFromName() {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "IOGP"), null);
         final NamedIdentifier identifier = new NamedIdentifier(factory.createGenericName(scope, "EPSG", "4326"));
         Validators.validate((ReferenceIdentifier) identifier);

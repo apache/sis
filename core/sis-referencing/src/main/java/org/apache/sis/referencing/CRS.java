@@ -31,7 +31,6 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -58,11 +57,9 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
-import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Numerics;
@@ -290,8 +287,7 @@ public final class CRS extends Static {
      * as mandated by ISO 19162 standard (see {@link #fromAuthority fromAuthority(…)} if a different behavior is needed).
      *
      * <h4>Usage and performance considerations</h4>
-     * This convenience method delegates to
-     * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}
+     * This convenience method delegates to {@link GeodeticObjectFactory#createFromWKT(String)}
      * using a default factory instance. This is okay for occasional use, but has the following limitations:
      *
      * <ul>
@@ -308,7 +304,7 @@ public final class CRS extends Static {
      * @throws FactoryException if the given WKT cannot be parsed.
      *
      * @see org.apache.sis.io.wkt.WKTFormat
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)
+     * @see GeodeticObjectFactory#createFromWKT(String)
      * @see org.apache.sis.geometry.Envelopes#fromWKT(CharSequence)
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
      *
@@ -316,7 +312,7 @@ public final class CRS extends Static {
      */
     public static CoordinateReferenceSystem fromWKT(final String text) throws FactoryException {
         ArgumentChecks.ensureNonNull("text", text);
-        final CoordinateReferenceSystem crs = DefaultFactories.forBuildin(CRSFactory.class).createFromWKT(text);
+        final CoordinateReferenceSystem crs = GeodeticObjectFactory.provider().createFromWKT(text);
         DefinitionVerifier.withAuthority(crs, Loggers.WKT, CRS.class, "fromWKT");
         return crs;
     }
@@ -339,14 +335,14 @@ public final class CRS extends Static {
      * @return the unmarshalled Coordinate Reference System.
      * @throws FactoryException if the object creation failed.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromXML(String)
+     * @see GeodeticObjectFactory#createFromXML(String)
      * @see org.apache.sis.xml.XML#unmarshal(String)
      *
      * @since 0.7
      */
     public static CoordinateReferenceSystem fromXML(final String xml) throws FactoryException {
         ArgumentChecks.ensureNonNull("text", xml);
-        final CoordinateReferenceSystem crs = DefaultFactories.forBuildin(CRSFactory.class).createFromXML(xml);
+        final CoordinateReferenceSystem crs = GeodeticObjectFactory.provider().createFromXML(xml);
         DefinitionVerifier.withAuthority(crs, Loggers.XML, CRS.class, "fromXML");
         return crs;
     }
@@ -652,7 +648,7 @@ public final class CRS extends Static {
          * may fail if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in
          * that database and we do not have the SQL scripts for creating them.
          */
-        final DefaultCoordinateOperationFactory factory = CoordinateOperations.factory();
+        final DefaultCoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
         try {
             return factory.createOperation(sourceCRS, targetCRS, context);
         } catch (UnavailableFactoryException e) {
@@ -694,7 +690,7 @@ public final class CRS extends Static {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         final CoordinateOperationContext context = CoordinateOperationContext.fromBoundingBox(areaOfInterest);
-        final DefaultCoordinateOperationFactory factory = CoordinateOperations.factory();
+        final DefaultCoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
         try {
             return factory.createOperations(sourceCRS, targetCRS, context);
         } catch (UnavailableFactoryException e) {

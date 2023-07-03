@@ -36,7 +36,6 @@ import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
-import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -51,7 +50,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
@@ -352,12 +350,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         value = properties.get(ALIAS_KEY);
         final GenericName[] names;
         try {
-            /*
-             * Note: DefaultFactories.forBuildin(Class) filters the implementations in order to guarantee an
-             * Apache SIS implementation. We need to revisit this mechanism for a real "dependency injection"
-             * mechanism in the future.
-             */
-            final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+            final DefaultNameFactory factory = DefaultNameFactory.provider();
             names = factory.toGenericNames(value);
         } catch (ClassCastException e) {
             throw (IllegalArgumentException) illegalPropertyType(properties, ALIAS_KEY, value).initCause(e);

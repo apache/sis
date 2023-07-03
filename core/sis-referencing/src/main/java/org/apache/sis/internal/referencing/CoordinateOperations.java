@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
+import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -36,25 +37,23 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.internal.metadata.NameToIdentifier;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.Static;
 
 
 /**
- * The default coordinate operation factory, provided in a separated class for deferring class loading
- * until first needed. Contains also utility methods related to coordinate operations.
+ * Utility methods related to coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.7
  */
-public final class CoordinateOperations extends SystemListener {
+public final class CoordinateOperations extends Static {
     /**
      * The {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#BURSA_WOLF_KEY} value.
      */
@@ -104,53 +103,9 @@ public final class CoordinateOperations extends SystemListener {
     private static final Set<Integer>[] CACHE = new Set[11];
 
     /**
-     * The system-wide default factory.
-     */
-    private static volatile DefaultCoordinateOperationFactory factory;
-
-    /**
-     * For system listener only.
+     * Do not allow instantiation.
      */
     private CoordinateOperations() {
-        super(Modules.REFERENCING);
-    }
-
-    /**
-     * Discards the factory if the classpath changed.
-     */
-    static {
-        add(new CoordinateOperations());
-    }
-
-    /**
-     * Invoked when the classpath changed.
-     */
-    @Override
-    protected void classpathChanged() {
-        factory = null;
-    }
-
-    /**
-     * Returns the factory.
-     *
-     * @return the system-wide factory.
-     */
-    public static DefaultCoordinateOperationFactory factory() {
-        DefaultCoordinateOperationFactory c = factory;
-        if (c == null) {
-            // DefaultFactories.forBuildin(…) performs the necessary synchronization.
-            factory = c = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
-        }
-        return c;
-    }
-
-    /**
-     * Returns the SIS implementation of {@link MathTransformFactory}.
-     *
-     * @return SIS implementation of transform factory.
-     */
-    public static DefaultMathTransformFactory factoryMT() {
-        return DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
     }
 
     /**
@@ -170,11 +125,11 @@ public final class CoordinateOperations extends SystemListener {
             final MathTransformFactory mtFactory, final CRSFactory crsFactory, final CSFactory csFactory)
     {
         if (Containers.isNullOrEmpty(properties)) {
-            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory) &&
-                DefaultFactories.isDefaultInstance(CRSFactory.class, crsFactory) &&
-                DefaultFactories.isDefaultInstance(CSFactory.class, csFactory))
+            if (isDefaultInstance(mtFactory) &&
+                isDefaultInstance(crsFactory) &&
+                isDefaultInstance(csFactory))
             {
-                return CoordinateOperations.factory();
+                return DefaultCoordinateOperationFactory.provider();
             }
             properties = Map.of();
         }
@@ -215,6 +170,26 @@ public final class CoordinateOperations extends SystemListener {
             }
         }
         return fallback;
+    }
+
+    /**
+     * Returns {@code true} if the given transform factory is the default instances used by Apache SIS.
+     *
+     * @param  factory  the factory to test. May be null.
+     * @return whether the given factory is the default instance.
+     */
+    public static boolean isDefaultInstance(final MathTransformFactory factory) {
+        return factory == DefaultMathTransformFactory.provider();
+    }
+
+    /**
+     * Returns {@code true} if the given factory is the default instances used by Apache SIS.
+     *
+     * @param  factory  the factory to test. May be null.
+     * @return whether the given factory is the default instance.
+     */
+    private static boolean isDefaultInstance(final ObjectFactory factory) {
+        return factory == GeodeticObjectFactory.provider();
     }
 
     /**

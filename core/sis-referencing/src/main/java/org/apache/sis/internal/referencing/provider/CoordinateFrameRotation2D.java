@@ -55,24 +55,27 @@ public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeog
     }
 
     /**
-     * Constructs the provider.
+     * Returns the provider for the specified combination of source and target dimensions.
      */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return CoordinateFrameRotation3D.REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public CoordinateFrameRotation2D() {
-        this(null);
+        super(CoordinateFrameRotation3D.REDIMENSIONED[INDEX_OF_2D]);
     }
 
     /**
      * Constructs a provider that can be resized.
      */
-    CoordinateFrameRotation2D(GeodeticOperation[] redimensioned) {
-        super(Type.FRAME_ROTATION, PARAMETERS, 2, 2, redimensioned);
-    }
-
-    /**
-     * Returns the three-dimensional variant of this operation method.
-     */
-    @Override
-    Class<CoordinateFrameRotation3D> variant3D() {
-        return CoordinateFrameRotation3D.class;
+    CoordinateFrameRotation2D(int indexOfDim) {
+        super(Type.FRAME_ROTATION, PARAMETERS, indexOfDim);
     }
 }

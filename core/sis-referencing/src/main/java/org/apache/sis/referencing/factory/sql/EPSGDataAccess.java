@@ -288,14 +288,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private final Map<Integer,AxisName> axisNames = new HashMap<>();
 
     /**
-     * Cache for the number of dimensions of coordinate systems. This service is not provided by
-     * {@code ConcurrentAuthorityFactory} since the number of dimension is used internally in this class.
-     *
-     * @see #getDimensionForCS(Integer)
-     */
-    private final Map<Integer,Integer> csDimensions = new HashMap<>();
-
-    /**
      * Cache for whether conversions are projections. This service is not provided by {@code ConcurrentAuthorityFactory}
      * since the check for conversion type is used internally in this class.
      *
@@ -2274,29 +2266,6 @@ codes:  for (int i=0; i<codes.length; i++) {
     }
 
     /**
-     * Returns the number of dimension for the specified Coordinate System, or {@code null} if not found.
-     *
-     * @param  cs  the EPSG code for the coordinate system.
-     * @return the number of dimensions, or {@code null} if not found.
-     *
-     * @see #getDimensionsForMethod(Integer)
-     */
-    private Integer getDimensionForCS(final Integer cs) throws SQLException {
-        Integer dimension = csDimensions.get(cs);
-        if (dimension == null) {
-            try (ResultSet result = executeQuery("Dimension",
-                    " SELECT COUNT(COORD_AXIS_CODE)" +
-                     " FROM [Coordinate Axis]" +
-                     " WHERE COORD_SYS_CODE = ?", cs))
-            {
-                dimension = result.next() ? result.getInt(1) : 0;
-                csDimensions.put(cs, dimension);
-            }
-        }
-        return (dimension != 0) ? dimension : null;
-    }
-
-    /**
      * Returns the coordinate system axis from an EPSG code for a {@link CoordinateSystem}.
      *
      * <p><strong>WARNING:</strong> The EPSG database uses "{@code ORDER}" as a column name.
@@ -2810,11 +2779,12 @@ next:                   while (r.next()) {
                 final String  name       = getString   (code, result, 2);
                 final String  remarks    = getOptionalString (result, 3);
                 final boolean deprecated = getOptionalBoolean(result, 4);
-                final Integer[] dim = getDimensionsForMethod(epsg);
                 final ParameterDescriptor<?>[] descriptors = createParameterDescriptors(epsg);
                 Map<String,Object> properties = createProperties("Coordinate_Operation Method", name, epsg, remarks, deprecated);
-                // We do not store the formula at this time, because the text is very verbose and rarely used.
-                final OperationMethod method = new DefaultOperationMethod(properties, dim[0], dim[1],
+                /*
+                 * Note: we do not store the formula at this time, because the text is very verbose and rarely used.
+                 */
+                final OperationMethod method = new DefaultOperationMethod(properties,
                             new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors));
                 returnValue = ensureSingleton(method, returnValue, code);
             }
@@ -2908,24 +2878,16 @@ next:                   while (r.next()) {
                      * However, this default number of dimensions is not generalizable to other kind of operation methods.
                      * For example, the "Geocentric translation" operation method has 3-dimensional source and target CRS.
                      */
-                    boolean isDimensionKnown = true;
-                    final int sourceDimensions, targetDimensions;
                     final CoordinateReferenceSystem sourceCRS, targetCRS;
                     if (sourceCode != null) {
                         sourceCRS = owner.createCoordinateReferenceSystem(sourceCode);
-                        sourceDimensions = sourceCRS.getCoordinateSystem().getDimension();
                     } else {
                         sourceCRS = null;
-                        sourceDimensions = 2;           // Acceptable default for projections only.
-                        isDimensionKnown = false;
                     }
                     if (targetCode != null) {
                         targetCRS = owner.createCoordinateReferenceSystem(targetCode);
-                        targetDimensions = targetCRS.getCoordinateSystem().getDimension();
                     } else {
                         targetCRS = null;
-                        targetDimensions = 2;           // Acceptable default for projections only.
-                        isDimensionKnown = false;
                     }
                     /*
                      * Get the operation method. This is mandatory for conversions and transformations
@@ -2937,9 +2899,6 @@ next:                   while (r.next()) {
                     OperationMethod     method     = null;
                     if (methodCode != null && !isDeferred) {
                         method = owner.createOperationMethod(methodCode.toString());
-                        if (isDimensionKnown) {
-                            method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
-                        }
                         parameters = method.getParameters().createValue();
                         fillParameterValues(methodCode, epsg, parameters);
                     }
@@ -3181,76 +3140,6 @@ next:                   while (r.next()) {
             isProjection.put(code, projection);
         }
         return projection;
-    }
-
-    /**
-     * Returns the source and target dimensions for the specified method, provided that they are the same
-     * for all operations using that method. The returned array has a length of 2 and is never null,
-     * but some elements in that array may be null.
-     *
-     * @param  method  the EPSG code of the operation method for which to get the dimensions.
-     * @return the dimensions in an array of length 2.
-     *
-     * @see #getDimensionForCS(Integer)
-     */
-    private Integer[] getDimensionsForMethod(final Integer method) throws SQLException {
-        final Integer[] dimensions = new Integer[2];
-        final boolean[] differents = new boolean[2];
-        int numDifferences = 0;
-        boolean projections = false;
-        do {
-            /*
-             * This loop is executed twice. On the first execution, we look for the source and
-             * target CRS declared directly in the "Coordinate Operations" table. This applies
-             * mostly to coordinate transformations, since those fields are typically empty in
-             * the case of projected CRS.
-             *
-             * In the second execution, we will look for the base geographic CRS and
-             * the resulting projected CRS that use the given operation method. This
-             * allows us to handle the case of projected CRS (typically 2 dimensional).
-             */
-            final String key, sql;
-            if (!projections) {
-                key = "MethodDimensions";
-                sql = "SELECT DISTINCT SRC.COORD_SYS_CODE," +
-                                     " TGT.COORD_SYS_CODE" +
-                      " FROM [Coordinate_Operation] AS CO" +
-                " INNER JOIN [Coordinate Reference System] AS SRC ON SRC.COORD_REF_SYS_CODE = CO.SOURCE_CRS_CODE" +
-                " INNER JOIN [Coordinate Reference System] AS TGT ON TGT.COORD_REF_SYS_CODE = CO.TARGET_CRS_CODE" +
-                      " WHERE CO.DEPRECATED=0 AND COORD_OP_METHOD_CODE = ?";
-                // Do not put spaces in "DEPRECATED=0" - SQLTranslator searches for this exact match.
-            } else {
-                key = "DerivedDimensions";
-                sql = "SELECT DISTINCT SRC.COORD_SYS_CODE," +
-                                     " TGT.COORD_SYS_CODE" +
-                      " FROM [Coordinate Reference System] AS TGT" +
-                " INNER JOIN [Coordinate Reference System] AS SRC ON TGT.SOURCE_GEOGCRS_CODE = SRC.COORD_REF_SYS_CODE" +
-                " INNER JOIN [Coordinate_Operation] AS CO ON TGT.PROJECTION_CONV_CODE = CO.COORD_OP_CODE" +
-                      " WHERE CO.DEPRECATED=0 AND COORD_OP_METHOD_CODE = ?";
-            }
-            try (ResultSet result = executeQuery(key, sql, method)) {
-                while (result.next()) {
-                    for (int i=0; i<dimensions.length; i++) {
-                        if (!differents[i]) {   // Not worth to test heterogenous dimensions.
-                            final Integer dim = getDimensionForCS(result.getInt(i + 1));
-                            if (dim != null) {
-                                if (dimensions[i] == null) {
-                                    dimensions[i] = dim;
-                                } else if (!dim.equals(dimensions[i])) {
-                                    dimensions[i] = null;
-                                    differents[i] = true;
-                                    if (++numDifferences == differents.length) {
-                                        // All dimensions have been set to null.
-                                        return dimensions;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } while ((projections = !projections) == true);
-        return dimensions;
     }
 
     /**

@@ -18,12 +18,13 @@ package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.LinkedList;
-import java.util.Set;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import org.apache.sis.internal.system.Reflect;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -31,22 +32,30 @@ import org.apache.sis.util.ArraysExt;
 
 /**
  * Creates {@link DataStore} instances for a given storage object by scanning all providers on the classpath.
- * Storage objects are typically {@link java.io.File} or {@link javax.sql.DataSource} instances, but can also
- * be any other objects documented in the {@link StorageConnector} class.
- *
- * <h2>API note</h2>
- * This class is package-private for now in order to get more experience about what could be a good API.
- * This class may become public in a future SIS version.
+ * Storage objects are typically {@link java.io.File} or {@link javax.sql.DataSource} instances,
+ * but can also be any other objects documented in the {@link StorageConnector} class.
  *
  * <h2>Thread safety</h2>
  * The same {@code DataStoreRegistry} instance can be safely used by many threads without synchronization
  * on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
-final class DataStoreRegistry {
+final class DataStoreRegistry extends LazySet<DataStoreProvider> {
+    /**
+     * The unique instance of this registry.
+     */
+    static final DataStoreRegistry INSTANCE = new DataStoreRegistry();
+    static {
+        SystemListener.add(new SystemListener(Modules.STORAGE) {
+            @Override protected void classpathChanged() {
+                INSTANCE.reload();
+            }
+        });
+    }
+
     /**
      * The loader to use for searching for {@link DataStoreProvider} implementations.
      * Note that {@code ServiceLoader} are not thread-safe - usage of this field must
@@ -60,31 +69,17 @@ final class DataStoreRegistry {
      * provided that it can access at least the Apache SIS stores.
      */
     public DataStoreRegistry() {
-        loader = DefaultFactories.createServiceLoader(DataStoreProvider.class);
+        this.loader = ServiceLoader.load(DataStoreProvider.class, Reflect.getContextClassLoader());
     }
 
     /**
-     * Creates a new registry which will look for data stores accessible to the given class loader.
-     *
-     * @param  loader  the class loader to use for loading {@link DataStoreProvider} implementations.
+     * Creates the iterator over the data stores.
      */
-    public DataStoreRegistry(final ClassLoader loader) {
-        ArgumentChecks.ensureNonNull("loader", loader);
-        this.loader = ServiceLoader.load(DataStoreProvider.class, loader);
-    }
-
-    /**
-     * Returns the list of data store providers available at this method invocation time.
-     * More providers may be added later if new modules are added on the classpath.
-     *
-     * @return descriptions of available data stores.
-     *
-     * @since 0.8
-     */
-    public Set<DataStoreProvider> providers() {
+    @Override
+    protected Iterator<DataStoreProvider> createSourceIterator() {
         synchronized (loader) {
             final Iterator<DataStoreProvider> providers = loader.iterator();
-            return new LazySet<>(new Iterator<DataStoreProvider>() {
+            return new Iterator<DataStoreProvider>() {
                 @Override public boolean hasNext() {
                     synchronized (loader) {
                         return providers.hasNext();
@@ -96,7 +91,7 @@ final class DataStoreRegistry {
                         return providers.next();
                     }
                 }
-            });
+            };
         }
     }
 
@@ -316,5 +311,14 @@ search:     for (int ci=0; ci < categories.length; ci++) {
             throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, name);
         }
         return selected;
+    }
+
+    /**
+     * Notifies this registry that it should re-fetch the elements from the source.
+     */
+    @Override
+    public synchronized void reload() {
+        loader.reload();
+        super.reload();
     }
 }

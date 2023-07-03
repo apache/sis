@@ -57,17 +57,16 @@ import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.internal.util.URLs;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.provider.VerticalOffset;
-import org.apache.sis.internal.referencing.provider.Providers;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.Parameterized;
@@ -249,6 +248,27 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private DefaultMathTransformFactory oppositeCachingPolicy;
 
     /**
+     * The default factory instance.
+     */
+    private static final DefaultMathTransformFactory INSTANCE = new DefaultMathTransformFactory();
+
+    /**
+     * Returns the default provider of {@code MathTransform} instances.
+     * This is the factory used by the Apache SIS library when no non-null
+     * {@link MathTransformFactory} has been explicitly specified.
+     * This method can be invoked directly, or indirectly through
+     * {@code ServiceLoader.load(MathTransformFactory.class)}.
+     *
+     * @return the default provider of math transforms.
+     *
+     * @see java.util.ServiceLoader
+     * @since 1.4
+     */
+    public static DefaultMathTransformFactory provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
      * The {@link OperationMethod} implementations shall be listed in the following file:
      *
@@ -258,28 +278,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * operation methods. By default, only operation methods that implement the {@link MathTransformProvider} interface
      * can be used by the {@code create(…)} methods in this class.
      *
+     * @see #provider()
      * @see #reload()
      */
     public DefaultMathTransformFactory() {
-        /*
-         * WORKAROUND for a JDK bug: ServiceLoader does not support usage of two Iterator instances
-         * before the first iteration is finished. Steps to reproduce:
-         *
-         *     ServiceLoader<?> loader = ServiceLoader.load(OperationMethod.class);
-         *
-         *     Iterator<?> it1 = loader.iterator();
-         *     assertTrue   ( it1.hasNext() );
-         *     assertNotNull( it1.next())   );
-         *
-         *     Iterator<?> it2 = loader.iterator();
-         *     assertTrue   ( it1.hasNext()) );
-         *     assertTrue   ( it2.hasNext()) );
-         *     assertNotNull( it1.next())    );
-         *     assertNotNull( it2.next())    );     // ConcurrentModificationException here !!!
-         *
-         * Wrapping the ServiceLoader in a LazySet avoid this issue.
-         */
-        this(new Providers());
+        this(ServiceLoader.load(OperationMethod.class, Reflect.getContextClassLoader()));
     }
 
     /**
@@ -1054,14 +1057,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * Get the operation method for the appropriate number of dimensions. For example, the default Molodensky
              * operation expects two-dimensional source and target CRS. If a given CRS is three-dimensional, we need
              * a provider variant which will not concatenate a "geographic 3D to 2D" operation before the Molodensky
-             * one. It is worth to perform this check only if the provider is a subclass of DefaultOperationMethod,
-             * since it needs to override the `redimension(int, int)` method.
+             * one.
              */
-            if (method instanceof DefaultOperationMethod && method.getClass() != DefaultOperationMethod.class) {
+            if (method instanceof AbstractProvider) {
                 final Integer sourceDim = (sourceCS != null) ? sourceCS.getDimension() : method.getSourceDimensions();
                 final Integer targetDim = (targetCS != null) ? targetCS.getDimension() : method.getTargetDimensions();
                 if (sourceDim != null && targetDim != null) {
-                    method = ((DefaultOperationMethod) method).redimension(sourceDim, targetDim);
+                    method = ((AbstractProvider) method).redimension(sourceDim, targetDim);
                     if (method instanceof MathTransformProvider) {
                         provider = method;
                     }
@@ -1259,8 +1261,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * directions and units of measurement.
              */
             transform = unique(transform);
-            method = DefaultOperationMethod.redimension(method, transform.getSourceDimensions(),
-                                                                transform.getTargetDimensions());
+            if (method instanceof AbstractProvider) {
+                method = ((AbstractProvider) method).variantFor(transform);
+            }
             if (context != null) {
                 transform = swapAndScaleAxes(transform, context);
             }
@@ -1763,9 +1766,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         synchronized (methods) {
             methodsByName.clear();
             final Iterable<? extends OperationMethod> m = methods;
-            if (m instanceof LazySet<?>) { // Workaround for JDK bug. See DefaultMathTransformFactory() constructor.
-                ((LazySet<? extends OperationMethod>) m).reload();
-            }
             if (m instanceof ServiceLoader<?>) {
                 ((ServiceLoader<?>) m).reload();
             }

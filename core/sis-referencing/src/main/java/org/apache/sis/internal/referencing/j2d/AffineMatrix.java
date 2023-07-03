@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.awt.geom.AffineTransform;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -36,7 +37,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @version 1.4
  * @since   0.5
  */
-class AffineMatrix extends MatrixSIS implements Serializable, Cloneable {
+class AffineMatrix extends MatrixSIS implements Serializable, CloneAccess {
     /**
      * For cross-version compatibility.
      */

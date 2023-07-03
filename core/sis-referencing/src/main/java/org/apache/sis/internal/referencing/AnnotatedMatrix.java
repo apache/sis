@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.apache.sis.internal.util.CloneAccess;
 
 
 /**
@@ -25,10 +26,10 @@ import org.opengis.metadata.quality.PositionalAccuracy;
  * We use this class for passing additional information in methods that returns only a {@link Matrix}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
-public final class AnnotatedMatrix implements Matrix, Cloneable {
+public final class AnnotatedMatrix implements Matrix, CloneAccess {
     /**
      * The matrix which contains the actual values.
      */

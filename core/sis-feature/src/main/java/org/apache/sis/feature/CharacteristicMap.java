@@ -20,6 +20,7 @@ import java.util.Map;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.Cloner;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.AbstractMapEntry;
 import org.apache.sis.internal.feature.Resources;
@@ -30,10 +31,10 @@ import org.apache.sis.internal.feature.Resources;
  * This map holds only the attribute characteristics which have been explicitly set or requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.5
  */
-final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> implements Cloneable {
+final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> implements CloneAccess {
     /**
      * The attribute source for which to provide characteristics.
      */

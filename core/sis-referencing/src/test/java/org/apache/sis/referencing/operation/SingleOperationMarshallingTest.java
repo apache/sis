@@ -83,7 +83,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(DefaultOperationMethod.NAME_KEY, descriptor.getName());
         properties.put(DefaultOperationMethod.FORMULA_KEY, new DefaultFormula("See EPSG guide."));
-        return new DefaultOperationMethod(properties, 2, 2, descriptor);
+        return new DefaultOperationMethod(properties, descriptor);
     }
 
     /**
@@ -97,8 +97,6 @@ public final class SingleOperationMarshallingTest extends TestCase {
         assertXmlEquals("<gml:OperationMethod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                         "  <gml:name>Mercator (1SP)</gml:name>\n" +
                         "  <gml:formula>See EPSG guide.</gml:formula>\n" +
-                        "  <gml:sourceDimensions>2</gml:sourceDimensions>\n" +
-                        "  <gml:targetDimensions>2</gml:targetDimensions>\n" +
                         "  <gml:parameter>\n" +
                         "    <gml:OperationParameter gml:id=\"epsg-parameter-8801\">\n" +
                         "      <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:parameter:EPSG::8801</gml:identifier>\n" +
@@ -124,8 +122,6 @@ public final class SingleOperationMarshallingTest extends TestCase {
     private static void verifyMethod(final OperationMethod method) {
         assertIdentifierEquals("name", null, null, null, "Mercator (1SP)", method.getName());
         assertEquals("formula", "See EPSG guide.", method.getFormula().getFormula().toString());
-        assertEquals("sourceDimensions", Integer.valueOf(2), method.getSourceDimensions());
-        assertEquals("targetDimensions", Integer.valueOf(2), method.getTargetDimensions());
         final ParameterDescriptorGroup parameters = method.getParameters();
         assertEquals("parameters.name", "Mercator (1SP)", parameters.getName().getCode());
         final Iterator<GeneralParameterDescriptor> it = parameters.descriptors().iterator();

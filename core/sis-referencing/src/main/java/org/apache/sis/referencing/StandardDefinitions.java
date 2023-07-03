@@ -43,7 +43,6 @@ import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.util.resources.Vocabulary;
@@ -65,6 +64,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -86,7 +86,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * The EPSG identifiers are provided as references where to find the complete definitions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.4
  */
 final class StandardDefinitions {
@@ -190,7 +190,7 @@ final class StandardDefinitions {
     {
         final OperationMethod method;
         try {
-            method = CoordinateOperations.factoryMT()
+            method = DefaultMathTransformFactory.provider()
                      .getOperationMethod(isUTM ? TransverseMercator.NAME : PolarStereographicA.NAME);
         } catch (NoSuchIdentifierException e) {
             throw new IllegalStateException(e);                     // Should not happen with SIS implementation.

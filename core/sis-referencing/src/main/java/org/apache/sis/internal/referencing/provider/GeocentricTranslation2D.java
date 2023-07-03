@@ -54,24 +54,27 @@ public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeogra
     }
 
     /**
-     * Constructs the provider.
+     * Returns the provider for the specified combination of source and target dimensions.
      */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return GeocentricTranslation3D.REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
     public GeocentricTranslation2D() {
-        this(null);
+        super(GeocentricTranslation3D.REDIMENSIONED[INDEX_OF_2D]);
     }
 
     /**
      * Constructs a provider that can be resized.
      */
-    GeocentricTranslation2D(GeodeticOperation[] redimensioned) {
-        super(Type.TRANSLATION, PARAMETERS, 2, 2, redimensioned);
-    }
-
-    /**
-     * Returns the three-dimensional variant of this operation method.
-     */
-    @Override
-    Class<GeocentricTranslation3D> variant3D() {
-        return GeocentricTranslation3D.class;
+    GeocentricTranslation2D(int indexOfDim) {
+        super(Type.TRANSLATION, PARAMETERS, indexOfDim);
     }
 }

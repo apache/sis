@@ -30,7 +30,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -40,6 +39,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.internal.referencing.ReferencingUtilities.getPropertiesForModifiedCRS;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 
 
 /**
@@ -87,7 +87,7 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
      * The factory to use for creating new coordinate reference system.
      */
     private static CRSFactory factory() {
-        return DefaultFactories.forBuildin(CRSFactory.class);
+        return GeodeticObjectFactory.provider();
     }
 
     /**

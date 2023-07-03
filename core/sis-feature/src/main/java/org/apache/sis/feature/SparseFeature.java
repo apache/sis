@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
+import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
@@ -35,14 +36,14 @@ import org.apache.sis.util.CorruptedObjectException;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see DenseFeature
  * @see DefaultFeatureType
  *
  * @since 0.5
  */
-final class SparseFeature extends AbstractFeature implements Cloneable {
+final class SparseFeature extends AbstractFeature implements CloneAccess {
     /**
      * For cross-version compatibility.
      */

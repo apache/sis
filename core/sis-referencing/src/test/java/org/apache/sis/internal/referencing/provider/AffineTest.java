@@ -54,7 +54,7 @@ public final class AffineTest extends TestCase {
      */
     @Test
     public void testParameters() {
-        verifyParameters(Affine.getProvider(Affine.EPSG_DIMENSION, Affine.EPSG_DIMENSION, true),
+        verifyParameters(Affine.provider(Affine.EPSG_DIMENSION, Affine.EPSG_DIMENSION, true),
                 "A0", "A1", "A2",
                 "B0", "B1", "B2");
     }
@@ -65,7 +65,7 @@ public final class AffineTest extends TestCase {
      */
     @Test
     public void testOGCParameters() {
-        verifyParameters(Affine.getProvider(3, 2, true),
+        verifyParameters(Affine.provider(3, 2, true),
                 "num_row",
                 "num_col",
                 "elt_0_0", "elt_0_1", "elt_0_2", "elt_0_3",

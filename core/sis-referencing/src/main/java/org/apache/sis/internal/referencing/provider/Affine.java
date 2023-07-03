@@ -25,7 +25,6 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
@@ -33,6 +32,7 @@ import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 
 /**
@@ -64,7 +64,7 @@ public final class Affine extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 649555815622129472L;
+    private static final long serialVersionUID = 9061544057836352125L;
 
     /**
      * The operation method name as defined in the EPSG database.
@@ -75,11 +75,6 @@ public final class Affine extends AbstractProvider {
      * @see org.apache.sis.internal.util.Constants#AFFINE
      */
     public static final String NAME = "Affine parametric transformation";
-
-    /**
-     * The EPSG:9624 compliant instance, created when first needed.
-     */
-    private static volatile Affine EPSG_METHOD;
 
     /**
      * The number of dimensions used by the EPSG:9624 definition. This will be used as the
@@ -97,9 +92,9 @@ public final class Affine extends AbstractProvider {
     /**
      * Cached providers for methods of dimension 1×1 to {@link #MAX_CACHED_DIMENSION}.
      * The index of each element is computed by {@link #cacheIndex(int, int)}.
-     * All usages of this array shall be synchronized on {@code cached}.
+     * All usages of this array shall be synchronized on {@code CACHED}.
      */
-    private static final Affine[] cached = new Affine[MAX_CACHED_DIMENSION * MAX_CACHED_DIMENSION];
+    private static final Affine[] CACHED = new Affine[MAX_CACHED_DIMENSION * MAX_CACHED_DIMENSION];
 
     /**
      * A map containing identification properties for creating {@code OperationMethod} or
@@ -113,34 +108,47 @@ public final class Affine extends AbstractProvider {
     }
 
     /**
+     * The EPSG:9624 compliant instance.
+     * This is restricted to {@value #EPSG_DIMENSION} dimensions.
+     *
+     * @see #provider()
+     */
+    private static final Affine EPSG_METHOD = new Affine();
+
+    /**
+     * Number of dimensions in the source or target CRS of this operation method.
+     */
+    private final int sourceDimensions, targetDimensions;
+
+    /**
      * Creates a provider for affine transform with a default matrix size (standard EPSG:9624 instance).
      * This constructor is public for the needs of {@link java.util.ServiceLoader} — do not invoke explicitly.
-     * If an instance of {@code Affine()} is desired, invoke {@code getProvider(EPSG_DIMENSION, EPSG_DIMENSION)}
+     * If an instance of {@code Affine()} is desired, invoke {@code provider(EPSG_DIMENSION, EPSG_DIMENSION)}
      * instead.
      *
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory
+     *
+     * @todo Delete this constructor after migration to JFK 9 modules. Replace by {@link #provider()} static method.
      */
     public Affine() {
-        super(IDENTIFICATION_EPSG, EPSG_DIMENSION, EPSG_DIMENSION, new Descriptor(IDENTIFICATION_EPSG,
+        super(IDENTIFICATION_EPSG, new Descriptor(IDENTIFICATION_EPSG,
                 Arrays.copyOfRange( // Discards param 0 and 1, take only the ones in index range [2…7].
                         TensorParameters.ALPHANUM.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1), 2, 8)));
-        /*
-         * Do caching ourselves because this constructor is usually not invoked by getProvider(int, int).
-         * It is usually invoked when DefaultMathTransformFactory scans the classpath with a ServiceLoader.
-         * This normally happen only once, so this instance is probably the unique instance to keep in the JVM.
-         */
-        EPSG_METHOD = this;
+        sourceDimensions = EPSG_DIMENSION;
+        targetDimensions = EPSG_DIMENSION;
     }
 
     /**
      * Creates a provider for affine transform with the specified dimensions.
-     * This is created when first needed by {@link #getProvider(int, int, boolean)}.
+     * This is created when first needed by {@link #provider(int, int, boolean)}.
      *
-     * @see #getProvider(int, int, boolean)
+     * @see #provider(int, int, boolean)
      */
     private Affine(final int sourceDimensions, final int targetDimensions) {
-        super(IDENTIFICATION_OGC, sourceDimensions, targetDimensions, new Descriptor(IDENTIFICATION_OGC,
+        super(IDENTIFICATION_OGC, new Descriptor(IDENTIFICATION_OGC,
                 TensorParameters.WKT1.getAllDescriptors(targetDimensions + 1, sourceDimensions + 1)));
+        this.sourceDimensions = sourceDimensions;
+        this.targetDimensions = targetDimensions;
     }
 
     /**
@@ -167,13 +175,49 @@ public final class Affine extends AbstractProvider {
         }
     }
 
+    /**
+     * Returns the number of source dimensions.
+     */
+    @Override
+    @Deprecated
+    public Integer getSourceDimensions() {
+        return sourceDimensions;
+    }
+
+    /**
+     * Returns the number of target dimensions.
+     */
+    @Override
+    @Deprecated
+    public Integer getTargetDimensions() {
+        return targetDimensions;
+    }
+
     /*
-     * Do not override the 'getOperationType()' method. We want to inherit the super-type value, which is
+     * Do not override the `getOperationType()` method. We want to inherit the super-type value, which is
      * SingleOperation.class, because we do not know if this operation method will be used for a Conversion
      * or a Transformation. When applied on geocentric coordinates, this method applies a transformation
      * (indeeded, the EPSG method name is "Affine parametric transformation"). But this method can also
      * be applied for unit conversions or axis swapping for examples, which are conversions.
      */
+
+    /**
+     * Returns an affine conversion with the specified number of dimensions.
+     */
+    @Override
+    public AbstractProvider variantFor(final MathTransform transform) {
+        final boolean isAffine = (transform instanceof LinearTransform) && ((LinearTransform) transform).isAffine();
+        return provider(transform.getSourceDimensions(), transform.getTargetDimensions(), isAffine);
+    }
+
+    /**
+     * Returns an affine conversion with the specified number of dimensions,
+     * conservatively assuming a non-affine conversion.
+     */
+    @Override
+    public AbstractProvider redimension(final int sourceDimensions, final int targetDimensions) {
+        return provider(sourceDimensions, targetDimensions, false);
+    }
 
     /**
      * The inverse of this operation can be described by the same operation with different parameter values.
@@ -205,22 +249,7 @@ public final class Affine extends AbstractProvider {
     }
 
     /**
-     * Returns the same operation method, but for different dimensions.
-     *
-     * @param  sourceDimensions  the desired number of input dimensions.
-     * @param  targetDimensions  the desired number of output dimensions.
-     * @return the redimensioned operation method, or {@code this} if no change is needed.
-     *
-     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
-     */
-    @Override
-    @Deprecated(since="1.1")
-    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
-        return getProvider(sourceDimensions, targetDimensions, false);
-    }
-
-    /**
-     * Returns the index where to store a method of the given dimensions in the {@link #cached} array,
+     * Returns the index where to store a method of the given dimensions in the {@link #CACHED} array,
      * or -1 if it should not be cached.
      */
     private static int cacheIndex(int sourceDimensions, int targetDimensions) {
@@ -233,6 +262,15 @@ public final class Affine extends AbstractProvider {
     }
 
     /**
+     * Returns the unique instance for the EPSG case of the affine transform.
+     *
+     * @return the EPSG case of affine transform.
+     */
+    public static Affine provider() {
+        return EPSG_METHOD;
+    }
+
+    /**
      * Returns the operation method for the specified source and target dimensions.
      * This method provides different {@code Affine} instances for different dimensions.
      *
@@ -241,25 +279,21 @@ public final class Affine extends AbstractProvider {
      * @param  isAffine          {@code true} if the transform is affine.
      * @return the provider for transforms of the given source and target dimensions.
      */
-    public static Affine getProvider(final int sourceDimensions, final int targetDimensions, final boolean isAffine) {
+    public static Affine provider(final int sourceDimensions, final int targetDimensions, final boolean isAffine) {
         Affine method;
         if (isAffine && sourceDimensions == EPSG_DIMENSION && targetDimensions == EPSG_DIMENSION) {
             /*
-             * Matrix complies with EPSG:9624 definition. This is the most common case. We do perform synchronization
-             * for this field since it is okay if the same object is created twice (they should be identical).
+             * Matrix complies with EPSG:9624 definition. This is the most common case.
              */
             method = EPSG_METHOD;
-            if (method == null) {
-                method = new Affine();
-            }
         } else {
             /*
              * All other cases. We will use the WKT1 parameter names instead of the EPSG ones.
              */
             final int index = cacheIndex(sourceDimensions, targetDimensions);
             if (index >= 0) {
-                synchronized (cached) {
-                    method = cached[index];
+                synchronized (CACHED) {
+                    method = CACHED[index];
                 }
                 if (method != null) {
                     return method;
@@ -271,12 +305,12 @@ public final class Affine extends AbstractProvider {
              */
             method = new Affine(sourceDimensions, targetDimensions);
             if (index >= 0) {
-                synchronized (cached) {
-                    final Affine other = cached[index];     // May have been created in another thread.
+                synchronized (CACHED) {
+                    final Affine other = CACHED[index];     // May have been created in another thread.
                     if (other != null) {
                         return other;
                     }
-                    cached[index] = method;
+                    CACHED[index] = method;
                 }
             }
         }

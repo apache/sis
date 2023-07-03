@@ -959,7 +959,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * Ensures that 0 ≤ {@code numDim} ≤ <var>n</var>
      * where <var>n</var> is the number of dimensions of this grid extent.
      *
-     * @param  numDim  the user-supplied number of dimensions to validate.
+     * @param  numDim  the user supplied number of dimensions to validate.
      * @return the number of dimensions in this grid extent.
      * @throws CannotEvaluateException if this grid extent does not have at least {@code numDim} dimensions.
      */

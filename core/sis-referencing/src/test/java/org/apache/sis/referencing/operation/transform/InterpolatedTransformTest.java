@@ -20,12 +20,10 @@ import java.net.URL;
 import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.NADCON;
 import org.apache.sis.internal.referencing.provider.NTv2;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.DefaultFactories;
 
 // Test dependencies
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
@@ -81,7 +79,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
         final NTv2 provider = new NTv2();
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("Latitude and longitude difference file").setValue(file);    // Automatic conversion from URL to Path.
-        transform = provider.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
+        transform = provider.createMathTransform(DefaultMathTransformFactory.provider(), values);
         tolerance = Formulas.ANGULAR_TOLERANCE;
         validate();
     }
@@ -98,7 +96,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("Latitude difference file").setValue(latitudeShifts);
         values.parameter("Longitude difference file").setValue(longitudeShifts);
-        transform = provider.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
+        transform = provider.createMathTransform(DefaultMathTransformFactory.provider(), values);
         tolerance = NADCONTest.ANGULAR_TOLERANCE;
         validate();
     }

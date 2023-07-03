@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn(StoreTest.class)
@@ -105,12 +105,12 @@ public final class DataStoresTest extends TestCase {
     private static List<Set<Class<?>>> collectProvidersConcurrently(final int nbWorkers, final ExecutorService executor)
             throws Exception
     {
-        final DataStoreRegistry dsr = new DataStoreRegistry(DataStoresTest.class.getClassLoader());
+        final DataStoreRegistry dsr = DataStoreRegistry.INSTANCE;
         final CyclicBarrier startSignal = new CyclicBarrier(nbWorkers);
         final Callable<Set<Class<?>>> collectProviderClasses = () -> {
             final Set<Class<?>> result = new HashSet<>();
             startSignal.await(10, TimeUnit.SECONDS);                        // Wait until all workers are ready.
-            for (DataStoreProvider p : dsr.providers()) {                   // This is the iteration to test.
+            for (DataStoreProvider p : dsr) {                               // This is the iteration to test.
                 result.add(p.getClass());
             }
             return result;

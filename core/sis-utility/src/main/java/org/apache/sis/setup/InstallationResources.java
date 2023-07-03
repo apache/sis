@@ -18,11 +18,13 @@ package org.apache.sis.setup;
 
 import java.util.Set;
 import java.util.Locale;
+import java.util.ServiceLoader;
 import java.io.IOException;
 import java.io.BufferedReader;
 import org.apache.sis.internal.util.URLs;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.internal.system.Reflect;
 
 
 /**
@@ -66,7 +68,7 @@ import org.apache.sis.internal.util.MetadataServices;
  * for writing the database; see above-cited web page for more information).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 public abstract class InstallationResources {
@@ -74,6 +76,17 @@ public abstract class InstallationResources {
      * For subclass constructors.
      */
     protected InstallationResources() {
+    }
+
+    /**
+     * Returns installation resources found on the class path.
+     *
+     * @return installation resources found on the class path.
+     *
+     * @since 1.4
+     */
+    public static ServiceLoader<InstallationResources> load() {
+        return ServiceLoader.load(InstallationResources.class, Reflect.getContextClassLoader());
     }
 
     /**

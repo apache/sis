@@ -39,7 +39,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gml.TM_Primitive;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
-import org.apache.sis.internal.util.TemporalUtilities;
+import org.apache.sis.internal.metadata.TemporalUtilities;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;

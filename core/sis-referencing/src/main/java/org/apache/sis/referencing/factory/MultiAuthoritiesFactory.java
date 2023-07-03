@@ -53,10 +53,10 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -145,7 +145,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * do not need to be thread-safe. See constructor Javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  *
@@ -1605,7 +1605,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     final CoordinateOperation[] ops = (CoordinateOperation[]) components;
                     String name = IdentifiedObjects.getIdentifierOrName(ops[0]) + " ⟶ "
                                 + IdentifiedObjects.getIdentifierOrName(ops[ops.length - 1]);
-                    combined = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
+                    combined = DefaultCoordinateOperationFactory.provider()
                             .createConcatenatedOperation(Map.of(CoordinateOperation.NAME_KEY, name), ops);
                 }
                 break;
@@ -1688,7 +1688,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      */
     private static GeodeticCRS combine(final GeodeticDatum datum, final CoordinateSystem cs) throws FactoryException {
         final Map<String,?> properties = IdentifiedObjects.getProperties(datum, Datum.IDENTIFIERS_KEY);
-        final CRSFactory factory = DefaultFactories.forBuildin(CRSFactory.class);
+        final CRSFactory factory = GeodeticObjectFactory.provider();
         if (datum instanceof GeodeticDatum) {
             if (cs instanceof EllipsoidalCS) {
                 return factory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
@@ -1714,7 +1714,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     {
         if (baseCRS != null && fromBase.getSourceCRS() == null && fromBase.getTargetCRS() == null) {
             final Map<String,?> properties = IdentifiedObjects.getProperties(fromBase, Datum.IDENTIFIERS_KEY);
-            final CRSFactory factory = DefaultFactories.forBuildin(CRSFactory.class);
+            final CRSFactory factory = GeodeticObjectFactory.provider();
             if (baseCRS instanceof GeographicCRS && cs instanceof CartesianCS) {
                 return factory.createProjectedCRS(properties, (GeographicCRS) baseCRS, fromBase, (CartesianCS) cs);
             } else {

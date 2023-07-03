@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Objects;
+import org.apache.sis.internal.util.CloneAccess;
 
 // Branch-dependent imports
 
@@ -37,7 +38,7 @@ import java.util.Objects;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @param <V>  the type of the attribute value.
  *
@@ -46,7 +47,7 @@ import java.util.Objects;
  * @since 0.5
  */
 @SuppressWarnings("CloneableImplementsClone")       // Nothing to add compared to subclass.
-final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {
+final class SingletonAttribute<V> extends AbstractAttribute<V> implements CloneAccess {
     /**
      * For cross-version compatibility.
      */

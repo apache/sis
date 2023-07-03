@@ -19,8 +19,6 @@ package org.apache.sis.io.wkt;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -39,7 +37,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests {@link MathTransformParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn(org.apache.sis.referencing.operation.transform.MathTransformsTest.class)
@@ -74,7 +72,7 @@ public final class MathTransformParserTest extends TestCase {
      */
     private MathTransform parse(final String text) throws ParseException {
         if (parser == null) {
-            parser = new MathTransformParser(DefaultFactories.forBuildin(MathTransformFactory.class));
+            parser = new MathTransformParser(DefaultMathTransformFactory.provider());
             assertEquals(DefaultMathTransformFactory.class.getCanonicalName(), parser.getPublicFacade());
         }
         final ParsePosition position = new ParsePosition(0);

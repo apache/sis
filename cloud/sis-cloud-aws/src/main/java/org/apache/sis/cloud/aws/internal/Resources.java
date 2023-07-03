@@ -16,7 +16,7 @@
  */
 package org.apache.sis.cloud.aws.internal;
 
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.apache.sis.util.resources.KeyConstants;
@@ -29,10 +29,10 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
-public final class Resources extends IndexedResourceBundle {
+public class Resources extends IndexedResourceBundle {
     /**
      * Resource keys. This class is used when compiling sources, but no dependencies to
      * {@code Keys} should appear in any resulting class files. Since the Java compiler
@@ -96,13 +96,21 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Constructs a new resource bundle loading data from the given UTF file.
-     *
-     * @param resources  the path of the binary file containing resources, or {@code null} if
-     *        there is no resources. The resources may be a file or an entry in a JAR file.
+     * Constructs a new resource bundle loading data from
+     * the resource file of the same name than this class.
      */
-    public Resources(final URL resources) {
-        super(resources);
+    public Resources() {
+    }
+
+    /**
+     * Opens the binary file containing the localized resources to load.
+     * This method delegates to {@link Class#getResourceAsStream(String)},
+     * but this delegation must be done from the same module than the one
+     * that provides the binary file.
+     */
+    @Override
+    protected InputStream getResourceAsStream(final String name) {
+        return getClass().getResourceAsStream(name);
     }
 
     /**
@@ -122,8 +130,13 @@ public final class Resources extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
      */
-    public static Resources forLocale(final Locale locale) throws MissingResourceException {
-        return getBundle(Resources.class, locale);
+    public static Resources forLocale(final Locale locale) {
+        /*
+         * We cannot factorize this method into the parent class, because we need to call
+         * `ResourceBundle.getBundle(String)` from the module that provides the resources.
+         * We do not cache the result because `ResourceBundle` already provides a cache.
+         */
+        return (Resources) getBundle(Resources.class.getName(), nonNull(locale));
     }
 
     /**

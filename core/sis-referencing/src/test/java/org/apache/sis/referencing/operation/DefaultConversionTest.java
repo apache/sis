@@ -27,12 +27,10 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -58,7 +56,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link DefaultConversion}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({
@@ -143,7 +141,7 @@ public final class DefaultConversionTest extends TestCase {
         final int sourceDim = sourceCRS.getCoordinateSystem().getDimension();
         final int targetDim = targetCRS.getCoordinateSystem().getDimension();
         final OperationMethod method = DefaultOperationMethodTest.create(
-                "Longitude rotation", "9601", "EPSG guidance note #7-2", sourceDim,
+                "Longitude rotation", "9601", "EPSG guidance note #7-2",
                 DefaultParameterDescriptorTest.createEPSG("Longitude offset", (short) 8602));
         final ParameterValueGroup pg = method.getParameters().createValue();
         pg.parameter("Longitude offset").setValue(OFFSET);
@@ -243,7 +241,7 @@ public final class DefaultConversionTest extends TestCase {
                 DefaultConversion.class,    // In normal use, this would be 'Conversion.class'.
                 changeCS(reference.getSourceCRS(), HardCodedCS.GEODETIC_φλ),
                 reference.getTargetCRS(),
-                DefaultFactories.forBuildin(MathTransformFactory.class));
+                null);
 
         verifyProperties(completed, true);
     }
@@ -258,7 +256,6 @@ public final class DefaultConversionTest extends TestCase {
     @Test
     @DependsOnMethod("testDefiningConversion")
     public void testSpecialize() throws FactoryException {
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         DefaultConversion op = createLongitudeRotation(
                 createParisCRS(true,  HardCodedCS.GEODETIC_3D, false),
                 createParisCRS(false, HardCodedCS.GEODETIC_3D, true), null);
@@ -271,12 +268,12 @@ public final class DefaultConversionTest extends TestCase {
          * When asking for a "specialization" with the same properties,
          * we should get the existing instance since no change is needed.
          */
-        assertSame(op, op.specialize(Conversion.class, op.getSourceCRS(), op.getTargetCRS(), factory));
+        assertSame(op, op.specialize(Conversion.class, op.getSourceCRS(), op.getTargetCRS(), null));
         /*
          * Reducing the number of dimensions to 2 and swapping (latitude, longitude) axes.
          */
         op = op.specialize(DefaultConversion.class, op.getSourceCRS(),
-                changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ), factory);
+                changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ), null);
         assertMatrixEquals("Longitude rotation of a two-dimensional CRS", Matrices.create(3, 4, new double[] {
                 0, 1, 0, 0,
                 1, 0, 0, OFFSET,
@@ -313,7 +310,7 @@ public final class DefaultConversionTest extends TestCase {
                 DefaultConversion.class,    // In normal use, this would be 'Conversion.class'.
                 op.getSourceCRS(),          // Keep the same source CRS.
                 changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ),   // Swap axis order.
-                DefaultFactories.forBuildin(MathTransformFactory.class));
+                null);
 
         assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
                 1, 0, 0, 0,
@@ -329,10 +326,9 @@ public final class DefaultConversionTest extends TestCase {
      */
     @Test
     public void testDatumCheck() throws FactoryException {
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         final DefaultConversion op = createLongitudeRotation(true);
         try {
-            op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF_NORMALIZED_AXES, factory);
+            op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF_NORMALIZED_AXES, null);
             fail("Should not have accepted to change the geodetic datum.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
@@ -340,7 +336,7 @@ public final class DefaultConversionTest extends TestCase {
             assertTrue(message, message.contains("Nouvelle Triangulation Française"));
         }
         try {
-            op.specialize(Conversion.class, HardCodedCRS.NTF_NORMALIZED_AXES, HardCodedCRS.WGS84, factory);
+            op.specialize(Conversion.class, HardCodedCRS.NTF_NORMALIZED_AXES, HardCodedCRS.WGS84, null);
             fail("Should not have accepted to change the geodetic datum.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();

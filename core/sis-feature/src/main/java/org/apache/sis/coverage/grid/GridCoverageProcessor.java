@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.function.Function;
+import java.lang.reflect.Field;
+import java.lang.reflect.InaccessibleObjectException;
 import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
@@ -44,7 +46,6 @@ import org.apache.sis.internal.coverage.MultiSourceArgument;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 
@@ -651,7 +652,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @return the reduced grid coverage, or {@code source} if no grid dimensions was specified.
      * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
      * @throws SubspaceNotSpecifiedException if at least one removed dimension has a grid extent size larger than 1 cell.
-     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      *
      * @see DimensionalityReduction#remove(GridGeometry, int...)
      *
@@ -702,7 +703,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @return the reduced grid coverage, or {@code source} if all grid dimensions where specified.
      * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
      * @throws SubspaceNotSpecifiedException if at least one removed dimension has a grid extent size larger than 1 cell.
-     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      *
      * @see DimensionalityReduction#select(GridGeometry, int...)
      *
@@ -902,12 +903,14 @@ public class GridCoverageProcessor implements Cloneable {
     public GridCoverageProcessor clone() {
         try {
             final GridCoverageProcessor clone = (GridCoverageProcessor) super.clone();
-            FinalFieldSetter.set(GridCoverageProcessor.class, "imageProcessor", clone, imageProcessor.clone());
+            final Field f = GridCoverageProcessor.class.getDeclaredField("imageProcessor");
+            f.setAccessible(true);      // Caller sensitive: must be invoked in same module.
+            f.set(clone, imageProcessor.clone());
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         } catch (ReflectiveOperationException e) {
-            throw FinalFieldSetter.cloneFailure(e);
+            throw (InaccessibleObjectException) new InaccessibleObjectException().initCause(e);
         }
     }
 }

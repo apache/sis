@@ -31,7 +31,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.DefaultFactories;
 
 
 /**
@@ -145,10 +144,10 @@ public abstract class AbstractName implements GenericName, Serializable {
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "parsedNames"));
         }
         /*
-         * Following cast should be safe because DefaultFactories.forBuildin(Class) filters the factories in
-         * order to return the Apache SIS implementation, which is known to create AbstractName instances.
+         * Following cast should be safe because we know that the
+         * Apache SIS implementation creates `AbstractName` instances.
          */
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         return (AbstractName) factory.createGenericName(object.scope(), names);
     }
 

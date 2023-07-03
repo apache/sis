@@ -17,10 +17,10 @@
 package org.apache.sis.util.resources;
 
 import java.net.URI;
-import java.net.URL;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
@@ -82,7 +82,7 @@ import org.apache.sis.measure.Range;
  * @version 1.4
  * @since   0.3
  */
-public class IndexedResourceBundle extends ResourceBundle implements Localized {
+public abstract class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * The logger for localization events.
      */
@@ -113,18 +113,13 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     static final int FIRST = 1;
 
     /**
-     * The path of the binary file containing resources, or {@code null} if there are no resources
-     * or if the resources have already been loaded. The resources may be a file or an entry in a
-     * JAR file.
-     */
-    private URL resources;
-
-    /**
-     * The array of resources. Keys are an array index plus {@value #FIRST}. For example, the value for key "14" is
-     * {@code values[13]}. This array will be loaded only when first needed. We should not load it at construction
-     * time, because some {@code ResourceBundle} objects will never ask for values.  This is particularly the case
-     * for parent resources of {@code Resources_fr_CA}, {@code Resources_en}, {@code Resources_de}, etc. which will
-     * only be used if a key has not been found in the child resources.
+     * The array of resources. Keys are an array index plus {@value #FIRST}.
+     * For example, the value for key "14" is {@code values[13]}.
+     *
+     * This array will be loaded only when first needed. We should not load it at construction time,
+     * because some {@code ResourceBundle} instances will never ask for values. In particular, parent
+     * of {@code Resources_en}, {@code Resources_fr}, <i>etc.</i> which will only be queries if a key
+     * has not been found in the child resources.
      *
      * @see #ensureLoaded(String)
      */
@@ -145,53 +140,43 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     private transient short lastKey;
 
     /**
-     * Constructs a new resource bundle loading data from the given UTF file.
-     *
-     * @param  resources  the path of the binary file containing resources, or {@code null} if
-     *         there are no resources. The resources may be a file or an entry in a JAR file.
+     * Constructs a new resource bundle loading data from a UTF file derived from the class name.
      */
-    protected IndexedResourceBundle(final URL resources) {
-        this.resources = resources;
+    protected IndexedResourceBundle() {
     }
 
     /**
-     * Returns a resource bundle of the specified class.
+     * Returns the given locale if non-null, or the default locale otherwise.
      *
-     * @param  <T>      the resource bundle class.
-     * @param  base     the resource bundle class.
-     * @param  locale   the locale, or {@code null} for the default locale.
-     * @return resources in the given locale.
-     * @throws MissingResourceException if resources cannot be found.
-     *
-     * @see Vocabulary#getResources(Locale)
-     * @see Errors#getResources(Locale)
+     * @param  locale  the user-specified locale.
+     * @return the locale to use for fetching a resource bundle.
      */
-    protected static <T extends IndexedResourceBundle> T getBundle(Class<T> base, Locale locale)
-            throws MissingResourceException
-    {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        // No caching; we rely on the one implemented in ResourceBundle.
-        return base.cast(getBundle(base.getName(), locale, base.getClassLoader(), Loader.INSTANCE));
+    protected static Locale nonNull(final Locale locale) {
+        return (locale != null) ? locale : Locale.getDefault();
     }
+
+    /**
+     * Opens the binary file containing the localized resources to load.
+     * Subclasses shall implement this method as below:
+     *
+     * {@snippet lang="java" :
+     *     return getClass().getResourceAsStream(name);
+     *     }
+     *
+     * Above implementation needs to be provided by subclasses because the
+     * call to {@link Class#getResourceAsStream(String)} is caller-sensitive.
+     *
+     * @param  name  name of the UTF file to open.
+     * @return a stream opened on the given file.
+     */
+    protected abstract InputStream getResourceAsStream(String name);
 
     /**
      * Returns a handler for the constants declared in the inner {@code Keys} class.
-     * Subclasses should override this method for efficiency, but this is not mandatory.
      *
      * @return a handler for the constants declared in the inner {@code Keys} class.
      */
-    protected KeyConstants getKeyConstants() {
-        Class<?> keysClass = KeyConstants.class;
-        for (final Class<?> inner : getClass().getClasses()) {
-            if ("Keys".equals(inner.getSimpleName())) {
-                keysClass = inner;
-                break;
-            }
-        }
-        return new KeyConstants(keysClass);
-    }
+    protected abstract KeyConstants getKeyConstants();
 
     /**
      * Returns an enumeration of the keys.
@@ -289,6 +274,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
         if (values == null) synchronized (this) {
             values = this.values;
             if (values == null) {
+                final InputStream resources = getResourceAsStream(getClass().getSimpleName() + ".utf");
                 /*
                  * If there are no explicit resources for this instance, inherit the resources
                  * from the parent. Note that this IndexedResourceBundle instance may still
@@ -314,7 +300,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     /*
                      * Loads resources from the UTF file.
                      */
-                    try (DataInputStream input = new DataInputStream(new BufferedInputStream(resources.openStream()))) {
+                    try (DataInputStream input = new DataInputStream(new BufferedInputStream(resources))) {
                         values = new String[input.readInt()];
                         for (int i=0; i<values.length; i++) {
                             values[i] = input.readUTF();
@@ -346,7 +332,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     }
                     record.setParameters(new String[] {language, baseName});
                     Logging.completeAndLog(LOGGER, IndexedResourceBundle.class, methodName, record);
-                    resources = null;                                           // Not needed anymore, let GC do its job.
                 }
                 this.values = values;
             }

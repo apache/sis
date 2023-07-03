@@ -22,7 +22,7 @@ import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.internal.xml.XmlUtilities;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.internal.util.TemporalUtilities;
+import org.apache.sis.internal.metadata.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports

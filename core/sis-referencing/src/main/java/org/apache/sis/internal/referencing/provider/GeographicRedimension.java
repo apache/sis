@@ -46,25 +46,38 @@ class GeographicRedimension extends GeodeticOperation {
     private static final long serialVersionUID = -3021902514274756742L;
 
     /**
+     * Returns the provider for the specified combination of source and target dimensions.
+     */
+    @Override
+    final GeodeticOperation redimensioned(int indexOfDim) {
+        return Geographic3Dto2D.REDIMENSIONED[indexOfDim];
+    }
+
+    /**
+     * Creates a copy of this provider.
+     *
+     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     */
+    @Deprecated
+    GeographicRedimension(final GeographicRedimension copy) {
+        super(copy);
+    }
+
+    /**
      * Constructs a math transform provider from a set of parameters.
      * This is for sub-class constructors only.
      */
-    GeographicRedimension(final ParameterDescriptorGroup parameters,
-                          final int sourceDimensions,
-                          final int targetDimensions,
-                          final GeodeticOperation[] redimensioned)
-    {
-        super(Conversion.class, parameters,
-              CoordinateSystem.class, sourceDimensions, false,
-              CoordinateSystem.class, targetDimensions, false, redimensioned);
+    GeographicRedimension(final ParameterDescriptorGroup parameters, final int indexOfDim) {
+        super(Conversion.class, parameters, indexOfDim,
+              CoordinateSystem.class, false,
+              CoordinateSystem.class, false);
     }
 
     /**
      * Creates an identity operation of the given number of dimensions.
      */
-    GeographicRedimension(final int dimension, final GeodeticOperation[] redimensioned) {
-        this(builder().setCodeSpace(Citations.SIS, Constants.SIS).addName("Identity " + dimension + 'D').createGroup(),
-             dimension, dimension, redimensioned);
+    GeographicRedimension(final int indexOfDim, final String name) {
+        this(builder().setCodeSpace(Citations.SIS, Constants.SIS).addName(name).createGroup(), indexOfDim);
     }
 
     /**

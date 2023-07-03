@@ -30,7 +30,6 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -92,7 +91,7 @@ public final class NameMarshallingTest extends TestCase {
      */
     @Test
     public void testLocalName() throws JAXBException {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final LocalName name = factory.createLocalName(null, "An ordinary local name");
         assertEquals("An ordinary local name", name.toString());
         final String expected =
@@ -115,7 +114,7 @@ public final class NameMarshallingTest extends TestCase {
     @Test
     @DependsOnMethod("testLocalName")
     public void testLocalNameWithAmp() throws JAXBException {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final LocalName name = factory.createLocalName(null, "A name with & and > and <.");
         assertEquals("A name with & and > and <.", name.toString());
         final String expected =
@@ -138,7 +137,7 @@ public final class NameMarshallingTest extends TestCase {
     @Test
     @DependsOnMethod("testLocalName")
     public void testLocalNameWithScope() throws JAXBException {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "A code space"), null);
         final LocalName name = factory.createLocalName(scope, "A name in a scope");
         assertEquals("A name in a scope", name.toString());
@@ -161,7 +160,7 @@ public final class NameMarshallingTest extends TestCase {
      */
     @Test
     public void testTypeName() throws JAXBException {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final TypeName name = factory.createTypeName(null, "Another local name");
         assertEquals("Another local name", name.toString());
         final String expected =
@@ -187,7 +186,7 @@ public final class NameMarshallingTest extends TestCase {
      */
     @Test
     public void testScopedName() throws JAXBException {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final GenericName name = factory.createGenericName(null, "myScope","myName");
         assertEquals("myScope:myName", name.toString());
         final String expected =

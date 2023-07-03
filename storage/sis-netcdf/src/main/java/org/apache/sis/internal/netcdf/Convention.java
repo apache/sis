@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.awt.Color;
 import javax.measure.Unit;
@@ -33,8 +34,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.Category;
@@ -67,7 +68,7 @@ import ucar.nc2.constants.CF;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
@@ -77,7 +78,8 @@ public class Convention {
     /**
      * All conventions found on the classpath.
      */
-    private static final LazySet<Convention> AVAILABLES = new LazySet<>(Convention.class);
+    private static final ServiceLoader<Convention> AVAILABLES =
+            ServiceLoader.load(Convention.class, Reflect.getContextClassLoader());
 
     /**
      * The convention to use when no specific conventions were found.

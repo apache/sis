@@ -47,7 +47,7 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
  * Tests the {@link Types} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class TypesTest extends TestCase {
@@ -150,12 +150,12 @@ public final class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Types#getResources(String)} method.
+     * Tests the {@link Types#toResourceName(String)} method.
      */
     @Test
     public void testGetResources() {
-        assertEquals("org.opengis.metadata.Descriptions", Types.getResources("org.opengis.metadata.Identifier"));
-        assertNull(Types.getResources("org.opengis.metadata2.Identifier"));
+        assertEquals("org.opengis.metadata.Descriptions", Types.toResourceName("org.opengis.metadata.Identifier"));
+        assertNull(Types.toResourceName("org.opengis.metadata2.Identifier"));
     }
 
     /**

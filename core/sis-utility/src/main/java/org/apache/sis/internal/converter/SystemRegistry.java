@@ -17,12 +17,13 @@
 package org.apache.sis.internal.converter;
 
 import java.util.Date;
+import java.util.ServiceLoader;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.internal.system.Modules;
 
 
@@ -49,7 +50,7 @@ import org.apache.sis.internal.system.Modules;
  * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
  */
 public final class SystemRegistry extends ConverterRegistry {
@@ -105,7 +106,7 @@ public final class SystemRegistry extends ConverterRegistry {
      */
     @Override
     protected void initialize() {
-        for (ObjectConverter<?,?> converter : DefaultFactories.createServiceLoader(ObjectConverter.class)) {
+        for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, Reflect.getContextClassLoader())) {
             if (converter instanceof SystemConverter<?,?>) {
                 converter = ((SystemConverter<?,?>) converter).unique();
             }

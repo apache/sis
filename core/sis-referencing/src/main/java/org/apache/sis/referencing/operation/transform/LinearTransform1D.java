@@ -191,7 +191,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.getProvider(1, 1, true).getParameters();
+        return Affine.provider(1, 1, true).getParameters();
     }
 
     /**

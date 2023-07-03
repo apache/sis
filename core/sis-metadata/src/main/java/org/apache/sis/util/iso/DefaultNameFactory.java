@@ -72,7 +72,7 @@ import org.apache.sis.internal.util.Strings;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see Names
  * @see DefaultNameSpace
@@ -105,7 +105,30 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     private transient volatile TypeNames typeNames;
 
     /**
+     * The default factory instance.
+     */
+    private static final DefaultNameFactory INSTANCE = new DefaultNameFactory();
+
+    /**
+     * Returns the default provider of {@code GenericName} instances.
+     * This is the factory used by the Apache SIS library when no non-null
+     * {@link NameFactory} has been explicitly specified.
+     * This method can be invoked directly, or indirectly through
+     * {@code ServiceLoader.load(NameFactory.class)}.
+     *
+     * @return the default provider of generic names.
+     *
+     * @see java.util.ServiceLoader
+     * @since 1.4
+     */
+    public static DefaultNameFactory provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Creates a new factory.
+     *
+     * @see #provider()
      */
     public DefaultNameFactory() {
         pool = new WeakHashSet<>(GenericName.class);

@@ -25,6 +25,7 @@ import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.CodeLists;
 
 import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
 
@@ -242,11 +243,8 @@ public final class CodeListUID {
         if (locale != null) {
             final String key = classID + '.' + fieldID;
             try {
-                value = ResourceBundle.getBundle("org.opengis.metadata.CodeLists",
+                value = ResourceBundle.getBundle(CodeLists.RESOURCES,
                         locale, CodeList.class.getClassLoader()).getString(key);
-                if ("Off line access".equals(value)) {
-                    value = "Offline access";               // For having the same value than GeoAPI 3.1.
-                }
             } catch (MissingResourceException e) {
                 Context.warningOccured(context, CodeListAdapter.class, "marshal", e, false);
             }

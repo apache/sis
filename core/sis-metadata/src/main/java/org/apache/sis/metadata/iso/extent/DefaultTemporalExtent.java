@@ -29,7 +29,7 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.util.TemporalUtilities;
+import org.apache.sis.internal.metadata.TemporalUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;

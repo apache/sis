@@ -35,7 +35,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * <p>Subclasses may be promoted to a real operation if we implement their formulas in a future Apache SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 @SuppressWarnings("serial")
@@ -43,13 +43,10 @@ abstract class ProviderMock extends AbstractProvider {
     /**
      * Creates a new mock provider.
      */
-    ProviderMock(final ParameterDescriptorGroup parameters,
-                 final int sourceDimension,
-                 final int targetDimension)
-    {
+    ProviderMock(final ParameterDescriptorGroup parameters) {
         super(SingleOperation.class, parameters,
-              CoordinateSystem.class, sourceDimension, false,
-              CoordinateSystem.class, targetDimension, false);
+              CoordinateSystem.class, false,
+              CoordinateSystem.class, false);
     }
 
     /**
@@ -62,8 +59,8 @@ abstract class ProviderMock extends AbstractProvider {
     @Override
     public final MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
         return new AbstractMathTransform() {
-            @Override @Deprecated public int getSourceDimensions() {return ProviderMock.this.getSourceDimensions();}
-            @Override @Deprecated public int getTargetDimensions() {return ProviderMock.this.getTargetDimensions();}
+            @Override public int getSourceDimensions() {return 2;}
+            @Override public int getTargetDimensions() {return 2;}
             @Override
             public Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate) {
                 throw new UnsupportedOperationException();

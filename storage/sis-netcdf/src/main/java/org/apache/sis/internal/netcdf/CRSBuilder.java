@@ -37,7 +37,6 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Matrix;
@@ -51,8 +50,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.provider.Equirectangular;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.TemporalUtilities;
+import org.apache.sis.internal.metadata.TemporalUtilities;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
@@ -794,8 +792,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          */
         private static final Conversion UNKNOWN_PROJECTION;
         static {
-            final DefaultCoordinateOperationFactory factory = DefaultFactories.forBuildin(
-                    CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+            final DefaultCoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
             try {
                 final OperationMethod method = factory.getOperationMethod(Equirectangular.NAME);
                 UNKNOWN_PROJECTION = factory.createDefiningConversion(

@@ -20,12 +20,11 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -42,7 +41,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Emmanuel Giasson (Thales)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -148,7 +147,7 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      */
     private void createCompleteTransform(final OperationMethod op, final ParameterValueGroup p) throws FactoryException {
         transform = new ObliqueStereographic(op, (Parameters) p).createMapProjection(
-                DefaultFactories.forBuildin(MathTransformFactory.class));
+                DefaultMathTransformFactory.provider());
     }
 
     /**

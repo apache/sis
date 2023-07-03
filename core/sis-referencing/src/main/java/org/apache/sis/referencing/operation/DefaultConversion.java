@@ -36,7 +36,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
@@ -426,7 +425,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             }
         }
         if (factory == null) {
-            factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+            factory = DefaultMathTransformFactory.provider();
         }
         return SubTypes.create(baseType, this, sourceCRS, targetCRS, factory);
     }

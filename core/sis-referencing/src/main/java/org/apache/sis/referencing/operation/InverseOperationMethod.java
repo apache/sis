@@ -66,7 +66,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
      * Creates the inverse of the given method.
      */
     private InverseOperationMethod(final Map<String,?> properties, final OperationMethod method) {
-        super(properties, method.getTargetDimensions(), method.getSourceDimensions(), method.getParameters());
+        super(properties, method.getParameters());
         inverse = method;
     }
 
