@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -55,9 +56,14 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class DefaultConcatenatedOperationTest extends TestCase {
     /**
-     * An XML file in this package containing a projected CRS definition.
+     * Opens the stream to the XML file in this package containing a projected CRS definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "ConcatenatedOperation.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultConcatenatedOperationTest.class.getResourceAsStream("ConcatenatedOperation.xml");
+    }
 
     /**
      * Creates a “Tokyo to JGD2000” transformation.
@@ -135,7 +141,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultConcatenatedOperation op = unmarshalFile(DefaultConcatenatedOperation.class, XML_FILE);
+        final DefaultConcatenatedOperation op = unmarshalFile(DefaultConcatenatedOperation.class, openTestFile());
         Validators.validate(op);
         assertEquals("operations.size()", 2, op.getOperations().size());
         final CoordinateOperation step1 = op.getOperations().get(0);
@@ -156,6 +162,6 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
         /*
          * Test marshalling and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, op, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(), op, "xmlns:*", "xsi:schemaLocation");
     }
 }

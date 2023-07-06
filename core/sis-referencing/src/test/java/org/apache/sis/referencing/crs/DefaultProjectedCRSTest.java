@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -64,6 +65,16 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 })
 public final class DefaultProjectedCRSTest extends TestCase {
     /**
+     * Opens the stream to the XML file in this package containing a projected CRS definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
+     */
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultProjectedCRSTest.class.getResourceAsStream("ProjectedCRS.xml");
+    }
+
+    /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testWKT1_WithExplicitAxisLength()}.
      * This rule is used by the test methods for verifying that the logged messages contain the expected information.
      * The expected message is something like "Parameter semi_minor could have been omitted but got a value that does
@@ -82,11 +93,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
-
-    /**
-     * An XML file in this package containing a projected CRS definition.
-     */
-    private static final String XML_FILE = "ProjectedCRS.xml";
 
     /**
      * Creates a projected CRS and verifies its parameters.
@@ -471,7 +477,7 @@ public final class DefaultProjectedCRSTest extends TestCase {
      */
     @Test
     public void testXML() throws FactoryException, JAXBException {
-        final DefaultProjectedCRS crs = unmarshalFile(DefaultProjectedCRS.class, XML_FILE);
+        final DefaultProjectedCRS crs = unmarshalFile(DefaultProjectedCRS.class, openTestFile());
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 27572, crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, crs.getBaseCRS());
@@ -488,7 +494,7 @@ public final class DefaultProjectedCRSTest extends TestCase {
          * Test marshalling and compare with the original file. The comparison ignores the <gml:name> nodes because the
          * marshalled CRS contains many operation method and parameter aliases which were not in the original XML file.
          */
-        assertMarshalEqualsFile(XML_FILE, crs, null, STRICT, new String[] {"gml:name"},
+        assertMarshalEqualsFile(openTestFile(), crs, null, STRICT, new String[] {"gml:name"},
                 new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});
     }
 

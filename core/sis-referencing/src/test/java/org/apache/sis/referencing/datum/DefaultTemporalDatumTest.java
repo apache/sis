@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.ImmutableIdentifier;
@@ -42,9 +43,14 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  */
 public final class DefaultTemporalDatumTest extends TestCase {
     /**
-     * An XML file in this package containing a vertical datum definition.
+     * Opens the stream to the XML file in this package containing a vertical datum definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "TemporalDatum.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultTemporalDatumTest.class.getResourceAsStream("TemporalDatum.xml");
+    }
 
     /**
      * November 17, 1858 at 00:00 UTC as a Java timestamp.
@@ -101,7 +107,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
     @Test
     public void testMarshalling() throws JAXBException {
         final DefaultTemporalDatum datum = create();
-        assertMarshalEqualsFile(XML_FILE, datum, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(), datum, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -111,7 +117,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        final DefaultTemporalDatum datum = unmarshalFile(DefaultTemporalDatum.class, XML_FILE);
+        final DefaultTemporalDatum datum = unmarshalFile(DefaultTemporalDatum.class, openTestFile());
         assertIdentifierEquals("identifier", "Apache Spatial Information System", "SIS", null, "MJ",
                 getSingleton(datum.getIdentifiers()));
         assertEquals("name", "Modified Julian",

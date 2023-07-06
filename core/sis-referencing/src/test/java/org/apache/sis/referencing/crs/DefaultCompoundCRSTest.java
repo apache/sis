@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
@@ -68,9 +69,14 @@ public final class DefaultCompoundCRSTest extends TestCase {
     private static final DefaultTemporalCRS TIME = HardCodedCRS.TIME;
 
     /**
-     * An XML file in this package containing a projected CRS definition.
+     * Opens the stream to the XML file in this package containing a projected CRS definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "CompoundCRS.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultCompoundCRSTest.class.getResourceAsStream("CompoundCRS.xml");
+    }
 
     /**
      * Verifies that we do not allow construction with a duplicated horizontal or vertical component.
@@ -332,7 +338,7 @@ public final class DefaultCompoundCRSTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultCompoundCRS crs = unmarshalFile(DefaultCompoundCRS.class, XML_FILE);
+        final DefaultCompoundCRS crs = unmarshalFile(DefaultCompoundCRS.class, openTestFile());
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("JGD2011 + JGD2011 (vertical) height", 6697, crs);
         assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
@@ -347,6 +353,6 @@ public final class DefaultCompoundCRSTest extends TestCase {
         /*
          * Test marshalling and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation", "gml:id");
+        assertMarshalEqualsFile(openTestFile(), crs, "xmlns:*", "xsi:schemaLocation", "gml:id");
     }
 }

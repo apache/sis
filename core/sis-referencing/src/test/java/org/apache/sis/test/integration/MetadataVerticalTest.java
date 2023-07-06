@@ -18,6 +18,7 @@ package org.apache.sis.test.integration;
 
 import java.net.URI;
 import java.util.Locale;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import jakarta.xml.bind.JAXBException;
 
@@ -73,10 +74,14 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public class MetadataVerticalTest extends TestCase {
     /**
-     * The resource file which contains an XML representation
-     * of a {@link Metadata} object with a {@link VerticalCRS}.
+     * Opens the stream to the XML representation of a {@link Metadata} object with a {@link VerticalCRS}.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "Metadata with vertical CRS.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return MetadataVerticalTest.class.getResourceAsStream("Metadata with vertical CRS.xml");
+    }
 
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
@@ -100,7 +105,7 @@ public class MetadataVerticalTest extends TestCase {
      */
     @Test
     public void testMetadataWithVerticalCRS() throws JAXBException {
-        final Metadata metadata = unmarshalFile(Metadata.class, XML_FILE);
+        final Metadata metadata = unmarshalFile(Metadata.class, openTestFile());
         assertEquals("fileIdentifier", "20090901",                     metadata.getMetadataIdentifier().getCode());
         assertEquals("language",       Locale.ENGLISH,                 getSingleton(metadata.getLocalesAndCharsets().keySet()));
         assertEquals("characterSet",   StandardCharsets.UTF_8,         getSingleton(metadata.getLocalesAndCharsets().values()));
@@ -197,7 +202,7 @@ public class MetadataVerticalTest extends TestCase {
          *
          * Now marshal the object and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, metadata, VERSION_2007, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(), metadata, VERSION_2007, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**

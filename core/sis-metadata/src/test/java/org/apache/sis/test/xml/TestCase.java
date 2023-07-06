@@ -16,7 +16,6 @@
  */
 package org.apache.sis.test.xml;
 
-import java.net.URL;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
@@ -25,11 +24,13 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.JAXBException;
+import java.io.IOException;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.cat.CodeListUID;
@@ -176,29 +177,11 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
-     * Returns the URL to the XML file of the given name.
-     * The file shall be in the same package than a subclass of {@code this}.
-     * This method begins the search in the package of {@link #getClass()}.
-     * If the resource is not found in that package, then this method searches in the parent classes.
-     * The intent is to allow some test classes to be overridden in different modules.
+     * Marshals the given object and ensures that the result is equal to the content of the given stream.
+     * The stream should be opened by a call to {@link Class#getResourceAsStream(String)} from the module
+     * that contains the resource, and the stream will be closed by this method.
      *
-     * @param  filename  the name of the XML file.
-     * @return the URL to the given XML file.
-     */
-    private URL getResource(final String filename) {
-        Class<?> c = getClass();
-        do {
-            final URL resource = c.getResource(filename);
-            if (resource != null) return resource;
-            c = c.getSuperclass();
-        } while (!c.equals(TestCase.class));
-        throw new AssertionError("Test resource not found: " + filename);
-    }
-
-    /**
-     * Marshals the given object and ensure that the result is equal to the content of the given file.
-     *
-     * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
+     * @param  expected           a stream opened on an XML document with the expected content.
      * @param  object             the object to marshal.
      * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
      *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
@@ -206,35 +189,47 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      *
      * @see #unmarshalFile(Class, String)
      */
-    protected final void assertMarshalEqualsFile(final String filename, final Object object,
+    protected final void assertMarshalEqualsFile(final InputStream expected, final Object object,
             final String... ignoredAttributes) throws JAXBException
     {
-        assertXmlEquals(getResource(filename), marshal(object), ignoredAttributes);
+        assertNotNull("Test resource is not found or not accessible.", expected);
+        try (expected) {
+            assertXmlEquals(expected, marshal(object), ignoredAttributes);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
-     * Marshals the given object and ensure that the result is equal to the content of the given file.
+     * Marshals the given object and ensures that the result is equal to the content of the given stream.
+     * The stream should be opened by a call to {@link Class#getResourceAsStream(String)} from the module
+     * that contains the resource, and the stream will be closed by this method.
      *
-     * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
+     * @param  expected           a stream opened on an XML document with the expected content.
      * @param  object             the object to marshal.
      * @param  metadataVersion    whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
      * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
      *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
      * @throws JAXBException if an error occurred during marshalling.
-     *
-     * @since 1.0
      */
-    protected final void assertMarshalEqualsFile(final String filename, final Object object,
+    protected final void assertMarshalEqualsFile(final InputStream expected, final Object object,
             final Version metadataVersion, final String... ignoredAttributes) throws JAXBException
     {
-        assertXmlEquals(getResource(filename), marshal(object, metadataVersion), ignoredAttributes);
+        assertNotNull("Test resource is not found or not accessible.", expected);
+        try (expected) {
+            assertXmlEquals(expected, marshal(object, metadataVersion), ignoredAttributes);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
-     * Marshals the given object and ensure that the result is equal to the content of the given file,
+     * Marshals the given object and ensures that the result is equal to the content of the given stream,
      * within a tolerance threshold for numerical values.
+     * The stream should be opened by a call to {@link Class#getResourceAsStream(String)} from the module
+     * that contains the resource, and the stream will be closed by this method.
      *
-     * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
+     * @param  expected           a stream opened on an XML document with the expected content.
      * @param  object             the object to marshal.
      * @param  metadataVersion    whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
      * @param  tolerance          the tolerance threshold for comparison of numerical values.
@@ -244,13 +239,16 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws JAXBException if an error occurred during marshalling.
      *
      * @see #unmarshalFile(Class, String)
-     *
-     * @since 1.0
      */
-    protected final void assertMarshalEqualsFile(final String filename, final Object object, final Version metadataVersion,
+    protected final void assertMarshalEqualsFile(final InputStream expected, final Object object, final Version metadataVersion,
             final double tolerance, final String[] ignoredNodes, final String[] ignoredAttributes) throws JAXBException
     {
-        assertXmlEquals(getResource(filename), marshal(object, metadataVersion), tolerance, ignoredNodes, ignoredAttributes);
+        assertNotNull("Test resource is not found or not accessible.", expected);
+        try (expected) {
+            assertXmlEquals(expected, marshal(object, metadataVersion), tolerance, ignoredNodes, ignoredAttributes);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
@@ -279,8 +277,6 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @param  metadataVersion  whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
      * @return the marshalled object.
      * @throws JAXBException if an error occurred while marshalling the object.
-     *
-     * @since 1.0
      */
     protected final String marshal(final Object object, final Version metadataVersion) throws JAXBException {
         final MarshallerPool pool = getMarshallerPool();
@@ -314,24 +310,28 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
 
     /**
      * Unmarshals the content of the given test file using the {@linkplain #getMarshallerPool() test marshaller pool}.
-     * The resource is obtained by a call to {@code getClass().getResource(filename)}, which implies that the file
-     * shall be in the same package than the subclass of {@code this}.
+     * The stream should be opened by a call to {@link Class#getResourceAsStream(String)} from the module
+     * that contains the resource, and the stream will be closed by this method.
      *
-     * @param  <T>       compile-time type of {@code type} argument.
-     * @param  type      the expected type of the unmarshalled object.
-     * @param  filename  the name of the XML file in the package of the final subclass of {@code this}.
+     * @param  <T>    compile-time type of {@code type} argument.
+     * @param  type   the expected type of the unmarshalled object.
+     * @param  input  a stream opened on the document to unmarshall.
      * @return the object unmarshalled from the given file.
      * @throws JAXBException if an error occurred during unmarshalling.
      *
      * @see #assertMarshalEqualsFile(String, Object, String...)
      */
-    protected final <T> T unmarshalFile(final Class<T> type, final String filename) throws JAXBException {
-        final MarshallerPool pool = getMarshallerPool();
-        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-        final Object object = unmarshaller.unmarshal(getResource(filename));
-        pool.recycle(unmarshaller);
-        assertInstanceOf(filename, type, object);
-        return type.cast(object);
+    protected final <T> T unmarshalFile(final Class<T> type, final InputStream input) throws JAXBException {
+        assertNotNull("Test resource is not found or not accessible.", input);
+        try (input) {
+            final MarshallerPool pool = getMarshallerPool();
+            final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+            final Object object = unmarshaller.unmarshal(input);
+            pool.recycle(unmarshaller);
+            return type.cast(object);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
@@ -412,8 +412,6 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      *
      * @param  xml  an XML compliant with ISO 19115-3.
      * @return an XML compliant with ISO 19139:2007.
-     *
-     * @since 1.0
      */
     protected static String toLegacyXML(final String xml) {
         final StringBuilder buffer = new StringBuilder(xml);

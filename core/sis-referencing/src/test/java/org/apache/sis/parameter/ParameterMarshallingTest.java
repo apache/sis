@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Objects;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import jakarta.xml.bind.JAXBException;
@@ -58,6 +59,34 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
     DefaultParameterValueGroupTest.class
 })
 public final class ParameterMarshallingTest extends TestCase {
+    /**
+     * Enumeration of test files.
+     */
+    private enum TestFile {
+        /** GML document of a parameter descriptor group. */
+        DESCRIPTOR("ParameterDescriptorGroup.xml"),
+
+        /** GML document of a parameter value group. */
+        VALUE("ParameterValueGroup.xml"),
+
+        /** GML document containing duplicated parameters. */
+        DUPLICATED("DuplicatedParameters.xml");
+
+        /** Relative filename of the GML document. */
+        private final String filename;
+
+        /** Creates an enumeration for a GML document in the specified file. */
+        private TestFile(final String filename) {
+            this.filename = filename;
+        }
+
+        /** Opens the stream to the XML file containing the test document. */
+        final InputStream openTestFile() {
+            // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+            return ParameterMarshallingTest.class.getResourceAsStream(filename);
+        }
+    }
+
     /**
      * Creates a parameter value for marshalling test.
      */
@@ -289,11 +318,11 @@ public final class ParameterMarshallingTest extends TestCase {
     @DependsOnMethod("testDoubleValue")
     public void testDescriptorGroup() throws JAXBException {
         // Test marshalling.
-        assertMarshalEqualsFile("ParameterDescriptorGroup.xml",
+        assertMarshalEqualsFile(TestFile.DESCRIPTOR.openTestFile(),
                 ParameterFormatTest.createMercatorParameters(), "xmlns:*", "xsi:schemaLocation");
 
         // Test unmarshalling.
-        verifyDescriptorGroup(unmarshalFile(DefaultParameterDescriptorGroup.class, "ParameterDescriptorGroup.xml"));
+        verifyDescriptorGroup(unmarshalFile(DefaultParameterDescriptorGroup.class, TestFile.DESCRIPTOR.openTestFile()));
     }
 
     /**
@@ -367,7 +396,7 @@ public final class ParameterMarshallingTest extends TestCase {
     @Test
     @DependsOnMethod("testDescriptorGroup")
     public void testValueGroupMmarshalling() throws JAXBException {
-        assertMarshalEqualsFile("ParameterValueGroup.xml",
+        assertMarshalEqualsFile(TestFile.VALUE.openTestFile(),
                 ParameterFormatTest.createMercatorParameters().createValue(),
                 "xmlns:*", "xsi:schemaLocation");
     }
@@ -381,7 +410,7 @@ public final class ParameterMarshallingTest extends TestCase {
     @Test
     @DependsOnMethod("testDescriptorGroup")
     public void testValueGroupUnmarshalling() throws JAXBException {
-        testValueGroupUnmarshalling("ParameterValueGroup.xml");
+        testValueGroupUnmarshalling(TestFile.VALUE);
     }
 
     /**
@@ -394,14 +423,14 @@ public final class ParameterMarshallingTest extends TestCase {
     @Test
     @DependsOnMethod("testValueGroupUnmarshalling")
     public void testDuplicatedParametersUnmarshalling() throws JAXBException {
-        testValueGroupUnmarshalling("DuplicatedParameters.xml");
+        testValueGroupUnmarshalling(TestFile.DUPLICATED);
     }
 
     /**
      * Tests unmarshalling of the given file.
      */
-    private void testValueGroupUnmarshalling(final String file) throws JAXBException {
-        final DefaultParameterValueGroup group = unmarshalFile(DefaultParameterValueGroup.class, file);
+    private void testValueGroupUnmarshalling(final TestFile file) throws JAXBException {
+        final DefaultParameterValueGroup group = unmarshalFile(DefaultParameterValueGroup.class, file.openTestFile());
         verifyDescriptorGroup(group.getDescriptor());
         final Iterator<GeneralParameterValue> it = group.values().iterator();
         final Iterator<GeneralParameterDescriptor> itd = group.getDescriptor().descriptors().iterator();
