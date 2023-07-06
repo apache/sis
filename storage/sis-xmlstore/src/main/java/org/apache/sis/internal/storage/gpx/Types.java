@@ -42,7 +42,6 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.storage.FeatureCatalogBuilder;
-import org.apache.sis.util.ResourceInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Branch-dependent imports
@@ -306,8 +305,8 @@ final class Types {
             final GenericName name = p.getName();
             if (!AttributeConvention.contains(name)) {
                 final InternationalString[] resources = previous.computeIfAbsent(name.toString(), (key) -> new InternationalString[] {
-                    new ResourceInternationalString("org.apache.sis.internal.storage.gpx.Designations", key),
-                    new ResourceInternationalString("org.apache.sis.internal.storage.gpx.Definitions",  key)
+                    new Description("org.apache.sis.internal.storage.gpx.Designations", key),
+                    new Description("org.apache.sis.internal.storage.gpx.Definitions",  key)
                 });
                 p.setDefinition (resources[1]);
                 p.setDesignation(resources[0]);
