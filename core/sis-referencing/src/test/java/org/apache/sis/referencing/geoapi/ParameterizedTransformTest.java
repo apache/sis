@@ -21,8 +21,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.After;
 import org.junit.Test;
 
@@ -36,7 +34,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * @version 1.4
  * @since   1.1
  */
-@RunWith(JUnit4.class)
 public final class ParameterizedTransformTest extends org.opengis.test.referencing.ParameterizedTransformTest {
     /**
      * Creates a new test suite using the singleton factory instance.

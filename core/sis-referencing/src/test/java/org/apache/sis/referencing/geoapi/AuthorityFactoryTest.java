@@ -18,8 +18,6 @@ package org.apache.sis.referencing.geoapi;
 
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.Ignore;
 
 
@@ -31,10 +29,9 @@ import org.junit.Ignore;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
-@RunWith(JUnit4.class)
 public final class AuthorityFactoryTest extends org.opengis.test.referencing.AuthorityFactoryTest {
     /**
      * Creates a new test suite using the singleton factory instance.

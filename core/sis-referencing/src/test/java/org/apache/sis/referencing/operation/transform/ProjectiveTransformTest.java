@@ -35,9 +35,7 @@ import org.apache.sis.math.Fraction;
 
 // Test imports
 import org.opengis.test.Validators;
-import org.apache.sis.test.TestRunner;
 import org.apache.sis.test.DependsOn;
-import org.junit.runner.RunWith;
 import org.junit.After;
 import org.junit.Test;
 import org.opengis.test.Assert;
@@ -58,7 +56,6 @@ import org.opengis.test.referencing.AffineTransformTest;
  * @version 1.4
  * @since   0.5
  */
-@RunWith(TestRunner.class)
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
 public class ProjectiveTransformTest extends AffineTransformTest {
     /**
