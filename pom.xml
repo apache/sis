@@ -983,16 +983,6 @@
     </pluginRepository>
   </pluginRepositories>
 
-  <!-- Used for GeoAPI snapshots only.
-       Shall be removed on SIS master. -->
-  <repositories>
-    <repository>
-      <id>geotoolkit</id>
-      <name>Geotoolkit.org repository</name>
-      <url>https://maven.geotoolkit.org</url>
-    </repository>
-  </repositories>
-
 
 
   <!-- ==============================================================
