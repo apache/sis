@@ -229,6 +229,20 @@
       </fileset>
     </concat>
 
+    <!-- Cross-module services. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.util.MetadataServices" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.util.MetadataServices"/>
+      </fileset>
+    </concat>
+
+    <!-- Cross-module services. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.metadata.ReferencingServices" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.metadata.ReferencingServices"/>
+      </fileset>
+    </concat>
+
     <!-- TypeRegistration implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
