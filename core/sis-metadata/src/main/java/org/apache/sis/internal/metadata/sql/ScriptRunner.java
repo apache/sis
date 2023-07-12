@@ -22,12 +22,15 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.function.BiFunction;
+import java.io.FileNotFoundException;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -51,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 public class ScriptRunner implements AutoCloseable {
@@ -440,24 +443,40 @@ public class ScriptRunner implements AutoCloseable {
     }
 
     /**
-     * Runs the SQL script of the given name in the same package than the given class.
-     * The script is presumed encoded in UTF-8.
+     * Runs the SQL script from the given (filename, input stream) pair.
+     * The file name is used only if an error needs to be reported.
+     * The stream content is presumed encoded in UTF-8 and the stream will be closed by this method.
+     * This method is intended to be invoked by code like this:
      *
-     * @param  loader    the class to use for loading the SQL script.
-     * @param  filename  the SQL script filename, relative to the {@code loader} package.
+     * {@snippet lang="java" :
+     *     run("myFile.sql", MyClass.getResourceAsStream("myFile.sql"));
+     * }
+     *
+     * <h4>Rational</h4>
+     * Because {@link Class#getResourceAsStream(String)} is caller-sensitive, it must be invoked
+     * from the module containing the resource. Invoking {@code getResourceAsStream(…)} from this
+     * {@code run(…)} method does not work even with a {@link Class} instance passed in argument.
+     *
+     * @param  filename  name of the SQL script being executed. This is used only for error reporting.
+     * @param  in  the stream to read. It will be closed by this method.
      * @return the number of rows added or modified as a result of the statement execution.
      * @throws IOException if an error occurred while reading the input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
-    public final int run(final Class<?> loader, final String filename) throws IOException, SQLException {
-        try (BufferedReader in = new LineNumberReader(new InputStreamReader(loader.getResourceAsStream(filename), "UTF-8"))) {
-            return run(filename, in);
+    public final int run(final String filename, final InputStream in) throws IOException, SQLException {
+        if (in == null) {
+            throw new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, filename));
+        }
+        try (BufferedReader reader = new LineNumberReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            return run(filename, reader);
         }
     }
 
     /**
      * Runs the script from the given reader. Lines are read and grouped up to the
      * terminal {@value #END_OF_STATEMENT} character, then sent to the database.
+     * Note that contrarily to {@link #run(String, InputStream)},
+     * this method does <strong>not</strong> close the given reader.
      *
      * @param  filename  name of the SQL script being executed. This is used only for error reporting.
      * @param  in        the stream to read. It is caller's responsibility to close this reader.

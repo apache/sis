@@ -16,7 +16,10 @@
  */
 package org.apache.sis.test.sql;
 
+import java.util.List;
+import java.util.function.Supplier;
 import java.io.IOException;
+import java.io.InputStream;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -276,25 +279,23 @@ public class TestDatabase implements AutoCloseable {
     }
 
     /**
-     * Executes the given SQL statements, or statements from the given resource files.
-     * If an element from the {@code scripts} array begin by {@code "file:"}, then the part
-     * after {@code ":"} will be read as a resource file loaded by the given {@code loader}.
-     * Otherwise the script is executed as a SQL statement. Null element are ignored.
+     * Executes the given SQL statements, or statements from the given resource streams.
+     * Each element of the list shall be either a {@link String} or a {@code Supplier<InputStream>}.
+     * In the latter case, {@code Supplier.toString()} is used in error message if an error happens.
      *
-     * @param loader   a class in the package of the resource file. This is usually the test class.
-     * @param scripts  SQL statements or names of the SQL files to load and execute.
+     * @param  scripts  SQL statements or names of the SQL files to load and execute.
      * @throws IOException if an error occurred while reading a resource file.
      * @throws SQLException if an error occurred while executing a SQL statement.
+     * @throws ClassCastException if an element of the list is not a {@code String} or a {@code Supplier<InputStream>}.
      */
-    public void executeSQL(final Class<?> loader, final String... scripts) throws IOException, SQLException {
+    public final void executeSQL(final List<?> scripts) throws IOException, SQLException {
         try (Connection c = source.getConnection(); ScriptRunner r = new ScriptRunner(c, 1000)) {
-            for (final String sql : scripts) {
-                if (sql != null) {
-                    if (sql.startsWith("file:")) {
-                        r.run(loader, sql.substring(5));
-                    } else {
-                        r.run(sql);
-                    }
+            for (final Object sql : scripts) {
+                if (sql instanceof String) {
+                    r.run((String) sql);
+                } else {
+                    final var s = (Supplier<?>) sql;
+                    r.run(s.toString(), (InputStream) s.get());
                 }
             }
         }

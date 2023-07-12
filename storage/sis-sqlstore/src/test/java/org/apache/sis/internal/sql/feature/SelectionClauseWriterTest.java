@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.sql.feature;
 
+import java.util.List;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStore;
@@ -73,9 +74,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
     @Test
     public void testOnDerby() throws Exception {
         try (TestDatabase db = TestDatabase.create("SQLStore")) {
-            db.executeSQL(SelectionClauseWriterTest.class,
-                    "CREATE TABLE TEST (ALPHA INTEGER, BETA INTEGER, GAMMA INTEGER, PI FLOAT);");
-
+            db.executeSQL(List.of("CREATE TABLE TEST (ALPHA INTEGER, BETA INTEGER, GAMMA INTEGER, PI FLOAT);"));
             final StorageConnector connector = new StorageConnector(db.source);
             connector.setOption(SchemaModifier.OPTION, this);
             try (DataStore store = new SQLStoreProvider().open(connector)) {

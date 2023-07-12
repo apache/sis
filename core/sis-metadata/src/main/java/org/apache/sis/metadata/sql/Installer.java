@@ -34,7 +34,7 @@ import org.apache.sis.util.StringBuilders;
  *       dependencies.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  */
 final class Installer extends ScriptRunner {
@@ -71,10 +71,15 @@ final class Installer extends ScriptRunner {
      * Runs the installation scripts.
      */
     public void run() throws IOException, SQLException {
-        run(Installer.class, "Citations.sql");
-        run(Installer.class, "Contents.sql");
-        run(Installer.class, "Metadata.sql");
-        run(Installer.class, "Referencing.sql");
+        final String[] scripts = {
+            "Citations.sql",
+            "Contents.sql",
+            "Metadata.sql",
+            "Referencing.sql"
+        };
+        for (final String filename : scripts) {
+            run(filename, Installer.class.getResourceAsStream(filename));
+        }
     }
 
     /**
