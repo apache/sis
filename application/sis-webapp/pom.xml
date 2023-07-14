@@ -39,17 +39,17 @@
 
   <dependencies>
     <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
-      <version>8.0.1</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.0.0</version>
       <scope>provided</scope>
     </dependency>
 
     <!-- Optional dependencies -->
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-      <version>6.0.0</version>
+      <artifactId>osgi.core</artifactId>
+      <version>8.0.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
