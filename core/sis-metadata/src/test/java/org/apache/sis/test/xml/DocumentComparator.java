@@ -73,7 +73,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see TestCase
  * @see org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])
@@ -186,8 +186,10 @@ public class DocumentComparator {
      * The inputs can be any of the following types:
      *
      * <ul>
-     *   <li>{@link Node}; used directly without further processing.</li>
-     *   <li>{@link Path}, {@link File}, {@link URL} or {@link URI}: the stream is opened and parsed as a XML document.</li>
+     *   <li>{@link Node}: used directly without further processing.</li>
+     *   <li>{@link InputStream}: parsed as an XML document, then closed.</li>
+     *   <li>{@link Path}, {@link File}, {@link URL} or {@link URI}:
+     *       the stream is opened and parsed as an XML document, then closed.</li>
      *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *

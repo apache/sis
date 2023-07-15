@@ -155,13 +155,13 @@ public final class EnvelopeOperationTest extends TestCase {
     private void set(final String propertyName, final CoordinateReferenceSystem crs,
                      final boolean asCharacteristic, final Geometry geometry)
     {
-        final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).orElseThrow(
+        final GeometryWrapper wrapper = Geometries.wrap(geometry).orElseThrow(
                     () -> new IllegalStateException("Cannot load ESRI binding"));
 
         if (asCharacteristic) {
             @SuppressWarnings("unchecked")
-            final Attribute<GeometryWrapper<?>> property =
-                    (Attribute<GeometryWrapper<?>>) feature.getProperty(propertyName);
+            final Attribute<GeometryWrapper> property =
+                    (Attribute<GeometryWrapper>) feature.getProperty(propertyName);
             final Attribute<CoordinateReferenceSystem> crsCharacteristic = Features.cast(
                     property.getType().characteristics().get(AttributeConvention.CRS),
                     CoordinateReferenceSystem.class).newInstance();

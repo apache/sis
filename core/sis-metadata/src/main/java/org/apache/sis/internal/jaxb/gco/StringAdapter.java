@@ -38,7 +38,7 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
     /**
      * Empty constructor for JAXB or subclasses.
      */
-    protected StringAdapter() {
+    public StringAdapter() {
     }
 
     /**

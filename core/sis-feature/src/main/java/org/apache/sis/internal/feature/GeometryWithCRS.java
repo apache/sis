@@ -26,13 +26,10 @@ import org.apache.sis.util.ArgumentChecks;
  * to wrap does not store CRS information by itself. See {@link GeometryWrapper} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- *
- * @param  <G>  root class of geometry instances of the underlying library.
- *
- * @since 1.1
+ * @version 1.4
+ * @since   1.1
  */
-public abstract class GeometryWithCRS<G> extends GeometryWrapper<G> {
+public abstract class GeometryWithCRS extends GeometryWrapper {
     /**
      * The coordinate reference system, or {@code null} if unspecified.
      */
@@ -75,13 +72,13 @@ public abstract class GeometryWithCRS<G> extends GeometryWrapper<G> {
      *         or {@code false} in case of doubt.
      */
     @Override
-    public final boolean isSameCRS(final GeometryWrapper<G> other) {
+    public final boolean isSameCRS(final GeometryWrapper other) {
         /*
          * Identity comparison is often sufficient since all geometries typically share the same CRS.
          * If they are not the same instance, a more expensive `equalsIgnoreMetadata(…)` method here
          * would probably duplicate the work done later by the `transform(Geometry, …)` method.
          */
-        return crs == ((GeometryWithCRS<G>) other).crs;
+        return crs == ((GeometryWithCRS) other).crs;
     }
 
     /**

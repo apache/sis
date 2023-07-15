@@ -54,7 +54,7 @@ public final class Anchor extends XLink implements InternationalString {
      * This is the value returned by {@link #toString()}.
      */
     @XmlValue
-    private String value;
+    public String value;
 
     /**
      * Creates a uninitialized {@code Anchor}.

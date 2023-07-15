@@ -100,6 +100,11 @@ public abstract class Geometries<G> implements Serializable {
      * This is set by {@link GeometryFactories} and should not change after initialization.
      * We do not synchronize accesses to this field because we keep it stable after
      * {@link GeometryFactories} class initialization.
+     *
+     * <h4>Temporarily permitted change</h4>
+     * {@link GeometryFactories#setStandard(Geometries)} temporarily permits a change of this field,
+     * but only for {@link GeometryLibrary#GEOAPI}. This is internal API and a temporary flexibility
+     * for experimenting different GeoAPI implementations.
      */
     transient Geometries<?> fallback;
 
@@ -118,8 +123,11 @@ public abstract class Geometries<G> implements Serializable {
      * @param  polylineClass  the class for polylines.
      * @param  polygonClass   the class for polygons.
      */
-    protected Geometries(final GeometryLibrary library, final Class<G> rootClass, final Class<?> pointClass,
-                         final Class<? extends G> polylineClass, final Class<? extends G> polygonClass)
+    protected Geometries(final GeometryLibrary library,
+                         final Class<G> rootClass,
+                         final Class<?> pointClass,
+                         final Class<? extends G> polylineClass,
+                         final Class<? extends G> polygonClass)
     {
         this.library         = library;
         this.rootClass       = rootClass;
@@ -137,8 +145,8 @@ public abstract class Geometries<G> implements Serializable {
      * @return the specified or the default geometry implementation (never {@code null}).
      * @throws IllegalArgumentException if a non-null library is specified by that library is not available.
      */
-    public static Geometries<?> implementation(final GeometryLibrary library) {
-        Geometries<?> g = GeometryFactories.implementation;
+    public static Geometries<?> factory(final GeometryLibrary library) {
+        Geometries<?> g = GeometryFactories.DEFAULT;
         if (library == null) {
             return g;
         }
@@ -156,8 +164,8 @@ public abstract class Geometries<G> implements Serializable {
      * @param  type  the type for which to get a geometry factory.
      * @return a geometry factory compatible with the given type if possible, or {@code null} otherwise.
      */
-    public static Geometries<?> implementation(final Class<?> type) {
-        for (Geometries<?> g = GeometryFactories.implementation; g != null; g = g.fallback) {
+    public static Geometries<?> factory(final Class<?> type) {
+        for (Geometries<?> g = GeometryFactories.DEFAULT; g != null; g = g.fallback) {
             if (g.isSupportedType(type)) return g;
         }
         return null;
@@ -170,7 +178,7 @@ public abstract class Geometries<G> implements Serializable {
      * @return {@code true} if the given type is one of the geometry types known to SIS.
      */
     public static boolean isKnownType(final Class<?> type) {
-        for (Geometries<?> g = GeometryFactories.implementation; g != null; g = g.fallback) {
+        for (Geometries<?> g = GeometryFactories.DEFAULT; g != null; g = g.fallback) {
             if (g.isSupportedType(type)) return true;
         }
         return GeometryWrapper.class.isAssignableFrom(type);
@@ -184,10 +192,13 @@ public abstract class Geometries<G> implements Serializable {
     }
 
     /**
-     * Returns the geometry class of the given instance.
+     * Returns the geometry class of the given type.
+     * This is the type of instances returned by {@link GeometryWrapper#implementation()}.
      *
      * @param  type  type of geometry for which the class is desired.
      * @return implementation class for the geometry of the specified type.
+     *
+     * @see #getGeometry(GeometryWrapper)
      */
     public Class<?> getGeometryClass(final GeometryType type) {
         switch (type) {
@@ -199,6 +210,31 @@ public abstract class Geometries<G> implements Serializable {
     }
 
     /**
+     * Returns the geometry object to return to the user in public API.
+     * This is the kind of object specified by {@link GeometryLibrary}.
+     * It is usually the {@linkplain GeometryWrapper#implementation() implementation},
+     * unless the user has requested GeoAPI interfaces in which case this method
+     * returns the wrapper directly.
+     *
+     * @param  wrapper  the wrapper for which to get the geometry, or {@code null}.
+     * @return the geometry instance of the library requested by user, or {@code null} if the given wrapper was null.
+     * @throws ClassCastException if the given wrapper is not an instance of the class expected by this factory.
+     *
+     * @see #getGeometryClass(GeometryType)
+     * @see #implementation(Object)
+     */
+    public Object getGeometry(final GeometryWrapper wrapper) {
+        if (wrapper == null) {
+            return null;
+        }
+        final Geometries<?> other = wrapper.factory();
+        if (other.library != library) {
+            throw new ClassCastException(Resources.format(Resources.Keys.MismatchedGeometryLibrary_2, library, other.library));
+        }
+        return wrapper.implementation();
+    }
+
+    /**
      * Wraps the given geometry implementation if recognized.
      * If the given object is already an instance of {@link GeometryWrapper}, then it is returned as-is.
      * If the given object is not recognized, then this method returns an empty value.
@@ -207,13 +243,14 @@ public abstract class Geometries<G> implements Serializable {
      * @return a wrapper for the given geometry implementation, or empty value.
      *
      * @see #castOrWrap(Object)
+     * @see #implementation(Object)
      */
-    public static Optional<GeometryWrapper<?>> wrap(final Object geometry) {
+    public static Optional<GeometryWrapper> wrap(final Object geometry) {
         if (geometry != null) {
-            if (geometry instanceof GeometryWrapper<?>) {
-                return Optional.of((GeometryWrapper<?>) geometry);
+            if (geometry instanceof GeometryWrapper) {
+                return Optional.of((GeometryWrapper) geometry);
             }
-            for (Geometries<?> g = GeometryFactories.implementation; g != null; g = g.fallback) {
+            for (Geometries<?> g = GeometryFactories.DEFAULT; g != null; g = g.fallback) {
                 if (g.isSupportedType(geometry.getClass())) {
                     return Optional.of(g.castOrWrap(geometry));
                 }
@@ -223,13 +260,13 @@ public abstract class Geometries<G> implements Serializable {
     }
 
     /**
-     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} instance.
+     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper} instance.
      * The given object can be one of the following choices:
      *
      * <ul>
      *   <li>{@code null}, in which case this method returns {@code null}.</li>
-     *   <li>An instance of {@code GeometryWrapper<G>}, in which case the given object is returned unchanged.
-     *       Note that instances of {@code GeometryWrapper<?>} for implementations other than {@code <G>}
+     *   <li>An instance of {@code GeometryWrapper}, in which case the given object is returned unchanged.
+     *       Note that instances of {@code GeometryWrapper} for implementations other than {@code <G>}
      *       will cause a {@link ClassCastException} to be thrown.</li>
      *   <li>An instance of {@link #rootClass} or {@link #pointClass}.</li>
      * </ul>
@@ -244,7 +281,7 @@ public abstract class Geometries<G> implements Serializable {
      *
      * @see #wrap(Object)
      */
-    public abstract GeometryWrapper<G> castOrWrap(Object geometry);
+    public abstract GeometryWrapper castOrWrap(Object geometry);
 
     /**
      * If the given object is an instance of {@link GeometryWrapper}, returns the wrapped geometry implementation.
@@ -252,9 +289,11 @@ public abstract class Geometries<G> implements Serializable {
      *
      * @param  geometry  the geometry to unwrap (can be {@code null}).
      * @return the geometry implementation, or the given geometry as-is.
+     *
+     * @see GeometryWrapper#implementation()
      */
-    protected static Object unwrap(final Object geometry) {
-        return (geometry instanceof GeometryWrapper<?>) ? ((GeometryWrapper<?>) geometry).implementation() : geometry;
+    protected static Object implementation(final Object geometry) {
+        return (geometry instanceof GeometryWrapper) ? ((GeometryWrapper) geometry).implementation() : geometry;
     }
 
     /**
@@ -266,7 +305,7 @@ public abstract class Geometries<G> implements Serializable {
      *
      * @see GeometryWrapper#formatWKT(double)
      */
-    public abstract GeometryWrapper<G> parseWKT(String wkt) throws Exception;
+    public abstract GeometryWrapper parseWKT(String wkt) throws Exception;
 
     /**
      * Reads the given bytes as a Well Known Binary (WKB) encoded geometry.
@@ -276,7 +315,7 @@ public abstract class Geometries<G> implements Serializable {
      * @return decoded geometry (never {@code null}).
      * @throws Exception if the WKB cannot be parsed. The exception sub-class depends on the implementation.
      */
-    public abstract GeometryWrapper<G> parseWKB(ByteBuffer data) throws Exception;
+    public abstract GeometryWrapper parseWKB(ByteBuffer data) throws Exception;
 
     /**
      * Creates and wraps a point from the given position.
@@ -284,7 +323,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  point  the point to convert to a geometry.
      * @return the given point converted to a geometry.
      */
-    public final GeometryWrapper<G> createPoint(final DirectPosition point) {
+    public final GeometryWrapper createPoint(final DirectPosition point) {
         final Object geometry;
         final int n = point.getDimension();
         switch (n) {
@@ -292,7 +331,7 @@ public abstract class Geometries<G> implements Serializable {
             case 3: geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1), point.getOrdinate(2)); break;
             default: throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "point", (n <= 2) ? 2 : 3, n));
         }
-        final GeometryWrapper<G> wrapper = castOrWrap(geometry);
+        final GeometryWrapper wrapper = castOrWrap(geometry);
         if (point.getCoordinateReferenceSystem() != null) {
             wrapper.setCoordinateReferenceSystem(point.getCoordinateReferenceSystem());
         }
@@ -390,7 +429,7 @@ public abstract class Geometries<G> implements Serializable {
      *       or returning a more primitive geometry type if the given array contains only one element.
      *       We may want to return null if the array is empty (to be decided later).
      */
-    public abstract GeometryWrapper<G> createMultiPolygon(final Object[] geometries);
+    public abstract GeometryWrapper createMultiPolygon(final Object[] geometries);
 
     /**
      * Creates a geometry from components.
@@ -408,7 +447,7 @@ public abstract class Geometries<G> implements Serializable {
      * @return geometry built from the given components.
      * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
      */
-    public abstract GeometryWrapper<G> createFromComponents(GeometryType type, Object components);
+    public abstract GeometryWrapper createFromComponents(GeometryType type, Object components);
 
     /**
      * Creates a polyline made of points describing a rectangle whose start point is the lower left corner.
@@ -422,8 +461,8 @@ public abstract class Geometries<G> implements Serializable {
      * @param  addPts  whether to allow insertion of intermediate points on edges of axis domains.
      * @return a polyline made of a sequence of at least 5 points describing the given rectangle.
      */
-    private GeometryWrapper<G> createGeometry2D(final Envelope envelope, final int xd, final int yd,
-                                                final boolean expand, final boolean addPts)
+    private GeometryWrapper createGeometry2D(final Envelope envelope, final int xd, final int yd,
+                                             final boolean expand, final boolean addPts)
     {
         final double  xmin, ymin, xmax, ymax;
         if (expand) {
@@ -500,7 +539,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  strategy  how to resolve wrap-around ambiguities on the envelope.
      * @return the envelope as a polygon, or potentially as two polygons in {@link WraparoundMethod#SPLIT} case.
      */
-    public GeometryWrapper<G> toGeometry2D(final Envelope envelope, final WraparoundMethod strategy) {
+    public GeometryWrapper toGeometry2D(final Envelope envelope, final WraparoundMethod strategy) {
         int xd = 0, yd = 1;
         CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final int dimension = envelope.getDimension();
@@ -524,7 +563,7 @@ public abstract class Geometries<G> implements Serializable {
                  */
             }
         }
-        final GeometryWrapper<G> result;
+        final GeometryWrapper result;
         switch (strategy) {
             case NORMALIZE: {
                 throw new IllegalArgumentException();
@@ -551,7 +590,7 @@ public abstract class Geometries<G> implements Serializable {
                     break;
                 }
                 @SuppressWarnings({"unchecked", "rawtypes"})
-                final GeometryWrapper<G>[] polygons = new GeometryWrapper[parts.length];
+                final GeometryWrapper[] polygons = new GeometryWrapper[parts.length];
                 for (int i=0; i<parts.length; i++) {
                     polygons[i] = createGeometry2D(parts[i], xd, yd, true, false);
                     polygons[i].setCoordinateReferenceSystem(crs);
@@ -574,7 +613,7 @@ public abstract class Geometries<G> implements Serializable {
      *
      * @see #castOrWrap(Object)
      */
-    protected abstract GeometryWrapper<G> createWrapper(G geometry);
+    protected abstract GeometryWrapper createWrapper(G geometry);
 
     /**
      * Returns an error message for an unsupported operation. This error message is used by non-abstract methods

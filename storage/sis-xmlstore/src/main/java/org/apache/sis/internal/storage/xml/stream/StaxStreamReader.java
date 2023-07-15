@@ -40,7 +40,6 @@ import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.storage.DataStoreException;
@@ -362,7 +361,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      */
     protected final Double getElementAsDouble() throws XMLStreamException {
         final String text = getElementText();
-        return (text != null) ? Numerics.valueOf(parseDouble(text)) : null;
+        return (text != null) ? parseDouble(text) : null;
     }
 
     /**

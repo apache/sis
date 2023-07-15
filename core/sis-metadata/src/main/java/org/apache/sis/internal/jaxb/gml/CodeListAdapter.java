@@ -37,21 +37,19 @@ import org.apache.sis.util.iso.Types;
  */
 public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> extends XmlAdapter<CodeListAdapter.Value, BoundType> {
     /**
-     * Wraps the {@link CodeList} value in a GML document. This class does not need to be public
-     * even if exported from public {@link CodeListAdapter} API, because it is used only by JAXB
-     * and JAXB can access private members.
+     * Wraps the {@link CodeList} value in a GML document.
      */
-    static final class Value {
+    public static final class Value {
         /** The code space of the {@link #value} as a URI, or {@code null}. */
         @XmlAttribute
-        String codeSpace;
+        public String codeSpace;
 
         /** The code list identifier. */
         @XmlValue
-        String value;
+        public String value;
 
         /** Empty constructor for JAXB only. */
-        Value() {
+        public Value() {
         }
 
         /** Creates a new wrapper for the given value. */

@@ -47,14 +47,14 @@ public final class MimeFileType {
      * The value of the {@code type} attribute, which is the mime type.
      */
     @XmlAttribute
-    private String type;
+    public String type;
 
     /**
      * A human-readable description of the mime type. If {@link #type} is null,
      * then this will be taken as the mime type.
      */
     @XmlValue
-    private String value;
+    public String value;
 
     /**
      * Empty constructor for JAXB only.

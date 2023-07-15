@@ -18,6 +18,7 @@ package org.apache.sis.internal.profile.fra;
 
 import java.util.Set;
 import java.util.Collection;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -43,9 +44,13 @@ import static org.junit.Assert.*;
  */
 public final class DirectReferenceSystemTest extends TestCase {
     /**
-     * An XML file in this package containing a reference system definition.
+     * Opens the stream to the XML file in this package containing a reference system definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "DirectReferenceSystem.xml";
+    private static InputStream openTestFile() {
+        return DirectReferenceSystemTest.class.getResourceAsStream("DirectReferenceSystem.xml");
+    }
 
     /**
      * Creates the metadata object to be tested.
@@ -75,7 +80,7 @@ public final class DirectReferenceSystemTest extends TestCase {
      */
     @Test
     public void marshallingTest() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE, createMetadata(false), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(), createMetadata(false), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -87,7 +92,7 @@ public final class DirectReferenceSystemTest extends TestCase {
     @Test
     public void unmarshallingTest() throws JAXBException {
         final DefaultMetadata expected = createMetadata(true);
-        final DefaultMetadata result = unmarshalFile(DefaultMetadata.class, XML_FILE);
+        final DefaultMetadata result = unmarshalFile(DefaultMetadata.class, openTestFile());
         assertTrue(expected.equals(result, ComparisonMode.DEBUG));
     }
 }

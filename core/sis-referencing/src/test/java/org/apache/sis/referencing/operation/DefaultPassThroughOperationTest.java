@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.List;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -46,9 +47,14 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class DefaultPassThroughOperationTest extends TestCase {
     /**
-     * An XML file in this package containing a projected CRS definition.
+     * Opens the stream to the XML file in this package containing a projected CRS definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "PassThroughOperation.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultPassThroughOperationTest.class.getResourceAsStream("PassThroughOperation.xml");
+    }
 
     /**
      * Tests (un)marshalling of a concatenated operation.
@@ -57,7 +63,7 @@ public final class DefaultPassThroughOperationTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultPassThroughOperation toTest = unmarshalFile(DefaultPassThroughOperation.class, XML_FILE);
+        final DefaultPassThroughOperation toTest = unmarshalFile(DefaultPassThroughOperation.class, openTestFile());
         Validators.validate(toTest);
         final CoordinateReferenceSystem sourceCRS = toTest.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = toTest.getTargetCRS();
@@ -79,6 +85,6 @@ public final class DefaultPassThroughOperationTest extends TestCase {
         /*
          * Test marshalling and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, toTest, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(), toTest, "xmlns:*", "xsi:schemaLocation");
     }
 }

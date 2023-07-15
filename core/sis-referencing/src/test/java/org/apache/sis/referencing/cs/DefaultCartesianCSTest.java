@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
@@ -49,9 +50,14 @@ import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 })
 public final class DefaultCartesianCSTest extends TestCase {
     /**
-     * An XML file in this package containing a Cartesian coordinate system definition.
+     * Opens the stream to the XML file in this package containing a Cartesian coordinate system definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "CartesianCS.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultCartesianCSTest.class.getResourceAsStream("CartesianCS.xml");
+    }
 
     /**
      * Tests the creation of a Cartesian CS with legal axes.
@@ -205,7 +211,7 @@ public final class DefaultCartesianCSTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultCartesianCS cs = unmarshalFile(DefaultCartesianCS.class, XML_FILE);
+        final DefaultCartesianCS cs = unmarshalFile(DefaultCartesianCS.class, openTestFile());
         Validators.validate(cs);
         GeodeticObjectVerifier.assertIsProjected2D(cs);
         /*
@@ -224,6 +230,6 @@ public final class DefaultCartesianCSTest extends TestCase {
         /*
          * Marshal and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, cs, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(), cs, "xmlns:*", "xsi:schemaLocation");
     }
 }

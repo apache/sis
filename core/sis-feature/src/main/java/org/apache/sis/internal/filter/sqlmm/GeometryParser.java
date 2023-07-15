@@ -20,6 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import org.opengis.filter.Expression;
@@ -85,11 +86,11 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
     public final Object apply(final R input) {
         final Object value = geometry.apply(input);
         try {
-            final GeometryWrapper<G> parsed = parse(value);
+            final GeometryWrapper parsed = parse(value);
             if (parsed == null) {
                 return null;
             }
-            final GeometryWrapper<G> result = parsed.toGeometryType(operation.getGeometryType().get());
+            final GeometryWrapper result = parsed.toGeometryType(operation.getGeometryType().get());
             if (result != parsed) {
                 /*
                  * Conversions are expected for operations of the kind "Boundary polygon".
@@ -103,7 +104,7 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
                     default: warning(new InvalidFilterValueException(Errors.format(
                                             Errors.Keys.IllegalArgumentClass_3, inputName(),
                                             getValueClass(),
-                                            result.implementation().getClass())), true);
+                                            Classes.getClass(library.getGeometry(result)))), true);
                 }
             }
             if (srid != null) {
@@ -112,7 +113,7 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
                     result.setCoordinateReferenceSystem(crs);
                 }
             }
-            return result.implementation();
+            return library.getGeometry(result);
         } catch (Exception e) {
             warning(e, false);
         }
@@ -127,5 +128,5 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
      * @throws ClassCastException if the given value is not an instance of the type expected by this operation
      * @throws Exception if parsing failed for another reason. This is an implementation-specific exception.
      */
-    protected abstract GeometryWrapper<G> parse(Object value) throws Exception;
+    protected abstract GeometryWrapper parse(Object value) throws Exception;
 }

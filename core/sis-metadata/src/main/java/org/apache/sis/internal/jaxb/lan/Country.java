@@ -67,7 +67,7 @@ public final class Country extends GO_CharacterString {
     /**
      * Empty constructor for JAXB only.
      */
-    private Country() {
+    public Country() {
     }
 
     /**
@@ -102,33 +102,39 @@ public final class Country extends GO_CharacterString {
 
     /**
      * Gets the value of the Country code using ISO 19139:2007 element name.
+     *
+     * @return the ISO country code.
      */
     @XmlElement(name = "Country", namespace = LegacyNamespaces.GMD)
-    private CodeListUID getCountry() {
+    public CodeListUID getCountry() {
         return isLegacyMetadata ? identifier : null;
     }
 
     /**
      * Sets the value of the Country code in ISO 19139:2007 element name.
+     *
+     * @param  newValue  the ISO country code.
      */
-    @SuppressWarnings("unused")
-    private void setCountry(CodeListUID newValue) {
+    public void setCountry(CodeListUID newValue) {
         identifier = newValue;
     }
 
     /**
      * Gets the value of the Country code using ISO 19115-3 element name.
+     *
+     * @return the ISO country code.
      */
     @XmlElement(name = "CountryCode")
-    private CodeListUID getCountryCode() {
+    public CodeListUID getCountryCode() {
         return isLegacyMetadata ? null : identifier;
     }
 
     /**
      * Sets the value of the Country code in ISO 19115-3 element name.
+     *
+     * @param  newValue  the ISO country code.
      */
-    @SuppressWarnings("unused")
-    private void setCountryCode(CodeListUID newValue) {
+    public void setCountryCode(CodeListUID newValue) {
         identifier = newValue;
     }
 

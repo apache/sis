@@ -67,12 +67,12 @@ public final class PT_FreeText extends GO_CharacterString {
      */
     @XmlElementWrapper(name = "PT_FreeText")
     @XmlElement(required = true)
-    private TextGroup[] textGroup;
+    public TextGroup[] textGroup;
 
     /**
      * Empty constructor used only by JAXB.
      */
-    private PT_FreeText() {
+    public PT_FreeText() {
     }
 
     /**

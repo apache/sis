@@ -31,6 +31,8 @@ import org.apache.sis.internal.feature.GeometryWithCRS;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.util.Debug;
+
+// Branch-dependent imports
 import org.opengis.filter.SpatialOperatorName;
 
 
@@ -39,10 +41,10 @@ import org.opengis.filter.SpatialOperatorName;
  * {@link Point2D} are not {@link Shape} in Java2D API.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
-final class PointWrapper extends GeometryWithCRS<Shape> {
+final class PointWrapper extends GeometryWithCRS {
     /**
      * The wrapped implementation.
      */
@@ -59,7 +61,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
      * Returns the implementation-dependent factory of geometric object.
      */
     @Override
-    public Geometries<Shape> factory() {
+    protected Geometries<Shape> factory() {
         return Factory.INSTANCE;
     }
 
@@ -67,7 +69,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
      * Returns the point specified at construction time.
      */
     @Override
-    public Object implementation() {
+    protected Object implementation() {
         return point;
     }
 
@@ -128,7 +130,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
      * This method assumes that the two geometries are in the same CRS (this is not verified).
      */
     @Override
-    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<Shape> other) {
+    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper other) {
         final int ordinal = type.ordinal();
         if (ordinal >= 0 && ordinal < PREDICATES.length) {
             final BiPredicate<PointWrapper,Object> op = PREDICATES[ordinal];
@@ -166,7 +168,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
      */
     @Override
     @SuppressWarnings("fallthrough")
-    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Shape> other, final Object argument) {
+    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper other, final Object argument) {
         switch (operation) {
             case ST_Dimension:
             case ST_CoordDim:   return 2;

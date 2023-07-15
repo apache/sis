@@ -34,11 +34,10 @@ import org.opengis.filter.Expression;
  * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
- * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
  */
-class OneGeometry<R,G> extends SpatialFunction<R> {
+class OneGeometry<R> extends SpatialFunction<R> {
     /**
      * For cross-version compatibility.
      */
@@ -48,12 +47,12 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
      * The expression giving the geometry.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    final Expression<R, GeometryWrapper<G>> geometry;
+    final Expression<R, GeometryWrapper> geometry;
 
     /**
      * Creates a new function for a geometry represented by the given parameter.
      */
-    OneGeometry(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
+    OneGeometry(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<?> library) {
         super(operation, parameters);
         geometry = toGeometryWrapper(library, parameters[0]);
     }
@@ -96,7 +95,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
      */
     @Override
     public Object apply(R input) {
-        final GeometryWrapper<G> value = geometry.apply(input);
+        final GeometryWrapper value = geometry.apply(input);
         if (value != null) try {
             return value.operation(operation);
         } catch (RuntimeException e) {
@@ -108,7 +107,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
     /**
      * SQLMM spatial functions taking a single geometry operand with one argument.
      */
-    static final class WithArgument<R,G> extends OneGeometry<R,G> {
+    static final class WithArgument<R> extends OneGeometry<R> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 2422322830405666146L;
 
@@ -121,7 +120,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
         /**
          * Creates a new function for a geometry represented by the given parameter.
          */
-        WithArgument(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
+        WithArgument(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<?> library) {
             super(operation, parameters, library);
             argument = parameters[1];
         }
@@ -157,7 +156,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
          */
         @Override
         public Object apply(R input) {
-            final GeometryWrapper<G> value = geometry.apply(input);
+            final GeometryWrapper value = geometry.apply(input);
             if (value != null) try {
                 return value.operationWithArgument(operation, argument.apply(input));
             } catch (RuntimeException e) {

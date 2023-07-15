@@ -107,9 +107,9 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         ArgumentChecks.ensureNonNull("temporal",   temporal);
         ArgumentChecks.ensureNonNull("wraparound", wraparound);
         if (spatial == Object.class) {
-            library = (Geometries<G>) Geometries.implementation((GeometryLibrary) null);
+            library = (Geometries<G>) Geometries.factory((GeometryLibrary) null);
         } else {
-            library = (Geometries<G>) Geometries.implementation(spatial);
+            library = (Geometries<G>) Geometries.factory(spatial);
             if (library == null || library.rootClass != spatial) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "spatial", spatial));
             }

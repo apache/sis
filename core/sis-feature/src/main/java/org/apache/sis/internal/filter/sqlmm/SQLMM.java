@@ -781,7 +781,7 @@ public enum SQLMM {
     final GeometryType geometryType1, geometryType2;
 
     /**
-     * Type of value returned by the method as a {@link Class} of {@link Geometries#TYPE}.
+     * Type of value returned by the method as a {@link Class} or a {@link GeometryType}.
      *
      * @see #getReturnType()
      */

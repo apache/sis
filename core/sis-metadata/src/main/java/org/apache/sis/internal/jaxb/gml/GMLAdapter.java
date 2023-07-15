@@ -62,7 +62,7 @@ public abstract class GMLAdapter {
      */
     @XmlID
     @XmlAttribute(namespace = Namespaces.GML, required = true)
-    private String id;
+    public String id;
 
     /**
      * Creates a new GML object with no ID.

@@ -23,18 +23,18 @@ import java.io.StringReader;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.metadata.iso.extent.DefaultExtentTest.FILENAME;
 
 
 /**
  * Tests {@link MimeTypeDetector}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 public final class MimeTypeDetectorTest extends TestUsingFile {
@@ -96,7 +96,7 @@ public final class MimeTypeDetectorTest extends TestUsingFile {
     @DependsOnMethod("testGMDFromString")
     public void testGMDFromInputStream() throws IOException {
         final String type;
-        try (InputStream in = TestUsingFile.class.getResourceAsStream(XML2007+FILENAME)) {
+        try (InputStream in = DefaultExtentTest.openTestFile(Format.XML2007)) {
             assertEquals('<', in.read());
             assertEquals('?', in.read());
             final MimeTypeDetector detector = new MimeTypeDetector(

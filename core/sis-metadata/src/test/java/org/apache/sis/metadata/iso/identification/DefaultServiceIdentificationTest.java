@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.identification;
 
 import java.util.Set;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDirection;
@@ -53,9 +54,14 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class DefaultServiceIdentificationTest extends TestUsingFile {
     /**
-     * An XML file containing a service identification.
+     * Opens the stream to the XML file containing a service identification.
+     *
+     * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String FILENAME = "ServiceIdentification.xml";
+    private static InputStream openTestFile(final Format format) {
+        return format.openTestFile("ServiceIdentification.xml");
+    }
 
     /**
      * Creates the service identification to use for testing purpose.
@@ -110,7 +116,7 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
      */
     @Test
     public void testUnmarshal() throws JAXBException {
-        final ServiceIdentification id = unmarshalFile(ServiceIdentification.class, XML2016+FILENAME);
+        final ServiceIdentification id = unmarshalFile(ServiceIdentification.class, openTestFile(Format.XML2016));
         verify(id);
         final CoupledResource resource = getSingleton(id.getCoupledResources());
         assertTitleEquals("resourceReference", "WMS specification", getSingleton(resource.getResourceReferences()));
@@ -123,7 +129,7 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
      */
     @Test
     public void testUnmarshalLegacy() throws JAXBException {
-        final ServiceIdentification id = unmarshalFile(ServiceIdentification.class, XML2007+FILENAME);
+        final ServiceIdentification id = unmarshalFile(ServiceIdentification.class, openTestFile(Format.XML2007));
         verify(id);
         final CoupledResource resource = getSingleton(id.getCoupledResources());
         assertEquals("scopedName", "mySpace:ABC-123", String.valueOf(resource.getScopedName()));
@@ -136,7 +142,7 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
      */
     @Test
     public void testMarshal() throws JAXBException {
-        assertMarshalEqualsFile(XML2016+FILENAME, create(), "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(Format.XML2016), create(), "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -146,6 +152,6 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
      */
     @Test
     public void testMarshalLegacy() throws JAXBException {
-        assertMarshalEqualsFile(XML2007+FILENAME, create(), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(Format.XML2007), create(), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
     }
 }

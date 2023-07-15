@@ -23,11 +23,9 @@ import org.opengis.util.FactoryException;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.test.TestRunner;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 import org.junit.Ignore;
-import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
@@ -40,7 +38,6 @@ import static org.junit.Assert.*;
  * @version 1.4
  * @since   0.6
  */
-@RunWith(TestRunner.class)
 @DependsOn(GeodeticObjectParserTest.class)
 public final class WKTParserTest extends CRSParserTest {
     /**

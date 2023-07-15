@@ -52,7 +52,7 @@ public final class TimePeriod extends GMLAdapter {
         @XmlElement(type = TimePeriodBound.GML3.class, name = "beginPosition"),
         @XmlElement(type = TimePeriodBound.GML2.class, name = "begin")
     })
-    TimePeriodBound begin;
+    public TimePeriodBound begin;
 
     /**
      * The end time, which may be marshalled in a GML3 way or GML2 way.
@@ -62,7 +62,7 @@ public final class TimePeriod extends GMLAdapter {
         @XmlElement(type = TimePeriodBound.GML3.class, name = "endPosition"),
         @XmlElement(type = TimePeriodBound.GML2.class, name = "end")
     })
-    TimePeriodBound end;
+    public TimePeriodBound end;
 
     /**
      * Empty constructor used by JAXB.

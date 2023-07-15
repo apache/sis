@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.test.Validators;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
@@ -42,9 +43,14 @@ import static org.junit.Assert.*;
 })
 public final class DefaultGeodeticCRSTest extends TestCase {
     /**
-     * An XML file in this package containing a geodetic CRS definition.
+     * Opens the stream to the XML file in this package containing a geodetic CRS definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "GeographicCRS.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultGeodeticCRSTest.class.getResourceAsStream("GeographicCRS.xml");
+    }
 
     /**
      * Tests (un)marshalling of a geodetic coordinate reference system.
@@ -53,7 +59,7 @@ public final class DefaultGeodeticCRSTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultGeodeticCRS crs = unmarshalFile(DefaultGeodeticCRS.class, XML_FILE);
+        final DefaultGeodeticCRS crs = unmarshalFile(DefaultGeodeticCRS.class, openTestFile());
         Validators.validate(crs);
         GeodeticObjectVerifier.assertIsWGS84(crs, false, true);
         /*
@@ -64,6 +70,6 @@ public final class DefaultGeodeticCRSTest extends TestCase {
         /*
          * Marshal and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(), crs, "xmlns:*", "xsi:schemaLocation");
     }
 }

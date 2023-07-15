@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.CitationDate;
@@ -45,7 +46,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
-import org.apache.sis.util.Version;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -65,9 +65,14 @@ import static org.junit.Assert.*;
  */
 public final class DefaultCitationTest extends TestUsingFile {
     /**
-     * An XML file containing a citation.
+     * Opens the stream to the XML file containing a citation.
+     *
+     * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String FILENAME = "Citation.xml";
+    private static InputStream openTestFile(final Format format) {
+        return format.openTestFile("Citation.xml");
+    }
 
     /**
      * Creates a citation with an arbitrary title, presentation form and other properties.
@@ -221,7 +226,7 @@ public final class DefaultCitationTest extends TestUsingFile {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        testMarshalling(XML2016+FILENAME, VERSION_2014);
+        testMarshalling(Format.XML2016);
     }
 
     /**
@@ -235,16 +240,15 @@ public final class DefaultCitationTest extends TestUsingFile {
     @Test
     @DependsOnMethod("testMarshalling")
     public void testMarshallingLegacy() throws JAXBException {
-        testMarshalling(XML2007+FILENAME, VERSION_2007);
+        testMarshalling(Format.XML2007);
     }
 
     /**
      * Tests XML marshalling for the given metadata version.
      *
-     * @param  file     file containing the expected metadata.
-     * @param  version  the metadata version to marshal.
+     * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
      */
-    private void testMarshalling(final String file, final Version version) throws JAXBException {
+    private void testMarshalling(final Format format) throws JAXBException {
         final DefaultOnlineResource rs = new DefaultOnlineResource(URI.create("https://tools.ietf.org/html/rfc1149"));
         rs.setName("IP over Avian Carriers");
         rs.setDescription(new SimpleInternationalString("High delay, low throughput, and low altitude service."));
@@ -264,7 +268,7 @@ public final class DefaultCitationTest extends TestUsingFile {
         /*
          * Check that XML file built by the marshaller is the same as the example file.
          */
-        assertMarshalEqualsFile(file, c, version, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(format), c, format.schemaVersion, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -277,7 +281,7 @@ public final class DefaultCitationTest extends TestUsingFile {
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        testUnmarshalling(XML2016+FILENAME);
+        testUnmarshalling(Format.XML2016);
     }
 
     /**
@@ -291,17 +295,17 @@ public final class DefaultCitationTest extends TestUsingFile {
     @Test
     @DependsOnMethod("testUnmarshalling")
     public void testUnmarshallingLegacy() throws JAXBException {
-        testUnmarshalling(XML2007+FILENAME);
+        testUnmarshalling(Format.XML2007);
     }
 
     /**
      * Tests XML unmarshalling for a metadata version.
      * The version is not specified since it should be detected automatically.
      *
-     * @param  file  file containing the metadata to unmarshal.
+     * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
      */
-    private void testUnmarshalling(final String file) throws JAXBException {
-        final DefaultCitation c = unmarshalFile(DefaultCitation.class, file);
+    private void testUnmarshalling(final Format format) throws JAXBException {
+        final DefaultCitation c = unmarshalFile(DefaultCitation.class, openTestFile(format));
         assertTitleEquals("title", "Fight against poverty", c);
 
         final CitationDate date = getSingleton(c.getDates());

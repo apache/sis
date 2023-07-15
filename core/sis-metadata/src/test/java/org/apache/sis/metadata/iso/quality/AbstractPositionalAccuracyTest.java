@@ -17,11 +17,11 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Locale;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.quality.Result;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest;
-import org.apache.sis.util.Version;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -43,9 +43,14 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(FreeTextMarshallingTest.class)
 public final class AbstractPositionalAccuracyTest extends TestUsingFile {
     /**
-     * An XML file containing quality information.
+     * Opens the stream to the XML file containing quality information.
+     *
+     * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String FILENAME = "PositionalAccuracy.xml";
+    private static InputStream openTestFile(final Format format) {
+        return format.openTestFile("PositionalAccuracy.xml");
+    }
 
     /**
      * Tests the (un)marshalling of a text group with a default {@code <gco:CharacterString>} element.
@@ -58,7 +63,7 @@ public final class AbstractPositionalAccuracyTest extends TestUsingFile {
      */
     @Test
     public void testXML() throws JAXBException {
-        roundtrip(XML2016+FILENAME, VERSION_2014);
+        roundtrip(Format.XML2016);
     }
 
     /**
@@ -68,7 +73,7 @@ public final class AbstractPositionalAccuracyTest extends TestUsingFile {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        roundtrip(XML2007+FILENAME, VERSION_2007);
+        roundtrip(Format.XML2007);
     }
 
     /**
@@ -76,8 +81,8 @@ public final class AbstractPositionalAccuracyTest extends TestUsingFile {
      * Then marshals the object and verify that we get equivalent XML.
      */
     @SuppressWarnings("deprecation")
-    private void roundtrip(final String filename, final Version version) throws JAXBException {
-        final AbstractElement metadata = unmarshalFile(AbstractElement.class, filename);
+    private void roundtrip(final Format format) throws JAXBException {
+        final AbstractElement metadata = unmarshalFile(AbstractElement.class, openTestFile(format));
         final InternationalString nameOfMeasure = getSingleton(metadata.getNamesOfMeasure());
         /*
          * Programmatic verification of the text group.
@@ -95,6 +100,7 @@ public final class AbstractPositionalAccuracyTest extends TestUsingFile {
         /*
          * Marshalling: ensure that we didn't lost any information.
          */
-        assertMarshalEqualsFile(filename, metadata, version, "xmlns:*", "xsi:schemaLocation", "xsi:type");
+        assertMarshalEqualsFile(openTestFile(format), metadata, format.schemaVersion,
+                                "xmlns:*", "xsi:schemaLocation", "xsi:type");
     }
 }

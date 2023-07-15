@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public final class GeometryGetterTest extends TestCase {
@@ -67,7 +67,7 @@ public final class GeometryGetterTest extends TestCase {
      */
     @SuppressWarnings("unchecked")
     private GeometryGetter<?,?> createReader(final GeometryLibrary library, final BinaryEncoding encoding) {
-        GF = Geometries.implementation(library);
+        GF = Geometries.factory(library);
         return new GeometryGetter<>(GF, (Class) GF.rootClass, HardCodedCRS.WGS84, encoding);
     }
 
@@ -110,11 +110,11 @@ public final class GeometryGetterTest extends TestCase {
         final ResultSet r = ResultSetMock.create(point.array());
         final Object geometry = createReader(library, BinaryEncoding.RAW).getValue(null, r, 1);
         assertEquals(GF.createPoint(42.2, 43.3), geometry);
-        final GeometryWrapper<?> wrapper = Geometries.implementation(library).castOrWrap(geometry);
+        final GeometryWrapper wrapper = Geometries.factory(library).castOrWrap(geometry);
         /*
          * If the wrapper is an instance of `GeometryWithCRS`, then the CRS is stored
          * with the wrapper instead of the geometry implementation. In such case, the
-         * CRS is lost on `GeometryWrapper.implementation()` and cannot be tested.
+         * CRS is lost on `GeometryWrapper.geometry()` and cannot be tested.
          */
         if (!(wrapper instanceof GeometryWithCRS)) {
             assertSame(HardCodedCRS.WGS84, wrapper.getCoordinateReferenceSystem());
@@ -142,8 +142,8 @@ public final class GeometryGetterTest extends TestCase {
             while (results.next()) {
                 final String wkt = results.getString(1);
                 final Geometry geometry = (Geometry) reader.getValue(fromSridToCRS, results, 2);
-                final GeometryWrapper<?> expected = GF.parseWKT(wkt);
-                assertEquals("WKT and WKB parsings gave different results.", expected.implementation(), geometry);
+                final GeometryWrapper expected = GF.parseWKT(wkt);
+                assertEquals("WKT and WKB parsings gave different results.", GF.getGeometry(expected), geometry);
                 final CoordinateReferenceSystem expectedCRS = getExpectedCRS(results.getInt(3));
                 if (expectedCRS != null) {
                     assertSame("SRID", expectedCRS, GF.castOrWrap(geometry).getCoordinateReferenceSystem());

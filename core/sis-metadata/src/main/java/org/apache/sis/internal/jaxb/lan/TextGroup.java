@@ -74,7 +74,7 @@ import jakarta.xml.bind.annotation.XmlElement;
  *
  * @since 0.3
  */
-final class TextGroup {
+public final class TextGroup {
     /**
      * The set of {@linkplain LocalisedCharacterString localized string}.
      * JAXB uses this field at marshalling-time in order to wrap {@code N}
@@ -85,7 +85,7 @@ final class TextGroup {
      * (as in the first example of class javadoc) for compatibility and convenience reasons.</p>
      */
     @XmlElement(name = "LocalisedCharacterString")
-    protected LocalisedCharacterString[] localized;
+    public LocalisedCharacterString[] localized;
 
     /**
      * Empty constructor only used by JAXB.

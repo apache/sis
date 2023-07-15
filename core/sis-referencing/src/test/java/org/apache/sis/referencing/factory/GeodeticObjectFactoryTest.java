@@ -43,9 +43,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.opengis.test.referencing.ObjectFactoryTest;
-import org.apache.sis.test.TestRunner;
 import org.apache.sis.test.DependsOn;
-import org.junit.runner.RunWith;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -61,7 +59,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * @version 1.4
  * @since   0.6
  */
-@RunWith(TestRunner.class)
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class,
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,

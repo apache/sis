@@ -18,6 +18,7 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.ServiceLoader;
 import java.text.Format;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -37,11 +38,8 @@ import org.apache.sis.internal.system.Modules;
 
 /**
  * Provides access to services defined in the {@code "sis-referencing"} module.
- * This class searches for the {@link org.apache.sis.internal.referencing.ServicesForMetadata}
- * implementation using Java reflection.
- *
- * <p>This class also opportunistically defines some methods and constants related to
- * <cite>"referencing by coordinates"</cite> but needed by metadata.</p>
+ * This class also opportunistically defines some methods and constants related
+ * to <cite>"referencing by coordinates"</cite> but needed by metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -62,6 +60,9 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * The services, fetched when first needed.
+     * Guaranteed non-null after the search was done, even if the service implementation was not found.
+     *
+     * @see #getInstance()
      */
     private static volatile ReferencingServices instance;
 
@@ -82,7 +83,6 @@ public class ReferencingServices extends OptionalDependency {
     @Override
     protected final void classpathChanged() {
         synchronized (ReferencingServices.class) {
-            super.classpathChanged();
             instance = null;
         }
     }
@@ -100,12 +100,11 @@ public class ReferencingServices extends OptionalDependency {
                 c = instance;
                 if (c == null) {
                     /*
-                     * Double-checked locking: okay since Java 5 provided that the 'instance' field is volatile.
+                     * Double-checked locking: okay since Java 5 provided that the `instance` field is volatile.
                      * In the particular case of this class, the intent is to ensure that SystemListener.add(…)
                      * is invoked only once.
                      */
-                    c = getInstance(ReferencingServices.class, Modules.METADATA, "sis-referencing",
-                            "org.apache.sis.internal.referencing.ServicesForMetadata");
+                    c = getInstance(ReferencingServices.class, ServiceLoader.load(ReferencingServices.class), "sis-referencing");
                     if (c == null) {
                         c = new ReferencingServices();
                     }

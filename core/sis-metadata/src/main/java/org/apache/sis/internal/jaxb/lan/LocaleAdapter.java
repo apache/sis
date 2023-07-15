@@ -47,7 +47,7 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     /**
      * Empty constructor for JAXB.
      */
-    private LocaleAdapter() {
+    public LocaleAdapter() {
     }
 
     /**
@@ -103,7 +103,7 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
         /**
          * Empty constructor for JAXB.
          */
-        private Wrapped() {
+        public Wrapped() {
         }
 
         /**

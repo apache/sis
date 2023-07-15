@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.jaxb.lan;
 
-import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import java.util.Locale;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
@@ -62,12 +62,12 @@ public final class LanguageCode extends GO_CharacterString {
      * The language using a {@link org.opengis.util.CodeList}-like format.
      */
     @XmlElement(name = "LanguageCode")
-    private CodeListUID identifier;
+    public CodeListUID identifier;
 
     /**
      * Empty constructor for JAXB only.
      */
-    private LanguageCode() {
+    public LanguageCode() {
     }
 
     /**

@@ -37,26 +37,26 @@ import jakarta.xml.bind.annotation.XmlValue;
  */
 @XmlType(name = "UnlimitedInteger_Type")
 @XmlRootElement(name = "UnlimitedInteger")
-final class UnlimitedInteger {
+public final class UnlimitedInteger {
     /**
      * The value, limited to 32 bits integer for now. A null value is interpreted as missing value,
      * unless {@link #isInfinite} is {@code true}.
      */
     @XmlValue
     @XmlSchemaType(name = "nonNegativeInteger")
-    private Integer value;
+    public Integer value;
 
     /**
      * Whether the value should be considered infinite.
      * An infinite value implies {@code xsi:nil = true}.
      */
     @XmlAttribute(name = "isInfinite")
-    private Boolean isInfinite;
+    public Boolean isInfinite;
 
     /**
      * Creates a new {@code gco:UnlimitedInteger} for a missing value.
      */
-    UnlimitedInteger() {
+    public UnlimitedInteger() {
     }
 
     /**
@@ -92,17 +92,21 @@ final class UnlimitedInteger {
     /**
      * Returns whether the value should be considered unspecified. An infinite value is considered nil.
      * This method never returns {@code false}; if the value is not nil, then {@code null} is returned.
+     *
+     * @return the nil status.
      */
     @XmlAttribute(name = "nil", namespace = XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)
-    private Boolean getNil() {
+    public Boolean getNil() {
         return (value == null) ? Boolean.TRUE : null;
     }
 
     /**
      * Sets whether the value should be considered unspecified.
      * This method is invoked by JAXB at unmarshalling time.
+     *
+     * @param  nil  the nil status.
      */
-    private void setNil(final Boolean nil) {
+    public void setNil(final Boolean nil) {
         if (nil != null && nil) {
             value = null;
             // Leave 'isInfinite' unchanged since an infinite value is also nil.

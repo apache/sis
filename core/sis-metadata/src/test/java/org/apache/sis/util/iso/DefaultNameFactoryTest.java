@@ -20,8 +20,6 @@ import org.opengis.util.GenericName;
 import org.opengis.test.util.NameTest;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestRunner;
-import org.junit.runner.RunWith;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -34,10 +32,9 @@ import static org.junit.Assert.*;
  * a {@link DefaultNameFactory} instance shared for all tests in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
  */
-@RunWith(TestRunner.class)
 @DependsOn({DefaultLocalNameTest.class, DefaultScopedNameTest.class})
 public final class DefaultNameFactoryTest extends NameTest {
     /**

@@ -48,11 +48,10 @@ import org.opengis.filter.InvalidFilterValueException;
  * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
- * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
  */
-final class ST_Point<R,G> extends FunctionWithSRID<R> {
+final class ST_Point<R> extends FunctionWithSRID<R> {
     /**
      * For cross-version compatibility.
      */
@@ -67,7 +66,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
     /**
      * The library to use for creating geometry objects.
      */
-    private final Geometries<G> library;
+    private final Geometries<?> library;
 
     /**
      * Creates a new function with the given parameters. It is caller's responsibility to ensure
@@ -75,7 +74,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
      *
      * @throws IllegalArgumentException if the number of arguments is less then two.
      */
-    ST_Point(final Expression<R,?>[] parameters, final Geometries<G> library) {
+    ST_Point(final Expression<R,?>[] parameters, final Geometries<?> library) {
         super(SQLMM.ST_Point, parameters, MAYBE);
         this.parameters = parameters;
         this.library = library;
@@ -151,8 +150,8 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
      * @throws InvalidFilterValueException if the value is not a string or byte array.
      * @throws Exception if parsing failed for another reason.
      */
-    private GeometryWrapper<G> parse(final Object value) throws Exception {
-        final GeometryWrapper<G> point;
+    private GeometryWrapper parse(final Object value) throws Exception {
+        final GeometryWrapper point;
         if (value == null) {
             return null;
         } else if (value instanceof byte[]) {
@@ -165,8 +164,8 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
             throw new InvalidFilterValueException(Errors.format(
                     Errors.Keys.IllegalArgumentClass_3, "wkt|wkb", String.class, value.getClass()));
         }
-        final Object implementation = point.implementation();
-        if (library.pointClass.isInstance(implementation)) {
+        final Object geometry = library.getGeometry(point);
+        if (library.pointClass.isInstance(geometry)) {
             return point;
         } else {
             final String type = (value instanceof String) ? "wkt" : "wkb";
@@ -184,7 +183,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
      */
     @Override
     public Object apply(R input) {
-        final GeometryWrapper<G> point;
+        final GeometryWrapper point;
         final CoordinateReferenceSystem crs;
         try {
             switch (parameters.length) {
@@ -193,7 +192,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
                  */
                 case 1: {
                     point = parse(parameters[0].apply(input));
-                    return (point != null) ? point.implementation() : null;
+                    return library.getGeometry(point);
                 }
                 /*
                  * One of the following:
@@ -265,6 +264,6 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
         if (crs != null) {
             point.setCoordinateReferenceSystem(crs);
         }
-        return point.implementation();
+        return library.getGeometry(point);
     }
 }

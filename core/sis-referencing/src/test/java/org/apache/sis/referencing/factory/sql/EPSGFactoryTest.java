@@ -82,7 +82,7 @@ import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -303,10 +303,10 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, variant.getConversionFromBase());
         verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -123);
 
-        assertSame("Operation method", crs.getConversionFromBase().getMethod(),
-                                   variant.getConversionFromBase().getMethod());
-        assertSame("Coordinate system", crs.getCoordinateSystem(),
-                                    variant.getCoordinateSystem());
+        assertEquals("Operation method", crs.getConversionFromBase().getMethod(),
+                                     variant.getConversionFromBase().getMethod());
+        assertEquals("Coordinate system", crs.getCoordinateSystem(),
+                                      variant.getCoordinateSystem());
 
         assertNotDeepEquals(crs.getConversionFromBase(), variant.getConversionFromBase());
         assertNotDeepEquals(crs, variant);
@@ -807,8 +807,8 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, copMethod);
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crsMethod);
         try {
-            assertSame("Conversion method", copMethod, crsMethod);
-            assertSame("Conversion method", copMethod, factory.createOperationMethod("9807"));
+            assertEquals("Conversion method", copMethod, crsMethod);
+            assertEquals("Conversion method", copMethod, factory.createOperationMethod("9807"));
         } catch (AssertionError error) {
             out.println("The following contains more information about a JUnit test failure.");
             out.println("See the JUnit report for the stack trace. Below is a cache dump.");

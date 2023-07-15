@@ -82,7 +82,7 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     @SuppressWarnings("unchecked")
     protected BinarySpatialFilterTestCase(final Class<G> rootGeometry) {
         factory = new DefaultFilterFactory.Features<>(rootGeometry, Object.class, WraparoundMethod.SPLIT);
-        library = (Geometries<G>) Geometries.implementation(rootGeometry);
+        library = (Geometries<G>) Geometries.factory(rootGeometry);
         assertEquals(rootGeometry, library.rootClass);
     }
 
@@ -365,7 +365,7 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     public void testSpatialContextDoesNotDegenerateEnvelope() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = HardCodedCRS.WGS84;
         final Envelope e1 = new Envelope2D(sourceCRS, -180, -90, 360, 180);
-        final DistanceFilter<?, G> within = new DistanceFilter<>(DistanceOperatorName.WITHIN,
+        final DistanceFilter<?> within = new DistanceFilter<>(DistanceOperatorName.WITHIN,
                 library, factory.literal(e1),
                 factory.literal(new DirectPosition2D(sourceCRS, 44, 2)),
                 Quantities.create(1.0, Units.METRE));

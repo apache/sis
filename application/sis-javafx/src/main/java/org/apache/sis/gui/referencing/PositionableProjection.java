@@ -187,6 +187,16 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
     }
 
     /**
+     * Disables the search for UML identifiers because we do not export this package to GeoAPI.
+     *
+     * @return {@code null}.
+     */
+    @Override
+    public String identifier() {
+        return null;
+    }
+
+    /**
      * Returns a name for this enumeration which can be used in a user interface.
      *
      * @return a human-readable name for the projection created by this enumeration.

@@ -25,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.logging.Logger;
 
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.test.TestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opengis.feature.Feature;
@@ -38,7 +37,7 @@ import org.opengis.feature.Feature;
  * @version 0.5
  * @since   0.5
  */
-public final class ShapeFileTest extends TestCase {
+public final class ShapeFileTest {
     /**
      * Returns URI path to a resource.
      * @param name Resource name.

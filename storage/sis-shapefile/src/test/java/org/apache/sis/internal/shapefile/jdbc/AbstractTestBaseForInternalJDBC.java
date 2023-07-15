@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import org.apache.sis.storage.shapefile.ShapeFileTest;
-import org.apache.sis.test.TestCase;
 import org.junit.Before;
 
 /**
@@ -36,7 +35,7 @@ import org.junit.Before;
  * all these tests are currently based on the SignedBikeRoute_4326_clipped.dbf DBase 3 file.
  * @author Marc LE BIHAN
  */
-public abstract class AbstractTestBaseForInternalJDBC extends TestCase {
+public abstract class AbstractTestBaseForInternalJDBC {
     /** Logger. */
     protected Logger log = Logger.getLogger("org.apache.sis.internal.shapefile.jdbc");
 

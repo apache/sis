@@ -39,14 +39,14 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 public abstract class GeometriesTestCase extends TestCase {
     /**
      * The factory to test.
      */
-    private final Geometries<?> factory;
+    protected final Geometries<?> factory;
 
     /**
      * The geometry created by the test. Provided for allowing sub-classes to perform additional verifications.
@@ -56,7 +56,7 @@ public abstract class GeometriesTestCase extends TestCase {
     /**
      * The wrapper of {@link #geometry}.
      */
-    private GeometryWrapper<?> wrapper;
+    private GeometryWrapper wrapper;
 
     /**
      * Creates a new test for the given factory.
@@ -68,11 +68,11 @@ public abstract class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#implementation(GeometryLibrary)}.
+     * Tests {@link Geometries#factory(GeometryLibrary)}.
      */
     @Test
-    public void testImplementation() {
-        assertEquals(factory, Geometries.implementation(factory.library));
+    public void testFactory() {
+        assertEquals(factory, Geometries.factory(factory.library));
     }
 
     /**
@@ -249,7 +249,7 @@ public abstract class GeometriesTestCase extends TestCase {
      */
     private void assertToGeometryEquals(final Envelope source, final WraparoundMethod method, final double... expected) {
         wrapper = factory.toGeometry2D(source, method);
-        geometry = wrapper.implementation();
+        geometry = wrapper.factory().getGeometry(wrapper);
         final double[] result = wrapper.getAllCoordinates();
         assertArrayEquals(expected, result, 1e-9);
     }
