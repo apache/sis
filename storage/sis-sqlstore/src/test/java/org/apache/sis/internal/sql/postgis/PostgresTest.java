@@ -16,14 +16,17 @@
  */
 package org.apache.sis.internal.sql.postgis;
 
+import java.util.List;
+import java.util.stream.Stream;
+import java.util.function.Supplier;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Method;
-import java.util.stream.Stream;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -65,11 +68,30 @@ import static org.opengis.test.Assert.assertInstanceOf;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 @DependsOn({RasterReaderTest.class, RasterWriterTest.class})
 public final class PostgresTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public PostgresTest() {
+    }
+
+    /**
+     * Provides a stream for a resource in the same package than this class.
+     * The implementation invokes {@code getResourceAsStream(filename)}.
+     * This invocation must be done in this module because the invoked
+     * method is caller-sensitive.
+     */
+    private static Supplier<InputStream> resource(final String filename) {
+        return new Supplier<>() {
+            @Override public String toString() {return filename;}
+            @Override public InputStream get() {return PostgresTest.class.getResourceAsStream(filename);}
+        };
+    }
+
     /**
      * Tests {@link Postgres#parseVersion(String)}.
      */
@@ -89,7 +111,7 @@ public final class PostgresTest extends TestCase {
     @Test
     public void testSpatialFeatures() throws Exception {
         try (TestDatabase database = TestDatabase.createOnPostgreSQL(SQLStoreTest.SCHEMA, true)) {
-            database.executeSQL(PostgresTest.class, "file:SpatialFeatures.sql");
+            database.executeSQL(List.of(resource("SpatialFeatures.sql")));
             final StorageConnector connector = new StorageConnector(database.source);
             connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.JTS);
             final ResourceDefinition table = ResourceDefinition.table(null, SQLStoreTest.SCHEMA, "SpatialData");

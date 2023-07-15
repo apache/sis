@@ -17,13 +17,13 @@
 package org.apache.sis.console;
 
 import java.net.URL;
-import org.apache.sis.internal.storage.gpx.MetadataTest;
-import org.apache.sis.metadata.xml.TestUsingFile;
+import org.apache.sis.internal.storage.gpx.TestData;
+import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.metadata.iso.extent.DefaultExtentTest.FILENAME;
 
 
 /**
@@ -34,7 +34,7 @@ import static org.apache.sis.metadata.iso.extent.DefaultExtentTest.FILENAME;
  * @since   0.4
  */
 @DependsOn(CommandRunnerTest.class)
-public final class MimeTypeCommandTest extends TestUsingFile {
+public final class MimeTypeCommandTest extends TestCase {
     /**
      * Tests the sub-command on a metadata file.
      *
@@ -42,7 +42,7 @@ public final class MimeTypeCommandTest extends TestUsingFile {
      */
     @Test
     public void testWithMetadataXML() throws Exception {
-        final URL url = TestUsingFile.class.getResource(XML2007+FILENAME);
+        final URL url = DefaultExtentTest.getTestFileURL();
         final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         final String output = test.outputBuffer.toString().trim();
@@ -56,8 +56,8 @@ public final class MimeTypeCommandTest extends TestUsingFile {
      */
     @Test
     public void testWithMetadataGPX() throws Exception {
-        final URL url = MetadataTest.class.getResource("1.1/metadata.xml");
-        assertNotNull("1.1/metadata.xml", url);
+        final URL url = TestData.V1_1.getURL(TestData.METADATA);
+        assertNotNull(url);
         final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         final String output = test.outputBuffer.toString().trim();

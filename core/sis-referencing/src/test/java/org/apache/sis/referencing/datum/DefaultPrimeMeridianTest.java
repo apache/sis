@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import java.io.InputStream;
 import javax.measure.quantity.Angle;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
@@ -49,9 +50,15 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
 public final class DefaultPrimeMeridianTest extends TestCase {
     /**
-     * An XML file in this package containing a prime meridian definition.
+     * Opens the stream to the XML file in this package containing a prime meridian definition.
+     *
+     * @param  greenwich  {@code true} for Greenwich meridian or {@code false} for an arbitrary one.
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "Greenwich.xml";
+    private static InputStream openTestFile(final boolean greenwich) {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultPrimeMeridianTest.class.getResourceAsStream(greenwich ? "Greenwich.xml" : "PrimeMeridian.xml");
+    }
 
     /**
      * Tests {@link DefaultPrimeMeridian#toWKT()}.
@@ -151,7 +158,7 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      */
     @Test
     public void testUnmarshall() throws JAXBException {
-        final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, XML_FILE);
+        final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, openTestFile(true));
         assertIsGreenwich(pm);
     }
 
@@ -180,7 +187,7 @@ public final class DefaultPrimeMeridianTest extends TestCase {
     @Test
     @DependsOnMethod({"testUnmarshall", "testMarshall", "testWKT_inGrads"})
     public void testParisMeridian() throws JAXBException {
-        final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, "PrimeMeridian.xml");
+        final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, openTestFile(false));
         assertIsParis(pm);
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(Units.DEGREE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());

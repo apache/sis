@@ -83,7 +83,7 @@ import org.opengis.referencing.operation.TransformException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 1.3
+ * @version 1.4
  *
  * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
@@ -306,7 +306,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         if (Double.isNaN(value)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, name));
         }
-        return (value != infinity) ? Numerics.valueOf(value) : null;
+        return (value != infinity) ? value : null;
     }
 
     /**

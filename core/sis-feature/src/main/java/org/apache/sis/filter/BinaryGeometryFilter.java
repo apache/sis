@@ -46,11 +46,10 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
- * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
  */
-abstract class BinaryGeometryFilter<R,G> extends Node implements Optimization.OnFilter<R> {
+abstract class BinaryGeometryFilter<R> extends Node implements Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */
@@ -60,13 +59,13 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements Optimization.On
      * The first of the two expressions to be used by this function.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    protected final Expression<R, GeometryWrapper<G>> expression1;
+    protected final Expression<R, GeometryWrapper> expression1;
 
     /**
      * The second of the two expressions to be used by this function.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    protected final Expression<R, GeometryWrapper<G>> expression2;
+    protected final Expression<R, GeometryWrapper> expression2;
 
     /**
      * The preferred CRS and other context to use if geometry transformations are needed.
@@ -80,14 +79,14 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements Optimization.On
      * @param  geometry2   the second of the two expressions to be used by this function.
      * @param  systemUnit  if the CRS needs to be in some units of measurement, the {@link Unit#getSystemUnit()} value.
      */
-    protected BinaryGeometryFilter(final Geometries<G> library,
+    protected BinaryGeometryFilter(final Geometries<?> library,
                                    final Expression<R,?> geometry1,
                                    final Expression<R,?> geometry2,
                                    final Unit<?> systemUnit)
     {
         ArgumentChecks.ensureNonNull("expression1", geometry1);
         ArgumentChecks.ensureNonNull("expression2", geometry2);
-        Expression<R, GeometryWrapper<G>> expression1, expression2;
+        Expression<R, GeometryWrapper> expression1, expression2;
         expression1 = toGeometryWrapper(library, geometry1);
         expression2 = toGeometryWrapper(library, geometry2);
         /*
@@ -97,7 +96,7 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements Optimization.On
          */
         final int index;
         final Literal<R,?> literal;
-        final GeometryWrapper<G> value;
+        final GeometryWrapper value;
         if (geometry2 instanceof Literal<?,?>) {
             literal = (Literal<R,?>) geometry2;
             value   = expression2.apply(null);
@@ -114,9 +113,9 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements Optimization.On
         try {
             context = new SpatialOperationContext(null, value, systemUnit, index);
             if (value != null) {
-                final GeometryWrapper<G> gt = context.transform(value);
+                final GeometryWrapper gt = context.transform(value);
                 if (gt != value) {
-                    final Expression<R, GeometryWrapper<G>> tr = new LeafExpression.Transformed<>(gt, literal);
+                    final Expression<R, GeometryWrapper> tr = new LeafExpression.Transformed<>(gt, literal);
                     switch (index) {
                         case 0:  expression1 = tr; break;
                         case 1:  expression2 = tr; break;
@@ -136,18 +135,17 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements Optimization.On
      * This method is invoked when it is possible to simplify or optimize at least one of the expressions that
      * were given in the original call to the constructor.
      */
-    protected abstract BinaryGeometryFilter<R,G> recreate(final Expression<R,?> geometry1,
-                                                          final Expression<R,?> geometry2);
+    protected abstract BinaryGeometryFilter<R> recreate(final Expression<R,?> geometry1,
+                                                        final Expression<R,?> geometry2);
 
     /**
      * Returns the original expression specified by the user.
      *
      * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
-     * @param  <G>  the geometry implementation type.
      * @param  expression  the expression to unwrap.
      * @return the unwrapped expression.
      */
-    protected static <R,G> Expression<R,?> original(final Expression<R, GeometryWrapper<G>> expression) {
+    protected static <R> Expression<R,?> original(final Expression<R, GeometryWrapper> expression) {
         Expression<R,?> unwrapped = unwrap(expression);
         if (unwrapped instanceof LeafExpression.Transformed<?,?>) {
             unwrapped = ((LeafExpression.Transformed<R,?>) unwrapped).original;
@@ -186,7 +184,7 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements Optimization.On
         Expression<R,?> effective1 = optimization.apply(geometry1);
         Expression<R,?> effective2 = optimization.apply(geometry2);
         Expression<R,?> other;     // The expression which is not literal.
-        Expression<R, GeometryWrapper<G>> wrapper;
+        Expression<R, GeometryWrapper> wrapper;
         Literal<R,?> literal;
         boolean immediate;                  // true if the filter should be evaluated immediately.
         boolean literalIsNull;              // true if one of the literal value is null.
@@ -219,8 +217,8 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements Optimization.On
                 final CoordinateReferenceSystem targetCRS = AttributeConvention.getCRSCharacteristic(
                         featureType, featureType.getProperty(((ValueReference<?,?>) other).getXPath()));
                 if (targetCRS != null) {
-                    final GeometryWrapper<G> geometry    = wrapper.apply(null);
-                    final GeometryWrapper<G> transformed = geometry.transform(targetCRS);
+                    final GeometryWrapper geometry    = wrapper.apply(null);
+                    final GeometryWrapper transformed = geometry.transform(targetCRS);
                     if (geometry != transformed) {
                         literal = (Literal<R,?>) Optimization.literal(transformed);
                         if (literal == effective1) effective1 = literal;

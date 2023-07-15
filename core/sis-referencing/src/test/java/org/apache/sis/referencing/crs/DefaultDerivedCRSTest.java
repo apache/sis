@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.AxisDirection;
@@ -57,9 +58,14 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 })
 public final class DefaultDerivedCRSTest extends TestCase {
     /**
-     * An XML file in this package containing a projected CRS definition.
+     * Opens the stream to the XML file in this package containing a projected CRS definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "DerivedCRS.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultDerivedCRSTest.class.getResourceAsStream("DerivedCRS.xml");
+    }
 
     /**
      * Tests {@link DefaultDerivedCRS#getType(SingleCRS, CoordinateSystem)}.
@@ -224,7 +230,7 @@ public final class DefaultDerivedCRSTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultDerivedCRS crs = unmarshalFile(DefaultDerivedCRS.class, XML_FILE);
+        final DefaultDerivedCRS crs = unmarshalFile(DefaultDerivedCRS.class, openTestFile());
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("WGS 84", 4979, crs.getBaseCRS());
         assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
@@ -239,6 +245,6 @@ public final class DefaultDerivedCRSTest extends TestCase {
         /*
          * Test marshalling and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(), crs, "xmlns:*", "xsi:schemaLocation");
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.datum;
 
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.xml.TestCase;
@@ -40,14 +41,15 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 })
 public final class DefaultEllipsoidTest extends TestCase {
     /**
-     * An XML file in this package containing an ellipsoid definition.
+     * Opens the stream to the XML file in this package containing an ellipsoid or sphere definition.
+     *
+     * @param  sphere  {@code true} for a sphere or {@code false} for an ellipsoid.
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String ELLIPSOID_FILE = "Ellipsoid.xml";
-
-    /**
-     * An XML file in this package containing a sphere definition.
-     */
-    private static final String SPHERE_FILE = "Sphere.xml";
+    private static InputStream openTestFile(final boolean sphere) {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultEllipsoidTest.class.getResourceAsStream(sphere ? "Sphere.xml" : "Ellipsoid.xml");
+    }
 
     /**
      * Tests {@link DefaultEllipsoid#getEccentricity()}.
@@ -132,7 +134,7 @@ public final class DefaultEllipsoidTest extends TestCase {
      */
     @Test
     public void testEllipsoidXML() throws JAXBException {
-        final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, ELLIPSOID_FILE);
+        final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, openTestFile(false));
         assertEquals("name", "Clarke 1880 (international foot)", ellipsoid.getName().getCode());
         assertEquals("remarks", "Definition in feet assumed to be international foot.", ellipsoid.getRemarks().toString());
         assertFalse ("isSphere",                              ellipsoid.isSphere());
@@ -144,7 +146,7 @@ public final class DefaultEllipsoidTest extends TestCase {
         /*
          * Marshal and compare to the original file.
          */
-        assertMarshalEqualsFile(ELLIPSOID_FILE, ellipsoid, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(false), ellipsoid, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -158,7 +160,7 @@ public final class DefaultEllipsoidTest extends TestCase {
      */
     @Test
     public void testSphereXML() throws JAXBException {
-        final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, SPHERE_FILE);
+        final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, openTestFile(true));
         assertEquals("name", "GRS 1980 Authalic Sphere", ellipsoid.getName().getCode());
         assertEquals("remarks", "Authalic sphere derived from GRS 1980 ellipsoid (code 7019).", ellipsoid.getRemarks().toString());
         assertTrue  ("isSphere",                                    ellipsoid.isSphere());
@@ -170,6 +172,6 @@ public final class DefaultEllipsoidTest extends TestCase {
         /*
          * Marshal and compare to the original file.
          */
-        assertMarshalEqualsFile(SPHERE_FILE, ellipsoid, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(true), ellipsoid, "xmlns:*", "xsi:schemaLocation");
     }
 }

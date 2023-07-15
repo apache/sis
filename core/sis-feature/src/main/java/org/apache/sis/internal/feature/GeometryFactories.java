@@ -18,6 +18,7 @@ package org.apache.sis.internal.feature;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -34,12 +35,15 @@ import org.apache.sis.util.logging.Logging;
  * @version 1.4
  * @since   1.1
  */
-final class GeometryFactories {
+public final class GeometryFactories {
     /**
      * The default geometry implementation to use. The default implementation
      * is JTS if present, or otherwise ESRI if present, or otherwise Java2D.
      */
-    static final Geometries<?> implementation = link(link(link(null, "j2d"), "esri"), "jts");
+    static final Geometries<?> DEFAULT = link(link(link(null, "j2d"), "esri"), "jts");
+    static {
+        setStandard(new StandardGeometries<>(DEFAULT));
+    }
 
     /**
      * Do not allow instantiation of this class.
@@ -65,5 +69,23 @@ final class GeometryFactories {
         }
         factory.fallback = previous;
         return factory;
+    }
+
+    /**
+     * Sets the implementation to associate to {@link GeometryLibrary#GEOAPI}.
+     * This method is used for experimenting GeoAPI implementations outside Apache SIS.
+     * This method may be removed in a future version if a stable GeoAPI geometry implementation
+     * become available.
+     *
+     * @param  standard  the implementation to associate to {@link GeometryLibrary#GEOAPI}.
+     */
+    public static void setStandard(final Geometries<?> standard) {
+        Geometries<?> factory = DEFAULT;        // Should never be null because at least "j2d" should be present.
+        Geometries<?> last;
+        do {
+            last = factory;
+            factory = factory.fallback;
+        } while (factory != null && factory.library != GeometryLibrary.GEOAPI);
+        last.fallback = standard;
     }
 }

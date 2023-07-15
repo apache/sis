@@ -41,7 +41,7 @@ public final class GO_Measure extends XmlAdapter<GO_Measure, Double> {
      * A proxy representation of the {@code <gco:Measure>} element.
      */
     @XmlElement(name = "Measure")
-    private Measure measure;
+    public Measure measure;
 
     /**
      * Empty constructor used only by JAXB.

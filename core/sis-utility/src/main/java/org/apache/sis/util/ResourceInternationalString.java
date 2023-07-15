@@ -25,9 +25,10 @@ import java.util.MissingResourceException;
 
 /**
  * An international string backed by a {@link ResourceBundle}.
- * Resource bundles can be Java classes or {@linkplain Properties properties} files, one for each
- * language. The fully qualified class name of the base resource bundle (without locale suffix)
- * is specified at {@linkplain #ResourceInternationalString(String, String) construction time}.
+ * Resource bundles can be Java classes or {@linkplain Properties properties} files, one for each language.
+ * The resource bundle is specified by {@link #getBundle(Locale)}, which must be defined by subclasses.
+ * The subclass will typically invoke {@code ResourceBundle.getBundle(resources, locale)} where
+ * <var>resources</var> is the fully qualified class name of the base resource bundle (without locale suffix).
  * The appropriate resource bundle is loaded at runtime for the client's language by looking for
  * a class or a properties file with the right suffix, for example {@code "_en"} for English or
  * {@code "_fr"} for French.
@@ -35,7 +36,7 @@ import java.util.MissingResourceException;
  * Javadoc for more information.
  *
  * <h2>Example</h2>
- * if a file named "{@code MyResources.properties}" exists in {@code org.mypackage}
+ * If a file named "{@code MyResources.properties}" exists in {@code org.mypackage}
  * and contains the following line:
  *
  * <pre class="text">MyKey = some value</pre>
@@ -43,29 +44,17 @@ import java.util.MissingResourceException;
  * Then an international string for {@code "some value"} can be created using the following code:
  *
  * {@snippet lang="java" :
- *     InternationalString value = new ResourceInternationalString("org.mypackage.MyResources", "MyKey");
+ *     InternationalString value = new ResourceInternationalString("MyKey") {
+ *         @Override protected ResourceBundle getBundle(Locale locale) {
+ *             return ResourceBundle.getBundle("org.mypackage.MyResources", locale);
+ *         }
+ *     };
  *     }
  *
  * The {@code "some value"} string will be localized if the required properties files exist, for
  * example "{@code MyResources_fr.properties}" for French or "{@code MyResources_it.properties}"
  * for Italian, <i>etc</i>.
  * If needed, users can gain more control by overriding the {@link #getBundle(Locale)} method.
- *
- * <h2>Class loaders</h2>
- * Developers can specify explicitly the {@link ClassLoader} to use be overriding the
- * {@link #getBundle(Locale)} method. This is recommended if the running environment
- * loads modules in isolated class loaders, as OSGi does for instance.
- *
- * <div class="note"><b>API note:</b>
- * We do not provide {@code ClassLoader} argument in the constructor of this class because class loaders
- * can often be hard-coded (thus avoiding the cost of an extra field) and are usually not serializable.</div>
- *
- * <h2>Apache SIS resources</h2>
- * Apache SIS has its own resources mechanism, built on top of the standard {@code ResourceBundle}
- * with the addition of type safety and optional arguments to be formatted in the localized string.
- * Those resource bundles provide {@code formatInternational(int, …)} static methods for creating
- * international strings with the same functionality than this {@code ResourceInternationalString}.
- * See {@code org.apache.sis.util.resources} for more information.
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe if the bundles created by {@link #getBundle(Locale)}
@@ -74,23 +63,17 @@ import java.util.MissingResourceException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see ResourceBundle#getBundle(String, Locale)
  *
  * @since 1.1
  */
-public class ResourceInternationalString extends AbstractInternationalString implements Serializable {
+public abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8636012022904092254L;
-
-    /**
-     * The name of the resource bundle, as a fully qualified class name.
-     * This value is given at construction time and cannot be {@code null}.
-     */
-    protected final String resources;
+    private static final long serialVersionUID = -4354957955509756039L;
 
     /**
      * The key for the resource to fetch.
@@ -99,30 +82,20 @@ public class ResourceInternationalString extends AbstractInternationalString imp
     protected final String key;
 
     /**
-     * Creates a new international string from the specified resource bundle and key.
-     * The class loader will be the one of the {@link #toString(Locale)} caller,
-     * unless the {@link #getBundle(Locale)} method is overridden.
+     * Creates a new international string from the specified key.
      *
-     * @param resources  the name of the resource bundle, as a fully qualified class name.
-     * @param key        the key for the resource to fetch.
+     * @param key  the key for the resource to fetch.
      */
-    public ResourceInternationalString(final String resources, final String key) {
-        ArgumentChecks.ensureNonNull("resources", resources);
-        ArgumentChecks.ensureNonNull("key",       key);
-        this.resources = resources;
-        this.key       = key;
+    protected ResourceInternationalString(final String key) {
+        ArgumentChecks.ensureNonNull("key", key);
+        this.key = key;
     }
 
     /**
-     * Returns the resource bundle for the given locale. The default implementation fetches the
-     * bundle from the name given at {@linkplain #ResourceInternationalString construction time}.
-     * Subclasses can override this method if they need to fetch the bundle in another way.
-     *
-     * <h4>Class loaders</h4>
-     * By default, this method loads the resources using the caller's class loader.
-     * Subclasses can override this method in order to specify a different class loader.
-     * For example, the code below works well if {@code MyResource} is a class defined
-     * in the same module than the one that contain the resources to load:
+     * Returns the resource bundle for the given locale.
+     * This implementation must be provided by subclasses because, in a modularized application,
+     * the call to the {@link ResourceBundle#getBundle(String, Locale)} method is caller-sensitive.
+     * This method is typically implemented as below:
      *
      * {@snippet lang="java" :
      *     @Override
@@ -133,14 +106,10 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      *
      * @param  locale  the locale for which to get the resource bundle.
      * @return the resource bundle for the given locale.
-     * @throws MissingResourceException if no resource bundle can be found for the base name specified
-     *         at {@linkplain #ResourceInternationalString(String, String) construction time}.
      *
      * @see ResourceBundle#getBundle(String, Locale, ClassLoader)
      */
-    protected ResourceBundle getBundle(final Locale locale) throws MissingResourceException {
-        return ResourceBundle.getBundle(resources, locale);
-    }
+    protected abstract ResourceBundle getBundle(Locale locale);
 
     /**
      * Returns a string in the specified locale. If there is no string for the specified
@@ -174,8 +143,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
     @Override
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final ResourceInternationalString that = (ResourceInternationalString) object;
-            return key.equals(that.key) && resources.equals(that.resources);
+            return key.equals(((ResourceInternationalString) object).key);
         }
         return false;
     }
@@ -187,6 +155,6 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      */
     @Override
     public int hashCode() {
-        return key.hashCode() ^ resources.hashCode() ^ (int) serialVersionUID;
+        return key.hashCode() ^ (int) serialVersionUID;
     }
 }

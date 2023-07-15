@@ -54,10 +54,10 @@ import org.apache.sis.internal.geoapi.filter.SpatialOperatorName;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
-final class Wrapper extends GeometryWithCRS<Geometry> {
+final class Wrapper extends GeometryWithCRS {
     /**
      * The wrapped implementation.
      */
@@ -82,7 +82,7 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
      * Returns the geometry specified at construction time.
      */
     @Override
-    public Object implementation() {
+    protected Object implementation() {
         return geometry;
     }
 
@@ -197,9 +197,11 @@ add:    for (Geometry next = geometry;;) {
      * <p><b>Note:</b> {@link SpatialOperatorName#BBOX} is implemented by {@code NOT DISJOINT}.
      * It is caller's responsibility to ensure that one of the geometries is rectangular,
      * for example by a call to {@link Geometry#getEnvelope()}.</p>
+     *
+     * @throws ClassCastException if the given wrapper is not for the same geometry library.
      */
     @Override
-    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<Geometry> other) {
+    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper other) {
         final int ordinal = type.ordinal();
         if (ordinal >= 0 && ordinal < PREDICATES.length) {
             final Supplier<OperatorSimpleRelation> op = PREDICATES[ordinal];
@@ -245,9 +247,10 @@ add:    for (Geometry next = geometry;;) {
      * @param  other      the other geometry, or {@code null} if the operation requires only one geometry.
      * @param  argument   an operation-specific argument, or {@code null} if not applicable.
      * @return result of the specified operation.
+     * @throws ClassCastException if the argument is a geometry wrapper, but for a different geometry library.
      */
     @Override
-    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Geometry> other, final Object argument) {
+    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper other, final Object argument) {
         final Geometry result;
         switch (operation) {
             case ST_Dimension:        return geometry.getDimension();

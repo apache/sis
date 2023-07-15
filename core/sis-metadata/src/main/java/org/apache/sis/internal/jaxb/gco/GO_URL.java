@@ -35,18 +35,18 @@ import jakarta.xml.bind.annotation.XmlValue;
  * @version 1.4
  * @since   1.0
  */
-final class GO_URL {
+public final class GO_URL {
     /**
      * The URI as a string. We uses a string in order to allow
      * the user to catch potential error at unmarshalling time.
      */
     @XmlValue
-    private String uri;
+    public String uri;
 
     /**
      * Empty constructor for JAXB only.
      */
-    GO_URL() {
+    public GO_URL() {
     }
 
     /**

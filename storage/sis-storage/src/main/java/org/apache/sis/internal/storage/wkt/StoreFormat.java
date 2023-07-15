@@ -43,7 +43,7 @@ import org.apache.sis.util.ArraysExt;
  * For example, WKT may also appear in some global attributes of CF-netCDF files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})       // Not intended to be serialized.
@@ -86,7 +86,7 @@ public final class StoreFormat extends WKTFormat {
      */
     public Geometry parseGeometry(final String geometry, final String crs, final String additionalCRS) {
         if (geometry != null) try {
-            final GeometryWrapper<?> obj = Geometries.implementation(library).parseWKT(geometry);
+            final GeometryWrapper obj = Geometries.factory(library).parseWKT(geometry);
             obj.setCoordinateReferenceSystem(parseCRS(crs, additionalCRS));
             return obj;
         } catch (Exception e) {     // Implementation-specific exception (e.g. JTS has its own exception class).

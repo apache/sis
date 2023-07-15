@@ -54,14 +54,11 @@ import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  *
- * @param  <G>  root class of geometry instances of the underlying library (i.e. {@link Geometries#rootClass}).
- *              This is not necessarily the class of the wrapped geometry returned by {@link #implementation()}.
- *
  * @see Geometries#wrap(Object)
  *
  * @since 0.8
  */
-public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geometry {
+public abstract class GeometryWrapper extends AbstractGeometry implements Geometry {
     /**
      * Creates a new geometry object.
      */
@@ -74,29 +71,32 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      *
      * @return the factory of implementation-dependent geometric objects (never {@code null}).
      */
-    public abstract Geometries<G> factory();
+    protected abstract Geometries<?> factory();
 
     /**
      * Returns the JTS, ESRI or Java2D geometry implementation wrapped by this {@code GeometryWrapper} instance.
-     * This returned object will be an instance of {@link Geometries#rootClass} or {@link Geometries#pointClass}
-     * (note that {@code pointClass} is not necessarily a subtype of {@code rootClass}).
+     * The return type should be {@code <G>}, except for points which may be of unrelated type in some libraries.
+     * For runtime check, the base class is either {@link Geometries#rootClass} or {@link Geometries#pointClass}.
      *
-     * @return the geometry implementation wrapped by this instance (never {@code null}).
+     * @return the geometry implementation wrapped by this instance (never {@code this} or {@code null}).
+     *
+     * @see Geometries#implementation(Object)
+     * @see Geometries#getGeometry(GeometryWrapper)
      */
-    public abstract Object implementation();
+    protected abstract Object implementation();
 
     /**
      * Returns the Spatial Reference System Identifier (SRID) if available.
      * The SRID is used in database such as PostGIS and is generally database-dependent.
-     * This is <em>not</em> necessarily an EPSG code, even it is common practice to use
-     * the same numerical values than EPSG. Note that the absence of SRID does not mean
-     * that {@link #getCoordinateReferenceSystem()} would return no CRS.
+     * This is <em>not</em> necessarily an EPSG code, even if it is a common practice
+     * to use the same numerical values than EPSG. Note that the absence of SRID does
+     * not mean that {@link #getCoordinateReferenceSystem()} would return no CRS.
      *
      * <p>Users should invoke the {@link #getCoordinateReferenceSystem()} method instead.
      * This {@code getSRID()} method is provided for classes such as {@code DataStore} backed by an SQL database.
-     * Those classes have a connection to a {@code "spatial_ref_sys} table providing the mapping from SRID codes
-     * to authority codes such as EPSG. Those {@code DataStore} will typically get the SRID soon after geometry
-     * creation, resolves its CRS and invoke {@link #setCoordinateReferenceSystem(CoordinateReferenceSystem)}.</p>
+     * Those classes have a connection to a {@code spatial_ref_sys} table providing the mapping from SRID codes
+     * to authority codes such as EPSG. Those {@code DataStore}s will typically get the SRID soon after geometry
+     * creation, resolve its CRS and invoke {@link #setCoordinateReferenceSystem(CoordinateReferenceSystem)}.</p>
      *
      * @return the Spatial Reference System Identifier of the geometry.
      */
@@ -127,9 +127,9 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
 
     /**
      * Returns the geometry bounding box, together with its coordinate reference system.
+     * For an empty geometry or a single point, the returned envelope will be empty.
      *
      * @return the geometry envelope. Should never be {@code null}.
-     *         Note though that for an empty geometry or a single point, the returned envelope will be empty.
      */
     public abstract GeneralEnvelope getEnvelope();
 
@@ -172,15 +172,15 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * Appends a sequence of points or polylines after this geometry.
      * Each previous polyline will be a separated path in the new polyline instance.
      *
-     * <p>The given iterator shall return instances of {@link Geometries#rootClass} or
-     * {@link Geometries#pointClass}, not <strong>not</strong> {@link GeometryWrapper}
-     * (it is caller responsibility to unwrap if needed).</p>
+     * <p>The given iterator shall return instances of the underlying library assignable to
+     * {@link Geometries#rootClass} or {@link Geometries#pointClass}, <em>not</em> instances
+     * of {@link GeometryWrapper}. It is caller responsibility to unwrap if needed.</p>
      *
      * @param  paths  the points or polylines to merge in a single polyline instance.
      * @return the merged polyline (may be the underlying geometry of {@code this} but never {@code null}).
      * @throws ClassCastException if collection elements are not instances of the point or geometry class.
      */
-    public abstract G mergePolylines(final Iterator<?> paths);
+    public abstract Object mergePolylines(final Iterator<?> paths);
 
     /**
      * Applies a filter predicate between this geometry and another geometry.
@@ -194,11 +194,10 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws IllegalArgumentException if an error occurred while executing the operation on given geometries.
      */
-    public final boolean predicate(final DistanceOperatorName type, final GeometryWrapper<G> other,
+    public final boolean predicate(final DistanceOperatorName type, final GeometryWrapper other,
                                    final Quantity<Length> distance, final SpatialOperationContext context)
     {
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        final GeometryWrapper<G>[] geometries = new GeometryWrapper[] {this, other};
+        final GeometryWrapper[] geometries = new GeometryWrapper[] {this, other};
         try {
             if (context.transform(geometries)) {
                 double dv = distance.getValue().doubleValue();
@@ -232,11 +231,10 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws IllegalArgumentException if an error occurred while executing the operation on given geometries.
      */
-    public final boolean predicate(final SpatialOperatorName type, final GeometryWrapper<G> other,
+    public final boolean predicate(final SpatialOperatorName type, final GeometryWrapper other,
                                    final SpatialOperationContext context)
     {
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        final GeometryWrapper<G>[] geometries = new GeometryWrapper[] {this, other};
+        final GeometryWrapper[] geometries = new GeometryWrapper[] {this, other};
         try {
             if (context.transform(geometries)) {
                 return geometries[0].predicateSameCRS(type, geometries[1]);
@@ -281,7 +279,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      *         (for example polylines) and the wrapped geometry is not of that class.
      * @throws TransformException if it was necessary to transform the other geometry and that transformation failed.
      */
-    public final Object operation(final SQLMM operation, final GeometryWrapper<G> other)
+    public final Object operation(final SQLMM operation, final GeometryWrapper other)
             throws TransformException
     {
         assert operation.geometryCount() == 2 && operation.maxParamCount == 2 : operation;
@@ -326,7 +324,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      *         (for example polylines) and the wrapped geometry is not of that class.
      * @throws TransformException if it was necessary to transform the other geometry and that transformation failed.
      */
-    public final Object operationWithArgument(final SQLMM operation, final GeometryWrapper<G> other, final Object argument)
+    public final Object operationWithArgument(final SQLMM operation, final GeometryWrapper other, final Object argument)
             throws TransformException
     {
         assert operation.geometryCount() == 2 && operation.maxParamCount == 3 : operation;
@@ -352,7 +350,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @throws TransformException if the other geometry cannot be transformed.
      *         If may be because the other geometry does not define its CRS.
      */
-    private GeometryWrapper<G> toSameCRS(final GeometryWrapper<G> other) throws TransformException {
+    private GeometryWrapper toSameCRS(final GeometryWrapper other) throws TransformException {
         if (isSameCRS(other)) {
             return other;
         }
@@ -380,7 +378,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @return result of applying the specified predicate.
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      */
-    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<G> other) {
+    protected boolean predicateSameCRS(SpatialOperatorName type, GeometryWrapper other) {
         throw new UnsupportedOperationException(Geometries.unsupported(type.name()));
     }
 
@@ -395,7 +393,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @return result of applying the specified predicate.
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      */
-    protected boolean predicateSameCRS(final DistanceOperatorName type, final GeometryWrapper<G> other, final double distance) {
+    protected boolean predicateSameCRS(DistanceOperatorName type, GeometryWrapper other, double distance) {
         throw new UnsupportedOperationException(Geometries.unsupported(type.name()));
     }
 
@@ -410,12 +408,12 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
      */
-    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<G> other, final Object argument) {
+    protected Object operationSameCRS(SQLMM operation, GeometryWrapper other, Object argument) {
         throw new UnsupportedOperationException(Geometries.unsupported(operation.name()));
     }
 
     /**
-     * Converts the given geometry to the specified type.
+     * Converts the wrapped geometry to the specified type.
      * If the geometry is already of that type, it is returned unchanged.
      * Otherwise coordinates are copied in a new geometry of the requested type.
      *
@@ -436,7 +434,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @return the converted geometry.
      * @throws IllegalArgumentException if the geometry cannot be converted to the specified type.
      */
-    public GeometryWrapper<G> toGeometryType(GeometryType target) {
+    public GeometryWrapper toGeometryType(final GeometryType target) {
         final Class<?> type = factory().getGeometryClass(target);
         final Object geometry = implementation();
         if (type.isInstance(geometry)) {
@@ -462,7 +460,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @throws FactoryException if transformation to the target CRS cannot be found.
      * @throws TransformException if the geometry cannot be transformed.
      */
-    public GeometryWrapper<G> transform(final CoordinateOperation operation, final boolean validate)
+    public GeometryWrapper transform(CoordinateOperation operation, boolean validate)
             throws FactoryException, TransformException
     {
         throw new UnsupportedOperationException(Geometries.unsupported("transform"));
@@ -484,7 +482,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      *
      * @see #getCoordinateReferenceSystem()
      */
-    public GeometryWrapper<G> transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
+    public GeometryWrapper transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
         if (targetCRS == null) {
             return this;
         }
@@ -504,7 +502,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @return {@code true} if the two geometries use equivalent CRS or if the CRS is undefined on both side,
      *         or {@code false} in case of doubt.
      */
-    public abstract boolean isSameCRS(GeometryWrapper<G> other);
+    public abstract boolean isSameCRS(GeometryWrapper other);
 
     /**
      * Formats the wrapped geometry in Well Known Text (WKT).

@@ -67,7 +67,7 @@ public class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      */
     @XmlElement(name = "DateTime")
     @XmlSchemaType(name = "dateTime")
-    private XMLGregorianCalendar dateTime;
+    public XMLGregorianCalendar dateTime;
 
     /**
      * The date value using the {@code "Date"} name,
@@ -75,7 +75,7 @@ public class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      */
     @XmlElement(name = "Date")
     @XmlSchemaType(name = "date")
-    private XMLGregorianCalendar date;
+    public XMLGregorianCalendar date;
 
     /**
      * Empty constructor for JAXB.

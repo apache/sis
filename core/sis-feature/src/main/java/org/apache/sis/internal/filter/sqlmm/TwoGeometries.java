@@ -39,11 +39,10 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
- * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
  */
-class TwoGeometries<R,G> extends SpatialFunction<R> {
+class TwoGeometries<R> extends SpatialFunction<R> {
     /**
      * For cross-version compatibility.
      */
@@ -53,12 +52,12 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
      * The expression giving the geometries.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    final Expression<R, GeometryWrapper<G>> geometry1, geometry2;
+    final Expression<R, GeometryWrapper> geometry1, geometry2;
 
     /**
      * Creates a new function for geometries represented by the given parameter.
      */
-    TwoGeometries(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
+    TwoGeometries(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<?> library) {
         super(operation, parameters);
         geometry1 = toGeometryWrapper(library, parameters[0]);
         geometry2 = toGeometryWrapper(library, parameters[1]);
@@ -88,9 +87,9 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
                 final CoordinateReferenceSystem targetCRS = AttributeConvention.getCRSCharacteristic(
                         featureType, featureType.getProperty(((ValueReference<?,?>) p1).getXPath()));
                 if (targetCRS != null) {
-                    final GeometryWrapper<G> literal = geometry2.apply(null);
+                    final GeometryWrapper literal = geometry2.apply(null);
                     if (literal != null) {
-                        final GeometryWrapper<G> tr = literal.transform(targetCRS);
+                        final GeometryWrapper tr = literal.transform(targetCRS);
                         if (tr != literal) {
                             @SuppressWarnings({"unchecked","rawtypes"})
                             final Expression<R,?>[] effective = getParameters().toArray(Expression[]::new);
@@ -136,9 +135,9 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
      */
     @Override
     public Object apply(R input) {
-        final GeometryWrapper<G> value = geometry1.apply(input);
+        final GeometryWrapper value = geometry1.apply(input);
         if (value != null) {
-            final GeometryWrapper<G> other = geometry2.apply(input);
+            final GeometryWrapper other = geometry2.apply(input);
             if (other != null) try {
                 return value.operation(operation, other);
             } catch (TransformException | RuntimeException e) {
@@ -152,7 +151,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
     /**
      * SQLMM spatial functions taking a single geometry operand with one argument.
      */
-    static final class WithArgument<R,G> extends TwoGeometries<R,G> {
+    static final class WithArgument<R> extends TwoGeometries<R> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -121819663224041806L;
 
@@ -165,7 +164,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
         /**
          * Creates a new function for geometries represented by the given parameter.
          */
-        WithArgument(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
+        WithArgument(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<?> library) {
             super(operation, parameters, library);
             argument = parameters[2];
         }
@@ -201,9 +200,9 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
          */
         @Override
         public Object apply(R input) {
-            final GeometryWrapper<G> value = geometry1.apply(input);
+            final GeometryWrapper value = geometry1.apply(input);
             if (value != null) {
-                final GeometryWrapper<G> other = geometry2.apply(input);
+                final GeometryWrapper other = geometry2.apply(input);
                 if (other != null) try {
                     return value.operationWithArgument(operation, other, argument.apply(input));
                 } catch (TransformException | RuntimeException e) {

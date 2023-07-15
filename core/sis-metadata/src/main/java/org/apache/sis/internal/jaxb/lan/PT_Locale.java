@@ -81,7 +81,7 @@ public final class PT_Locale {
      * The attributes wrapped in a {@code "PT_Locale"} element.
      */
     @XmlElement(name = "PT_Locale")
-    private Wrapper element;
+    public Wrapper element;
 
     /**
      * Wraps the {@code "locale"} attributes in a {@code "PT_Locale"} element.
@@ -92,7 +92,7 @@ public final class PT_Locale {
         "country",
         "characterEncoding"
     })
-    private static final class Wrapper {
+    public static final class Wrapper {
         /**
          * The language code, or {@code null} if none.
          */
@@ -102,7 +102,7 @@ public final class PT_Locale {
          * The country code, or {@code null} if none.
          */
         @XmlElement
-        Country country;
+        public Country country;
 
         /**
          * The character encoding. If {@code null}, then this property will be set to the encoding of XML file.
@@ -121,7 +121,7 @@ public final class PT_Locale {
          */
         @XmlElement(required = true)
         @XmlJavaTypeAdapter(MD_CharacterSetCode.class)
-        Charset characterEncoding;
+        public Charset characterEncoding;
 
         /**
          * {@code true} if marshalling an element from the ISO 19115:2003 model,
@@ -151,33 +151,39 @@ public final class PT_Locale {
 
         /**
          * Gets the language code for this PT_Locale. Used in ISO 19115:2003 model.
+         *
+         * @return the ISO language code.
          */
         @XmlElement(name = "languageCode", namespace = LegacyNamespaces.GMD)
-        private LanguageCode getLanguageCode() {
+        public LanguageCode getLanguageCode() {
             return isLegacyMetadata ? language : null;
         }
 
         /**
          * Sets the language code for this PT_Locale. Used in ISO 19115:2003 model.
+         *
+         * @param  newValue  the ISO language code.
          */
-        @SuppressWarnings("unused")
-        private void setLanguageCode(LanguageCode newValue) {
+        public void setLanguageCode(LanguageCode newValue) {
             language = newValue;
         }
 
         /**
          * Gets the language code for this PT_Locale. Used in ISO 19115:2014 model.
+         *
+         * @return the ISO language code.
          */
         @XmlElement(name = "language", required = true)
-        private LanguageCode getLanguage() {
+        public LanguageCode getLanguage() {
             return isLegacyMetadata ? null : language;
         }
 
         /**
          * Sets the language code for this PT_Locale. Used in ISO 19115:2014 model.
+         *
+         * @param  newValue  the ISO language code.
          */
-        @SuppressWarnings("unused")
-        private void setLanguage(LanguageCode newValue) {
+        public void setLanguage(LanguageCode newValue) {
             language = newValue;
         }
 
@@ -188,6 +194,8 @@ public final class PT_Locale {
          *
          * <div class="note"><b>Note:</b> This is redundant with the encoding declared in the XML header.
          * But the {@code <lan:characterEncoding>} element is mandatory according OGC/ISO schemas.</div>
+         *
+         * @param  marshaller  the marshaller invoking this method.
          */
         public void beforeMarshal(final Marshaller marshaller) {
             if (characterEncoding == null) {
@@ -213,7 +221,7 @@ public final class PT_Locale {
     /**
      * Empty constructor for JAXB only.
      */
-    private PT_Locale() {
+    public PT_Locale() {
     }
 
     /**

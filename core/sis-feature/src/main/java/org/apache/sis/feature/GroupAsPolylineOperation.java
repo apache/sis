@@ -98,7 +98,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
                                                    components.getName(), components.getClass()));
             }
         }
-        return new GroupAsPolylineOperation(identification, Geometries.implementation(library), components, isFeatureAssociation);
+        return new GroupAsPolylineOperation(identification, Geometries.factory(library), components, isFeatureAssociation);
     }
 
     /**
@@ -209,7 +209,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
                 };
             }
             while (paths.hasNext()) {
-                GeometryWrapper<?> first = geometries.castOrWrap(paths.next());
+                GeometryWrapper first = geometries.castOrWrap(paths.next());
                 if (first != null) {
                     final Object geom = first.mergePolylines(paths);
                     return getType().getValueClass().cast(geom);

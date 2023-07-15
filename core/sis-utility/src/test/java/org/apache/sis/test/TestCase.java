@@ -28,7 +28,6 @@ import java.io.UnsupportedEncodingException;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.MonolineFormatter;
-import org.junit.runner.RunWith;
 
 
 /**
@@ -52,7 +51,6 @@ import org.junit.runner.RunWith;
  * @version 1.4
  * @since   0.3
  */
-@RunWith(TestRunner.class)
 public abstract class TestCase {
     /**
      * A flag for code that are pending future SIS development before to be enabled.

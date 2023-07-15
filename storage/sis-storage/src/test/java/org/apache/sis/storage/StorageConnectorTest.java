@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 import java.net.URI;
 import java.io.DataInput;
 import java.io.InputStream;
+import java.io.BufferedInputStream;
 import java.io.Reader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -48,7 +49,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class)
@@ -71,12 +72,30 @@ public final class StorageConnectorTest extends TestCase {
     private static final int MAGIC_NUMBER = ('T' << 24) | ('h' << 16) | ('e' << 8) | ' ';
 
     /**
+     * Ensures that the given input stream supports marks. This check is needed because
+     * {@link Class#getResourceAsStream(String)} may return different classes of stream
+     * depending on the context. For example on Java 20 with observed that the resource
+     * from unnamed module was returned as {@link BufferedInputStream}, while the same
+     * resource was returned as {@code sun.nio.ch.ChannelInputStream} after the module
+     * became a named one.
+     *
+     * @param  in  the input stream to check.
+     * @return the input stream with mark support.
+     */
+    private static InputStream withMarkSupport(InputStream in) {
+        if (in != null && !in.markSupported()) {
+            in = new BufferedInputStream(in);
+        }
+        return in;
+    }
+
+    /**
      * Creates the instance to test. This method uses the {@code "Any.txt"} ASCII file as
      * the resource to test. The resource can be provided either as a URL or as a stream.
      */
     static StorageConnector create(final boolean asStream) {
         final Class<?> c = StorageConnectorTest.class;
-        final Object storage = asStream ? c.getResourceAsStream(FILENAME) : c.getResource(FILENAME);
+        final Object storage = asStream ? withMarkSupport(c.getResourceAsStream(FILENAME)) : c.getResource(FILENAME);
         assertNotNull(storage);
         final StorageConnector connector = new StorageConnector(storage);
         connector.setOption(OptionKey.ENCODING, StandardCharsets.US_ASCII);

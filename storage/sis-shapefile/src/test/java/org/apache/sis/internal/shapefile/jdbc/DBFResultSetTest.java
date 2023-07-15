@@ -25,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 
 import org.apache.sis.internal.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
-import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 
@@ -58,7 +57,6 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
      * @throws SQLException if an error occurred while querying the database.
      */
     @Test
-    @DependsOnMethod("readFirstRecord")
     public void readAllRecords() throws SQLException {
         try(Connection connection = connect(); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM SignedBikeRoute")) {
             int count = 0;

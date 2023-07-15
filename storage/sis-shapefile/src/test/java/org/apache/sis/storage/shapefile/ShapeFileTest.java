@@ -25,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.logging.Logger;
 
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.test.TestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.apache.sis.feature.AbstractFeature;
@@ -39,7 +38,7 @@ import org.apache.sis.feature.AbstractAttribute;
  * @version 0.5
  * @since   0.5
  */
-public final class ShapeFileTest extends TestCase {
+public final class ShapeFileTest {
     /**
      * Returns URI path to a resource.
      * @param name Resource name.

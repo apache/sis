@@ -60,7 +60,7 @@ import org.apache.sis.internal.geoapi.filter.Literal;
  * @version 1.4
  * @since   1.1
  */
-final class ST_Transform<R,G> extends FunctionWithSRID<R> {
+final class ST_Transform<R> extends FunctionWithSRID<R> {
     /**
      * For cross-version compatibility.
      */
@@ -70,7 +70,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      * The expression giving the geometry.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private final Expression<R, GeometryWrapper<G>> geometry;
+    private final Expression<R, GeometryWrapper> geometry;
 
     /**
      * Creates a new function with the given parameters. It is caller's responsibility to ensure
@@ -78,7 +78,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      *
      * @throws IllegalArgumentException if CRS cannot be constructed from the second expression.
      */
-    ST_Transform(final Expression<R,?>[] parameters, final Geometries<G> library) {
+    ST_Transform(final Expression<R,?>[] parameters, final Geometries<?> library) {
         super(SQLMM.ST_Transform, parameters, PRESENT);
         geometry = toGeometryWrapper(library, parameters[0]);
     }
@@ -126,10 +126,10 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      */
     @Override
     public Object apply(final R input) {
-        final GeometryWrapper<G> value = geometry.apply(input);
+        final GeometryWrapper value = geometry.apply(input);
         if (value != null) try {
             // Note: `transform(…)` does nothing if the CRS is null.
-            return value.transform(getTargetCRS(input)).implementation();
+            return getGeometryLibrary().getGeometry(value.transform(getTargetCRS(input)));
         } catch (BackingStoreException e) {
             final Throwable cause = e.getCause();
             warning((cause instanceof Exception) ? (Exception) cause : e, false);

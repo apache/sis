@@ -40,7 +40,7 @@ public final class TM_Duration extends PropertyType<TM_Duration, Duration> {
     /**
      * Empty constructor for JAXB.
      */
-    TM_Duration() {
+    public TM_Duration() {
     }
 
     /**

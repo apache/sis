@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterDescriptor;
@@ -67,6 +68,18 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
     org.apache.sis.parameter.ParameterMarshallingTest.class
 })
 public final class SingleOperationMarshallingTest extends TestCase {
+    /**
+     * Opens the stream to the XML file in this package containing an operation definition.
+     *
+     * @param  transformation  {@code true} for a transformation or {@code false} for a conversion.
+     * @return stream opened on the XML document to use for testing purpose.
+     */
+    private static InputStream openTestFile(final boolean transformation) {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return SingleOperationMarshallingTest.class.getResourceAsStream(
+                transformation ? "Transformation.xml" : "Conversion.xml");
+    }
+
     /**
      * Creates the test operation method.
      */
@@ -138,7 +151,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
     @Test
     @DependsOnMethod("testOperationMethod")
     public void testConversionUnmarshalling() throws JAXBException {
-        final DefaultConversion c = unmarshalFile(DefaultConversion.class, "Conversion.xml");
+        final DefaultConversion c = unmarshalFile(DefaultConversion.class, openTestFile(false));
         assertEquals("name", "World Mercator", c.getName().getCode());
         assertEquals("identifier", "3395", getSingleton(c.getIdentifiers()).getCode());
         assertEquals("scope", "Very small scale mapping.", String.valueOf(c.getScope()));
@@ -198,7 +211,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
     @Test
     @DependsOnMethod("testConversionUnmarshalling")
     public void testTransformationUnmarshalling() throws JAXBException {
-        final DefaultTransformation c = unmarshalFile(DefaultTransformation.class, "Transformation.xml");
+        final DefaultTransformation c = unmarshalFile(DefaultTransformation.class, openTestFile(true));
         assertEquals("name",             "NTF (Paris) to NTF (1)",    c.getName().getCode());
         assertEquals("identifier",       "1763",                      getSingleton(c.getIdentifiers()).getCode());
         assertEquals("scope",            "Change of prime meridian.", String.valueOf(c.getScope()));

@@ -78,7 +78,7 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
     }
 
     /**
-     * Constructor for the {@link #wrap} method only.
+     * Constructor for the {@link #wrap(ParameterDescriptor)} method only.
      */
     private CC_OperationParameter(final ParameterDescriptor<?> parameter) {
         super(parameter);
@@ -157,10 +157,10 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
      * the unit of measurement of the parameter descriptor to create. Those information will
      * be used by the {@link DefaultParameterDescriptor} private constructor.
      *
-     * @param  unmarshaller  the unmarshaller.
-     * @param  parent        the enclosing {@link ParameterValue} instance being unmarshalled.
+     * @param  caller  the unmarshaller which is calling this method.
+     * @param  parent  the enclosing {@link ParameterValue} instance being unmarshalled.
      */
-    private void beforeUnmarshal(final Unmarshaller unmarshaller, final Object parent) {
+    public void beforeUnmarshal(final Unmarshaller caller, final Object parent) {
         if (parent instanceof ParameterValue<?>) {
             valueClass  = valueClass ((ParameterValue<?>) parent);
             valueDomain = valueDomain((ParameterValue<?>) parent);
@@ -171,8 +171,12 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
     /**
      * Clears the value class and units of measurement after {@code <gml:OperationParameter>} unmarshalling
      * for avoiding that those information are wrongly used for an unrelated {@link ParameterDescriptor}.
+     * This method is invoked automatically by JAXB.
+     *
+     * @param  caller  the unmarshaller which is calling this method.
+     * @param  parent  the enclosing {@link ParameterValue} instance being unmarshalled.
      */
-    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+    public void afterUnmarshal(final Unmarshaller caller, final Object parent) {
         Context.setWrapper(Context.current(), null);
     }
 }

@@ -136,8 +136,9 @@ public final class Assertions extends Static {
      *
      * <ul>
      *   <li>{@link org.w3c.dom.Node}: used directly without further processing.</li>
+     *   <li>{@link java.io.InputStream}: the stream is parsed as an XML document, then closed.</li>
      *   <li>{@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}:
-     *       the stream is opened and parsed as a XML document.</li>
+     *       the stream is opened, parsed as an XML document, then closed.</li>
      *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *

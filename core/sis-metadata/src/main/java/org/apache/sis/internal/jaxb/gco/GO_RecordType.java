@@ -34,7 +34,7 @@ public class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {
     /**
      * Empty constructor for JAXB only.
      */
-    GO_RecordType() {
+    public GO_RecordType() {
     }
 
     /**

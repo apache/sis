@@ -16,7 +16,10 @@
  */
 package org.apache.sis.metadata.xml;
 
+import java.net.URL;
+import java.io.InputStream;
 import org.apache.sis.test.xml.TestCase;
+import org.apache.sis.util.Version;
 
 
 /**
@@ -25,19 +28,54 @@ import org.apache.sis.test.xml.TestCase;
  * whether ISO 19139:2007 or ISO 19115-3:2016 schema is used.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 public abstract class TestUsingFile extends TestCase {
     /**
-     * The sub-directory of XML files encoded according the ISO 19115-3:2016 schema.
+     * Identification of the data to use for a test.
      */
-    protected static final String XML2016 = "2016/";
+    protected enum Format {
+        /** A document in the sub-directory of XML files encoded according the ISO 19115-3:2016 schema. */
+        XML2016(VERSION_2014, "2016/"),
 
-    /**
-     * The sub-directory of XML files encoded according the ISO 19139:2007 schema.
-     */
-    protected static final String XML2007 = "2007/";
+        /** A document in the sub-directory of XML files encoded according the ISO 19139:2007 schema. */
+        XML2007(VERSION_2007, "2007/");
+
+        /** Version of the XML schema used by this format. */
+        public final Version schemaVersion;
+
+        /** The directory (relative to the {@code TestUsingFile.class} file) of the XML document. */
+        private final String directory;
+
+        /** Creates a new enumeration for documents in the specified sub-directory. */
+        private Format(final Version schemaVersion, final String directory) {
+            this.schemaVersion = schemaVersion;
+            this.directory = directory;
+        }
+
+        /**
+         * Returns the URL to the specified XML file.
+         *
+         * @param  filename  the XML file in the directory represented by this enumeration.
+         * @return URL to the specified file.
+         */
+        public final URL getURL(final String filename) {
+            // Call to `getResource(…)` is caller sensitive: it must be in the same module.
+            return TestUsingFile.class.getResource(directory.concat(filename));
+        }
+
+        /**
+         * Opens the stream to the specified XML file.
+         *
+         * @param  filename  the XML file in the directory represented by this enumeration.
+         * @return stream opened on the XML document to use for testing purpose.
+         */
+        public final InputStream openTestFile(final String filename) {
+            // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+            return TestUsingFile.class.getResourceAsStream(directory.concat(filename));
+        }
+    }
 
     /**
      * For sub-class constructors only.

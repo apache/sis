@@ -697,7 +697,7 @@ convert:            if (componentType != null) {
         if (Number.class.isAssignableFrom(valueClass)) {
             return Numbers.wrap(value, (Class<? extends Number>) valueClass);
         } else {
-            return Numerics.valueOf(value);
+            return value;
         }
     }
 

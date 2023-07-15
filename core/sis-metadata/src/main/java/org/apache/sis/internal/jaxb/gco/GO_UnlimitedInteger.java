@@ -35,11 +35,11 @@ import jakarta.xml.bind.annotation.XmlType;
  * @since 1.0
  */
 @XmlType(name = "UnlimitedInteger_PropertyType")
-final class GO_UnlimitedInteger extends PropertyType<GO_UnlimitedInteger, UnlimitedInteger> {
+public final class GO_UnlimitedInteger extends PropertyType<GO_UnlimitedInteger, UnlimitedInteger> {
     /**
      * Empty constructor used only by JAXB.
      */
-    GO_UnlimitedInteger() {
+    public GO_UnlimitedInteger() {
     }
 
     /**

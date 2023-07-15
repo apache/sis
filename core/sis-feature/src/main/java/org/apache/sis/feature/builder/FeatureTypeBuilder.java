@@ -231,7 +231,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
             factory = DefaultNameFactory.provider();
         }
         nameFactory          = factory;
-        geometries           = Geometries.implementation(library);
+        geometries           = Geometries.factory(library);
         properties           = new ArrayList<>();
         superTypes           = new ArrayList<>();
         idDelimiter          = ":";

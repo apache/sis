@@ -42,7 +42,7 @@ public class GO_Real extends PropertyType<GO_Real, Double> {
     /**
      * Empty constructor used only by JAXB.
      */
-    GO_Real() {
+    public GO_Real() {
     }
 
     /**

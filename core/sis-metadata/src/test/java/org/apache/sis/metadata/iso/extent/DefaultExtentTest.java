@@ -17,9 +17,10 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.List;
+import java.net.URL;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
-import org.apache.sis.util.Version;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.Namespaces;
@@ -45,9 +46,24 @@ import static org.apache.sis.test.TestUtilities.date;
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
 public final class DefaultExtentTest extends TestUsingFile {
     /**
-     * An XML file containing extent information.
+     * Opens the stream to the XML file containing extent information.
+     *
+     * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    public static final String FILENAME = "Extent.xml";
+    public static InputStream openTestFile(final Format format) {
+        return format.openTestFile("Extent.xml");
+    }
+
+    /**
+     * Returns the URL to an arbitrary test file.
+     * This is an accessor for tests in other modules.
+     *
+     * @return URL to an arbitrary test file.
+     */
+    public static URL getTestFileURL() {
+        return Format.XML2007.getURL("Extent.xml");
+    }
 
     /**
      * Tests {@link DefaultExtent#intersect(Extent)}.
@@ -91,7 +107,7 @@ public final class DefaultExtentTest extends TestUsingFile {
      */
     @Test
     public void testXML() throws JAXBException {
-        roundtrip(XML2016+FILENAME, VERSION_2014);
+        roundtrip(Format.XML2016);
     }
 
     /**
@@ -101,13 +117,13 @@ public final class DefaultExtentTest extends TestUsingFile {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        roundtrip(XML2007+FILENAME, VERSION_2007);
+        roundtrip(Format.XML2007);
     }
 
     /**
      * Compares the marshalling and unmarshalling of a {@link DefaultExtent} with XML in the given file.
      */
-    private void roundtrip(final String filename, final Version version) throws JAXBException {
+    private void roundtrip(final Format format) throws JAXBException {
         final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(-99, -79, 14.9844, 31);
         bbox.getIdentifierMap().put(IdentifierSpace.ID, "bbox");
         final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
@@ -116,8 +132,8 @@ public final class DefaultExtentTest extends TestUsingFile {
             temporal.setBounds(date("2010-01-27 13:26:10"), date("2010-08-27 13:26:10"));
         }
         final DefaultExtent extent = new DefaultExtent(null, bbox, null, temporal);
-        assertMarshalEqualsFile(filename, extent, version, "xmlns:*", "xsi:schemaLocation");
-        assertEquals(extent, unmarshalFile(DefaultExtent.class, filename));
+        assertMarshalEqualsFile(openTestFile(format), extent, format.schemaVersion, "xmlns:*", "xsi:schemaLocation");
+        assertEquals(extent, unmarshalFile(DefaultExtent.class, openTestFile(format)));
     }
 
     /**

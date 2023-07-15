@@ -81,7 +81,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.metadata.Merger;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
@@ -108,7 +107,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 public class MetadataBuilder {
@@ -3429,7 +3428,7 @@ parse:      for (int i = 0; i < length;) {
      * @return  the given value, but as an existing instance if possible.
      */
     protected final Double shared(final double value) {
-        final Double n = Numerics.valueOf(value);
+        final Double n = value;
         final Object existing = sharedValues.putIfAbsent(n, n);
         return (existing != null) ? (Double) existing : n;
     }

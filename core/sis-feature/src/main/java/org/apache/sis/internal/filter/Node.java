@@ -177,7 +177,7 @@ public abstract class Node implements Serializable {
      *         but for another geometry implementation.
      */
     @SuppressWarnings("unchecked")
-    protected static <R,G> Expression<R, GeometryWrapper<G>> toGeometryWrapper(
+    protected static <R,G> Expression<R, GeometryWrapper> toGeometryWrapper(
             final Geometries<G> library, final Expression<R,?> expression)
     {
         if (expression instanceof GeometryConverter<?,?>) {
@@ -194,12 +194,11 @@ public abstract class Node implements Serializable {
      * If the given exception was wrapped by {@link #toGeometryWrapper(Geometries, Expression)},
      * returns the original expression. Otherwise returns the given expression.
      *
-     * @param  <R>         the type of resources (e.g. {@code Feature}) used as inputs.
-     * @param  <G>         the geometry implementation type.
+     * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
      * @param  expression  the expression to unwrap.
      * @return the unwrapped expression.
      */
-    protected static <R,G> Expression<R,?> unwrap(final Expression<R, GeometryWrapper<G>> expression) {
+    protected static <R> Expression<R,?> unwrap(final Expression<R, GeometryWrapper> expression) {
         if (expression instanceof GeometryConverter<?,?>) {
             return ((GeometryConverter<R,?>) expression).expression;
         } else {
@@ -212,13 +211,12 @@ public abstract class Node implements Serializable {
      * The given expression should be the first parameter (as requested by SQLMM specification),
      * otherwise the error message will not be accurate.
      *
-     * @param  <G>          the type of geometry created by the expression.
      * @param  expression   the expression for which to get the geometry library.
      * @return the geometry library (never {@code null}).
      */
-    protected static <G> Geometries<G> getGeometryLibrary(final Expression<?, GeometryWrapper<G>> expression) {
+    protected static Geometries<?> getGeometryLibrary(final Expression<?, GeometryWrapper> expression) {
         if (expression instanceof GeometryConverter<?,?>) {
-            return ((GeometryConverter<?,G>) expression).library;
+            return ((GeometryConverter<?,?>) expression).library;
         }
         throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAGeometryAtFirstExpression));
     }

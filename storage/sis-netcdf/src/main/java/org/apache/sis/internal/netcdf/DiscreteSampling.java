@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
  * and profiles.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 public abstract class DiscreteSampling extends AbstractFeatureSet implements StoreResource {
@@ -62,7 +62,7 @@ public abstract class DiscreteSampling extends AbstractFeatureSet implements Sto
      */
     protected DiscreteSampling(final GeometryLibrary library, final StoreListeners listeners, final DataStore lock) {
         super(listeners, false);
-        factory = Geometries.implementation(library);
+        factory = Geometries.factory(library);
         this.lock = lock;
     }
 

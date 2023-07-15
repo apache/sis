@@ -23,9 +23,7 @@ import org.opengis.referencing.operation.TransformException;
 
 // Test imports
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestRunner;
 import static org.opengis.test.Assert.assertInstanceOf;
 
 // Branch-dependent imports
@@ -37,10 +35,9 @@ import org.junit.Ignore;
  * in GeoAPI conformance module. The transforms are created by {@link MathTransforms#linear(Matrix)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
  */
-@RunWith(TestRunner.class)
 @DependsOn(ProjectiveTransformTest.class)
 public final class LinearTransformTest extends ProjectiveTransformTest {
     /**

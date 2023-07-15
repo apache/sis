@@ -47,7 +47,7 @@ import org.apache.sis.math.Vector;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 public final class Factory extends Geometries<Geometry> {
@@ -62,7 +62,7 @@ public final class Factory extends Geometries<Geometry> {
     public static final Factory INSTANCE = new Factory();
 
     /**
-     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
+     * Invoked at deserialization time for obtaining the unique instance of this {@code Factory} class.
      *
      * @return {@link #INSTANCE}.
      * @throws ObjectStreamException if the object state is invalid.
@@ -79,16 +79,36 @@ public final class Factory extends Geometries<Geometry> {
     }
 
     /**
-     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} geometry.
+     * Returns the geometry object to return to the user in public API.
+     *
+     * @param  wrapper  the wrapper for which to get the geometry, or {@code null}.
+     * @return the ESRI geometry instance, or {@code null} if the given wrapper was null.
+     * @throws ClassCastException if the given wrapper is not an instance of the class expected by this factory.
+     */
+    @Override
+    public Object getGeometry(final GeometryWrapper wrapper) {
+        if (wrapper instanceof Wrapper) {
+            // Intentionally stronger cast than needed.
+            return ((Wrapper) wrapper).implementation();
+        } else {
+            return super.getGeometry(wrapper);
+        }
+    }
+
+    /**
+     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper} geometry.
      *
      * @param  geometry  the geometry instance to wrap (can be {@code null}).
      * @return a wrapper for the given geometry implementation, or {@code null}.
      * @throws ClassCastException if the given geometry is not an instance of valid type.
      */
     @Override
-    public GeometryWrapper<Geometry> castOrWrap(final Object geometry) {
-        return (geometry == null || geometry instanceof Wrapper)
-                ? (Wrapper) geometry : new Wrapper((Geometry) geometry);
+    public GeometryWrapper castOrWrap(final Object geometry) {
+        if (geometry == null || geometry instanceof Wrapper) {
+            return (Wrapper) geometry;
+        } else {
+            return new Wrapper((Geometry) geometry);
+        }
     }
 
     /**
@@ -98,7 +118,7 @@ public final class Factory extends Geometries<Geometry> {
      * @return wrapper for the given geometry.
      */
     @Override
-    protected GeometryWrapper<Geometry> createWrapper(final Geometry geometry) {
+    protected GeometryWrapper createWrapper(final Geometry geometry) {
         return new Wrapper(geometry);
     }
 
@@ -167,10 +187,10 @@ public final class Factory extends Geometries<Geometry> {
      * @throws ClassCastException if an element in the array is not an ESRI geometry.
      */
     @Override
-    public GeometryWrapper<Geometry> createMultiPolygon(final Object[] geometries) {
+    public GeometryWrapper createMultiPolygon(final Object[] geometries) {
         final Polygon polygon = new Polygon();
         for (final Object geometry : geometries) {
-            polygon.add((MultiPath) unwrap(geometry), false);
+            polygon.add((MultiPath) implementation(geometry), false);
         }
         return new Wrapper(polygon);
     }
@@ -190,7 +210,7 @@ public final class Factory extends Geometries<Geometry> {
      * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
      */
     @Override
-    public GeometryWrapper<Geometry> createFromComponents(final GeometryType type, final Object components) {
+    public GeometryWrapper createFromComponents(final GeometryType type, final Object components) {
         /*
          * No exhaustive `if (x instanceof y)` checks in this method.
          * `ClassCastException` shall be handled by the caller.
@@ -262,7 +282,7 @@ public final class Factory extends Geometries<Geometry> {
      * @return the geometry object for the given WKT.
      */
     @Override
-    public GeometryWrapper<Geometry> parseWKT(final String wkt) {
+    public GeometryWrapper parseWKT(final String wkt) {
         return new Wrapper(OperatorImportFromWkt.local().execute(WktImportFlags.wktImportDefaults, Geometry.Type.Unknown, wkt, null));
     }
 
@@ -273,7 +293,7 @@ public final class Factory extends Geometries<Geometry> {
      * @return the geometry object for the given WKB.
      */
     @Override
-    public GeometryWrapper<Geometry> parseWKB(final ByteBuffer data) {
+    public GeometryWrapper parseWKB(final ByteBuffer data) {
         return new Wrapper(OperatorImportFromWkb.local().execute(WkbImportFlags.wkbImportDefaults, Geometry.Type.Unknown, data, null));
     }
 }

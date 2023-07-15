@@ -48,7 +48,7 @@ public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDur
     /**
      * Empty constructor for JAXB.
      */
-    TM_PeriodDuration() {
+    public TM_PeriodDuration() {
     }
 
     /**

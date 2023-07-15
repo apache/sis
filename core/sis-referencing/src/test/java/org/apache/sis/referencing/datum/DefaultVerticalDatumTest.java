@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
@@ -46,14 +47,17 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  */
 public final class DefaultVerticalDatumTest extends TestCase {
     /**
-     * An XML file in this package containing a vertical datum definition.
+     * Opens the stream to the XML file in this package containing a vertical datum definition.
+     *
+     * @param  legacy  {@code true} for GML 3.1 or {@code false} for GML 3.2.
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "VerticalDatum.xml";
-
-    /**
-     * An XML file with the same content than {@link #XML_FILE}, but written in an older GML format.
-     */
-    private static final String GML31_FILE = "VerticalDatum (GML 3.1).xml";
+    private static InputStream openTestFile(final boolean legacy) {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultVerticalDatumTest.class.getResourceAsStream(
+                legacy ? "VerticalDatum (GML 3.1).xml"
+                       : "VerticalDatum.xml");
+    }
 
     /**
      * Tests the {@link DefaultVerticalDatum#getVerticalDatumType()} method in a state
@@ -107,7 +111,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultVerticalDatum datum = unmarshalFile(DefaultVerticalDatum.class, XML_FILE);
+        final DefaultVerticalDatum datum = unmarshalFile(DefaultVerticalDatum.class, openTestFile(false));
         assertIsMeanSeaLevel(datum, true);
         /*
          * Following attribute does not exist in GML 3.2, so it has been inferred.
@@ -124,7 +128,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
         /*
          * Test marshalling and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, datum, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(false), datum, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -140,8 +144,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
         final MarshallerPool pool = getMarshallerPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         unmarshaller.setProperty(XML.GML_VERSION, version);
-        final DefaultVerticalDatum datum =
-                (DefaultVerticalDatum) unmarshaller.unmarshal(getClass().getResource(GML31_FILE));
+        final var datum = (DefaultVerticalDatum) unmarshaller.unmarshal(openTestFile(true));
         pool.recycle(unmarshaller);
         /*
          * Following attribute exists in GML 3.1 only.

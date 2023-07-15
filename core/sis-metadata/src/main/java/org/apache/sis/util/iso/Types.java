@@ -293,11 +293,8 @@ public final class Types extends Static {
      */
     @OptionalCandidate
     public static InternationalString getDescription(final CodeList<?> code) {
-        if (code != null) {
-            final String resources = toResourceName(code.getClass().getName());
-            if (resources != null) {
-                return new Description(resources, Description.resourceKey(code));
-            }
+        if (code != null && hasResources(code.getClass())) {
+            return new Description(Description.resourceKey(code));
         }
         return null;
     }
@@ -314,11 +311,8 @@ public final class Types extends Static {
     @OptionalCandidate
     public static InternationalString getDescription(final Class<?> type) {
         final String name = getStandardName(type);
-        if (name != null) {
-            final String resources = toResourceName(type.getName());
-            if (resources != null) {
-                return new Description(resources, name);
-            }
+        if (name != null && hasResources(type)) {
+            return new Description(name);
         }
         return null;
     }
@@ -336,11 +330,8 @@ public final class Types extends Static {
     public static InternationalString getDescription(final Class<?> type, final String property) {
         if (property != null) {
             final String name = getStandardName(type);
-            if (name != null) {
-                final String resources = toResourceName(type.getName());
-                if (resources != null) {
-                    return new Description(resources, name + SEPARATOR + property);
-                }
+            if (name != null && hasResources(type)) {
+                return new Description(name + SEPARATOR + property);
             }
         }
         return null;
@@ -367,11 +358,10 @@ public final class Types extends Static {
         /**
          * Creates a new international string from the specified resource bundle and key.
          *
-         * @param resources  the name of the resource bundle, as a fully qualified class name.
-         * @param key        the key for the resource to fetch.
+         * @param key  the key for the resource to fetch.
          */
-        Description(final String resources, final String key) {
-            super(resources, key);
+        Description(final String key) {
+            super(key);
         }
 
         /**
@@ -379,7 +369,7 @@ public final class Types extends Static {
          */
         @Override
         protected ResourceBundle getBundle(final Locale locale) {
-            return ResourceBundle.getBundle(resources, locale, CLASSLOADER);
+            return ResourceBundle.getBundle("org.opengis.metadata.Descriptions", locale, CLASSLOADER);
         }
 
         /**
@@ -443,8 +433,16 @@ public final class Types extends Static {
          * @param  code  the code list for which to create a title.
          */
         CodeTitle(final CodeList<?> code) {
-            super(CodeLists.RESOURCES, resourceKey(code));
+            super(resourceKey(code));
             this.code = code;
+        }
+
+        /**
+         * Loads the GeoAPI resources. A cache is managed by {@link ResourceBundle}.
+         */
+        @Override
+        protected ResourceBundle getBundle(final Locale locale) {
+            return ResourceBundle.getBundle(CodeLists.RESOURCES, locale);
         }
 
         /**
@@ -457,21 +455,13 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the resource name for the given GeoAPI type, or {@code null} if none.
-     * The non-null resource name is only informative in this implementation.
-     * We need to allow {@code null} return value for telling that no resource
-     * is expected to exist for the given class.
+     * Returns whether the specified class is expected to have GeoAPI resources.
      *
-     * @param  classname  the fully qualified name of the GeoAPI type.
-     * @return the resource bundle to load, or {@code null} if none.
+     * @param  type  the type to test.
+     * @return whether the given class is expected to have resources.
      */
-    static String toResourceName(final String classname) {
-        String resources = "org.opengis.metadata.Descriptions";
-        if (classname.regionMatches(0, resources, 0, 21)) {             // 21 is the location after the last dot.
-            return resources;
-        }
-        // Add more checks here (maybe in a loop) if there is more resource candidates.
-        return null;
+    private static boolean hasResources(final Class<?> type) {
+        return type.getName().startsWith("org.opengis.metadata.");
     }
 
     /**

@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.feature.esri;
 
-import org.apache.sis.internal.feature.GeometriesTestCase;
 import com.esri.core.geometry.Polyline;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometriesTestCase;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.util.StringBuilders;
 import org.junit.Test;
 
@@ -74,5 +76,23 @@ public final class FactoryTest extends GeometriesTestCase {
         StringBuilders.replace(b, ")", "))");
         expected = b.toString();
         super.assertWktEquals(expected, actual);
+    }
+
+    /**
+     * Verifies that {@link Factory#getGeometry(GeometryWrapper)} does not allow mixing libraries.
+     */
+    @Test
+    public void testGetGeometry() {
+        final Geometries<?> other = org.apache.sis.internal.feature.j2d.Factory.INSTANCE;
+        final GeometryWrapper ogw = other.castOrWrap(other.createPoint(5, 6));
+        assertNotNull(other.getGeometry(ogw));
+        try {
+            factory.getGeometry(ogw);
+            fail("Expected a ClassCastException");
+        } catch (ClassCastException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("ESRI"));
+            assertTrue(message, message.contains("JAVA2D"));
+        }
     }
 }

@@ -22,7 +22,6 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -30,7 +29,7 @@ import org.apache.sis.internal.util.Numerics;
  * Values may be {@code long} or {@code double} types.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.8
  */
 abstract class SequenceVector extends Vector implements Serializable {
@@ -209,7 +208,7 @@ abstract class SequenceVector extends Vector implements Serializable {
 
         /** Returns the increment between all consecutive values. */
         @Override public final Number increment(final double tolerance) {
-            return Numerics.valueOf(increment);         // Always Double even if data type is Float.
+            return increment;   // Always Double even if data type is Float.
         }
 
         /** Computes the minimal and maximal values in this vector. */

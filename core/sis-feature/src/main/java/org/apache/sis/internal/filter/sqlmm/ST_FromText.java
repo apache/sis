@@ -74,7 +74,7 @@ final class ST_FromText<R,G> extends GeometryParser<R,G> {
      * @throws Exception if parsing failed for another reason. This is an implementation-specific exception.
      */
     @Override
-    protected GeometryWrapper<G> parse(final Object value) throws Exception {
+    protected GeometryWrapper parse(final Object value) throws Exception {
         // ClassCastException is part of method contract.
         return library.parseWKT((String) value);
     }

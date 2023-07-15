@@ -19,6 +19,7 @@ package org.apache.sis.internal.util;
 import java.text.Format;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.ServiceLoader;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -33,8 +34,6 @@ import org.opengis.util.CodeList;
 
 /**
  * Provides access to services defined in the {@code "sis-metadata"} module.
- * This class searches for the {@link org.apache.sis.internal.metadata.ServicesForUtility}
- * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -49,6 +48,9 @@ public class MetadataServices extends OptionalDependency {
 
     /**
      * The services, fetched when first needed.
+     * Guaranteed non-null after the search was done, even if the service implementation was not found.
+     *
+     * @see #getInstance()
      */
     private static volatile MetadataServices instance;
 
@@ -68,7 +70,6 @@ public class MetadataServices extends OptionalDependency {
     @Override
     protected final void classpathChanged() {
         synchronized (MetadataServices.class) {
-            super.classpathChanged();
             instance = null;
         }
     }
@@ -86,12 +87,11 @@ public class MetadataServices extends OptionalDependency {
                 c = instance;
                 if (c == null) {
                     /*
-                     * Double-checked locking: okay since Java 5 provided that the 'instance' field is volatile.
+                     * Double-checked locking: okay since Java 5 provided that the `instance` field is volatile.
                      * In the particular case of this class, the intent is to ensure that SystemListener.add(…)
                      * is invoked only once.
                      */
-                    c = getInstance(MetadataServices.class, Modules.UTILITIES, "sis-metadata",
-                            "org.apache.sis.internal.metadata.ServicesForUtility");
+                    c = getInstance(MetadataServices.class, ServiceLoader.load(MetadataServices.class), "sis-metadata");
                     if (c == null) {
                         c = new MetadataServices();
                     }

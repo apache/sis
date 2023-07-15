@@ -35,26 +35,26 @@ import org.apache.sis.xml.NilReason;
     "lower",
     "upper"
 })
-final class MultiplicityRange {
+public final class MultiplicityRange {
     /**
      * The lower bound.
      */
     @XmlElement(required = true)
     @XmlJavaTypeAdapter(GO_Integer.class)
-    private Integer lower;
+    public Integer lower;
 
     /**
      * The upper bound.
      */
     @XmlElement(required = true)
     @XmlJavaTypeAdapter(GO_UnlimitedInteger.class)
-    private UnlimitedInteger upper;
+    public UnlimitedInteger upper;
 
     /**
      * Creates an initially empty range.
      * This is invoked by JAXB at unmarshalling time.
      */
-    private MultiplicityRange() {
+    public MultiplicityRange() {
     }
 
     /**

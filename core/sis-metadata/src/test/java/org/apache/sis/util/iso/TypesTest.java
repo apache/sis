@@ -150,15 +150,6 @@ public final class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Types#toResourceName(String)} method.
-     */
-    @Test
-    public void testGetResources() {
-        assertEquals("org.opengis.metadata.Descriptions", Types.toResourceName("org.opengis.metadata.Identifier"));
-        assertNull(Types.toResourceName("org.opengis.metadata2.Identifier"));
-    }
-
-    /**
      * Tests the {@link Types#getDescription(Class)} method.
      */
     @Test

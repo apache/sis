@@ -24,6 +24,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -53,7 +54,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * Miscellaneous utility methods for test cases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class TestUtilities extends Static {
@@ -457,21 +458,20 @@ public final class TestUtilities extends Static {
     }
 
     /**
-     * Copies the full content of the given test resource in a temporary file and returns the channel for that file.
+     * Copies the full content of the given input stream in a temporary file and returns the channel for that file.
      * The file is opened with {@link StandardOpenOption#DELETE_ON_CLOSE}, together with read and write options.
      *
-     * @param  caller    defines the root from which to search for the {@code resource}.
-     * @param  resource  path (relative to the {@code caller}) of the test file to copy.
+     * @param  data    the data to copy in the temporary file.
+     * @param  suffix  suffix (dot included) to append to the temporary file name, or {@code null} if none.
      * @return a channel opened on a copy of the content of the given test resource.
      * @throws IOException if an error occurred while copying the data.
      *
      * @since 0.8
      */
-    public static SeekableByteChannel createTemporaryFile(final Class<?> caller, final String resource) throws IOException {
+    public static SeekableByteChannel createTemporaryFile(final InputStream data, final String suffix) throws IOException {
         final SeekableByteChannel channel;
-        try (ReadableByteChannel in = Channels.newChannel(caller.getResourceAsStream(resource))) {
-            final int s = resource.lastIndexOf('.');
-            final Path file = Files.createTempFile("SIS", (s >= 0) ? resource.substring(s) : null);
+        try (ReadableByteChannel in = Channels.newChannel(data)) {
+            final Path file = Files.createTempFile("SIS", suffix);
             channel = Files.newByteChannel(file, StandardOpenOption.DELETE_ON_CLOSE,
                                 StandardOpenOption.READ, StandardOpenOption.WRITE);
             final ByteBuffer buffer = ByteBuffer.allocate(4000);

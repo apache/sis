@@ -25,7 +25,7 @@
  * in any future version without notice.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 package org.apache.sis.test.xml;

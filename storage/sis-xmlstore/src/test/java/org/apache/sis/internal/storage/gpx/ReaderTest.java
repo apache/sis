@@ -81,10 +81,11 @@ public final class ReaderTest extends TestCase {
     /**
      * Creates a new GPX data store which will read the given test file.
      *
-     * @param  resource  name of the test file in a directory relative to {@code "org/apache/sis/internal/gpx"}.
+     * @param  version   identifies the version of the schema to test.
+     * @param  resource  name of the test file.
      */
-    private static Store create(final String resource) throws DataStoreException {
-        final StorageConnector connector = new StorageConnector(ReaderTest.class.getResourceAsStream(resource));
+    private static Store create(final TestData version, final String resource) throws DataStoreException {
+        final var connector = new StorageConnector(version.openStream(resource));
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         return new Store(provider, connector);
     }
@@ -137,7 +138,7 @@ public final class ReaderTest extends TestCase {
      */
     @Test
     public void testMetadata100() throws DataStoreException {
-        try (Store reader = create("1.0/metadata.xml")) {
+        try (Store reader = create(TestData.V1_0, TestData.METADATA)) {
             final Metadata md = (Metadata) reader.getMetadata();
             verifyMetadata(md, 1);
             assertNull(md.author.link);
@@ -153,7 +154,7 @@ public final class ReaderTest extends TestCase {
      */
     @Test
     public void testMetadata110() throws DataStoreException {
-        try (Store reader = create("1.1/metadata.xml")) {
+        try (Store reader = create(TestData.V1_1, TestData.METADATA)) {
             final Metadata md = (Metadata) reader.getMetadata();
             verifyMetadata(md, 3);
             assertStringEquals("http://someone-site.org", md.author.link);
@@ -223,7 +224,7 @@ public final class ReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testMetadata100")
     public void testWayPoint100() throws DataStoreException {
-        try (Store reader = create("1.0/waypoint.xml")) {
+        try (Store reader = create(TestData.V1_0, TestData.WAYPOINT)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_0, reader.getVersion());
             try (Stream<AbstractFeature> features = reader.features(false)) {
@@ -244,7 +245,7 @@ public final class ReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testMetadata110")
     public void testWayPoint110() throws DataStoreException {
-        try (Store reader = create("1.1/waypoint.xml")) {
+        try (Store reader = create(TestData.V1_1, TestData.WAYPOINT)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_1, reader.getVersion());
             try (Stream<AbstractFeature> features = reader.features(false)) {
@@ -265,7 +266,7 @@ public final class ReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testWayPoint100")
     public void testRoute100() throws DataStoreException {
-        try (Store reader = create("1.0/route.xml")) {
+        try (Store reader = create(TestData.V1_0, TestData.ROUTE)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_0, reader.getVersion());
             try (Stream<AbstractFeature> features = reader.features(false)) {
@@ -285,7 +286,7 @@ public final class ReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testWayPoint110")
     public void testRoute110() throws DataStoreException {
-        try (Store reader = create("1.1/route.xml")) {
+        try (Store reader = create(TestData.V1_1, TestData.ROUTE)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_1, reader.getVersion());
             verifyRoute110(reader);
@@ -372,7 +373,7 @@ public final class ReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testRoute100")
     public void testTrack100() throws DataStoreException {
-        try (Store reader = create("1.0/track.xml")) {
+        try (Store reader = create(TestData.V1_0, TestData.TRACK)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_0, reader.getVersion());
             try (Stream<AbstractFeature> features = reader.features(false)) {
@@ -392,7 +393,7 @@ public final class ReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testRoute110")
     public void testTrack110() throws DataStoreException {
-        try (Store reader = create("1.1/track.xml")) {
+        try (Store reader = create(TestData.V1_1, TestData.TRACK)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_1, reader.getVersion());
             try (Stream<AbstractFeature> features = reader.features(false)) {
@@ -558,7 +559,7 @@ public final class ReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testRoute110")
     public void testRouteSkipMetadata() throws DataStoreException {
-        try (Store reader = create("1.1/route.xml")) {
+        try (Store reader = create(TestData.V1_1, TestData.ROUTE)) {
             verifyRoute110(reader);
         }
     }
@@ -568,7 +569,7 @@ public final class ReaderTest extends TestCase {
      * Using the URL makes easier for the data store to read the same data more than once.
      */
     private static Store createFromURL() throws DataStoreException {
-        final StorageConnector connector = new StorageConnector(ReaderTest.class.getResource("1.1/route.xml"));
+        final StorageConnector connector = new StorageConnector(TestData.V1_1.getURL(TestData.ROUTE));
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         connector.setOption(OptionKey.URL_ENCODING, "UTF-8");
         return new Store(provider, connector);

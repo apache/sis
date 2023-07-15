@@ -17,9 +17,9 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.Map;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.metadata.xml.TestUsingFile;
@@ -41,9 +41,14 @@ import static org.junit.Assert.*;
  */
 public final class MultiplicityTest extends TestUsingFile {
     /**
-     * An XML file containing multiplicity declarations.
+     * Opens the stream to the XML file containing multiplicity declarations.
+     *
+     * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String FILENAME = "Multiplicity.xml";
+    private static InputStream openTestFile(final Format format) {
+        return format.openTestFile("Multiplicity.xml");
+    }
 
     /**
      * A poll of configured {@code Marshaller} and {@code Unmarshaller}.
@@ -94,10 +99,11 @@ public final class MultiplicityTest extends TestUsingFile {
     /**
      * Tests marshalling of a few multiplicity using the specified version of metadata schema.
      *
-     * @param  filename  name of the file containing expected result.
+     * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
      */
-    private void marshalAndCompare(final String filename, final Version version) throws JAXBException {
-        assertMarshalEqualsFile(filename, create(0), version, "xmlns:*", "xsi:*");
+    private void marshalAndCompare(final Format format) throws JAXBException {
+        FeatureAttributeMock metadata = create(0);
+        assertMarshalEqualsFile(openTestFile(format), metadata, format.schemaVersion, "xmlns:*", "xsi:*");
     }
 
     /**
@@ -107,7 +113,7 @@ public final class MultiplicityTest extends TestUsingFile {
      */
     @Test
     public void testMarshallingLegacy() throws JAXBException {
-        marshalAndCompare(XML2007+FILENAME, VERSION_2007);
+        marshalAndCompare(Format.XML2007);
     }
 
     /**
@@ -117,7 +123,7 @@ public final class MultiplicityTest extends TestUsingFile {
      */
     @Test
     public void testUnmarshallingLegacy() throws JAXBException {
-        final FeatureAttributeMock metadata = unmarshalFile(FeatureAttributeMock.class, XML2007+FILENAME);
+        final FeatureAttributeMock metadata = unmarshalFile(FeatureAttributeMock.class, openTestFile(Format.XML2007));
         assertEquals(create(1).cardinality.range(), metadata.cardinality.range());
     }
 }

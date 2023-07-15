@@ -86,7 +86,7 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  * See package javadoc for more information on the syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 final class Store extends URIDataStore implements FeatureSet {
@@ -234,7 +234,7 @@ final class Store extends URIDataStore implements FeatureSet {
         super(provider, connector);
         final Reader r = connector.commit(Reader.class, StoreProvider.NAME);
         source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
-        geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
+        geometries = Geometries.factory(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
         dissociate = FoliationRepresentation.FRAGMENTED.equals(connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION));
         GeneralEnvelope envelope    = null;
         DefaultFeatureType featureType = null;

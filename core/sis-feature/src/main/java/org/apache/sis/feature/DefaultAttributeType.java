@@ -26,7 +26,6 @@ import java.io.InvalidObjectException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
-import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -95,7 +94,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @param <V> the type of attribute values. If the attribute supports multi-occurrences,
  *            then this is the type of elements (not the collection type).
@@ -195,7 +194,7 @@ public class DefaultAttributeType<V> extends FieldType {
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
         this.valueClass      = valueClass;
-        this.defaultValue    = Numerics.cached(defaultValue);
+        this.defaultValue    = defaultValue;
         if (characterizedBy != null && characterizedBy.length != 0) {
             characteristics = CharacteristicTypeMap.create(this, characterizedBy.clone());
         }

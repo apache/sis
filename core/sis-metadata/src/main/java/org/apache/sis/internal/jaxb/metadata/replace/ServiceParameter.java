@@ -76,6 +76,11 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 @XmlRootElement(name = "SV_Parameter", namespace = Namespaces.SRV)
 public final class ServiceParameter extends Parameter {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 8979265876109276877L;
+
+    /**
      * The name, as used by the service for this parameter. Note that in ISO 19115-3:2016, this element is
      * inside a {@code <gco:MemberName>} element  (i.e. ISO inserts the same kind of {@code Property_Type}
      * element as it does for all other attributes) while in ISO 19139:2007 it was not (i.e. name attributes
@@ -97,7 +102,8 @@ public final class ServiceParameter extends Parameter {
      */
     @XmlElement(required=true, name="name")
     @XmlJavaTypeAdapter(GO_GenericName.Since2014.class)
-    MemberName memberName;
+    @SuppressWarnings("serial")                 // Most Apache SIS implementations are serializable.
+    public MemberName memberName;
 
     /**
      * A narrative explanation of the role of the parameter.
@@ -105,7 +111,8 @@ public final class ServiceParameter extends Parameter {
      * @see #getDescription()
      */
     @XmlElement
-    InternationalString description;
+    @SuppressWarnings("serial")                 // Most Apache SIS implementations are serializable.
+    public InternationalString description;
 
     /**
      * Indication if the parameter is required.
@@ -127,16 +134,13 @@ public final class ServiceParameter extends Parameter {
      * @see #getMaximumOccurs()
      */
     @XmlElement(required = true)
-    boolean repeatability;
+    public boolean repeatability;
 
     /**
      * Creates an initially empty parameter.
      * This constructor is needed by JAXB at unmarshalling time.
-     *
-     * <p><strong>Consider this constructor as private</strong> except for testing purpose.
-     * See <cite>Note about raw-type usage</cite> in class javadoc.</p>
      */
-    ServiceParameter() {
+    public ServiceParameter() {
     }
 
     /**
@@ -251,7 +255,7 @@ public final class ServiceParameter extends Parameter {
      * @return the name if marshalling legacy ISO 19139:2007 format, or {@code null} otherwise.
      */
     @XmlElement(name = "name", namespace = LegacyNamespaces.SRV)
-    private DefaultMemberName getLegacyName() {
+    public DefaultMemberName getLegacyName() {
         return FilterByVersion.LEGACY_METADATA.accept() ? DefaultMemberName.castOrCopy(memberName) : null;
     }
 
@@ -262,8 +266,7 @@ public final class ServiceParameter extends Parameter {
      * @param  value  the new name.
      * @throws IllegalStateException if a name is already defined.
      */
-    @SuppressWarnings("unused")
-    private void setLegacyName(final DefaultMemberName value) {
+    public void setLegacyName(final DefaultMemberName value) {
         if (memberName == null) {
             memberName = value;
         }
@@ -273,10 +276,12 @@ public final class ServiceParameter extends Parameter {
      * For JAXB marshalling of ISO 19139:2007 document only.
      * Note that there is not setter method, because we expect that
      * the same information is provided in the {@link #memberName} attribute type.
+     *
+     * @return the type name of value component(s) in this parameter.
      */
     @XmlElement(name = "valueType", namespace = LegacyNamespaces.SRV)
     @XmlJavaTypeAdapter(GO_GenericName.class)    // Not in package-info because shall not be applied to getLegacyName().
-    private TypeName getLegacyValueType() {
+    public TypeName getLegacyValueType() {
         return FilterByVersion.LEGACY_METADATA.accept() ? getValueType() : null;
     }
 
@@ -320,32 +325,40 @@ public final class ServiceParameter extends Parameter {
 
     /**
      * Returns the optionality as a boolean (ISO 19115-3:2016 way).
+     *
+     * @return optionality of this parameter.
      */
     @XmlElement(name = "optionality", required = true)
-    final Boolean getOptionality() {
+    public Boolean getOptionality() {
         return FilterByVersion.CURRENT_METADATA.accept() ? optionality : null;
     }
 
     /**
      * Sets whether this parameter is optional.
+     *
+     * @param  optional  optionality of this parameter.
      */
-    final void setOptionality(final Boolean optional) {
+    public void setOptionality(final Boolean optional) {
         if (optional != null) optionality = optional;
     }
 
     /**
      * Returns {@code "Optional"} if {@link #optionality} is {@code true} or {@code "Mandatory"} otherwise.
      * This is the legacy ISO 19139:2007 way to marshal optionality.
+     *
+     * @return optionality of this parameter.
      */
     @XmlElement(name = "optionality", namespace = LegacyNamespaces.SRV)
-    final String getOptionalityLabel() {
+    public String getOptionalityLabel() {
         return FilterByVersion.LEGACY_METADATA.accept() ? (optionality ? "Optional" : "Mandatory") : null;
     }
 
     /**
      * Sets whether this parameter is optional.
+     *
+     * @param  optional  optionality of this parameter.
      */
-    final void setOptionalityLabel(final String optional) {
+    public void setOptionalityLabel(final String optional) {
         if (optional != null) {
             optionality = Boolean.parseBoolean(optional) || optional.equalsIgnoreCase("Optional");
         }

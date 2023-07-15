@@ -28,7 +28,6 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.util.Version;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -51,7 +50,7 @@ import org.apache.sis.feature.AbstractFeature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  */
 @DependsOn({MetadataTest.class, ReaderTest.class})
@@ -114,7 +113,7 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testMetadata100() throws Exception {
-        testMetadata(StoreProvider.V1_0, "1.0/metadata.xml");
+        testMetadata(TestData.V1_0);
     }
 
     /**
@@ -125,7 +124,7 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testMetadata110() throws Exception {
-        testMetadata(StoreProvider.V1_1, "1.1/metadata.xml");
+        testMetadata(TestData.V1_1);
     }
 
     /**
@@ -134,13 +133,13 @@ public final class WriterTest extends TestCase {
      * @param version   either {@link StoreProvider#V1_0} or {@link StoreProvider#V1_1}.
      * @param expected  name of a test file containing the expected XML result.
      */
-    private void testMetadata(final Version version, final String expected) throws Exception {
+    private void testMetadata(final TestData data) throws Exception {
         final Metadata metadata = MetadataTest.create();
         try (WritableStore store = create()) {
-            store.setVersion(version);
+            store.setVersion(data.schemaVersion);
             store.write(metadata, null);
         }
-        assertXmlEquals(WriterTest.class.getResourceAsStream(expected), toString(), STRICT,
+        assertXmlEquals(data.openStream(TestData.METADATA), toString(), STRICT,
                         new String[] {Tags.NAMESPACE_V11 + ":extensions"},
                         new String[] {"xmlns:xsi", "xsi:schemaLocation", "xsi:type"});
     }
@@ -154,7 +153,7 @@ public final class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testMetadata100")
     public void testWayPoints100() throws Exception {
-        testFeatures(StoreProvider.V1_0, Type.WAY_POINT, "1.0/waypoint.xml");
+        testFeatures(TestData.V1_0, Type.WAY_POINT, TestData.WAYPOINT);
     }
 
     /**
@@ -166,7 +165,7 @@ public final class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testMetadata110")
     public void testWayPoints110() throws Exception {
-        testFeatures(StoreProvider.V1_1, Type.WAY_POINT, "1.1/waypoint.xml");
+        testFeatures(TestData.V1_1, Type.WAY_POINT, TestData.WAYPOINT);
     }
 
     /**
@@ -178,7 +177,7 @@ public final class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testWayPoints100")
     public void testRoutes100() throws Exception {
-        testFeatures(StoreProvider.V1_0, Type.ROUTE, "1.0/route.xml");
+        testFeatures(TestData.V1_0, Type.ROUTE, TestData.ROUTE);
     }
 
     /**
@@ -190,7 +189,7 @@ public final class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testWayPoints110")
     public void testRoutes110() throws Exception {
-        testFeatures(StoreProvider.V1_1, Type.ROUTE, "1.1/route.xml");
+        testFeatures(TestData.V1_1, Type.ROUTE, TestData.ROUTE);
     }
 
     /**
@@ -202,7 +201,7 @@ public final class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testRoutes100")
     public void testTracks100() throws Exception {
-        testFeatures(StoreProvider.V1_0, Type.TRACK, "1.0/track.xml");
+        testFeatures(TestData.V1_0, Type.TRACK, TestData.TRACK);
     }
 
     /**
@@ -214,7 +213,7 @@ public final class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testRoutes110")
     public void testTracks110() throws Exception {
-        testFeatures(StoreProvider.V1_1, Type.TRACK, "1.1/track.xml");
+        testFeatures(TestData.V1_1, Type.TRACK, TestData.TRACK);
     }
 
     /**
@@ -227,16 +226,16 @@ public final class WriterTest extends TestCase {
     /**
      * Implementation of way points, routes and tracks test methods.
      *
-     * @param version   either {@link StoreProvider#V1_0} or {@link StoreProvider#V1_1}.
+     * @param version   either {@link TestData#V1_0} or {@link TestData#V1_1}.
      * @param type      the kind of feature to test: way point, route or track.
      * @param expected  name of a test file containing the expected XML result.
      */
-    private void testFeatures(final Version version, final Type type, final String expected) throws Exception {
+    private void testFeatures(final TestData version, final Type type, final String expected) throws Exception {
         try (WritableStore store = create()) {
-            store.version = version;
+            store.version = version.schemaVersion;
             testFeatures(store, type);
         }
-        assertXmlEquals(WriterTest.class.getResourceAsStream(expected), toString(),
+        assertXmlEquals(version.openStream(expected), toString(),
                         "xmlns:xsi", "xsi:schemaLocation", "xsi:type");
     }
 
@@ -367,7 +366,7 @@ public final class WriterTest extends TestCase {
     @DependsOnMethod("testRoutes110")
     public void testInputReplacement() throws Exception {
         final StorageConnector connector = new StorageConnector(
-                TestUtilities.createTemporaryFile(ReaderTest.class, "1.1/metadata.xml"));
+                TestUtilities.createTemporaryFile(TestData.V1_1.openStream(TestData.METADATA), ".xml"));
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         try (WritableStore store = new WritableStore(provider, connector)) {
             /*

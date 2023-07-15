@@ -29,7 +29,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.CollectionsExt;
 
@@ -88,7 +87,7 @@ public final class Numbers extends Static {
         new Numbers(BigDecimal  .class, true, false, BIG_DECIMAL);
         new Numbers(BigInteger  .class, false, true, BIG_INTEGER);
         new Numbers(Fraction    .class, true, false, FRACTION);
-        new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Numerics .valueOf(Double.NaN));
+        new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Double   .valueOf(Double.NaN));
         new Numbers(Float    .TYPE, Float    .class, true,  false, (byte) Float    .SIZE, FLOAT,     'F', Float    .valueOf(Float .NaN));
         new Numbers(Long     .TYPE, Long     .class, false, true,  (byte) Long     .SIZE, LONG,      'J', Long     .valueOf(        0L));
         new Numbers(Integer  .TYPE, Integer  .class, false, true,  (byte) Integer  .SIZE, INTEGER,   'I', Integer  .valueOf(        0));
@@ -520,8 +519,8 @@ asLong: if (mapping != null) {
                 isFloat = (doubleToLongBits(floatValue) == doubleToLongBits(doubleValue));
                 if (doubleValue != longValue) {
                     // Do not use "isFloat ? … : …" operator as it inserts undesired automatic auto-(un)boxing.
-                    if (isFloat) candidate = Float   .valueOf(floatValue);
-                    else         candidate = Numerics.valueOf(doubleValue);
+                    if (isFloat) candidate = floatValue;
+                    else         candidate = doubleValue;
                     break;
                 }
                 // Fall through everywhere.
@@ -619,7 +618,7 @@ asLong: if (mapping != null) {
             case INTEGER:  return (N) Integer .valueOf(number.   intValue());
             case LONG:     return (N) Long    .valueOf(number.  longValue());
             case FLOAT:    return (N) Float   .valueOf(number. floatValue());
-            case DOUBLE:   return (N) Numerics.valueOf(number.doubleValue());
+            case DOUBLE:   return (N) Double  .valueOf(number.doubleValue());
             case FRACTION: return (N) Fraction.valueOf(number.doubleValue());
             case BIG_INTEGER: {
                 final BigInteger c;
@@ -681,7 +680,7 @@ asLong: if (mapping != null) {
             case INTEGER:     number = (N) Integer   .valueOf((int)   value); break;
             case LONG:        number = (N) Long      .valueOf((long)  value); break;
             case FLOAT:       number = (N) Float     .valueOf((float) value); break;
-            case DOUBLE:      return   (N) Numerics  .valueOf(value); // No need to verify.
+            case DOUBLE:      return   (N) Double    .valueOf(value); // No need to verify.
             case FRACTION:    return   (N) Fraction  .valueOf(value); // No need to verify.
             case BIG_INTEGER: number = (N) BigInteger.valueOf((long) value); break;
             case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value); // No need to verify.
@@ -718,7 +717,7 @@ asLong: if (mapping != null) {
             case INTEGER:     number = (N) Integer   .valueOf((int)    value); break;
             case LONG:        return   (N) Long      .valueOf(value);  // No need to verify.
             case FLOAT:       number = (N) Float     .valueOf((float)  value); break;
-            case DOUBLE:      number = (N) Numerics  .valueOf((double) value); break;
+            case DOUBLE:      number = (N) Double    .valueOf((double) value); break;
             case FRACTION:    number = (N) new Fraction      ((int) value, 1); break;
             case BIG_INTEGER: return   (N) BigInteger.valueOf(value);  // No need to verify.
             case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value);  // No need to verify.

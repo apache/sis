@@ -38,7 +38,13 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @since   0.7
  */
-public final class InitializerTest extends TestCase{
+public final class InitializerTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public InitializerTest() {
+    }
+
     /**
      * Tests the {@link Initializer#radiusOfConformalSphere(double)} method.
      * This test computes the Radius of Conformal Sphere using the values given by the

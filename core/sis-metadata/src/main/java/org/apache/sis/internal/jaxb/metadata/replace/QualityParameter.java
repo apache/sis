@@ -70,12 +70,17 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 @XmlRootElement(name = "DQM_Parameter", namespace = Namespaces.DQM)
 public final class QualityParameter extends Parameter {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 4333632866772665659L;
+
+    /**
      * Name of the data quality parameter, to be represented as identifier code.
      *
      * @see #getName()
      */
     @XmlElement(name="name", required=true)
-    String code;
+    public String code;
 
     /**
      * Definition of the data quality parameter.
@@ -84,7 +89,8 @@ public final class QualityParameter extends Parameter {
      * @see #getName()
      */
     @XmlElement(required = true)
-    InternationalString definition;
+    @SuppressWarnings("serial")                 // Most Apache SIS implementations are serializable.
+    public InternationalString definition;
 
     /**
      * Description of the data quality parameter.
@@ -92,7 +98,7 @@ public final class QualityParameter extends Parameter {
      * @see #getDescription()
      */
     @XmlElement
-    DefaultMeasureDescription description;
+    public DefaultMeasureDescription description;
 
     /**
      * Value type of the data quality parameter (shall be one of the data types defined in ISO/TS 19103:2005).
@@ -102,16 +108,14 @@ public final class QualityParameter extends Parameter {
      */
     @XmlElement(required = true)
     @XmlJavaTypeAdapter(GO_GenericName.class)   // Not in package-info because shall not be applied to getLegacyName().
-    TypeName valueType;
+    @SuppressWarnings("serial")                 // Most Apache SIS implementations are serializable.
+    public TypeName valueType;
 
     /**
      * Creates an initially empty parameter.
      * This constructor is needed by JAXB at unmarshalling time.
-     *
-     * <p><strong>Consider this constructor as private</strong> except for testing purpose.
-     * See <cite>Note about raw-type usage</cite> in class javadoc.</p>
      */
-    QualityParameter() {
+    public QualityParameter() {
     }
 
     /**

@@ -198,7 +198,7 @@ cases:  if (operation.isGeometryInOut()) {
                 final PropertyTypeBuilder type = fex.expectedType(valueType, addTo);
                 if (type instanceof AttributeTypeBuilder<?>) {
                     att = (AttributeTypeBuilder<?>) type;
-                    final Geometries<?> library = Geometries.implementation(att.getValueClass());
+                    final Geometries<?> library = Geometries.factory(att.getValueClass());
                     if (library != null) {
                         att = att.setValueClass(operation.getReturnType(library));
                         break cases;

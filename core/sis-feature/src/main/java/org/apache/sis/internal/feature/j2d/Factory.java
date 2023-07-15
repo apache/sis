@@ -42,7 +42,7 @@ import org.apache.sis.util.UnsupportedImplementationException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 public final class Factory extends Geometries<Shape> {
@@ -57,7 +57,7 @@ public final class Factory extends Geometries<Shape> {
     public static final Factory INSTANCE = new Factory();
 
     /**
-     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
+     * Invoked at deserialization time for obtaining the unique instance of this {@code Factory} class.
      *
      * @return {@link #INSTANCE}.
      * @throws ObjectStreamException if the object state is invalid.
@@ -74,14 +74,14 @@ public final class Factory extends Geometries<Shape> {
     }
 
     /**
-     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} geometry.
+     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper} geometry.
      *
      * @param  geometry  the geometry instance to wrap (can be {@code null}).
      * @return a wrapper for the given geometry implementation, or {@code null}.
      * @throws ClassCastException if the given geometry is not an instance of valid type.
      */
     @Override
-    public GeometryWrapper<Shape> castOrWrap(final Object geometry) {
+    public GeometryWrapper castOrWrap(final Object geometry) {
         if (geometry == null || geometry instanceof Wrapper) {
             return (Wrapper) geometry;
         } else if (geometry instanceof PointWrapper) {
@@ -100,7 +100,7 @@ public final class Factory extends Geometries<Shape> {
      * @return wrapper for the given geometry.
      */
     @Override
-    protected GeometryWrapper<Shape> createWrapper(final Shape geometry) {
+    protected GeometryWrapper createWrapper(final Shape geometry) {
         return new Wrapper(geometry);
     }
 
@@ -233,13 +233,13 @@ public final class Factory extends Geometries<Shape> {
      * @throws ClassCastException if an element in the array is not a Java2D geometry.
      */
     @Override
-    public GeometryWrapper<Shape> createMultiPolygon(final Object[] geometries) {
+    public GeometryWrapper createMultiPolygon(final Object[] geometries) {
         if (geometries.length == 1) {
-            return new Wrapper((Shape) unwrap(geometries[0]));
+            return new Wrapper((Shape) implementation(geometries[0]));
         }
         final Shape[] shapes = new Shape[geometries.length];
         for (int i=0; i<geometries.length; i++) {
-            shapes[i] = (Shape) unwrap(geometries[i]);
+            shapes[i] = (Shape) implementation(geometries[i]);
         }
         boolean isFloat = true;
         for (final Shape geometry : shapes) {
@@ -271,7 +271,7 @@ public final class Factory extends Geometries<Shape> {
      */
     @Override
     @SuppressWarnings("fallthrough")
-    public GeometryWrapper<Shape> createFromComponents(final GeometryType type, final Object components) {
+    public GeometryWrapper createFromComponents(final GeometryType type, final Object components) {
         /*
          * No exhaustive `if (x instanceof y)` checks in this method.
          * `ClassCastException` shall be handled by the caller.
@@ -318,7 +318,7 @@ public final class Factory extends Geometries<Shape> {
      * Well Known Text (WKT) parsing not supported with Java2D.
      */
     @Override
-    public GeometryWrapper<Shape> parseWKT(final String wkt) {
+    public GeometryWrapper parseWKT(final String wkt) {
         throw new UnsupportedImplementationException(unsupported("parseWKT"));
     }
 
@@ -326,7 +326,7 @@ public final class Factory extends Geometries<Shape> {
      * Well Known Binary (WKB) reading not supported with Java2D.
      */
     @Override
-    public GeometryWrapper<Shape> parseWKB(final ByteBuffer data) {
+    public GeometryWrapper parseWKB(final ByteBuffer data) {
         throw new UnsupportedImplementationException(unsupported("parseWKB"));
     }
 }

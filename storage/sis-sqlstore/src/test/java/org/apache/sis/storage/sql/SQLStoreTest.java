@@ -20,9 +20,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Stream;
+import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.io.InputStream;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.StorageConnector;
@@ -107,6 +110,19 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     }
 
     /**
+     * Provides a stream for a resource in the same package than this class.
+     * The implementation invokes {@code getResourceAsStream(filename)}.
+     * This invocation must be done in this module because the invoked
+     * method is caller-sensitive.
+     */
+    private static Supplier<InputStream> resource(final String filename) {
+        return new Supplier<>() {
+            @Override public String toString() {return filename;}
+            @Override public InputStream get() {return SQLStoreTest.class.getResourceAsStream(filename);}
+        };
+    }
+
+    /**
      * Runs all tests on a single database software. A temporary schema is created at the beginning of this method
      * and deleted after all tests finished. The schema is created and populated by the {@code Features.sql} script.
      *
@@ -116,14 +132,13 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      */
     @Override
     protected void test(final TestDatabase database, final boolean noschema) throws Exception {
-        final String[] scripts = {
-            "CREATE SCHEMA " + SCHEMA + ';',
-            "file:Features.sql"
-        };
-        if (!noschema) {
-            scripts[0] = null;      // Omit the "CREATE SCHEMA" statement if the schema already exists.
+        final var scripts = new ArrayList<>(2);
+        if (noschema) {
+            scripts.add("CREATE SCHEMA " + SCHEMA + ';');
+            // Omit the "CREATE SCHEMA" statement if the schema already exists.
         }
-        database.executeSQL(SQLStoreTest.class, scripts);
+        scripts.add(resource("Features.sql"));
+        database.executeSQL(scripts);
         final StorageConnector connector = new StorageConnector(database.source);
         final ResourceDefinition table = ResourceDefinition.table(null, noschema ? null : SCHEMA, "Cities");
         testTableQuery(connector, table);

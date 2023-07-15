@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.operation.Matrix;
@@ -61,9 +62,14 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 })
 public final class DefaultGeodeticDatumTest extends TestCase {
     /**
-     * An XML file in this package containing a geodetic datum definition.
+     * Opens the stream to the XML file in this package containing a geodetic datum definition.
+     *
+     * @return stream opened on the XML document to use for testing purpose.
      */
-    private static final String XML_FILE = "GeodeticDatum.xml";
+    private static InputStream openTestFile() {
+        // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
+        return DefaultGeodeticDatumTest.class.getResourceAsStream("GeodeticDatum.xml");
+    }
 
     /**
      * Tests the creation and serialization of a {@link DefaultGeodeticDatum}.
@@ -289,7 +295,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @TestStep
     public DefaultGeodeticDatum testUnmarshalling() throws JAXBException {
-        final DefaultGeodeticDatum datum = unmarshalFile(DefaultGeodeticDatum.class, XML_FILE);
+        final DefaultGeodeticDatum datum = unmarshalFile(DefaultGeodeticDatum.class, openTestFile());
         assertIsWGS84(datum, true);
         /*
          * Values in the following tests are specific to our XML file.

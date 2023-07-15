@@ -50,7 +50,7 @@ import org.apache.sis.internal.feature.Geometries;
  * @param <G> the type of geometry objects created by the factory.
  * @param <V> the type of geometry objects returned by this getter.
  *
- * @version 1.2
+ * @version 1.4
  *
  * @see org.apache.sis.internal.sql.postgis.RasterGetter
  *
@@ -109,7 +109,7 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     public V getValue(final InfoStatements stmts, final ResultSet source, final int columnIndex) throws Exception {
         final byte[] wkb = encoding.getBytes(source, columnIndex);
         if (wkb == null) return null;
-        final GeometryWrapper<G> geom = geometryFactory.parseWKB(ByteBuffer.wrap(wkb));
+        final GeometryWrapper geom = geometryFactory.parseWKB(ByteBuffer.wrap(wkb));
         CoordinateReferenceSystem crs = defaultCRS;
         if (stmts != null) {
             final OptionalInt srid = geom.getSRID();
@@ -120,6 +120,6 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
         if (crs != null) {
             geom.setCoordinateReferenceSystem(crs);
         }
-        return valueType.cast(geom.implementation());
+        return valueType.cast(geometryFactory.getGeometry(geom));
     }
 }

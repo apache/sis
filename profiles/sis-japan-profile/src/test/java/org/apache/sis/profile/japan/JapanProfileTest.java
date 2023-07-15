@@ -16,36 +16,34 @@
  */
 package org.apache.sis.profile.japan;
 
-import java.util.ServiceLoader;
 import org.apache.sis.internal.earth.netcdf.GCOM_C;
-import org.apache.sis.internal.earth.netcdf.GCOM_W;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
  * Tests the Japanese profile.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 public final class JapanProfileTest extends TestCase {
     /**
-     * Verifies that GCOM-C and GCOM-W conventions are registered.
+     * Tests {@link GCOM_C#mapAttributeName(String, int)}.
      */
     @Test
-    public void testRegistration() {
-        boolean foundGCOM_C = false;
-        boolean foundGCOM_W = false;
-        for (final Convention c : ServiceLoader.load(Convention.class)) {
-            foundGCOM_C |= (c instanceof GCOM_C);
-            foundGCOM_W |= (c instanceof GCOM_W);
-        }
-        assertTrue("GCOM C", foundGCOM_C);
-        assertTrue("GCOM W", foundGCOM_W);
+    public void testMapAttributeName() {
+        final Convention c = new GCOM_C();
+        assertEquals("title",               c.mapAttributeName("title", 0));
+        assertEquals("Product_name",        c.mapAttributeName("title", 1));
+        assertNull  (                       c.mapAttributeName("title", 2));
+        assertEquals("time_coverage_start", c.mapAttributeName("time_coverage_start", 0));
+        assertEquals("Scene_start_time",    c.mapAttributeName("time_coverage_start", 1));
+        assertEquals("Image_start_time",    c.mapAttributeName("time_coverage_start", 2));
+        assertNull  (                       c.mapAttributeName("time_coverage_start", 3));
     }
 }

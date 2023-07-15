@@ -28,7 +28,7 @@ import org.opengis.metadata.acquisition.GeometryType;
  * All those libraries are optional.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see OptionKey#GEOMETRY_LIBRARY
  * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
@@ -90,5 +90,26 @@ public enum GeometryLibrary {
      *
      * @since 1.0
      */
-    JTS
+    JTS,
+
+    /**
+     * The GeoAPI geometry interfaces.
+     * Since GeoAPI interfaces are implementation neutral, the actual implementation is currently unspecified
+     * (a future Apache SIS version may provide some control on that).
+     *
+     * <table class="sis">
+     *   <caption>Implementation classes</caption>
+     *   <tr><th>Geometry type</th>               <th>Class name</th></tr>
+     *   <tr><td>Root geometry class</td>         <td>{@link org.opengis.geometry.Geometry}</td></tr>
+     * </table>
+     *
+     * <h4>Limitations</h4>
+     * The geometry interfaces are not well developed in GeoAPI 3.0.
+     * In current Apache SIS implementation, only the most basic methods are implemented
+     * and other methods throws {@link UnsupportedOperationException}.
+     * Future GeoAPI version and Apache SIS implementation should provide more extensive support.
+     *
+     * @since 1.4
+     */
+    GEOAPI
 }
