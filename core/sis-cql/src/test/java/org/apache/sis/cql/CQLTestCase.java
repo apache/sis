@@ -19,7 +19,6 @@ package org.apache.sis.cql;
 import org.opengis.filter.FilterFactory;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.test.TestCase;
 import org.opengis.feature.Feature;
 
 
@@ -30,7 +29,7 @@ import org.opengis.feature.Feature;
  * @version 1.1
  * @since   1.1
  */
-abstract class CQLTestCase extends TestCase {
+abstract class CQLTestCase {
     /**
      * The factory to use for creating filter and expressions.
      */

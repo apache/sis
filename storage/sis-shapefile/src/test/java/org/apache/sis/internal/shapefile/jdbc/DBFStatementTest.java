@@ -19,7 +19,6 @@ package org.apache.sis.internal.shapefile.jdbc;
 import java.sql.*;
 
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-import org.apache.sis.test.DependsOnMethod;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -54,7 +53,6 @@ public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
      * @throws SQLException if an error occurred while opening the database or the statement.
      */
     @Test
-    @DependsOnMethod("openCloseStatement")
     public void statementClosed() throws SQLException {
         // Open a connection, open and close a statement.
         try(Connection connection = connect()) {

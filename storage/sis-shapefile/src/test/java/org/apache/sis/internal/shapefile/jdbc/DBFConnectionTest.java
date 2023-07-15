@@ -20,7 +20,6 @@ import java.sql.*;
 import java.util.Properties;
 
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
-import org.apache.sis.test.DependsOnMethod;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -57,7 +56,7 @@ public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
     public void openCloseConnectionWithAnotherCharset() throws SQLException {
         Properties info = new Properties();
         info.put("record_charset", "UTF-8");
-        
+
         final Driver driver = new DBFDriver();
         final Connection connection = driver.connect(this.dbfFile.getAbsolutePath(), info);
         assertFalse("Connection should be opened", connection.isClosed());
@@ -73,7 +72,6 @@ public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
      * @throws SQLException if an error occurred while opening the database.
      */
     @Test(expected=SQLConnectionClosedException.class)
-    @DependsOnMethod("openCloseConnection")
     public void connectionClosed() throws SQLException {
         // Open and close an connection.
         final Driver driver = new DBFDriver();
