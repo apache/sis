@@ -143,13 +143,10 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             id.setCodeSpace("md.id.ns");
             md.setMetadataIdentifier(id);
         }
-        // Languages — one language only, and one (country, language) tuple.
-        final Collection<Locale> languages = List.of(Locale.ENGLISH, Locale.CANADA_FRENCH);
-        md.setLanguages(languages);
-
-        // Character Sets (character encoding)
-        final Collection<Charset> charSets = Set.of(StandardCharsets.ISO_8859_1);
-        md.setCharacterSets(charSets);
+        final Map<Locale,Charset> languages = Map.of(
+                Locale.ENGLISH,       StandardCharsets.ISO_8859_1,
+                Locale.CANADA_FRENCH, StandardCharsets.ISO_8859_1);
+        md.setLocalesAndCharsets(languages);
         {
             // Parent metadata
             final DefaultCitation parent = new DefaultCitation("A parent metadata");
@@ -516,8 +513,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             associatedResources = Set.of(associatedResource);
             dataId.setAssociatedResources(associatedResources);
         }
-        dataId.setLanguages(languages);     // Locales (ISO 19115:2014) a.k.a Languages and CharacterSets (ISO 19115:2003)
-        dataId.setCharacterSets(charSets);
+        dataId.setLocalesAndCharsets(languages);     // Locales (ISO 19115:2014) a.k.a Languages and CharacterSets (ISO 19115:2003)
         dataId.setEnvironmentDescription (new SimpleInternationalString("High humidity."));
         dataId.setSupplementalInformation(new SimpleInternationalString("High water pressure."));
         {

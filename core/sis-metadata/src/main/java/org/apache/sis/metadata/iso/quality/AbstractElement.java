@@ -101,6 +101,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
     AbstractMetaquality.class,
     DefaultQualityMeasure.class     // Not a subclass, but "weakly" associated.
 })
+@SuppressWarnings("deprecation")
 public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Serial number for inter-operability with different versions.

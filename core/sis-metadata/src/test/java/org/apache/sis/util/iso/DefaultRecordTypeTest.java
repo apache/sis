@@ -77,6 +77,7 @@ public final class DefaultRecordTypeTest extends TestCase {
      * {@link DefaultRecordType#locate(MemberName)}.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testConstructor() {
         init();
         final DefaultRecordType type = create();

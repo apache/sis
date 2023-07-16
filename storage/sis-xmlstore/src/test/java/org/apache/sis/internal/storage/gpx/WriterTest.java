@@ -133,6 +133,7 @@ public final class WriterTest extends TestCase {
      * @param version   either {@link StoreProvider#V1_0} or {@link StoreProvider#V1_1}.
      * @param expected  name of a test file containing the expected XML result.
      */
+    @SuppressWarnings("deprecation")
     private void testMetadata(final TestData data) throws Exception {
         final Metadata metadata = MetadataTest.create();
         try (WritableStore store = create()) {
@@ -245,6 +246,7 @@ public final class WriterTest extends TestCase {
      * @param store  the store where to write.
      * @param type   the kind of feature to write: way point, route or track.
      */
+    @SuppressWarnings("deprecation")
     private void testFeatures(final WritableStore store, final Type type) throws Exception {
         final Types types = store.types;
         /*

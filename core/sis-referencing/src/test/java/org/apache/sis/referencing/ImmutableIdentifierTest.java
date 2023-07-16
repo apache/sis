@@ -79,6 +79,7 @@ public final class ImmutableIdentifierTest extends TestCase {
         assertEquals     ("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
         assertEquals     ("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
         assertEquals     ("description_fr_BE", "Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
+        // TODO: use Locale.of(…) with JDK19.
     }
 
     /**

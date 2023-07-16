@@ -210,6 +210,7 @@ filter: for (final Locale locale : locales) {
      * @param  locales  the locales from which to get the languages.
      * @return the languages, without country or variant information.
      */
+    @SuppressWarnings("deprecation")
     private static Locale[] getLanguages(final Locale... locales) {
         final Set<String> codes = new LinkedHashSet<>(hashMapCapacity(locales.length));
         for (final Locale locale : locales) {
@@ -218,6 +219,7 @@ filter: for (final Locale locale : locales) {
         int i=0;
         final Locale[] languages = new Locale[codes.size()];
         for (final String code : codes) {
+            // TODO: replace by Locale.of(…) with JDK19.
             languages[i++] = unique(new Locale(code));
         }
         return languages;

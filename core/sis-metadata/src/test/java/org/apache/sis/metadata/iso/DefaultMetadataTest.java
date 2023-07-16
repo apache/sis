@@ -138,7 +138,7 @@ public final class DefaultMetadataTest extends TestCase {
      */
     @SuppressWarnings("deprecation")
     private static void assertLanguagesEquals(final DefaultMetadata metadata, final Locale... expected) {
-        assertArrayEquals("languages", expected,    metadata.getLanguages().toArray());
+        assertArrayEquals("languages", expected,    metadata.getLocalesAndCharsets().keySet().toArray());
         assertEquals     ("language",  expected[0], metadata.getLanguage());
         assertArrayEquals("locales",   Arrays.copyOfRange(expected, 1, expected.length), metadata.getLocales().toArray());
     }

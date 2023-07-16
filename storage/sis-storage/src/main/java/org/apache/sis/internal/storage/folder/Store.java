@@ -272,8 +272,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
         if (metadata == null) {
             final MetadataBuilder mb = new MetadataBuilder();
             mb.addResourceScope(ScopeCode.COLLECTION, Resources.formatInternational(Resources.Keys.DirectoryContent_1, getDisplayName()));
-            mb.addLanguage(locale,   MetadataBuilder.Scope.RESOURCE);
-            mb.addEncoding(encoding, MetadataBuilder.Scope.RESOURCE);
+            mb.addLanguage(locale, encoding, MetadataBuilder.Scope.RESOURCE);
             final GenericName identifier = identifier(null);
             String name = null;
             if (identifier != null) {

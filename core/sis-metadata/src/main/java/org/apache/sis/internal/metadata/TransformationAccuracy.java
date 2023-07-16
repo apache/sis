@@ -62,6 +62,7 @@ public final class TransformationAccuracy extends Static {
      * @param  accuracy  the accuracy in metres.
      * @return a positional accuracy with the given value.
      */
+    @SuppressWarnings("deprecation")
     public static PositionalAccuracy create(final Double accuracy) {
         PositionalAccuracy p = CACHE.get(accuracy);
         if (p == null) {

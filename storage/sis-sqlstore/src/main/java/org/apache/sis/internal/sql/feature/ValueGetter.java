@@ -400,8 +400,8 @@ public class ValueGetter<T> {
      * <h4>Implementation note</h4>
      * PostgreSQL always return the time in the local time zone, while HSQLDB and H2 return the time as
      * inserted in the database but ignoring the timezone offset. The latter implies that we don't know
-     * how convert a HSQLDB and H2 to local or UTC timezone. Current implementation assumes PostgreSQL
-     * behavior, which is the only one that we can map to {@link OffsetDateTime}.
+     * how to convert a HSQLDB and H2 date to local or UTC timezone. Current implementation assumes the
+     * PostgreSQL behavior, which is the only one that we can map to {@link OffsetDateTime}.
      * Specifying a {@link java.util.Calendar} seems to have no effect.
      */
     static final class AsOffsetDateTime extends ValueGetter<OffsetDateTime> {

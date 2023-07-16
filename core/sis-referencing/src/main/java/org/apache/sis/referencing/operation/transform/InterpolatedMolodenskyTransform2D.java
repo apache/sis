@@ -36,6 +36,7 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-500">Deprecate (for removal) InterpolatedMolodenskyTransform</a>
  */
+@SuppressWarnings("removal")
 @Deprecated(since="1.4", forRemoval=true)
 final class InterpolatedMolodenskyTransform2D extends InterpolatedMolodenskyTransform implements MathTransform2D {
     /**
@@ -89,6 +90,7 @@ final class InterpolatedMolodenskyTransform2D extends InterpolatedMolodenskyTran
      * @version 0.7
      * @since   0.7
      */
+    @SuppressWarnings("removal")
     static final class Inverse extends InterpolatedMolodenskyTransform.Inverse implements MathTransform2D {
         /**
          * Serial number for inter-operability with different versions.

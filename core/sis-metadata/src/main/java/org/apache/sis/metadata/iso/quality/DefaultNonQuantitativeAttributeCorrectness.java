@@ -50,6 +50,7 @@ import org.opengis.metadata.quality.NonQuantitativeAttributeCorrectness;
 @XmlSeeAlso({
     DefaultNonQuantitativeAttributeAccuracy.class
 })
+@SuppressWarnings("deprecation")
 public class DefaultNonQuantitativeAttributeCorrectness extends AbstractThematicAccuracy
         implements NonQuantitativeAttributeCorrectness
 {

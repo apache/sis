@@ -116,6 +116,7 @@ public final class SingletonAttributeTest extends TestCase {
      * @param  explanation   the expected explanation.
      * @param  consistency   the report element to test.
      */
+    @SuppressWarnings("deprecation")
     private static void assertDomainConsistencyEquals(final String propertyName, final String explanation,
             final DomainConsistency consistency)
     {

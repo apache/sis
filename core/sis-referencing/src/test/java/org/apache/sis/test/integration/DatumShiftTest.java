@@ -25,7 +25,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assume.*;
+import static org.apache.sis.test.Assume.assumeDataExists;
 
 
 /**

@@ -47,11 +47,12 @@ public final class IOUtilitiesTest extends TestCase {
      */
     @Test
     public void testFilename() throws URISyntaxException, MalformedURLException {
-        assertEquals("Map.png", IOUtilities.filename(              "/Users/name/Map.png"));
-        assertEquals("Map.png", IOUtilities.filename(new File(     "/Users/name/Map.png")));
-        assertEquals("Map.png", IOUtilities.filename(new URI ("file:/Users/name/Map.png")));
-        assertEquals("Map.png", IOUtilities.filename(new URL ("file:/Users/name/Map.png")));
-        assertEquals("name",    IOUtilities.filename(new URI ("file:/Users/name/")));
+        final URI uri = new URI ("file:/Users/name/Map.png");
+        assertEquals("Map.png", IOUtilities.filename(         "/Users/name/Map.png"));
+        assertEquals("Map.png", IOUtilities.filename(new File("/Users/name/Map.png")));
+        assertEquals("Map.png", IOUtilities.filename(uri));
+        assertEquals("Map.png", IOUtilities.filename(uri.toURL()));
+        assertEquals("name",    IOUtilities.filename(new URI("file:/Users/name/")));
         assertEquals("",        IOUtilities.filename("/"));
         assertEquals("",        IOUtilities.filename(""));
         assertNull(IOUtilities.filename(Boolean.FALSE));
@@ -67,12 +68,13 @@ public final class IOUtilitiesTest extends TestCase {
     @Test
     @DependsOnMethod("testFilename")
     public void testExtension() throws URISyntaxException, MalformedURLException {
-        assertEquals("png", IOUtilities.extension(              "/Users/name/Map.png"));
-        assertEquals("png", IOUtilities.extension(new File(     "/Users/name/Map.png")));
-        assertEquals("png", IOUtilities.extension(new URI ("file:/Users/name/Map.png")));
-        assertEquals("png", IOUtilities.extension(new URL ("file:/Users/name/Map.png")));
-        assertEquals("",    IOUtilities.extension(new File(     "/Users/name/Map")));
-        assertEquals("",    IOUtilities.extension(new File(     "/Users/name/.png")));
+        final URI uri = new URI ("file:/Users/name/Map.png");
+        assertEquals("png", IOUtilities.extension(         "/Users/name/Map.png"));
+        assertEquals("png", IOUtilities.extension(new File("/Users/name/Map.png")));
+        assertEquals("png", IOUtilities.extension(uri));
+        assertEquals("png", IOUtilities.extension(uri.toURL()));
+        assertEquals("",    IOUtilities.extension(new File("/Users/name/Map")));
+        assertEquals("",    IOUtilities.extension(new File("/Users/name/.png")));
         assertNull(IOUtilities.extension(Boolean.FALSE));
         assertNull(IOUtilities.extension(null));
     }
@@ -92,7 +94,7 @@ public final class IOUtilitiesTest extends TestCase {
         assertEquals("Any.xml", IOUtilities.filename (uri));
         assertEquals(    "xml", IOUtilities.extension(uri));
 
-        final URL url = new URL("jar:file:/sis-storage-tests.jar!/org/apache/sis/Any.xml");
+        final URL url = new URI("jar:file:/sis-storage-tests.jar!/org/apache/sis/Any.xml").toURL();
         assertEquals("Any.xml", IOUtilities.filename (url));
         assertEquals(    "xml", IOUtilities.extension(url));
     }
@@ -106,23 +108,24 @@ public final class IOUtilitiesTest extends TestCase {
     @Test
     public void testToString() throws URISyntaxException, MalformedURLException {
         // Do not test File because the result is platform-specific.
-        assertEquals("/Users/name/Map.png",      IOUtilities.toString(              "/Users/name/Map.png"));
-        assertEquals("file:/Users/name/Map.png", IOUtilities.toString(new URI ("file:/Users/name/Map.png")));
-        assertEquals("file:/Users/name/Map.png", IOUtilities.toString(new URL ("file:/Users/name/Map.png")));
+        final URI uri = new URI ("file:/Users/name/Map.png");
+        assertEquals("/Users/name/Map.png",      IOUtilities.toString("/Users/name/Map.png"));
+        assertEquals("file:/Users/name/Map.png", IOUtilities.toString(uri));
+        assertEquals("file:/Users/name/Map.png", IOUtilities.toString(uri.toURL()));
         assertNull(IOUtilities.toString(Boolean.FALSE));
         assertNull(IOUtilities.toString(null));
     }
 
     /**
-     * Tests {@link IOUtilities#toAuxiliaryURL(URI, int)}.
+     * Tests {@link IOUtilities#toAuxiliaryURI(URI, int)}.
      *
      * @throws URISyntaxException if a URI cannot be parsed.
      * @throws MalformedURLException if a URL cannot be parsed.
      */
     @Test
-    public void testAuxiliaryURL() throws URISyntaxException, MalformedURLException {
-        assertEquals(new URL("http://localhost/directory/image.tfw"),
-                IOUtilities.toAuxiliaryURL(new URI("http://localhost/directory/image.tiff"), "tfw"));
+    public void testAuxiliaryURI() throws URISyntaxException, MalformedURLException {
+        assertEquals(new URI("http://localhost/directory/image.tfw"),
+                IOUtilities.toAuxiliaryURI(new URI("http://localhost/directory/image.tiff"), "tfw"));
     }
 
     /**
@@ -153,6 +156,7 @@ public final class IOUtilitiesTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testEncodeURI")
+    @SuppressWarnings("deprecation")
     public void testToURI() throws IOException, URISyntaxException {
         assertEquals(new URI("file:/Users/name/Map.png"),
                 IOUtilities.toURI(new URL("file:/Users/name/Map.png"), null));
@@ -169,7 +173,7 @@ public final class IOUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IOUtilities#toFile(URL, String)} method. Do not test a Windows-specific path
+     * Tests the {@link IOUtilities#toFile(URL)} method. Do not test a Windows-specific path
      * (e.g. {@code "file:///C:/some/path/Map.png"}), since the result is different on Windows or
      * Unix platforms.
      *
@@ -193,7 +197,7 @@ public final class IOUtilitiesTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testToFile()} using the given encoding.
+     * Implementation of {@link #testToURL()} using the given encoding.
      * If the encoding is null, then the {@code URLDecoder} will not be used.
      *
      * @param  encoding  the encoding, or {@code null} if none.
@@ -202,24 +206,25 @@ public final class IOUtilitiesTest extends TestCase {
      */
     private void testToFile(final String encoding, final String plus) throws IOException {
         assertEquals("Unix absolute path.", new File("/Users/name/Map.png"),
-                IOUtilities.toFile(new URL("file:/Users/name/Map.png"), encoding));
+                IOUtilities.toFile(IOUtilities.toURL("file:/Users/name/Map.png", encoding)));
         assertEquals("Path with space.", new File("/Users/name/Map with spaces.png"),
-                IOUtilities.toFile(new URL("file:/Users/name/Map with spaces.png"), encoding));
+                IOUtilities.toFile(IOUtilities.toURL("file:/Users/name/Map with spaces.png", encoding)));
         assertEquals("Path with + sign.", new File("/Users/name/++t--++est.shp"),
-                IOUtilities.toFile(new URL(CharSequences.replace("file:/Users/name/++t--++est.shp", "+", plus).toString()), encoding));
+                IOUtilities.toFile(IOUtilities.toURL(
+                        CharSequences.replace("file:/Users/name/++t--++est.shp", "+", plus).toString(), encoding)));
     }
 
     /**
-     * Tests {@link IOUtilities#toFileOrURL(String, String)}.
+     * Tests {@link IOUtilities#toFileOrURL(String)}.
      *
      * @throws IOException if a URL cannot be parsed.
      */
     @Test
     @DependsOnMethod("testToFileFromUTF8")
     public void testToFileOrURL() throws IOException {
-        assertEquals(new File("/Users/name/Map.png"), IOUtilities.toFileOrURL("/Users/name/Map.png", null));
-        assertEquals(new File("/Users/name/Map.png"), IOUtilities.toFileOrURL("file:/Users/name/Map.png", null));
-        assertEquals(new URL("http://localhost"),     IOUtilities.toFileOrURL("http://localhost", null));
+        assertEquals(new File("/Users/name/Map.png"),        IOUtilities.toFileOrURL("/Users/name/Map.png", null));
+        assertEquals(new File("/Users/name/Map.png"),        IOUtilities.toFileOrURL("file:/Users/name/Map.png", null));
+        assertEquals(URI.create("http://localhost").toURL(), IOUtilities.toFileOrURL("http://localhost", null));
         assertEquals(new File("/Users/name/Map with spaces.png"),
                 IOUtilities.toFileOrURL("file:/Users/name/Map%20with%20spaces.png", "UTF-8"));
     }

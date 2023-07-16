@@ -123,6 +123,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     /**
      * Creates an positional accuracy initialized to the given result.
      */
+    @SuppressWarnings("deprecation")
     private PositionalAccuracyConstant(final InternationalString measureDescription,
             final InternationalString evaluationMethodDescription, final boolean pass)
     {
@@ -185,7 +186,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
                         if (Units.isLinear(unit)) {
                             final Unit<Length> unitOfLength = unit.asType(Length.class);
                             for (final Record record : records) {
-                                for (final Object value : record.getAttributes().values()) {
+                                for (final Object value : record.getFields().values()) {
                                     if (value instanceof Number) {
                                         double v = ((Number) value).doubleValue();
                                         v = unitOfLength.getConverterTo(Units.METRE).convert(v);

@@ -1281,6 +1281,7 @@ public class ImageProcessor implements Cloneable {
      * @param  colors  colors to use for each range of values in the source image.
      * @deprecated Replaced by {@link #visualize(RenderedImage)} with colors map inferred from the {@link Colorizer}.
      */
+    @SuppressWarnings("removal")
     @Deprecated(since="1.4", forRemoval=true)
     public synchronized RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
         /*
@@ -1305,6 +1306,7 @@ public class ImageProcessor implements Cloneable {
      * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
      *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
      */
+    @SuppressWarnings("removal")
     @Deprecated(since="1.4", forRemoval=true)
     public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -1458,6 +1460,7 @@ public class ImageProcessor implements Cloneable {
      * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
      *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
      */
+    @SuppressWarnings("removal")
     @Deprecated(since="1.4", forRemoval=true)
     public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
                                    final List<SampleDimension> ranges)

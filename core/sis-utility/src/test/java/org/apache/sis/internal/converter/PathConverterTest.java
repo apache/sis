@@ -101,7 +101,7 @@ public final class PathConverterTest extends TestCase {
     public void testFile_URL() throws MalformedURLException {
         assumeUnixRoot();
         final ObjectConverter<File,URL> c = PathConverter.FileURL.INSTANCE;
-        runInvertibleConversion(c, new File("/home/user/index.txt"), new URL("file:/home/user/index.txt"));
+        runInvertibleConversion(c, new File("/home/user/index.txt"), URI.create("file:/home/user/index.txt").toURL());
         assertSerializedEquals(c);
     }
 
@@ -126,7 +126,7 @@ public final class PathConverterTest extends TestCase {
     @Test
     public void testURI_URL() throws MalformedURLException, URISyntaxException {
         final ObjectConverter<URI,URL> c = PathConverter.URI_URL.INSTANCE;
-        runInvertibleConversion(c, new URI("file:/home/user/index.txt"), new URL("file:/home/user/index.txt"));
+        runInvertibleConversion(c, new URI("file:/home/user/index.txt"), URI.create("file:/home/user/index.txt").toURL());
         assertSerializedEquals(c);
     }
 
@@ -152,7 +152,7 @@ public final class PathConverterTest extends TestCase {
     @Test
     public void testURL_String() throws MalformedURLException {
         final ObjectConverter<URL,String> c = new StringConverter.URL().inverse();
-        runInvertibleConversion(c, new URL("file:/home/user/index.txt"), "file:/home/user/index.txt");
+        runInvertibleConversion(c, URI.create("file:/home/user/index.txt").toURL(), "file:/home/user/index.txt");
         assertSerializedEquals(c);
     }
 
@@ -164,8 +164,9 @@ public final class PathConverterTest extends TestCase {
      */
     @Test
     public void testURL_URI() throws MalformedURLException, URISyntaxException {
+        final URI uri = new URI("file:/home/user/index.txt");
         final ObjectConverter<URL,URI> c = PathConverter.URL_URI.INSTANCE;
-        runInvertibleConversion(c, new URL("file:/home/user/index.txt"), new URI("file:/home/user/index.txt"));
+        runInvertibleConversion(c, uri.toURL(), uri);
         assertSerializedEquals(c);
     }
 
@@ -179,7 +180,7 @@ public final class PathConverterTest extends TestCase {
     public void testURL_File() throws MalformedURLException {
         assumeUnixRoot();
         final ObjectConverter<URL,File> c = PathConverter.URLFile.INSTANCE;
-        runInvertibleConversion(c, new URL("file:/home/user/index.txt"), new File("/home/user/index.txt"));
+        runInvertibleConversion(c, URI.create("file:/home/user/index.txt").toURL(), new File("/home/user/index.txt"));
         assertSerializedEquals(c);
     }
 }

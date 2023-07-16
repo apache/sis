@@ -157,7 +157,7 @@ public class MetadataVerticalTest extends TestCase {
         assertInstanceOf("citation", NilObject.class, citation);
         assertEquals("nilReason", NilReason.MISSING, ((NilObject) citation).getNilReason());
         assertEquals("abstract", "SIS test", identification.getAbstract().toString());
-        assertEquals("language", Locale.ENGLISH, getSingleton(identification.getLanguages()));
+        assertEquals("language", Locale.ENGLISH, getSingleton(identification.getLocalesAndCharsets().keySet()));
         /*
          * <gmd:geographicElement>
          *   <gmd:EX_GeographicBoundingBox>

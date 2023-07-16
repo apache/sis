@@ -136,6 +136,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @see #castOrCopy(DataQuality)
      */
+    @SuppressWarnings("deprecation")
     public DefaultDataQuality(final DataQuality object) {
         super(object);
         if (object != null) {

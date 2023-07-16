@@ -148,6 +148,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      *
      * @see #createGeodeticTransformation(MathTransformFactory, Ellipsoid, boolean, Ellipsoid, boolean, DatumShiftGrid)
      */
+    @SuppressWarnings("removal")
     protected InterpolatedMolodenskyTransform(final Ellipsoid source, final boolean isSource3D,
                                               final Ellipsoid target, final boolean isTarget3D,
                                               final DatumShiftGrid<Angle,Length> grid)
@@ -193,6 +194,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      * @return the transformation between geographic coordinates in degrees.
      * @throws FactoryException if an error occurred while creating a transform.
      */
+    @SuppressWarnings("removal")
     public static MathTransform createGeodeticTransformation(final MathTransformFactory factory,
             final Ellipsoid source, final boolean isSource3D,
             final Ellipsoid target, final boolean isTarget3D,

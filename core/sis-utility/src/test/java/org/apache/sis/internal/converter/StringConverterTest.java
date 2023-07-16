@@ -288,7 +288,7 @@ public final class StringConverterTest extends TestCase {
     @Test
     public void testURL() throws MalformedURLException {
         final ObjectConverter<String,URL> c = new StringConverter.URL();
-        runInvertibleConversion(c, "file:/home/user/index.txt", new URL("file:/home/user/index.txt"));
+        runInvertibleConversion(c, "file:/home/user/index.txt", URI.create("file:/home/user/index.txt").toURL());
         assertSerializedEquals(c);
     }
 
