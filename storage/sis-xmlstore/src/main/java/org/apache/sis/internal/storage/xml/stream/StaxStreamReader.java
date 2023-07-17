@@ -500,11 +500,12 @@ parse:  switch (value.length()) {
      * Closes the input stream and releases any resources used by this XML reader.
      * This reader cannot be used anymore after this method has been invoked.
      *
+     * @throws JAXBException if an error occurred while releasing JAXB resources.
      * @throws XMLStreamException if an error occurred while releasing XML reader resources.
      * @throws IOException if an error occurred while closing the input stream.
      */
     @Override
-    public void close() throws Exception {
+    public void close() throws JAXBException, XMLStreamException, IOException {
         final Unmarshaller m = unmarshaller;
         if (m != null) {
             unmarshaller = null;

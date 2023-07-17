@@ -129,10 +129,10 @@ public final class StoreProvider extends URIDataStore.Provider {
             if (length >= MIN_LENGTH) {
                 int pos = length;
                 int version = 1;
-                keyword[    0] &= ~0x20;         // Make upper-case (valid only for characters in the a-z range).
-                keyword[--pos] &= ~0x20;
-                if ((keyword[--pos] &= ~0x20) == 'R') {
-                    keyword[--pos] &= ~0x20;     // Make "CRS" suffix in upper case (otherwise, was "CS" suffix)
+                keyword[    0] &= (char) ~0x20;         // Make upper-case (valid only for characters in the a-z range).
+                keyword[--pos] &= (char) ~0x20;
+                if ((keyword[--pos] &= (char) ~0x20) == 'R') {
+                    keyword [--pos] &= (char) ~0x20;    // Make "CRS" suffix in upper case (otherwise, was "CS" suffix)
                     version = 2;
                 }
                 while (--pos != 0) {

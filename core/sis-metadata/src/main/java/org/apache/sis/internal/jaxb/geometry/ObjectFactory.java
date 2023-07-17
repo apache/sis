@@ -51,6 +51,12 @@ public class ObjectFactory {
     protected static final QName AbstractObject_QNAME   = new QName(Namespaces.GML, "AbstractObject");
 
     /**
+     * Creates a default factory.
+     */
+    public ObjectFactory() {
+    }
+
+    /**
      * Creates an instance of {@code JAXBElement<Object>}}.
      *
      * @param  value  the {@code Object} value to wrap.

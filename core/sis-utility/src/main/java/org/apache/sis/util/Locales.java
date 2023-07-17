@@ -336,6 +336,7 @@ filter: for (final Locale locale : locales) {
      * @param  n     initial bit pattern, either {@link #LANGUAGE} or {@link #COUNTRY}.
      * @return a number for the given code, or 0 if a non alpha characters were found.
      */
+    @SuppressWarnings("lossy-conversions")      // Okay because we shift no more than 15 bits.
     private static short toNumber(final String code, short n) {
         final int length = code.length();
         if (length >= 1 && length <= 3) {

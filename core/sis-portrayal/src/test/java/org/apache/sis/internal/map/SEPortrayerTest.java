@@ -66,7 +66,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.BinaryComparisonOperator;
-import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
@@ -648,8 +647,7 @@ public class SEPortrayerTest extends TestCase {
                 true, MatchAction.ANY);
 
         final var symbolizer = factory.createLineSymbolizer();
-        symbolizer.setPerpendicularOffset((Expression)filterFactory.property("description", String.class));
-        // TODO: use a numeric property above.
+        symbolizer.setPerpendicularOffset(filterFactory.property("offset", Integer.class));
 
         final var rule = factory.createRule();
         rule.symbolizers().add(symbolizer);
@@ -678,7 +676,7 @@ public class SEPortrayerTest extends TestCase {
         final SEPresentation presentation = (SEPresentation) presentations.get(0);
         final Feature feature = presentation.getCandidate();
         final FeatureType type = feature.getType();
-        assertEquals(4, type.getProperties(true).size());
+        assertEquals(6, type.getProperties(true).size());
         assertNotNull(type.getProperty(AttributeConvention.IDENTIFIER));
         assertNotNull(type.getProperty(AttributeConvention.GEOMETRY));
         assertNotNull(type.getProperty("id"));

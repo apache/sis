@@ -41,7 +41,7 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see <a href="https://postgis.net/docs/ST_EstimatedExtent.html">ST_EstimatedExtent</a>
  *
@@ -51,7 +51,7 @@ final class ExtentEstimator {
     /**
      * The database containing the table for which to estimate the extent.
      */
-    private final Database database;
+    private final Database<?> database;
 
     /**
      * The table for which to get the extent.
@@ -82,7 +82,7 @@ final class ExtentEstimator {
     /**
      * Creates a new extent estimator for the specified table.
      */
-   ExtentEstimator(final Database database, final TableReference table, final Column[] columns) {
+   ExtentEstimator(final Database<?> database, final TableReference table, final Column[] columns) {
         this.database = database;
         this.table    = table;
         this.columns  = columns;

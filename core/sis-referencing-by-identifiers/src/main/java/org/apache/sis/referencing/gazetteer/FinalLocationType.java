@@ -53,49 +53,58 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
     /**
      * Name of the location type.
      */
+    @SuppressWarnings("serial")         // Most Apache SIS implementations are serializable.
     private final InternationalString name;
 
     /**
      * Property used as the defining characteristic of the location type.
      */
+    @SuppressWarnings("serial")         // Most Apache SIS implementations are serializable.
     private final InternationalString theme;
 
     /**
      * Method(s) of uniquely identifying location instances.
      * This list is unmodifiable.
      */
+    @SuppressWarnings("serial")
     private final List<InternationalString> identifications;
 
     /**
      * The way in which location instances are defined.
      */
+    @SuppressWarnings("serial")         // Most Apache SIS implementations are serializable.
     private final InternationalString definition;
 
     /**
      * The reference system that comprises this location type.
      */
+    @SuppressWarnings("serial")         // Most Apache SIS implementations are serializable.
     private final ReferenceSystemUsingIdentifiers referenceSystem;
 
     /**
      * Geographic area within which the location type occurs.
      */
+    @SuppressWarnings("serial")         // Most Apache SIS implementations are serializable.
     private final GeographicExtent territoryOfUse;
 
     /**
      * Name of organization or class of organization able to create and destroy location instances.
      */
+    @SuppressWarnings("serial")         // Most Apache SIS implementations are serializable.
     private final Party owner;
 
     /**
      * Parent location types (location types of which this location type is a sub-division).
      * This list is unmodifiable.
      */
+    @SuppressWarnings("serial")
     private final List<LocationType> parents;
 
     /**
      * Child location types (location types which sub-divides this location type).
      * This list is unmodifiable.
      */
+    @SuppressWarnings("serial")
     final List<LocationType> children;
 
     /**

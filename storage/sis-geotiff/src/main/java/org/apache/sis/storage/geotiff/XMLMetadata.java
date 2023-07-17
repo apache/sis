@@ -223,6 +223,11 @@ final class XMLMetadata implements Filter {
      */
     static final class Root extends DefaultTreeTable.Node {
         /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -3656784393688796818L;
+
+        /**
          * Column for the name associated to the element.
          */
         private static final TableColumn<CharSequence> NAME = NativeMetadata.NAME;

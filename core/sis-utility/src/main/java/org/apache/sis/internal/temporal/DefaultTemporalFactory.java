@@ -108,6 +108,7 @@ public final class DefaultTemporalFactory implements TemporalFactory {
     }
 
     /** Unsupported. */
+    @SuppressWarnings("rawtypes")
     @Override public IntervalLength createIntervalLenght(Unit unit, int radix, int factor, int value) {
         throw unsupported();
     }

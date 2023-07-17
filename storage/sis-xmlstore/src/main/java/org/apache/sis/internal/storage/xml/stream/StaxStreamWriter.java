@@ -322,11 +322,12 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * Closes the output stream and releases any resources used by this XML writer.
      * This writer cannot be used anymore after this method has been invoked.
      *
+     * @throws JAXBException if an error occurred while releasing JAXB resources.
      * @throws XMLStreamException if an error occurred while releasing XML writer resources.
      * @throws IOException if an error occurred while closing the output stream.
      */
     @Override
-    public void close() throws Exception {
+    public void close() throws JAXBException, XMLStreamException, IOException {
         final Marshaller m = marshaller;
         if (m != null) {
             marshaller = null;

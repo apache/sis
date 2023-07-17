@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.xml.stream;
 
+import java.io.Closeable;
 import java.io.IOException;
 import jakarta.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
@@ -51,7 +52,7 @@ abstract class StaxStreamIO implements AutoCloseable {
      * or {@code null} if none. This may be the same reference than {@link StaxDataStore#stream},
      * but not necessarily if we had to create a new stream for reading the data one more time.
      */
-    AutoCloseable stream;
+    Closeable stream;
 
     /**
      * The (un)marshaller pool, fetched when first needed. The same pool is shared by all {@code StaxStreamIO}
@@ -90,12 +91,13 @@ abstract class StaxStreamIO implements AutoCloseable {
      * Closes the input or output stream and releases any resources used by this XML reader or writer.
      * This reader or writer cannot be used anymore after this method has been invoked.
      *
+     * @throws JAXBException if an error occurred while releasing JAXB resources.
      * @throws XMLStreamException if an error occurred while releasing XML reader/writer resources.
      * @throws IOException if an error occurred while closing the input or output stream.
      */
     @Override
-    public void close() throws Exception {
-        final AutoCloseable s = stream;
+    public void close() throws JAXBException, XMLStreamException, IOException {
+        final Closeable s = stream;
         stream = null;
         if (s != null && owner.canClose(s)) {
             s.close();

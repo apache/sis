@@ -42,6 +42,7 @@ public final class MolodenskyTest extends TestCase {
     /**
      * Implementation of {@link #testRedimension()} to be shared with other provider having similar capability.
      */
+    @SuppressWarnings("deprecation")
     static void testRedimension(final AbstractProvider provider) {
         for (int sourceDimensions = 2; sourceDimensions <= 3; sourceDimensions++) {
             for (int targetDimensions = 2; targetDimensions <= 3; targetDimensions++) {

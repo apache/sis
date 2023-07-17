@@ -77,7 +77,6 @@ public final class IdentifierGeneratorTest extends TestCase {
                 stmt.executeUpdate("DROP TABLE \"" + TABLE + '"');
                 stmt.close();
                 generator.close();
-                source.close();
             }
         }
     }

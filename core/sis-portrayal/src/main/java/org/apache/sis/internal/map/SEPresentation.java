@@ -38,12 +38,12 @@ import org.opengis.feature.Feature;
  */
 public final class SEPresentation extends Presentation {
 
-    private Symbolizer symbolizer;
+    private Symbolizer<?> symbolizer;
 
     public SEPresentation() {
     }
 
-    public SEPresentation(MapLayer layer, Resource resource, Feature candidate, Symbolizer symbolizer) {
+    public SEPresentation(MapLayer layer, Resource resource, Feature candidate, Symbolizer<?> symbolizer) {
         super(layer, resource, candidate);
         this.symbolizer = symbolizer;
     }
@@ -51,11 +51,11 @@ public final class SEPresentation extends Presentation {
     /**
      * @return Symbogy Encoding symbolizer
      */
-    public Symbolizer getSymbolizer() {
+    public Symbolizer<?> getSymbolizer() {
         return symbolizer;
     }
 
-    public void setSymbolizer(Symbolizer symbolizer) {
+    public void setSymbolizer(Symbolizer<?> symbolizer) {
         this.symbolizer = symbolizer;
     }
 

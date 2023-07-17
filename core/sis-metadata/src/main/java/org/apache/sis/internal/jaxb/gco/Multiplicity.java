@@ -72,8 +72,9 @@ public final class Multiplicity {
      * @param  ranges  the ranges.
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public Multiplicity(final NumberRange<Integer>... ranges) {
-        this.range = Arrays.asList(ranges);
+        range = Arrays.asList(ranges);
     }
 
     /**
