@@ -43,6 +43,12 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  */
 public final class EquirectangularTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public EquirectangularTest() {
+    }
+
+    /**
      * Initializes a simple Equirectangular projection on sphere. This method is different than the
      * {@code createNormalizedProjection(boolean)} method in all other test classes, because it does
      * not create an instance of {@link NormalizedProjection}. Instead, it creates an affine transform

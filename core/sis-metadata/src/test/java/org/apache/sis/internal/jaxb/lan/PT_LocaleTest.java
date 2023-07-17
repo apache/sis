@@ -38,6 +38,12 @@ import static org.junit.Assert.*;
  */
 public final class PT_LocaleTest extends TestUsingFile {
     /**
+     * Creates a new test case.
+     */
+    public PT_LocaleTest() {
+    }
+
+    /**
      * Opens the stream to the XML file containing localized strings.
      *
      * @param  format  whether to use the 2007 or 2016 version of ISO 19115.

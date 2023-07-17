@@ -41,6 +41,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
 @DependsOn(AbstractMathTransformTest.class)
 public final class ScaleTransformTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public ScaleTransformTest() {
+    }
+
+    /**
      * Sets the {@link #transform} field to the {@link ScaleTransform} instance to test.
      *
      * @param  sourceDimensions  expected number of source dimensions.

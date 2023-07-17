@@ -54,6 +54,12 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 @DependsOn(GridExtentTest.class)
 public final class GridGeometryTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GridGeometryTest() {
+    }
+
+    /**
      * Verifies grid extent coordinates.
      */
     static void assertExtentEquals(final long[] low, final long[] high, final GridExtent extent) {

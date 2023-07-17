@@ -78,6 +78,12 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public MultiAuthoritiesFactoryTest() {
+    }
+
+    /**
      * Tests consistency of the mock factory used by other tests in this class.
      *
      * @throws FactoryException if no object was found for a code.

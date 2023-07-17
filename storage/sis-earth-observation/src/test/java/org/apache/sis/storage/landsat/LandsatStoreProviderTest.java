@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
  */
 public final class LandsatStoreProviderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LandsatStoreProviderTest() {
+    }
+
+    /**
      * Tests {@link LandsatStoreProvider#probeContent(StorageConnector)} method.
      *
      * @throws DataStoreException if en error occurred while reading the test file.

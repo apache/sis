@@ -79,7 +79,14 @@ public final class WriterTest extends TestCase {
     /**
      * Where to write the GPX file.
      */
-    private final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream output;
+
+    /**
+     * Creates a new test case.
+     */
+    public WriterTest() {
+        output = new ByteArrayOutputStream();
+    }
 
     /**
      * Creates a new GPX data store which will read and write in memory.

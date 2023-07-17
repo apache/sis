@@ -22,7 +22,6 @@ import java.time.Duration;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
-import java.time.temporal.TemporalUnit;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -51,6 +50,12 @@ import static org.junit.Assert.*;
  * @since   1.1
  */
 public final class ExpressionReadingTest extends CQLTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public ExpressionReadingTest() {
+    }
+
     @Test
     public void testValueReference1() throws CQLException {
         final String cql = "geom";

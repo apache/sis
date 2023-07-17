@@ -35,6 +35,12 @@ import org.opengis.metadata.spatial.DimensionNameType;
  */
 public final class GridSliceSelectorApp extends Application {
     /**
+     * Creates a widget viewer.
+     */
+    public GridSliceSelectorApp() {
+    }
+
+    /**
      * Starts the test application.
      *
      * @param  args  ignored.

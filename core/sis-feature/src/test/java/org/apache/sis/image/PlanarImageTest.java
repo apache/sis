@@ -63,6 +63,12 @@ public final class PlanarImageTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public PlanarImageTest() {
+    }
+
+    /**
      * Tests {@link PlanarImage#getData()} on a tiled image.
      */
     @Test

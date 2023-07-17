@@ -50,6 +50,12 @@ public final class IterationStrategyTest extends TestCase {
     private static final int MAX_OFFSET = 20;
 
     /**
+     * Creates a new test case.
+     */
+    public IterationStrategyTest() {
+    }
+
+    /**
      * Tests {@link IterationStrategy#suggest(int, int, int, int, int)} with a few basic cases,
      * comparing the computed value with the expected value.
      */

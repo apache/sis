@@ -49,6 +49,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public final class CodeListMarshallingTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CodeListMarshallingTest() {
+    }
+
+    /**
      * Returns a XML string to use for testing purpose.
      * Note that responsible party exists only in legacy ISO 19115:2003 model.
      *

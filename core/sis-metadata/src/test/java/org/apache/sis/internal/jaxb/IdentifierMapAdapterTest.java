@@ -38,6 +38,12 @@ import static org.apache.sis.xml.IdentifierSpace.*;
  */
 public class IdentifierMapAdapterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public IdentifierMapAdapterTest() {
+    }
+
+    /**
      * Tests serialization.
      */
     @Test

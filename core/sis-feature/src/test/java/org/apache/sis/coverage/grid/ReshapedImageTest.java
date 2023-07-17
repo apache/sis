@@ -73,6 +73,12 @@ public final class ReshapedImageTest extends TestCase {
     private int tileXOffset, tileYOffset;
 
     /**
+     * Creates a new test case.
+     */
+    public ReshapedImageTest() {
+    }
+
+    /**
      * Tests wrapping a {@link BufferedImage}. This single case has only one tile
      * with pixel coordinates starting at (0,0).
      */

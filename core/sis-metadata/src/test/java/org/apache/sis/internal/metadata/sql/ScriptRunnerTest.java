@@ -35,6 +35,12 @@ import static org.junit.Assert.*;
  */
 public final class ScriptRunnerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ScriptRunnerTest() {
+    }
+
+    /**
      * Tests {@link ScriptRunner} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link ScriptRunner} argument.
      *

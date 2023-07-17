@@ -51,6 +51,11 @@ public class CoverageCanvasApp extends Application {
      */
     private static final int TILE_WIDTH = 200, TILE_HEIGHT = 300;
 
+    /**
+     * Creates a widget viewer.
+     */
+    public CoverageCanvasApp() {
+    }
 
     /**
      * Starts the test application.

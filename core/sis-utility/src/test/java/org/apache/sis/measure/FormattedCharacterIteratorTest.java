@@ -56,6 +56,12 @@ public final class FormattedCharacterIteratorTest extends TestCase {
     static final double LATITUDE_VALUE = 45.50416666666667;
 
     /**
+     * Creates a new test case.
+     */
+    public FormattedCharacterIteratorTest() {
+    }
+
+    /**
      * Tests an iteration without attribute.
      */
     @Test

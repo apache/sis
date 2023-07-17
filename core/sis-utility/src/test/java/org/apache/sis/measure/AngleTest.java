@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(AngleFormatTest.class)
 public final class AngleTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AngleTest() {
+    }
+
+    /**
      * Tests the {@link Angle#toString()} method.
      */
     @Test

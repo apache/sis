@@ -41,6 +41,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @SuppressWarnings("UnnecessaryBoxing")
 public final class NumberConverterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NumberConverterTest() {
+    }
+
+    /**
      * Creates a {@link NumberConverter} for the given source and target classes.
      * We have to use the {@link ConverterRegistry} instead of instantiating the
      * converters directly because some tests are going to verify that the converter

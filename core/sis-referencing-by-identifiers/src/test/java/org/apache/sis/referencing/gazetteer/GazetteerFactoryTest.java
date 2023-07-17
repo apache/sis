@@ -32,6 +32,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 public final class GazetteerFactoryTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GazetteerFactoryTest() {
+    }
+
+    /**
      * Tests {@link ReferencingByIdentifiers#getInstance(String)}.
      *
      * @throws GazetteerException if a reference system cannot be created.

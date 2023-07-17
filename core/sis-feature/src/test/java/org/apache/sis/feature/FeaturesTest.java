@@ -38,6 +38,12 @@ import org.opengis.feature.InvalidPropertyValueException;
 @DependsOn(SingletonAttributeTest.class)
 public final class FeaturesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FeaturesTest() {
+    }
+
+    /**
      * Tests {@link Features#cast(AttributeType, Class)}.
      */
     @Test

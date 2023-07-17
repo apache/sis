@@ -73,6 +73,12 @@ public final class ModifiableIdentifierMapTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public ModifiableIdentifierMapTest() {
+    }
+
+    /**
      * Tests read and write operations on an {@link IdentifierMapAdapter}, using a well-formed
      * identifier collection (no null values, no duplicated authorities).
      *

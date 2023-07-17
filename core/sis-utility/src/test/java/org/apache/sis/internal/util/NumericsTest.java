@@ -41,6 +41,12 @@ import static org.junit.Assert.*;
 @SuppressWarnings("UnnecessaryBoxing")
 public final class NumericsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NumericsTest() {
+    }
+
+    /**
      * Verifies the value of {@link Numerics#LONG_SHIFT} and {@link Numerics#INT_SHIFT}.
      */
     @Test

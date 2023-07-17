@@ -37,6 +37,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(SingletonAttributeTest.class)
 public final class AbstractOperationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractOperationTest() {
+    }
+
+    /**
      * Returns an operation that found new cities.
      */
     static AbstractOperation foundCity() {

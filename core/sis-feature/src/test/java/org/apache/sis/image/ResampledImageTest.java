@@ -73,6 +73,12 @@ public final class ResampledImageTest extends TestCase {
     private Interpolation interpolation;
 
     /**
+     * Creates a new test case.
+     */
+    public ResampledImageTest() {
+    }
+
+    /**
      * Creates a rendered image with arbitrary tiles and some random values.
      *
      * @param  dataType  {@link DataBuffer#TYPE_SHORT} or {@link DataBuffer#TYPE_FLOAT}.

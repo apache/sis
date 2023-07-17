@@ -39,6 +39,12 @@ import static java.lang.StrictMath.*;
  */
 public final class CassiniSoldnerTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public CassiniSoldnerTest() {
+    }
+
+    /**
      * Returns the operation method for the projection tested in this class.
      *
      * @param  hyperbolic  {@code false} for standard case, or {@code true} for hyperbolic case.

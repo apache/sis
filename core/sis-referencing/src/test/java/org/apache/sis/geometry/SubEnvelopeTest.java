@@ -37,6 +37,12 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 @DependsOn(GeneralEnvelopeTest.class)
 public final class SubEnvelopeTest extends GeneralEnvelopeTest {
     /**
+     * Creates a new test case.
+     */
+    public SubEnvelopeTest() {
+    }
+
+    /**
      * Creates a new sub-envelope envelope for the given coordinate values.
      */
     @Override

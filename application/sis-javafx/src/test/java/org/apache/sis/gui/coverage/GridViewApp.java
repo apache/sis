@@ -44,6 +44,12 @@ public final class GridViewApp extends Application {
     private static final int TILE_WIDTH = 10, TILE_HEIGHT = 15;
 
     /**
+     * Creates a widget viewer.
+     */
+    public GridViewApp() {
+    }
+
+    /**
      * Starts the test application.
      *
      * @param args  ignored.

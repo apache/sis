@@ -45,6 +45,12 @@ import org.opengis.feature.FeatureType;
 @DependsOn(DefaultFeatureTypeTest.class)
 public final class DefaultAssociationRoleTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultAssociationRoleTest() {
+    }
+
+    /**
      * Creates an association to a twin town. We arbitrarily fix the maximum number
      * of occurrences to 1, even if in reality some cities have many twin towns.
      *

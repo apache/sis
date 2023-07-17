@@ -62,6 +62,12 @@ import org.opengis.referencing.gazetteer.LocationType;
 @DependsOn(ReferencingByIdentifiersTest.class)
 public final class MilitaryGridReferenceSystemTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MilitaryGridReferenceSystemTest() {
+    }
+
+    /**
      * Verifies the metadata.
      */
     @Test

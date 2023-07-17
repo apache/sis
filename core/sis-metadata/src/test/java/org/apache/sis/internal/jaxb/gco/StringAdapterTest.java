@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
  */
 public final class StringAdapterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StringAdapterTest() {
+    }
+
+    /**
      * Tests {@link StringAdapter#toString(CharSequence)} for the trivial cases.
      */
     @Test

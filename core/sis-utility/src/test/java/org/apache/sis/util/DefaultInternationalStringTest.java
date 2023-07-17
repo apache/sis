@@ -41,6 +41,12 @@ public final class DefaultInternationalStringTest extends TestCase {
     /** {@value} */ static final String MESSAGE_fr_CA = "Swing la baguette dans le fond de la boîte à bois!";
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultInternationalStringTest() {
+    }
+
+    /**
      * Tests an instance having only the English locale.
      */
     @Test

@@ -38,6 +38,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public final class FreeTextMarshallingTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FreeTextMarshallingTest() {
+    }
+
+    /**
      * Returns the expected string.
      */
     private static DefaultInternationalString getExpectedI18N() {

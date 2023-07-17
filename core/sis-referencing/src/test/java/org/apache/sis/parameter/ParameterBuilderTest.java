@@ -42,6 +42,12 @@ import static org.junit.Assert.*;
 })
 public final class ParameterBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ParameterBuilderTest() {
+    }
+
+    /**
      * Tests various {@code create(…)} methods.
      */
     @Test

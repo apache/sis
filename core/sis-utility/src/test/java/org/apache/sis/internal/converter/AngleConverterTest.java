@@ -34,6 +34,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class AngleConverterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AngleConverterTest() {
+    }
+
+    /**
      * Tests conversions to {@link Double}.
      */
     @Test

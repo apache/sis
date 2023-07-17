@@ -42,6 +42,12 @@ public final class BandedSampleConverterTest extends ImageTestCase {
     private static final int TILE_WIDTH = 4, TILE_HEIGHT = 3;
 
     /**
+     * Creates a new test case.
+     */
+    public BandedSampleConverterTest() {
+    }
+
+    /**
      * Creates a converted image with arbitrary tiles.
      * The created image is assigned to the {@link #image} field.
      *

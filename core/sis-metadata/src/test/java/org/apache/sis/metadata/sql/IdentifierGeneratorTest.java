@@ -51,6 +51,12 @@ public final class IdentifierGeneratorTest extends TestCase {
     private Statement stmt;
 
     /**
+     * Creates a new test case.
+     */
+    public IdentifierGeneratorTest() {
+    }
+
+    /**
      * Tests the creation of identifiers with sequence numbers.
      *
      * @throws Exception if an error occurred while reading or writing in the temporary database.

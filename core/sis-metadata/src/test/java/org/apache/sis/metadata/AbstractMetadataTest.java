@@ -34,6 +34,12 @@ import static org.apache.sis.test.TestUtilities.toTreeStructure;
 @DependsOn(MetadataStandardTest.class)
 public final class AbstractMetadataTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractMetadataTest() {
+    }
+
+    /**
      * Tests the {@link AbstractMetadata#hashCode()} method on an object having cyclic associations.
      * This is the same test than {@link MetadataStandardTest#testHashCodeOnCyclicMetadata()}, with
      * only a different entry point.

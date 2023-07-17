@@ -52,6 +52,12 @@ public final class WeakValueHashMapTest extends TestCase {
     private static final int NUM_RETRY = 2;
 
     /**
+     * Creates a new test case.
+     */
+    public WeakValueHashMapTest() {
+    }
+
+    /**
      * Tests the {@link WeakValueHashMap} using strong references.
      * The tested {@code WeakValueHashMap} shall behave like a standard {@link HashMap},
      * except for element order.

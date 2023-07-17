@@ -42,6 +42,12 @@ public final class PlaneTest extends TestCase {
     private double pearson;
 
     /**
+     * Creates a new test case.
+     */
+    public PlaneTest() {
+    }
+
+    /**
      * Invokes {@link Plane#fit(Iterable)} with the given arrays,
      * and compares the fitted values against the original values.
      *

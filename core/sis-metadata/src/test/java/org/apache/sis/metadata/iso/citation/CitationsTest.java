@@ -52,6 +52,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(org.apache.sis.metadata.sql.MetadataSourceTest.class)
 public final class CitationsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CitationsTest() {
+    }
+
+    /**
      * Verifies that {@link Citations#values()} is complete by comparing with the list
      * of constants given by reflection.
      *

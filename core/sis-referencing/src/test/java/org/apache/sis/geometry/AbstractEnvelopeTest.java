@@ -43,6 +43,12 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 @DependsOn(GeneralDirectPositionTest.class)
 public final class AbstractEnvelopeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractEnvelopeTest() {
+    }
+
+    /**
      * Enumeration of implementations to be tested.
      * The {@code LAST} constant is for stopping the loops.
      */

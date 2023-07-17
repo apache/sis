@@ -48,6 +48,12 @@ import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
  */
 public final class ConvertedGridCoverageTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ConvertedGridCoverageTest() {
+    }
+
+    /**
      * Creates a test coverage backed by an image of 2 pixels
      * on a single row with sample values (-1, 3).
      */

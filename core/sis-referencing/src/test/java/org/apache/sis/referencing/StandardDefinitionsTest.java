@@ -62,6 +62,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
 })
 public final class StandardDefinitionsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StandardDefinitionsTest() {
+    }
+
+    /**
      * Verifies value of the {@link StandardDefinitions#GREENWICH} code.
      * This method is for ensuring consistency between hard-coded constants.
      *

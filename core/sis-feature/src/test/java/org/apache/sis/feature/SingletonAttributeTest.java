@@ -45,6 +45,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class SingletonAttributeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SingletonAttributeTest() {
+    }
+
+    /**
      * Creates an attribute for the city name.
      * This attribute has a default value.
      */

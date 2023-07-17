@@ -47,6 +47,12 @@ public final class DerivedMapTest extends TestCase implements ObjectConverter<In
     protected static final int EXCLUDED = 17;                       // non-private for javadoc purpose.
 
     /**
+     * Creates a new test case.
+     */
+    public DerivedMapTest() {
+    }
+
+    /**
      * Fills test values in the given maps.
      */
     private static void fill(final Map<Integer,Integer> source,

@@ -69,6 +69,12 @@ import static org.opengis.test.Assert.assertMatrixEquals;
 })
 public final class DefaultMathTransformFactoryTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultMathTransformFactoryTest() {
+    }
+
+    /**
      * Returns the factory to use for the tests.
      *
      * @return the factory to use for the tests.

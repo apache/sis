@@ -39,6 +39,12 @@ import static org.junit.Assert.*;
  */
 public final class ElementTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ElementTest() {
+    }
+
+    /**
      * A dummy parser to be given to the {@link Element} constructor.
      */
     private final AbstractParser parser = new AbstractParser(Symbols.SQUARE_BRACKETS, new HashMap<>(2),

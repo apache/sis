@@ -44,6 +44,12 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  */
 public final class BufferedGridCoverageTest extends GridCoverage2DTest {
     /**
+     * Creates a new test case.
+     */
+    public BufferedGridCoverageTest() {
+    }
+
+    /**
      * Creates a {@link GridCoverage} instance to test with fixed sample values.
      * The coverage returned by this method shall contain the following values:
      *

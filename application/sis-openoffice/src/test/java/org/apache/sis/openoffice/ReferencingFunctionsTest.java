@@ -61,6 +61,12 @@ public final class ReferencingFunctionsTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public ReferencingFunctionsTest() {
+    }
+
+    /**
      * Verifies the service and implementation names.
      */
     @Test

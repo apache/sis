@@ -83,6 +83,12 @@ public final class CRSTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public CRSTest() {
+    }
+
+    /**
      * Asserts that the result of {@link CRS#forCode(String)} is the given CRS.
      */
     private static void verifyForCode(final SingleCRS expected, final String code) throws FactoryException {

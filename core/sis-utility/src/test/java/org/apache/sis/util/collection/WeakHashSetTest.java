@@ -50,6 +50,12 @@ public final class WeakHashSetTest extends TestCase {
     private static final int NUM_RETRY = 4;
 
     /**
+     * Creates a new test case.
+     */
+    public WeakHashSetTest() {
+    }
+
+    /**
      * Tests the {@link WeakHashSet} using strong references.
      * The tested {@code WeakHashSet} shall behave like a standard {@link HashSet},
      * except for element order.

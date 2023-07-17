@@ -40,6 +40,12 @@ import static org.junit.Assume.*;
  */
 public final class SchemaComplianceTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SchemaComplianceTest() {
+    }
+
+    /**
      * Verifies compliance with metadata schemas.
      *
      * @throws Exception if an error occurred while checking the schema.

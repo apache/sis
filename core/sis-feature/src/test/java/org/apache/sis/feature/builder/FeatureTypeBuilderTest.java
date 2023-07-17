@@ -54,6 +54,12 @@ import org.opengis.feature.Operation;
 @DependsOn(AttributeTypeBuilderTest.class)
 public final class FeatureTypeBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FeatureTypeBuilderTest() {
+    }
+
+    /**
      * Verifies that {@link FeatureTypeBuilder#setSuperTypes(FeatureType...)} ignores null parents.
      * This method tests only the builder state without creating feature type.
      */

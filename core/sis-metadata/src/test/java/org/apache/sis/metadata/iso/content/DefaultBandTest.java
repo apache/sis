@@ -73,6 +73,12 @@ public final class DefaultBandTest extends TestCase {
             + "</gmi:MI_Band>\n";
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultBandTest() {
+    }
+
+    /**
      * Tests marshalling a small metadata containing a {@link PolarisationOrientation}.
      *
      * @throws JAXBException if an error occurred during XML marshalling.

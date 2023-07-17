@@ -39,6 +39,12 @@ import static org.junit.Assert.*;
  */
 public final class MimeTypeDetectorTest extends TestUsingFile {
     /**
+     * Creates a new test case.
+     */
+    public MimeTypeDetectorTest() {
+    }
+
+    /**
      * Tests a pseudo-XML file in the default namespace, read from a hard-coded string.
      *
      * @throws IOException if an error occurred while reading the bytes or characters.

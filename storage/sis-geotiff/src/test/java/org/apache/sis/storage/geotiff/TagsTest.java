@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class TagsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TagsTest() {
+    }
+
+    /**
      * Tests {@link Tags#name(short)}.
      */
     @Test

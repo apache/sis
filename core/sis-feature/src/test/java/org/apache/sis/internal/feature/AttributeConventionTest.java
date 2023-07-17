@@ -45,6 +45,12 @@ import org.opengis.feature.IdentifiedType;
  */
 public final class AttributeConventionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AttributeConventionTest() {
+    }
+
+    /**
      * Tests {@link AttributeConvention#contains(GenericName)} method.
      */
     @Test

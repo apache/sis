@@ -83,6 +83,12 @@ public final class StringConverterTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public StringConverterTest() {
+    }
+
+    /**
      * Tests conversions to {@link Number}.
      */
     @Test

@@ -40,6 +40,12 @@ import static org.junit.Assert.*;
 @DependsOn(LocalizationGridBuilderTest.class)
 public final class LinearizerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LinearizerTest() {
+    }
+
+    /**
      * Tests {@link LinearTransformBuilder#approximate(MathTransform, Envelope)} on a transform created by
      * {@link LocalizationGridBuilder}. We verify that the {@link Linearizer#approximate(MathTransform,
      * Envelope)} short path is executed.

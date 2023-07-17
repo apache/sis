@@ -38,6 +38,12 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 public final class ValueColorMapperApp extends Application {
     /**
+     * Creates a widget viewer.
+     */
+    public ValueColorMapperApp() {
+    }
+
+    /**
      * Starts the test application.
      *
      * @param  args  ignored.

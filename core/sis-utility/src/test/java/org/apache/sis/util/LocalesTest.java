@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(ArraysExtTest.class)
 public final class LocalesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LocalesTest() {
+    }
+
+    /**
      * Tests the {@link Locales#getAvailableLanguages()} method.
      */
     @Test

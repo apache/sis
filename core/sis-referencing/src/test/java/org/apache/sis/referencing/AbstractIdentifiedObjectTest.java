@@ -50,6 +50,12 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 })
 public final class AbstractIdentifiedObjectTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractIdentifiedObjectTest() {
+    }
+
+    /**
      * Creates a map of properties to be given to the {@link AbstractIdentifiedObject} constructor.
      * The values in the map are consistent with the values expected by the {@link #validate} method.
      *

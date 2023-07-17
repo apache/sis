@@ -65,7 +65,14 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      *
      * Some test methods may replace the default descriptor by another one.
      */
-    private ParameterDescriptorGroup descriptor = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2;
+    private ParameterDescriptorGroup descriptor;
+
+    /**
+     * Creates a new test case.
+     */
+    public DefaultParameterValueGroupTest() {
+        descriptor = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2;
+    }
 
     /**
      * Creates values for all parameters defined by the {@linkplain #descriptor} (regardless their multiplicity),

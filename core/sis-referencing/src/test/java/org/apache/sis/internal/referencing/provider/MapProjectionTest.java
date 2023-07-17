@@ -41,6 +41,12 @@ import static org.apache.sis.internal.util.Constants.*;
  */
 public final class MapProjectionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MapProjectionTest() {
+    }
+
+    /**
      * Verifies {@link MapProjection#SEMI_MAJOR} and {@link MapProjection#SEMI_MINOR} parameter descriptors.
      */
     @Test

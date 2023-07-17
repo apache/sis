@@ -54,6 +54,12 @@ public final class ScopeCodeTest extends TestCase {
             "</gmd:DQ_DataQuality>\n";
 
     /**
+     * Creates a new test case.
+     */
+    public ScopeCodeTest() {
+    }
+
+    /**
      * Tests marshalling a small metadata containing a {@link ScopeCode}.
      *
      * @throws JAXBException if an error occurred during XML marshalling.

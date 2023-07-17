@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
  */
 public final class OtherLocalesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public OtherLocalesTest() {
+    }
+
+    /**
      * Returns the locales in an array. Character sets are ignored.
      */
     private static Locale[] toArray(final Set<PT_Locale> locales) {

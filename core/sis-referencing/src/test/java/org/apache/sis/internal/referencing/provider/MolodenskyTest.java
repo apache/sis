@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class MolodenskyTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MolodenskyTest() {
+    }
+
+    /**
      * Tests {@link Molodensky#redimension(int, int)}.
      */
     @Test

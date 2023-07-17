@@ -43,6 +43,12 @@ import static org.junit.Assert.*;
 @DependsOn(CategoryTest.class)
 public final class CategoryListTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CategoryListTest() {
+    }
+
+    /**
      * Asserts that the specified categories are sorted.
      * This method ignores {@code NaN} values.
      */

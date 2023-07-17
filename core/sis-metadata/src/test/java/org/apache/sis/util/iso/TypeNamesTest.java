@@ -46,6 +46,12 @@ import static org.apache.sis.internal.util.Constants.OGC;
 })
 public final class TypeNamesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TypeNamesTest() {
+    }
+
+    /**
      * Verifies that the call to {@link TypeNames#toTypeName(NameFactory, Class)} returns a {@code TypeName} having the
      * given name and namespace, then tests the reverse operation with {@link TypeNames#toClass(String, String)}.
      */

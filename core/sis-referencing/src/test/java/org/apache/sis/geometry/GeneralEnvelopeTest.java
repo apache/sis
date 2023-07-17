@@ -63,6 +63,12 @@ public class GeneralEnvelopeTest extends TestCase {
     boolean skipValidation;
 
     /**
+     * Creates a new test case.
+     */
+    public GeneralEnvelopeTest() {
+    }
+
+    /**
      * Creates a new geographic envelope for the given coordinate values.
      * The {@literal [xmin … xmax]} may span the anti-meridian.
      * This method is overridden by {@link SubEnvelopeTest}.

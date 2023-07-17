@@ -29,11 +29,17 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @since   0.8
  */
-public final class CodeTypeTest  extends TestCase {
+public final class CodeTypeTest extends TestCase {
     /**
      * The expected value.
      */
     private CodeType expected;
+
+    /**
+     * Creates a new test case.
+     */
+    public CodeTypeTest() {
+    }
 
     /**
      * Asserts that {@link CodeType#guess(String)} returns the expected value.

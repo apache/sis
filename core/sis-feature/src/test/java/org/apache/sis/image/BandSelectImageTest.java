@@ -66,6 +66,12 @@ public final class BandSelectImageTest extends TestCase {
     private BufferedImage bufferedImage;
 
     /**
+     * Creates a new test case.
+     */
+    public BandSelectImageTest() {
+    }
+
+    /**
      * Creates a dummy image for testing purpose. This image will contain the given amount of bands.
      * One band contains deterministic values and all other bands contain random values.
      * The image is assigned to {@link #bufferedImage} and {@link #image} fields.

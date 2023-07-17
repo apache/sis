@@ -36,6 +36,12 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  */
 public final class LocationFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LocationFormatTest() {
+    }
+
+    /**
      * Tests formatting of an instance having only geographic coordinates.
      */
     @Test

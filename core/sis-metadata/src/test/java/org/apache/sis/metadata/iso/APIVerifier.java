@@ -60,6 +60,12 @@ public final class APIVerifier extends TestCase {
     private Method method;
 
     /**
+     * Creates a new test case.
+     */
+    public APIVerifier() {
+    }
+
+    /**
      * Verifies the API changes for the ISO 19115 standard.
      *
      * @throws IOException if an error occurred while reading the {@code "api-changes.properties"} file.

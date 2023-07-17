@@ -44,6 +44,12 @@ public final class CategoryTest extends TestCase {
     static final double EPS = 1E-9;
 
     /**
+     * Creates a new test case.
+     */
+    public CategoryTest() {
+    }
+
+    /**
      * Asserts that the given range contains NaN values.
      */
     private static void assertNaN(final String message, final NumberRange<?> range) {

@@ -43,6 +43,12 @@ import org.opengis.feature.InvalidPropertyValueException;
 @DependsOn(LinkOperationTest.class)
 public final class StringJoinOperationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StringJoinOperationTest() {
+    }
+
+    /**
      * Creates a feature type with an string join operation.
      * The feature contains the following properties:
      *

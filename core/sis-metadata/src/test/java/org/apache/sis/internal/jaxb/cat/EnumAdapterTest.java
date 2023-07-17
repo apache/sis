@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class EnumAdapterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public EnumAdapterTest() {
+    }
+
+    /**
      * Tests the {@link EnumAdapter#name(String)} method.
      */
     @Test

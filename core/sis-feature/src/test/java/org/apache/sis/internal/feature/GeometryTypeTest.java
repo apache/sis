@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class GeometryTypeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GeometryTypeTest() {
+    }
+
+    /**
      * Tests {@link GeometryType#forBinaryType(int)} and verifies {@link GeometryType#binaryType()} values.
      */
     @Test

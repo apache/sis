@@ -36,6 +36,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public final class DefaultResponsibilityTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultResponsibilityTest() {
+    }
+
+    /**
      * Tests marshalling with replacement of {@link DefaultResponsibility} by {@link DefaultResponsibleParty}.
      *
      * @throws JAXBException if an error occurred during the marshalling.

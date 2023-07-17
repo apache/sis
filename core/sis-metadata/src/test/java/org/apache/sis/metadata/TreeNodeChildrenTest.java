@@ -57,6 +57,12 @@ import static org.junit.Assert.*;
 @DependsOn(PropertyAccessorTest.class)
 public final class TreeNodeChildrenTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TreeNodeChildrenTest() {
+    }
+
+    /**
      * Creates a shallow metadata object without collections.
      *
      * <pre class="text">

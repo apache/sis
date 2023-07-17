@@ -42,6 +42,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(UnitsTest.class)
 public final class ScalarTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ScalarTest() {
+    }
+
+    /**
      * Tests {@link Scalar#add(Quantity)} and {@link Scalar#subtract(Quantity)}.
      * Those tests depend on proper working of {@link Scalar#create(double, Unit)}.
      */

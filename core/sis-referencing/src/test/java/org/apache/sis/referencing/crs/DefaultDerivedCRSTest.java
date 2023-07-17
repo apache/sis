@@ -58,6 +58,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 })
 public final class DefaultDerivedCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultDerivedCRSTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a projected CRS definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

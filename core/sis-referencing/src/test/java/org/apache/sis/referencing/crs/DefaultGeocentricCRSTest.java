@@ -46,6 +46,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 })
 public final class DefaultGeocentricCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultGeocentricCRSTest() {
+    }
+
+    /**
      * Tests the {@link DefaultGeocentricCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#RIGHT_HANDED}.
      *

@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class StoreUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StoreUtilitiesTest() {
+    }
+
+    /**
      * Tests {@link StoreUtilities#basedOnASCII(Charset)}.
      */
     @Test

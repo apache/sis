@@ -116,6 +116,12 @@ public final class MetadataTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public MetadataTest() {
+    }
+
+    /**
      * Programmatically creates the metadata to marshal, or to compare against the unmarshalled metadata.
      *
      * @return the hard-coded representation of {@value #XML_FILE} content.

@@ -63,6 +63,12 @@ public final class AbstractMapTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public AbstractMapTest() {
+    }
+
+    /**
      * Tests {@link AbstractMap#keySet()}, {@link AbstractMap#values()} and {@link AbstractMap#entrySet()}.
      * This method will also opportunistically tests basic methods like {@link AbstractMap#isEmpty()} and
      * {@link AbstractMap#containsValue(Object)}. This test does not add new values in the map.

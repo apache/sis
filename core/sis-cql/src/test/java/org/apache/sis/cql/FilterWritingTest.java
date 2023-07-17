@@ -44,7 +44,13 @@ import org.locationtech.jts.geom.LinearRing;
  */
 public final class FilterWritingTest extends CQLTestCase {
 
-    private final Geometry baseGeometry = GF.createPolygon(
+    private final Geometry baseGeometry;
+
+    /**
+     * Creates a new test case.
+     */
+    public FilterWritingTest() {
+        baseGeometry = GF.createPolygon(
                 GF.createLinearRing(
                     new Coordinate[]{
                         new Coordinate(10, 20),
@@ -52,8 +58,8 @@ public final class FilterWritingTest extends CQLTestCase {
                         new Coordinate(50, 60),
                         new Coordinate(10, 20)
                     }),
-                new LinearRing[0]
-                );
+                new LinearRing[0]);
+    }
 
     @Test
     public void testExcludeFilter() throws CQLException {

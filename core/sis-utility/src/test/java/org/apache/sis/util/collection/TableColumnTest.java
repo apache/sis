@@ -36,6 +36,12 @@ import static org.apache.sis.util.collection.TableColumn.*;
  */
 public final class TableColumnTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TableColumnTest() {
+    }
+
+    /**
      * Test the header of some constants.
      */
     @Test

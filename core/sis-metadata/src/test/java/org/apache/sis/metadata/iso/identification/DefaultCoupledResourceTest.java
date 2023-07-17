@@ -43,6 +43,12 @@ import static org.junit.Assert.*;
 @DependsOn(ServiceParameterTest.class)
 public final class DefaultCoupledResourceTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultCoupledResourceTest() {
+    }
+
+    /**
      * Creates the resource to use for testing purpose.
      */
     static DefaultCoupledResource create(final NameFactory factory) {

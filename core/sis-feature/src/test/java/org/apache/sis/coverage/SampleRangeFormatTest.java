@@ -34,6 +34,12 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  */
 public final class SampleRangeFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SampleRangeFormatTest() {
+    }
+
+    /**
      * Creates a band for temperature data.
      */
     private static SampleDimension temperature(final SampleDimension.Builder builder) {

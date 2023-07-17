@@ -38,6 +38,12 @@ import static org.junit.Assert.*;
 @DependsOn(ChannelDataOutputTest.class)
 public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
     /**
+     * Creates a new test case.
+     */
+    public ChannelImageOutputStreamTest() {
+    }
+
+    /**
      * Initializes all non-final fields before to execute a test.
      */
     @Override

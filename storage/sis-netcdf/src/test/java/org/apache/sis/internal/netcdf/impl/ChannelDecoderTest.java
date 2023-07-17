@@ -40,6 +40,12 @@ import org.opengis.test.dataset.TestData;
 @DependsOn(DecoderTest.class)
 public final class ChannelDecoderTest extends DecoderTest {
     /**
+     * Creates a new test case.
+     */
+    public ChannelDecoderTest() {
+    }
+
+    /**
      * Creates a new decoder for the specified dataset.
      *
      * @return the decoder for the specified dataset.

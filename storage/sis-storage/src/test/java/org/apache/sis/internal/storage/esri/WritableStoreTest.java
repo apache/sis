@@ -49,6 +49,12 @@ import static org.junit.Assert.*;
  */
 public final class WritableStoreTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public WritableStoreTest() {
+    }
+
+    /**
      * Creates a test grid coverage filled with arbitrary data.
      *
      * @param  crs  the CRS to assign to the coverage. May be {@code null}.

@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class ConventionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ConventionTest() {
+    }
+
+    /**
      * Tests {@link Convention#getNameAuthority()}.
      */
     @Test

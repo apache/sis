@@ -45,6 +45,12 @@ public final class DerivedSetTest extends TestCase implements ObjectConverter<In
     protected static final int EXCLUDED = 19;                   // non-private for javadoc purpose.
 
     /**
+     * Creates a new test case.
+     */
+    public DerivedSetTest() {
+    }
+
+    /**
      * Tests {@link DerivedSet} without excluded value.
      */
     @Test

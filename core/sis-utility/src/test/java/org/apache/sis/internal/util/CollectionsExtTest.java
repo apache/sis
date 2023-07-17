@@ -47,6 +47,12 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  */
 public final class CollectionsExtTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CollectionsExtTest() {
+    }
+
+    /**
      * Tests {@link CollectionsExt#nonNullArraySet(String, Object, Object[])}.
      */
     @Test

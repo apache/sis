@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class TestUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TestUtilitiesTest() {
+    }
+
+    /**
      * Tests {@link org.apache.sis.test.TestUtilities#toTreeStructure(CharSequence)}.
      */
     @Test

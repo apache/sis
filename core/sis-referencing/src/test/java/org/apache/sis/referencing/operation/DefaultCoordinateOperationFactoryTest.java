@@ -88,6 +88,12 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
     private static WKTFormat parser;
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultCoordinateOperationFactoryTest() {
+    }
+
+    /**
      * Creates a new {@link DefaultCoordinateOperationFactory} to use for testing purpose.
      * The same factory will be used for all tests in this class.
      *

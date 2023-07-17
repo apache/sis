@@ -57,6 +57,12 @@ public final class IndexedResourceBundleTest extends TestCase {
     private IndexedResourceBundle testing;
 
     /**
+     * Creates a new test case.
+     */
+    public IndexedResourceBundleTest() {
+    }
+
+    /**
      * Tests the {@link Errors#getResources(Locale)} method on different locales.
      */
     @Test

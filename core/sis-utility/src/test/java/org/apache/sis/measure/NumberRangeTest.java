@@ -41,6 +41,12 @@ import org.opengis.referencing.operation.TransformException;
 })
 public final class NumberRangeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NumberRangeTest() {
+    }
+
+    /**
      * Tests {@link NumberRange#isCacheable(Number)}.
      */
     @Test

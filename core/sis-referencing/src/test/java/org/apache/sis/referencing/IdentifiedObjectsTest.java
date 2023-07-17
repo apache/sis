@@ -45,6 +45,12 @@ import static org.apache.sis.referencing.IdentifiedObjects.*;
  */
 public final class IdentifiedObjectsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public IdentifiedObjectsTest() {
+    }
+
+    /**
      * Tests {@link IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)}.
      */
     @Test

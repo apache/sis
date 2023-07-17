@@ -41,6 +41,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public final class EnumMarshallingTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public EnumMarshallingTest() {
+    }
+
+    /**
      * Tests (un)marshalling of an enumeration.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the XML.

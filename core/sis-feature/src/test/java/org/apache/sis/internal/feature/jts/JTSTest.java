@@ -46,6 +46,12 @@ import static org.junit.Assert.*;
  */
 public final class JTSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public JTSTest() {
+    }
+
+    /**
      * Tests {@link JTS#getCoordinateReferenceSystem(Geometry)}.
      *
      * @throws FactoryException if an EPSG code cannot be resolved.

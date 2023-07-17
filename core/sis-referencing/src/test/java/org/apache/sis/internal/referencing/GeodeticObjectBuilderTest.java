@@ -38,6 +38,12 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  */
 public final class GeodeticObjectBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GeodeticObjectBuilderTest() {
+    }
+
+    /**
      * Tests {@link GeodeticObjectBuilder#changeConversion(String, BiConsumer)}.
      *
      * @throws FactoryException if an operation method name is not supported.

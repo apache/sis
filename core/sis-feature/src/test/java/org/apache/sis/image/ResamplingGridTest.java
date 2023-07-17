@@ -48,6 +48,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 public final class ResamplingGridTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ResamplingGridTest() {
+    }
+
+    /**
      * Tests {@link ResamplingGrid#create(MathTransform2D, Rectangle)} with an affine transform.
      * The method should detect the affine case and return an equal transform (not necessarily the same instance).
      *

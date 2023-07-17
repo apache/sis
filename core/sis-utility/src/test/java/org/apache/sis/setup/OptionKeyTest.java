@@ -50,6 +50,12 @@ public final class OptionKeyTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public OptionKeyTest() {
+    }
+
+    /**
      * Tests the {@link OptionKey#getValueFrom(Map)} and {@link OptionKey#setValueInto(Map, Object)}
      * methods with null arguments.
      */

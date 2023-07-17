@@ -88,6 +88,12 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
     private static final double LATITUDE_OF_REDUCED_DOMAIN = 20;
 
     /**
+     * Creates a new test case.
+     */
+    public TransverseMercatorTest() {
+    }
+
+    /**
      * Creates a new instance of {@link TransverseMercator}.
      *
      * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.

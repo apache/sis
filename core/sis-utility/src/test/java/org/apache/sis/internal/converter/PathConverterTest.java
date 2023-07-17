@@ -45,6 +45,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(StringConverterTest.class)
 public final class PathConverterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public PathConverterTest() {
+    }
+
+    /**
      * Assumes that the platform file system has a Unix-style root.
      * Windows platform has driver letters instead, like "C:\\",
      * which are not correctly tested by this class.

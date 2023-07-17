@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
  */
 public final class GeoCodesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GeoCodesTest() {
+    }
+
+    /**
      * Verifies the constants relative to the polar stereographic projection.
      *
      * @throws FactoryException if the operation method is not found.

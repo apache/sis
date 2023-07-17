@@ -41,6 +41,12 @@ import static org.junit.Assert.*;
 @DependsOn(IterationStrategyTest.class)
 public final class AbstractMathTransformTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractMathTransformTest() {
+    }
+
+    /**
      * Tests the transform methods expecting at least one argument of type {@code float[]}.
      * We will use the {@link AbstractMathTransform#transform(double[], int, double[], int, int)}
      * method as the reference implementation, assuming that the latter has been correctly tested

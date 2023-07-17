@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class AbstractShapeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractShapeTest() {
+    }
+
+    /**
      * Tests {@link ShapeUtilities#isFloat(Object)}.
      */
     @Test

@@ -38,6 +38,12 @@ import org.junit.Test;
  */
 public final class SphericalToCartesianTest extends TransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public SphericalToCartesianTest() {
+    }
+
+    /**
      * Returns coordinate tuples in spherical coordinates and their equivalent in Cartesian coordinates.
      */
     static double[][] testData() {

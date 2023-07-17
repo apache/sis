@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class BagTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public BagTest() {
+    }
+
+    /**
      * Creates an instance initialized to the given values.
      */
     private static Bag<Integer> create(final int... values) {

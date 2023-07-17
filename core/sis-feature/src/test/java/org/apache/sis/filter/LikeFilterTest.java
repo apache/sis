@@ -36,6 +36,12 @@ import org.opengis.filter.Literal;
  */
 public final class LikeFilterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LikeFilterTest() {
+    }
+
+    /**
      * Tests {@link LikeFilter#isMetaCharacter(char)}.
      */
     @Test

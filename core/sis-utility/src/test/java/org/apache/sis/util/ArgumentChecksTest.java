@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
 @DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)
 public final class ArgumentChecksTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ArgumentChecksTest() {
+    }
+
+    /**
      * Tests {@link ArgumentChecks#ensureNonNullElement(String, int, Object)}.
      */
     @Test

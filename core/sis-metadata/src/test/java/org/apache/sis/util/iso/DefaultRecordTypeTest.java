@@ -48,6 +48,12 @@ public final class DefaultRecordTypeTest extends TestCase {
     /** Value of {@link DefaultRecordType#getFieldTypes()}. */ private DefaultTypeName     fieldTypeName;
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultRecordTypeTest() {
+    }
+
+    /**
      * Initializes the private fields.
      * This method shall be invoked only once per test.
      */

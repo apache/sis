@@ -54,6 +54,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(ConformalProjectionTest.class)
 public final class LambertConicConformalTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public LambertConicConformalTest() {
+    }
+
+    /**
      * Verifies the value of the constant used in <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection.
      *
      * @see #testLambertConicConformalBelgium()

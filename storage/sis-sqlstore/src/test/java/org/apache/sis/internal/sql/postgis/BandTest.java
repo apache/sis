@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class BandTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public BandTest() {
+    }
+
+    /**
      * Verifies the values returned by {@link Band#bufferToPixelType(int)}
      * by comparing them to the values returned by {@link Band#getDataBufferType()}.
      */

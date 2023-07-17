@@ -89,6 +89,12 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     public static final double ANGULAR_TOLERANCE = (0.0001 / 60 / 60) / 2;
 
     /**
+     * Creates a new test case.
+     */
+    public FranceGeocentricInterpolationTest() {
+    }
+
+    /**
      * Tests {@link FranceGeocentricInterpolation#isRecognized(URI)}.
      *
      * @throws URISyntaxException if the URL to the test file is not valid.

@@ -39,6 +39,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 public final class NilReasonTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NilReasonTest() {
+    }
+
+    /**
      * Tests the {@link NilReason#valueOf(String)} method on constants.
      *
      * @throws URISyntaxException if a test URI cannot be parsed (should not happen).

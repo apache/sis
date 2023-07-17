@@ -43,6 +43,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 public final class AsciiGridStoreTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AsciiGridStoreTest() {
+    }
+
+    /**
      * Returns a storage connector with the URL to the test data.
      */
     private static StorageConnector testData() {

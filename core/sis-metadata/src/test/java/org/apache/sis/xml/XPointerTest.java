@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class XPointerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public XPointerTest() {
+    }
+
+    /**
      * Tests {@link XPointer#UOM}.
      */
     @Test

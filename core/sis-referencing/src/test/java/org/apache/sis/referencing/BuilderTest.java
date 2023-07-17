@@ -46,6 +46,12 @@ import static org.junit.Assert.*;
 @DependsOn(AbstractIdentifiedObjectTest.class)
 public final class BuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public BuilderTest() {
+    }
+
+    /**
      * Tests {@link Builder#verifyParameterizedType(Class)}.
      */
     @Test

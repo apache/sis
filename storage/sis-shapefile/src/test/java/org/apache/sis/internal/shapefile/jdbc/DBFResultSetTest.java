@@ -37,6 +37,12 @@ import org.junit.Test;
  */
 public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
     /**
+     * Creates a new test case.
+     */
+    public DBFResultSetTest() {
+    }
+
+    /**
      * Reads the first record.
      * @throws SQLException if an error occurred while querying the database.
      */

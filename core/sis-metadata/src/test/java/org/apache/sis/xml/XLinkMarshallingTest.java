@@ -85,6 +85,12 @@ public final class XLinkMarshallingTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public XLinkMarshallingTest() {
+    }
+
+    /**
      * Tests (un)marshalling of an object with a {@code xlink:href} attribute without element definition.
      * The XML fragment is:
      *

@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(LinearConverterTest.class)
 public final class PrefixesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public PrefixesTest() {
+    }
+
+    /**
      * Ensures that the characters in the {@link Prefixes#PREFIXES} array are in strictly increasing order,
      * and that {@link Prefixes#POWERS} has the same length.
      * Those two arrays form a map used by {@link Prefixes#converter(char)}.

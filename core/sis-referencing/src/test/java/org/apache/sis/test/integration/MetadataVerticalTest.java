@@ -74,6 +74,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public class MetadataVerticalTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MetadataVerticalTest() {
+    }
+
+    /**
      * Opens the stream to the XML representation of a {@link Metadata} object with a {@link VerticalCRS}.
      *
      * @return stream opened on the XML document to use for testing purpose.

@@ -64,6 +64,12 @@ import static org.junit.Assert.*;
  */
 public final class DefaultCitationTest extends TestUsingFile {
     /**
+     * Creates a new test case.
+     */
+    public DefaultCitationTest() {
+    }
+
+    /**
      * Opens the stream to the XML file containing a citation.
      *
      * @param  format  whether to use the 2007 or 2016 version of ISO 19115.

@@ -44,6 +44,12 @@ public final class LocalizationGridBuilderTest extends TransformTestCase {
     private static final double STRICT = 0;
 
     /**
+     * Creates a new test case.
+     */
+    public LocalizationGridBuilderTest() {
+    }
+
+    /**
      * Creates a builder initialized with control points computed from the given affine transform.
      * Some non-linear terms will be added to the coordinates computed by the given transform.
      *

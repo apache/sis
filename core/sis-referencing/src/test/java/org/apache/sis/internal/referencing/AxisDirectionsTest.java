@@ -47,6 +47,12 @@ import static org.apache.sis.internal.referencing.AxisDirections.COUNTER_CLOCKWI
 @DependsOn(AxesMapperTest.class)
 public final class AxisDirectionsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AxisDirectionsTest() {
+    }
+
+    /**
      * Tests {@link AxisDirections#absolute(AxisDirection)}.
      */
     @Test

@@ -43,6 +43,12 @@ public abstract class AbstractTestBaseForInternalJDBC {
     protected File dbfFile;
 
     /**
+     * Creates a new test case.
+     */
+    public AbstractTestBaseForInternalJDBC() {
+    }
+
+    /**
      * Connect to test database.
      * @return Connection to database.
      * @throws SQLException if the connection failed.

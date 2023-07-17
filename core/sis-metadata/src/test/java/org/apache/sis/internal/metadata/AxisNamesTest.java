@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class AxisNamesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AxisNamesTest() {
+    }
+
+    /**
      * Tests {@link AxisNames#toCamelCase(String)}.
      */
     @Test

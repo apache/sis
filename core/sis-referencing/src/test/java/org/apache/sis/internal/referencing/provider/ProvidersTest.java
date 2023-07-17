@@ -157,6 +157,12 @@ public final class ProvidersTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public ProvidersTest() {
+    }
+
+    /**
      * Ensures that every parameter instance is unique. Actually this test is not strong requirement.
      * This is only for sharing existing resources by avoiding unnecessary objects duplication.
      *

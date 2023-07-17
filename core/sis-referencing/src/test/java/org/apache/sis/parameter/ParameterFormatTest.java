@@ -53,6 +53,12 @@ public final class ParameterFormatTest extends TestCase {
     private static ParameterDescriptorGroup descriptor;
 
     /**
+     * Creates a new test case.
+     */
+    public ParameterFormatTest() {
+    }
+
+    /**
      * Creates the parameter descriptors to be used by all tests in this class. This method creates
      * a variant of the example documented in the {@link DefaultParameterDescriptorGroup} javadoc
      * with arbitrary non-zero default values. Those default values are not part of EPSG definitions.

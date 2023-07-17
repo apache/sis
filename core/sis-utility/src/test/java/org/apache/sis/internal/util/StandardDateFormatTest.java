@@ -39,6 +39,12 @@ import static org.junit.Assert.*;
  */
 public final class StandardDateFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StandardDateFormatTest() {
+    }
+
+    /**
      * Verifies the {@link StandardDateFormat#MILLISECONDS_PER_DAY}, {@link StandardDateFormat#NANOS_PER_MILLISECOND}
      * and {@link StandardDateFormat#NANOS_PER_SECOND} constant values.
      */

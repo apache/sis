@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class DataScriptFormatterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DataScriptFormatterTest() {
+    }
+
+    /**
      * Tests the {@link DataScriptFormatter#removeLF(StringBuilder)} method.
      */
     @Test

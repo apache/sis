@@ -41,6 +41,12 @@ import org.apache.sis.util.iso.Names;
 @DependsOn(DefaultAttributeTypeTest.class)
 public final class CharacteristicTypeMapTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CharacteristicTypeMapTest() {
+    }
+
+    /**
      * Creates an attribute type for a temperature measurement in °C with a ±0.1°C accuracy.
      *
      * @return a {@code "temperature"} type attribute with two characteristics: {@code "accuracy"} and {@code "units"}.

@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class AxisTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AxisTest() {
+    }
+
+    /**
      * Tests {@link Axis#direction(String)}.
      */
     @Test

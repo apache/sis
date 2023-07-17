@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class CompressionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CompressionTest() {
+    }
+
+    /**
      * Tests {@link Compression#valueOf(long)}.
      */
     @Test

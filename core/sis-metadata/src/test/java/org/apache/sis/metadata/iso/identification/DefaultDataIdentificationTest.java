@@ -56,6 +56,12 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 })
 public final class DefaultDataIdentificationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultDataIdentificationTest() {
+    }
+
+    /**
      * Creates the instance to test.
      */
     private static DefaultDataIdentification create() {

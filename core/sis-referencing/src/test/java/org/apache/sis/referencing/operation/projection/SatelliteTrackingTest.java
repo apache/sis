@@ -42,6 +42,12 @@ import static org.junit.Assert.assertTrue;
  */
 public final class SatelliteTrackingTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public SatelliteTrackingTest() {
+    }
+
+    /**
      * Creates a new instance of {@link SatelliteTracking} concatenated with the (de)normalization matrices.
      * The new instance is stored in the inherited {@link #transform} field.
      * This methods uses projection parameters for Landsat 3 satellite, namely:

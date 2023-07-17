@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class UtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public UtilitiesTest() {
+    }
+
+    /**
      * Tests {@link Utilities#deepEquals(Object, Object, ComparisonMode)}.
      */
     @Test

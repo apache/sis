@@ -56,6 +56,12 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 @DependsOn(TreeNodeChildrenTest.class)
 public final class TreeNodeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TreeNodeTest() {
+    }
+
+    /**
      * Creates a metadata hierarchy to be used for the tests.
      * This method creates the following metadata:
      *

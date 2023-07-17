@@ -33,6 +33,12 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  */
 public final class NamespacesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NamespacesTest() {
+    }
+
+    /**
      * Tests {@link Namespaces#getPreferredPrefix(String, String)}.
      */
     @Test

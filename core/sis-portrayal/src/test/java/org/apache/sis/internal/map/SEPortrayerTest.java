@@ -89,6 +89,9 @@ public class SEPortrayerTest extends TestCase {
     private final FeatureSet fishes;
     private final FeatureSet boats;
 
+    /**
+     * Creates a new test case.
+     */
     public SEPortrayerTest() {
         filterFactory = DefaultFilterFactory.forFeatures();
 

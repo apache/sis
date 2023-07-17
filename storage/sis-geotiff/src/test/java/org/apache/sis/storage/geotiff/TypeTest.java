@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class TypeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TypeTest() {
+    }
+
+    /**
      * Verifies that all enumeration values override either {@link Type#readLong(ChannelDataInput, long)}
      * or {@link Type#readDouble(ChannelDataInput, long)}.Failing to do so may cause stack overflow.
      *

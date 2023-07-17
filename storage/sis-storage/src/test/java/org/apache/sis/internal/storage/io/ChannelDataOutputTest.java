@@ -68,6 +68,12 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
     ByteArrayOutputStream expectedData;
 
     /**
+     * Creates a new test case.
+     */
+    public ChannelDataOutputTest() {
+    }
+
+    /**
      * Initializes all non-final fields before to execute a test.
      *
      * @param  testName      the name of the test method to be executed.

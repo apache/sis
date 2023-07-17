@@ -41,6 +41,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 public final class NilReasonMarshallingTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NilReasonMarshallingTest() {
+    }
+
+    /**
      * Tests a simple case for a missing data.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.

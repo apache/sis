@@ -26,6 +26,11 @@ import org.opengis.filter.SortOrder;
  * @author Johann Sorel (Geomatys)
  */
 public final class QueryReadingTest extends CQLTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public QueryReadingTest() {
+    }
 
     @Test
     public void testEmpty() throws CQLException {

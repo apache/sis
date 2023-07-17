@@ -59,6 +59,12 @@ public final class MaskedImageTest extends TestCase {
     private static final int TILE_WIDTH = WIDTH/2, TILE_HEIGHT = HEIGHT/2;
 
     /**
+     * Creates a new test case.
+     */
+    public MaskedImageTest() {
+    }
+
+    /**
      * Returns a rectangular shape to use as a mask.
      */
     private static Rectangle rectangularMask() {

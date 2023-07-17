@@ -34,6 +34,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class SymbolsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SymbolsTest() {
+    }
+
+    /**
      * Tests the {@link Symbols#containsElement(CharSequence, String)} method.
      */
     @Test

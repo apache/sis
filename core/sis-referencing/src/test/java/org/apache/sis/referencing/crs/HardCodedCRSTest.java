@@ -39,6 +39,12 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.*;
 })
 public final class HardCodedCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public HardCodedCRSTest() {
+    }
+
+    /**
      * Validates constants.
      *
      * <p>Note: ISO specification does not allow ellipsoidal height, so we have to relax

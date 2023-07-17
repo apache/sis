@@ -35,6 +35,12 @@ import static org.apache.sis.util.Numbers.*;
  */
 public final class NumbersTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NumbersTest() {
+    }
+
+    /**
      * Tests {@link Numbers#isInteger(Class)}.
      */
     @Test

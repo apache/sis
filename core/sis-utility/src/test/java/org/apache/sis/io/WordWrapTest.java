@@ -38,6 +38,12 @@ import static org.apache.sis.util.Characters.SOFT_HYPHEN;
 @DependsOn(LineAppenderTest.class)
 public class WordWrapTest extends LineAppenderTest {
     /**
+     * Creates a new test case.
+     */
+    public WordWrapTest() {
+    }
+
+    /**
      * Creates and configure the {@link LineAppender} to test.
      */
     @Before

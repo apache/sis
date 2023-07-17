@@ -47,6 +47,12 @@ import static org.junit.Assume.assumeTrue;
  */
 public final class StoreTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StoreTest() {
+    }
+
+    /**
      * Gets the path to the test directory. If the directory is not accessible through the file system
      * (for example if the test data are read from a JAR file), then skip the tests. This happen if the
      * test are executed from another Maven module than {@code sis-storage}.

@@ -35,6 +35,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(NumberRangeTest.class)
 public final class MeasurementRangeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MeasurementRangeTest() {
+    }
+
+    /**
      * Tests unit conversions by the {@link MeasurementRange#convertTo(Unit)} method.
      *
      * @throws IncommensurableException if a conversion between incompatible units were attempted.

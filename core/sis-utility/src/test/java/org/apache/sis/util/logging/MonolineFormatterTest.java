@@ -42,6 +42,12 @@ public final class MonolineFormatterTest extends TestCase {
     private final MonolineFormatter formatter = new MonolineFormatter(null);
 
     /**
+     * Creates a new test case.
+     */
+    public MonolineFormatterTest() {
+    }
+
+    /**
      * Tests {@link MonolineFormatter#levelWidth(Level)}.
      */
     @Test

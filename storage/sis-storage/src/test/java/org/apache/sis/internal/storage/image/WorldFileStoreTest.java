@@ -48,6 +48,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 public final class WorldFileStoreTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public WorldFileStoreTest() {
+    }
+
+    /**
      * Returns a storage connector with the URL to the test data.
      */
     private static StorageConnector testData() {

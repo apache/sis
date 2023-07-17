@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class JapanProfileTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public JapanProfileTest() {
+    }
+
+    /**
      * Tests {@link GCOM_C#mapAttributeName(String, int)}.
      */
     @Test

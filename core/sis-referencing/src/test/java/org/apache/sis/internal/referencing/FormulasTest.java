@@ -38,6 +38,12 @@ import static org.junit.Assert.*;
  */
 public final class FormulasTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FormulasTest() {
+    }
+
+    /**
      * Verifies the {@link Formulas#LONGITUDE_MAX} constant.
      */
     @Test

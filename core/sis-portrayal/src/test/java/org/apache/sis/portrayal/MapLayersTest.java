@@ -27,11 +27,16 @@ import org.junit.Test;
 
 /**
  *
- * @author Johann Sorel (Geomatys)
- * @version 1.1
- * @since 1.1
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class MapLayersTest extends TestCase {
+public final class MapLayersTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public MapLayersTest() {
+    }
 
     /**
      * Test the maplayers components list events.

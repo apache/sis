@@ -49,6 +49,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
 public final class DefaultParameterDescriptorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultParameterDescriptorTest() {
+    }
+
+    /**
      * Creates the map of properties to be given to {@link DefaultParameterDescriptor} constructor.
      *
      * @param  name  the parameter name.

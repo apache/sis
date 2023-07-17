@@ -48,6 +48,12 @@ import static org.opengis.metadata.Identifier.*;
  */
 public final class ImmutableIdentifierTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ImmutableIdentifierTest() {
+    }
+
+    /**
      * Returns the properties map to be used in argument to test methods.
      */
     private static Map<String,Object> properties() {

@@ -39,6 +39,12 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
 @DependsOn(DefaultPolarCSTest.class)
 public final class DefaultCylindricalCSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultCylindricalCSTest() {
+    }
+
+    /**
      * Tests {@link DefaultCylindricalCS#forConvention(AxesConvention)}
      * with a change from clockwise to counterclockwise axis orientation.
      */

@@ -79,6 +79,12 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultParameterDescriptorGroupTest() {
+    }
+
+    /**
      * Ensures that the constructor detects duplicated names.
      */
     @Test

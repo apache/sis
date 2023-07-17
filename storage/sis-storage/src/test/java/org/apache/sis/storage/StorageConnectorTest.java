@@ -72,6 +72,12 @@ public final class StorageConnectorTest extends TestCase {
     private static final int MAGIC_NUMBER = ('T' << 24) | ('h' << 16) | ('e' << 8) | ' ';
 
     /**
+     * Creates a new test case.
+     */
+    public StorageConnectorTest() {
+    }
+
+    /**
      * Ensures that the given input stream supports marks. This check is needed because
      * {@link Class#getResourceAsStream(String)} may return different classes of stream
      * depending on the context. For example on Java 20 with observed that the resource

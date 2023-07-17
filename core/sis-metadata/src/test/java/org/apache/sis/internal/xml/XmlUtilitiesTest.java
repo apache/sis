@@ -45,6 +45,12 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  */
 public final class XmlUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public XmlUtilitiesTest() {
+    }
+
+    /**
      * Tests the {@link XmlUtilities#toXML(Context, Date)} method.
      * This test arbitrarily uses the CET timezone.
      * The reverse operation is also tested.

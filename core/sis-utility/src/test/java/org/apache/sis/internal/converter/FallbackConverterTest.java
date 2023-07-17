@@ -48,6 +48,12 @@ public final class FallbackConverterTest extends TestCase {
     private static final int SHORT=0, LONG=1, FLOAT=2, BOOLEAN=3;
 
     /**
+     * Creates a new test case.
+     */
+    public FallbackConverterTest() {
+    }
+
+    /**
      * Tests a chain of fallback converters. The initial fallback will understand {@link Short}
      * and {@link Long} types. Then we progressively add more types.
      *

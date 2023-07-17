@@ -51,6 +51,12 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
 @DependsOn(WeakValueHashMapTest.class)
 public final class CacheTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CacheTest() {
+    }
+
+    /**
      * Tests {@link Cache} as a {@link java.util.Map} using strong references.
      * The tested {@code Cache} shall behave like a standard {@link HashMap},
      * except for element order.

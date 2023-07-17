@@ -40,6 +40,12 @@ import static org.junit.Assert.*;
  */
 public final class IOUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public IOUtilitiesTest() {
+    }
+
+    /**
      * Tests {@link IOUtilities#filename(Object)}.
      *
      * @throws URISyntaxException if a URI cannot be parsed.

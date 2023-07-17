@@ -44,6 +44,12 @@ import static org.junit.Assert.*;
 })
 public final class DefaultRecordSchemaTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultRecordSchemaTest() {
+    }
+
+    /**
      * Tests {@link DefaultRecordSchema#createRecordType(CharSequence, Map)}.
      */
     @Test

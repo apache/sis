@@ -58,6 +58,12 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  */
 public final class GridExtentTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GridExtentTest() {
+    }
+
+    /**
      * Creates a three-dimensional grid extent to be shared by different tests.
      */
     private static GridExtent create3D() {

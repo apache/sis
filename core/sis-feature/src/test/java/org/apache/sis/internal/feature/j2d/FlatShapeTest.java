@@ -33,6 +33,12 @@ import static org.apache.sis.feature.Assertions.assertPathEquals;
  */
 public final class FlatShapeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FlatShapeTest() {
+    }
+
+    /**
      * Tests {@link Polyline} using {@link Path2D} as a reference implementation.
      */
     @Test

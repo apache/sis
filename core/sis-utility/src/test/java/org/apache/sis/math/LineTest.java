@@ -40,6 +40,12 @@ public final class LineTest extends TestCase {
     private static final double EPS = 1E-8;
 
     /**
+     * Creates a new test case.
+     */
+    public LineTest() {
+    }
+
+    /**
      * Tests {@link Line#setFromPoints(double, double, double, double)}.
      */
     @Test

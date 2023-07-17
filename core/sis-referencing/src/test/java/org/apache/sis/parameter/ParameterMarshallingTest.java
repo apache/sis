@@ -60,6 +60,12 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
 })
 public final class ParameterMarshallingTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ParameterMarshallingTest() {
+    }
+
+    /**
      * Enumeration of test files.
      */
     private enum TestFile {

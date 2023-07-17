@@ -73,6 +73,12 @@ public final class DefaultRecordTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultRecordTest() {
+    }
+
+    /**
      * Sets all values in the given record using the {@link DefaultRecord#setAll(Object[])} method,
      * then checks that the values were correctly stored.
      */

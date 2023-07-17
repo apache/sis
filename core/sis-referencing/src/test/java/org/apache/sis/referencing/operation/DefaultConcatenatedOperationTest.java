@@ -56,6 +56,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class DefaultConcatenatedOperationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultConcatenatedOperationTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a projected CRS definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

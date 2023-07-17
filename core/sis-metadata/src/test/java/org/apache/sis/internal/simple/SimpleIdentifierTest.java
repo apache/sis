@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class SimpleIdentifierTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SimpleIdentifierTest() {
+    }
+
+    /**
      * Tests {@link SimpleIdentifier#toString()}.
      */
     @Test

@@ -39,6 +39,12 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  */
 public class DecoderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DecoderTest() {
+    }
+
+    /**
      * Tests {@link Decoder#stringValue(String)} with global attributes.
      *
      * @throws IOException if an I/O error occurred while opening the file.

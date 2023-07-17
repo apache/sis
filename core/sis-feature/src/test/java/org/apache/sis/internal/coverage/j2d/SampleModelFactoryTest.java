@@ -45,6 +45,12 @@ public final class SampleModelFactoryTest extends TestCase {
     private static final int WIDTH = 200, HEIGHT = 300, NUM_BANDS = 6;
 
     /**
+     * Creates a new test case.
+     */
+    public SampleModelFactoryTest() {
+    }
+
+    /**
      * Tests the creation and modification of a {@link BandedSampleModel}.
      */
     @Test
