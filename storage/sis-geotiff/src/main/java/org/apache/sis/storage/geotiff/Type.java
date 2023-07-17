@@ -49,12 +49,12 @@ enum Type {
      * </ul>
      */
     UNDEFINED(7, Byte.BYTES, false) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             throw new UnsupportedOperationException(name());
         }
 
         /** Unknown value (used for reporting native metadata only). */
-        @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
+        @Override public Object readAsObject(final ChannelDataInput input, final long count) throws IOException {
             return null;
         }
     },
@@ -67,7 +67,7 @@ enum Type {
      * </ul>
      */
     BYTE(6, Byte.BYTES, false) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readByte();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readByte(), count);
@@ -75,7 +75,7 @@ enum Type {
             return value;
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readBytes(count);
         }
     },
@@ -88,7 +88,7 @@ enum Type {
      * </ul>
      */
     UBYTE(1, Byte.BYTES, true) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readUnsignedByte();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readUnsignedByte(), count);
@@ -96,7 +96,7 @@ enum Type {
             return value;
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readBytes(count);
         }
     },
@@ -109,7 +109,7 @@ enum Type {
      * </ul>
      */
     SHORT(8, Short.BYTES, false) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readShort();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readShort(), count);
@@ -117,7 +117,7 @@ enum Type {
             return value;
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readShorts(count);
         }
     },
@@ -130,7 +130,7 @@ enum Type {
      * </ul>
      */
     USHORT(3, Short.BYTES, true) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readUnsignedShort();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readUnsignedShort(), count);
@@ -138,7 +138,7 @@ enum Type {
             return value;
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readShorts(count);
         }
     },
@@ -151,7 +151,7 @@ enum Type {
      * </ul>
      */
     INT(9, Integer.BYTES, false) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readInt();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readInt(), count);
@@ -159,7 +159,7 @@ enum Type {
             return value;
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readInts(count);
         }
     },
@@ -172,7 +172,7 @@ enum Type {
      * </ul>
      */
     UINT(4, Integer.BYTES, true) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readUnsignedInt();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readUnsignedInt(), count);
@@ -180,7 +180,7 @@ enum Type {
             return value;
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readInts(count);
         }
     },
@@ -192,7 +192,7 @@ enum Type {
      * </ul>
      */
     LONG(17, Long.BYTES, false) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readLong();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readLong(), count);
@@ -200,7 +200,7 @@ enum Type {
             return value;
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readLongs(count);
         }
     },
@@ -212,7 +212,7 @@ enum Type {
      * </ul>
      */
     ULONG(16, Long.BYTES, true) {
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readLong();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readLong(), count);
@@ -223,11 +223,11 @@ enum Type {
             throw new ArithmeticException(canNotConvert(Long.toUnsignedString(value)));
         }
 
-        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
-            return Numerics.toUnsignedDouble(readLong(input, count));
+        @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
+            return Numerics.toUnsignedDouble(readAsLong(input, count));
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readLongs(count);
         }
     },
@@ -240,7 +240,7 @@ enum Type {
      * </ul>
      */
     FLOAT(11, Float.BYTES, false) {
-        private float readFloat(final ChannelDataInput input, final long count) throws IOException {
+        private float readAsFloat(final ChannelDataInput input, final long count) throws IOException {
             final float value = input.readFloat();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readFloat(), count);
@@ -248,8 +248,8 @@ enum Type {
             return value;
         }
 
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
-            final float value = readFloat(input, count);
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
+            final float value = readAsFloat(input, count);
             final long r = (long) value;
             if (r == value) {
                 return r;
@@ -257,11 +257,11 @@ enum Type {
             throw new ArithmeticException(canNotConvert(Float.toString(value)));
         }
 
-        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
-            return DecimalFunctions.floatToDouble(readFloat(input, count));
+        @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
+            return DecimalFunctions.floatToDouble(readAsFloat(input, count));
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readFloats(count);
         }
     },
@@ -274,7 +274,7 @@ enum Type {
      * </ul>
      */
     DOUBLE(12, Double.BYTES, false) {
-        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
+        @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
             final double value = input.readDouble();
             for (long i=1; i<count; i++) {
                 ensureSingleton(value, input.readDouble(), count);
@@ -282,7 +282,7 @@ enum Type {
             return value;
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return input.readDoubles(count);
         }
     },
@@ -295,16 +295,16 @@ enum Type {
      * </ul>
      */
     RATIONAL(10, (2*Integer.BYTES), false) {
-        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
+        @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
             return readFraction(input, count).doubleValue();
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return readFractions(input, count);
         }
 
-        @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
-            return (count == 1) ? readFraction(input, count) : super.readObject(input, count);
+        @Override public Object readAsObject(final ChannelDataInput input, final long count) throws IOException {
+            return (count == 1) ? readFraction(input, count) : super.readAsObject(input, count);
         }
     },
 
@@ -316,16 +316,16 @@ enum Type {
      * </ul>
      */
     URATIONAL(5, (2*Integer.BYTES), true) {
-        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
+        @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
             return readFraction(input, count).doubleValue();
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
             return readFractions(input, count);
         }
 
-        @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
-            return (count == 1) ? readFraction(input, count) : super.readObject(input, count);
+        @Override public Object readAsObject(final ChannelDataInput input, final long count) throws IOException {
+            return (count == 1) ? readFraction(input, count) : super.readAsObject(input, count);
         }
     },
 
@@ -339,7 +339,7 @@ enum Type {
      * </ul>
      */
     ASCII(2, Byte.BYTES, false) {
-        @Override public String[] readString(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
+        @Override public String[] readAsStrings(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
             final byte[] chars = input.readBytes(Math.toIntExact(length));
             String[] lines = new String[1];                     // We will usually have exactly one string.
             int count = 0, lower = 0;
@@ -355,8 +355,8 @@ enum Type {
         }
 
         /** Returns the singleton string, or {@code null} if none. */
-        private String readString(final ChannelDataInput input, final long count, final boolean mandatory) throws IOException {
-            final String[] lines = readString(input, count, StandardCharsets.US_ASCII);
+        private String readAsString(final ChannelDataInput input, final long count, final boolean mandatory) throws IOException {
+            final String[] lines = readAsStrings(input, count, StandardCharsets.US_ASCII);
             if (lines.length != 0) {
                 final String value = lines[0];
                 int i = 1;
@@ -368,24 +368,24 @@ enum Type {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 1, lines.length));
         }
 
-        @Override public long readLong(final ChannelDataInput input, final long count) throws IOException {
-            return Long.parseLong(readString(input, count, true));
+        @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
+            return Long.parseLong(readAsString(input, count, true));
         }
 
-        @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
-            String text = readString(input, count, false);
+        @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
+            String text = readAsString(input, count, false);
             if (text == null || (text = text.trim()).isEmpty() || text.equalsIgnoreCase("NaN")) {
                 return Double.NaN;
             }
             return Double.parseDouble(text);
         }
 
-        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
-            return readString(input, count, StandardCharsets.US_ASCII);
+        @Override public Object readAsArray(final ChannelDataInput input, final int count) throws IOException {
+            return readAsStrings(input, count, StandardCharsets.US_ASCII);
         }
 
-        @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
-            return readString(input, count, false);
+        @Override public Object readAsObject(final ChannelDataInput input, final long count) throws IOException {
+            return readAsString(input, count, false);
         }
     };
 
@@ -472,7 +472,7 @@ enum Type {
 
     /**
      * Invoked by {@code read(…)} method implementations for verifying that the {@code count} argument value is 1.
-     * All read methods other than {@code readArray(…)} expect exactly one value, except methods in {@link #ASCII}
+     * All read methods other than {@code readAsArray(…)} expect exactly one value, except methods in {@link #ASCII}
      * enumeration value which are treated differently.
      *
      * <p>While exactly one value is expected, we are tolerant to longer arrays provided that all values are the
@@ -519,8 +519,8 @@ enum Type {
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    public final short readShort(final ChannelDataInput input, final long count) throws IOException {
-        final long value = readLong(input, count);
+    public final short readAsShort(final ChannelDataInput input, final long count) throws IOException {
+        final long value = readAsLong(input, count);
         if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
             return (short) value;
         }
@@ -540,8 +540,8 @@ enum Type {
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    public final int readInt(final ChannelDataInput input, final long count) throws IOException {
-        final long value = readLong(input, count);
+    public final int readAsInt(final ChannelDataInput input, final long count) throws IOException {
+        final long value = readAsLong(input, count);
         if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) {
             return (int) value;
         }
@@ -558,8 +558,8 @@ enum Type {
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    public final long readUnsignedLong(final ChannelDataInput input, final long count) throws IOException {
-        final long value = readLong(input, count);
+    public final long readAsUnsignedLong(final ChannelDataInput input, final long count) throws IOException {
+        final long value = readAsLong(input, count);
         if (value >= 0) {
             return value;
         }
@@ -583,9 +583,9 @@ enum Type {
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    public long readLong(final ChannelDataInput input, final long count) throws IOException {
-        // All enum MUST override one of 'readLong' or 'readDouble' methods.
-        final double value = readDouble(input, count);
+    public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
+        // All enum MUST override one of `readAsLong(…)` or `readAsDouble(…)` methods.
+        final double value = readAsDouble(input, count);
         final long r = (long) value;
         if (r == value) {
             return r;
@@ -609,9 +609,9 @@ enum Type {
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    public double readDouble(ChannelDataInput input, long count) throws IOException {
-        // All enum MUST override one of 'readLong' or 'readDouble' methods.
-        return readLong(input, count);
+    public double readAsDouble(ChannelDataInput input, long count) throws IOException {
+        // All enum MUST override one of `readAsLong(…)` or `readAsDouble(…)` methods.
+        return readAsLong(input, count);
     }
 
     /**
@@ -625,10 +625,10 @@ enum Type {
      * @throws ArithmeticException if the given length is too large.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    public String[] readString(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
+    public String[] readAsStrings(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
         final String[] s = new String[Math.toIntExact(length)];
         for (int i=0; i<s.length; i++) {
-            final double value = readDouble(input, 1);
+            final double value = readAsDouble(input, 1);
             final long r = (long) value;
             s[i] = (r == value) ? String.valueOf(r) : String.valueOf(value);
         }
@@ -638,15 +638,15 @@ enum Type {
     /**
      * Returns the value as a {@link Vector}, a {@link Number} (only for fractions) or a {@link String} instance.
      * This method should be overridden by all enumeration values that do no override
-     * {@link #readArray(ChannelDataInput, int)}.
+     * {@link #readAsArray(ChannelDataInput, int)}.
      *
      * @param  input  the input from where to read the values.
      * @param  count  the amount of values.
      * @return the value as a Java array or a {@link String}, or {@code null} if undefined.
      * @throws IOException if an error occurred while reading the stream.
      */
-    public Object readObject(ChannelDataInput input, long count) throws IOException {
-        return readVector(input, count);
+    public Object readAsObject(ChannelDataInput input, long count) throws IOException {
+        return readAsVector(input, count);
     }
 
     /**
@@ -660,14 +660,14 @@ enum Type {
      * @throws IOException if an error occurred while reading the stream.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    public Object readArray(ChannelDataInput input, int count) throws IOException {
+    public Object readAsArray(ChannelDataInput input, int count) throws IOException {
         throw new UnsupportedOperationException(name());
     }
 
     /**
      * Reads an arbitrary number of values as a wrapper around a Java array of primitive type.
      * This wrapper provide a more convenient way to access array elements than the object
-     * returned by {@link #readArray(ChannelDataInput, int)}.
+     * returned by {@link #readAsArray(ChannelDataInput, int)}.
      *
      * @param  input  the input from where to read the values.
      * @param  count  the amount of values.
@@ -677,7 +677,7 @@ enum Type {
      * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    public final Vector readVector(final ChannelDataInput input, final long count) throws IOException {
-        return Vector.create(readArray(input, Math.toIntExact(count)), isUnsigned);
+    public final Vector readAsVector(final ChannelDataInput input, final long count) throws IOException {
+        return Vector.create(readAsArray(input, Math.toIntExact(count)), isUnsigned);
     }
 }

@@ -540,7 +540,7 @@ final class ImageFileDirectory extends DataCube {
              * 2 = Planar format. For example, one plane of Red components, one plane of Green and one plane if Blue.
              */
             case TAG_PLANAR_CONFIGURATION: {
-                final int value = type.readInt(input(), count);
+                final int value = type.readAsInt(input(), count);
                 switch (value) {
                     case PLANAR_CONFIGURATION_CHUNKY: isPlanar = false; break;
                     case PLANAR_CONFIGURATION_PLANAR: isPlanar = true;  break;
@@ -552,14 +552,14 @@ final class ImageFileDirectory extends DataCube {
              * The number of columns in the image, i.e., the number of pixels per row.
              */
             case TAG_IMAGE_WIDTH: {
-                imageWidth = type.readUnsignedLong(input(), count);
+                imageWidth = type.readAsUnsignedLong(input(), count);
                 break;
             }
             /*
              * The number of rows of pixels in the image.
              */
             case TAG_IMAGE_LENGTH: {
-                imageHeight = type.readUnsignedLong(input(), count);
+                imageHeight = type.readAsUnsignedLong(input(), count);
                 break;
             }
             /*
@@ -567,7 +567,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_TILE_WIDTH: {
                 setTileTagFamily(TILE);
-                tileWidth = type.readInt(input(), count);
+                tileWidth = type.readAsInt(input(), count);
                 break;
             }
             /*
@@ -575,7 +575,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_TILE_LENGTH: {
                 setTileTagFamily(TILE);
-                tileHeight = type.readInt(input(), count);
+                tileHeight = type.readAsInt(input(), count);
                 break;
             }
             /*
@@ -584,7 +584,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_ROWS_PER_STRIP: {
                 setTileTagFamily(STRIP);
-                tileHeight = type.readInt(input(), count);
+                tileHeight = type.readAsInt(input(), count);
                 break;
             }
             /*
@@ -592,7 +592,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_TILE_OFFSETS: {
                 setTileTagFamily(TILE);
-                tileOffsets = type.readVector(input(), count);
+                tileOffsets = type.readAsVector(input(), count);
                 break;
             }
             /*
@@ -601,7 +601,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_STRIP_OFFSETS: {
                 setTileTagFamily(STRIP);
-                tileOffsets = type.readVector(input(), count);
+                tileOffsets = type.readAsVector(input(), count);
                 break;
             }
             /*
@@ -609,7 +609,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_TILE_BYTE_COUNTS: {
                 setTileTagFamily(TILE);
-                tileByteCounts = type.readVector(input(), count);
+                tileByteCounts = type.readAsVector(input(), count);
                 break;
             }
             /*
@@ -618,7 +618,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_STRIP_BYTE_COUNTS: {
                 setTileTagFamily(STRIP);
-                tileByteCounts = type.readVector(input(), count);
+                tileByteCounts = type.readAsVector(input(), count);
                 break;
             }
             /*
@@ -626,12 +626,12 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_JPEG_INTERCHANGE_FORMAT: {
                 setTileTagFamily(JPEG);
-                tileOffsets = type.readVector(input(), count);
+                tileOffsets = type.readAsVector(input(), count);
                 break;
             }
             case TAG_JPEG_INTERCHANGE_FORMAT_LENGTH: {
                 setTileTagFamily(JPEG);
-                tileByteCounts = type.readVector(input(), count);
+                tileByteCounts = type.readAsVector(input(), count);
                 break;
             }
 
@@ -646,7 +646,7 @@ final class ImageFileDirectory extends DataCube {
              * Compression scheme used on the image data.
              */
             case TAG_COMPRESSION: {
-                final int value = type.readInt(input(), count);
+                final int value = type.readAsInt(input(), count);
                 compression = Compression.valueOf(value);
                 if (compression == Compression.UNKNOWN) {
                     return value;                           // Cause a warning to be reported by the caller.
@@ -658,7 +658,7 @@ final class ImageFileDirectory extends DataCube {
              * 1=none, 2=horizontal differencing. More values may be added in the future.
              */
             case TAG_PREDICTOR: {
-                final int value = type.readInt(input(), count);
+                final int value = type.readAsInt(input(), count);
                 predictor = Predictor.valueOf(value);
                 if (predictor == Predictor.UNKNOWN) {
                     return value;                           // Cause a warning to be reported by the caller.
@@ -670,7 +670,7 @@ final class ImageFileDirectory extends DataCube {
              * bits order shall be reversed in every bytes before decompression.
              */
             case TAG_FILL_ORDER: {
-                final int value = type.readInt(input(), count);
+                final int value = type.readAsInt(input(), count);
                 switch (value) {
                     case FILL_ORDER_LEFT_TO_RIGHT: isBitOrderReversed = false; break;
                     case FILL_ORDER_RIGHT_TO_LEFT: isBitOrderReversed = true;  break;
@@ -683,7 +683,7 @@ final class ImageFileDirectory extends DataCube {
              * specified by the BitsPerSample field.
              */
             case TAG_SAMPLE_FORMAT: {
-                final int value = type.readInt(input(), count);
+                final int value = type.readAsInt(input(), count);
                 switch (value) {
                     default: return value;      // Warning to be reported by the caller.
                     case SAMPLE_FORMAT_UNSIGNED_INTEGER: sampleFormat = UNSIGNED; break;
@@ -702,7 +702,7 @@ final class ImageFileDirectory extends DataCube {
              * But the TIFF specification allows different values.
              */
             case TAG_BITS_PER_SAMPLE: {
-                final Vector values = type.readVector(input(), count);
+                final Vector values = type.readAsVector(input(), count);
                 /*
                  * The current implementation requires that all `bitsPerSample` elements have the same value.
                  * This restriction may be revisited in future Apache SIS versions.
@@ -723,7 +723,7 @@ final class ImageFileDirectory extends DataCube {
              * and 3 for RGB images. Default value is 1.
              */
             case TAG_SAMPLES_PER_PIXEL: {
-                samplesPerPixel = type.readShort(input(), count);
+                samplesPerPixel = type.readAsShort(input(), count);
                 break;
             }
             /*
@@ -733,7 +733,7 @@ final class ImageFileDirectory extends DataCube {
              * describes the meaning of the extra samples. It may be an alpha channel, but not necessarily.
              */
             case TAG_EXTRA_SAMPLES: {
-                extraSamples = type.readVector(input(), count);
+                extraSamples = type.readAsVector(input(), count);
                 break;
             }
 
@@ -753,7 +753,7 @@ final class ImageFileDirectory extends DataCube {
              * 4 = Transparency Mask. Defines an irregularly shaped region of another image in the same TIFF file.
              */
             case TAG_PHOTOMETRIC_INTERPRETATION: {
-                final short value = type.readShort(input(), count);
+                final short value = type.readAsShort(input(), count);
                 if (value < 0 || value > Byte.MAX_VALUE) return value;
                 photometricInterpretation = (byte) value;
                 break;
@@ -766,7 +766,7 @@ final class ImageFileDirectory extends DataCube {
              * (black is 0,0,0) and 65535 represents the maximum intensity.
              */
             case TAG_COLOR_MAP: {
-                colorMap = type.readVector(input(), count);
+                colorMap = type.readAsVector(input(), count);
                 break;
             }
             /*
@@ -775,7 +775,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_MIN_SAMPLE_VALUE:
             case TAG_S_MIN_SAMPLE_VALUE: {
-                minValues = extremum(minValues, type.readVector(input(), count), false);
+                minValues = extremum(minValues, type.readAsVector(input(), count), false);
                 isMinSpecified = true;
                 break;
             }
@@ -786,7 +786,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_MAX_SAMPLE_VALUE:
             case TAG_S_MAX_SAMPLE_VALUE: {
-                maxValues = extremum(maxValues, type.readVector(input(), count), true);
+                maxValues = extremum(maxValues, type.readAsVector(input(), count), true);
                 isMaxSpecified = true;
                 break;
             }
@@ -807,7 +807,7 @@ final class ImageFileDirectory extends DataCube {
              * Bit 4 indicates MRC imaging model as described in ITU-T recommendation T.44 [T.44] (See ImageLayer tag) - RFC 2301.
              */
             case TAG_NEW_SUBFILE_TYPE: {
-                subfileType = type.readInt(input(), count);
+                subfileType = type.readAsInt(input(), count);
                 break;
             }
             /*
@@ -817,7 +817,7 @@ final class ImageFileDirectory extends DataCube {
              * 3 = a single page of a multi-page image (see PageNumber).
              */
             case TAG_SUBFILE_TYPE: {
-                final int value = type.readInt(input(), count);
+                final int value = type.readAsInt(input(), count);
                 switch (value) {
                     default: return value;                // Warning to be reported by the caller.
                     case SUBFILE_TYPE_FULL_RESOLUTION:    subfileType &= ~NEW_SUBFILE_TYPE_REDUCED_RESOLUTION; break;
@@ -839,14 +839,14 @@ final class ImageFileDirectory extends DataCube {
              * The first 4 values are special, and contain GeoKey directory header information.
              */
             case (short) TAG_GEO_KEY_DIRECTORY: {
-                referencing().keyDirectory = type.readVector(input(), count);
+                referencing().keyDirectory = type.readAsVector(input(), count);
                 break;
             }
             /*
              * Stores all of the `double` valued GeoKeys, referenced by the GeoKeyDirectory.
              */
             case (short) TAG_GEO_DOUBLE_PARAMS: {
-                referencing().numericParameters = type.readVector(input(), count);
+                referencing().numericParameters = type.readAsVector(input(), count);
                 break;
             }
             /*
@@ -855,7 +855,7 @@ final class ImageFileDirectory extends DataCube {
              * Note that TIFF files use 0 as the end delimiter in strings (C/C++ convention).
              */
             case (short) TAG_GEO_ASCII_PARAMS: {
-                referencing().setAsciiParameters(type.readString(input(), count, encoding()));
+                referencing().setAsciiParameters(type.readAsStrings(input(), count, encoding()));
                 break;
             }
             /*
@@ -875,7 +875,7 @@ final class ImageFileDirectory extends DataCube {
              * Only one of `ModelPixelScaleTag` and `ModelTransformationTag` should be used.
              */
             case (short) TAG_MODEL_TRANSFORMATION: {
-                final Vector m = type.readVector(input(), count);
+                final Vector m = type.readAsVector(input(), count);
                 final int n;
                 switch (m.size()) {
                     case  6:                    // Assume 2D model with implicit [0 0 1] last row.
@@ -902,7 +902,7 @@ final class ImageFileDirectory extends DataCube {
              * the tie point. Only one of `ModelPixelScaleTag` and `ModelTransformationTag` should be used.
              */
             case (short) TAG_MODEL_PIXEL_SCALE: {
-                final Vector m = type.readVector(input(), count);
+                final Vector m = type.readAsVector(input(), count);
                 final int size = m.size();
                 if (size < 2 || size > 3) {     // Length should be exactly 3, but we make this reader tolerant.
                     return m;
@@ -915,7 +915,7 @@ final class ImageFileDirectory extends DataCube {
              * This tag is also known as `Georeference`.
              */
             case (short) TAG_MODEL_TIE_POINT: {
-                referencing().modelTiePoints = type.readVector(input(), count);
+                referencing().modelTiePoints = type.readAsVector(input(), count);
                 break;
             }
 
@@ -933,7 +933,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/identificationInfo/citation/series/name
              */
             case TAG_DOCUMENT_NAME: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.addSeries(value);
                 }
                 break;
@@ -944,7 +944,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/identificationInfo/citation/series/page
              */
             case TAG_PAGE_NAME: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.addPage(value);
                 }
                 break;
@@ -957,7 +957,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/identificationInfo/citation/series/page
              */
             case TAG_PAGE_NUMBER: {
-                final Vector v = type.readVector(input(), count);
+                final Vector v = type.readAsVector(input(), count);
                 int p = 0, n = 0;
                 switch (v.size()) {
                     default: n = v.intValue(1);     // Fall through
@@ -974,7 +974,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/identificationInfo/citation/title
              */
             case TAG_IMAGE_DESCRIPTION: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.addTitle(Strings.singleLine(" ", value));
                 }
                 break;
@@ -986,7 +986,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/identificationInfo/citation/party/name
              */
             case TAG_ARTIST: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.addAuthor(value);
                 }
                 break;
@@ -998,7 +998,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/identificationInfo/resourceConstraint
              */
             case (short) TAG_COPYRIGHT: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.parseLegalNotice(value);
                 }
                 break;
@@ -1009,7 +1009,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/identificationInfo/citation/date
              */
             case TAG_DATE_TIME: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.addCitationDate(reader.getDateFormat().parse(value),
                             DateType.CREATION, MetadataBuilder.Scope.RESOURCE);
                 }
@@ -1021,7 +1021,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/resourceLineage/processStep/processingInformation/procedureDescription
              */
             case TAG_HOST_COMPUTER: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.addHostComputer(value);
                 }
                 break;
@@ -1032,7 +1032,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/resourceLineage/processStep/processingInformation/softwareReference/title
              */
             case TAG_SOFTWARE: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.addSoftwareReference(value);
                 }
                 break;
@@ -1053,7 +1053,7 @@ final class ImageFileDirectory extends DataCube {
              * Destination: metadata/acquisitionInformation/platform/instrument/identifier
              */
             case TAG_MODEL: {
-                for (final String value : type.readString(input(), count, encoding())) {
+                for (final String value : type.readAsStrings(input(), count, encoding())) {
                     metadata.addInstrument(null, value);
                 }
                 break;
@@ -1063,7 +1063,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_X_RESOLUTION:
             case TAG_Y_RESOLUTION: {
-                metadata.setResolution(type.readDouble(input(), count));
+                metadata.setResolution(type.readAsDouble(input(), count));
                 break;
             }
             /*
@@ -1074,7 +1074,7 @@ final class ImageFileDirectory extends DataCube {
              *   3 = Centimeter.
              */
             case TAG_RESOLUTION_UNIT: {
-                return metadata.setResolutionUnit(type.readInt(input(), count));
+                return metadata.setResolutionUnit(type.readAsInt(input(), count));
                 // Non-null return value cause a warning to be reported by the caller.
             }
             /*
@@ -1086,7 +1086,7 @@ final class ImageFileDirectory extends DataCube {
              *   3 = A randomized process such as error diffusion has been applied to the image data.
              */
             case TAG_THRESHHOLDING: {
-                return metadata.setThreshholding(type.readShort(input(), count));
+                return metadata.setThreshholding(type.readAsShort(input(), count));
                 // Non-null return value cause a warning to be reported by the caller.
             }
             /*
@@ -1095,7 +1095,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_CELL_WIDTH:
             case TAG_CELL_LENGTH: {
-                metadata.setCellSize(type.readShort(input(), count), tag == TAG_CELL_WIDTH);
+                metadata.setCellSize(type.readAsShort(input(), count), tag == TAG_CELL_WIDTH);
                 break;
             }
 
@@ -1133,7 +1133,7 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
             case Tags.GDAL_NODATA: {
-                noData = type.readDouble(input(), count);
+                noData = type.readAsDouble(input(), count);
                 break;
             }
         }

@@ -38,8 +38,8 @@ public final class TypeTest extends TestCase {
     }
 
     /**
-     * Verifies that all enumeration values override either {@link Type#readLong(ChannelDataInput, long)}
-     * or {@link Type#readDouble(ChannelDataInput, long)}.Failing to do so may cause stack overflow.
+     * Verifies that all enumeration values override either {@link Type#readAsLong(ChannelDataInput, long)}
+     * or {@link Type#readAsDouble(ChannelDataInput, long)}. Failing to do so may cause stack overflow.
      *
      * @throws NoSuchMethodException if a reflective operation failed.
      */
@@ -51,8 +51,8 @@ public final class TypeTest extends TestCase {
         };
         for (final Type type : Type.values()) {
             final Class<?> c = type.getClass();
-            final boolean readLong   = c.getMethod("readLong",   parameters).getDeclaringClass() == Type.class;
-            final boolean readDouble = c.getMethod("readDouble", parameters).getDeclaringClass() == Type.class;
+            final boolean readLong   = c.getMethod("readAsLong",   parameters).getDeclaringClass() == Type.class;
+            final boolean readDouble = c.getMethod("readAsDouble", parameters).getDeclaringClass() == Type.class;
             assertFalse(type.name(), readLong & readDouble);
         }
     }

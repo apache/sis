@@ -160,17 +160,17 @@ final class NativeMetadata extends GeoKeysLoader {
                         switch (tag) {
                             case (short) TAG_GEO_KEY_DIRECTORY: {
                                 writeGeoKeys();             // Flush previous keys if any (should never happen).
-                                keyDirectory = type.readVector(input, count);
+                                keyDirectory = type.readAsVector(input, count);
                                 value = "GeoTIFF";
                                 break;
                             }
                             case (short) TAG_GEO_DOUBLE_PARAMS: {
-                                numericParameters = type.readVector(input, count);
+                                numericParameters = type.readAsVector(input, count);
                                 visible = false;
                                 break;
                             }
                             case (short) TAG_GEO_ASCII_PARAMS: {
-                                setAsciiParameters(type.readString(input, count, reader.store.encoding));
+                                setAsciiParameters(type.readAsStrings(input, count, reader.store.encoding));
                                 visible = false;
                                 break;
                             }
@@ -179,12 +179,12 @@ final class NativeMetadata extends GeoKeysLoader {
                                 children = new XMLMetadata(reader, type, count, tag);
                                 if (children.isEmpty()) {
                                     // Fallback on showing array of numerical values.
-                                    value = type.readVector(input, count);
+                                    value = type.readAsVector(input, count);
                                 }
                                 break;
                             }
                             default: {
-                                value = type.readObject(input, count);
+                                value = type.readAsObject(input, count);
                                 if (value instanceof Vector) {
                                     final Vector v = (Vector) value;
                                     switch (v.size()) {
