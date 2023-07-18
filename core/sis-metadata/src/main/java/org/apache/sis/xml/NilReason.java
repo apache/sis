@@ -30,7 +30,8 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
+import org.apache.sis.internal.jaxb.FinalClassExtensions;
+import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -139,8 +140,37 @@ public final class NilReason implements Serializable {
 
     /**
      * The pool of other nil reasons created up to date.
+     *
+     * @see #unique()
      */
     private static final WeakHashSet<NilReason> POOL = new WeakHashSet<>(NilReason.class);
+
+    /**
+     * The last {@linkplain #ordinal} value used in a {@code NilReason} instance.
+     * This is used for choosing the next value to assign to {@link #ordinal}.
+     * This value is usually equal to {@code PREDEFINED.length + POOL.size()}
+     * but may be different if some pool entries have been garbage collected.
+     * Accesses to this field shall be synchronized on {@link #POOL}.
+     */
+    private static int lastOrdinal;
+
+    /**
+     * A numerical identifier of this {@code NilReason}, or 0 if not yet assigned.
+     * This field is used for choosing a NaN value for floating point numbers.
+     * We want the same NaN to be used for {@code float} and {@code double} types.
+     * This value shall not be modified after {@code NilReason} publication.
+     *
+     * @see #ordinal()
+     * @see #forNumber(Number)
+     */
+    private transient int ordinal;
+    static {
+        int i = 0;
+        while (i < PREDEFINED.length) {
+            PREDEFINED[i].ordinal = ++i;
+        }
+        lastOrdinal = i;
+    }
 
     /**
      * Either the XML value as a {@code String} (including the explanation if the prefix
@@ -254,10 +284,33 @@ public final class NilReason implements Serializable {
                 if (result.equals(reason)) {
                     result = reason;                            // Use the existing instance.
                 }
-                return POOL.unique(new NilReason(result));
+                return new NilReason(result).unique();
             }
         }
-        return POOL.unique(new NilReason(new URI(reason)));
+        return new NilReason(new URI(reason)).unique();
+    }
+
+    /**
+     * Returns a unique instance of this nil reason.
+     * If another instance has been created previously for the same reason,
+     * that other instance is returned. Otherwise {@code this} is returned.
+     *
+     * @return a unique instance of this nil reason.
+     */
+    private NilReason unique() {
+        synchronized (POOL) {
+            final NilReason instance = POOL.unique(this);
+            if (instance == this) {
+                if ((instance.ordinal = ++lastOrdinal) < 0) {
+                    /*
+                     * Overflow, but still accept to create this nil reason.
+                     * Maybe it will not be used for floating point numbers.
+                     */
+                    instance.ordinal = lastOrdinal = Integer.MIN_VALUE;     // Really MIN, not MAX.
+                }
+            }
+            return instance;
+        }
     }
 
     /**
@@ -274,7 +327,21 @@ public final class NilReason implements Serializable {
                 }
             }
         }
-        return POOL.unique(this);
+        return unique();
+    }
+
+    /**
+     * Returns an ordinal value for this nil reason.
+     * Numbers start at 1.
+     *
+     * @return an ordinal value for this nil reason, numbered from 1.
+     * @throws ArithmeticException if there is too many {@code NilReason} instances.
+     *
+     * @see #forNumber(Number)
+     */
+    final int ordinal() {
+        if (ordinal > 0) return ordinal;
+        throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
     }
 
     /**
@@ -360,10 +427,16 @@ public final class NilReason implements Serializable {
      *             {@code 0} or {@code false}, in this preference order, depending on the method return type.</li>
      *       </ul>
      *   </li>
-     *   <li>One of {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer}, {@link Long}, {@link Float},
-     *       {@code Double} or {@code String} types: in such case, this method returns a specific instance which
-     *       will be recognized as "nil" by the XML marshaller.</li>
+     *   <li>One of {@link Float}, {@link Double} or {@link String} types.
+     *       In such case, this method returns an instance which will be recognized as "nil" by the XML marshaller.</li>
      * </ul>
+     *
+     * <h4>Historical note</h4>
+     * In previous Apache SIS releases, this method recognized also {@code Boolean}, {@link Byte}, {@link Short},
+     * {@code Integer}, {@link Long}, {@link Float} and {@code Double} types in the same way as {@code String}.
+     * The support for those types has been removed in Apache SIS 1.4 (except for types supporting NaN values)
+     * because it depends on {@code java.lang} constructors now marked as deprecated for removal.
+     * See <a href="https://issues.apache.org/jira/browse/SIS-586">SIS-586</a> on JIRA issue tracker.
      *
      * @param  <T>   the compile-time type of the {@code type} argument.
      * @param  type  the object type as an <strong>interface</strong>
@@ -376,7 +449,7 @@ public final class NilReason implements Serializable {
         ArgumentChecks.ensureNonNull("type", type);
         /*
          * Check for existing instance in the cache before to create a new object. Returning a unique
-         * instance is mandatory for the types handled by `createNilPrimitive(Class)`. Since we have
+         * instance is mandatory for the types handled by `createNilInstance(Class)`. Since we have
          * to cache those values anyway, we opportunistically extend the caching to other types too.
          *
          * Implementation note: we have two synchronizations here: one lock on `this` because of the
@@ -412,11 +485,10 @@ public final class NilReason implements Serializable {
                 }
             } else {
                 /*
-                 * If the requested type is not an interface, this is usually an error except for some
-                 * special cases: Boolean, Byte, Short, Integer, Long, Float, Double or String.
+                 * If the requested type is not an interface, this is usually an error except for some special cases:
+                 * Float, Double and String (Apache SIS 1.3 supported also: Boolean, Byte, Short, Integer and Long).
                  */
-                object = createNilPrimitive(type);
-                PrimitiveTypeProperties.associate(object, this);
+                object = createNilInstance(type);
             }
             if (nilObjects.put(type, object) != null) {
                 throw new AssertionError(type);                                 // Should never happen.
@@ -426,11 +498,9 @@ public final class NilReason implements Serializable {
     }
 
     /**
-     * Returns a new {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer}, {@link Long},
-     * {@link Float}, {@code Double} or {@code String} instance to be considered as a nil value.
-     * The caller is responsible for registering the value in {@link PrimitiveTypeProperties}.
+     * Returns a new {@code Float}, {@code Double} or {@code String} instance to be considered as a nil value.
      *
-     * <p><b>Reminder:</b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
+     * <p><b>Reminder:</b> If more special cases are added, do not forget to update the {@link #forObject(Object)}
      * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
      *
      * <h4>Implementation note</h4>
@@ -440,41 +510,21 @@ public final class NilReason implements Serializable {
      * encoding in the XML files, since many files use another encoding than UTF-16 anyway.
      *
      * @throws IllegalArgumentException if the given type is not a supported type.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-586">SIS-586</a>
      */
-    @SuppressWarnings({"deprecation", "RedundantStringConstructorCall", "BooleanConstructorCall", "UnnecessaryBoxing"})
-    private static Object createNilPrimitive(final Class<?> type) {
-        if (type == String .class) return new String("");         // REALLY need a new instance.
-        if (type == Boolean.class) return new Boolean(false);     // REALLY need a new instance, not Boolean.FALSE.
-        if (type == Byte   .class) return new Byte((byte) 0);     // REALLY need a new instance, not Byte.valueOf(0).
-        if (type == Short  .class) return new Short((byte) 0);    // REALLY need a new instance, not Short.valueOf(0).
-        if (type == Integer.class) return new Integer(0);         // REALLY need a new instance, not Integer.valueOf(0).
-        if (type == Long   .class) return new Long(0);            // REALLY need a new instance, not Long.valueOf(0).
-        if (type == Float  .class) return new Float(Float.NaN);   // REALLY need a new instance, not Float.valueOf(…).
-        if (type == Double .class) return new Double(Double.NaN); // REALLY need a new instance, not Double.valueOf(…).
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
-    }
-
-    /**
-     * Returns {@code true} if the given object may be one of the sentinel values
-     * created by {@link #createNilPrimitive(Class)}. This method only checks the value.
-     * If this method returns {@code true}, then the caller still needs to check the actual instance using the
-     * {@link PrimitiveTypeProperties} class. The purpose of this method is to filter the values that cannot
-     * be sentinel values, in order to avoid the synchronization done by {@code PrimitiveTypeProperties}.
-     */
-    private static boolean mayBeNil(final Object object) {
-        // `instanceof` checks on instances of final classes are expected to be very fast.
-        if (object instanceof String)  return ((String) object).isEmpty();
-        if (object instanceof Boolean) return !((Boolean) object) && (object != Boolean.FALSE);
-        if (object instanceof Number) {
-            /*
-             * Following test may return false positives for Long, Float and Double types, but this is okay
-             * since the real check will be done by PrimitiveTypeProperties.  The purpose of this method is
-             * only to perform a cheap filtering. Note that this method relies on the fact that casting NaN
-             * to `int` produces 0.
-             */
-            return ((Number) object).intValue() == 0;
+    @SuppressWarnings({"RedundantStringConstructorCall", "UnnecessaryBoxing"})
+    private Object createNilInstance(final Class<?> type) {
+        if (type == Double .class) return Double.valueOf(MathFunctions.toNanFloat(ordinal()));
+        if (type == Float  .class) return Float .valueOf(MathFunctions.toNanFloat(ordinal()));
+        final Object object;
+        if (type == String .class) {
+            object = new String("");         // REALLY need a new instance.
+        } else {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
-        return false;
+        FinalClassExtensions.associate(object, this);
+        return object;
     }
 
     /**
@@ -484,9 +534,8 @@ public final class NilReason implements Serializable {
      * <ul>
      *   <li>If the given object implements the {@link NilObject} interface, then this method delegates
      *       to the {@link NilObject#getNilReason()} method.</li>
-     *   <li>Otherwise if the given object is one of the {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer},
-     *       {@link Long}, {@link Float}, {@code Double} or {@code String} instances returned by
-     *       {@link #createNilObject(Class)}, then this method returns the associated reason.</li>
+     *   <li>Otherwise if the given object is one of the {@link Float}, {@link Double} or {@link String} instances
+     *       returned by {@link #createNilObject(Class)}, then this method returns the associated reason.</li>
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *
@@ -501,10 +550,49 @@ public final class NilReason implements Serializable {
         if (object != null) {
             if (object instanceof NilObject) {
                 return ((NilObject) object).getNilReason();
+            } else if (object instanceof Double) {
+                final Double value = (Double) object;
+                if (value.isNaN()) {
+                    return forNumber(value);
+                }
+            } else if (object instanceof Float) {
+                final Float value = (Float) object;
+                if (value.isNaN()) {
+                    return forNumber(value);
+                }
+            } else if (object instanceof String) {
+                return (NilReason) FinalClassExtensions.property(object);
             }
-            if (mayBeNil(object)) {
-                return (NilReason) PrimitiveTypeProperties.property(object);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the nil reason for the ordinal value extracted from the given floating point value.
+     * Caller should have verified that the value is NaN before to invoke this method.
+     *
+     * @param  value  the floating point value for which to search the nil reason.
+     * @return the nil reason, or {@code null} if none has been found for the given ordinal.
+     *
+     * @see #ordinal()
+     */
+    private static NilReason forNumber(final Number value) {
+        try {
+            final int ordinal = MathFunctions.toNanOrdinal(value.floatValue());
+            if (ordinal >= 1) {
+                if (ordinal <= PREDEFINED.length) {
+                    return PREDEFINED[ordinal - 1];
+                }
+                synchronized (POOL) {
+                    for (final NilReason reason : POOL) {       // Should be a very small set, usually empty.
+                        if (reason.ordinal == ordinal) {
+                            return reason;
+                        }
+                    }
+                }
             }
+        } catch (IllegalArgumentException e) {
+            // Unsupported bit pattern. Ignore.
         }
         return null;
     }

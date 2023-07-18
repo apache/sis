@@ -83,10 +83,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
 
     /**
      * Whether or not the cited feature catalogue complies with ISO 19110.
-     *
-     * <p>Implementation note: we need to store the reference to the {@code Boolean} instance instead
-     * than using bitmask because {@link org.apache.sis.internal.jaxb.PrimitiveTypeProperties} may
-     * associate some properties to that particular instance.</p>
+     * May be {@code null} is unspecified.
      */
     private Boolean compliant;
 

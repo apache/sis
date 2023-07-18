@@ -61,10 +61,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
     /**
      * Indication of whether the bounding polygon encompasses an area covered by the data
      * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>).
-     *
-     * <p>Implementation note: we need to store the reference to the {@code Boolean} instance instead
-     * than using bitmask because {@link org.apache.sis.internal.jaxb.PrimitiveTypeProperties} may
-     * associate some properties to that particular instance.</p>
+     * May be {@code null} is unspecified.
      */
     private Boolean inclusion;
 
@@ -144,6 +141,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
      * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>).
      *
      * @return {@code true} for inclusion, or {@code false} for exclusion.
+     *         May be {@code null} is unspecified.
      */
     @Override
     @XmlElement(name = "extentTypeCode")

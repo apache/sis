@@ -33,7 +33,6 @@ import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
 
@@ -146,7 +145,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * Builds a {@code PropertyType} wrapper for the given primitive type wrapper.
+     * Builds a {@code PropertyType} wrapper for an instance of a final class.
      * This constructor checks for nil reasons only if {@code check} is {@code true}.
      *
      * @param  value     the primitive type wrapper.
@@ -155,8 +154,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     protected PropertyType(final BoundType value, final boolean mayBeNil) {
         metadata = value;
         if (mayBeNil) {
-            final Object property = PrimitiveTypeProperties.property(value);
-            if (property instanceof NilReason) {
+            final NilReason property = NilReason.forObject(value);
+            if (property != null) {
                 reference = property.toString();
                 metadata  = null;
             }
