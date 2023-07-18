@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(LineAppenderTest.class)
 public final class LeftMarginTest extends LineAppenderTest {
     /**
+     * Creates a new test case.
+     */
+    public LeftMarginTest() {
+    }
+
+    /**
      * Creates and configure the {@link LineAppender} to test.
      */
     @Before

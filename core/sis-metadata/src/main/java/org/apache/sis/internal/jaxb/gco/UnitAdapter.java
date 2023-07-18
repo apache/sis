@@ -73,8 +73,11 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
      * code for the degrees. See {@link org.apache.sis.measure.Units#getEpsgCode(Unit, boolean)} for more information.
      */
     public static final class ForCS extends UnitAdapter {
-        @Override
-        public String marshal(final Unit<?> value) {
+        /** Empty constructor used only by JAXB. */
+        public ForCS() {
+        }
+
+        @Override public String marshal(final Unit<?> value) {
             return Measure.getUOM(value, false, true);
         }
     }

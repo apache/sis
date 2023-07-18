@@ -32,6 +32,12 @@ import static org.apache.sis.xml.LegacyCodes.*;
  */
 public final class LegacyCodesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LegacyCodesTest() {
+    }
+
+    /**
      * Tests {@link LegacyCodes#fromIANA(String)}.
      */
     @Test

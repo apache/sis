@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class DataTypeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DataTypeTest() {
+    }
+
+    /**
      * Verifies the relationship between the enumeration ordinal value and the netCDF numerical code.
      */
     @Test

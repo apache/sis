@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class KeyPathMatcherTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public KeyPathMatcherTest() {
+    }
+
+    /**
      * Tests a pattern using "glob" syntax.
      */
     @Test

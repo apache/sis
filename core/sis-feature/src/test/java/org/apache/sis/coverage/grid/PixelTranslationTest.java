@@ -39,6 +39,12 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  */
 public final class PixelTranslationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public PixelTranslationTest() {
+    }
+
+    /**
      * Returns a transform from center to corner with the given number of dimensions.
      */
     private static MathTransform centerToCorner(final int dimension) {

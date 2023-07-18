@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
  */
 public final class CheckedArrayListTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CheckedArrayListTest() {
+    }
+
+    /**
      * Tests {@link CheckedArrayList#add(Object)}.
      */
     @Test

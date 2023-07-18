@@ -40,6 +40,12 @@ import static org.junit.Assert.assertEquals;
 @DependsOn(NormalizedProjectionTest.class)
 public final class AuthalicConversionTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public AuthalicConversionTest() {
+    }
+
+    /**
      * Creates the projection to be tested.
      *
      * @param  ellipsoidal   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.

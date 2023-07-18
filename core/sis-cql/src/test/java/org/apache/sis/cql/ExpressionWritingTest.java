@@ -39,6 +39,12 @@ import static org.junit.Assert.*;
  * @since   1.1
  */
 public final class ExpressionWritingTest extends CQLTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public ExpressionWritingTest() {
+    }
+
     @Test
     public void testValueReference1() throws CQLException {
         final Expression<Feature,?> exp = FF.property("geom");

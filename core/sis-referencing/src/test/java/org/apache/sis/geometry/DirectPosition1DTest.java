@@ -36,6 +36,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(GeneralDirectPositionTest.class)
 public final class DirectPosition1DTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DirectPosition1DTest() {
+    }
+
+    /**
      * Tests the {@link DirectPosition1D#toString()} method.
      */
     @Test

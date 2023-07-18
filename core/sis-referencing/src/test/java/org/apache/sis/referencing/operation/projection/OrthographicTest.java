@@ -38,6 +38,12 @@ import static java.lang.StrictMath.*;
 @DependsOn(NormalizedProjectionTest.class)
 public final class OrthographicTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public OrthographicTest() {
+    }
+
+    /**
      * Creates a new instance of {@link Orthographic} using spherical formulas.
      *
      * @param  φ0  latitude of projection centre.

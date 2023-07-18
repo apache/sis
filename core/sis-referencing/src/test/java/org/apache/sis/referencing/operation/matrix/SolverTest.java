@@ -50,7 +50,7 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
  * @version 1.4
  * @since   0.4
  */
-@DependsOn(GeneralMatrixTest.class) // See class javadoc
+@DependsOn(GeneralMatrixTest.class)                 // See class javadoc
 public final class SolverTest extends TestCase {
     /**
      * The tolerance threshold for this test case, which is {@value}. This value needs to be higher then the
@@ -71,6 +71,12 @@ public final class SolverTest extends TestCase {
      * Contains the same value than {@link #matrix}.
      */
     private Matrix reference;
+
+    /**
+     * Creates a new test case.
+     */
+    public SolverTest() {
+    }
 
     /**
      * Initializes the {@link #matrix} and {@link #reference} matrices to random values.

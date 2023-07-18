@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class MarshallerPoolTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MarshallerPoolTest() {
+    }
+
+    /**
      * Tests a marshaller which is acquired, then released.
      * The marshaller should be reset to its initial state
      * despite the setter method we may have invoked on it.

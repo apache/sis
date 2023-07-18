@@ -41,6 +41,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn({SystemUnitTest.class, LinearConverterTest.class, PrefixesTest.class})
 public final class ConventionalUnitTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ConventionalUnitTest() {
+    }
+
+    /**
      * Verifies the properties in the given unit.
      *
      * @param  system  the expected system unit.

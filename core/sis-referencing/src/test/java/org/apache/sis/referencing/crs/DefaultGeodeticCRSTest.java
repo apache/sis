@@ -43,6 +43,12 @@ import static org.junit.Assert.*;
 })
 public final class DefaultGeodeticCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultGeodeticCRSTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a geodetic CRS definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

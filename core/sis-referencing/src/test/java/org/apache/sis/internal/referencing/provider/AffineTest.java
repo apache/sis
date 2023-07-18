@@ -39,6 +39,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 @DependsOn(org.apache.sis.parameter.TensorValuesTest.class)
 public final class AffineTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AffineTest() {
+    }
+
+    /**
      * Verifies that {@link Affine#getOperationType()} is {@link SingleOperation}.
      * The {@code Affine} class cannot return one of the above, because we do not
      * know if this operation method will be used for a transformation ora conversion

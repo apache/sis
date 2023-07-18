@@ -35,6 +35,12 @@ import static org.junit.Assert.*;
  */
 public final class GUIUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GUIUtilitiesTest() {
+    }
+
+    /**
      * Tests {@link GUIUtilities#appendPathSorted(TreeItem, Comparable...)}
      * and   {@link GUIUtilities#removePathSorted(TreeItem, Comparable...)}.
      */

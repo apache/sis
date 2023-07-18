@@ -55,6 +55,12 @@ import org.opengis.feature.PropertyType;
 @DependsOn({LinkOperationTest.class, EnvelopeOperationTest.class})
 public final class FeatureOperationsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FeatureOperationsTest() {
+    }
+
+    /**
      * Creates a feature type with an envelope operation.
      * The feature contains the following properties:
      *

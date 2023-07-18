@@ -46,6 +46,12 @@ import static org.apache.sis.test.TestUtilities.date;
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
 public final class DefaultExtentTest extends TestUsingFile {
     /**
+     * Creates a new test case.
+     */
+    public DefaultExtentTest() {
+    }
+
+    /**
      * Opens the stream to the XML file containing extent information.
      *
      * @param  format  whether to use the 2007 or 2016 version of ISO 19115.

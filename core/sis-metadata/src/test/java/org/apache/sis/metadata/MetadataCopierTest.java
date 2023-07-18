@@ -49,6 +49,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(MetadataStandardTest.class)
 public final class MetadataCopierTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MetadataCopierTest() {
+    }
+
+    /**
      * Tests {@link MetadataCopier#copy(Object)}.
      */
     @Test

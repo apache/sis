@@ -35,6 +35,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class DefaultEvaluationMethodTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultEvaluationMethodTest() {
+    }
+
+    /**
      * Tests the {@link DefaultEvaluationMethod#getDates()} list,
      * which is backed by a custom implementation.
      */

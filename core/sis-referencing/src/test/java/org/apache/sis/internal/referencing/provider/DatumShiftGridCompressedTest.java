@@ -32,6 +32,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 public final class DatumShiftGridCompressedTest extends DatumShiftGridFileTest {
     /**
+     * Creates a new test case.
+     */
+    public DatumShiftGridCompressedTest() {
+    }
+
+    /**
      * Creates a new grid using an affine transform as a reference.
      *
      * @param  rotation  ignored.

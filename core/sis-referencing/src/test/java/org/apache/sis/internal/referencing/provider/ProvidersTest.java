@@ -49,6 +49,7 @@ public final class ProvidersTest extends TestCase {
     /**
      * Returns all providers to test.
      */
+    @SuppressWarnings("removal")
     private static Class<?>[] methods() {
         return new Class<?>[] {
             Affine.class,
@@ -153,6 +154,12 @@ public final class ProvidersTest extends TestCase {
             AbridgedMolodensky.class,
             FranceGeocentricInterpolation.class
         };
+    }
+
+    /**
+     * Creates a new test case.
+     */
+    public ProvidersTest() {
     }
 
     /**

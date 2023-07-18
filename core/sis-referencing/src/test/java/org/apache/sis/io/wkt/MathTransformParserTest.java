@@ -48,6 +48,12 @@ public final class MathTransformParserTest extends TestCase {
     private MathTransformParser parser;
 
     /**
+     * Creates a new test case.
+     */
+    public MathTransformParserTest() {
+    }
+
+    /**
      * Tests {@link MathTransformParser#completeUnitFactor(Unit, double)}.
      * This is not used directly by {@link MathTransformParser}, but is needed by subclass.
      *

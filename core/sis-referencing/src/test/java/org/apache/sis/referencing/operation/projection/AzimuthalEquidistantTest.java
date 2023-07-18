@@ -35,6 +35,12 @@ import org.junit.Test;
 @DependsOn(NormalizedProjectionTest.class)
 public class AzimuthalEquidistantTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public AzimuthalEquidistantTest() {
+    }
+
+    /**
      * Returns the method to be tested.
      */
     MapProjection method() {

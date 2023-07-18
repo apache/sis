@@ -54,6 +54,12 @@ import org.junit.Test;
 })
 public final class InterpolatedTransformTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public InterpolatedTransformTest() {
+    }
+
+    /**
      * Creates an {@link InterpolatedTransform} derived from a sinusoidal formula.
      * We do not really need {@code InterpolatedTransform} for sinusoidal formulas,
      * but we use them for testing purpose since they are easier to debug.

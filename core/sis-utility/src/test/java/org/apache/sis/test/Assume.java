@@ -21,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import org.apache.sis.internal.system.DataDirectory;
 
+import static org.junit.Assume.*;
+
 
 /**
  * Assumption methods used by the SIS project in addition of the JUnit ones.
@@ -29,7 +31,7 @@ import org.apache.sis.internal.system.DataDirectory;
  * @version 1.4
  * @since   0.7
  */
-public final class Assume extends org.junit.Assume {
+public final class Assume {
     /**
      * Do not allow instantiation.
      */

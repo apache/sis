@@ -38,6 +38,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 })
 public final class SingletonAssociationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SingletonAssociationTest() {
+    }
+
+    /**
      * Returns an association to use for testing purpose.
      *
      * <blockquote>“The earliest known town twinning in Europe was between Paderborn, Germany

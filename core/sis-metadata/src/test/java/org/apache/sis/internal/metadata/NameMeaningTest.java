@@ -40,6 +40,12 @@ import static org.junit.Assert.*;
  */
 public final class NameMeaningTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NameMeaningTest() {
+    }
+
+    /**
      * Tests {@link NameMeaning#toObjectType(Class)}.
      */
     @Test

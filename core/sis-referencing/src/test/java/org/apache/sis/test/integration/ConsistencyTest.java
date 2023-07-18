@@ -85,6 +85,12 @@ public final class ConsistencyTest extends TestCase {
     private int codeWidth = 15;
 
     /**
+     * Creates a new test case.
+     */
+    public ConsistencyTest() {
+    }
+
+    /**
      * Specialization of {@link #testCoordinateReferenceSystems()} for specific cases that were known to fail.
      * This is used for debugging purposes only; not included in normal test execution because it is redundant
      * with {@link #testCoordinateReferenceSystems()}.

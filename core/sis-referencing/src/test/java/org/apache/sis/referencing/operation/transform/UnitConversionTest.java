@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class UnitConversionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public UnitConversionTest() {
+    }
+
+    /**
      * Tests a linear conversion.
      */
     @Test

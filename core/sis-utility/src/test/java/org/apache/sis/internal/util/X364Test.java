@@ -35,6 +35,12 @@ import static org.apache.sis.internal.util.X364.*;
 @DependsOn(org.apache.sis.util.CharSequencesTest.class)
 public final class X364Test extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public X364Test() {
+    }
+
+    /**
      * Tests {@link X364#forColorName(String)}.
      */
     @Test

@@ -40,6 +40,12 @@ import org.opengis.feature.PropertyType;
  */
 public final class TypesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TypesTest() {
+    }
+
+    /**
      * Verifies that all designations and definitions can be read from the resources.
      *
      * @throws FactoryException      if an error occurred while initializing the {@link Types} class.

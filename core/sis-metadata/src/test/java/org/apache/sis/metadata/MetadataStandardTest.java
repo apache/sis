@@ -75,6 +75,12 @@ public final class MetadataStandardTest extends TestCase {
     private MetadataStandard standard;
 
     /**
+     * Creates a new test case.
+     */
+    public MetadataStandardTest() {
+    }
+
+    /**
      * Returns {@code true} if the given type is a metadata.
      */
     private boolean isMetadata(final Class<?> type) {

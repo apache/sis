@@ -49,6 +49,12 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
     private static final double STRICT = 0;
 
     /**
+     * Creates a new test case.
+     */
+    public ConcatenatedTransformTest() {
+    }
+
+    /**
      * Tests the concatenation of two affine transforms that can be represented
      * as a {@link ConcatenatedTransformDirect2D}.
      *

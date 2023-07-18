@@ -296,8 +296,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         private static final long serialVersionUID = -6518011235037500143L;
         public URL() {super(java.net.URL.class);}                                   // Instantiated by ServiceLoader.
 
-        @Override java.net.URL doConvert(String source) throws MalformedURLException {
-            return new java.net.URL(source);
+        @Override java.net.URL doConvert(String source) throws URISyntaxException, MalformedURLException {
+            return new java.net.URI(source).parseServerAuthority().toURL();
         }
     }
 

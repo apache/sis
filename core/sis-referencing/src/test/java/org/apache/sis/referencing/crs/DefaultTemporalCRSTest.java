@@ -41,6 +41,12 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  */
 public final class DefaultTemporalCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultTemporalCRSTest() {
+    }
+
+    /**
      * Tests WKT 1 pseudo-formatting.
      * This is not part of OGC 01-009 standard.
      */

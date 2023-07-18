@@ -38,6 +38,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 public final class DefaultProcessStepTest extends TestUsingFile {
     /**
+     * Creates a new test case.
+     */
+    public DefaultProcessStepTest() {
+    }
+
+    /**
      * Opens the stream to the XML file containing process step information.
      *
      * @param  format  whether to use the 2007 or 2016 version of ISO 19115.

@@ -41,6 +41,12 @@ import static org.junit.Assert.*;
 @DependsOn(AbstractMathTransformTest.class)
 public final class TranslationTransformTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public TranslationTransformTest() {
+    }
+
+    /**
      * Sets the {@link #transform} field to the {@link TranslationTransform} instance to test.
      *
      * @param  dimensions  expected number of source and target dimensions.

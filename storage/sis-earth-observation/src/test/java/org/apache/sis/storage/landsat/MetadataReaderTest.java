@@ -52,7 +52,13 @@ import static org.apache.sis.test.TestUtilities.date;
  * @version 1.2
  * @since   0.8
  */
-public class MetadataReaderTest extends TestCase {
+public final class MetadataReaderTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public MetadataReaderTest() {
+    }
+
     /**
      * Tests the regular expression used for detecting the
      * “Image courtesy of the U.S. Geological Survey” credit.

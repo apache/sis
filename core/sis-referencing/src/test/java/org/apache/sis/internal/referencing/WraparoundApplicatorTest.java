@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class WraparoundApplicatorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public WraparoundApplicatorTest() {
+    }
+
+    /**
      * Tests {@link WraparoundApplicator#range(CoordinateSystem, int)}.
      */
     @Test

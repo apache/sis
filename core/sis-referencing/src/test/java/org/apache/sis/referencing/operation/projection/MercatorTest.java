@@ -54,6 +54,12 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
 @DependsOn(ConformalProjectionTest.class)
 public final class MercatorTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public MercatorTest() {
+    }
+
+    /**
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
      * The new instance is stored in the inherited {@link #transform} field.
      *

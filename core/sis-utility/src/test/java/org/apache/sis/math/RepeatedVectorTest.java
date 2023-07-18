@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class RepeatedVectorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public RepeatedVectorTest() {
+    }
+
+    /**
      * Tests the case where values in a grid are repeated horizontally.
      */
     @Test

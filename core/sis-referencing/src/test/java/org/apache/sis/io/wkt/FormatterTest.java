@@ -43,6 +43,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 @DependsOn({ConventionTest.class, SymbolsTest.class, ColorsTest.class})
 public final class FormatterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FormatterTest() {
+    }
+
+    /**
      * Verifies the ANSI escape sequences hard-coded in {@link Formatter}.
      */
     @Test

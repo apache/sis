@@ -39,6 +39,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(LocationTypeTest.class)
 public final class ReferencingByIdentifiersTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ReferencingByIdentifiersTest() {
+    }
+
+    /**
      * Creates the example given in annex B of ISO 19112:2003.
      *
      * @param  inherit  {@code false} for defining all properties of all location types explicitly even

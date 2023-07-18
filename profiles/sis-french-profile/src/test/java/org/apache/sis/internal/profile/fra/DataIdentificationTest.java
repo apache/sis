@@ -34,6 +34,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 public final class DataIdentificationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DataIdentificationTest() {
+    }
+
+    /**
      * Tests marshalling and unmarshalling of a XML fragment.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.

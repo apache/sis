@@ -59,6 +59,12 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
     private Random random;
 
     /**
+     * Creates a new test case.
+     */
+    public PassThroughTransformTest() {
+    }
+
+    /**
      * Verifies argument validation performed by {@link MathTransforms#passThrough(int, MathTransform, int)}.
      */
     @Test

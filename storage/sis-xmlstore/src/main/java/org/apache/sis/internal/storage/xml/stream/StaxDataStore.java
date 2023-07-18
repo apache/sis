@@ -130,7 +130,7 @@ public abstract class StaxDataStore extends URIDataStore {
      *
      * @see #close()
      */
-    private volatile AutoCloseable stream;
+    private volatile Closeable stream;
 
     /**
      * Position of the first byte to read in the {@linkplain #stream}, or a negative value if unknown.
@@ -226,8 +226,8 @@ public abstract class StaxDataStore extends URIDataStore {
              */
             stream = connector.getStorageAs(InputStream.class);
         }
-        if (stream == null && storage instanceof AutoCloseable) {
-            stream = (AutoCloseable) storage;
+        if (stream == null && storage instanceof Closeable) {
+            stream = (Closeable) storage;
         }
         channelFactory = connector.getStorageAs(ChannelFactory.class);  // Must be last before `closeAllExcept(…)`.
         connector.closeAllExcept(stream);
@@ -425,7 +425,7 @@ public abstract class StaxDataStore extends URIDataStore {
         if (inputOrFile == null) {
             throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.READ);
         }
-        AutoCloseable input = stream;
+        Closeable input = stream;
         InputType type = storageToReader;
         /*
          * If the stream has already been used by a previous read operation, then we need to rewind
@@ -525,7 +525,7 @@ public abstract class StaxDataStore extends URIDataStore {
     final synchronized XMLStreamWriter createWriter(final StaxStreamWriter target, final OutputStream temporary)
             throws DataStoreException, XMLStreamException, IOException
     {
-        AutoCloseable output;
+        Closeable output;
         Object outputOrFile;
         OutputType outputType;
         if (temporary == null) {

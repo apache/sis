@@ -57,6 +57,12 @@ public final class TimePeriodTest extends TestCase {
     private static MarshallerPool pool;
 
     /**
+     * Creates a new test case.
+     */
+    public TimePeriodTest() {
+    }
+
+    /**
      * Set the marshalling context to a fixed locale and timezone before to create the
      * JAXB wrappers for temporal objects.
      */

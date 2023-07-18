@@ -48,6 +48,12 @@ import static org.junit.Assert.*;
  */
 public final class DefaultQuantitativeResultTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultQuantitativeResultTest() {
+    }
+
+    /**
      * Tests {@link DefaultQuantitativeResult#isEmpty()}. The {@code isEmpty()} method needs a special check
      * for the deprecated {@code "errorStatistic"} property because, contrarily to other deprecated properties,
      * that one has no replacement. Consequently, no non-deprecated property is set as a result of redirection.

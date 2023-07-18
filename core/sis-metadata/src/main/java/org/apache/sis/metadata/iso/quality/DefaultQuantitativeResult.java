@@ -109,6 +109,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @see #castOrCopy(QuantitativeResult)
      */
+    @SuppressWarnings("deprecation")
     public DefaultQuantitativeResult(final QuantitativeResult object) {
         super(object);
         if (object != null) {

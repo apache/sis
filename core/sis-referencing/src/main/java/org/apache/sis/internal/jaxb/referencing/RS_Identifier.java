@@ -62,6 +62,12 @@ import org.opengis.metadata.Identifier;
  */
 public final class RS_Identifier extends XmlAdapter<Code, Identifier> {
     /**
+     * Empty constructor for JAXB.
+     */
+    public RS_Identifier() {
+    }
+
+    /**
      * Substitutes the wrapper value read from an XML stream by the object which will
      * represents the identifier. JAXB calls automatically this method at unmarshalling time.
      *

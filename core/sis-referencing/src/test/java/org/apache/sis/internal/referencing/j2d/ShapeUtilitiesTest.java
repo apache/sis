@@ -52,6 +52,12 @@ public final class ShapeUtilitiesTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public ShapeUtilitiesTest() {
+    }
+
+    /**
      * Tests {@link ShapeUtilities#intersectionPoint(double, double, double, double, double, double, double, double)}.
      * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
      */

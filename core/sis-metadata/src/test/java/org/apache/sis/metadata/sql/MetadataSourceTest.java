@@ -46,6 +46,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class)
 public final class MetadataSourceTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MetadataSourceTest() {
+    }
+
+    /**
      * Tests {@link MetadataSource} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link MetadataSource} argument.
      *

@@ -39,6 +39,12 @@ import static org.junit.Assert.*;
  */
 public final class CoverageCombinerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CoverageCombinerTest() {
+    }
+
+    /**
      * Tests a coverage combination involving unit conversion.
      *
      * @throws TransformException if the coordinates of a given coverage cannot be transformed.

@@ -32,6 +32,12 @@ import org.apache.sis.storage.DataStoreException;
  */
 public final class FeatureSetTest extends org.apache.sis.internal.netcdf.FeatureSetTest {
     /**
+     * Creates a new test case.
+     */
+    public FeatureSetTest() {
+    }
+
+    /**
      * Creates a new decoder for the specified dataset.
      *
      * @param  file  the dataset as one of the above-cited constants.

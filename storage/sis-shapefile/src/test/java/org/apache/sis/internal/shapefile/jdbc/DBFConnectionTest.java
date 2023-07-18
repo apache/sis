@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
     /**
+     * Creates a new test case.
+     */
+    public DBFConnectionTest() {
+    }
+
+    /**
      * Open and close a connection.
      * @throws SQLException if an error occurred while opening the database.
      */

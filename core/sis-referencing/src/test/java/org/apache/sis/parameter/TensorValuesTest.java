@@ -52,6 +52,12 @@ import static org.apache.sis.internal.util.Constants.NUM_COL;
 @DependsOn(MatrixParametersTest.class)
 public final class TensorValuesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TensorValuesTest() {
+    }
+
+    /**
      * The name of the parameter group created in this test class.
      */
     private static final String GROUP_NAME = "Group test";

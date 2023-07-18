@@ -86,6 +86,12 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     protected abstract static class EntryIterator<K,V> {
         /**
+         * Creates a new iterator.
+         */
+        protected EntryIterator() {
+        }
+
+        /**
          * Moves the iterator to the next position, and returns {@code true} if there is at least one remaining element.
          *
          * @return {@code false} if this method reached iteration end.
@@ -148,7 +154,10 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * @param  keys  all keys that the map may possibly contain.
          */
         @SafeVarargs
-        public KeyIterator(final K... keys) {this.keys = keys;}
+        @SuppressWarnings("varargs")
+        public KeyIterator(final K... keys) {
+            this.keys = keys;
+        }
 
         /**
          * Moves to the next key associated to a non-null value.

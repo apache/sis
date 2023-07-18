@@ -57,6 +57,12 @@ public final class RangeSetTest extends TestCase {
     private static final double EPS = 0;
 
     /**
+     * Creates a new test case.
+     */
+    public RangeSetTest() {
+    }
+
+    /**
      * Asserts that the two given values are equals to the expected one.
      * This method is used for testing {@link RangeSet#first()} and {@link RangeSet#last()}
      * at the same time than the values from the iterator.

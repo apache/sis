@@ -43,6 +43,12 @@ import static org.junit.Assert.*;
  */
 public final class GeoKeysTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GeoKeysTest() {
+    }
+
+    /**
      * Tests {@link GeoKeys#name(short)}.
      */
     @Test

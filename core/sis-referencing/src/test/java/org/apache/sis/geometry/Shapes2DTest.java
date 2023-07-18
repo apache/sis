@@ -38,6 +38,12 @@ import static org.apache.sis.referencing.Assertions.assertRectangleEquals;
 @DependsOn(CurveExtremumTest.class)
 public final class Shapes2DTest extends TransformTestCase<Rectangle2D> {
     /**
+     * Creates a new test case.
+     */
+    public Shapes2DTest() {
+    }
+
+    /**
      * Creates a rectangle for the given CRS and coordinate values.
      */
     @Override

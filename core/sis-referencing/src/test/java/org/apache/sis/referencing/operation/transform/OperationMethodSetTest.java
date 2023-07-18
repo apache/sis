@@ -49,6 +49,12 @@ import static org.junit.Assert.*;
 })
 public final class OperationMethodSetTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public OperationMethodSetTest() {
+    }
+
+    /**
      * Creates a new two-dimensional operation method for an operation of the given name.
      *
      * @param  type    the value to be returned by {@link DefaultOperationMethod#getOperationType()}.

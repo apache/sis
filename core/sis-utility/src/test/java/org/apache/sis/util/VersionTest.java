@@ -33,6 +33,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class VersionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public VersionTest() {
+    }
+
+    /**
      * Tests a numeric-only version.
      */
     @Test

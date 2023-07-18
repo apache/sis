@@ -43,6 +43,12 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 @DependsOn(WKTParserTest.class)
 public final class ComparisonWithEPSG extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ComparisonWithEPSG() {
+    }
+
+    /**
      * Creates the factory to use for all tests in this class.
      *
      * @throws FactoryException if an error occurred while creating the factory.

@@ -52,6 +52,12 @@ public final class DefaultGeorectifiedTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultGeorectifiedTest() {
+    }
+
+    /**
      * Tests {@link DefaultGeorectified#isCheckPointAvailable()} and
      * {@link DefaultGeorectified#setCheckPointAvailable(boolean)}.
      */

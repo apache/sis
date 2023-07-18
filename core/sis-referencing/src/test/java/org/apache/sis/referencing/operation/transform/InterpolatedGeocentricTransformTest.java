@@ -47,6 +47,12 @@ import org.junit.Test;
 })
 public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public InterpolatedGeocentricTransformTest() {
+    }
+
+    /**
      * Creates the <cite>"France geocentric interpolation"</cite> transform,
      * including the normalization and denormalization parts.
      *

@@ -43,6 +43,12 @@ import static org.junit.Assert.*;
 })
 public final class CoordinateFrameRotationTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public CoordinateFrameRotationTest() {
+    }
+
+    /**
      * Creates the transformation from WGS 72 to WGS 84.
      */
     private void createTransform(final GeocentricAffine method) throws FactoryException {

@@ -42,7 +42,14 @@ public final class PropertyTypeTest extends TestCase {
     /**
      * The pseudo-metadata object to wrap for testing purpose.
      */
-    private final PropertyTypeMock.Value metadata = new PropertyTypeMock.Value();
+    private final PropertyTypeMock.Value metadata;
+
+    /**
+     * Creates a new test case.
+     */
+    public PropertyTypeTest() {
+        metadata = new PropertyTypeMock.Value();
+    }
 
     /**
      * Simulates the marshalling of the {@link #metadata} value.

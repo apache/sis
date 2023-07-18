@@ -32,6 +32,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class FractionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FractionTest() {
+    }
+
+    /**
      * Tests the {@link Fraction#floor()} method.
      */
     @Test

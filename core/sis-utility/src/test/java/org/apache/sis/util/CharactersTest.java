@@ -33,6 +33,12 @@ import static org.apache.sis.util.Characters.*;
  */
 public final class CharactersTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CharactersTest() {
+    }
+
+    /**
      * Tests the value of {@link Characters#LINE_SEPARATOR}
      * and {@link Characters#PARAGRAPH_SEPARATOR} constant value.
      */

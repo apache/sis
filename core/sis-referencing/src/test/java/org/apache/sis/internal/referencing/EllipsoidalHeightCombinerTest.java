@@ -60,6 +60,12 @@ import static org.apache.sis.test.Assertions.assertArrayEqualsIgnoreMetadata;
 })
 public final class EllipsoidalHeightCombinerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public EllipsoidalHeightCombinerTest() {
+    }
+
+    /**
      * Creates an instance to be tested.
      */
     private static EllipsoidalHeightCombiner create() {

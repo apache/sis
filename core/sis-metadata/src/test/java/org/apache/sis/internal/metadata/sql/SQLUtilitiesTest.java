@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class SQLUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SQLUtilitiesTest() {
+    }
+
+    /**
      * Tests {@link SQLUtilities#toLikePattern(String, int, int, boolean, boolean, StringBuilder)}.
      */
     @Test

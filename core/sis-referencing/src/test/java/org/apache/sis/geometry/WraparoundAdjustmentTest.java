@@ -40,6 +40,12 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  */
 public final class WraparoundAdjustmentTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public WraparoundAdjustmentTest() {
+    }
+
+    /**
      * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope crossing the anti-meridian.
      *

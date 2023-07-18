@@ -36,6 +36,12 @@ import org.opengis.referencing.ReferenceSystem;
  */
 public final class ReferencingTypes extends TypeRegistration implements UnaryOperator<Object> {
     /**
+     * Creates a default provider of additional types to register.
+     */
+    public ReferencingTypes() {
+    }
+
+    /**
      * Adds to the given collection the referencing types that should be given to the initial JAXB context.
      */
     @Override

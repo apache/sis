@@ -33,6 +33,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  */
 public final class DefaultVerticalCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultVerticalCRSTest() {
+    }
+
+    /**
      * Tests WKT 1 formatting.
      */
     @Test

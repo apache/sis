@@ -86,6 +86,7 @@ public final class MolodenskyInterpolation extends FranceGeocentricInterpolation
     /**
      * Constructs a provider for the given number of dimensions.
      */
+    @SuppressWarnings("removal")
     private MolodenskyInterpolation(ParameterDescriptorGroup parameters, int indexOfDim) {
         super(parameters, indexOfDim);
     }
@@ -95,6 +96,7 @@ public final class MolodenskyInterpolation extends FranceGeocentricInterpolation
      * after all parameters have been processed.
      */
     @Override
+    @SuppressWarnings("removal")
     MathTransform createGeodeticTransformation(final MathTransformFactory factory,
             final Ellipsoid source, final Ellipsoid target, final boolean withHeights,
             final DatumShiftGridFile<Angle,Length> grid) throws FactoryException

@@ -380,6 +380,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *                     or {@code null} or an empty array if none.
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public final void setSortBy(final SortProperty<Feature>... properties) {
         SortBy<Feature> sortBy = null;
         if (properties != null) {

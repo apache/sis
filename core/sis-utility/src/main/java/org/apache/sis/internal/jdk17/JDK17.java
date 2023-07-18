@@ -67,6 +67,10 @@ public final class JDK17 {
 
     /**
      * Place holder for {@link InputStream#skipNBytes(long)} method added in JDK12.
+     *
+     * @param  s  the input stream where to skip bytes.
+     * @param  n  the number of bytes to skip.
+     * @throws IOException if an error occurred while reading bytes, including EOF.
      */
     public static void skipNBytes(final InputStream s, long n) throws IOException {
         while (n > 0) {
@@ -83,7 +87,12 @@ public final class JDK17 {
 
     /**
      * Place holder for {@link Stream#toList()} method added in JDK16.
+     *
+     * @param  <T>  type of elements in the stream.
+     * @param  s    the stream to convert to a list.
+     * @return the stream content as a list.
      */
+    @SuppressWarnings("unchecked")
     public static <T> List<T> toList(final Stream<T> s) {
         return (List<T>) UnmodifiableArrayList.wrap(s.toArray());
     }

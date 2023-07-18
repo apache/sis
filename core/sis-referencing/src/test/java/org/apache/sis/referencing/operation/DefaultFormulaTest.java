@@ -32,6 +32,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  */
 public final class DefaultFormulaTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultFormulaTest() {
+    }
+
+    /**
      * Tests {@link DefaultFormula#toWKT()}.
      */
     @Test

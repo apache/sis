@@ -44,7 +44,7 @@ import org.apache.sis.util.collection.Containers;
  * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
  *
@@ -188,6 +188,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * @param  locale  the locale to look for, or {@code null}.
      * @return the string in the specified locale, or {@code null} if none was found.
      */
+    @SuppressWarnings("deprecation")
     private String getString(Locale locale) {
         while (locale != null) {
             final String text = localeMap.get(locale);
@@ -198,10 +199,12 @@ public class DefaultInternationalString extends AbstractInternationalString impl
             final String country  = locale.getCountry ();
             final String variant  = locale.getVariant ();
             if (!variant.isEmpty()) {
+                // TODO: replace by Locale.of(…) with JDK19.
                 locale = new Locale(language, country);
                 continue;
             }
             if (!country.isEmpty()) {
+                // TODO: replace by Locale.of(…) with JDK19.
                 locale = new Locale(language);
                 continue;
             }

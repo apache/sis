@@ -212,7 +212,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
      * @throws JAXBException if an error occurred while producing the XML output using JAXB.
      * @throws IOException should never happen since we are appending to a print writer.
      */
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    @SuppressWarnings({"UseOfSystemOutOrSystemErr", "deprecation"})
     final void format(final Object object) throws DataStoreException, JAXBException, IOException {
         switch (outputFormat) {
             case TEXT: {

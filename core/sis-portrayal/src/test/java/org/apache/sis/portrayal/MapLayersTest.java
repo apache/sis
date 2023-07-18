@@ -27,11 +27,16 @@ import org.junit.Test;
 
 /**
  *
- * @author Johann Sorel (Geomatys)
- * @version 1.1
- * @since 1.1
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-public class MapLayersTest extends TestCase {
+public final class MapLayersTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public MapLayersTest() {
+    }
 
     /**
      * Test the maplayers components list events.
@@ -47,8 +52,8 @@ public class MapLayersTest extends TestCase {
         layers.addPropertyChangeListener(MapLayers.COMPONENTS_PROPERTY, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                assertTrue(evt instanceof ListChangeEvent);
-                final ListChangeEvent levt = (ListChangeEvent) evt;
+                assertTrue(evt instanceof ListChangeEvent<?>);
+                final ListChangeEvent<?> levt = (ListChangeEvent<?>) evt;
                 assertEquals(layers.getComponents(), levt.getOldValue());
                 assertEquals(layers.getComponents(), levt.getNewValue());
                 assertEquals(MapLayers.COMPONENTS_PROPERTY, levt.getPropertyName());

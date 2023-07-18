@@ -74,6 +74,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public class MetadataVerticalTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MetadataVerticalTest() {
+    }
+
+    /**
      * Opens the stream to the XML representation of a {@link Metadata} object with a {@link VerticalCRS}.
      *
      * @return stream opened on the XML document to use for testing purpose.
@@ -157,7 +163,7 @@ public class MetadataVerticalTest extends TestCase {
         assertInstanceOf("citation", NilObject.class, citation);
         assertEquals("nilReason", NilReason.MISSING, ((NilObject) citation).getNilReason());
         assertEquals("abstract", "SIS test", identification.getAbstract().toString());
-        assertEquals("language", Locale.ENGLISH, getSingleton(identification.getLanguages()));
+        assertEquals("language", Locale.ENGLISH, getSingleton(identification.getLocalesAndCharsets().keySet()));
         /*
          * <gmd:geographicElement>
          *   <gmd:EX_GeographicBoundingBox>

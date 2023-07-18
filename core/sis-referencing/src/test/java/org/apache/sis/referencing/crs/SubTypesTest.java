@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
 @DependsOn(AbstractCRSTest.class)
 public final class SubTypesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SubTypesTest() {
+    }
+
+    /**
      * Tests the {@link SubTypes#BY_TYPE} comparator.
      */
     @Test

@@ -108,6 +108,10 @@ public class NameValue {
      */
     @XmlRootElement(name = "LocalName")
     public static final class Local extends NameValue {
+        /** Invoked by reflection by JAXB on unmarshalling. */
+        public Local() {
+        }
+
         @Override public GenericName getName() {
             return Names.createLocalName(codeSpace, null, value);
         }
@@ -118,5 +122,8 @@ public class NameValue {
      */
     @XmlRootElement(name = "ScopedName")
     public static final class Scoped extends NameValue {
+        /** Invoked by reflection by JAXB on unmarshalling. */
+        public Scoped() {
+        }
     }
 }

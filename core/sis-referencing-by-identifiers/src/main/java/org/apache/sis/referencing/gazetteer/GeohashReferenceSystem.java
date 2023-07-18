@@ -155,6 +155,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      * The coordinate operation from {@link #normalizedCRS} to the CRS specified by the user.
      * The target CRS is the coordinate reference system to assign to the decoded positions.
      */
+    @SuppressWarnings("serial")         // Most Apache SIS implementations are serializable.
     final CoordinateOperation denormalize;
 
     /**

@@ -40,6 +40,12 @@ import static org.junit.Assert.*;
  */
 public final class CodeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CodeTest() {
+    }
+
+    /**
      * Tests the {@link Code#Code(Identifier)} constructor with {@code "EPSG:4326"} identifier.
      * This test intentionally uses an identifier with the {@code IOGP} authority instead of
      * EPSG in order to make sure that the {@code codeSpace} attribute is set from

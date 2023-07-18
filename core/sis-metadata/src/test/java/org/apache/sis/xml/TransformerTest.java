@@ -35,6 +35,12 @@ import static org.junit.Assert.*;
  */
 public final class TransformerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TransformerTest() {
+    }
+
+    /**
      * Tests {@link Transformer#load(boolean, String, Set, int)}.
      */
     @Test

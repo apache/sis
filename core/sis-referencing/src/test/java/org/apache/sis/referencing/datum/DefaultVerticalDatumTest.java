@@ -47,6 +47,12 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  */
 public final class DefaultVerticalDatumTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultVerticalDatumTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a vertical datum definition.
      *
      * @param  legacy  {@code true} for GML 3.1 or {@code false} for GML 3.2.

@@ -38,6 +38,12 @@ import static org.junit.Assert.*;
 @DependsOn(DefaultParameterValueTest.class)
 public final class UnmodifiableParameterValueTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public UnmodifiableParameterValueTest() {
+    }
+
+    /**
      * Creates an {@link UnmodifiableParameterValue} implementation for the given parameter
      * and asserts that we got a new instance equivalent to the original one.
      */

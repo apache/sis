@@ -1264,6 +1264,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         int dimension = 2;
         String csType = WKTKeywords.ellipsoidal;
         if (method != null) {
+            @SuppressWarnings("deprecation")
             final Integer d = method.getSourceDimensions();
             if (d != null) dimension = d;
             if (method instanceof AbstractProvider) {

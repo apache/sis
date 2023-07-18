@@ -40,6 +40,12 @@ import org.apache.sis.measure.Units;
  */
 public final class CoverageStylingApp extends Application {
     /**
+     * Creates a widget viewer.
+     */
+    public CoverageStylingApp() {
+    }
+
+    /**
      * Starts the test application.
      *
      * @param args  ignored.

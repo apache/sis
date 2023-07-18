@@ -115,7 +115,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @see #getContainer()
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "deprecation"})
     private final RecordSchema container;
 
     /**
@@ -130,6 +130,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @param other  the {@code RecordType} to copy.
      */
+    @SuppressWarnings("deprecation")
     public DefaultRecordType(final RecordType other) {
         typeName   = other.getTypeName();
         container  = other.getContainer();
@@ -401,7 +402,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      */
     @Override
     public boolean isInstance(final Record record) {
-        return (record != null) && getMembers().containsAll(record.getAttributes().keySet());
+        return (record != null) && getMembers().containsAll(record.getFields().keySet());
     }
 
     /**

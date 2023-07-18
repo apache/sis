@@ -50,6 +50,12 @@ import static org.junit.Assert.*;
  */
 public final class CoordinateFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CoordinateFormatTest() {
+    }
+
+    /**
      * Compares coordinate values from the given positions.
      */
     private static void assertPositionEquals(final DirectPosition expected, final DirectPosition actual) {

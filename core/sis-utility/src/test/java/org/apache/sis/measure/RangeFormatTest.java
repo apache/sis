@@ -63,6 +63,12 @@ public final class RangeFormatTest extends TestCase {
     private ParsePosition parsePos;
 
     /**
+     * Creates a new test case.
+     */
+    public RangeFormatTest() {
+    }
+
+    /**
      * Formats the given range.
      */
     private String format(final Range<?> range) {

@@ -59,6 +59,12 @@ public final class MathFunctionsTest extends TestCase {
     private static final int LOWEST_USHORT_PRIME = 32771;
 
     /**
+     * Creates a new test case.
+     */
+    public MathFunctionsTest() {
+    }
+
+    /**
      * Verifies the values of {@link MathFunctions#SQRT_2} and {@link MathFunctions#LOG10_2}.
      */
     @Test

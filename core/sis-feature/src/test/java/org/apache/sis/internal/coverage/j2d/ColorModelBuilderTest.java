@@ -42,6 +42,12 @@ import static org.junit.Assert.*;
  */
 public final class ColorModelBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ColorModelBuilderTest() {
+    }
+
+    /**
      * Tests the creation of an index color model using explicit range of sample values.
      *
      * @throws TransformException if a sample value cannot be converted.

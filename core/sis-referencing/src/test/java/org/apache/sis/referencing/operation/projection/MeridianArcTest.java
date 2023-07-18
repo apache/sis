@@ -46,6 +46,12 @@ public final class MeridianArcTest extends MapProjectionTestCase {
     private static final double STRICT = 0;
 
     /**
+     * Creates a new test case.
+     */
+    public MeridianArcTest() {
+    }
+
+    /**
      * Creates the projection to be tested.
      *
      * @param  ellipsoidal   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.

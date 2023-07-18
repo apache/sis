@@ -37,6 +37,12 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
 @DependsOn(AbstractCSTest.class)
 public final class DefaultSphericalCSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultSphericalCSTest() {
+    }
+
+    /**
      * Tests a spherical CRS conforms to EPSG:8.9:6404 definition.
      * Expected axes are:
      *

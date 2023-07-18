@@ -131,11 +131,11 @@ public final class SEPortrayer {
      */
     private boolean preserveProperties;
 
-    private BiFunction<GridGeometry, Symbolizer, Double> marginSolver;
+    private BiFunction<GridGeometry, Symbolizer<?>, Double> marginSolver;
 
     public SEPortrayer() {
         filterFactory = DefaultFilterFactory.forFeatures();
-        marginSolver  = (GridGeometry t, Symbolizer u) -> 30.0;
+        marginSolver  = (GridGeometry t, Symbolizer<?> u) -> 30.0;
     }
 
     /**
@@ -165,7 +165,7 @@ public final class SEPortrayer {
      * The margin solver try to guess the expected symbolizer size to expand the query bounding box.
      * @param marginSolver
      */
-    public void setMarginSolver(BiFunction<GridGeometry, Symbolizer, Double> marginSolver) {
+    public void setMarginSolver(BiFunction<GridGeometry, Symbolizer<?>, Double> marginSolver) {
         ArgumentChecks.ensureNonNull("marginSolver", marginSolver);
         this.marginSolver = marginSolver;
     }
@@ -254,10 +254,10 @@ public final class SEPortrayer {
             final int elseRuleIndex = sortByElseRule(rules);
             {   //special case for resource symbolizers
                 //resource symbolizers must be alone in a FTS
-                ResourceSymbolizer resourceSymbolizer = null;
+                ResourceSymbolizer<?> resourceSymbolizer = null;
                 int count = 0;
                 for (final Rule<Feature> r : rules) {
-                    for (final Symbolizer s : r.symbolizers()) {
+                    for (final Symbolizer<?> s : r.symbolizers()) {
                         count++;
                         if (s instanceof ResourceSymbolizer) {
                             resourceSymbolizer = (ResourceSymbolizer) s;
@@ -312,7 +312,7 @@ public final class SEPortrayer {
                 // Calculate max symbol size, to expand search envelope.
                 double symbolsMargin = 0.0;
                 for (Rule<Feature> rule : rules) {
-                    for (Symbolizer symbolizer : rule.symbolizers()) {
+                    for (Symbolizer<?> symbolizer : rule.symbolizers()) {
                         symbolsMargin = Math.max(symbolsMargin, marginSolver.apply(canvas, symbolizer));
                     }
                 }
@@ -366,7 +366,7 @@ public final class SEPortrayer {
         //test if the rule is valid for this resource/feature
         if (rule.isElseFilter() || ((Filter) ruleFilter).test(feature == null ? resource : feature)) {       // TODO: unsafe cast.
             Stream<Presentation> stream = Stream.empty();
-            for (final Symbolizer symbolizer : rule.symbolizers()) {
+            for (final Symbolizer<?> symbolizer : rule.symbolizers()) {
                 final SEPresentation presentation = new SEPresentation(layer, refResource, feature, symbolizer);
                 stream = Stream.concat(stream, Stream.of(presentation));
             }
@@ -403,7 +403,7 @@ public final class SEPortrayer {
         final Set<Expression<Feature,?>> geomProperties = new HashSet<>();
         if (rules != null) {
             for (final Rule<Feature> r : rules) {
-                for (final Symbolizer s : r.symbolizers()) {
+                for (final Symbolizer<Feature> s : r.symbolizers()) {
                     final Expression<Feature,?> expGeom = s.getGeometry();
                     if (expGeom != null) {
                         geomProperties.add(expGeom );

@@ -38,6 +38,12 @@ import org.opengis.filter.FilterFactory;
  */
 public final class CopyVisitorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CopyVisitorTest() {
+    }
+
+    /**
      * Tests copy a value reference.
      */
     @Test

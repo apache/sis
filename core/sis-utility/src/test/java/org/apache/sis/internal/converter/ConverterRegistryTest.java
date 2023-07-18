@@ -54,13 +54,21 @@ public final class ConverterRegistryTest extends TestCase {
     /**
      * The registry being tested.
      */
-    private final ConverterRegistry registry = new ConverterRegistry();
+    private final ConverterRegistry registry;
 
     /**
      * All converters registered in a test case. Only the converter type and properties
      * will be verified; no conversion or serialization shall be attempted.
      */
-    private final Deque<ObjectConverter<?,?>> converters = new ArrayDeque<>();
+    private final Deque<ObjectConverter<?,?>> converters;
+
+    /**
+     * Creates a new test case.
+     */
+    public ConverterRegistryTest() {
+        registry = new ConverterRegistry();
+        converters = new ArrayDeque<>();
+    }
 
     /**
      * Registers a converter to test.

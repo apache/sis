@@ -41,6 +41,12 @@ import static org.junit.Assert.*;
  */
 public final class CoordinateOperationsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CoordinateOperationsTest() {
+    }
+
+    /**
      * Tests {@link CoordinateOperations#isWrapAround(CoordinateSystemAxis)}.
      */
     @Test

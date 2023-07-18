@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(CommandRunnerTest.class)
 public final class MimeTypeCommandTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MimeTypeCommandTest() {
+    }
+
+    /**
      * Tests the sub-command on a metadata file.
      *
      * @throws Exception if an error occurred while reading the test file.

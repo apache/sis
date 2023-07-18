@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class DocumentComparatorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DocumentComparatorTest() {
+    }
+
+    /**
      * Tests the {@link DocumentComparator#ignoredAttributes} and {@link DocumentComparator#ignoredNodes} sets.
      *
      * @throws Exception if an error occurred while reading the XML.

@@ -45,6 +45,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 })
 public final class AbstractCSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractCSTest() {
+    }
+
+    /**
      * Gets a coordinate system for the given axes convention and compare against the expected values.
      *
      * @param  convention  the convention to use.

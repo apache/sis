@@ -45,6 +45,12 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  */
 public final class DimensionalityReductionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DimensionalityReductionTest() {
+    }
+
+    /**
      * Convenience method for building a grid geometry.
      *
      * @param  low        low grid coordinates, inclusive.

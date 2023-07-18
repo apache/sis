@@ -39,6 +39,12 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  */
 public final class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultGeographicBoundingBoxTest() {
+    }
+
+    /**
      * Asserts that the given geographic bounding box is strictly equals to the given values.
      * The {@link GeographicBoundingBox#getInclusion()} is expected to be {@code true}.
      */

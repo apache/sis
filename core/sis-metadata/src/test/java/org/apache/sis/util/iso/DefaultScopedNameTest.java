@@ -41,6 +41,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(DefaultLocalNameTest.class)
 public final class DefaultScopedNameTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultScopedNameTest() {
+    }
+
+    /**
      * Tests the creation of a scoped name in a new namespace.
      * The fully qualified name is {@code "urn:ogc:def:crs:epsg:4326"}.
      */

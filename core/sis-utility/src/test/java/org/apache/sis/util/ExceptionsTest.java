@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class ExceptionsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ExceptionsTest() {
+    }
+
+    /**
      * Tests {@link Exceptions#formatChainedMessages(Locale, String, Throwable)}.
      */
     @Test

@@ -95,6 +95,12 @@ public final class UUIDMarshallingTest extends TestCase {
             "</cit:CI_Citation>";
 
     /**
+     * Creates a new test case.
+     */
+    public UUIDMarshallingTest() {
+    }
+
+    /**
      * Tests (un)marshalling of an object identified by the {@code uuid} attribute.
      * The element of interest for this test is the {@code "uuid"} attribute value
      * in the {@code <cit:CI_Series>} element of the following XML fragment:

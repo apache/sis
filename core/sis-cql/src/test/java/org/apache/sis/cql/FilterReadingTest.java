@@ -63,7 +63,15 @@ public final class FilterReadingTest extends CQLTestCase {
 
     private static final double DELTA = 0.00000001;
 
-    private final Geometry baseGeometry = GF.createPolygon(
+    private final Geometry baseGeometry;
+
+    private final Geometry baseGeometryPoint;
+
+    /**
+     * Creates a new test case.
+     */
+    public FilterReadingTest() {
+        baseGeometry = GF.createPolygon(
                 GF.createLinearRing(
                     new Coordinate[]{
                         new Coordinate(10, 20),
@@ -71,11 +79,11 @@ public final class FilterReadingTest extends CQLTestCase {
                         new Coordinate(50, 60),
                         new Coordinate(10, 20)
                     }),
-                new LinearRing[0]
-                );
+                new LinearRing[0]);
 
-    private final Geometry baseGeometryPoint = GF.createPoint(
+        baseGeometryPoint = GF.createPoint(
                 new Coordinate(12.1, 28.9));
+    }
 
     @Test
     public void testNullFilter() throws CQLException {

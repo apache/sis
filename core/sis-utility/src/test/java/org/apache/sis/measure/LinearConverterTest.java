@@ -37,6 +37,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class LinearConverterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LinearConverterTest() {
+    }
+
+    /**
      * Asserts that the given converter is a linear converter with the given scale factor and no offset.
      * The scale factor is given by the ratio of the given numerator and denominator.
      *

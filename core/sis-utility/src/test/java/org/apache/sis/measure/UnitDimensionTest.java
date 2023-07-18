@@ -53,6 +53,12 @@ public final class UnitDimensionTest extends TestCase {
                            DIMENSIONLESS = Units.UNITY            .getDimension();
 
     /**
+     * Creates a new test case.
+     */
+    public UnitDimensionTest() {
+    }
+
+    /**
      * Tests {@link UnitDimension#multiply(Dimension)}.
      */
     @Test

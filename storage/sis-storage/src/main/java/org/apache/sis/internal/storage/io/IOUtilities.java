@@ -204,22 +204,20 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Converts the given {@link URI} to a {@link URL} with the same path except for the file extension,
-     * which is replaced by the given extension. This method is used for opening auxiliary files such as
-     * {@code "*.prj"} and {@code "*.tfw"} files that come with e.g. TIFF files.
+     * Converts the given URI to a new URI with the same path except for the file extension,
+     * which is replaced by the given extension. This method is used for opening auxiliary files
+     * such as {@code "*.prj"} and {@code "*.tfw"} files that come with e.g. TIFF files.
      *
      * @param  location   the URI to convert to a URL with a different extension, or {@code null}.
      * @param  extension  the file extension (without {@code '.'}) of the auxiliary file.
-     * @return URL for the auxiliary file with the given extension, or {@code null} if none.
-     * @throws MalformedURLException if the URI uses an unknown protocol or a negative port number other than -1.
-     *
-     * @since 1.2
+     * @return URI for the auxiliary file with the given extension, or {@code null} if none.
+     * @throws URISyntaxException if the URI cannot be reconstructed.
      */
-    public static URL toAuxiliaryURL(final URI location, final String extension) throws MalformedURLException {
+    public static URI toAuxiliaryURI(final URI location, final String extension) throws URISyntaxException {
         if (location == null || !location.isAbsolute() || location.isOpaque()) {
             return null;
         }
-        String path = location.getRawPath();    // Raw because URL constructor needs encoded strings.
+        String path = location.getRawPath();
         int s = path.indexOf('?');              // Shall be before '#' in a valid URL.
         if (s < 0) {
             s = path.indexOf('#');              // A '?' after '#' would be part of the anchor.
@@ -233,10 +231,9 @@ public final class IOUtilities extends Static {
         } else {
             path = path + '.' + extension;
         }
-        return new URL(location.getScheme(),            // http, https, file or jar.
+        return new URI(location.getScheme(),            // http, https, file or jar.
                        location.getRawAuthority(),      // Host name or literal IP address.
-                       location.getPort(),              // -1 if undefined.
-                       path);
+                       path, null, null);
     }
 
     /**
@@ -317,12 +314,42 @@ public final class IOUtilities extends Static {
     }
 
     /**
+     * Converts a path specified as a character string to an URL.
+     * This method can be used as a replacement for the deprecated {@link URL} constructors.
+     *
+     * @param  url       the path to convert, or {@code null}.
+     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
+     *                   the character encoding (normally {@code "UTF-8"}).
+     *                   If the URL is not encoded, then {@code null}.
+     * @return the path converted to an uRL, or {@code null} if the given path was null.
+     * @throws MalformedURLException if the path can not be parsed as an URL.
+     * @throws IOException if a non-null {@code encoding} was specified and an encoding error is found.
+     *
+     * @since 1.4
+     */
+    public static URL toURL(String url, final String encoding) throws IOException {
+        if (url == null) {
+            return null;
+        }
+        if (encoding != null) {
+            url = URLDecoder.decode(url, encoding);
+        }
+        url = encodeURI(url);
+        try {
+            return new URI(url).parseServerAuthority().toURL();
+        } catch (IllegalArgumentException | URISyntaxException cause) {
+            throw (MalformedURLException) new MalformedURLException(malformed(url, cause)).initCause(cause);
+        }
+    }
+
+    /**
      * Converts a {@link URL} to a {@link URI}. This is equivalent to a call to the standard {@link URL#toURI()}
      * method, except for the following functionalities:
      *
      * <ul>
      *   <li>Optionally decodes the {@code "%XX"} sequences, where {@code "XX"} is a number.</li>
-     *   <li>Converts various exceptions into subclasses of {@link IOException}.</li>
+     *   <li>Escape spaces and a some other reserved characters.</li>
+     *   <li>Converts exceptions into subclasses of {@link IOException}.</li>
      * </ul>
      *
      * @param  url       the URL to convert, or {@code null}.
@@ -333,75 +360,70 @@ public final class IOUtilities extends Static {
      * @throws IOException if the URL cannot be converted to a URI.
      *
      * @see URI#URI(String)
+     * @see URL#toURI()
      */
     public static URI toURI(final URL url, final String encoding) throws IOException {
         if (url == null) {
             return null;
         }
         /*
-         * Convert the URL to a URI, taking in account the encoding if any.
-         *
-         * Note: URL.toURI() is implemented as new URI(URL.toString()) where toString()
-         * delegates to toExternalForm(), and all those methods are final. So we really
-         * don't lost anything by doing those steps ourself.
+         * Convert the URL to a URI, taking in account the encoding if any. We want to escape
+         * spaces with `encodeURI(…)` before to convert. Invoking `URL.toURI()` is preferable
+         * to `new URI(String)` because the former performs more checks, but is possible only
+         * if the decoding and escaping resulted in no change.
          */
-        String path = url.toExternalForm();
+        final String specified = url.toExternalForm();
+        String path = specified;
         if (encoding != null) {
             path = URLDecoder.decode(path, encoding);
         }
         path = encodeURI(path);
         try {
-            return new URI(path);
+            return path.equals(specified) ? url.toURI() : new URI(path);
         } catch (URISyntaxException cause) {
             /*
              * Occurs only if the URL is not compliant with RFC 2396. Otherwise every URL
              * should succeed, so a failure can actually be considered as a malformed URL.
              */
-            throw (MalformedURLException) new MalformedURLException(Exceptions.formatChainedMessages(null,
-                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", path), cause)).initCause(cause);
+            throw (MalformedURLException) new MalformedURLException(malformed(url, cause)).initCause(cause);
         }
     }
 
     /**
      * Converts a {@link URL} to a {@link File}. This is equivalent to a call to the standard
      * {@link URL#toURI()} method followed by a call to the {@link File#File(URI)} constructor,
-     * except for the following functionalities:
+     * except that exceptions are converted to {@link IOException}:
      *
-     * <ul>
-     *   <li>Optionally decodes the {@code "%XX"} sequences, where {@code "XX"} is a number.</li>
-     *   <li>Converts various exceptions into subclasses of {@link IOException}.</li>
-     * </ul>
-     *
-     * @param  url       the URL to convert, or {@code null}.
-     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
-     *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
-     *                   then {@code null}.
+     * @param  url  the URL to convert, or {@code null}.
      * @return the file for the given URL, or {@code null} if the given URL was null.
      * @throws IOException if the URL cannot be converted to a file.
      *
      * @see File#File(URI)
      */
-    public static File toFile(final URL url, final String encoding) throws IOException {
+    public static File toFile(final URL url) throws IOException {
         if (url == null) {
             return null;
-        }
-        final URI uri = toURI(url, encoding);
-        /*
-         * We really want to call the File constructor expecting a URI argument,
-         * not the constructor expecting a String argument, because the one for
-         * the URI argument performs additional platform-specific parsing.
-         */
-        try {
-            return new File(uri);
-        } catch (IllegalArgumentException cause) {
+        } else try {
+            return new File(url.toURI());
+        } catch (IllegalArgumentException | URISyntaxException cause) {
             /*
              * Typically happen when the URI scheme is not "file". But may also happen if the
              * URI contains fragment that cannot be represented in a File (e.g. a Query part).
              * The IllegalArgumentException does not allow us to distinguish those cases.
              */
-            throw new IOException(Exceptions.formatChainedMessages(null,
-                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause), cause);
+            throw new IOException(malformed(url, cause), cause);
         }
+    }
+
+    /**
+     * Prepares a message for a malformed URL.
+     *
+     * @param url    the malformed URL.
+     * @param cause  the exception thrown.
+     */
+    private static String malformed(final Object url, final Exception cause) {
+        return Exceptions.formatChainedMessages(null,
+                Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause);
     }
 
     /**
@@ -431,8 +453,7 @@ public final class IOUtilities extends Static {
         try {
             return Path.of(uri);
         } catch (IllegalArgumentException | FileSystemNotFoundException cause) {
-            final String message = Exceptions.formatChainedMessages(null,
-                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause);
+            final String message = malformed(url, cause);
             /*
              * If the exception is IllegalArgumentException, then the URI scheme has been recognized
              * but the URI syntax is illegal for that file system. So we can consider that the URL is
@@ -486,10 +507,10 @@ public final class IOUtilities extends Static {
                 return new File(path);
             }
         }
-        final URL url = new URL(path);
+        final URL url = toURL(path, encoding);
         final String scheme = url.getProtocol();
         if (scheme != null && scheme.equalsIgnoreCase("file")) {
-            return toFile(url, encoding);
+            return toFile(url);
         }
         /*
          * Leave the URL in its original encoding on the assumption that this is the encoding expected by

@@ -99,6 +99,12 @@ public final class PointTreeTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public PointTreeTest() {
+    }
+
+    /**
      * Creates a tree filled with random values.
      */
     private void createTree() {

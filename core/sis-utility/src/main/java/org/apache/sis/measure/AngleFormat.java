@@ -529,7 +529,7 @@ public class AngleFormat extends Format implements Localized {
                         if (--endPreviousSuffix == endPreviousField) {
                             throw illegalPattern(pattern);
                         }
-                        optionalFields |= (1 << (field - 1));
+                        optionalFields |= (byte) (1 << (field - 1));
                     }
                     previousSuffix = pattern.substring(endPreviousField, endPreviousSuffix);
                 }
@@ -592,7 +592,7 @@ public class AngleFormat extends Format implements Localized {
                 if (--endPreviousSuffix == endPreviousField) {
                     throw illegalPattern(pattern);
                 }
-                optionalFields |= (1 << expectedField);
+                optionalFields |= (byte) (1 << expectedField);
             }
             final String suffix = pattern.substring(endPreviousField, endPreviousSuffix);
             switch (expectedField) {

@@ -45,6 +45,12 @@ import static org.apache.sis.util.collection.TableColumn.*;
 })
 public final class TreeTablesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TreeTablesTest() {
+    }
+
+    /**
      * The {@code concatenateSingletons(…)} example documented in the {@link TreeTables} class javadoc.
      * This simple code assumes that the children collection in the given node is a {@link List}.
      *

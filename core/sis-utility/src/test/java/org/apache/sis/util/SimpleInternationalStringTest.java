@@ -35,6 +35,12 @@ import static org.apache.sis.util.DefaultInternationalStringTest.MESSAGE;
  */
 public final class SimpleInternationalStringTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SimpleInternationalStringTest() {
+    }
+
+    /**
      * Tests the {@link SimpleInternationalString} implementation.
      */
     @Test

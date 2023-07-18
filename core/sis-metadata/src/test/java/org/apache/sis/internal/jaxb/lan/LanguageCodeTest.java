@@ -77,6 +77,12 @@ public final class LanguageCodeTest extends TestCase {
     private static MarshallerPool pool;
 
     /**
+     * Creates a new test case.
+     */
+    public LanguageCodeTest() {
+    }
+
+    /**
      * Creates the XML (un)marshaller pool to be shared by all test methods.
      * The (un)marshallers locale and timezone will be set to fixed values.
      *

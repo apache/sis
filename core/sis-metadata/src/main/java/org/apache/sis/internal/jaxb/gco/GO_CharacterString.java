@@ -297,7 +297,9 @@ public class GO_CharacterString {
             if (ct != null && CodeList.class.isAssignableFrom(ct)) {
                 final String attribute = e.getAttribute("codeListValue").trim();
                 if (!attribute.isEmpty()) {
-                    text = Types.getCodeTitle(Types.forCodeName((Class) ct, attribute, true));
+                    @SuppressWarnings("unchecked")
+                    final CodeList<?> c = Types.forCodeName((Class) ct, attribute, true);
+                    text = Types.getCodeTitle(c);
                     type = ENUM;
                     return;
                 } else {

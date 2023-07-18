@@ -1060,7 +1060,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * one.
              */
             if (method instanceof AbstractProvider) {
+                @SuppressWarnings("deprecation")
                 final Integer sourceDim = (sourceCS != null) ? sourceCS.getDimension() : method.getSourceDimensions();
+                @SuppressWarnings("deprecation")
                 final Integer targetDim = (targetCS != null) ? targetCS.getDimension() : method.getTargetDimensions();
                 if (sourceDim != null && targetDim != null) {
                     method = ((AbstractProvider) method).redimension(sourceDim, targetDim);

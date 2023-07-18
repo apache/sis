@@ -40,6 +40,12 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
 @DependsOn(UnitsTest.class)
 public final class UnitServicesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public UnitServicesTest() {
+    }
+
+    /**
      * Tests the default system of units.
      */
     @Test

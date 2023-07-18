@@ -65,6 +65,12 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
 @DependsOn(GridGeometryTest.class)
 public final class GridDerivationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GridDerivationTest() {
+    }
+
+    /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} using only the
      * {@link GridExtent} result provided by {@link GridDerivation#getIntersection()}.
      */

@@ -41,6 +41,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 public final class SampleDimensionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SampleDimensionTest() {
+    }
+
+    /**
      * Tests a sample dimension having only qualitative categories.
      * Expected value:
      *

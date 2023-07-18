@@ -317,7 +317,7 @@ public class TensorParameters<E> implements Serializable {
      *                     Length may be different if the caller wants to generalize usage of this class to tensors.
      */
     @SafeVarargs
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "varargs"})
     public TensorParameters(final Class<E> elementType, final String prefix, final String separator,
             final ParameterDescriptor<Integer>... dimensions)
     {

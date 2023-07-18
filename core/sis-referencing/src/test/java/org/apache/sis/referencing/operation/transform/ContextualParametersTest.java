@@ -45,6 +45,12 @@ import static org.opengis.test.Assert.assertMatrixEquals;
 @DependsOn(DefaultParameterDescriptorGroupTest.class)
 public final class ContextualParametersTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ContextualParametersTest() {
+    }
+
+    /**
      * Creates an instance to use for testing purpose.
      */
     private static ContextualParameters create(final int srcDim, final int dstDim) {

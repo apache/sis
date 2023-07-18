@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final class StoreProviderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StoreProviderTest() {
+    }
+
+    /**
      * Verifies validity of {@code StoreProvider.MIN_LENGTH} and {@code StoreProvider.MAX_LENGTH} constants
      * by comparing them with the content of {@code StoreProvider.KEYWORDS} map.
      */

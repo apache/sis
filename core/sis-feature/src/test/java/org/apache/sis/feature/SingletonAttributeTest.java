@@ -45,6 +45,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class SingletonAttributeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SingletonAttributeTest() {
+    }
+
+    /**
      * Creates an attribute for the city name.
      * This attribute has a default value.
      */
@@ -116,6 +122,7 @@ public final class SingletonAttributeTest extends TestCase {
      * @param  explanation   the expected explanation.
      * @param  consistency   the report element to test.
      */
+    @SuppressWarnings("deprecation")
     private static void assertDomainConsistencyEquals(final String propertyName, final String explanation,
             final DomainConsistency consistency)
     {

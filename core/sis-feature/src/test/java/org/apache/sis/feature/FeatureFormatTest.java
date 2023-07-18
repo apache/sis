@@ -46,6 +46,12 @@ import org.opengis.feature.PropertyType;
 })
 public final class FeatureFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FeatureFormatTest() {
+    }
+
+    /**
      * Creates the formatter instance to be used for the tests.
      */
     private static FeatureFormat create() {

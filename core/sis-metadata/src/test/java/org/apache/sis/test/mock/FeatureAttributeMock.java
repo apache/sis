@@ -45,4 +45,10 @@ public final class FeatureAttributeMock {
      */
     @XmlElement(name = "cardinality", required = true)
     public Multiplicity cardinality;
+
+    /**
+     * Creates a new feature attribute with all values initialized to {@code null}.
+     */
+    public FeatureAttributeMock() {
+    }
 }

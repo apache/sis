@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class AxesMapperTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AxesMapperTest() {
+    }
+
+    /**
      * Tests with axes having same direction in same order.
      */
     @Test

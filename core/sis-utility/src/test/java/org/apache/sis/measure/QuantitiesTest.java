@@ -38,6 +38,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
 @DependsOn(ScalarTest.class)
 public final class QuantitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public QuantitiesTest() {
+    }
+
+    /**
      * Tests {@link Quantities#create(double, String)}.
      */
     @Test

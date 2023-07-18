@@ -43,6 +43,12 @@ import static org.junit.Assert.*;
 @DependsOn(DefaultNameFactoryTest.class)
 public final class NamesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NamesTest() {
+    }
+
+    /**
      * Tests {@link Names#createScopedName(GenericName, String, CharSequence)}.
      */
     @Test

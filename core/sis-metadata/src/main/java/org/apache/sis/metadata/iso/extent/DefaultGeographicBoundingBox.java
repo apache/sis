@@ -33,9 +33,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.metadata.InvalidMetadataException;
-import org.apache.sis.xml.NilReason;
 
 import static java.lang.Double.doubleToLongBits;
 
@@ -248,27 +246,14 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     }
 
     /**
-     * Makes sure that the given inclusion is non-nil, then returns its value.
+     * Makes sure that the given inclusion is non-null, then returns its value.
      * If the given inclusion is {@code null}, then the default value is {@code true}.
      *
-     * @param  value  the {@link org.opengis.metadata.extent.GeographicBoundingBox#getInclusion()} value.
+     * @param  value  the {@link GeographicBoundingBox#getInclusion()} value.
      * @return the given value as a primitive type.
-     * @throws InvalidMetadataException if the given value is nil.
      */
-    @SuppressWarnings("NumberEquality")
     static boolean getInclusion(final Boolean value) throws InvalidMetadataException {
-        if (value == null) {
-            return true;
-        }
-        final boolean p = value;
-        /*
-         * (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
-         * DO NOT REPLACE BY `equals` OR `booleanValue()` — the exact reference value matter.
-         */
-        if (p || (value == Boolean.FALSE) || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
-            return p;
-        }
-        throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));
+        return (value == null) || value;
     }
 
     /**

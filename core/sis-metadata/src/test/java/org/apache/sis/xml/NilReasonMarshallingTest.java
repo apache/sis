@@ -20,8 +20,6 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.spatial.Dimension;
-import org.opengis.metadata.quality.ConformanceResult;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
@@ -40,6 +38,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * @since   0.3
  */
 public final class NilReasonMarshallingTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public NilReasonMarshallingTest() {
+    }
+
     /**
      * Tests a simple case for a missing data.
      *
@@ -76,70 +80,9 @@ public final class NilReasonMarshallingTest extends TestCase {
     }
 
     /**
-     * Tests a missing boolean value. The {@link Boolean}, {@link Integer}, {@link Double} and {@link String}
-     * values are implemented as special cases in {@link NilReason}, because they are final classes on which
-     * we have no control.
-     *
-     * @throws JAXBException if an error occurred during (un)marshalling.
-     */
-    @Test
-    @DependsOnMethod("testMissing")
-    public void testMissingBoolean() throws JAXBException {
-        final String expected =
-                "<mdq:DQ_ConformanceResult xmlns:mdq=\"" + Namespaces.MDQ + '"' +
-                                         " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <mdq:explanation>\n" +
-                "    <gco:CharacterString>An explanation</gco:CharacterString>\n" +
-                "  </mdq:explanation>\n" +
-                "  <mdq:pass gco:nilReason=\"missing\"/>\n" +
-                "</mdq:DQ_ConformanceResult>";
-
-        final ConformanceResult result = unmarshal(ConformanceResult.class, expected);
-        assertEquals("explanation", "An explanation", result.getExplanation().toString());
-
-        final Boolean pass = result.pass();
-        assertNotNull("Expected a sentinel value.", pass);
-        assertEquals ("Nil value shall be false.",  Boolean.FALSE, pass);
-        assertNotSame("Expected a sentinel value.", Boolean.FALSE, pass);
-        assertSame("nilReason", NilReason.MISSING, NilReason.forObject(pass));
-
-        final String actual = marshal(result);
-        assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(result, unmarshal(ConformanceResult.class, actual));
-    }
-
-    /**
-     * Tests a missing integer value. The {@link Boolean}, {@link Integer}, {@link Double} and {@link String}
-     * values are implemented as special cases in {@link NilReason}, because they are final classes on which
-     * we have no control.
-     *
-     * @throws JAXBException if an error occurred during (un)marshalling.
-     */
-    @Test
-    @DependsOnMethod("testMissing")
-    @SuppressWarnings("UnnecessaryBoxing")
-    public void testMissingInteger() throws JAXBException {
-        final String expected =
-                "<msr:MD_Dimension xmlns:msr=\"" + Namespaces.MSR + '"' +
-                                 " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <msr:dimensionSize gco:nilReason=\"unknown\"/>\n" +
-                "</msr:MD_Dimension>";
-
-        final Dimension result = unmarshal(Dimension.class, expected);
-
-        final Integer size = result.getDimensionSize();
-        assertNotNull("Expected a sentinel value.", size);
-        assertEquals ("Nil value shall be 0.",      Integer.valueOf(0), size);
-        assertNotSame("Expected a sentinel value.", Integer.valueOf(0), size);
-        assertSame("nilReason", NilReason.UNKNOWN, NilReason.forObject(size));
-
-        final String actual = marshal(result);
-        assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(result, unmarshal(Dimension.class, actual));
-    }
-
-    /**
      * Tests a missing double value.
+     * The {@link Float}, {@link Double} and {@link String} values are implemented as special
+     * cases in {@link NilReason}, because they are final classes on which we have no control.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      */

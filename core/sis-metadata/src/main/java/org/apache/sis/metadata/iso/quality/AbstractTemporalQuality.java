@@ -55,6 +55,7 @@ import org.opengis.metadata.quality.TemporalAccuracy;
     DefaultTemporalConsistency.class,
     DefaultTemporalValidity.class
 })
+@SuppressWarnings("deprecation")
 public class AbstractTemporalQuality extends AbstractElement implements TemporalQuality {
     /**
      * Serial number for inter-operability with different versions.

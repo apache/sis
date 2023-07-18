@@ -36,6 +36,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(CommandRunnerTest.class)
 public final class AboutCommandTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AboutCommandTest() {
+    }
+
+    /**
      * Tests the sub-command without option.
      *
      * @throws Exception should never happen.

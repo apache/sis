@@ -54,6 +54,12 @@ import org.opengis.feature.PropertyType;
 @DependsOn(CharacteristicTypeBuilderTest.class)
 public final class AttributeTypeBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AttributeTypeBuilderTest() {
+    }
+
+    /**
      * Tests with the minimum number of parameters.
      */
     @Test

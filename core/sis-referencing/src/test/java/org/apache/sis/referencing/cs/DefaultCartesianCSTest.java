@@ -50,6 +50,12 @@ import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 })
 public final class DefaultCartesianCSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultCartesianCSTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a Cartesian coordinate system definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

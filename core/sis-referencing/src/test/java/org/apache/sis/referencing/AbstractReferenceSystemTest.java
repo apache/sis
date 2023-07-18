@@ -48,6 +48,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 @DependsOn(AbstractIdentifiedObjectTest.class)
 public final class AbstractReferenceSystemTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractReferenceSystemTest() {
+    }
+
+    /**
      * Tests {@link AbstractReferenceSystem}.
      */
     @Test

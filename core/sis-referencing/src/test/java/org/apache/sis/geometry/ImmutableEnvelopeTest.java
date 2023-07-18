@@ -38,6 +38,12 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 @DependsOn(ArrayEnvelopeTest.class)
 public final class ImmutableEnvelopeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ImmutableEnvelopeTest() {
+    }
+
+    /**
      * Tests {@code ImmutableEnvelope} serialization.
      */
     @Test

@@ -1249,7 +1249,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
     /**
      * A vector backed by an array of type {@code Number[]}.
+     * The parameterized type should be {@code <? extends Number>},
+     * but using {@code <Number>} for simplicity is okay since this class is private
+     * and this specific type is forgotten immediately after {@code Raw} construction.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static final class Raw extends ArrayVector<Number> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 5444263017359778157L;
@@ -1263,7 +1267,6 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the type of elements in the backing array. */
-        @SuppressWarnings({"unchecked", "rawtypes"})
         @Override public final Class getElementType() {
             return array.getClass().getComponentType();
         }

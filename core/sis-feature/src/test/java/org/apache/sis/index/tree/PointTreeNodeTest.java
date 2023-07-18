@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class PointTreeNodeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public PointTreeNodeTest() {
+    }
+
+    /**
      * Verifies the value of {@link PointTree#MAXIMUM_DIMENSIONS}.
      * That value is restricted by the maximal capacity of {@code long} type
      * of {@link org.apache.sis.index.tree.NodeIterator.Cursor#quadrants}:

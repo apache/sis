@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
 @DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
 public final class DefaultCompoundCSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultCompoundCSTest() {
+    }
+
+    /**
      * Tests {@link DefaultCompoundCS} construction.
      */
     @Test

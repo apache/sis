@@ -148,7 +148,7 @@ abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final GraphicalSymbol candidate) {
+    protected void visit(final GraphicalSymbol<?> candidate) {
         if (candidate instanceof Mark) {
             visit((Mark) candidate);
         } else if (candidate instanceof ExternalGraphic) {
@@ -183,7 +183,7 @@ abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final Description candidate) {
+    protected void visit(final Description<?> candidate) {
     }
 
     protected void visit(final Displacement<?> candidate) {
@@ -222,7 +222,7 @@ abstract class SymbologyVisitor {
         }
     }
 
-    protected void visit(final LabelPlacement candidate) {
+    protected void visit(final LabelPlacement<?> candidate) {
         if (candidate instanceof PointPlacement) {
             visit((PointPlacement) candidate);
         } else if (candidate instanceof LinePlacement) {
@@ -280,7 +280,7 @@ abstract class SymbologyVisitor {
 
     protected void visit(final ChannelSelection<?> candidate) {
         if (candidate != null) {
-            SelectedChannel[] channels = candidate.getChannels();
+            SelectedChannel<?>[] channels = candidate.getChannels();
             if (channels != null) {
                 for (final SelectedChannel<?> sct : channels) {
                     visit(sct);

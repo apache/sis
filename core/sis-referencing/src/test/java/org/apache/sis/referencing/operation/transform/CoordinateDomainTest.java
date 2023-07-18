@@ -40,6 +40,12 @@ public class CoordinateDomainTest extends TestCase {
     private static final double TOLERANCE = 0.05;
 
     /**
+     * Creates a new test case.
+     */
+    public CoordinateDomainTest() {
+    }
+
+    /**
      * Tests {@link CoordinateDomain#GEOCENTRIC}.
      */
     @Test

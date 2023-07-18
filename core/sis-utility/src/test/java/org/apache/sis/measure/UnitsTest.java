@@ -46,6 +46,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 })
 public final class UnitsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public UnitsTest() {
+    }
+
+    /**
      * Verifies that the {@link Units#initialized} flag has been set.
      */
     @Test

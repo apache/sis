@@ -38,6 +38,12 @@ import static org.junit.Assert.*;
 @DependsOn(org.apache.sis.referencing.cs.AbstractCSTest.class)
 public final class AbstractCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractCRSTest() {
+    }
+
+    /**
      * Tests {@link AbstractCRS#forConvention(AxesConvention)} with {@link AxesConvention#RIGHT_HANDED}.
      */
     @Test

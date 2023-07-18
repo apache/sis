@@ -39,6 +39,12 @@ import static org.apache.sis.math.DecimalFunctions.*;
 @DependsOn(org.apache.sis.internal.util.NumericsTest.class)
 public final class DecimalFunctionsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DecimalFunctionsTest() {
+    }
+
+    /**
      * Verifies the values of {@link DecimalFunctions#EXPONENT_FOR_ZERO}.
      */
     @Test

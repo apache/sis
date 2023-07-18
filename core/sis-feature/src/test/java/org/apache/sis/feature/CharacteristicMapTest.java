@@ -41,6 +41,12 @@ import org.opengis.feature.Attribute;
 @DependsOn(CharacteristicTypeMapTest.class)
 public final class CharacteristicMapTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CharacteristicMapTest() {
+    }
+
+    /**
      * Creates an attribute for a temperature measurement of 20°C with a ±0.1°C accuracy.
      *
      * @return a {@code "temperature"} attribute with two characteristics: {@code "accuracy"} and {@code "units"}.

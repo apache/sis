@@ -136,6 +136,12 @@ public final class FileCacheByteChannelTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public FileCacheByteChannelTest() {
+    }
+
+    /**
      * Tests random operations on a stream of computed values.
      * The bytes values are determined by their position, which allows easy verifications.
      *

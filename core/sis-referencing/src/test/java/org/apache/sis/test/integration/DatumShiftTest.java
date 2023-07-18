@@ -25,7 +25,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assume.*;
+import static org.apache.sis.test.Assume.assumeDataExists;
 
 
 /**
@@ -43,6 +43,12 @@ import static org.apache.sis.test.Assume.*;
     FranceGeocentricInterpolationTest.class
 })
 public final class DatumShiftTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public DatumShiftTest() {
+    }
+
     /**
      * Tests loading an official {@code "ntf_r93.gsb"} datum shift grid file
      * and interpolating the sample point tested by {@link FranceGeocentricInterpolationTest}.

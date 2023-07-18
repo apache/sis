@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class DataTypeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DataTypeTest() {
+    }
+
+    /**
      * Verifies that {@link DataType} ordinal values match {@link DataBuffer} constant values.
      */
     @Test

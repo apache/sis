@@ -33,6 +33,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class AssertTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AssertTest() {
+    }
+
+    /**
      * Tests the {@link org.apache.sis.test.Assertions#assertMultilinesEquals(CharSequence, CharSequence)} method.
      */
     @Test

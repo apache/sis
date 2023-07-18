@@ -47,6 +47,12 @@ public final class ChannelDataInputTest extends ChannelDataTestCase {
     private DataInput referenceStream;
 
     /**
+     * Creates a new test case.
+     */
+    public ChannelDataInputTest() {
+    }
+
+    /**
      * Fills a buffer with random data and compare the result with a standard image input stream.
      * We allocate a small buffer for the {@code ChannelDataInput} in order to force frequent
      * interactions between the buffer and the channel.

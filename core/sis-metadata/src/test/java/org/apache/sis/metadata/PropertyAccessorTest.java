@@ -89,6 +89,12 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 @DependsOn(PropertyInformationTest.class)
 public final class PropertyAccessorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public PropertyAccessorTest() {
+    }
+
+    /**
      * Creates a new property accessor for the {@link DefaultCitation} class.
      */
     private static PropertyAccessor createPropertyAccessor() {

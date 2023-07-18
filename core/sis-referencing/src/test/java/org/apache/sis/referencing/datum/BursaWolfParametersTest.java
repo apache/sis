@@ -48,6 +48,12 @@ public final class BursaWolfParametersTest extends TestCase {
     private static final double TO_RADIANS = StrictMath.PI / (180 * 60 * 60);
 
     /**
+     * Creates a new test case.
+     */
+    public BursaWolfParametersTest() {
+    }
+
+    /**
      * Returns the parameters for the <cite>WGS 72 to WGS 84 (2)</cite> transformation (EPSG:1238).
      * Area of validity is the World.
      */

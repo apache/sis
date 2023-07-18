@@ -56,6 +56,12 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 })
 public final class MatricesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MatricesTest() {
+    }
+
+    /**
      * Tests {@link Matrices#create(int, int, Number[])}.
      */
     @Test

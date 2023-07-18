@@ -77,6 +77,12 @@ public final class NTv2Test extends DatumShiftTestCase {
     private static final float ACCURACY = 0.001618f;
 
     /**
+     * Creates a new test case.
+     */
+    public NTv2Test() {
+    }
+
+    /**
      * Tests loading a grid file and interpolating a sample point. The point used for
      * this test is given by {@link FranceGeocentricInterpolationTest#samplePoint(int)}.
      *

@@ -53,6 +53,12 @@ public final class DefaultParameterValueTest extends TestCase {
     private static final double EPS = 1E-10;
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultParameterValueTest() {
+    }
+
+    /**
      * A subclass of {@code DefaultParameterValue} which store the value converted by {@link Verifier}.
      * This allows {@link DefaultParameterValueTest} methods to verify the conversion result.
      */

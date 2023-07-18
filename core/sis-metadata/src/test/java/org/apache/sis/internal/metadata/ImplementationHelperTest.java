@@ -38,6 +38,12 @@ import static java.util.Locale.*;
  */
 public final class ImplementationHelperTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ImplementationHelperTest() {
+    }
+
+    /**
      * Tests {@link ImplementationHelper#toMilliseconds(Date)}.
      */
     @Test

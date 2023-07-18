@@ -38,6 +38,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 public final class CommandRunnerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CommandRunnerTest() {
+    }
+
+    /**
      * A dummy sub-command for testing purpose.
      */
     private static final class Dummy extends CommandRunner {

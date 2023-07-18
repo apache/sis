@@ -50,6 +50,12 @@ public final class NonSquareMatrixTest extends MatrixTestCase {
     private int numRow, numCol;
 
     /**
+     * Creates a new test case.
+     */
+    public NonSquareMatrixTest() {
+    }
+
+    /**
      * Computes a random size for the next matrix to create.
      *
      * @param  random  the random number generator to use.

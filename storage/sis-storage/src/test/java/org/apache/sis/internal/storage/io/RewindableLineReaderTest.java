@@ -41,6 +41,12 @@ public final class RewindableLineReaderTest extends TestCase {
     private static final int TRANSFERT_SIZE = 100;
 
     /**
+     * Creates a new test case.
+     */
+    public RewindableLineReaderTest() {
+    }
+
+    /**
      * Tests {@link RewindableLineReader#rewind()}.
      *
      * @throws IOException if an error occurred while reading characters.

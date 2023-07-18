@@ -43,6 +43,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class NamedIdentifierTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NamedIdentifierTest() {
+    }
+
+    /**
      * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, String, CharSequence, String, InternationalString)}
      * constructor.
      */

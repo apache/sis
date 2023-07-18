@@ -34,6 +34,12 @@ import org.apache.sis.test.DependsOn;
 })
 public final class SparseFeatureTest extends FeatureTestCase {
     /**
+     * Creates a new test case.
+     */
+    public SparseFeatureTest() {
+    }
+
+    /**
      * Creates a new feature for the given type.
      */
     @Override

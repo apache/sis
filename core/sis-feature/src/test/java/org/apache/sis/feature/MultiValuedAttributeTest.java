@@ -37,6 +37,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(SingletonAttributeTest.class)
 public final class MultiValuedAttributeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MultiValuedAttributeTest() {
+    }
+
+    /**
      * Creates an attribute for a list of universities.
      * The multiplicity is [0 … ∞].
      */

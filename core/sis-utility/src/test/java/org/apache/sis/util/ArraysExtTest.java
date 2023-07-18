@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class ArraysExtTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ArraysExtTest() {
+    }
+
+    /**
      * Tests {@link ArraysExt#concatenate(Object[]...)}.
      */
     @Test

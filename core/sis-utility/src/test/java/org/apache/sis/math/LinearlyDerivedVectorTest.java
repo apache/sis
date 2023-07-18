@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class LinearlyDerivedVectorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LinearlyDerivedVectorTest() {
+    }
+
+    /**
      * Tests creation of a vector and a few methods that haven been overridden.
      */
     @Test

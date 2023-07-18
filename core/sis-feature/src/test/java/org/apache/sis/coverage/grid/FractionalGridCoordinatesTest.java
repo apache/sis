@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class FractionalGridCoordinatesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FractionalGridCoordinatesTest() {
+    }
+
+    /**
      * Creates a test instance with (4 -1.1 7.6) coordinate values.
      */
     private static FractionalGridCoordinates instance() {

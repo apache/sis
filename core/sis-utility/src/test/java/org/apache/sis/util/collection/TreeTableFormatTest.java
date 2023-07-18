@@ -44,6 +44,12 @@ import static org.apache.sis.util.collection.TableColumn.*;
 })
 public final class TreeTableFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TreeTableFormatTest() {
+    }
+
+    /**
      * Tests the formatting as a tree, with control on the indentation.
      */
     @Test

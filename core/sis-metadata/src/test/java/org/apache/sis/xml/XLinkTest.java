@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class XLinkTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public XLinkTest() {
+    }
+
+    /**
      * Tests the automatic {@link XLink#getType()} detection.
      *
      * @throws URISyntaxException if a test URI cannot be parsed (should not happen).

@@ -48,6 +48,12 @@ import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 })
 public final class NormalizerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NormalizerTest() {
+    }
+
+    /**
      * Tests {@link Normalizer#sort(CoordinateSystemAxis[], int)}
      * with axes of an ellipsoidal coordinate system.
      */

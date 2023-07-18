@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class TypeMapperTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TypeMapperTest() {
+    }
+
+    /**
      * Tests {@link TypeMapper#toJavaType(int)}.
      */
     @Test

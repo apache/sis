@@ -28,12 +28,12 @@ import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.internal.system.Configuration;
 
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
 import static java.lang.Math.ulp;
-import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -543,9 +543,9 @@ public final class Numerics extends Static {
     public static int getSignificand(final float value) {
         int bits = Float.floatToRawIntBits(value);
         final int exponent = bits & (0xFF << SIGNIFICAND_SIZE_OF_FLOAT);
-        bits &= (1L << SIGNIFICAND_SIZE_OF_FLOAT) - 1;
+        bits &= (1 << SIGNIFICAND_SIZE_OF_FLOAT) - 1;
         if (exponent != 0) {
-            bits |= (1L << SIGNIFICAND_SIZE_OF_FLOAT);
+            bits |= (1 << SIGNIFICAND_SIZE_OF_FLOAT);
         } else {
             bits <<= 1;
         }

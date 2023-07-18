@@ -53,6 +53,12 @@ import static java.util.AbstractMap.SimpleEntry;
 @DependsOn(PropertyAccessorTest.class)
 public final class TypeMapTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TypeMapTest() {
+    }
+
+    /**
      * Tests {@code TypeMap.entrySet()} for an exact match (including iteration order).
      * The properties used in this test are listed in {@link PropertyAccessorTest#testConstructor()}.
      *

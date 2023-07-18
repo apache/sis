@@ -59,6 +59,12 @@ public final class DefaultResolutionTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultResolutionTest() {
+    }
+
+    /**
      * Tests the {@link DefaultResolution#DefaultResolution(RepresentativeFraction)} constructor.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-195">SIS-195</a>

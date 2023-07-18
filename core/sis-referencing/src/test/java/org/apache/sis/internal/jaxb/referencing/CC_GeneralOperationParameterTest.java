@@ -70,6 +70,12 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public CC_GeneralOperationParameterTest() {
+    }
+
+    /**
      * Creates a parameter descriptor as unmarshalled by JAXB, without {@code valueClass}.
      *
      * @throws JAXBException if this method failed to create test data.

@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(ArraysExtTest.class)
 public final class LocalesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LocalesTest() {
+    }
+
+    /**
      * Tests the {@link Locales#getAvailableLanguages()} method.
      */
     @Test
@@ -63,6 +69,7 @@ public final class LocalesTest extends TestCase {
      */
     @Test
     public void testUnique() {
+        // TODO: use Locale.of(…) with JDK19.
         assertSame(Locale.ENGLISH, Locales.unique(new Locale("en")));
         assertSame(Locale.FRENCH,  Locales.unique(new Locale("fr")));
     }
@@ -83,6 +90,7 @@ public final class LocalesTest extends TestCase {
         assertSame(Locale.JAPAN,         Locales.parse("ja_JP"));
         assertSame(Locale.US,            Locales.parse("en; USA"));
 
+        // TODO: use Locale.of(…) with JDK19.
         assertEquals(new Locale("de", "DE"),            Locales.parse("de_DE"));
         assertEquals(new Locale("",   "GB"),            Locales.parse("_GB"));
         assertEquals(new Locale("en", "US", "WINDOWS"), Locales.parse("en_US_WINDOWS"));

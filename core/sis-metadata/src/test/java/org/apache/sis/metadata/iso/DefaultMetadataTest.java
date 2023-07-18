@@ -57,6 +57,12 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 @DependsOn(org.apache.sis.internal.jaxb.lan.OtherLocalesTest.class)
 public final class DefaultMetadataTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultMetadataTest() {
+    }
+
+    /**
      * Tests unmarshalling of a metadata having a collection that contains no element.
      * This was used to cause a {@code NullPointerException} prior SIS-139 fix.
      *
@@ -138,7 +144,7 @@ public final class DefaultMetadataTest extends TestCase {
      */
     @SuppressWarnings("deprecation")
     private static void assertLanguagesEquals(final DefaultMetadata metadata, final Locale... expected) {
-        assertArrayEquals("languages", expected,    metadata.getLanguages().toArray());
+        assertArrayEquals("languages", expected,    metadata.getLocalesAndCharsets().keySet().toArray());
         assertEquals     ("language",  expected[0], metadata.getLanguage());
         assertArrayEquals("locales",   Arrays.copyOfRange(expected, 1, expected.length), metadata.getLocales().toArray());
     }

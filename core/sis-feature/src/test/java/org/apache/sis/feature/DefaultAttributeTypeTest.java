@@ -42,6 +42,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class DefaultAttributeTypeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultAttributeTypeTest() {
+    }
+
+    /**
      * Creates an attribute type for city name.
      *
      * @return an attribute type for a city name.

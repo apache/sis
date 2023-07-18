@@ -47,6 +47,12 @@ import static org.apache.sis.internal.converter.SystemRegistry.INSTANCE;
 @DependsOn(ConverterRegistryTest.class)
 public final class SystemRegistryTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SystemRegistryTest() {
+    }
+
+    /**
      * Tests the creation of {@link StringConverter}.
      */
     @Test

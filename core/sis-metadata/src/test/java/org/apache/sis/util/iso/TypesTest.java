@@ -50,6 +50,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 public final class TypesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TypesTest() {
+    }
+
+    /**
      * Tests the {@link Types#toInternationalString(Map, String)} method.
      */
     @Test

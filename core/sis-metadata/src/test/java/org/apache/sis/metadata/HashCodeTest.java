@@ -53,6 +53,12 @@ import static org.junit.Assert.*;
 @DependsOn(PropertyAccessorTest.class)
 public final class HashCodeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public HashCodeTest() {
+    }
+
+    /**
      * Computes the hash code value of the given object.
      */
     private static Integer hash(final Object metadata) {

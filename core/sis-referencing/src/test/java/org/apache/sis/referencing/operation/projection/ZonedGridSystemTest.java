@@ -42,6 +42,12 @@ import static org.junit.Assert.*;
 @DependsOn(TransverseMercatorTest.class)
 public final class ZonedGridSystemTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public ZonedGridSystemTest() {
+    }
+
+    /**
      * Creates a new instance of {@link ZonedGridSystem}.
      *
      * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.

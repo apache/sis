@@ -49,6 +49,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
 })
 public final class CoordinateReferenceSystemTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CoordinateReferenceSystemTest() {
+    }
+
+    /**
      * Tests creation from codes in the
      * {@code "urn:ogc:def:type, type₁:authority₁:version₁:code₁, type₂:authority₂:version₂:code₂"} form.
      *

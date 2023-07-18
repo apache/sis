@@ -39,6 +39,12 @@ import static org.junit.Assert.*;
  */
 public final class SpecializableTransformTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public SpecializableTransformTest() {
+    }
+
+    /**
      * Creates a transform scaling the coordinate values by 10, then applying the given translation.
      */
     private static MathTransform translation(final double t) {

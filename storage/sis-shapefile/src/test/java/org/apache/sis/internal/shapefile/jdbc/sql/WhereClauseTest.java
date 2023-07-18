@@ -31,6 +31,12 @@ import org.junit.Test;
  */
 public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
     /**
+     * Creates a new test case.
+     */
+    public WhereClauseTest() {
+    }
+
+    /**
      * Test operators.
      * @throws SQLException if a trouble occurs : all tests shall pass.
      */

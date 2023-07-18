@@ -56,6 +56,12 @@ public final class WKTFormatTest extends TestCase {
     private WKTFormat parser;
 
     /**
+     * Creates a new test case.
+     */
+    public WKTFormatTest() {
+    }
+
+    /**
      * Tests integration in {@link WKTFormat#parse(CharSequence, ParsePosition)}.
      * This method tests only a simple WKT because it is not the purpose of this
      * method to test the parser itself. We only want to tests its integration in

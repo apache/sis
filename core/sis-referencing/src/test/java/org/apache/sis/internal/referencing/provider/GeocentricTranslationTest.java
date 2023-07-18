@@ -60,6 +60,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
 })
 public final class GeocentricTranslationTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public GeocentricTranslationTest() {
+    }
+
+    /**
      * Geocentric translation parameters for transforming a point in the North Sea from WGS84 to ED50.
      * They are the parameters to use for transformation of the point given by {@link #samplePoint(int)}.
      */

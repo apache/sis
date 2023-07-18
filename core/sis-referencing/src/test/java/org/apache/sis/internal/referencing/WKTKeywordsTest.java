@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
  */
 public final class WKTKeywordsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public WKTKeywordsTest() {
+    }
+
+    /**
      * Ensures that all constants are equal to the name of the field that declare it.
      * The intent is to avoid misleading constant names when reading code.
      *

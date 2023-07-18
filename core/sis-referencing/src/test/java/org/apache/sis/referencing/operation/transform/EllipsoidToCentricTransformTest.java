@@ -56,6 +56,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 })
 public final class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public EllipsoidToCentricTransformTest() {
+    }
+
+    /**
      * Convenience method for creating an instance from an ellipsoid.
      */
     private void createGeodeticConversion(final Ellipsoid ellipsoid, boolean is3D) throws FactoryException {

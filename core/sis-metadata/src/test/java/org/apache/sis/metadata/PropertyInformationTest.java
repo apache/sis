@@ -50,6 +50,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 public final class PropertyInformationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public PropertyInformationTest() {
+    }
+
+    /**
      * Creates a property information instance for the given method of the {@link Citation} interface.
      *
      * @param  elementType  the type of elements returned by the given method.

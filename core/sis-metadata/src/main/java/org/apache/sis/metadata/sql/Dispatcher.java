@@ -237,7 +237,7 @@ final class Dispatcher implements InvocationHandler {
                             if (impl == null) {
                                 return value;
                             }
-                            cache = impl.newInstance();
+                            cache = impl.getDeclaredConstructor().newInstance();
                             if (cache instanceof ModifiableMetadata) {
                                 ((ModifiableMetadata) cache).transitionTo(ModifiableMetadata.State.COMPLETABLE);
                             }

@@ -48,6 +48,12 @@ public final class MetadataFallbackVerifier {
     private static final Set<String> EXCLUDES = Set.of("NetCDF", "GeoTIFF", "ArcGIS", "MapInfo");
 
     /**
+     * Creates a new test case.
+     */
+    public MetadataFallbackVerifier() {
+    }
+
+    /**
      * Creates a temporary database for comparing {@link MetadataFallback} content with database content.
      * This method is provided for allowing to execute this class individually. In a complete Maven build,
      * of {@code sis-metadata} module, the test will rather be executed by {@link MetadataSourceTest} for

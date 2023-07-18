@@ -17,6 +17,8 @@
 package org.apache.sis.internal.storage;
 
 import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,7 +68,7 @@ import org.apache.sis.util.Classes;
  * be null and the CRS defined by the {@code DataOptionKey} will be used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.2
  */
 public abstract class PRJDataStore extends URIDataStore {
@@ -202,13 +204,16 @@ public abstract class PRJDataStore extends URIDataStore {
             path   = path.resolveSibling(base.concat(extension));
             stream = Files.newInputStream(path);
             source = path;
-        } else {
-            final URL url = IOUtilities.toAuxiliaryURL(location, extension);
-            if (url == null) {
+        } else try {
+            final URI uri = IOUtilities.toAuxiliaryURI(location, extension);
+            if (uri == null) {
                 return null;
             }
+            final URL url = uri.toURL();
             stream = url.openStream();
             source = url;
+        } catch (URISyntaxException e) {
+            throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, "*." + extension), e);
         }
         /*
          * Reads the auxiliary file fully, with an arbitrary size limit.

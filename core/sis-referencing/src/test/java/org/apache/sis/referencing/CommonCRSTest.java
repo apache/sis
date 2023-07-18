@@ -71,6 +71,12 @@ public final class CommonCRSTest extends TestCase {
     private static final double DAY_LENGTH = 24 * 60 * 60 * 1000;
 
     /**
+     * Creates a new test case.
+     */
+    public CommonCRSTest() {
+    }
+
+    /**
      * Verifies that the same EPSG code is not used for two objects. Collisions are not allowed between
      * {@code geographic}, {@code geocentric}, {@code geo3D} and all UTM projections. Strictly speaking
      * all the above-cited codes may collide with {@code datum} and {@code ellipsoid}, but we nevertheless

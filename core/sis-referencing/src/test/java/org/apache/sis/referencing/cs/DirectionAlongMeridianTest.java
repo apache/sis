@@ -36,6 +36,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 @DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
 public final class DirectionAlongMeridianTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DirectionAlongMeridianTest() {
+    }
+
+    /**
      * Tests the {@link DirectionAlongMeridian#parse(AxisDirection)} method.
      */
     @Test

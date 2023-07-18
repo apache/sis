@@ -84,6 +84,12 @@ public final class GeodeticObjectParserTest extends TestCase {
     private GeodeticObjectParser parser;
 
     /**
+     * Creates a new test case.
+     */
+    public GeodeticObjectParserTest() {
+    }
+
+    /**
      * Instantiates the parser to test.
      */
     private void newParser(final Convention convention) {

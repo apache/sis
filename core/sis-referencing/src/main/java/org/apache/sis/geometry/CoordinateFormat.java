@@ -1416,7 +1416,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
      * @throws ArithmeticException if a date value exceed the capacity of {@code long} type.
      */
     @Override
-    @SuppressWarnings({"UnnecessaryBoxing", "null"})
+    @SuppressWarnings("UnnecessaryBoxing")
     public void format(final DirectPosition position, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("position",   position);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);

@@ -32,6 +32,12 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  */
 public final class ProfileTypes extends TypeRegistration {
     /**
+     * Creates a default provider of types to register.
+     */
+    public ProfileTypes() {
+    }
+
+    /**
      * Adds to the given collection the metadata types that should be given to the initial JAXB context.
      */
     @Override

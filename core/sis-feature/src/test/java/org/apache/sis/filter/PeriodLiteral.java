@@ -49,6 +49,12 @@ final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializab
     public long begin, end;
 
     /**
+     * Constructs a new literal with all values initialized to zero.
+     */
+    public PeriodLiteral() {
+    }
+
+    /**
      * Returns the constant value held by this object.
      */
     @Override public Period getValue() {return this;}

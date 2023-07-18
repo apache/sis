@@ -39,6 +39,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public final class ServiceParameterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ServiceParameterTest() {
+    }
+
+    /**
      * Creates the parameter to use for testing purpose.
      *
      * @return the test parameter.

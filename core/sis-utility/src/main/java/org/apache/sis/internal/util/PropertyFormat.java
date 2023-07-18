@@ -121,7 +121,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
             final Locale locale = getLocale();
             text = (locale != Locale.ROOT) ? ((Currency) value).getDisplayName(locale) : value.toString();
         } else if (value instanceof Record) {
-            appendCollection(((Record) value).getAttributes().values(), recursive);
+            appendCollection(((Record) value).getFields().values(), recursive);
             return;
         } else if (value instanceof Iterable<?>) {
             appendCollection((Iterable<?>) value, recursive);

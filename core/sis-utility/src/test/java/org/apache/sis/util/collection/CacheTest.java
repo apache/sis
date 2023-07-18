@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
@@ -45,11 +46,17 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  * Tests the {@link Cache} with simple tests and a {@linkplain #stress() stress} test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(WeakValueHashMapTest.class)
 public final class CacheTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public CacheTest() {
+    }
+
     /**
      * Tests {@link Cache} as a {@link java.util.Map} using strong references.
      * The tested {@code Cache} shall behave like a standard {@link HashMap},
@@ -229,11 +236,11 @@ public final class CacheTest extends TestCase {
             /**
              * Puts random values in the map.
              */
-            @SuppressWarnings({"UnnecessaryBoxing", "CallToThreadYield", "NumberEquality"})
+            @SuppressWarnings("CallToThreadYield")
             @Override public void run() {
                 for (int i=0; i<count; i++) {
                     final Integer   key = i;
-                    final IntObject expected = new IntObject(i * i);        // We really want new instance.
+                    final IntObject expected = new IntObject(i * i);    // We really want new instance.
                     final IntObject value;
                     try {
                         value = cache.getOrCreate(key, () -> expected);
@@ -252,9 +259,11 @@ public final class CacheTest extends TestCase {
             }
         }
         final WriterThread[] threads = new WriterThread[50];
-        for (int i=0; i<threads.length; i++) threads[i] = new WriterThread(i);
-        for (int i=0; i<threads.length; i++) threads[i].start();
-        for (int i=0; i<threads.length; i++) threads[i].join();
+        Arrays.setAll(threads, WriterThread::new);
+        Arrays.stream(threads).forEach(Thread::start);
+        for (WriterThread thread : threads) {
+            thread.join();
+        }
         TestUtilities.rethrownIfNotNull(failures.get());
         /*
          * Verifies the values.

@@ -44,6 +44,12 @@ import static org.junit.Assert.*;
 @DependsOn(org.apache.sis.referencing.CRSTest.class)
 public final class DefinitionVerifierTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefinitionVerifierTest() {
+    }
+
+    /**
      * Tests with a CRS which is conform to the authoritative definition.
      *
      * @throws FactoryException if an error occurred while querying the authority factory.

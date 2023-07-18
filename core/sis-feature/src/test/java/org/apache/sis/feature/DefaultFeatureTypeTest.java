@@ -47,6 +47,12 @@ import org.opengis.feature.AttributeType;
 @DependsOn(DefaultAttributeTypeTest.class)
 public final class DefaultFeatureTypeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultFeatureTypeTest() {
+    }
+
+    /**
      * Convenience method returning the given name in a a property map
      * to be given to {@link AbstractIdentifiedType} constructor.
      */

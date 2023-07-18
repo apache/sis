@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class DefaultKeywordsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultKeywordsTest() {
+    }
+
+    /**
      * Tests {@link DefaultKeywords#DefaultKeywords(CharSequence[])}.
      */
     @Test

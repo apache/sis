@@ -68,6 +68,12 @@ public class DatumShiftGridFileTest extends TestCase {
     DatumShiftGridFile<Dimensionless,Dimensionless> grid;
 
     /**
+     * Creates a new test case.
+     */
+    public DatumShiftGridFileTest() {
+    }
+
+    /**
      * Creates a new grid using an affine transform as a reference.
      * An arbitrary non-uniform scale is applied on axes.
      *

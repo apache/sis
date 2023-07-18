@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class ReferenceQueueConsumerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ReferenceQueueConsumerTest() {
+    }
+
+    /**
      * Verifies that invoking {@link Thread#interrupt()} will cause {@link InterruptedException}
      * to be thrown even if invoked <em>before</em> {@link ReferenceQueue#remove()} put the
      * thread in a waiting state. This behavior is documented in {@link Object#wait()}, but
