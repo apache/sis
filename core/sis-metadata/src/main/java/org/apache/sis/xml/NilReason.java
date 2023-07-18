@@ -54,7 +54,7 @@ import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see NilObject
  *
@@ -171,10 +171,9 @@ public final class NilReason implements Serializable {
     }
 
     /**
-     * Returns an array containing every instances of this type that have not yet been
-     * garbage collected. The first elements of the returned array are the constants
-     * defined in this class, in declaration order. All other elements are the instances
-     * created by the {@link #valueOf(String)} method, in no particular order.
+     * Returns an array containing every instances of this type that have not yet been garbage collected.
+     * The first elements of the returned array are the constants defined in this class, in declaration order.
+     * All other elements are the instances created by the {@link #valueOf(String)} method, in no particular order.
      *
      * @return an array containing the instances of {@code NilReason}.
      */
@@ -279,13 +278,11 @@ public final class NilReason implements Serializable {
     }
 
     /**
-     * If this {@code NilReason} is an enumeration of kind {@link #OTHER}, returns the explanation
-     * text. Otherwise returns {@code null}. If non-null, then the explanation is a string without
-     * whitespace.
+     * If this {@code NilReason} is an enumeration of kind {@link #OTHER}, returns the explanation text.
+     * Otherwise returns {@code null}. If non-null, then the explanation is a string without whitespace.
      *
-     * <p>Note that in the special case where {@code this} nil reason is the {@link #OTHER}
-     * instance itself, then this method returns an empty string. For all other cases, the
-     * string contains at least two characters.</p>
+     * <p>Note that in the special case where {@code this} nil reason is the {@link #OTHER} instance itself,
+     * then this method returns an empty string. For all other cases, the string contains at least two characters.</p>
      *
      * @return the explanation, or {@code null} if this {@code NilReason} is not of kind {@link #OTHER}.
      */
@@ -379,15 +376,15 @@ public final class NilReason implements Serializable {
         ArgumentChecks.ensureNonNull("type", type);
         /*
          * Check for existing instance in the cache before to create a new object. Returning a unique
-         * instance is mandatory for the types handled by 'createNilPrimitive(Class)'. Since we have
+         * instance is mandatory for the types handled by `createNilPrimitive(Class)`. Since we have
          * to cache those values anyway, we opportunistically extend the caching to other types too.
          *
-         * Implementation note: we have two synchronizations here: one lock on 'this' because of the
-         * 'synchronized' statement in this method signature, and another lock in WeakValueHashMap.
-         * The second lock may seem useless since we already hold a lock on 'this'. But it is actually
+         * Implementation note: we have two synchronizations here: one lock on `this` because of the
+         * `synchronized` statement in this method signature, and another lock in `WeakValueHashMap`.
+         * The second lock may seem useless since we already hold a lock on `this`. But it is actually
          * needed because the garbage-collected entries are removed from the map in a background thread
          * (see ReferenceQueueConsumer), which is synchronized on the map itself. It is better to keep
-         * the synchronization on the map shorter than the snychronization on 'this' because a single
+         * the synchronization on the map shorter than the snychronization on `this` because a single
          * ReferenceQueueConsumer thread is shared by all the SIS library.
          */
         if (nilObjects == null) {
@@ -465,7 +462,7 @@ public final class NilReason implements Serializable {
      * be sentinel values, in order to avoid the synchronization done by {@code PrimitiveTypeProperties}.
      */
     private static boolean mayBeNil(final Object object) {
-        // 'instanceof' checks on instances of final classes are expected to be very fast.
+        // `instanceof` checks on instances of final classes are expected to be very fast.
         if (object instanceof String)  return ((String) object).isEmpty();
         if (object instanceof Boolean) return !((Boolean) object) && (object != Boolean.FALSE);
         if (object instanceof Number) {
@@ -473,7 +470,7 @@ public final class NilReason implements Serializable {
              * Following test may return false positives for Long, Float and Double types, but this is okay
              * since the real check will be done by PrimitiveTypeProperties.  The purpose of this method is
              * only to perform a cheap filtering. Note that this method relies on the fact that casting NaN
-             * to 'int' produces 0.
+             * to `int` produces 0.
              */
             return ((Number) object).intValue() == 0;
         }

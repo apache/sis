@@ -110,7 +110,6 @@ public final class WeakHashSetTest extends TestCase {
             final WeakHashSet<IntObject> weakSet = new WeakHashSet<>(IntObject.class);
             final HashSet<IntObject> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                @SuppressWarnings("UnnecessaryBoxing")
                 final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));     // Really need new instances.
                 if (random.nextBoolean()) {
                     /*

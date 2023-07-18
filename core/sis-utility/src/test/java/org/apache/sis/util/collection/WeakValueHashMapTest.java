@@ -115,7 +115,6 @@ public final class WeakValueHashMapTest extends TestCase {
      *
      * @param weakMap  the map implementation to test.
      */
-    @SuppressWarnings("UnnecessaryBoxing")
     static void testWeakReferences(final Map<Integer,IntObject> weakMap) throws InterruptedException {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
@@ -206,7 +205,6 @@ public final class WeakValueHashMapTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testStrongReferences")
-    @SuppressWarnings("UnnecessaryBoxing")
     public void testIdentityComparisons() {
         final WeakValueHashMap<IntObject,IntObject> weakMap = new WeakValueHashMap<>(IntObject.class, true);
         final IntObject k1 = new IntObject(10);

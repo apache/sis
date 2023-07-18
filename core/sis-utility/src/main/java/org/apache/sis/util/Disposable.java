@@ -55,8 +55,8 @@ package org.apache.sis.util;
  */
 public interface Disposable {
     /**
-     * Allows any resources held by this object to be released. The result of calling any other
-     * method (other than {@code finalize()}) subsequent to a call to this method is undefined.
+     * Allows any resources held by this object to be released.
+     * The result of calling any other method subsequent to a call to this method is undefined.
      */
     void dispose();
 }

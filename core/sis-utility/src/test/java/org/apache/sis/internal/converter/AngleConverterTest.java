@@ -43,7 +43,6 @@ public final class AngleConverterTest extends TestCase {
      * Tests conversions to {@link Double}.
      */
     @Test
-    @SuppressWarnings("UnnecessaryBoxing")
     public void testDouble() {
         final ObjectConverter<Angle,Double> c1 = AngleConverter.INSTANCE;
         final ObjectConverter<Double,Angle> c2 = AngleConverter.Inverse.INSTANCE;
