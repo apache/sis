@@ -188,6 +188,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @return distributed computing platforms on which the operation has been implemented.
      */
+    @SuppressWarnings("unchecked")
     @XmlJavaTypeAdapter(DCPList.class)
     @XmlElement(name = "distributedComputingPlatform", required = true)
     @UML(identifier="distributedComputingPlatform", obligation=MANDATORY, specification=ISO_19115)
@@ -229,6 +230,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @param  newValues  the new distributed computing platforms on which the operation has been implemented.
      */
+    @SuppressWarnings("unchecked")
     public void setDistributedComputingPlatforms(final Collection<? extends CodeList<?>> newValues) {
         distributedComputingPlatforms = writeCollection(newValues, distributedComputingPlatforms, (Class) CodeList.class);
     }

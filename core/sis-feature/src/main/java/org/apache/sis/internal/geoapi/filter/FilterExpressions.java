@@ -30,6 +30,7 @@ import org.apache.sis.util.iso.Names;
  * Placeholder for GeoAPI 3.1 interfaces (not yet released).
  * Shall not be visible in public API, as it will be deleted after next GeoAPI release.
  */
+@SuppressWarnings("doclint:missing")
 final class FilterExpressions<R> extends AbstractList<Expression<R,?>> {
     private final List<Filter<R>> filters;
 

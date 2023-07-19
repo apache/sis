@@ -2903,6 +2903,7 @@ parse:      for (int i = 0; i < length;) {
      * @see #addProcessing(CharSequence, String)
      * @see #addProcessDescription(CharSequence)
      */
+    @SuppressWarnings("deprecation")
     public final void addSource(final CharSequence description, final ScopeCode level, final CharSequence feature) {
         final InternationalString i18n = trim(description);
         if (i18n != null) {

@@ -102,6 +102,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * Density at which the data is recorded.
      * If non-null, then the number shall be greater than zero.
      */
+    @SuppressWarnings("serial")
     private Collection<Double> densities;
 
     /**

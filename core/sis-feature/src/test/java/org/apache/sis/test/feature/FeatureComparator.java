@@ -190,7 +190,7 @@ public class FeatureComparator {
         }
         if (expected instanceof AbstractIdentifiedType) {
             assertInstanceOf(path(), AbstractIdentifiedType.class, actual);
-            comparePropertyType((AbstractIdentifiedType) expected, (AbstractIdentifiedType) actual);
+            comparePropertyType(expected, actual);
             recognized = true;
         }
         if (!recognized) {

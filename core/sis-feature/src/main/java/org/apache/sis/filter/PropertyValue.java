@@ -392,8 +392,8 @@ split:  if (path != null) {
         }
         while (type instanceof AbstractOperation) {
             final AbstractIdentifiedType result = ((AbstractOperation) type).getResult();
-            if (result != type && result instanceof AbstractIdentifiedType) {
-                type = (AbstractIdentifiedType) result;
+            if (result != type && result != null) {
+                type = result;
             } else if (result instanceof DefaultFeatureType) {
                 return addTo.addAssociation((DefaultFeatureType) result).setName(name);
             } else {

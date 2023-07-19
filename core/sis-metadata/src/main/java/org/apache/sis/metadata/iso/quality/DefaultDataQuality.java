@@ -115,6 +115,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @since 0.5
      */
+    @SuppressWarnings("deprecation")
     public DefaultDataQuality(final ScopeCode level) {
         if (level != null) {
             scope = new DefaultScope(level);

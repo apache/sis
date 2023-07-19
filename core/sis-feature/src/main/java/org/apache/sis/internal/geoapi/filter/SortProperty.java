@@ -23,6 +23,7 @@ import java.util.Comparator;
  * Placeholder for GeoAPI 3.1 interfaces (not yet released).
  * Shall not be visible in public API, as it will be deleted after next GeoAPI release.
  */
+@SuppressWarnings("doclint:missing")
 public interface SortProperty<R> extends Comparator<R> {
     ValueReference<R,?> getValueReference();
 

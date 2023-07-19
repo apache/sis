@@ -238,7 +238,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
                 return cast(value, type);
             } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
                 return Semaphores.query(Semaphores.NULL_COLLECTION)
-                       ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
+                       ? null : new ExcludedSet<>(NAMES[code-1], NAMES[property-1]);
             }
         }
         /*
@@ -563,6 +563,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @since 1.0
      */
+    @SuppressWarnings("deprecation")
     public void setLevelDescription(final ScopeCode level, final Set<? extends CharSequence> newValues) {
         if (ScopeCode.DATASET.equals(level)) {
             String description = null;

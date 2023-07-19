@@ -118,6 +118,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
      *
      * @see #getLocationTypes()
      */
+    @SuppressWarnings("serial")
     final List<AbstractLocationType> locationTypes;
 
     /**

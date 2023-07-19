@@ -56,6 +56,7 @@ import org.opengis.test.referencing.TransformTestCase;
  * @version 1.4
  * @since   0.5
  */
+@SuppressWarnings("doclint:missing")
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
 public class ProjectiveTransformTest extends TransformTestCase {
     /**
@@ -137,7 +138,7 @@ public class ProjectiveTransformTest extends TransformTestCase {
      */
 
     static final String MESSAGE = "This test is not available in GeoAPI 3.0. "
-            + "See Apache SIS JDK6, JDK7 or JDK8 branch for the actual tests.";
+            + "See Apache SIS geoapi-4.0 branch for the actual tests.";
 
     @Test
     @Ignore(MESSAGE)

@@ -36,6 +36,7 @@ final class FeatureTypeAdapter extends XmlAdapter<GO_CharacterString, FeatureTyp
      * defined by ISO 19115-3:2016 schema.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public FeatureType unmarshal(GO_CharacterString value) {
         return new LegacyFeatureType(LegacyFeatureType.ADAPTER.unmarshal(value));
     }
@@ -45,6 +46,7 @@ final class FeatureTypeAdapter extends XmlAdapter<GO_CharacterString, FeatureTyp
      * {@link DefaultScopeDescription}.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public GO_CharacterString marshal(FeatureType value) {
         return LegacyFeatureType.ADAPTER.marshal(LegacyFeatureType.wrap(value));
     }

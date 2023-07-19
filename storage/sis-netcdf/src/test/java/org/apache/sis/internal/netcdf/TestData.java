@@ -26,6 +26,7 @@ import static org.junit.Assume.*;
  * Place-holder for a GeoAPI 3.1 class. Used only for allowing the code to compile.
  * For real test execution, see the development branches on GeoAPI 4.0-SNAPSHOT.
  */
+@SuppressWarnings("doclint:missing")
 public enum TestData {
     NETCDF_2D_GEOGRAPHIC,
 

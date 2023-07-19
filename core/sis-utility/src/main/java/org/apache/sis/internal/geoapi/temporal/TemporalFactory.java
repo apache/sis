@@ -27,6 +27,7 @@ import org.opengis.util.InternationalString;
  * @since   0.3
  * @version 0.3
  */
+@SuppressWarnings("doclint:missing")
 public interface TemporalFactory {
     Instant createInstant(Date date);
 

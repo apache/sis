@@ -52,6 +52,7 @@ final class Validator {
      * @param scope  {@code FEATURE} if the object to validate is a feature, or
      *               {@code ATTRIBUTE} for an attribute, or {@code null} otherwise.
      */
+    @SuppressWarnings("deprecation")
     Validator(final ScopeCode scope) {
         quality = new DefaultDataQuality();
         if (scope != null) {

@@ -24,6 +24,7 @@ import org.apache.sis.filter.Filter;
  * Placeholder for GeoAPI 3.1 interfaces (not yet released).
  * Shall not be visible in public API, as it will be deleted after next GeoAPI release.
  */
+@SuppressWarnings("doclint:missing")
 public interface BinaryComparisonOperator<R> extends Filter<R> {
     Expression<R,?> getOperand1();
     Expression<R,?> getOperand2();

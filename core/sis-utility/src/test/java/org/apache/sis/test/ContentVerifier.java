@@ -25,6 +25,7 @@ import org.opengis.metadata.Metadata;
  * Place-holder for a GeoAPI 3.1 class. Used only for allowing the code to compile.
  * For real test execution, see the development branches on GeoAPI 4.0-SNAPSHOT.
  */
+@SuppressWarnings("doclint:missing")
 public class ContentVerifier {
     public void addPropertyToIgnore(Class<?> type, String property) {
         assumeTrue("This test requires GeoAPI 3.1.", false);

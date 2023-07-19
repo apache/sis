@@ -21,6 +21,7 @@ package org.apache.sis.internal.geoapi.filter;
  * Placeholder for GeoAPI 3.1 interfaces (not yet released).
  * Shall not be visible in public API, as it will be deleted after next GeoAPI release.
  */
+@SuppressWarnings("doclint:missing")
 public enum SortOrder {
     ASCENDING("ASC"), DESCENDING("DESC");
 

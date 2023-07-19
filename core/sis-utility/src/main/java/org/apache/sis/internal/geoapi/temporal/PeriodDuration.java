@@ -29,6 +29,7 @@ import org.opengis.util.InternationalString;
  * @since   0.3
  * @version 0.3
  */
+@SuppressWarnings("doclint:missing")
 public interface PeriodDuration extends org.opengis.temporal.PeriodDuration {
     /**
      * A positive integer, followed by the character "Y",
