@@ -50,6 +50,12 @@ public final class DefaultScopeDescriptionTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultScopeDescriptionTest() {
+    }
+
+    /**
      * Tests the various setter methods. Since they are exclusive properties,
      * we expect any new property to replace the old one.
      */

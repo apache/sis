@@ -49,6 +49,12 @@ import org.opengis.metadata.spatial.Georeferenceable;
  */
 public final class MetadataTypes extends TypeRegistration implements UnaryOperator<Object> {
     /**
+     * Creates a default provider of additional classes to register.
+     */
+    public MetadataTypes() {
+    }
+
+    /**
      * Adds to the given collection the metadata types that should be given to the initial JAXB context.
      */
     @Override

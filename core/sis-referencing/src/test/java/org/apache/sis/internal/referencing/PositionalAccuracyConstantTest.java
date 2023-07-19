@@ -35,6 +35,12 @@ import static org.junit.Assert.*;
  */
 public final class PositionalAccuracyConstantTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public PositionalAccuracyConstantTest() {
+    }
+
+    /**
      * Tests {@link PositionalAccuracyConstant} constants.
      */
     @Test

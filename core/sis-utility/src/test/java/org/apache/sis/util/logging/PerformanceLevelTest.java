@@ -34,6 +34,12 @@ import static org.apache.sis.util.logging.PerformanceLevel.*;
  */
 public final class PerformanceLevelTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public PerformanceLevelTest() {
+    }
+
+    /**
      * Ensures that the duration are conform to the documentation.
      */
     @Test

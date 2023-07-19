@@ -52,6 +52,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class ServicesForMetadataTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ServicesForMetadataTest() {
+    }
+
+    /**
      * Tests {@link org.apache.sis.metadata.iso.extent.Extents#centroid(GeographicBoundingBox)}.
      *
      * @since 0.8

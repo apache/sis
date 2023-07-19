@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
  */
 public final class AbstractElementTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractElementTest() {
+    }
+
+    /**
      * Tests {@link Element#getDates()}.
      */
     @Test

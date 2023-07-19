@@ -48,6 +48,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class DefaultGeographicCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultGeographicCRSTest() {
+    }
+
+    /**
      * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#POSITIVE_RANGE}.
      */

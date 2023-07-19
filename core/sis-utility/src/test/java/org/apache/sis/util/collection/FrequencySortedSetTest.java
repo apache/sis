@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class FrequencySortedSetTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FrequencySortedSetTest() {
+    }
+
+    /**
      * A simple case with only two elements, the first one being omitted.
      */
     @Test

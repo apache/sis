@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class VerticalDatumTypesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public VerticalDatumTypesTest() {
+    }
+
+    /**
      * Tests the {@link VerticalDatumTypes#fromLegacy(int)} method.
      */
     @Test

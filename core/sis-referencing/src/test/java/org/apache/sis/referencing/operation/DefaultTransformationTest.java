@@ -54,6 +54,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 })
 public final class DefaultTransformationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultTransformationTest() {
+    }
+
+    /**
      * Creates a geocentric CRS using the given datum.
      */
     private static DefaultGeocentricCRS createCRS(final String name, final GeodeticDatum datum) {

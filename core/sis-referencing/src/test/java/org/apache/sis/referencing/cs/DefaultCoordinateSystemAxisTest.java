@@ -48,6 +48,12 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 })
 public final class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultCoordinateSystemAxisTest() {
+    }
+
+    /**
      * Validates the {@link HardCodedAxes} constants.
      */
     @Test

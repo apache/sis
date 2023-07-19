@@ -83,6 +83,12 @@ public final class UpdaterTest extends TestCase {
     private Path file;
 
     /**
+     * Creates a new test case.
+     */
+    public UpdaterTest() {
+    }
+
+    /**
      * Creates the temporary file before test execution.
      *
      * @throws IOException if the temporary file cannot be created.

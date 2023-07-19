@@ -41,6 +41,12 @@ import static org.apache.sis.util.collection.TableColumn.*;
 @DependsOn(TableColumnTest.class)
 public final class DefaultTreeTableTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultTreeTableTest() {
+    }
+
+    /**
      * Tests the creation of an {@link DefaultTreeTable} with initially no root node.
      * The columns are {@code NAME} and {@code TYPE}.
      *

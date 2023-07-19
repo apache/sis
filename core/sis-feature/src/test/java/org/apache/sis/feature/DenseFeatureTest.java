@@ -34,6 +34,12 @@ import org.apache.sis.test.DependsOn;
 })
 public final class DenseFeatureTest extends FeatureTestCase {
     /**
+     * Creates a new test case.
+     */
+    public DenseFeatureTest() {
+    }
+
+    /**
      * Creates a new feature for the given type.
      */
     @Override

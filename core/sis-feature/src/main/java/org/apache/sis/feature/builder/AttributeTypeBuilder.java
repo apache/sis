@@ -359,6 +359,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @see #characteristics()
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public final AttributeTypeBuilder<V> setValidValues(final V... values) {
         return setCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC,
                 Set.class, CollectionsExt.immutableSet(false, values));

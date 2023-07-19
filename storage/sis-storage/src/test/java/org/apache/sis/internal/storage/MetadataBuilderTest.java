@@ -48,6 +48,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 public final class MetadataBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MetadataBuilderTest() {
+    }
+
+    /**
      * Tests {@link MetadataBuilder#parseLegalNotice(String)}.
      * The expected result of this parsing is:
      *

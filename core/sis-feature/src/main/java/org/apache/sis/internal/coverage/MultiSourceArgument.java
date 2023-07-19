@@ -91,7 +91,7 @@ public final class MultiSourceArgument<S> {
      * Consequently this field can also be used for checking whether
      * one of the {@code validate(…)} methods has been invoked.</p>
      *
-     * @see #validate(Function)
+     * @see #completeAndValidate(Function)
      * @see #validate(ToIntFunction)
      */
     private int[] numBandsPerSource;
@@ -250,7 +250,7 @@ public final class MultiSourceArgument<S> {
          *
          * @param sources         all sources of the aggregate to decompose.
          * @param bandsPerSource  selected bands of the aggregate to decompose. May contain null elements.
-         * @param getter          same getter as {@link #validate(Function)}, used for getting the number of bands.
+         * @param getter          same getter as {@link #completeAndValidate(Function)}, used for getting the number of bands.
          */
         public void applySubset(final S[] sources, final int[][] bandsPerSource,
                                 final Function<S, List<SampleDimension>> getter)
@@ -312,7 +312,7 @@ public final class MultiSourceArgument<S> {
     }
 
     /**
-     * Clones and validates the arguments given to the constructor.
+     * Validates the arguments given to the constructor.
      *
      * @param  counter  method to invoke for counting the number of bands in a source.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
@@ -323,14 +323,13 @@ public final class MultiSourceArgument<S> {
     }
 
     /**
-     * Clones and validates the arguments given to the constructor.
-     * Also computes the union of bands in the sources given at construction time.
-     * The union result is stored in {@link #ranges()}.
+     * Computes the union of bands in the source given at construction time, then validates.
+     * The union of bands is stored in {@link #ranges()}.
      *
      * @param  getter  method to invoke for getting the list of sample dimensions.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
-    public void validate(final Function<S, List<SampleDimension>> getter) {
+    public void completeAndValidate(final Function<S, List<SampleDimension>> getter) {
         checkValidationState(false);
         ranges = new ArrayList<>();
         validate(Objects.requireNonNull(getter), null);

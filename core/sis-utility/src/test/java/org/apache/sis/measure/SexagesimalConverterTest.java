@@ -40,6 +40,12 @@ public final class SexagesimalConverterTest extends TestCase {
     private static final double TOLERANCE = 1E-12;
 
     /**
+     * Creates a new test case.
+     */
+    public SexagesimalConverterTest() {
+    }
+
+    /**
      * Converts the given value to another unit, compares with the expected value, and verify
      * the inverse conversion. Then tries again with the negative of the given values.
      */

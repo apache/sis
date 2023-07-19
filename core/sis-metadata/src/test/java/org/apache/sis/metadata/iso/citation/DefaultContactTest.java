@@ -51,6 +51,12 @@ public final class DefaultContactTest extends TestCase implements Filter {
     private Object[] parameters;
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultContactTest() {
+    }
+
+    /**
      * Invoked when a warning occurred while unmarshalling a test XML fragment. This method ensures that no other
      * warning occurred before this method call (i.e. each test is allowed to cause at most one warning), then
      * remember the warning parameters for verification by the test method.

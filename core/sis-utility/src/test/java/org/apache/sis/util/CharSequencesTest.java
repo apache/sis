@@ -41,6 +41,12 @@ import static org.apache.sis.util.CharSequences.*;
 })
 public final class CharSequencesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CharSequencesTest() {
+    }
+
+    /**
      * Tests {@link CharSequences#spaces(int)}.
      */
     @Test

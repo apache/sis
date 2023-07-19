@@ -35,6 +35,12 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  */
 public final class StatisticsFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StatisticsFormatTest() {
+    }
+
+    /**
      * Tests the formatting of {@code Statistics} without column headers.
      * We instantiate the {@link StatisticsFormat} directly in order to fix the locale
      * to a hard-coded value. But except for the localization, the result should be

@@ -60,6 +60,12 @@ public final class StoreTest extends TestCase {
     private boolean isMovingFeature;
 
     /**
+     * Creates a new test case.
+     */
+    public StoreTest() {
+    }
+
+    /**
      * An example of Moving Features file.
      * Derived from the example provided in OGC 14-084r2.
      */

@@ -43,6 +43,12 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  */
 public final class WraparoundTransformTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public WraparoundTransformTest() {
+    }
+
+    /**
      * Tests {@link WraparoundTransform#inverse()}.
      *
      * @throws TransformException if a coordinate cannot be computed.

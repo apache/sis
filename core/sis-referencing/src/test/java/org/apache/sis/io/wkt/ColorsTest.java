@@ -33,6 +33,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class ColorsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ColorsTest() {
+    }
+
+    /**
      * Tests {@link Colors#getName(ElementKind)}.
      */
     @Test

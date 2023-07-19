@@ -37,6 +37,12 @@ import org.junit.Test;
  */
 public final class PolarToCartesianTest extends TransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public PolarToCartesianTest() {
+    }
+
+    /**
      * Returns coordinate tuples in polar or cylindrical coordinates and their equivalent in Cartesian coordinates.
      */
     static double[][] testData(final boolean withHeight) {

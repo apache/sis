@@ -26,7 +26,6 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLDataException;
-import org.postgresql.PGProperty;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.sis.internal.metadata.sql.Dialect;
@@ -237,7 +236,6 @@ public class TestDatabase implements AutoCloseable {
         ds.setDatabaseName(NAME);
         ds.setApplicationName("Apache SIS test database");
         ds.setCurrentSchema(schema);
-        ds.setProperty(PGProperty.LOGGER_LEVEL, "OFF");   // For avoiding warning when no PostgreSQL server is running.
         /*
          * Current version does not use pooling on the assumption that connections to local host are fast enough.
          * We verify that the schema does not exist, even if the `create` argument is `false`, because we assume

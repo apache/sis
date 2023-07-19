@@ -217,7 +217,7 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
         try {
             final var aggregate = new MultiSourceArgument<GridCoverageResource>(sources, bandsPerSource);
             aggregate.unwrap(BandAggregateGridResource::unwrap);
-            aggregate.validate(BandAggregateGridResource::range);
+            aggregate.completeAndValidate(BandAggregateGridResource::range);
             aggregate.mergeConsecutiveSources();
             if (aggregate.isIdentity()) {
                 return aggregate.sources()[0];

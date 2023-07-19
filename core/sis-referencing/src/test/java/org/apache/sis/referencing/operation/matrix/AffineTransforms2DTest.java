@@ -38,6 +38,12 @@ public final class AffineTransforms2DTest extends TestCase {
     private static final double EPS = 1E-10;
 
     /**
+     * Creates a new test case.
+     */
+    public AffineTransforms2DTest() {
+    }
+
+    /**
      * Tests {@link AffineTransforms2D} in the unflipped case.
      */
     @Test

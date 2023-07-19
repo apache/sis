@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class AbstractDirectPositionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractDirectPositionTest() {
+    }
+
+    /**
      * Tests {@link AbstractDirectPosition#parse(CharSequence)}.
      */
     @Test

@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class ListOfUnknownSizeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ListOfUnknownSizeTest() {
+    }
+
+    /**
      * Tests {@link ListOfUnknownSize#listIterator()}.
      */
     @Test

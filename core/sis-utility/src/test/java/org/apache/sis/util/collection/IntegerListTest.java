@@ -52,6 +52,12 @@ public final class IntegerListTest extends TestCase {
     private IntegerList list;
 
     /**
+     * Creates a new test case.
+     */
+    public IntegerListTest() {
+    }
+
+    /**
      * Writes values and read them again for making sure they are the expected ones.
      * This method tests also split iterators.
      *

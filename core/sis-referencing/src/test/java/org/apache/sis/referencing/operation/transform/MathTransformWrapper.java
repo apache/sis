@@ -54,6 +54,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
     /**
      * The math transform on which to delegate the work.
      */
+    @SuppressWarnings("serial")             // Most Apache SIS implementations are serializable.
     public final MathTransform transform;
 
     /**

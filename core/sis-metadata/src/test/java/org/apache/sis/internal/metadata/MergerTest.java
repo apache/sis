@@ -49,6 +49,12 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  */
 public final class MergerTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MergerTest() {
+    }
+
+    /**
      * Creates a metadata sample with 3 content information of different kind.
      */
     private static DefaultMetadata createSample1() {

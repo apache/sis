@@ -79,6 +79,12 @@ public final class ReaderTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public ReaderTest() {
+    }
+
+    /**
      * Creates a new GPX data store which will read the given test file.
      *
      * @param  version   identifies the version of the schema to test.

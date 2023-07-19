@@ -39,6 +39,12 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 @DependsOn(AbstractCSTest.class)
 public final class DefaultPolarCSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultPolarCSTest() {
+    }
+
+    /**
      * Tests {@link DefaultPolarCS#forConvention(AxesConvention)}
      * with a change from clockwise to counterclockwise axis orientation.
      */

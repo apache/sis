@@ -69,6 +69,12 @@ public final class DefaultCompoundCRSTest extends TestCase {
     private static final DefaultTemporalCRS TIME = HardCodedCRS.TIME;
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultCompoundCRSTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a projected CRS definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

@@ -43,6 +43,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(FreeTextMarshallingTest.class)
 public final class AbstractPositionalAccuracyTest extends TestUsingFile {
     /**
+     * Creates a new test case.
+     */
+    public AbstractPositionalAccuracyTest() {
+    }
+
+    /**
      * Opens the stream to the XML file containing quality information.
      *
      * @param  format  whether to use the 2007 or 2016 version of ISO 19115.

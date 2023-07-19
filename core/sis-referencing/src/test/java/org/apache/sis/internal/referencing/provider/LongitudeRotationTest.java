@@ -41,6 +41,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 @DependsOn(AffineTest.class)
 public final class LongitudeRotationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LongitudeRotationTest() {
+    }
+
+    /**
      * Tests {@code LongitudeRotation.createMathTransform(…)}.
      */
     @Test

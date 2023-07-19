@@ -52,6 +52,12 @@ public final class WeakValueHashMapTest extends TestCase {
     private static final int NUM_RETRY = 2;
 
     /**
+     * Creates a new test case.
+     */
+    public WeakValueHashMapTest() {
+    }
+
+    /**
      * Tests the {@link WeakValueHashMap} using strong references.
      * The tested {@code WeakValueHashMap} shall behave like a standard {@link HashMap},
      * except for element order.
@@ -109,7 +115,6 @@ public final class WeakValueHashMapTest extends TestCase {
      *
      * @param weakMap  the map implementation to test.
      */
-    @SuppressWarnings("UnnecessaryBoxing")
     static void testWeakReferences(final Map<Integer,IntObject> weakMap) throws InterruptedException {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
@@ -200,7 +205,6 @@ public final class WeakValueHashMapTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testStrongReferences")
-    @SuppressWarnings("UnnecessaryBoxing")
     public void testIdentityComparisons() {
         final WeakValueHashMap<IntObject,IntObject> weakMap = new WeakValueHashMap<>(IntObject.class, true);
         final IntObject k1 = new IntObject(10);

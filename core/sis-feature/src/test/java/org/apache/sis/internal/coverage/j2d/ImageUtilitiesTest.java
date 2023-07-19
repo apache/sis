@@ -43,6 +43,12 @@ import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
  */
 public final class ImageUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ImageUtilitiesTest() {
+    }
+
+    /**
      * Verifies that {@link ImageUtilities#SUGGESTED_TILE_CACHE_SIZE} is strictly positive.
      */
     @Test

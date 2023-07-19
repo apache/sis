@@ -46,6 +46,12 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  */
 public final class NADCONTest extends DatumShiftTestCase {
     /**
+     * Creates a new test case.
+     */
+    public NADCONTest() {
+    }
+
+    /**
      * Returns the sample point for a step in the transformation from NAD27 to NAD83.
      * The sample point is the coordinate of Meades Ranch station, which was the point
      * relative to which all land measurements in USA were made for NAD27.

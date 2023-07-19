@@ -50,6 +50,12 @@ public final class ExtentSelectorTest extends TestCase {
     private Duration granularity;
 
     /**
+     * Creates a new test case.
+     */
+    public ExtentSelectorTest() {
+    }
+
+    /**
      * Tests the selector when intersection with AOI is a sufficient criterion.
      */
     @Test

@@ -200,6 +200,7 @@ public final class CollectionsExt extends Static {
      */
     @SafeVarargs
     public static <T> Set<T> nonEmptySet(final T... elements) {
+        @SuppressWarnings("varargs")
         final Set<T> asSet = immutableSet(true, elements);
         return (asSet != null && asSet.isEmpty()) ? null : asSet;
     }
@@ -366,6 +367,7 @@ public final class CollectionsExt extends Static {
                 return Collections.emptySet();
             }
             default: {
+                @SuppressWarnings("varargs")
                 final Set<E> set = new LinkedHashSet<>(Arrays.asList(array));
                 if (excludeNull) {
                     set.remove(null);

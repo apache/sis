@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class ImageLayoutTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ImageLayoutTest() {
+    }
+
+    /**
      * Tests {@link ImageLayout#suggestTileSize(int, int, boolean)}.
      */
     @Test

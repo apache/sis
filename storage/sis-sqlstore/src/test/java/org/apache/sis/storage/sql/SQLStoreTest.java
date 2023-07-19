@@ -62,10 +62,10 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * Data used in the {@code Features.sql} test file.
      */
     public enum City {
-        TOKYO   ("Tōkyō",    "JPN", "日本",     13622267, "Yoyogi-kōen", "Shinjuku Gyoen"),
-        PARIS   ("Paris",    "FRA", "France",   2206488, "Tuileries Garden", "Luxembourg Garden"),
-        MONTREAL("Montreal", "CAN", "Canada",   1704694, "Mount Royal"),
-        QUEBEC  ("Quebec",   "CAN", "Canada",    531902);
+        /** Tokyo (Japan).     */ TOKYO   ("Tōkyō",    "JPN", "日本",    13622267, "Yoyogi-kōen", "Shinjuku Gyoen"),
+        /** Paris (France).    */ PARIS   ("Paris",    "FRA", "France",   2206488, "Tuileries Garden", "Luxembourg Garden"),
+        /** Montréal (Canada). */ MONTREAL("Montreal", "CAN", "Canada",   1704694, "Mount Royal"),
+        /** Québec (Canada).   */ QUEBEC  ("Quebec",   "CAN", "Canada",    531902);
 
         /** City name in Latin characters.   */ public final String englishName;
         /** Country ISO code (3 letters).    */ public final String country;

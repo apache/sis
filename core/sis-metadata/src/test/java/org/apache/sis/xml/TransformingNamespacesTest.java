@@ -46,6 +46,12 @@ public final class TransformingNamespacesTest extends TestCase implements Namesp
     }
 
     /**
+     * Creates a new test case.
+     */
+    public TransformingNamespacesTest() {
+    }
+
+    /**
      * Tests {@link TransformingNamespaces#getPrefixes(String)}.
      */
     @Test

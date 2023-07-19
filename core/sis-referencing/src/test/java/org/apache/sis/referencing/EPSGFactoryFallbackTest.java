@@ -63,6 +63,12 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
 })
 public final class EPSGFactoryFallbackTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public EPSGFactoryFallbackTest() {
+    }
+
+    /**
      * Tests {@link EPSGFactoryFallback#getAuthorityCodes(Class)}.
      *
      * @throws FactoryException if the set of authority codes cannot be fetched.

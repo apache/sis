@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
 @DependsOn(CommandRunnerTest.class)
 public final class HelpCommandTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public HelpCommandTest() {
+    }
+
+    /**
      * Tests the sub-command without option.
      *
      * @throws InvalidOptionException should never happen.

@@ -43,6 +43,12 @@ import org.apache.sis.feature.AbstractOperation;
  */
 public final class AttributeConventionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AttributeConventionTest() {
+    }
+
+    /**
      * Tests {@link AttributeConvention#contains(GenericName)} method.
      */
     @Test

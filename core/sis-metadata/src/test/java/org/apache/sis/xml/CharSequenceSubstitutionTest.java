@@ -49,6 +49,12 @@ import org.opengis.referencing.ReferenceIdentifier;
  */
 public final class CharSequenceSubstitutionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CharSequenceSubstitutionTest() {
+    }
+
+    /**
      * Tests unmarshalling of {@code "RS_Identifier"} element. This element was defined in legacy ISO 19139:2007
      * but has been removed in ISO 19115-3. That element is extensively used for Coordinate Reference Systems in
      * GML 3.2.

@@ -40,6 +40,12 @@ import static org.junit.Assert.*;
  */
 public final class GroupAsPolylineOperationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GroupAsPolylineOperationTest() {
+    }
+
+    /**
      * Tests a feature with a sequence of points.
      */
     @Test

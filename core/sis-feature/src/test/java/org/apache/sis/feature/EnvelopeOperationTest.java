@@ -68,6 +68,12 @@ public final class EnvelopeOperationTest extends TestCase {
     private AbstractFeature feature;
 
     /**
+     * Creates a new test case.
+     */
+    public EnvelopeOperationTest() {
+    }
+
+    /**
      * Creates the feature type with two geometric properties without default CRS.
      *
      * @see #initialize(CoordinateReferenceSystem, boolean, CoordinateReferenceSystem, boolean)

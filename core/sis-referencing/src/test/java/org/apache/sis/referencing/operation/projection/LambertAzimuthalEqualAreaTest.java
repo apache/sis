@@ -50,6 +50,12 @@ public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
     private static final double SPHERE_RADIUS = ReferencingServices.AUTHALIC_RADIUS;
 
     /**
+     * Creates a new test case.
+     */
+    public LambertAzimuthalEqualAreaTest() {
+    }
+
+    /**
      * Returns the provider for the map projection to tesT.
      */
     private static MapProjection provider(final boolean elliptical) {

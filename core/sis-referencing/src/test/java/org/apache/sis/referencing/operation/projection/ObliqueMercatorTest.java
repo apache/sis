@@ -39,6 +39,12 @@ import static java.lang.StrictMath.*;
 @DependsOn(MercatorTest.class)
 public final class ObliqueMercatorTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public ObliqueMercatorTest() {
+    }
+
+    /**
      * Returns a new instance of {@link ObliqueMercator}.
      *
      * @param  cx       the longitude of projection center.

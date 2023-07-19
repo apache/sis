@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
  */
 public final class RasterWriterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public RasterWriterTest() {
+    }
+
+    /**
      * Tests writing a raster in unsigned short format.
      * This method writes the raster in an array and compares the result with
      * the expected sequence of bytes provided by {@code "raster-ushort.wkb"} file.

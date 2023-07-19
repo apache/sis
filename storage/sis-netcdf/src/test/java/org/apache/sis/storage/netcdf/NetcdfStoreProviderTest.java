@@ -48,6 +48,12 @@ import static org.opengis.test.Assert.assertInstanceOf;
 })
 public final class NetcdfStoreProviderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NetcdfStoreProviderTest() {
+    }
+
+    /**
      * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for an input stream which shall
      * be recognized as a classic netCDF file.
      *

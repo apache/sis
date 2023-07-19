@@ -58,6 +58,12 @@ import static org.junit.Assert.*;
 @DependsOn(ReferencingByIdentifiersTest.class)
 public final class MilitaryGridReferenceSystemTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MilitaryGridReferenceSystemTest() {
+    }
+
+    /**
      * Verifies the metadata.
      */
     @Test

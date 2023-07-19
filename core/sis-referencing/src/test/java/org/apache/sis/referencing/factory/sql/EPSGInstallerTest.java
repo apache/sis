@@ -89,6 +89,12 @@ public final class EPSGInstallerTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public EPSGInstallerTest() {
+    }
+
+    /**
      * Tests the {@link EPSGInstaller#REPLACE_STATEMENT} pattern.
      */
     @Test

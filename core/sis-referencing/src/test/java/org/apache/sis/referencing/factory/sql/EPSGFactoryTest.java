@@ -91,6 +91,12 @@ import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
 })
 public final class EPSGFactoryTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public EPSGFactoryTest() {
+    }
+
+    /**
      * Creates the factory to use for all tests in this class.
      *
      * @throws FactoryException if an error occurred while creating the factory.

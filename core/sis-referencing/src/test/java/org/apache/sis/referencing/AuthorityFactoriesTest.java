@@ -69,6 +69,12 @@ public final class AuthorityFactoriesTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public AuthorityFactoriesTest() {
+    }
+
+    /**
      * Ensures that {@link EPSGFactoryProxy} is declared before {@link CommonAuthorityFactory}.
      * This is preferable (but not mandatory) because of the way we implemented {@link AuthorityFactories}.
      */

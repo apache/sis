@@ -43,6 +43,12 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 @DependsOn(StoreProviderTest.class)
 public final class StoreTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StoreTest() {
+    }
+
+    /**
      * The WKT to parse. This WKT uses US-ASCII characters only.
      */
     public static final String WKT =

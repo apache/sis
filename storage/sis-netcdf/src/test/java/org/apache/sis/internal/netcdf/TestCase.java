@@ -28,7 +28,9 @@ import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.DataStoreMock;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.NetcdfFiles;
 import ucar.nc2.NetcdfFile;
 import org.junit.AfterClass;
 
@@ -88,7 +90,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
          */
         String location = file.location().toString();
         location = location.substring(location.lastIndexOf('/') + 1);
-        return NetcdfFile.openInMemory(location, file.content());
+        return NetcdfFiles.openInMemory(location, file.content());
     }
 
     /**
@@ -110,7 +112,8 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     protected Decoder createDecoder(final TestData file) throws IOException, DataStoreException {
-        return new DecoderWrapper(new NetcdfDataset(createUCAR(file)), GeometryLibrary.JAVA2D, createListeners());
+        final NetcdfDataset ds = NetcdfDatasets.enhance(createUCAR(file), NetcdfDataset.getDefaultEnhanceMode(), null);
+        return new DecoderWrapper(ds, GeometryLibrary.JAVA2D, createListeners());
     }
 
     /**

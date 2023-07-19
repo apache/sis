@@ -36,6 +36,12 @@ public final class CurveExtremumTest extends TestCase {
     private static final double EPS = 1E-8;
 
     /**
+     * Creates a new test case.
+     */
+    public CurveExtremumTest() {
+    }
+
+    /**
      * Tests {@link CurveExtremum#resolve(double, double, double, double, double, double)}.
      */
     @Test

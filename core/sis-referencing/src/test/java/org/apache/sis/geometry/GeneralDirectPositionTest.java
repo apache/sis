@@ -38,6 +38,12 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 @DependsOn(AbstractDirectPositionTest.class)
 public final class GeneralDirectPositionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GeneralDirectPositionTest() {
+    }
+
+    /**
      * Tests the {@link GeneralDirectPosition#normalize()} method.
      */
     @Test

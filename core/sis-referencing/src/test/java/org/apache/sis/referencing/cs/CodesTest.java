@@ -44,6 +44,12 @@ public final class CodesTest extends TestCase {
     private static final Unit<?> VERTICAL_UNIT = Units.METRE;
 
     /**
+     * Creates a new test case.
+     */
+    public CodesTest() {
+    }
+
+    /**
      * Compares the axis directions and units with EPSG definitions.
      *
      * @throws Exception if an error occurred while fetching the codes or querying the database.

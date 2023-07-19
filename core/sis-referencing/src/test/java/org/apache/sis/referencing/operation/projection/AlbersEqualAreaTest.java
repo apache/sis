@@ -45,6 +45,12 @@ import static org.junit.Assert.*;
 @DependsOn(CylindricalEqualAreaTest.class)
 public final class AlbersEqualAreaTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public AlbersEqualAreaTest() {
+    }
+
+    /**
      * Returns whether the given projection is the spherical implementation.
      */
     private static boolean isSpherical(final AlbersEqualArea transform) {

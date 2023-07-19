@@ -41,6 +41,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public final class DefaultLineageTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultLineageTest() {
+    }
+
+    /**
      * Create a lineage to marshal. If {@code extension} is {@code false}, then this method uses
      * only properties defined in ISO 19115-1. If {@code extension} is {@code true}, then this
      * method adds an ISO 19115-2 property.

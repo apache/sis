@@ -45,6 +45,12 @@ import static org.junit.Assert.*;
 })
 public final class PositionVector7ParamTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public PositionVector7ParamTest() {
+    }
+
+    /**
      * Returns the sample point for a step in the example given by the EPSG guidance note.
      *
      * <blockquote><b>Source:</b>

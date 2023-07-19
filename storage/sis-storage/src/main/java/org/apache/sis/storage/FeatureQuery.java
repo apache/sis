@@ -378,6 +378,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @todo Not yet in public API. Pending publication of {@link SortProperty} interface.
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     final void setSortBy(final SortProperty<AbstractFeature>... properties) {
         SortBy<AbstractFeature> sortBy = null;
         if (properties != null) {

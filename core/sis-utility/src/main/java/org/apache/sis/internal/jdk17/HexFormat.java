@@ -32,6 +32,9 @@ public final class HexFormat {
     private HexFormat() {
     }
 
+    /**
+     * {@return the singleton instance}.
+     */
     public static HexFormat of() {
         return INSTANCE;
     }
@@ -56,7 +59,7 @@ public final class HexFormat {
     }
 
     /**
-     * Returns the numerical value of the given hexadecimal digit.
+     * {@return the numerical value of the given hexadecimal digit}.
      * The hexadecimal digit can be the decimal digits 0 to 9, or the letters A to F ignoring case.
      *
      * <h4>Implementation note</h4>

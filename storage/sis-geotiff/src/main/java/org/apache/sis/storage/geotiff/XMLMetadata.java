@@ -139,7 +139,7 @@ final class XMLMetadata implements Filter {
         listeners = reader.store.listeners();
         switch (type) {
             case ASCII: {
-                final String[] cs = type.readString(reader.input, count, reader.store.encoding);
+                final String[] cs = type.readAsStrings(reader.input, count, reader.store.encoding);
                 switch (cs.length) {
                     case 0:  break;
                     case 1:  string = cs[0]; break;      // Usual case.
@@ -153,7 +153,7 @@ final class XMLMetadata implements Filter {
                  * NoSuchElementException, ClassCastException and UnsupportedOperationException
                  * should never happen here because we verified that the vector type is byte.
                  */
-                bytes = ((ByteBuffer) type.readVector(reader.input, count).buffer().get()).array();
+                bytes = ((ByteBuffer) type.readAsVector(reader.input, count).buffer().get()).array();
                 break;
             }
         }
@@ -222,6 +222,11 @@ final class XMLMetadata implements Filter {
      * It allows JavaFX application to support the "copy to clipboard" operation.
      */
     static final class Root extends DefaultTreeTable.Node {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -3656784393688796818L;
+
         /**
          * Column for the name associated to the element.
          */

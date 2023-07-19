@@ -57,6 +57,12 @@ public final class IsolinesTest extends TestCase {
     private Shape isoline;
 
     /**
+     * Creates a new test case.
+     */
+    public IsolinesTest() {
+    }
+
+    /**
      * Tests isolines computed in a contouring grid having only one cell.
      * The cell may have zero, one or two line segments.
      *

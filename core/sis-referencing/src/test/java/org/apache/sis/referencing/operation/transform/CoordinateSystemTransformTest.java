@@ -68,6 +68,12 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
     private static ThreadLocal<OperationMethod> lastMethod;
 
     /**
+     * Creates a new test case.
+     */
+    public CoordinateSystemTransformTest() {
+    }
+
+    /**
      * Creates the {@link MathTransformFactory} to be used for the tests.
      * We do not use the system-wide factory in order to have better tests isolation.
      */

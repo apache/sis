@@ -100,6 +100,12 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
         /*  After kernel */     FN  = 463000.00;        // False Northing (m)
 
     /**
+     * Creates a new test case.
+     */
+    public ObliqueStereographicTest() {
+    }
+
+    /**
      * Compares the <var>n</var> value given in the EPSG guide with the value computed from the formula.
      */
     @Test

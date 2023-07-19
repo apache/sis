@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class LoggersTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LoggersTest() {
+    }
+
+    /**
      * Verifies some logger names.
      */
     @Test

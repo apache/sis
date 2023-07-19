@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class DefaultDomainConsistencyTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultDomainConsistencyTest() {
+    }
+
+    /**
      * Tests {@link DefaultDomainConsistency#asMap()}.
      */
     @Test

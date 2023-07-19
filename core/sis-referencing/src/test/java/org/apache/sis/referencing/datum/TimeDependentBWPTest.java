@@ -42,6 +42,12 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
 @DependsOn(BursaWolfParametersTest.class)
 public final class TimeDependentBWPTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TimeDependentBWPTest() {
+    }
+
+    /**
      * Creates a {@code TimeDependentBWP} using the example given in the EPSG database for operation method EPSG:1053.
      * The target datum given by the EPG example is actually GDA94, but it is coincident with WGS84 to within 1 metre.
      * For the purpose of this test, the target datum does not matter anyway.

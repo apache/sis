@@ -40,6 +40,12 @@ import org.apache.sis.feature.AbstractAttribute;
  */
 public final class ShapeFileTest {
     /**
+     * Creates a new test case.
+     */
+    public ShapeFileTest() {
+    }
+
+    /**
      * Returns URI path to a resource.
      * @param name Resource name.
      * @return URI path.

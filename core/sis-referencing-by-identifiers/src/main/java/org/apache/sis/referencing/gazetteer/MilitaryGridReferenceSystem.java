@@ -162,7 +162,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     /**
      * Size of the 100 kilometres squares, in metres.
      */
-    static final double GRID_SQUARE_SIZE = 100_000;
+    static final int GRID_SQUARE_SIZE = 100_000;
 
     /**
      * Number of letters available for grid rows. Those letters are "ABCDEFGHJKLMNPQRSTUV" (starting at letter
@@ -814,9 +814,9 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                             org.apache.sis.internal.referencing.Resources.Keys.NonHorizontalCRS_1, "areaOfInterest"));
                 }
                 final int precision = (int) getPrecision();
-                if (precision <= 0 || precision > (int) GRID_SQUARE_SIZE) {
+                if (precision <= 0 || precision > GRID_SQUARE_SIZE) {
                     throw new GazetteerException(Errors.format(Errors.Keys.ValueOutOfRange_4,
-                            "precision", 1, (int) GRID_SQUARE_SIZE, precision));
+                            "precision", 1, GRID_SQUARE_SIZE, precision));
                 }
                 /*
                  * Convert area of interest (AOI) from an envelope to a Rectangle2D for use with

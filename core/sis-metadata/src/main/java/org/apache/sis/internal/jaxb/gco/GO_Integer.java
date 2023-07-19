@@ -50,7 +50,7 @@ public class GO_Integer extends PropertyType<GO_Integer, Integer> {
      * @param  value  the value.
      */
     private GO_Integer(final Integer value) {
-        super(value, value == 0);
+        super(value, false);
     }
 
     /**

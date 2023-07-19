@@ -36,6 +36,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public final class SecondDefiningParameterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SecondDefiningParameterTest() {
+    }
+
+    /**
      * XML of an ellipsoid defined by semi-major and semi-minor axes.
      * The numerical values used for this test is the ones of Clarke 1866 (EPSG:7008).
      */

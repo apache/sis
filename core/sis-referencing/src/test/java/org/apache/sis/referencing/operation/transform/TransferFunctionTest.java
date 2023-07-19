@@ -42,6 +42,12 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 @DependsOn(ExponentialTransform1DTest.class)
 public final class TransferFunctionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TransferFunctionTest() {
+    }
+
+    /**
      * Tests the creation of a linear transfer function.
      */
     @Test

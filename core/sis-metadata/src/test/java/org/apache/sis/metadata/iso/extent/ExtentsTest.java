@@ -57,6 +57,12 @@ public final class ExtentsTest extends TestCase {
     private static final double MINUTE = 1./60;
 
     /**
+     * Creates a new test case.
+     */
+    public ExtentsTest() {
+    }
+
+    /**
      * Tests {@link Extents#getVerticalRange(Extent)}.
      *
      * @throws IncommensurableException if a conversion between incompatible units were attempted.

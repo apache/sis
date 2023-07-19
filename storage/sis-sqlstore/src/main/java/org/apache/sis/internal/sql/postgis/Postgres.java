@@ -47,6 +47,8 @@ import org.apache.sis.util.Version;
  * This class specializes some of the functions for converting PostGIS objects to Java objects.
  * The PostGIS database is optional; it is possible to use PostgreSQL alone as a store of features without geometries.
  *
+ * @param  <G>  the type of geometry objects. Depends on the backing implementation (ESRI, JTS, Java2D…).
+ *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

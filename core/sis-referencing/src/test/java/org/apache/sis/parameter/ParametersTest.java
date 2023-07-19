@@ -55,6 +55,12 @@ import org.opengis.referencing.ReferenceIdentifier;
 })
 public final class ParametersTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ParametersTest() {
+    }
+
+    /**
      * Tests the {@link Parameters#cast(ParameterDescriptor, Class)} and
      * {@link Parameters#cast(ParameterValue, Class)} methods.
      */

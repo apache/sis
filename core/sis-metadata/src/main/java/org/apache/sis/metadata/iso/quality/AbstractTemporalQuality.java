@@ -59,6 +59,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
     DefaultTemporalConsistency.class,
     DefaultTemporalValidity.class
 })
+@SuppressWarnings("deprecation")
 @UML(identifier="DQ_TemporalQuality", specification=UNSPECIFIED)
 public class AbstractTemporalQuality extends AbstractElement implements TemporalAccuracy {
     /**

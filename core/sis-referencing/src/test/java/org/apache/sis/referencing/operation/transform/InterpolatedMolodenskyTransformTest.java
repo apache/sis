@@ -48,6 +48,12 @@ import org.junit.Test;
 })
 public final class InterpolatedMolodenskyTransformTest extends InterpolatedGeocentricTransformTest {
     /**
+     * Creates a new test case.
+     */
+    public InterpolatedMolodenskyTransformTest() {
+    }
+
+    /**
      * Creates an approximation of the <cite>"France geocentric interpolation"</cite> transform
      * using the Molodensky transform. This method relax slightly the tolerance threshold since
      * Molodensky transformations are approximation of translations in geocentric domain.

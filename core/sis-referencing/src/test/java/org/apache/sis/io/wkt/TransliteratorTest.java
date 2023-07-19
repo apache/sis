@@ -40,7 +40,13 @@ import static org.junit.Assert.*;
  */
 public final class TransliteratorTest extends TestCase {
     /**
-     * Verify the value of the {@link Transliterator#SPACES} constant.
+     * Creates a new test case.
+     */
+    public TransliteratorTest() {
+    }
+
+    /**
+     * Verifies the value of the {@link Transliterator#SPACES} constant.
      */
     @Test
     public void testSpacesConstant() {

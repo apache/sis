@@ -41,6 +41,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 })
 public final class DefaultEllipsoidTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultEllipsoidTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing an ellipsoid or sphere definition.
      *
      * @param  sphere  {@code true} for a sphere or {@code false} for an ellipsoid.

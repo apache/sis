@@ -43,6 +43,12 @@ import static org.junit.Assert.*;
 @DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
 public final class InformationMapTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public InformationMapTest() {
+    }
+
+    /**
      * Tests {@link InformationMap#get(Object)} on a few specific properties of the {@link Citation} type.
      * This test duplicates {@link PropertyInformationTest}, but is done here again as an integration test.
      */

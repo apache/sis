@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
 @DependsOn(SingletonAttributeTest.class)
 public final class FeaturesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FeaturesTest() {
+    }
+
+    /**
      * Tests {@code Features.cast(AttributeType, Class)}.
      */
     @Test

@@ -49,6 +49,12 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  */
 public final class ConcatenatedFeatureSetTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ConcatenatedFeatureSetTest() {
+    }
+
+    /**
      * Tests the concatenation of two feature sets having the same feature type.
      *
      * @throws DataStoreException if an error occurred while concatenating the feature sets.

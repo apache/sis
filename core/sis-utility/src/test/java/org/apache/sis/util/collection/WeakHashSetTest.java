@@ -50,6 +50,12 @@ public final class WeakHashSetTest extends TestCase {
     private static final int NUM_RETRY = 4;
 
     /**
+     * Creates a new test case.
+     */
+    public WeakHashSetTest() {
+    }
+
+    /**
      * Tests the {@link WeakHashSet} using strong references.
      * The tested {@code WeakHashSet} shall behave like a standard {@link HashSet},
      * except for element order.
@@ -104,7 +110,6 @@ public final class WeakHashSetTest extends TestCase {
             final WeakHashSet<IntObject> weakSet = new WeakHashSet<>(IntObject.class);
             final HashSet<IntObject> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                @SuppressWarnings("UnnecessaryBoxing")
                 final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));     // Really need new instances.
                 if (random.nextBoolean()) {
                     /*

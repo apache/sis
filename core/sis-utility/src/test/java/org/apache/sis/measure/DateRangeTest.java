@@ -37,6 +37,12 @@ import static org.apache.sis.test.TestUtilities.date;
 @DependsOn(RangeTest.class)
 public final class DateRangeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DateRangeTest() {
+    }
+
+    /**
      * Tests {@link Range#union(Range)}.
      */
     @Test

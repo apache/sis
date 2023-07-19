@@ -76,6 +76,7 @@ final class Validator {
      * @param  explanation  explanation of the constraint violation.
      * @return the {@code report}, or a new report if {@code report} was null.
      */
+    @SuppressWarnings("deprecation")
     private AbstractElement addViolationReport(AbstractElement report,
             final AbstractIdentifiedType type, final InternationalString explanation)
     {

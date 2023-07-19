@@ -159,11 +159,10 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * A filter for specifying whether a node should be formatted, or {@code null} if no filtering is applied.
      * This is ignored at parsing time.
      *
-     * <p>A non-null value may cause the serialization to fail.</p>
-     *
      * @see #getNodeFilter()
      * @see #setNodeFilter(Predicate)
      */
+    @SuppressWarnings("serial")             // Serialization of lambda functions is possible (but discouraged).
     private Predicate<TreeTable.Node> nodeFilter;
 
     /**

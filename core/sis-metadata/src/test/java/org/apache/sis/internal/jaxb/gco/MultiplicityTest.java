@@ -56,6 +56,12 @@ public final class MultiplicityTest extends TestUsingFile {
     private static MarshallerPool pool;
 
     /**
+     * Creates a new test case.
+     */
+    public MultiplicityTest() {
+    }
+
+    /**
      * Returns the XML (un)marshaller pool to be shared by all test methods.
      * This test uses its own pool instead of {@link #getMarshallerPool()}
      * in order to use {@link FeatureAttributeMock}.

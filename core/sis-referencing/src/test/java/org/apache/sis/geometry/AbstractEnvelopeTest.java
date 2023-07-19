@@ -46,6 +46,12 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 @DependsOn(GeneralDirectPositionTest.class)
 public final class AbstractEnvelopeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractEnvelopeTest() {
+    }
+
+    /**
      * Enumeration of implementations to be tested.
      * The {@code LAST} constant is for stopping the loops.
      */

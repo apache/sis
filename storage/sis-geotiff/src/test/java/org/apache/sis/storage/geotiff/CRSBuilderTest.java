@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class CRSBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CRSBuilderTest() {
+    }
+
+    /**
      * Tests {@link CRSBuilder#splitName(String)}. The string used for this test is:
      *
      * <pre class="text">

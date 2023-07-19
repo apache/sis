@@ -46,6 +46,12 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
     private static final long TIMEOUT = ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION * 4;
 
     /**
+     * Creates a new test case.
+     */
+    public ConcurrentAuthorityFactoryTest() {
+    }
+
+    /**
      * Verifies the value of {@code ConcurrentAuthorityFactory.Finder.DOMAIN_COUNT}.
      * This method uses reflection because the verified class is private.
      *

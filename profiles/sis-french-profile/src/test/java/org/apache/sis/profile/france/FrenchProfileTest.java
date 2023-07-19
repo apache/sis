@@ -44,6 +44,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 public final class FrenchProfileTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FrenchProfileTest() {
+    }
+
+    /**
      * Tests {@link FrenchProfile#toAFNOR(Object)} with {@link Constraints},
      * {@link LegalConstraints} and  {@link SecurityConstraints} objects.
      */

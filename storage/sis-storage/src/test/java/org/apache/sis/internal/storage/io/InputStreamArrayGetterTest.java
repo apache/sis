@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class InputStreamArrayGetterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public InputStreamArrayGetterTest() {
+    }
+
+    /**
      * Tests the creation of a channel data input which uses directly the array.
      *
      * @throws IOException if an error occurred while creating the channel data input.

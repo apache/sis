@@ -38,6 +38,12 @@ import static java.lang.Double.NaN;
  */
 public final class CylindricalEqualAreaTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public CylindricalEqualAreaTest() {
+    }
+
+    /**
      * Tests the derivatives at a few points. This method compares the derivatives computed by
      * the projection with an estimation of derivatives computed by the finite differences method.
      *

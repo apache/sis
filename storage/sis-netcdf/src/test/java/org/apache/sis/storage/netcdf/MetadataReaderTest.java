@@ -55,6 +55,12 @@ import static org.apache.sis.test.TestUtilities.date;
 })
 public final class MetadataReaderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MetadataReaderTest() {
+    }
+
+    /**
      * Tests {@link MetadataReader#split(String)}.
      */
     @Test

@@ -2035,11 +2035,11 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 call();
             } catch (Exception exception) {
                 /*
-                 * Pretend that the exception is logged by ConcurrentAuthorityFactory.finalize().
+                 * Pretend that the exception is logged by `ConcurrentAuthorityFactory.dispose()`.
                  * This is not true, but carries the idea that the error occurred while cleaning
                  * ConcurrentAuthorityFactory after garbage collection.
                  */
-                unexpectedException("finalize", exception);
+                unexpectedException("dispose", exception);
             }
         }
 

@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 
 
 /**
- * Contextual information fetching by reflection.
+ * Contextual information fetched by reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)

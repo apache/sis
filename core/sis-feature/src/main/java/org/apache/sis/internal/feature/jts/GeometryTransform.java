@@ -164,10 +164,10 @@ public abstract class GeometryTransform {
      * @throws TransformException if an error occurred while transforming the geometry.
      */
     public Polygon transform(final Polygon geom) throws TransformException {
-        final LinearRing exterior = transform((LinearRing) geom.getExteriorRing());
+        final LinearRing exterior = transform(geom.getExteriorRing());
         final LinearRing[] holes = new LinearRing[geom.getNumInteriorRing()];
         for (int i = 0; i < holes.length; i++) {
-            holes[i] = transform((LinearRing) geom.getInteriorRingN(i));
+            holes[i] = transform(geom.getInteriorRingN(i));
         }
         return geometryFactory.createPolygon(exterior, holes);
     }

@@ -69,6 +69,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 })
 public final class SingleOperationMarshallingTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SingleOperationMarshallingTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing an operation definition.
      *
      * @param  transformation  {@code true} for a transformation or {@code false} for a conversion.

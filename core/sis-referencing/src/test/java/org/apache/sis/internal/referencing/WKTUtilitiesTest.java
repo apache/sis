@@ -38,6 +38,12 @@ import static org.apache.sis.internal.referencing.WKTUtilities.*;
 @DependsOn(ReferencingUtilitiesTest.class)
 public final class WKTUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public WKTUtilitiesTest() {
+    }
+
+    /**
      * Tests {@link WKTUtilities#toType(Class, Class)}.
      *
      * @see ReferencingUtilitiesTest#testToPropertyName()

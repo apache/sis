@@ -39,6 +39,12 @@ import static org.apache.sis.referencing.cs.HardCodedCS.*;
 })
 public final class HardCodedCSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public HardCodedCSTest() {
+    }
+
+    /**
      * Validates constants.
      */
     @Test

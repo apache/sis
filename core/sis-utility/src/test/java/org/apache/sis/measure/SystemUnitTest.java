@@ -48,6 +48,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn(UnitDimensionTest.class)
 public final class SystemUnitTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public SystemUnitTest() {
+    }
+
+    /**
      * Verifies the {@link SystemUnit#related} array content of all system units declared in {@link Units}.
      * This tests verify that the array has been fully populated and that the converter of all units are
      * instance of {@link LinearConverter}.

@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
 })
 public final class LinkOperationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LinkOperationTest() {
+    }
+
+    /**
      * Creates a simple feature type with a link operation.
      * The feature contains the following properties:
      *

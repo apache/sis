@@ -1039,45 +1039,20 @@ public class MetadataBuilder {
      * Storage locations are:
      *
      * <ul>
-     *   <li><b>Metadata:</b> {@code metadata/language}</li>
-     *   <li><b>Resource:</b> {@code metadata/identificationInfo/language}</li>
+     *   <li><b>Metadata:</b> {@code metadata/defaultLocale} or {@code metadata/otherLocale}</li>
+     *   <li><b>Resource:</b> {@code metadata/identificationInfo/defaultLocale} or
+     *                        {@code metadata/identificationInfo/otherLocale}</li>
      * </ul>
      *
      * @param  language  a language used for documenting data and/or metadata, or {@code null} for no-operation.
+     * @param  encoding  the encoding associated to the locale, or {@code null} if unspecified.
      * @param  scope     whether the language applies to data, to metadata or to both.
-     *
-     * @see #addEncoding(Charset, MetadataBuilder.Scope)
      */
-    public final void addLanguage(final Locale language, final Scope scope) {
+    public final void addLanguage(final Locale language, final Charset encoding, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (language != null) {
-            // No need to use `addIfNotPresent(…)` because Locale collection is a Set by default.
-            if (scope != Scope.RESOURCE) metadata().getLanguages().add(language);
-            if (scope != Scope.METADATA) identification().getLanguages().add(language);
-        }
-    }
-
-    /**
-     * Adds a character set used for encoding the data and/or metadata.
-     * Storage locations are:
-     *
-     * <ul>
-     *   <li><b>Metadata:</b> {@code metadata/characterSet}</li>
-     *   <li><b>Resource:</b> {@code metadata/identificationInfo/characterSet}</li>
-     * </ul>
-     *
-     * @param  encoding  the character set used for encoding data and/or metadata, or {@code null} for no-operation.
-     * @param  scope     whether the encoding applies to data, to metadata or to both.
-     *
-     * @see #addLanguage(Locale, MetadataBuilder.Scope)
-     */
-    public final void addEncoding(final Charset encoding, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
-        if (encoding != null) {
-            // No need to use `addIfNotPresent(…)` because Charset collection is a Set by default.
-            if (scope != Scope.RESOURCE) metadata().getCharacterSets().add(encoding);
-            if (scope != Scope.METADATA) identification().getCharacterSets().add(
-                    Types.forCodeName(CharacterSet.class, encoding.toString(), true));
+            if (scope != Scope.RESOURCE) metadata().getLocalesAndCharsets().put(language, encoding);
+            if (scope != Scope.METADATA) identification().getLocalesAndCharsets().put(language, encoding);
         }
     }
 

@@ -40,6 +40,12 @@ public final class ArrayConverterTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public ArrayConverterTest() {
+    }
+
+    /**
      * Tests conversions between wrapper classes.
      */
     @Test

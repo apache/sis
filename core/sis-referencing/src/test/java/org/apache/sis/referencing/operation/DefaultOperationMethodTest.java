@@ -54,6 +54,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 })
 public final class DefaultOperationMethodTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultOperationMethodTest() {
+    }
+
+    /**
      * Creates a new two-dimensional operation method for an operation of the given name and identifier.
      *
      * @param  method      the operation name (example: "Mercator (variant A)").

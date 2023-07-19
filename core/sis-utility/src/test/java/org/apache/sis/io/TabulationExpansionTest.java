@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(LineAppenderTest.class)
 public final class TabulationExpansionTest extends LineAppenderTest {
     /**
+     * Creates a new test case.
+     */
+    public TabulationExpansionTest() {
+    }
+
+    /**
      * Creates and configure the {@link LineAppender} to test.
      */
     @Before

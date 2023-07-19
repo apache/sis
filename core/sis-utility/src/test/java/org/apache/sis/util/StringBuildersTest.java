@@ -33,6 +33,12 @@ import static org.apache.sis.util.StringBuilders.*;
  */
 public final class StringBuildersTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StringBuildersTest() {
+    }
+
+    /**
      * Tests the {@link StringBuilders#replace(StringBuilder, String, String)} method.
      */
     @Test

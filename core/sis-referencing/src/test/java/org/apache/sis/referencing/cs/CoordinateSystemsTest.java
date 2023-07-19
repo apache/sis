@@ -58,6 +58,12 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 })
 public final class CoordinateSystemsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CoordinateSystemsTest() {
+    }
+
+    /**
      * Tests {@link CoordinateSystems#parseAxisDirection(String)}.
      */
     @Test

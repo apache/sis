@@ -36,6 +36,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class RangeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public RangeTest() {
+    }
+
+    /**
      * Tests the creation of {@link Range} objects under normal conditions.
      */
     @Test

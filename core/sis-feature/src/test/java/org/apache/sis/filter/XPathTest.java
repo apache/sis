@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class XPathTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public XPathTest() {
+    }
+
+    /**
      * Tests {@link XPath#split(String)}.
      */
     @Test

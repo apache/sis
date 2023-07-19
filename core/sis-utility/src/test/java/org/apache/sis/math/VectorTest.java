@@ -39,6 +39,12 @@ public final class VectorTest extends TestCase {
     private Vector vector;
 
     /**
+     * Creates a new test case.
+     */
+    public VectorTest() {
+    }
+
+    /**
      * Tests {@link SequenceVector} with byte values.
      */
     @Test

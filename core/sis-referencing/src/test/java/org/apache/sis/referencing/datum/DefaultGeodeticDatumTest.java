@@ -62,6 +62,12 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 })
 public final class DefaultGeodeticDatumTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultGeodeticDatumTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a geodetic datum definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

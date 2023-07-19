@@ -33,6 +33,12 @@ import org.apache.sis.test.DependsOn;
 @DependsOn(WordWrapTest.class)
 public final class WordWrapWithLineSeparatorTest extends WordWrapTest {
     /**
+     * Creates a new test case.
+     */
+    public WordWrapWithLineSeparatorTest() {
+    }
+
+    /**
      * Creates and configure the {@link LineAppender} to test.
      */
     @Before

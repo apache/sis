@@ -58,6 +58,12 @@ public final class DefaultIdentifierTest extends TestCase {
             "</mcc:MD_Identifier>";
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultIdentifierTest() {
+    }
+
+    /**
      * Tests XML marshalling.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.

@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class InflaterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public InflaterTest() {
+    }
+
+    /**
      * Verifies that the inflater constructor makes sure to have a chunk size
      * not greater than maximal buffer capacity.
      */

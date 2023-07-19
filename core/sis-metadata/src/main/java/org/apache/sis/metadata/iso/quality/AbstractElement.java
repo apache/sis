@@ -104,6 +104,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
     AbstractMetaquality.class,
     DefaultQualityMeasure.class     // Not a subclass, but "weakly" associated.
 })
+@SuppressWarnings("deprecation")
 public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Serial number for inter-operability with different versions.

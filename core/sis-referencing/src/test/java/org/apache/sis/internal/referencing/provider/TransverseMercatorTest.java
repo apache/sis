@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
  */
 public final class TransverseMercatorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TransverseMercatorTest() {
+    }
+
+    /**
      * Tests {@link TransverseMercator.Zoner#zone(double, double)},
      * including the special cases for Norway and Svalbard.
      */

@@ -57,6 +57,12 @@ import static org.junit.Assert.*;
  */
 public final class CustomMetadataTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CustomMetadataTest() {
+    }
+
+    /**
      * Tests the marshalling of a metadata implemented by {@link Proxy}.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.

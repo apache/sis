@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
  */
 public final class StoreProviderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StoreProviderTest() {
+    }
+
+    /**
      * Tests {@link StoreProvider#probeContent(StorageConnector)} method.
      *
      * @throws DataStoreException if en error occurred while reading the CSV file.

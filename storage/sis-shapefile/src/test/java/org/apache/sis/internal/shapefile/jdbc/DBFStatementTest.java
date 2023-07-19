@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
     /**
+     * Creates a new test case.
+     */
+    public DBFStatementTest() {
+    }
+
+    /**
      * Open and close a statement.
      * @throws SQLException if an error occurred while opening the database or the statement.
      */

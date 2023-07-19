@@ -35,6 +35,12 @@ import static org.junit.Assert.*;
  */
 public final class DefaultCitationDateTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultCitationDateTest() {
+    }
+
+    /**
      * Tests the copy constructor.
      */
     @Test

@@ -126,6 +126,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @see #castOrCopy(DataFile)
      */
+    @SuppressWarnings("deprecation")
     public DefaultDataFile(final DataFile object) {
         super(object);
         if (object != null) {

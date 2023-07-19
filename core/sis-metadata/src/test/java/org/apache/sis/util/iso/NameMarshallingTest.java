@@ -59,6 +59,12 @@ public final class NameMarshallingTest extends TestCase {
     private static MarshallerPool pool;
 
     /**
+     * Creates a new test case.
+     */
+    public NameMarshallingTest() {
+    }
+
+    /**
      * Returns the XML representation of the given name, wrapped
      * in a mock {@code <gml:IO_IdentifiedObject>} element.
      */

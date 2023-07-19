@@ -40,6 +40,12 @@ import org.junit.Test;
 @DependsOn(AffineTest.class)
 public final class GeographicOffsetsTest extends TransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public GeographicOffsetsTest() {
+    }
+
+    /**
      * Tests {@code GeographicOffsets2D.createMathTransform(…)}.
      * This test uses the sample point given in §2.4.4.3 of EPSG guide (April 2015).
      *

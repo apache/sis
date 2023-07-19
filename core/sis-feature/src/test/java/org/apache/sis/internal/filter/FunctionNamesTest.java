@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class FunctionNamesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FunctionNamesTest() {
+    }
+
+    /**
      * Verifies that each field has the same name than its value.
      *
      * @throws IllegalAccessException should never happen.

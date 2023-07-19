@@ -44,6 +44,12 @@ import static org.apache.sis.test.TestUtilities.formatMetadata;
 @DependsOn(TreeNodeTest.class)
 public final class TreeTableViewTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TreeTableViewTest() {
+    }
+
+    /**
      * Creates a table to be tested for the given value policy.
      */
     private static TreeTableView create(final ValueExistencePolicy valuePolicy) {

@@ -40,6 +40,12 @@ import static org.apache.sis.test.TestUtilities.date;
 @DependsOn(TypesTest.class)
 public final class MetadataTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MetadataTest() {
+    }
+
+    /**
      * Tests the {@link Metadata#equals(Object)} and {@link Metadata#hashCode()}.
      *
      * @throws URISyntaxException if a {@link Link} element is constructed with an invalid URI.

@@ -35,6 +35,12 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  */
 public final class DomainDefinitionTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DomainDefinitionTest() {
+    }
+
+    /**
      * Tests domain transformation when the domain is provided by a step in a chain of transforms.
      *
      * @throws TransformException should never happen.

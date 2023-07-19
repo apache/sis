@@ -31,6 +31,12 @@ import static org.junit.Assert.*;
  */
 public final class TableInfoTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TableInfoTest() {
+    }
+
+    /**
      * Tests {@link TableInfo#tableMatches(String, String)}.
      */
     @Test

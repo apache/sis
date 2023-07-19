@@ -52,6 +52,12 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
  */
 public final class TypesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TypesTest() {
+    }
+
+    /**
      * Tests the {@link Types#toInternationalString(Map, String)} method.
      */
     @Test

@@ -19,6 +19,7 @@ package org.apache.sis.storage.landsat;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Arrays;
 import java.util.Date;
@@ -96,7 +97,7 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.8
  */
 final class MetadataReader extends MetadataBuilder {
@@ -856,7 +857,7 @@ final class MetadataReader extends MetadataBuilder {
      * @throws FactoryException if an error occurred while creating the Coordinate Reference System.
      */
     final Metadata getMetadata() throws FactoryException {
-        addLanguage(Locale.ENGLISH, MetadataBuilder.Scope.METADATA);
+        addLanguage(Locale.ENGLISH, StandardCharsets.US_ASCII, MetadataBuilder.Scope.METADATA);
         addResourceScope(ScopeCode.valueOf("COVERAGE"), null);
         addTopicCategory(TopicCategory.GEOSCIENTIFIC_INFORMATION);
         try {

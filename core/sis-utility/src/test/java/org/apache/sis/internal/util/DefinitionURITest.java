@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class DefinitionURITest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefinitionURITest() {
+    }
+
+    /**
      * Tests {@link DefinitionURI#parse(String)} on strings that should not be recognized as URN.
      */
     @Test

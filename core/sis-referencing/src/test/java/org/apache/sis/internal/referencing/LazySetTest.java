@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class LazySetTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LazySetTest() {
+    }
+
+    /**
      * The test data.
      */
     private static final String[] LABELS = {"one", "two", "three", "four"};

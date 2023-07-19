@@ -34,6 +34,12 @@ import org.apache.sis.feature.AbstractFeature;
  */
 public final class LikeFilterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LikeFilterTest() {
+    }
+
+    /**
      * Tests {@link LikeFilter#isMetaCharacter(char)}.
      */
     @Test

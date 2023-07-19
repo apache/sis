@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(CommandRunnerTest.class)
 public final class MetadataCommandTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MetadataCommandTest() {
+    }
+
+    /**
      * Tests the sub-command on a netCDF file.
      *
      * @throws Exception if an error occurred while creating the command.

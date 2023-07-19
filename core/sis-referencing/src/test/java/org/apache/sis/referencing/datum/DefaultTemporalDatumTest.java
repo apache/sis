@@ -43,6 +43,12 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  */
 public final class DefaultTemporalDatumTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultTemporalDatumTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a vertical datum definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

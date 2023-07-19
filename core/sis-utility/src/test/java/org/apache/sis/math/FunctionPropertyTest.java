@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class FunctionPropertyTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public FunctionPropertyTest() {
+    }
+
+    /**
      * Tests {@link FunctionProperty#concatenate(Set, Set)}.
      */
     @Test

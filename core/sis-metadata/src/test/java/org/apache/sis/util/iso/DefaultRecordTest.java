@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link DefaultRecord} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn(DefaultRecordSchemaTest.class)
@@ -73,12 +73,18 @@ public final class DefaultRecordTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultRecordTest() {
+    }
+
+    /**
      * Sets all values in the given record using the {@link DefaultRecord#setAll(Object[])} method,
      * then checks that the values were correctly stored.
      */
     private static void setAllAndCompare(final DefaultRecord record, final Object... values) {
         record.setAll(values);
-        assertArrayEquals("attributes.values", values, record.getAttributes().values().toArray());
+        assertArrayEquals("attributes.values", values, record.getFields().values().toArray());
     }
 
     /**
@@ -112,7 +118,7 @@ public final class DefaultRecordTest extends TestCase {
         final DefaultRecord record = new DefaultRecord(recordType);
         assertSame("recordType", recordType, record.getRecordType());
         int index = 0;
-        for (final Map.Entry<MemberName,Object> entry : record.getAttributes().entrySet()) {
+        for (final Map.Entry<MemberName,Object> entry : record.getFields().entrySet()) {
             final String name;
             final Object value;
             switch (index) {
@@ -191,7 +197,7 @@ public final class DefaultRecordTest extends TestCase {
          */
         assertEquals("baseValueClass", Double.TYPE, record.definition.baseValueClass());
         assertArrayEquals("attributes.values", new Double[] {0.0, 0.0},
-                record.getAttributes().values().toArray());
+                record.getFields().values().toArray());
         /*
          * Combines tests similar to 3 other test methods in this class.
          */

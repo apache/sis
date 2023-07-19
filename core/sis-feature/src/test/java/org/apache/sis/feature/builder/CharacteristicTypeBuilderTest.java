@@ -38,6 +38,12 @@ import org.apache.sis.feature.DefaultAttributeType;
  */
 public final class CharacteristicTypeBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CharacteristicTypeBuilderTest() {
+    }
+
+    /**
      * Tests {@link CharacteristicTypeBuilder#setValueClass(Class)}.
      * This implies the replacement of the builder by a new instance.
      */

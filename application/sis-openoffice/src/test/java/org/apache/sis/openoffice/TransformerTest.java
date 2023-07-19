@@ -61,6 +61,12 @@ public final class TransformerTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public TransformerTest() {
+    }
+
+    /**
      * Asserts that the transformation result is equal to the expected result.
      */
     static void assertPointsEqual(final double[][] expected, final double[][] actual, final double tolerance) {

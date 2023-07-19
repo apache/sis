@@ -39,6 +39,12 @@ import static org.junit.Assert.*;
  */
 public final class TranslatedGridCoverageTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TranslatedGridCoverageTest() {
+    }
+
+    /**
      * Creates a test coverage with grid coordinates starting at (-20, -10).
      * Envelope is BOX(-80 -20, -72 -16).
      */

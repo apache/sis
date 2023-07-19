@@ -36,6 +36,12 @@ import org.junit.Test;
 @DependsOn(PolarToCartesianTest.class)
 public final class CartesianToPolarTest extends TransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public CartesianToPolarTest() {
+    }
+
+    /**
      * Tests coordinate conversions in the polar case.
      *
      * @throws FactoryException if the transform cannot be created.

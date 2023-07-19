@@ -43,6 +43,12 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  */
 public final class ReferencingUtilitiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ReferencingUtilitiesTest() {
+    }
+
+    /**
      * Tests {@link ReferencingUtilities#getGreenwichLongitude(PrimeMeridian, Unit)}.
      */
     @Test

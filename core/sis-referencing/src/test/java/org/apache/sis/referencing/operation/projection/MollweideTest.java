@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
 @DependsOn(NormalizedProjectionTest.class)
 public final class MollweideTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public MollweideTest() {
+    }
+
+    /**
      * Creates a new instance of {@link Mollweide} concatenated with the (de)normalization matrices.
      * The new instance is stored in the inherited {@link #transform} field.
      *

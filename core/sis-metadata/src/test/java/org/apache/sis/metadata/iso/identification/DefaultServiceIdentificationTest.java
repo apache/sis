@@ -49,6 +49,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final class DefaultServiceIdentificationTest extends TestUsingFile {
     /**
+     * Creates a new test case.
+     */
+    public DefaultServiceIdentificationTest() {
+    }
+
+    /**
      * Opens the stream to the XML file containing a service identification.
      *
      * @param  format  whether to use the 2007 or 2016 version of ISO 19115.

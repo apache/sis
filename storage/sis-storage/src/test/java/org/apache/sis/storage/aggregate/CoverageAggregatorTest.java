@@ -33,6 +33,12 @@ import static org.junit.Assert.*;
  */
 public final class CoverageAggregatorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CoverageAggregatorTest() {
+    }
+
+    /**
      * Tests an empty aggregator.
      *
      * @throws DataStoreException if an error occurred.

@@ -52,6 +52,12 @@ public final class StatisticsTest extends TestCase {
     private static final double EPS = 1E-10;
 
     /**
+     * Creates a new test case.
+     */
+    public StatisticsTest() {
+    }
+
+    /**
      * Tests the initial state of newly constructed instance.
      */
     @Test

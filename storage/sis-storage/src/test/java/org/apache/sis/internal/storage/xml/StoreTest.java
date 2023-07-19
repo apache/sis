@@ -44,6 +44,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final class StoreTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StoreTest() {
+    }
+
+    /**
      * The metadata to unmarshal.
      */
     public static final String XML =

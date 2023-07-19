@@ -53,6 +53,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
 @XmlSeeAlso({
     DefaultNonQuantitativeAttributeAccuracy.class
 })
+@SuppressWarnings("deprecation")
 @UML(identifier="DQ_NonQuantitativeAttributeCorrectness", specification=UNSPECIFIED)
 public class DefaultNonQuantitativeAttributeCorrectness extends AbstractThematicAccuracy
         implements NonQuantitativeAttributeAccuracy

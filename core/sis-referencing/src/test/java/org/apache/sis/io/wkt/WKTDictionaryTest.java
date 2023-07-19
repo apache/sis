@@ -57,6 +57,12 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
 @DependsOn(WKTFormatTest.class)
 public final class WKTDictionaryTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public WKTDictionaryTest() {
+    }
+
+    /**
      * Tests {@link WKTDictionary#addDefinitions(Stream)}. The CRS used in this test are a subset of the
      * ones used by {@link #testLoad()}. One of them is intentionally malformed for testing error index.
      *

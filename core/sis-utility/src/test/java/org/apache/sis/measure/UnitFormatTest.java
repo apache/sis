@@ -45,6 +45,12 @@ import static org.junit.Assert.*;
 @DependsOn({SystemUnitTest.class, ConventionalUnitTest.class})
 public final class UnitFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public UnitFormatTest() {
+    }
+
+    /**
      * Verifies all constants defined in {@link Units} class. This method verifies:
      *
      * <ul>

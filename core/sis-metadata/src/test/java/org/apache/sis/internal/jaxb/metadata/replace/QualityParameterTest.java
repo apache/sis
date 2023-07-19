@@ -38,6 +38,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public final class QualityParameterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public QualityParameterTest() {
+    }
+
+    /**
      * Creates the parameter to use for testing purpose.
      *
      * @return the test parameter.

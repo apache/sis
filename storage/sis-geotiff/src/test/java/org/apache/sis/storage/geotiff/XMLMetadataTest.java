@@ -38,6 +38,12 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  */
 public final class XMLMetadataTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public XMLMetadataTest() {
+    }
+
+    /**
      * A GDAL metadata. The format is specific to the GDAL project.
      */
     private static final String GDAL_METADATA =

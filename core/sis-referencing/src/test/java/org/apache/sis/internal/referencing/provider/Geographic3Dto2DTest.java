@@ -42,6 +42,12 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 @DependsOn(AffineTest.class)
 public final class Geographic3Dto2DTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public Geographic3Dto2DTest() {
+    }
+
+    /**
      * Tests {@code Geographic3Dto2D.createMathTransform(…)}.
      *
      * @throws FactoryException should never happen.

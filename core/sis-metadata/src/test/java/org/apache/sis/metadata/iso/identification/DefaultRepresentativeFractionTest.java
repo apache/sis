@@ -44,6 +44,12 @@ public final class DefaultRepresentativeFractionTest extends TestCase {
     private boolean legacy;
 
     /**
+     * Creates a new test case.
+     */
+    public DefaultRepresentativeFractionTest() {
+    }
+
+    /**
      * Verifies that marshalling the given metadata produces the expected XML document,
      * then verifies that unmarshalling that document gives back the original metadata object.
      * If {@link #legacy} is {@code true}, then this method will use ISO 19139:2007 schema.

@@ -42,6 +42,12 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 @DependsOn(AbstractEnvelopeTest.class)
 public final class Envelope2DTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public Envelope2DTest() {
+    }
+
+    /**
      * Tests {@code Envelope2D} serialization.
      */
     @Test

@@ -43,6 +43,12 @@ import static org.apache.sis.test.TestUtilities.*;
 })
 public final class AngleFormatTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AngleFormatTest() {
+    }
+
+    /**
      * Tests a pattern with illegal usage of D, M and S symbols.
      */
     @Test(expected = IllegalArgumentException.class)

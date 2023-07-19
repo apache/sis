@@ -65,6 +65,12 @@ import static org.opengis.test.Validators.validate;
 })
 public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
     /**
+     * Creates a new test case.
+     */
+    public EnvelopesTest() {
+    }
+
+    /**
      * Creates an envelope for the given CRS and coordinate values.
      */
     @Override

@@ -70,6 +70,12 @@ public final class HyperRectangleReaderTest extends TestCase {
     private HyperRectangleReader reader;
 
     /**
+     * Creates a new test case.
+     */
+    public HyperRectangleReaderTest() {
+    }
+
+    /**
      * Encodes the given index in the sample values to be stored in the array of data.
      * We use a decimal encoding for making easier to compare the actual values with the expected ones.
      */

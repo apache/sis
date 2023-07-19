@@ -41,6 +41,12 @@ import static org.apache.sis.metadata.KeyNamePolicy.*;
 @DependsOn(PropertyAccessorTest.class)
 public final class NameMapTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NameMapTest() {
+    }
+
+    /**
      * Tests {@code NameMap.entrySet()} for an exact match (including iteration order).
      * The properties used in this test are listed in {@link PropertyAccessorTest#testConstructor()}.
      *

@@ -47,6 +47,12 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
 @DependsOn(StoreTest.class)
 public final class DataStoresTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DataStoresTest() {
+    }
+
+    /**
      * Tests {@link DataStores#probeContentType(Object)}.
      *
      * @throws DataStoreException Should never happen.

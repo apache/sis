@@ -64,7 +64,14 @@ public final class DoubleDoubleTest extends TestCase {
     /**
      * The random number generator to use for the test.
      */
-    private final Random random = TestUtilities.createRandomNumberGenerator();
+    private final Random random;
+
+    /**
+     * Creates a new test case.
+     */
+    public DoubleDoubleTest() {
+        random = TestUtilities.createRandomNumberGenerator();
+    }
 
     /**
      * Returns the next {@code double} random value. The scale factor is a power of two

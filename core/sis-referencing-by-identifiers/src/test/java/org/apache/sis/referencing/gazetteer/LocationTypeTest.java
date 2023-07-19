@@ -36,6 +36,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class LocationTypeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LocationTypeTest() {
+    }
+
+    /**
      * Creates the example given in annex B of ISO 19112:2003.
      *
      * @param  inherit  {@code false} for defining all properties of all location types explicitly even

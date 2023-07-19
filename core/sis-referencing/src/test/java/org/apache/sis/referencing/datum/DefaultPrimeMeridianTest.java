@@ -50,6 +50,12 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
 public final class DefaultPrimeMeridianTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultPrimeMeridianTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a prime meridian definition.
      *
      * @param  greenwich  {@code true} for Greenwich meridian or {@code false} for an arbitrary one.

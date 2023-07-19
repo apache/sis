@@ -46,6 +46,12 @@ import static java.lang.StrictMath.*;
 @DependsOn(NormalizedProjectionTest.class)
 public final class PolarStereographicTest extends MapProjectionTestCase {
     /**
+     * Creates a new test case.
+     */
+    public PolarStereographicTest() {
+    }
+
+    /**
      * Creates a new instance of {@link PolarStereographic}.
      */
     private void createNormalizedProjection(final MapProjection method) {

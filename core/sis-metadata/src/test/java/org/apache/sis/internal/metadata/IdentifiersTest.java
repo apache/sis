@@ -38,6 +38,12 @@ import static org.junit.Assert.*;
  */
 public final class IdentifiersTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public IdentifiersTest() {
+    }
+
+    /**
      * Creates a citation with the given title and the given identifiers.
      */
     private static DefaultCitation citation(final String title, final Identifier... identifiers) {

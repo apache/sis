@@ -41,6 +41,12 @@ import static org.junit.Assert.*;
 })
 public final class AbstractFeatureTest extends FeatureTestCase {
     /**
+     * Creates a new test case.
+     */
+    public AbstractFeatureTest() {
+    }
+
+    /**
      * A feature implementation on top of {@link AbstractFeature}. This class has more code than strictly necessary
      * since we need to reproduce some of the verifications performed by the Apache SIS supported implementations
      * in order to get the tests to pass.

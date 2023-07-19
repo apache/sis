@@ -37,6 +37,12 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 @DependsOn(AbstractEnvelopeTest.class)
 public final class ArrayEnvelopeTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ArrayEnvelopeTest() {
+    }
+
+    /**
      * Tests {@link ArrayEnvelope#isFinite()}.
      */
     @Test

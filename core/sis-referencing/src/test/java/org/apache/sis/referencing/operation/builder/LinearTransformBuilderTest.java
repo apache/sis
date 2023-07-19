@@ -48,6 +48,12 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  */
 public final class LinearTransformBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public LinearTransformBuilderTest() {
+    }
+
+    /**
      * Tests a very simple case where an exact answer is expected.
      *
      * @throws FactoryException if the transform cannot be created.

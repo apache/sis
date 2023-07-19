@@ -66,6 +66,12 @@ public final class InterpolationTest extends TestCase {
     private PixelIterator.Window<DoubleBuffer> window;
 
     /**
+     * Creates a new test case.
+     */
+    public InterpolationTest() {
+    }
+
+    /**
      * Creates an iterator over a simple 3×3 image. Image values are:
      *
      * <pre class="text">

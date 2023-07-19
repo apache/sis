@@ -48,6 +48,12 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 @DependsOn(org.apache.sis.referencing.operation.matrix.MatricesTest.class)
 public final class MathTransformsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public MathTransformsTest() {
+    }
+
+    /**
      * Creates a dummy transform for testing purpose.
      * The transform has the following properties:
      *

@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class ShapePropertiesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ShapePropertiesTest() {
+    }
+
+    /**
      * Tests with a line segment.
      */
     @Test

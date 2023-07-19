@@ -45,6 +45,12 @@ import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
 })
 public final class CopyTransformTest extends MathTransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public CopyTransformTest() {
+    }
+
+    /**
      * Generates random coordinates with approximately 5% of NaN values in the array.
      */
     private double[] generateRandomCoordinates() {

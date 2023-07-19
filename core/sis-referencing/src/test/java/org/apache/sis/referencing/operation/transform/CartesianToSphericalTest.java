@@ -36,6 +36,12 @@ import org.junit.Test;
 @DependsOn(SphericalToCartesianTest.class)
 public final class CartesianToSphericalTest extends TransformTestCase {
     /**
+     * Creates a new test case.
+     */
+    public CartesianToSphericalTest() {
+    }
+
+    /**
      * Tests coordinate conversions.
      *
      * @throws FactoryException if the transform cannot be created.

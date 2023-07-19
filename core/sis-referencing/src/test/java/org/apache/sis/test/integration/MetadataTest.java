@@ -118,6 +118,12 @@ public final class MetadataTest extends TestCase {
     }
 
     /**
+     * Creates a new test case.
+     */
+    public MetadataTest() {
+    }
+
+    /**
      * Creates a telephone number of the given type.
      *
      * @param type Either {@code "VOICE"}, {@code "FACSIMILE"} or {@code "SMS"}.

@@ -48,6 +48,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  */
 public final class DefaultImageCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultImageCRSTest() {
+    }
+
+    /**
      * Creates an image CRS using a two-dimensional affine or Cartesian coordinate system.
      *
      * @param cartesian {@code true} for a Cartesian coordinate system, or {@code false} for an affine one.

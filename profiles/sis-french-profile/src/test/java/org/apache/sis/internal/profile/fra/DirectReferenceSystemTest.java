@@ -44,6 +44,12 @@ import static org.junit.Assert.*;
  */
 public final class DirectReferenceSystemTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DirectReferenceSystemTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing a reference system definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

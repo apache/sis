@@ -34,6 +34,12 @@ import static org.apache.sis.referencing.operation.matrix.Matrix1.SIZE;
 @DependsOn(SolverTest.class)
 public final class Matrix1Test extends MatrixTestCase {
     /**
+     * Creates a new test case.
+     */
+    public Matrix1Test() {
+    }
+
+    /**
      * Returns the size of the matrix of interest for this test class.
      */
     @Override int getNumRow() {return SIZE;}

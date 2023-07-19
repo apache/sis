@@ -45,6 +45,12 @@ public final class NormalizedProjectionTest extends TransformTestCase {
     static final double TOLERANCE = 1E-12;
 
     /**
+     * Creates a new test case.
+     */
+    public NormalizedProjectionTest() {
+    }
+
+    /**
      * Tests the value documented in the javadoc. Those value may be freely changed;
      * those tests exist only to increase the chances that the documented values are right.
      */

@@ -95,6 +95,12 @@ public final class GeohashReferenceSystemTest extends TestCase {
     };
 
     /**
+     * Creates a new test case.
+     */
+    public GeohashReferenceSystemTest() {
+    }
+
+    /**
      * Tests the {@link GeohashReferenceSystem.Coder#getPrecision(DirectPosition)} method.
      * Values published in Wikipedia are used as references, with more precision digits
      * added from SIS computation.

@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final class StoreProviderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StoreProviderTest() {
+    }
+
+    /**
      * Tests {@link StoreProvider#probeContent(StorageConnector)} method from a {@link java.io.Reader} object.
      *
      * @throws DataStoreException if en error occurred while reading the XML.

@@ -55,6 +55,12 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 })
 public final class TransformSeparatorTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public TransformSeparatorTest() {
+    }
+
+    /**
      * Verifies the argument checks performed by the {@code add} methods.
      */
     @Test

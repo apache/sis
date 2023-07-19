@@ -38,6 +38,12 @@ import static org.junit.Assert.*;
 @DependsOn(LegacyCodesTest.class)
 public final class ValueConverterTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ValueConverterTest() {
+    }
+
+    /**
      * Tests {@link ValueConverter#toLanguageCode(MarshalContext, Locale)}.
      * The results should be ISO 639-2 codes (3 letters language codes).
      */

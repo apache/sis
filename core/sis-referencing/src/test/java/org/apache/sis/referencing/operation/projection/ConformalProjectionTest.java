@@ -49,6 +49,12 @@ public final class ConformalProjectionTest extends TransformTestCase {
     static final int LN_INFINITY = 37;
 
     /**
+     * Creates a new test case.
+     */
+    public ConformalProjectionTest() {
+    }
+
+    /**
      * Tests a few formulas used by the Mercator projection in the spherical case.
      * This is a little bit more a Java test than an Apache SIS test (or to be more
      * accurate, a test of our understanding of the {@code java.lang.Math} library).

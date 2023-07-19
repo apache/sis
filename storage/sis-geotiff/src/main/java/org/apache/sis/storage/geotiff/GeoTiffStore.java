@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.LogRecord;
 import java.net.URI;
@@ -293,7 +294,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             builder.addFormatName(Constants.GEOTIFF);
             listeners.warning(e);
         }
-        builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
+        builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.METADATA);
         builder.addResourceScope(ScopeCode.valueOf("COVERAGE"), null);
     }
 

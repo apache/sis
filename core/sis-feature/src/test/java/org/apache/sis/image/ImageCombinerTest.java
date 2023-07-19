@@ -46,6 +46,12 @@ public final class ImageCombinerTest extends ImageTestCase {
     private PlanarImage toAdd;
 
     /**
+     * Creates a new test case.
+     */
+    public ImageCombinerTest() {
+    }
+
+    /**
      * Creates a rendered image with arbitrary tiles.
      */
     private ImageCombiner initialize() {

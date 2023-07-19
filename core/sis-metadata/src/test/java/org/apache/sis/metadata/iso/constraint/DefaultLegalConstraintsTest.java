@@ -40,6 +40,12 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  */
 public final class DefaultLegalConstraintsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultLegalConstraintsTest() {
+    }
+
+    /**
      * Tests unmarshalling of an element containing an empty {@code codeListValue} attribute.
      * This was used to cause a {@code NullPointerException} prior SIS-157 fix.
      *

@@ -50,6 +50,12 @@ import static org.junit.Assert.*;
 @DependsOn(CommonAuthorityFactoryTest.class)
 public final class AuthorityFactoryProxyTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AuthorityFactoryProxyTest() {
+    }
+
+    /**
      * Ensures that the most specific interfaces appear first in the list of proxies.
      */
     @Test

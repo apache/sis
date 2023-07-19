@@ -385,6 +385,7 @@ public final class NADCON extends AbstractProvider {
          * @param latitudeShifts   the previously loaded latitude shifts, or {@code null} if not yet loaded.
          * @param longitudeShifts  the file for the longitude grid.
          */
+        @SuppressWarnings("lossy-conversions")      // Implicit cast from double to float in compound assignment.
         final void readGrid(final FloatBuffer fb, final Loader latitudeShifts, final URI longitudeShifts)
                 throws IOException, FactoryException, NoninvertibleTransformException
         {

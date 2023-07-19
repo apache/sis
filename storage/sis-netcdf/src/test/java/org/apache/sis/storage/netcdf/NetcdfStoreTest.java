@@ -41,6 +41,12 @@ import static org.junit.Assert.*;
 })
 public final class NetcdfStoreTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public NetcdfStoreTest() {
+    }
+
+    /**
      * Returns a new netCDF store to test.
      *
      * @param  dataset the name of the datastore to load.

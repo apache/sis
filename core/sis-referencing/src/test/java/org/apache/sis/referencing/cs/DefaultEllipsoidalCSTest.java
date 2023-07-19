@@ -45,6 +45,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(AbstractCSTest.class)
 public final class DefaultEllipsoidalCSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultEllipsoidalCSTest() {
+    }
+
+    /**
      * Opens the stream to the XML file in this package containing an ellipsoidal coordinate system definition.
      *
      * @return stream opened on the XML document to use for testing purpose.

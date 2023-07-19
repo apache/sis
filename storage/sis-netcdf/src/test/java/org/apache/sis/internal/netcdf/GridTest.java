@@ -49,6 +49,12 @@ public class GridTest extends TestCase {
     protected boolean includeRuntimeDimension;
 
     /**
+     * Creates a new test case.
+     */
+    public GridTest() {
+    }
+
+    /**
      * Optionally filters out some grid geometries that shall be ignored by the tests.
      * The default implementation returns the given array unmodified. This method is overridden by
      * {@code GridGeometryInfoTest} in order to ignore one-dimensional coordinate systems created

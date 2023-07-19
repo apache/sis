@@ -34,6 +34,12 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  */
 public final class ProbeResultTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ProbeResultTest() {
+    }
+
+    /**
      * Tests serialization of predefined constants.
      */
     @Test

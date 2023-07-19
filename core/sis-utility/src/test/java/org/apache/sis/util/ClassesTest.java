@@ -70,6 +70,12 @@ import org.opengis.referencing.operation.CoordinateOperation;
  */
 public final class ClassesTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public ClassesTest() {
+    }
+
+    /**
      * Tests {@link Classes#changeArrayDimension(Class, int)}.
      */
     @Test

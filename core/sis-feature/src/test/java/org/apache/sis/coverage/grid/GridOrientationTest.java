@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class GridOrientationTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public GridOrientationTest() {
+    }
+
+    /**
      * Tests {@link GridOrientation#useVariantOfCRS(AxesConvention)}. This test may fail if new enumeration values
      * are added in {@link AxesConvention} without updating {@link GridOrientation#useVariantOfCRS(AxesConvention)}
      * code accordingly. The main purpose of this test is to warn the developer if such situation happens.

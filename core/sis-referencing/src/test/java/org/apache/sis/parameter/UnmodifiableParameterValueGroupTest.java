@@ -36,6 +36,12 @@ import static org.junit.Assert.*;
 @DependsOn(UnmodifiableParameterValueTest.class)
 public final class UnmodifiableParameterValueGroupTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public UnmodifiableParameterValueGroupTest() {
+    }
+
+    /**
      * Tests creation of an {@link UnmodifiableParameterValueGroup} and verify the values.
      */
     @Test

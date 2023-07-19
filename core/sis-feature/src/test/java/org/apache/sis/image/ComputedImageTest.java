@@ -60,6 +60,12 @@ public final class ComputedImageTest extends TestCase {
     private Consumer<ComputedImage> onComputeTile;
 
     /**
+     * Creates a new test case.
+     */
+    public ComputedImageTest() {
+    }
+
+    /**
      * Creates an image to test. The {@link ComputedImage} tiles are simply sub-regions of a {@link BufferedImage}.
      * If {@link #onComputeTile} is non-null, it will be invoked every time that a tile is computed.
      */

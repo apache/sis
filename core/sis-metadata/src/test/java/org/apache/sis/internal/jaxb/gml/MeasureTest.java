@@ -45,6 +45,12 @@ public final class MeasureTest extends TestCase {
     public static final String UOM_URL = CodeListUID.METADATA_ROOT_LEGACY + CodeListUID.UOM_PATH;
 
     /**
+     * Creates a new test case.
+     */
+    public MeasureTest() {
+    }
+
+    /**
      * Tests the {@link Measure#getUOM()}.
      */
     @Test

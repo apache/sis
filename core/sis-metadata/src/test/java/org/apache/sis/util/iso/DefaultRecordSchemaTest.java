@@ -44,9 +44,16 @@ import static org.junit.Assert.*;
 })
 public final class DefaultRecordSchemaTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultRecordSchemaTest() {
+    }
+
+    /**
      * Tests {@link DefaultRecordSchema#createRecordType(CharSequence, Map)}.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testCreateRecordType() {
         final DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
         final Map<CharSequence,Class<?>> fields = new LinkedHashMap<>(8);
@@ -104,7 +111,7 @@ public final class DefaultRecordSchemaTest extends TestCase {
          * The DefaultRecordType(TypeName, RecordSchema, Map) constructor performs many argument checks, so
          * we use that constructor as a way to perform a final validation, especially regarding namespaces.
          */
-        final DefaultRecordType copy = new DefaultRecordType(
+        final var copy = new DefaultRecordType(
                 recordType.getTypeName(),
                 recordType.getContainer(),
                 recordType.getMemberTypes());

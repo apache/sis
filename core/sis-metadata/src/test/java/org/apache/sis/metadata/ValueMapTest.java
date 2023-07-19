@@ -69,6 +69,12 @@ public final class ValueMapTest extends TestCase {
     private DefaultResponsibleParty author;
 
     /**
+     * Creates a new test case.
+     */
+    public ValueMapTest() {
+    }
+
+    /**
      * Creates the metadata instance to be used for testing purpose.
      * This method creates the following metadata
      * (ignoring identifiers, which will be inferred from the ISBN value):

@@ -34,6 +34,12 @@ import static org.junit.Assert.*;
  */
 public final class RangeArgumentTest extends TestCase implements Localized {
     /**
+     * Creates a new test case.
+     */
+    public RangeArgumentTest() {
+    }
+
+    /**
      * Returns a fixed locale for testing purpose.
      *
      * @return a fixed locale.

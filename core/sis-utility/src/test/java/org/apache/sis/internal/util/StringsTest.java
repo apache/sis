@@ -32,6 +32,12 @@ import static org.junit.Assert.*;
  */
 public final class StringsTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public StringsTest() {
+    }
+
+    /**
      * Tests the {@link Strings#toString(Class, Object[])} method.
      */
     @Test

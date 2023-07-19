@@ -1352,6 +1352,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      * @throws FactoryException if the object creation failed for some other reason.
      */
     @Override
+    @SuppressWarnings("try")    // Explicit call to close() on an auto-closeable resource.
     public synchronized CoordinateReferenceSystem createCoordinateReferenceSystem(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
@@ -2819,6 +2820,7 @@ next:                   while (r.next()) {
      * @throws FactoryException if the object creation failed for some other reason.
      */
     @Override
+    @SuppressWarnings("try")    // Explicit call to close() on an auto-closeable resource.
     public synchronized CoordinateOperation createCoordinateOperation(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {

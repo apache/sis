@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
  */
 public final class RasterReaderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public RasterReaderTest() {
+    }
+
+    /**
      * Tests reading a raster in unsigned short format.
      * This method reads the {@code "raster-ushort.wkb"} file
      * and compares the result with the expected raster.

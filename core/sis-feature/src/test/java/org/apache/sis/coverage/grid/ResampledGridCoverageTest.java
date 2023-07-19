@@ -89,6 +89,12 @@ public final class ResampledGridCoverageTest extends TestCase {
     private int gridZ;
 
     /**
+     * Creates a new test case.
+     */
+    public ResampledGridCoverageTest() {
+    }
+
+    /**
      * Creates a small grid coverage with arbitrary data. The rendered image will
      * have only one tile because testing tiling is not the purpose of this class.
      * This simple coverage is two-dimensional.

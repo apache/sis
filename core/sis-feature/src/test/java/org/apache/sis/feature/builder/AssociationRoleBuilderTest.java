@@ -36,6 +36,12 @@ import org.apache.sis.feature.DefaultAssociationRole;
  */
 public final class AssociationRoleBuilderTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public AssociationRoleBuilderTest() {
+    }
+
+    /**
      * Tests the name, designation, definition, description and multiplicity associated to the role.
      */
     @Test

@@ -56,6 +56,12 @@ public final class MetadataWriterTest extends TestCase {
     private MetadataWriter source;
 
     /**
+     * Creates a new test case.
+     */
+    public MetadataWriterTest() {
+    }
+
+    /**
      * Runs all tests on Derby in the required order.
      *
      * @throws Exception if an error occurred while writing or reading the database.

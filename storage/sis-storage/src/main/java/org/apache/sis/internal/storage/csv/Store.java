@@ -639,7 +639,7 @@ final class Store extends URIDataStore implements FeatureSet {
                 builder.addFormatName(format);
                 listeners.warning(e);
             }
-            builder.addEncoding(encoding, MetadataBuilder.Scope.ALL);
+            builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.ALL);
             builder.addResourceScope(ScopeCode.FEATURE, null);
             try {
                 builder.addExtent(envelope);

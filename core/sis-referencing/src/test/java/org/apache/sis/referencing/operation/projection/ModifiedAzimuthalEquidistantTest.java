@@ -33,6 +33,12 @@ import org.junit.Test;
 @DependsOn(NormalizedProjectionTest.class)
 public final class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistantTest {
     /**
+     * Creates a new test case.
+     */
+    public ModifiedAzimuthalEquidistantTest() {
+    }
+
+    /**
      * Returns the method to be tested.
      */
     @Override

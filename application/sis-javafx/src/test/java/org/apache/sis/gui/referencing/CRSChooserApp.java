@@ -38,6 +38,12 @@ import org.apache.sis.referencing.CommonCRS;
  */
 public final class CRSChooserApp extends Application {
     /**
+     * Creates a widget viewer.
+     */
+    public CRSChooserApp() {
+    }
+
+    /**
      * Starts the test application.
      *
      * @param args  ignored.

@@ -41,6 +41,12 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  */
 public final class CodeListSetTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public CodeListSetTest() {
+    }
+
+    /**
      * Creates a new set filled with up to 4 axis directions.
      * The directions are (NORTH, EAST, UP, FUTURE) in that order.
      *

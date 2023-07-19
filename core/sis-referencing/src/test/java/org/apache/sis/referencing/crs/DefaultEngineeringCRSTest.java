@@ -45,6 +45,12 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  */
 public final class DefaultEngineeringCRSTest extends TestCase {
     /**
+     * Creates a new test case.
+     */
+    public DefaultEngineeringCRSTest() {
+    }
+
+    /**
      * Creates an engineering CRS using a two-dimensional Cartesian coordinate system.
      */
     private static DefaultEngineeringCRS createCartesian() {

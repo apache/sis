@@ -66,6 +66,12 @@ public class GridCoverage2DTest extends TestCase {
     protected static final int GRID_SIZE = 2;
 
     /**
+     * Creates a new test case.
+     */
+    public GridCoverage2DTest() {
+    }
+
+    /**
      * Creates a {@link GridCoverage} instance with arbitrary sample values.
      * The image size is 2×2 pixels, the "grid to CRS" transform is identity,
      * the range of sample values is [-97.5 … 105] metres and the packed values are:

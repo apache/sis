@@ -30,7 +30,7 @@ import org.apache.sis.referencing.NamedIdentifier;
  * This implementation adds its own criterion to the attribute quality evaluation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
  */
 @SuppressWarnings("serial")
@@ -73,6 +73,7 @@ final class CustomAttribute<V> extends AbstractAttribute<V> {
      * Evaluates the quality of this attribute with a custom rule.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public DataQuality quality() {
         final DefaultDataQuality        quality = (DefaultDataQuality) super.quality();
         final DefaultDomainConsistency  report  = new DefaultDomainConsistency();
