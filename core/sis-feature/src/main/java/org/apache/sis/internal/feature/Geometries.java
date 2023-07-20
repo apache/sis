@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  * <h2>Serialization</h2>
  * All fields except {@link #library} should be declared {@code transient}.
  * Deserialized {@code Geometries} instances shall be replaced by a unique instance,
- * which is given by {@link #readResolve()}.
+ * which is given by {@code readResolve()} methods defined in each subclass.
  *
  * @param   <G>  the base class of all geometry objects (except point in some implementations).
  *

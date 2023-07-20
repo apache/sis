@@ -230,8 +230,9 @@ public final class JTS extends Static {
      *
      * <p><b>This operation may be slow!</b>
      * If many geometries need to be transformed, it is better to fetch the {@link CoordinateOperation} only once,
-     * then invoke {@link #transform(Geometry, CoordinateOperation)} for each geometry. Alternatively, the geometries
-     * can be stored in a single geometry collection in order to invoke this method only once.</p>
+     * then invoke {@link #transform(Geometry, CoordinateOperation, boolean)} for each geometry.
+     * Alternatively, the geometries can be stored in a single geometry collection
+     * in order to invoke this method only once.</p>
      *
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  targetCRS  the target coordinate reference system, or {@code null}.

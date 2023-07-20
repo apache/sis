@@ -74,7 +74,7 @@ public final class WritableStore extends Store implements WritableFeatureSet {
 
     /**
      * Appends new feature instances in this {@code FeatureSet}.
-     * Any feature already present in this {@link FeatureSet} will remain unmodified.
+     * Any feature already present in this {@link WritableFeatureSet} will remain unmodified.
      *
      * @param  features  feature instances to append in this {@code FeatureSet}.
      * @throws DataStoreException if the feature stream cannot be obtained or updated.

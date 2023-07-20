@@ -268,7 +268,7 @@ public class Stroke<R> extends StyleElement<R> implements Translucent<R> {
 
     /**
      * Sets the color of the line if it is to be solid-color filled.
-     * If this method is never invoked, then the default value is {@link Fill#BLACK}.
+     * If this method is never invoked, then the default value is black.
      * That default value is standardized by OGC 05-077r4.
      *
      * <p>Setting a non-null value clears the {@linkplain #getGraphicFill() graphic fill} and the

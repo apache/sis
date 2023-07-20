@@ -61,7 +61,7 @@ public class AlbersEqualArea extends AuthalicConversion {
 
     /**
      * Internal coefficients for computation, depending only on eccentricity and values of standards parallels.
-     * This is defined as {@literal n = (m₁² – m₂²) / (α₂ – α₁)} in §1.3.13 of IOGP Publication 373-7-2 (april 2015).
+     * This is defined as {@literal n = (m₁² – m₂²) / (α₂ – α₁)} in §1.3.13 of IOGP Publication 373-7-2 (April 2015).
      *
      * <p>In Apache SIS implementation, we use modified formulas in which the (1 - ℯ²) factor is omitted in
      * {@link #qm(double)} calculation. Consequently, what we get is a modified value <var>nm</var> which is

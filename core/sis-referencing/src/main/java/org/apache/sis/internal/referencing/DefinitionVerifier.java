@@ -80,7 +80,7 @@ public final class DefinitionVerifier {
     /**
      * Recommended CRS. May be the instance given to the {@link #withAuthority withAuthority(…)} method
      * or an instance created from the authority factory. May also be {@code null} if all CRS given to the
-     * {@link #compare(CoordinateReferenceSystem, CoordinateReferenceSystem) compare(…)} method were null.
+     * {@link #compare(CoordinateReferenceSystem, CoordinateReferenceSystem, Locale) compare(…)} method were null.
      *
      * Note that ISO 19162 said <cite>"Should any attributes or values given in the cited identifier be in conflict
      * with attributes or values given explicitly in the WKT description, the WKT values shall prevail."</cite>
@@ -225,7 +225,7 @@ public final class DefinitionVerifier {
     }
 
     /**
-     * Implementation of {@link #compare(CoordinateReferenceSystem, CoordinateReferenceSystem)}
+     * Implementation of {@link #compare(CoordinateReferenceSystem, CoordinateReferenceSystem, Locale)}
      * and final step in {@code forAuthority(…)} methods. The boolean flags control the behavior
      * in case of mismatched axis order or full mismatch.
      *

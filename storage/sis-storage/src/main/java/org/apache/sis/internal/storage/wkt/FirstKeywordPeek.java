@@ -179,8 +179,8 @@ public abstract class FirstKeywordPeek {
 
     /**
      * Returns {@link ProbeResult#SUPPORTED} if the content of given file begins with an expected keyword.
-     * This method can be invoked as an alternative to {@link #probeContent(StorageConnector)} when the file
-     * to test is not the specified storage, but some auxiliary file.
+     * This method can be invoked as an alternative to {@link #probeContent(DataStoreProvider, StorageConnector)}
+     * when the file to test is not the specified storage, but some auxiliary file.
      *
      * @param  file  the file to partially read.
      * @return {@link ProbeResult#SUPPORTED} if the given file seems to be readable.
@@ -270,7 +270,7 @@ public abstract class FirstKeywordPeek {
     protected abstract boolean isPostKeyword(int c);
 
     /**
-     * Returns the value to be returned by {@link #probeContent(StorageConnector)} for the given keyword.
+     * Returns the value to be returned by {@link #probeContent(DataStoreProvider, StorageConnector)} for the given keyword.
      *
      * @param  keyword  the first keyword found in the input. May be {@code null} if {@code length} is zero.
      * @param  length   number of valid characters in {@code keyword}.

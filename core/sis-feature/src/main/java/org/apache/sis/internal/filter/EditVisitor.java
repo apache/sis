@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.filter;
 
+import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
+
 
 /**
  * Visitor used to copy expressions and filters with same parameterized types.

@@ -308,7 +308,7 @@ public abstract class Visitor<R,A> {
      * Adds the value to use or throws an exception when there is no action registered for a given filter type.
      * The default implementation throws {@link UnsupportedOperationException}.
      *
-     * @param  type         the filter type which has not been found, or {@code null} if {@coce filter} is null.
+     * @param  type         the filter type which has not been found, or {@code null} if {@code filter} is null.
      * @param  filter       the filter (may be {@code null}).
      * @param  accumulator  where to write the result of all actions.
      * @throws UnsupportedOperationException if there is no default action.
@@ -321,7 +321,7 @@ public abstract class Visitor<R,A> {
      * Adds the value to use or throws an exception when there is no action registered for a given expression type.
      * The default implementation throws {@link UnsupportedOperationException}.
      *
-     * @param  type         the expression type which has not been found, or {@code null} if {@coce expression} is null.
+     * @param  type         the expression type which has not been found, or {@code null} if {@code expression} is null.
      * @param  expression   the expression (may be {@code null}).
      * @param  accumulator  where to write the result of all actions.
      * @throws UnsupportedOperationException if there is no default value.

@@ -608,7 +608,7 @@ public class Database<G> extends Syntax  {
 
     /**
      * Returns the type of components in SQL arrays stored in a column.
-     * This method is invoked when {@link #type} = {@link Types#ARRAY}.
+     * This method is invoked when {@link Column#type} = {@link Types#ARRAY}.
      * The default implementation returns {@link Types#OTHER} because JDBC
      * column metadata does not provide information about component types.
      * Database-specific subclasses should override this method if they can

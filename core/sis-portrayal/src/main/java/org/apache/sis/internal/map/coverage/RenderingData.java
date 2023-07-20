@@ -369,7 +369,7 @@ public class RenderingData implements CloneAccess {
      * @param  sliceExtent  a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
      *                      May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
      * @param  force        whether to force data loading. Should be {@code true} if {@code coverage} changed since last call.
-     * @return whether the {@linkpalin #data} changed.
+     * @return whether the {@linkplain #data} changed.
      * @throws FactoryException if the CRS changed but the transform from old to new CRS cannot be determined.
      * @throws TransformException if an error occurred while transforming coordinates from old to new CRS.
      */

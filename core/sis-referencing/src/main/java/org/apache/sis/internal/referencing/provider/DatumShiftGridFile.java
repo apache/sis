@@ -513,7 +513,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
-     * @since   0.7
+     *
+     * @param <C>  dimension of the coordinate unit (usually angular).
+     * @param <T>  dimension of the translation unit (usually angular or linear).
+     *
+     * @since 0.7
      */
     static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**
@@ -629,7 +633,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
-     * @since   1.1
+     *
+     * @param <C>  dimension of the coordinate unit (usually angular).
+     * @param <T>  dimension of the translation unit (usually angular or linear).
+     *
+     * @since 1.1
      */
     static final class Double<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**

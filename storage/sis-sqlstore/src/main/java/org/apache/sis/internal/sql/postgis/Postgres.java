@@ -137,7 +137,7 @@ public final class Postgres<G> extends Database<G> {
 
     /**
      * Returns the type of components in SQL arrays stored in a column.
-     * This method is invoked when {@link #type} = {@link Types#ARRAY}.
+     * This method is invoked when {@link Column#type} = {@link Types#ARRAY}.
      */
     @Override
     protected int getArrayComponentType(final Column columnDefinition) {

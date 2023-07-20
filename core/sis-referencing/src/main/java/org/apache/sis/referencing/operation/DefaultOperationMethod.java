@@ -90,7 +90,7 @@ import org.apache.sis.io.wkt.FormattableObject;
  * but may be missing under some conditions in Apache SIS:
  * <ul>
  *   <li>The {@linkplain #getFormula() formula} if it has not been provided to the
- *     {@linkplain #DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup) constructor}, or if it
+ *     {@linkplain #DefaultOperationMethod(Map, ParameterDescriptorGroup) constructor}, or if it
  *     cannot be {@linkplain #DefaultOperationMethod(MathTransform) inferred from the given math transform}.</li>
  *   <li>The {@linkplain #getParameters() parameters} if the {@link #DefaultOperationMethod(MathTransform)}
  *     constructor cannot infer them.</li>

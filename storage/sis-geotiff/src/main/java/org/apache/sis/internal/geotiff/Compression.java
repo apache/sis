@@ -20,7 +20,7 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 
 /**
- * Possible values for {@link org.apache.sis.storage.geotiff.Tags#Compression}.
+ * Possible values for {@code BaselineTIFFTagSet.TAG_COMPRESSION}.
  * Data compression applies only to raster image data. All other TIFF fields are unaffected.
  *
  * <p>Except otherwise noted, field names in this class are upper-case variant of the names
