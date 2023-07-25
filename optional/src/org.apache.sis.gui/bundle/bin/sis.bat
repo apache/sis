@@ -20,8 +20,10 @@ SET BASE_DIR=%~dp0\..
 SET SIS_DATA=%BASE_DIR%\data
 
 REM Execute SIS with any optional JAR that the user may put in the 'lib' directory.
-java -classpath "%BASE_DIR%\lib\sis-console-2.0-SNAPSHOT.jar"^
+java --module-path "%BASE_DIR%\lib"^
+     --limit-modules org.apache.sis.console^
      -Djava.util.logging.config.class=org.apache.sis.util.logging.Initializer^
      -Djava.util.logging.config.file="%BASE_DIR%\conf\logging.properties"^
      -Dderby.stream.error.file="%BASE_DIR%\log\derby.log"^
-     %JAVA_OPTS% org.apache.sis.console.Command %SIS_OPTS% %*
+     %JAVA_OPTS% --module org.apache.sis.console/org.apache.sis.console.Command^
+     %SIS_OPTS% %*

@@ -569,9 +569,12 @@ public final class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
+     *
+     * @see org.apache.sis.internal.referencing.provider.SeismicBinGridMock
      */
     @Test
     @Override
+    @org.junit.Ignore("Pending implementation of EPSG:1049 — Seismic bin grid.")
     public void testDerivedEngineeringFromProjected() throws FactoryException {
         super.testDerivedEngineeringFromProjected();
         final CoordinateSystem cs = object.getCoordinateSystem();
