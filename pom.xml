@@ -108,10 +108,15 @@
       <archive>https://lists.apache.org/list.html?dev@sis.apache.org</archive>
     </mailingList>
     <mailingList>
+      <name>Issues mailing list</name>
+      <subscribe>issues-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>issues-unsubscribe@sis.apache.org</unsubscribe>
+      <archive>https://lists.apache.org/list.html?issues@sis.apache.org</archive>
+    </mailingList>
+    <mailingList>
       <name>Commit mailing list</name>
       <subscribe>commits-subscribe@sis.apache.org</subscribe>
       <unsubscribe>commits-unsubscribe@sis.apache.org</unsubscribe>
-      <post>commits@sis.apache.org</post>
       <archive>https://lists.apache.org/list.html?commits@sis.apache.org</archive>
     </mailingList>
   </mailingLists>
@@ -125,6 +130,17 @@
     <developer>
       <name>Adam Estrada</name>
       <id>aestrada</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Alexis Manin</name>
+      <id>alexismanin</id>
+      <email>alexis.manin@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
       <roles>
         <role>PMC member</role>
       </roles>
@@ -226,6 +242,9 @@
     </developer>
     <developer>
       <name>Olivier Nouguier</name>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
       <roles>
         <role>PMC member</role>
       </roles>
@@ -262,7 +281,6 @@
     <developer>
       <name>Rémi Maréchal</name>
       <id>rmarechal</id>
-      <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
       <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
@@ -309,16 +327,6 @@
       <name>Adrian Custer</name>
       <roles>
         <role>documentation</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Alexis manin</name>
-      <email>alexis.manin@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>https://www.geomatys.com</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
       </roles>
     </contributor>
     <contributor>
@@ -372,6 +380,15 @@
       </roles>
     </contributor>
     <contributor>
+      <name>Maxime Gavens</name>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Minh Chinh Vu</name>
       <email>chinhvm.uet.1995@gmail.com</email>
       <organization>VNSC</organization>
@@ -379,6 +396,20 @@
       <timezone>+7</timezone>
       <roles>
         <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Richard Deplanque</name>
+      <organization>Université de Nouvelle-Calédonie</organization>
+      <timezone>+11</timezone>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Smaniotto Enzo</name>
+      <roles>
+        <role>GSoC student</role>
       </roles>
     </contributor>
     <contributor>
