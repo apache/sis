@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
@@ -33,6 +32,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
@@ -241,6 +241,7 @@ public class Database<G> extends Syntax  {
          * we continue looping in case the type information is duplicated with more information later.
          */
         Boolean unsigned = null;
+        SQLException cause = null;
         try (ResultSet reflect = metadata.getTypeInfo()) {
             while (reflect.next()) {
                 if (reflect.getInt(Reflection.DATA_TYPE) == Types.TINYINT) {
@@ -250,16 +251,15 @@ public class Database<G> extends Syntax  {
                 }
             }
         } catch (SQLFeatureNotSupportedException e) {
-            // If metadata cannot be fetched, consider it equivalent to an empty metadata: assume default interpretation
+            // If metadata cannot be fetched, consider it equivalent to an empty metadata: assume default interpretation.
             unsigned = null;
+            cause = e;
         }
-
         if (unsigned == null) {
             unsigned = true;
             listeners.warning(Resources.forLocale(listeners.getLocale())
-                                       .getString(Resources.Keys.AssumeUnsigned));
+                                       .getString(Resources.Keys.AssumeUnsigned), cause);
         }
-
         this.source        = source;
         this.isByteSigned  = !unsigned;
         this.geomLibrary   = geomLibrary;
