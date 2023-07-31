@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.sql.feature;
 
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
@@ -236,16 +237,29 @@ public class Database<G> extends Syntax  {
          * Get information about whether byte are unsigned.
          * According JDBC specification, the rows shall be ordered by DATA_TYPE.
          * But the PostgreSQL driver 42.2.2 still provides rows in random order.
+         * Also, if we find information about tiny int, but it does not specify signing information,
+         * we continue looping in case the type information is duplicated with more information later.
          */
-        boolean unsigned = true;
+        Boolean unsigned = null;
         try (ResultSet reflect = metadata.getTypeInfo()) {
             while (reflect.next()) {
                 if (reflect.getInt(Reflection.DATA_TYPE) == Types.TINYINT) {
                     unsigned = reflect.getBoolean(Reflection.UNSIGNED_ATTRIBUTE);
-                    if (unsigned) break;        // Give precedence to "true" value.
+                    if (reflect.wasNull()) unsigned = null;
+                    else break;
                 }
             }
+        } catch (SQLFeatureNotSupportedException e) {
+            // If metadata cannot be fetched, consider it equivalent to an empty metadata: assume default interpretation
+            unsigned = null;
         }
+
+        if (unsigned == null) {
+            unsigned = true;
+            listeners.warning(Resources.forLocale(listeners.getLocale())
+                                       .getString(Resources.Keys.AssumeUnsigned));
+        }
+
         this.source        = source;
         this.isByteSigned  = !unsigned;
         this.geomLibrary   = geomLibrary;

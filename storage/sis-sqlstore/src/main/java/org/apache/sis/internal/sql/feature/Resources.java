@@ -57,6 +57,11 @@ public class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Assume database byte/tinyint unsigned, due to a lack of metadata.
+         */
+        public static final short AssumeUnsigned = 16;
+
+        /**
          * Cannot fetch a Coordinate Reference System (CRS) for SRID code {0}.
          */
         public static final short CanNotFetchCRS_1 = 8;
