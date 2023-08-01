@@ -21,9 +21,10 @@ import java.util.Locale;
 
 /**
  * Implementation-neutral description of the type of geometry.
+ * The name of each enumeration value is the name in WKT format.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see Geometries#getGeometryClass(GeometryType)
  *
@@ -65,22 +66,22 @@ public enum GeometryType {
     /**
      * Set of points.
      */
-    MULTI_POINT,
+    MULTIPOINT,
 
     /**
      * Set of linestrings.
      */
-    MULTI_LINESTRING,
+    MULTILINESTRING,
 
     /**
      * Set of polygons.
      */
-    MULTI_POLYGON,
+    MULTIPOLYGON,
 
     /**
      * Set of geometries of any type except other geometry collection.
      */
-    GEOMETRY_COLLECTION;
+    GEOMETRYCOLLECTION;
 
     /**
      * The type of this geometry as specified in Well-Known Binary (WKB) specification.
@@ -101,13 +102,13 @@ public enum GeometryType {
 
     /**
      * Returns {@code true} if this geometry type is some sort of collection.
-     * Those types are {@link #MULTI_POINT}, {@link #MULTI_LINESTRING},
-     * {@link #MULTI_POLYGON} or {@link #GEOMETRY_COLLECTION}.
+     * Those types are {@link #MULTIPOINT}, {@link #MULTILINESTRING},
+     * {@link #MULTIPOLYGON} or {@link #GEOMETRYCOLLECTION}.
      *
      * @return whether this geometry type is some kind of collections.
      */
     public final boolean isCollection() {
-        return ordinal() >= MULTI_POINT.ordinal();
+        return ordinal() >= MULTIPOINT.ordinal();
     }
 
     /**
@@ -126,14 +127,11 @@ public enum GeometryType {
                 // Remove Z, M or ZM suffix.
                 if (/*non-empty*/ name.charAt(length - 1) == 'M') length--;
                 if (length > 0 && name.charAt(length - 1) == 'Z') length--;
-                name = name.substring(0, length);
-                switch (name) {
-                    case "MULTIPOINT":      return MULTI_POINT;
-                    case "MULTILINESTRING": return MULTI_LINESTRING;
-                    case "MULTIPOLYGON":    return MULTI_POLYGON;
-                    case "GEOMCOLLECTION":  return GEOMETRY_COLLECTION;
-                    default: return valueOf(name);
+                name = name.substring(0, length).replace("_", "");
+                if (name.equals("GEOMCOLLECTION")) {    // Alternative name also accepted.
+                    return GEOMETRYCOLLECTION;
                 }
+                return valueOf(name);
             }
         }
         return null;
@@ -158,10 +156,10 @@ public enum GeometryType {
             case 1:  return POINT;
             case 2:  return LINESTRING;
             case 3:  return POLYGON;
-            case 4:  return MULTI_POINT;
-            case 5:  return MULTI_LINESTRING;
-            case 6:  return MULTI_POLYGON;
-            case 7:  return GEOMETRY_COLLECTION;
+            case 4:  return MULTIPOINT;
+            case 5:  return MULTILINESTRING;
+            case 6:  return MULTIPOLYGON;
+            case 7:  return GEOMETRYCOLLECTION;
         //  case 13: return CURVE;
         //  case 14: return SURFACE;
         //  case 15: return POLYHEDRALSURFACE;

@@ -51,9 +51,9 @@ public final class GeometryTypeTest extends TestCase {
      */
     @Test
     public void testForName() {
-        assertSame(GeometryType.MULTI_POLYGON, GeometryType.forName("multi_polygon"));
-        assertSame(GeometryType.MULTI_POLYGON, GeometryType.forName("MULTIPOLYGON"));
-        assertSame(GeometryType.GEOMETRY_COLLECTION, GeometryType.forName("GEOMETRY_COLLECTION"));
-        assertSame(GeometryType.GEOMETRY_COLLECTION, GeometryType.forName("GeomCollection"));
+        assertSame(GeometryType.MULTIPOLYGON, GeometryType.forName("multi_Polygon"));
+        assertSame(GeometryType.MULTIPOLYGON, GeometryType.forName("MULTIPOLYGON"));
+        assertSame(GeometryType.GEOMETRYCOLLECTION, GeometryType.forName("GEOMETRY_COLLECTION"));
+        assertSame(GeometryType.GEOMETRYCOLLECTION, GeometryType.forName("GeomCollection"));
     }
 }

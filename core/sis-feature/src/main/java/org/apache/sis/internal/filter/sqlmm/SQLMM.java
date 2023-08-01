@@ -550,17 +550,17 @@ public enum SQLMM {
      * @see #ST_MultiLineString
      * @see #ST_MultiPolygon
      */
-    ST_GeomCollection(1, 2, null, null, GEOMETRY_COLLECTION),
+    ST_GeomCollection(1, 2, null, null, GEOMETRYCOLLECTION),
 
     /**
      * The cardinality of the geometries of a geometry collection.
      */
-    ST_NumGeometries(GEOMETRY_COLLECTION, Integer.class),
+    ST_NumGeometries(GEOMETRYCOLLECTION, Integer.class),
 
     /**
      * The specified element in a geometry collection.
      */
-    ST_GeometryN(2, 2, GEOMETRY_COLLECTION, null, GEOMETRY),
+    ST_GeometryN(2, 2, GEOMETRYCOLLECTION, null, GEOMETRY),
 
     /**
      * Constructor for a geometry collection which is transformed from a Well-Known Text (WKT) representation.
@@ -573,7 +573,7 @@ public enum SQLMM {
      * @see #ST_MLineFromText
      * @see #ST_MPolyFromText
      */
-    ST_GeomCollFromText(1, 2, null, null, GEOMETRY_COLLECTION),
+    ST_GeomCollFromText(1, 2, null, null, GEOMETRYCOLLECTION),
 
     /**
      * Constructor for a geometry collection which is transformed from a Well-Known Binary (WKB) representation.
@@ -586,7 +586,7 @@ public enum SQLMM {
      * @see #ST_MLineFromWKB
      * @see #ST_MPolyFromWKB
      */
-    ST_GeomCollFromWKB(1, 2, null, null, GEOMETRY_COLLECTION),
+    ST_GeomCollFromWKB(1, 2, null, null, GEOMETRYCOLLECTION),
 
     /**
      * {@code MultiPoint} constructed from either a Well-Known Text (WKT) representation,
@@ -598,7 +598,7 @@ public enum SQLMM {
      * @see #ST_MultiLineString
      * @see #ST_MultiPolygon
      */
-    ST_MultiPoint(1, 2, null, null, MULTI_POINT),
+    ST_MultiPoint(1, 2, null, null, MULTIPOINT),
 
     /**
      * Constructor for a multi-point which is transformed from a Well-Known Text (WKT) representation.
@@ -611,7 +611,7 @@ public enum SQLMM {
      * @see #ST_MLineFromText
      * @see #ST_MPolyFromText
      */
-    ST_MPointFromText(1, 2, null, null, MULTI_POINT),
+    ST_MPointFromText(1, 2, null, null, MULTIPOINT),
 
     /**
      * Constructor for a multi-point which is transformed from a Well-Known Binary (WKB) representation.
@@ -624,7 +624,7 @@ public enum SQLMM {
      * @see #ST_MLineFromWKB
      * @see #ST_MPolyFromWKB
      */
-    ST_MPointFromWKB(1, 2, null, null, MULTI_POINT),
+    ST_MPointFromWKB(1, 2, null, null, MULTIPOINT),
 
     /**
      * {@code MultiLineString} constructed from either a Well-Known Text (WKT) representation,
@@ -636,7 +636,7 @@ public enum SQLMM {
      * @see #ST_MultiPoint
      * @see #ST_MultiPolygon
      */
-    ST_MultiLineString(1, 2, null, null, MULTI_LINESTRING),
+    ST_MultiLineString(1, 2, null, null, MULTILINESTRING),
 
     /**
      * Constructor for a multi-line string which is transformed from a Well-Known Text (WKT) representation.
@@ -649,7 +649,7 @@ public enum SQLMM {
      * @see #ST_MPointFromText
      * @see #ST_MPolyFromText
      */
-    ST_MLineFromText(1, 2, null, null, MULTI_LINESTRING),
+    ST_MLineFromText(1, 2, null, null, MULTILINESTRING),
 
     /**
      * Constructor for a multi-line string which is transformed from a Well-Known Binary (WKB) representation.
@@ -662,7 +662,7 @@ public enum SQLMM {
      * @see #ST_MPointFromWKB
      * @see #ST_MPolyFromWKB
      */
-    ST_MLineFromWKB(1, 2, null, null, MULTI_LINESTRING),
+    ST_MLineFromWKB(1, 2, null, null, MULTILINESTRING),
 
     /**
      * {@code MultiPolygon} constructed from either a Well-Known Text (WKT) representation,
@@ -674,7 +674,7 @@ public enum SQLMM {
      * @see #ST_MultiPoint
      * @see #ST_MultiLineString
      */
-    ST_MultiPolygon(1, 2, null, null, MULTI_POLYGON),
+    ST_MultiPolygon(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Constructor for a multi-polygon which is transformed from a Well-Known Text (WKT) representation.
@@ -687,7 +687,7 @@ public enum SQLMM {
      * @see #ST_MPointFromText
      * @see #ST_MLineFromText
      */
-    ST_MPolyFromText(1, 2, null, null, MULTI_POLYGON),
+    ST_MPolyFromText(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Constructor for a multi-polygon which is transformed from a Well-Known Binary (WKB) representation.
@@ -700,7 +700,7 @@ public enum SQLMM {
      * @see #ST_MPointFromWKB
      * @see #ST_MLineFromWKB
      */
-    ST_MPolyFromWKB(1, 2, null, null, MULTI_POLYGON),
+    ST_MPolyFromWKB(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Constructor for a multi-polygon which is transformed from a Well-Known Text (WKT) representation
@@ -708,13 +708,13 @@ public enum SQLMM {
      *
      * @see #ST_BdPolyFromText
      */
-    ST_BdMPolyFromText(1, 2, null, null, MULTI_POLYGON),
+    ST_BdMPolyFromText(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Constructor for a multi-polygon which is transformed from a Well-Known Binary (WKB) representation
      * of multi line string. There is one polygon for each line-string.
      */
-    ST_BdMPolyFromWKB(1, 2, null, null, MULTI_POLYGON),
+    ST_BdMPolyFromWKB(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
@@ -729,22 +729,22 @@ public enum SQLMM {
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
      */
-    ST_ToMultiPoint(GEOMETRY, MULTI_POINT),
+    ST_ToMultiPoint(GEOMETRY, MULTIPOINT),
 
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
      */
-    ST_ToMultiLine(GEOMETRY, MULTI_LINESTRING),
+    ST_ToMultiLine(GEOMETRY, MULTILINESTRING),
 
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
      */
-    ST_ToMultiPolygon(GEOMETRY, MULTI_POLYGON),
+    ST_ToMultiPolygon(GEOMETRY, MULTIPOLYGON),
 
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
      */
-    ST_ToGeomColl(GEOMETRY, GEOMETRY_COLLECTION),
+    ST_ToGeomColl(GEOMETRY, GEOMETRYCOLLECTION),
 
     /**
      * Computes a geometry simplification.
