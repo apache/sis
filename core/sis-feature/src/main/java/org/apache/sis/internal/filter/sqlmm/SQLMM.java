@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
+import java.util.EnumMap;
 import java.util.Optional;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryType;
 
@@ -26,6 +28,7 @@ import static org.apache.sis.internal.feature.GeometryType.*;
 
 // Branch-dependent imports
 import org.opengis.filter.SpatialOperatorName;
+import org.opengis.filter.capability.AvailableFunction;
 
 
 /**
@@ -34,7 +37,7 @@ import org.opengis.filter.SpatialOperatorName;
  * Enumeration values order is the approximated declaration order in SQLMM standard.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see <a href="https://www.iso.org/standard/60343.html">ISO 13249-3 - SQLMM</a>
  *
@@ -783,9 +786,17 @@ public enum SQLMM {
     /**
      * Type of value returned by the method as a {@link Class} or a {@link GeometryType}.
      *
-     * @see #getReturnType()
+     * @see #getReturnType(Geometries)
      */
     private final Object returnType;
+
+    /**
+     * Description of this SQLMM function, created when first needed.
+     * The associated Java type depends on the geometry library.
+     *
+     * @see #description(Geometries)
+     */
+    private transient EnumMap<GeometryLibrary,AvailableFunction> descriptions;
 
     /**
      * Creates a new enumeration value for an operation expecting exactly one geometry object
@@ -828,12 +839,26 @@ public enum SQLMM {
     }
 
     /**
+     * Returns a description of this SQLMM function.
+     * The Java types associated to arguments and return value depend on which geometry library is used.
+     *
+     * @param  library  the geometry ilibrary implementation to use.
+     * @return description of this SQLMM function.
+     */
+    public final synchronized AvailableFunction description(final Geometries<?> library) {
+        if (descriptions == null) {
+            descriptions = new EnumMap<>(GeometryLibrary.class);
+        }
+        return descriptions.computeIfAbsent(library.library, (key) -> new FunctionDescription(this, library));
+    }
+
+    /**
      * Returns the number of parameters that are geometry objects. Those parameters shall be first.
      * This value shall be between {@link #minParamCount} and {@link #maxParamCount}.
      *
      * @return number of parameters that are geometry objects.
      */
-    public int geometryCount() {
+    public final int geometryCount() {
         return (geometryType1 == null) ? 0 :
                (geometryType2 == null) ? 1 : 2;
     }
