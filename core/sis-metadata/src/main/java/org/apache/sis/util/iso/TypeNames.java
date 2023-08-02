@@ -28,6 +28,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
+import org.opengis.geometry.Geometry;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Numbers;
@@ -37,7 +38,7 @@ import org.apache.sis.util.Numbers;
  * Implements the mapping between {@link Class} and {@link TypeName} documented in {@link DefaultTypeName}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
  */
 final class TypeNames {
@@ -57,8 +58,11 @@ final class TypeNames {
         m.put("URI",       URI.class);
         m.put("DateTime",  Date.class);
         m.put("PT_Locale", Locale.class);
+        m.put("Geometry",  Geometry.class);             // Was GM_Object in ISO 19107:2003.
         m.put("Decimal",   BigDecimal.class);
         m.put("Boolean",   Boolean.class);              // Used as a sentinel value for stopping iteration.
+
+        // MD_Metadata is not specified because it is handled through UML annotations.
 
         // Entries below this point are handled in a special way.
         m.put("FreeText",        InternationalString.class);

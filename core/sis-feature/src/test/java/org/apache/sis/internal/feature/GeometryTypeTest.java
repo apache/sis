@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Locale;
+import org.opengis.util.TypeName;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -26,7 +28,7 @@ import static org.junit.Assert.*;
  * Tests {@link GeometryType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class GeometryTypeTest extends TestCase {
@@ -34,6 +36,30 @@ public final class GeometryTypeTest extends TestCase {
      * Creates a new test case.
      */
     public GeometryTypeTest() {
+    }
+
+    /**
+     * Verifies {@link GeometryType#name} values.
+     */
+    @Test
+    public void verifyCamelCaseName() {
+        for (final GeometryType type : GeometryType.values()) {
+            assertEquals(type.name(), type.name.toUpperCase(Locale.US));
+        }
+    }
+
+    /**
+     * Tests {@link GeometryType#getTypeName(Geometries)}.
+     */
+    @Test
+    public void testTypeName() {
+        TypeName name = GeometryType.LINESTRING.getTypeName(org.apache.sis.internal.feature.jts.Factory.INSTANCE);
+        assertEquals("OGC:LineString", name.toFullyQualifiedName().toString());
+        assertEquals(org.locationtech.jts.geom.LineString.class, name.toJavaType().get());
+
+        name = GeometryType.LINESTRING.getTypeName(org.apache.sis.internal.feature.esri.Factory.INSTANCE);
+        assertEquals("OGC:LineString", name.toFullyQualifiedName().toString());
+        assertEquals(com.esri.core.geometry.Polyline.class, name.toJavaType().get());
     }
 
     /**

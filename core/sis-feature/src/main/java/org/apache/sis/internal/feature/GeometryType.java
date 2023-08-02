@@ -17,6 +17,13 @@
 package org.apache.sis.internal.feature;
 
 import java.util.Locale;
+import java.util.EnumMap;
+import org.opengis.util.TypeName;
+import org.opengis.util.NameSpace;
+import org.apache.sis.util.iso.Names;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**
@@ -36,7 +43,7 @@ public enum GeometryType {
      *
      * @see Geometries#rootClass
      */
-    GEOMETRY,
+    GEOMETRY("Geometry"),
 
     /**
      * Zero-dimensional geometry containing a single point.
@@ -45,7 +52,7 @@ public enum GeometryType {
      *
      * @see Geometries#pointClass
      */
-    POINT,
+    POINT("Point"),
 
     /**
      * Sequence of points connected by straight, non-self intersecting line pieces.
@@ -53,7 +60,7 @@ public enum GeometryType {
      *
      * @see Geometries#polylineClass
      */
-    LINESTRING,
+    LINESTRING("LineString"),
 
     /**
      * Geometry with a positive area (two-dimensional).
@@ -61,27 +68,89 @@ public enum GeometryType {
      *
      * @see Geometries#polygonClass
      */
-    POLYGON,
+    POLYGON("Polygon"),
 
     /**
      * Set of points.
      */
-    MULTIPOINT,
+    MULTIPOINT("MultiPoint"),
 
     /**
      * Set of linestrings.
      */
-    MULTILINESTRING,
+    MULTILINESTRING("MultiLineString"),
 
     /**
      * Set of polygons.
      */
-    MULTIPOLYGON,
+    MULTIPOLYGON("MultiPolygon"),
 
     /**
      * Set of geometries of any type except other geometry collection.
      */
-    GEOMETRYCOLLECTION;
+    GEOMETRYCOLLECTION("GeometryCollection");
+
+    /**
+     * Camel-case name of this geometry type.
+     * The upper-case variant of this name is equal to {@link #name()}.
+     */
+    public final String name;
+
+    /**
+     * The geometry types as ISO 19103 type names, created when first needed.
+     * For a given enumeration value, all {@code typeNames} values are identical
+     * except for the associated Java class, which depends on the geometry library.
+     *
+     * @see #getTypeName(Geometries)
+     */
+    private final EnumMap<GeometryLibrary, TypeName> typeNames;
+
+    /**
+     * The "OGC" namespace for geometry names. Fetched when first needed.
+     */
+    private static volatile NameSpace namespace;
+
+    /**
+     * Creates a new enumeration value.
+     *
+     * @param  name  camel-case name of the geometry.
+     */
+    private GeometryType(final String name) {
+        this.name = name;
+        typeNames = new EnumMap<>(GeometryLibrary.class);
+    }
+
+    /**
+     * {@return the name of this geometry type as an ISO 19103 object}.
+     * The namespace is "OGC". The Java type depends on the geometry library.
+     *
+     * @param  library  the geometry library that determine geometry classes.
+     */
+    public final TypeName getTypeName(final Geometries<?> library) {
+        TypeName value;
+        synchronized (typeNames) {
+            value = typeNames.get(library.library);
+        }
+        if (value == null) {
+            NameSpace scope = namespace;
+            if (scope == null) {
+                /*
+                 * The `Names.createTypeName(…)` method creates a `TypeName` associated to the
+                 * `org.opengis.geometry.Geometry` type, which is not necessarily what we want.
+                 * So we keep only the namespace.
+                 */
+                namespace = scope = Names.createTypeName(Constants.OGC, null, "Geometry").scope();
+            }
+            value = DefaultNameFactory.provider().createTypeName(scope, name, library.getGeometryClass(this));
+            synchronized (typeNames) {
+                final TypeName existing = typeNames.put(library.library, value);
+                if (existing != null) {
+                    typeNames.put(library.library, value = existing);
+                }
+            }
+        }
+        return value;
+    }
 
     /**
      * The type of this geometry as specified in Well-Known Binary (WKB) specification.
