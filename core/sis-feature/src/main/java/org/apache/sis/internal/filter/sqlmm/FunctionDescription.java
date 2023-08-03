@@ -17,14 +17,22 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.List;
-import org.opengis.util.LocalName;
+import java.io.Serializable;
+import java.lang.reflect.Type;
 import org.opengis.util.TypeName;
+import org.opengis.util.LocalName;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryType;
+import org.apache.sis.internal.simple.SimpleIdentifiedObject;
+import org.apache.sis.parameter.DefaultParameterValue;
+import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 
 // Branch-dependent imports
-import org.opengis.filter.capability.Argument;
 import org.opengis.filter.capability.AvailableFunction;
 
 
@@ -41,12 +49,23 @@ import org.opengis.filter.capability.AvailableFunction;
  *
  * @since 1.4
  */
-final class FunctionDescription implements AvailableFunction {
+final class FunctionDescription implements AvailableFunction, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -264656649425360058L;
+
+    /**
+     * The name space for function descriptions.
+     */
+    private static final String NAMESPACE = "SQLMM";
+
     /**
      * The function name in SQLMM namespace.
      *
      * @see #getName()
      */
+    @SuppressWarnings("serial")     // The implementation used here is serializable.
     private final LocalName name;
 
     /**
@@ -55,13 +74,15 @@ final class FunctionDescription implements AvailableFunction {
      *
      * @see #getArguments()
      */
-    private final List<Argument> arguments;
+    @SuppressWarnings("serial")     // The implementation used here is serializable.
+    private final List<ParameterDescriptor<?>> arguments;
 
     /**
      * The type of return value.
      *
      * @see #getReturnType()
      */
+    @SuppressWarnings("serial")     // The implementation used here is serializable.
     private final TypeName result;
 
     /**
@@ -71,30 +92,21 @@ final class FunctionDescription implements AvailableFunction {
      * @param  library   the geometry library implementation in use.
      */
     FunctionDescription(final SQLMM function, final Geometries<?> library) {
-        name = createLocalName(function.name());
-        final Arg[] args = new Arg[function.maxParamCount];
+        name = Names.createLocalName(NAMESPACE, null, function.name());
+        final var args = new Argument<?>[function.maxParamCount];
         for (int i=0; i<args.length; i++) {
-            final GeometryType type;
+            final GeometryType gt;
             switch (i) {
-                case 0:  type = function.geometryType1; break;
-                case 1:  type = function.geometryType2; break;
-                default: type = null; break;
+                case 0:  gt = function.geometryType1; break;
+                case 1:  gt = function.geometryType2; break;
+                default: gt = null; break;
             }
-            args[i] = new Arg(i, (type != null) ? type.getTypeName(library) : null);
+            final TypeName type = (gt != null) ? gt.getTypeName(library) : null;
+            args[i] = new Argument<>("arg" + (i+1), type, Argument.getValueClass(type), true);
         }
         arguments = List.of(args);
         result = function.getGeometryType().map((t) -> t.getTypeName(library))
                          .orElseGet(() -> Names.createTypeName(function.getReturnType(library)));
-    }
-
-    /**
-     * Creates a name which is local in SQLMM namespace.
-     *
-     * @param  name  text of the name to create.
-     * @return name which is local in SQLMM namespace.
-     */
-    private static LocalName createLocalName(final String name) {
-        return Names.createLocalName("SQLMM", null, name);
     }
 
     /**
@@ -115,7 +127,7 @@ final class FunctionDescription implements AvailableFunction {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<Argument> getArguments() {
+    public List<ParameterDescriptor<?>> getArguments() {
         return arguments;
     }
 
@@ -132,35 +144,44 @@ final class FunctionDescription implements AvailableFunction {
      *
      * @todo Argument names are not informative.
      * @todo Argument types are unknown if not geometric.
+     *
+     * @param  <T>  the type of the argument value.
      */
-    private static final class Arg implements Argument {
+    private static final class Argument<T> extends SimpleIdentifiedObject implements ParameterDescriptor<T> {
         /**
-         * The argument name.
+         * For cross-version compatibility.
          */
-        private final LocalName name;
+        private static final long serialVersionUID = 1607271450895713628L;
 
         /**
-         * The value type, or {@code null} if unknown.
+         * Java type of the argument value, or {@code Object.class} if unknown.
          */
+        private final Class<T> valueClass;
+
+        /**
+         * The value type in OGC namespace, or {@code null} if unknown.
+         */
+        @SuppressWarnings("serial")     // Most Apache SIS implementations are serializable.
         private final TypeName type;
+
+        /**
+         * Whether this argument is mandatory.
+         */
+        private final boolean mandatory;
 
         /**
          * Creates a new argument description.
          *
-         * @param  i     index of the argument being created.
-         * @param  type  the argument type, or {@code null} if unknown.
+         * @param  name        name of the argument being created.
+         * @param  type        the {@code valueClass} name in OGC namespace, or {@code null} if unknown.
+         * @param  valueClass  Java type of the argument value, or {@code Object.class} if unknown.
+         * @param  mandatory   whether this argument is mandatory.
          */
-        Arg(final int i, final TypeName type) {
-            this.name = createLocalName("arg" + (i+1));
-            this.type = type;
-        }
-
-        /**
-         * {@return the name of the argument}.
-         */
-        @Override
-        public LocalName getName() {
-            return name;
+        Argument(final String name, final TypeName type, final Class<T> valueClass, final boolean mandatory) {
+            this.name       = new NamedIdentifier(null, NAMESPACE, name, null, null);
+            this.type       = type;
+            this.valueClass = valueClass;
+            this.mandatory  = mandatory;
         }
 
         /**
@@ -172,17 +193,81 @@ final class FunctionDescription implements AvailableFunction {
         }
 
         /**
+         * Returns the Java type for the specified type name, or {@code Object.class} if none.
+         * This method is for computing the value returned by {@link #getValueClass()}.
+         * It cannot be inlined because of parameterized type.
+         *
+         * @param  type  type for which to get the Java class.
+         * @return the Java class for the specified type name.
+         */
+        static Class<?> getValueClass(final TypeName type) {
+            if (type != null) {
+                final Type t = type.toJavaType().orElse(null);
+                if (t instanceof Class<?>) {
+                    return (Class<?>) t;
+                }
+            }
+            return Object.class;
+        }
+
+        /**
+         * Returns the Java type of the argument value, or {@code Object.class} if none.
+         * This is the Java equivalent of {@link #getValueType()}.
+         *
+         * @return the Java type of the argument value.
+         */
+        @Override
+        public Class<T> getValueClass() {
+            return valueClass;
+        }
+
+        /**
+         * Creates a new instance of parameter value initialized with the default value.
+         *
+         * @return a new parameter value initialized to the default value.
+         */
+        @Override
+        public ParameterValue<T> createValue() {
+            return new DefaultParameterValue<>(this);
+        }
+
+        /**
+         * Returns the maximum number of times that values for this argument can be provided.
+         * This is 0 for optional argument and 1 for mandatory argument.
+         *
+         * @return the minimum occurrence.
+         */
+        @Override
+        public int getMinimumOccurs() {
+            return mandatory ? 1 : 0;
+        }
+
+        /**
+         * Returns the maximum number of times that values for this argument can be provided.
+         *
+         * @return the maximum occurrence.
+         */
+        @Override
+        public int getMaximumOccurs() {
+            return 1;
+        }
+
+        /**
          * Tests whether the given object is equal to this argument description.
          *
-         * @param  obj  the object to test for equality.
+         * @param  obj   the object to test for equality.
+         * @param  mode  the strictness level of the comparison.
          * @return whether the given object describes the same argument than this.
          */
         @Override
-        public boolean equals(final Object obj) {
-            if (obj instanceof Arg) {
-                final var other = (Arg) obj;
-                return name.equals(other.name)
-                    && type.equals(other.type);
+        public boolean equals(final Object obj, final ComparisonMode mode) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof Argument) {
+                final var other = (Argument) obj;
+                return Utilities.deepEquals(name, other.name, mode)
+                    && Utilities.deepEquals(type, other.type, mode);
             }
             return false;
         }
@@ -203,7 +288,7 @@ final class FunctionDescription implements AvailableFunction {
         @Override
         public String toString() {
             final var sb = new StringBuilder(20);
-            addType(sb.append(name), type);
+            addType(sb.append(name.getCode()), type);
             return sb.toString();
         }
     }
@@ -253,9 +338,9 @@ final class FunctionDescription implements AvailableFunction {
     public String toString() {
         final var sb = new StringBuilder(40).append(name).append('(');
         boolean isMore = false;
-        for (final Argument arg : getArguments()) {
+        for (final ParameterDescriptor<?> arg : getArguments()) {
             if (isMore) sb.append(", ");
-            addType(sb.append(arg.getName()), arg.getValueType());
+            addType(sb.append(arg.getName().getCode()), arg.getValueType());
             isMore = true;
         }
         addType(sb.append(')'), getReturnType());
