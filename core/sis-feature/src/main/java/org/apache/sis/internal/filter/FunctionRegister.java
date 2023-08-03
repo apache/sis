@@ -37,8 +37,6 @@ import org.opengis.filter.capability.AvailableFunction;
  * @since   1.0
  *
  * @see org.opengis.filter.FilterFactory#function(String, Expression...)
- *
- * @todo Replace by {@link org.opengis.filter.capability.ExtendedCapabilities}.
  */
 public interface FunctionRegister {
     /**
@@ -60,7 +58,7 @@ public interface FunctionRegister {
     /**
      * Describes the parameters of a function.
      *
-     * @param  name        name of the function to describe (not null).
+     * @param  name  name of the function to describe (not null).
      * @return description of the function parameters.
      * @throws IllegalArgumentException if function name is unknown..
      */

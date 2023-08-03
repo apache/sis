@@ -32,7 +32,7 @@ import org.opengis.filter.capability.AvailableFunction;
  * Description of a SQLMM function with its parameters.
  *
  * @todo Argument descriptions are incomplete. They have no good names,
- *       and the types are missing (null) except for geometry types.
+ *       and the types are missing (they are {@code null}) except for geometry types.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -120,9 +120,7 @@ final class FunctionDescription implements AvailableFunction {
     }
 
     /**
-     * Returns the type of return value.
-     *
-     * @return the type of return value.
+     * {@return the type of return value}.
      */
     @Override
     public TypeName getReturnType() {
@@ -172,5 +170,95 @@ final class FunctionDescription implements AvailableFunction {
         public TypeName getValueType() {
             return type;
         }
+
+        /**
+         * Tests whether the given object is equal to this argument description.
+         *
+         * @param  obj  the object to test for equality.
+         * @return whether the given object describes the same argument than this.
+         */
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj instanceof Arg) {
+                final var other = (Arg) obj;
+                return name.equals(other.name)
+                    && type.equals(other.type);
+            }
+            return false;
+        }
+
+        /**
+         * {@return a hash-code value for this argument description}.
+         */
+        @Override
+        public int hashCode() {
+            return name.hashCode() + type.hashCode();
+        }
+
+        /**
+         * {@return a string representation of this argument}.
+         * Current version includes the name and the type.
+         * Should be used only for debugging purposes.
+         */
+        @Override
+        public String toString() {
+            final var sb = new StringBuilder(20);
+            addType(sb.append(name), type);
+            return sb.toString();
+        }
+    }
+
+    /**
+     * Appends the given type name if non-null.
+     *
+     * @param sb    where to append the type name.
+     * @param type  the type name to add, or {@code null} if none.
+     */
+    private static void addType(final StringBuilder sb, final TypeName type) {
+        if (type != null) {
+            sb.append(" : ").append(type);
+        }
+    }
+
+    /**
+     * Tests whether the given object is equal to this function description.
+     *
+     * @param  obj  the object to test for equality.
+     * @return whether the given object describes the same function than this.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof FunctionDescription) {
+            final var other = (FunctionDescription) obj;
+            return name.equals(other.name)
+                && result.equals(other.result)
+                && arguments.equals(other.arguments);
+        }
+        return false;
+    }
+
+    /**
+     * {@return a hash-code value for this function description}.
+     */
+    @Override
+    public int hashCode() {
+        return name.hashCode() + arguments.hashCode() + result.hashCode();
+    }
+
+    /**
+     * {@return a string representation of this function with its argument}.
+     * Should be used only for debugging purposes.
+     */
+    @Override
+    public String toString() {
+        final var sb = new StringBuilder(40).append(name).append('(');
+        boolean isMore = false;
+        for (final Argument arg : getArguments()) {
+            if (isMore) sb.append(", ");
+            addType(sb.append(arg.getName()), arg.getValueType());
+            isMore = true;
+        }
+        addType(sb.append(')'), getReturnType());
+        return sb.toString();
     }
 }

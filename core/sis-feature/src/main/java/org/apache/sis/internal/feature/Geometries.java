@@ -143,7 +143,7 @@ public abstract class Geometries<G> implements Serializable {
      *
      * @param  library  the desired library, or {@code null} for the default.
      * @return the specified or the default geometry implementation (never {@code null}).
-     * @throws IllegalArgumentException if a non-null library is specified by that library is not available.
+     * @throws IllegalArgumentException if a non-null library is specified but that library is not available.
      */
     public static Geometries<?> factory(final GeometryLibrary library) {
         Geometries<?> g = GeometryFactories.DEFAULT;

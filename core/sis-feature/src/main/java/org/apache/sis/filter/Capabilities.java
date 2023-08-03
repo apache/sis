@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import org.apache.sis.internal.feature.AttributeConvention;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.capability.Conformance;
 import org.opengis.filter.capability.IdCapabilities;
+import org.opengis.filter.capability.AvailableFunction;
 import org.opengis.filter.capability.FilterCapabilities;
 import org.opengis.filter.capability.ScalarCapabilities;
 import org.opengis.filter.capability.SpatialCapabilities;
@@ -40,19 +42,24 @@ import org.opengis.filter.capability.TemporalCapabilities;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 final class Capabilities implements FilterCapabilities, Conformance, IdCapabilities, ScalarCapabilities {
     /**
-     * The unique instance of the capabilities document.
+     * The filter factory which is providing the functions.
+     *
+     * @see #getFunctions()
      */
-    static final Capabilities INSTANCE = new Capabilities();
+    private final DefaultFilterFactory<?,?,?> factory;
 
     /**
      * Creates a new capability document.
+     *
+     * @param  factory  the filter factory which is providing functions.
      */
-    private Capabilities() {
+    Capabilities(final DefaultFilterFactory<?,?,?> factory) {
+        this.factory = factory;
     }
 
     /**
@@ -148,5 +155,15 @@ final class Capabilities implements FilterCapabilities, Conformance, IdCapabilit
     @Override
     public boolean implementsSorting() {
         return true;
+    }
+
+    /**
+     * Enumerates the functions that may be used in filter expressions.
+     *
+     * @return the function that may be used in filter expressions.
+     */
+    @Override
+    public Map<String,AvailableFunction> getFunctions() {
+        return factory.new Functions();
     }
 }
