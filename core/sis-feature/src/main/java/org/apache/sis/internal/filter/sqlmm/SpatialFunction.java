@@ -110,7 +110,8 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
     }
 
     /**
-     * Invoked by {@link #getFunctionName()} when a name needs to be created.
+     * Invoked by {@link Expression#getFunctionName()} implementations
+     * when a name needs to be created.
      */
     private static ScopedName createName(final SQLMM operation) {
         return Names.createScopedName(SCOPE, null, operation.name());

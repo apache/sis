@@ -37,7 +37,11 @@ import org.apache.sis.util.UnconvertibleObjectException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
+ *
+ * @param <S>  the base type of source objects.
+ * @param <T>  the base type of converted objects.
+ *
+ * @since 0.3
  */
 abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     /**

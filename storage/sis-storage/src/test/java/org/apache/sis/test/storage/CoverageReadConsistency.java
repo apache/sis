@@ -27,7 +27,6 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
@@ -254,10 +253,8 @@ public class CoverageReadConsistency extends TestCase {
      * Applies a random configuration on the resource.
      */
     private void randomConfigureResource() throws DataStoreException {
-        if (resource instanceof AbstractGridCoverageResource) {
-            final RasterLoadingStrategy[] choices = RasterLoadingStrategy.values();
-            ((AbstractGridCoverageResource) resource).setLoadingStrategy(choices[random.nextInt(choices.length)]);
-        }
+        final RasterLoadingStrategy[] choices = RasterLoadingStrategy.values();
+        resource.setLoadingStrategy(choices[random.nextInt(choices.length)]);
     }
 
     /**
@@ -450,6 +447,7 @@ nextSlice:  for (;;) {
      * Prints statistics about execution time (in milliseconds) after all tests completed.
      */
     @AfterClass
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void printDurations() {
         if (statistics != null) {
             // It is too late for using `TestCase.out`.

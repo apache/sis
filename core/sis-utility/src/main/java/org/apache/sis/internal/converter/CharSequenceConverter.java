@@ -38,7 +38,10 @@ import org.apache.sis.util.UnconvertibleObjectException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @param <T>  the base type of converted objects.
+ *
+ * @since 0.3
  */
 final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**

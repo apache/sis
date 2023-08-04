@@ -134,7 +134,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
      *
      * @return factory operating on {@link AbstractFeature} instances.
      *
-     * @todo The type of temporal object is not yet determined.
+     * @todo The type of temporal objects is not yet determined.
      */
     public static DefaultFilterFactory<AbstractFeature, Object, Object> forFeatures() {
         return Features.DEFAULT;
@@ -155,7 +155,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
          * @see #forFeatures()
          */
         static final DefaultFilterFactory<AbstractFeature,Object,Object> DEFAULT =
-                new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);;
+                new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);
 
         /**
          * Creates a new factory operating on {@link AbstractFeature} instances.
@@ -891,21 +891,14 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
     }
 
     /**
-     * Creates an implementation-specific function.
+     * Returns the provider for the function of the given name.
+     * If the given name is {@code null}, then this method only
+     * ensures that {@link #availableFunctions} is initialized.
      *
-     * @param  name        name of the function to call.
-     * @param  parameters  expressions providing values for the function arguments.
-     * @return an expression which will call the specified function.
-     * @throws IllegalArgumentException if the given name is not recognized,
-     *         or if the arguments are illegal for the specified function.
+     * @param  name  name of the function to get, or {@code null} if none.
+     * @return the register for the given function, or {@code null} if none.
      */
-    public Expression<R,?> function(final String name, Expression<R,?>[] parameters) {
-        ArgumentChecks.ensureNonNull("name", name);
-        ArgumentChecks.ensureNonNull("parameters", parameters);
-        parameters = parameters.clone();
-        for (int i=0; i<parameters.length; i++) {
-            ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
-        }
+    private FunctionRegister register(final String name) {
         final FunctionRegister register;
         synchronized (availableFunctions) {
             if (availableFunctions.isEmpty()) {
@@ -927,6 +920,26 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
             }
             register = availableFunctions.get(name);
         }
+        return register;
+    }
+
+    /**
+     * Creates an implementation-specific function.
+     *
+     * @param  name        name of the function to call.
+     * @param  parameters  expressions providing values for the function arguments.
+     * @return an expression which will call the specified function.
+     * @throws IllegalArgumentException if the given name is not recognized,
+     *         or if the arguments are illegal for the specified function.
+     */
+    public Expression<R,?> function(final String name, Expression<R,?>[] parameters) {
+        ArgumentChecks.ensureNonNull("name", name);
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        parameters = parameters.clone();
+        for (int i=0; i<parameters.length; i++) {
+            ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
+        }
+        final FunctionRegister register = register(name);
         if (register == null) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
         }

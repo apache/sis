@@ -302,7 +302,7 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the standard name if available, or the unique variable name otherwise.
-     * May be used for {@link RasterResource#getIdentifier()} and {@link Raster#label}.
+     * May be used for {@link RasterResource#getIdentifier()}.
      * Standard name is preferred to variable name when controlled vocabulary is desired,
      * for example for more stable identifier or more consistency between similar data.
      *

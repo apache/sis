@@ -34,10 +34,6 @@ import org.apache.sis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
  * @since   1.0
- *
- * @see org.opengis.filter.FilterFactory#function(String, Expression...)
- *
- * @todo Replace by {@code org.opengis.filter.capability.ExtendedCapabilities}.
  */
 public interface FunctionRegister {
     /**
@@ -57,7 +53,7 @@ public interface FunctionRegister {
     Collection<String> getNames();
 
     /**
-     * Create a new function of the given name with given parameters.
+     * Creates a new function of the given name with given parameters.
      *
      * @param  <R>         the type of resources (e.g. {@code Feature}) used as inputs.
      * @param  name        name of the function to create (not null).

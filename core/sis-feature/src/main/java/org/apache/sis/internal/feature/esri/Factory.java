@@ -225,11 +225,11 @@ public final class Factory extends Geometries<Geometry> {
         if (geometry == null) {
             boolean isPolygon = false;
             switch (type) {
-                case MULTI_LINESTRING:
+                case MULTILINESTRING:
                 case LINESTRING: break;
-                case MULTI_POLYGON:
+                case MULTIPOLYGON:
                 case POLYGON: isPolygon=true; break;
-                case GEOMETRY_COLLECTION: {
+                case GEOMETRYCOLLECTION: {
                     for (final Object component : data) {
                         isPolygon = (((Geometry) component).getType() == Geometry.Type.Polygon);
                         if (!isPolygon) break;
@@ -238,7 +238,7 @@ public final class Factory extends Geometries<Geometry> {
                 }
                 case GEOMETRY:      // Default to multi-points for now.
                 case POINT:
-                case MULTI_POINT: {
+                case MULTIPOINT: {
                     final MultiPoint points = new MultiPoint();
                     for (final Object p : data) {
                         points.add((Point) p);

@@ -48,7 +48,7 @@ public final class FeatureCatalogBuilder extends MetadataBuilder {
     /**
      * The feature types created by the {@code FeatureCatalogBuilder}.
      * {@code DataStore} implementations can keep the reference to this {@code FeatureNaming}
-     * after the {@link #build(boolean)} method has been invoked.
+     * after the {@link #build()} method has been invoked.
      */
     public final FeatureNaming<DefaultFeatureType> features;
 

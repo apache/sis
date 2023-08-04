@@ -62,7 +62,7 @@ public abstract class AbstractShape implements Shape {
 
     /**
      * Returns {@code true} if the given shape is presumed backed by primitive {@code float} values.
-     * The given object should be an instance of {@link Shape} or {@link Point2D}.
+     * The given object should be an instance of {@link Shape} or {@link java.awt.geom.Point2D}.
      *
      * @param  shape  the shape for which to determine the backing primitive type.
      * @return {@code true} if the given shape is presumed backed by {@code float} coordinate values.

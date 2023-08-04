@@ -30,7 +30,7 @@
  * </ul>
  *
  * As of June 2023 we have not yet determined how to consolidate above works in a Java API.
- * The {@link org.apache.sis.style.se1} package, which is derived from SE 1.1 standard,
+ * The {@code org.apache.sis.style.se1} package, which is derived from SE 1.1 standard,
  * is used an an interim API.
  *
  * @author  Johann Sorel (Geomatys)

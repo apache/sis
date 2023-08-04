@@ -26,9 +26,6 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- *
- * @see org.apache.sis.internal.referencing.j2d
- *
- * @since 1.0
+ * @since   1.0
  */
 package org.apache.sis.internal.feature.j2d;

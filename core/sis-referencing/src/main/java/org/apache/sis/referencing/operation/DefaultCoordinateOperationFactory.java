@@ -300,7 +300,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
      *
      * <p>The properties given in argument follow the same rules than for the
-     * {@linkplain DefaultOperationMethod#DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup)
+     * {@linkplain DefaultOperationMethod#DefaultOperationMethod(Map, ParameterDescriptorGroup)
      * operation method} constructor. The following table is a reminder of main (not all) properties:</p>
      *
      * <table class="sis">

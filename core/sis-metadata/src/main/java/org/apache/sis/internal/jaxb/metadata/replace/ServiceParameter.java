@@ -175,9 +175,9 @@ public final class ServiceParameter extends Parameter {
      * This method performs the following checks:
      *
      * <ul>
-     *   <li>If the {@linkplain DefaultParameterDescriptor#getName() primary name} is an instance of {@code MemberName},
+     *   <li>If the {@linkplain ParameterDescriptor#getName() primary name} is an instance of {@code MemberName},
      *       returns that primary name.</li>
-     *   <li>Otherwise this method searches for the first {@linkplain DefaultParameterDescriptor#getAlias() alias}
+     *   <li>Otherwise this method searches for the first {@linkplain ParameterDescriptor#getAlias() alias}
      *       which is an instance of {@code MemberName}. If found, that alias is returned.</li>
      *   <li>If no alias is found, then this method tries to build a member name from the primary name and the
      *       {@linkplain ParameterDescriptor#getValueType() value type} (if available) or the

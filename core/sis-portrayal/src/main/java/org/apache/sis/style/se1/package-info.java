@@ -28,7 +28,7 @@
  *
  * <h2>Future evolution</h2>
  * This package defines an XML encoding. It is not an abstract model for sophisticated styling.
- * More generic styling API may be provided in a future Apache SIS version in the {@link org.apache.sis.style} package.
+ * More generic styling API may be provided in a future Apache SIS version in the {@code org.apache.sis.style} package.
  * That future API may be derived from <cite>ISO 19117:2012 — Portrayal</cite> and/or from the outcome of OGC standard
  * working groups which are currently (as of June 2023) working on new style API.
  *

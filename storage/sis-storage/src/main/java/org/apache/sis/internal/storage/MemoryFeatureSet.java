@@ -30,7 +30,7 @@ import org.apache.sis.feature.DefaultFeatureType;
 
 /**
  * Set of features stored in memory. Features are specified at construction time.
- * Metadata can be specified by overriding {@link #createMetadata(MetadataBuilder)}.
+ * Metadata can be specified by overriding {@link #createMetadata()}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

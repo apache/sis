@@ -60,7 +60,7 @@ public class LinePlacement<R> extends LabelPlacement<R> {
      * Whether the label will be repeatedly drawn along the line, or {@code null} for the default value.
      *
      * @see #isRepeated()
-     * @see #setRepeated(boolean)
+     * @see #setRepeated(Expression)
      *
      * @todo Needs an adapter from expression to plain boolean.
      */

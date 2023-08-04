@@ -41,7 +41,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.AbstractIdentifiedObject
  *
@@ -166,7 +166,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Returns a hash code value for this object.
      */
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         int code = (int) serialVersionUID;
         final Identifier name = getName();
         if (name != null) {

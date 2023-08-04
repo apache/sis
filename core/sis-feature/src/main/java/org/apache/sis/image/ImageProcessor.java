@@ -1100,6 +1100,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  colorModel  color model of resulting image, or {@code null}.
      */
+    @SuppressWarnings("doclint:missing")
     @Deprecated(since="1.4", forRemoval=true)
     public synchronized RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
                 MathTransform1D[] converters, final DataType targetType, final ColorModel colorModel)
@@ -1281,7 +1282,7 @@ public class ImageProcessor implements Cloneable {
      * @param  colors  colors to use for each range of values in the source image.
      * @deprecated Replaced by {@link #visualize(RenderedImage)} with colors map inferred from the {@link Colorizer}.
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings({"removal", "doclint:missing"})
     @Deprecated(since="1.4", forRemoval=true)
     public synchronized RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
         /*
@@ -1306,7 +1307,7 @@ public class ImageProcessor implements Cloneable {
      * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
      *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings({"removal", "doclint:missing"})
     @Deprecated(since="1.4", forRemoval=true)
     public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -1460,7 +1461,7 @@ public class ImageProcessor implements Cloneable {
      * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
      *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings({"removal", "doclint:missing"})
     @Deprecated(since="1.4", forRemoval=true)
     public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
                                    final List<SampleDimension> ranges)

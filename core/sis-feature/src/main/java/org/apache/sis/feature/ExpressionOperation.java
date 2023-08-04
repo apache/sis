@@ -41,7 +41,10 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
- * @since   1.4
+ *
+ * @param  <V>  class of values computed by the operation.
+ *
+ * @since 1.4
  */
 final class ExpressionOperation<V> extends AbstractOperation {
     /**

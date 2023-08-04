@@ -408,26 +408,26 @@ public final class Factory extends Geometries<Geometry> {
     public GeometryWrapper createFromComponents(final GeometryType type, final Object components) {
         final Geometry geometry;
         switch (type) {
-            case GEOMETRY_COLLECTION: {
+            case GEOMETRYCOLLECTION: {
                 // The ClassCastException that may happen here is part of method contract.
                 geometry = factory.createGeometryCollection((Geometry[]) components);
                 break;
             }
-            case MULTI_LINESTRING: {
+            case MULTILINESTRING: {
                 // The ClassCastException that may happen here is part of method contract.
                 geometry = createFromComponents((LineString[]) components,
                             LineString::getCoordinateSequence,
                             GeometryFactory::createMultiLineString);
                 break;
             }
-            case MULTI_POLYGON: {
+            case MULTIPOLYGON: {
                 // The ClassCastException that may happen here is part of method contract.
                 geometry = createFromComponents((Polygon[]) components,
                             (g) -> g.getExteriorRing().getCoordinateSequence(),
                             GeometryFactory::createMultiPolygon);
                 break;
             }
-            case MULTI_POINT: {
+            case MULTIPOINT: {
                 if (components instanceof Point[]) {
                     geometry = createFromComponents((Point[]) components,
                                 Point::getCoordinateSequence,
@@ -472,12 +472,12 @@ public final class Factory extends Geometries<Geometry> {
                     cs = gf.getCoordinateSequenceFactory().create(coordinates);
                 }
                 switch (type) {
-                    case GEOMETRY:    // Default to multi-points for now.
-                    case MULTI_POINT: geometry = gf.createMultiPoint(cs); break;
-                    case LINESTRING:  geometry = gf.createLineString(cs); break;
-                    case POLYGON:     geometry = gf.createPolygon(cs); break;
-                    case POINT:       geometry = gf.createMultiPoint(cs).getCentroid(); break;
-                    default:          throw new AssertionError(type);
+                    case GEOMETRY:   // Default to multi-points for now.
+                    case MULTIPOINT: geometry = gf.createMultiPoint(cs); break;
+                    case LINESTRING: geometry = gf.createLineString(cs); break;
+                    case POLYGON:    geometry = gf.createPolygon(cs); break;
+                    case POINT:      geometry = gf.createMultiPoint(cs).getCentroid(); break;
+                    default:         throw new AssertionError(type);
                 }
             }
         }

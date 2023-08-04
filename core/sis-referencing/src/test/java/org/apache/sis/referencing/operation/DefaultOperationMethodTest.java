@@ -91,8 +91,7 @@ public final class DefaultOperationMethodTest extends TestCase {
     }
 
     /**
-     * Tests the {@link DefaultOperationMethod#DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup)}
-     * constructor.
+     * Tests the {@link DefaultOperationMethod#DefaultOperationMethod(Map, ParameterDescriptorGroup)} constructor.
      */
     @Test
     public void testConstruction() {

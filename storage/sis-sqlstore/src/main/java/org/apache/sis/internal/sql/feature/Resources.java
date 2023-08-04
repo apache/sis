@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
 /**
  * Warning and error messages that are specific to the {@code sis-sqlstore} module.
  * Resources in this file should not be used by any other module. For resources shared by
- * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
+ * all modules in the Apache SIS project, see {@code org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -55,6 +55,11 @@ public class Resources extends IndexedResourceBundle {
          */
         private Keys() {
         }
+
+        /**
+         * Assume database byte/tinyint unsigned, due to a lack of metadata.
+         */
+        public static final short AssumeUnsigned = 16;
 
         /**
          * Cannot fetch a Coordinate Reference System (CRS) for SRID code {0}.

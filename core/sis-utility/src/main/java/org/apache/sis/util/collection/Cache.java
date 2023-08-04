@@ -1361,8 +1361,6 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @param  value  the object for which to get an estimation of its cost.
      * @return the estimated cost of the given object.
-     *
-     * @see java.lang.instrument.Instrumentation#getObjectSize(Object)
      */
     protected int cost(final V value) {
         return 1;

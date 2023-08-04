@@ -28,8 +28,7 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * are really unique; we assume that this condition was already verified by the caller.
  *
  * <p>Some usages for this class are to prepend some values before the elements given by the source {@code Iterable},
- * or to replace some values when they are loaded. It may also be used for creating filtered sets when used together
- * with {@link org.apache.sis.internal.util.CollectionsExt#filter CollectionsExt.filter(…)}.</p>
+ * or to replace some values when they are loaded.</p>
  *
  * <h2>Thread-safety</h2>
  * This class is thread safe. The synchronization lock is {@code this}.

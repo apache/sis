@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.geometry.Geometry;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;

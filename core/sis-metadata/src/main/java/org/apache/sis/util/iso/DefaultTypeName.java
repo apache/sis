@@ -108,6 +108,11 @@ import org.apache.sis.util.UnknownNameException;
  *     <td class="sep"></td>
  *     <td></td>
  *   </tr><tr>
+ *     <td>{@link org.opengis.geometry.Geometry}</td>
+ *     <td>{@code OGC:Geometry}</td>
+ *     <td class="sep"></td>
+ *     <td></td>
+ *   </tr><tr>
  *     <td>Unknown Java class</td>
  *     <td>{@code class:}&lt;the class name&gt;</td>
  *     <td class="sep"></td>

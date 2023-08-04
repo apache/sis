@@ -35,7 +35,7 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * A {@link org.apache.sis.storage.GridCoverageResource} in memory.
  * This resource wraps an arbitrary {@link GridCoverage} specified at construction time.
- * Metadata can be specified by overriding {@link #createMetadata(MetadataBuilder)}.
+ * Metadata can be specified by overriding {@link #createMetadata()}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

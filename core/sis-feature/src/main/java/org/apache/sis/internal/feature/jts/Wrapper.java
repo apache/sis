@@ -574,13 +574,13 @@ add:    for (Geometry next = geometry;;) {
      */
     static Class<?> getGeometryClass(final GeometryType type) {
         switch (type) {
-            default:               return Geometry.class;
-            case POINT:            return Point.class;
-            case LINESTRING:       return LineString.class;
-            case POLYGON:          return Polygon.class;
-            case MULTI_POINT:      return MultiPoint.class;
-            case MULTI_LINESTRING: return MultiLineString.class;
-            case MULTI_POLYGON:    return MultiPolygon.class;
+            default:              return Geometry.class;
+            case POINT:           return Point.class;
+            case LINESTRING:      return LineString.class;
+            case POLYGON:         return Polygon.class;
+            case MULTIPOINT:      return MultiPoint.class;
+            case MULTILINESTRING: return MultiLineString.class;
+            case MULTIPOLYGON:    return MultiPolygon.class;
         }
     }
 
@@ -617,24 +617,24 @@ add:    for (Geometry next = geometry;;) {
                 if (isCollection(geometry)) break;
                 return factory.createPolygon(geometry.getCoordinates());
             }
-            case MULTI_POINT: {
+            case MULTIPOINT: {
                 return (geometry instanceof Point)
                         ? factory.createMultiPoint(new Point[] {(Point) geometry})
                         : factory.createMultiPointFromCoords(geometry.getCoordinates());
             }
-            case MULTI_LINESTRING: {
+            case MULTILINESTRING: {
                 return toCollection(factory,
                         LineString.class, LineString[]::new,
                         GeometryFactory::createLineString,
                         GeometryFactory::createMultiLineString);
             }
-            case MULTI_POLYGON: {
+            case MULTIPOLYGON: {
                 return toCollection(factory,
                         Polygon.class, Polygon[]::new,
                         GeometryFactory::createPolygon,
                         GeometryFactory::createMultiPolygon);
             }
-            case GEOMETRY_COLLECTION: {
+            case GEOMETRYCOLLECTION: {
                 if (geometry instanceof Point) {
                     return factory.createMultiPoint(new Point[] {(Point) geometry});
                 } else if (geometry instanceof LineString) {

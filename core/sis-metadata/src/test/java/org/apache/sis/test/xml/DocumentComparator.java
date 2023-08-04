@@ -523,7 +523,7 @@ public class DocumentComparator {
      * @param  ignored  the set of node or attribute fully qualified names to ignore.
      * @param  ns       the node or attribute namespace, or {@code null}.
      * @param  name     the node or attribute name.
-     * @return {@coce true} if the node or attribute shall be ignored.
+     * @return {@code true} if the node or attribute shall be ignored.
      */
     private static boolean isIgnored(final Set<String> ignored, String ns, final String name) {
         if (!ignored.isEmpty()) {

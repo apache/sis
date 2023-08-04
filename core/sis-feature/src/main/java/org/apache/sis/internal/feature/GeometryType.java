@@ -17,13 +17,21 @@
 package org.apache.sis.internal.feature;
 
 import java.util.Locale;
+import java.util.EnumMap;
+import org.opengis.util.TypeName;
+import org.opengis.util.NameSpace;
+import org.apache.sis.util.iso.Names;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**
  * Implementation-neutral description of the type of geometry.
+ * The name of each enumeration value is the name in WKT format.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see Geometries#getGeometryClass(GeometryType)
  *
@@ -35,7 +43,7 @@ public enum GeometryType {
      *
      * @see Geometries#rootClass
      */
-    GEOMETRY,
+    GEOMETRY("Geometry"),
 
     /**
      * Zero-dimensional geometry containing a single point.
@@ -44,7 +52,7 @@ public enum GeometryType {
      *
      * @see Geometries#pointClass
      */
-    POINT,
+    POINT("Point"),
 
     /**
      * Sequence of points connected by straight, non-self intersecting line pieces.
@@ -52,7 +60,7 @@ public enum GeometryType {
      *
      * @see Geometries#polylineClass
      */
-    LINESTRING,
+    LINESTRING("LineString"),
 
     /**
      * Geometry with a positive area (two-dimensional).
@@ -60,27 +68,89 @@ public enum GeometryType {
      *
      * @see Geometries#polygonClass
      */
-    POLYGON,
+    POLYGON("Polygon"),
 
     /**
      * Set of points.
      */
-    MULTI_POINT,
+    MULTIPOINT("MultiPoint"),
 
     /**
      * Set of linestrings.
      */
-    MULTI_LINESTRING,
+    MULTILINESTRING("MultiLineString"),
 
     /**
      * Set of polygons.
      */
-    MULTI_POLYGON,
+    MULTIPOLYGON("MultiPolygon"),
 
     /**
      * Set of geometries of any type except other geometry collection.
      */
-    GEOMETRY_COLLECTION;
+    GEOMETRYCOLLECTION("GeometryCollection");
+
+    /**
+     * Camel-case name of this geometry type.
+     * The upper-case variant of this name is equal to {@link #name()}.
+     */
+    public final String name;
+
+    /**
+     * The geometry types as ISO 19103 type names, created when first needed.
+     * For a given enumeration value, all {@code typeNames} values are identical
+     * except for the associated Java class, which depends on the geometry library.
+     *
+     * @see #getTypeName(Geometries)
+     */
+    private final EnumMap<GeometryLibrary, TypeName> typeNames;
+
+    /**
+     * The "OGC" namespace for geometry names. Fetched when first needed.
+     */
+    private static volatile NameSpace namespace;
+
+    /**
+     * Creates a new enumeration value.
+     *
+     * @param  name  camel-case name of the geometry.
+     */
+    private GeometryType(final String name) {
+        this.name = name;
+        typeNames = new EnumMap<>(GeometryLibrary.class);
+    }
+
+    /**
+     * {@return the name of this geometry type as an ISO 19103 object}.
+     * The namespace is "OGC". The Java type depends on the geometry library.
+     *
+     * @param  library  the geometry library that determine geometry classes.
+     */
+    public final TypeName getTypeName(final Geometries<?> library) {
+        TypeName value;
+        synchronized (typeNames) {
+            value = typeNames.get(library.library);
+        }
+        if (value == null) {
+            NameSpace scope = namespace;
+            if (scope == null) {
+                /*
+                 * The `Names.createTypeName(…)` method creates a `TypeName` associated to the
+                 * `org.opengis.geometry.Geometry` type, which is not necessarily what we want.
+                 * So we keep only the namespace.
+                 */
+                namespace = scope = Names.createTypeName(Constants.OGC, null, "Geometry").scope();
+            }
+            value = DefaultNameFactory.provider().createTypeName(scope, name, library.getGeometryClass(this));
+            synchronized (typeNames) {
+                final TypeName existing = typeNames.put(library.library, value);
+                if (existing != null) {
+                    typeNames.put(library.library, value = existing);
+                }
+            }
+        }
+        return value;
+    }
 
     /**
      * The type of this geometry as specified in Well-Known Binary (WKB) specification.
@@ -101,13 +171,13 @@ public enum GeometryType {
 
     /**
      * Returns {@code true} if this geometry type is some sort of collection.
-     * Those types are {@link #MULTI_POINT}, {@link #MULTI_LINESTRING},
-     * {@link #MULTI_POLYGON} or {@link #GEOMETRY_COLLECTION}.
+     * Those types are {@link #MULTIPOINT}, {@link #MULTILINESTRING},
+     * {@link #MULTIPOLYGON} or {@link #GEOMETRYCOLLECTION}.
      *
      * @return whether this geometry type is some kind of collections.
      */
     public final boolean isCollection() {
-        return ordinal() >= MULTI_POINT.ordinal();
+        return ordinal() >= MULTIPOINT.ordinal();
     }
 
     /**
@@ -126,14 +196,11 @@ public enum GeometryType {
                 // Remove Z, M or ZM suffix.
                 if (/*non-empty*/ name.charAt(length - 1) == 'M') length--;
                 if (length > 0 && name.charAt(length - 1) == 'Z') length--;
-                name = name.substring(0, length);
-                switch (name) {
-                    case "MULTIPOINT":      return MULTI_POINT;
-                    case "MULTILINESTRING": return MULTI_LINESTRING;
-                    case "MULTIPOLYGON":    return MULTI_POLYGON;
-                    case "GEOMCOLLECTION":  return GEOMETRY_COLLECTION;
-                    default: return valueOf(name);
+                name = name.substring(0, length).replace("_", "");
+                if (name.equals("GEOMCOLLECTION")) {    // Alternative name also accepted.
+                    return GEOMETRYCOLLECTION;
                 }
+                return valueOf(name);
             }
         }
         return null;
@@ -158,10 +225,10 @@ public enum GeometryType {
             case 1:  return POINT;
             case 2:  return LINESTRING;
             case 3:  return POLYGON;
-            case 4:  return MULTI_POINT;
-            case 5:  return MULTI_LINESTRING;
-            case 6:  return MULTI_POLYGON;
-            case 7:  return GEOMETRY_COLLECTION;
+            case 4:  return MULTIPOINT;
+            case 5:  return MULTILINESTRING;
+            case 6:  return MULTIPOLYGON;
+            case 7:  return GEOMETRYCOLLECTION;
         //  case 13: return CURVE;
         //  case 14: return SURFACE;
         //  case 15: return POLYHEDRALSURFACE;
