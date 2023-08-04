@@ -93,6 +93,7 @@ dependencies {
  */
 var srcDir = file("src")            // Must be the same as the hard-coded value in `BuildHelper.java`.
 tasks.compileJava {
+    dependsOn(":geoapi:rebuild")
     options.release.set(11)         // The version of both Java source code and compiled byte code.
 }
 tasks.compileTestJava {
