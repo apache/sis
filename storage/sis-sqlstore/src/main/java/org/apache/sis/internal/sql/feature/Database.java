@@ -237,26 +237,27 @@ public class Database<G> extends Syntax  {
          * Get information about whether byte are unsigned.
          * According JDBC specification, the rows shall be ordered by DATA_TYPE.
          * But the PostgreSQL driver 42.2.2 still provides rows in random order.
-         * Also, if we find information about tiny int, but it does not specify signing information,
-         * we continue looping in case the type information is duplicated with more information later.
+         * Also, if we find a row about `TINYINT` but without sign information,
+         * continue looping in case the type is duplicated with more information later.
+         * If no row is found for `TINYINT`, do not log any warning because it simply
+         * means that the database does not support that data type.
          */
-        Boolean unsigned = null;
+        boolean unsigned = true;
+        boolean wasNull = false;    // Not the same as allowing `unsigned` to be null.
         SQLException cause = null;
         try (ResultSet reflect = metadata.getTypeInfo()) {
             while (reflect.next()) {
                 if (reflect.getInt(Reflection.DATA_TYPE) == Types.TINYINT) {
-                    unsigned = reflect.getBoolean(Reflection.UNSIGNED_ATTRIBUTE);
-                    if (reflect.wasNull()) unsigned = null;
-                    else break;
+                    unsigned  = reflect.getBoolean(Reflection.UNSIGNED_ATTRIBUTE);
+                    wasNull   = reflect.wasNull();
+                    unsigned |= wasNull;
+                    if (!wasNull) break;
                 }
             }
         } catch (SQLFeatureNotSupportedException e) {
-            // If metadata cannot be fetched, consider it equivalent to an empty metadata: assume default interpretation.
-            unsigned = null;
             cause = e;
         }
-        if (unsigned == null) {
-            unsigned = true;
+        if (cause != null || wasNull) {
             listeners.warning(Resources.forLocale(listeners.getLocale())
                                        .getString(Resources.Keys.AssumeUnsigned), cause);
         }
