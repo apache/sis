@@ -271,7 +271,7 @@ public class BufferedGridCoverage extends GridCoverage {
      * for completing the renderer configuration before to create an image.
      * The default implementation does nothing.
      *
-     * <p>Some example of methods that subclasses may want to use are:</p>
+     * <p>Some examples of methods that subclasses may want to use are:</p>
      * <ul>
      *   <li>{@link ImageRenderer#setCategoryColors(Function)}</li>
      *   <li>{@link ImageRenderer#setVisibleBand(int)}</li>

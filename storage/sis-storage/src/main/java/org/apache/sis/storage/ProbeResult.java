@@ -185,7 +185,7 @@ public class ProbeResult implements Serializable {
      * A generic MIME type for XML documents is {@code "application/xml"}.
      * However, many other MIME types exist for XML documents compliant to some particular shema.
      * Those types can be determined by inspecting the namespace of XML root element.
-     * The following table gives some example:
+     * The following table gives some examples:
      *
      * <table class="sis">
      * <caption>MIME type examples</caption>

@@ -88,7 +88,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <tr><td>verticalDatumType</td>   <td>Vertical datum type code definition</td></tr>
  * </table>
  *
- * Some example of <cite>authorities</cite> are:
+ * Some examples of <cite>authorities</cite> are:
  * <table class="sis">
  *   <caption>Authority examples</caption>
  *   <tr><th>Authority</th>      <th>Purpose</th></tr>
