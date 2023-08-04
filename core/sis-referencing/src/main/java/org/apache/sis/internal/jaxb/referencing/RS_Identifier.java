@@ -24,7 +24,7 @@ import org.opengis.metadata.Identifier;
  * JAXB adapter mapping the GeoAPI {@link Identifier} to an implementation class that can be marshalled.
  * See the package documentation for more information about JAXB and interfaces.
  *
- * <p>Note that a class of similar name is defined in the {@link org.apache.sis.internal.jaxb.metadata} package,
+ * <p>Note that a class of similar name is defined in the {@code org.apache.sis.internal.jaxb.metadata} package,
  * which serve the same purpose (wrapping exactly the same interface) but using the ISO 19139:2007 syntax instead.
  * The ISO 19139 syntax represents the code and codespace as XML elements, while in this GML representation the code
  * is a XML value and the codespace is a XML attribute.</p>

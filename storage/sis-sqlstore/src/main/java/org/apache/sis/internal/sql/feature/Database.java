@@ -32,6 +32,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
@@ -236,15 +237,28 @@ public class Database<G> extends Syntax  {
          * Get information about whether byte are unsigned.
          * According JDBC specification, the rows shall be ordered by DATA_TYPE.
          * But the PostgreSQL driver 42.2.2 still provides rows in random order.
+         * Also, if we find information about tiny int, but it does not specify signing information,
+         * we continue looping in case the type information is duplicated with more information later.
          */
-        boolean unsigned = true;
+        Boolean unsigned = null;
+        SQLException cause = null;
         try (ResultSet reflect = metadata.getTypeInfo()) {
             while (reflect.next()) {
                 if (reflect.getInt(Reflection.DATA_TYPE) == Types.TINYINT) {
                     unsigned = reflect.getBoolean(Reflection.UNSIGNED_ATTRIBUTE);
-                    if (unsigned) break;        // Give precedence to "true" value.
+                    if (reflect.wasNull()) unsigned = null;
+                    else break;
                 }
             }
+        } catch (SQLFeatureNotSupportedException e) {
+            // If metadata cannot be fetched, consider it equivalent to an empty metadata: assume default interpretation.
+            unsigned = null;
+            cause = e;
+        }
+        if (unsigned == null) {
+            unsigned = true;
+            listeners.warning(Resources.forLocale(listeners.getLocale())
+                                       .getString(Resources.Keys.AssumeUnsigned), cause);
         }
         this.source        = source;
         this.isByteSigned  = !unsigned;
@@ -608,7 +622,7 @@ public class Database<G> extends Syntax  {
 
     /**
      * Returns the type of components in SQL arrays stored in a column.
-     * This method is invoked when {@link #type} = {@link Types#ARRAY}.
+     * This method is invoked when {@link Column#type} = {@link Types#ARRAY}.
      * The default implementation returns {@link Types#OTHER} because JDBC
      * column metadata does not provide information about component types.
      * Database-specific subclasses should override this method if they can

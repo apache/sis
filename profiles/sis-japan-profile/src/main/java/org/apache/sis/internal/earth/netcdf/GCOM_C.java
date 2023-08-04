@@ -111,7 +111,7 @@ import ucar.nc2.constants.CF;
  *       All attribute names for missing values have {@code "_DN"} suffix.
  *       This particularity is handled by {@link #nodataValues(Variable)}.</li>
  *   <li>The global attributes have different names than CF-Convention.
- *       This particularity is handled by {@link #mapAttributeName(String)}.</li>
+ *       This particularity is handled by {@link #mapAttributeName(String, int)}.</li>
  * </ul>
  *
  * @author  Alexis Manin (Geomatys)

@@ -50,6 +50,7 @@ import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.ValueReference;
+import org.opengis.filter.capability.AvailableFunction;
 
 
 /**
@@ -125,6 +126,23 @@ public abstract class RegistryTestCase<G> extends TestCase {
         library = (Geometries<G>) Geometries.factory(rootGeometry);
         assertEquals(rootGeometry, library.rootClass);
         this.supportCRS = supportCRS;
+    }
+
+    /**
+     * Tests {@link Registry#describe(String)}.
+     */
+    @Test
+    public void testDescribe() {
+        final Registry r = new Registry(library);
+        AvailableFunction desc = r.describe("ST_Transform");
+        assertEquals("SQLMM:ST_Transform", desc.getName().toFullyQualifiedName().toString());
+        assertEquals("OGC:Geometry", desc.getReturnType().toFullyQualifiedName().toString());
+        assertEquals(library.rootClass, desc.getReturnType().toJavaType().get());
+
+        desc = r.describe("ST_PointFromText");
+        assertEquals("ST_PointFromText", desc.getName().toString());
+        assertEquals("OGC:Point", desc.getReturnType().toFullyQualifiedName().toString());
+        assertEquals(library.pointClass, desc.getReturnType().toJavaType().get());
     }
 
     /**

@@ -395,8 +395,6 @@ public final class CollectionsExt extends Static {
      * @param  <E>  the type of elements in the set.
      * @param  set  the set to make unmodifiable, or {@code null}.
      * @return a unmodifiable version of the given set, or {@code null} if the given set was null.
-     *
-     * @see #compact(Set)
      */
     public static <E> Set<E> unmodifiableOrCopy(final Set<E> set) {
         if (set == null) {

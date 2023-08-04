@@ -23,7 +23,7 @@ import java.lang.reflect.Field;
  * Identifiers (usually EPSG codes) associated to {@link GeoKeys}.
  * Those identifiers do not need to be declared in the main {@code sis-geotiff} module
  * because the GeoTIFF reader uses the EPSG database instead or declare those identifiers
- * in the {@link org.apache.sis.internal.referencing.provider} package instead.
+ * in the {@code org.apache.sis.internal.referencing.provider} package instead.
  * However, those identifiers are useful for verification purposes during tests.
  *
  * @author  Rémi Maréchal (Geomatys)

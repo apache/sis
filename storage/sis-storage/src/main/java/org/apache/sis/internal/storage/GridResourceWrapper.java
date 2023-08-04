@@ -39,7 +39,9 @@ import org.opengis.util.GenericName;
  *
  * <p>The default implementation assumes that the wrapper only delays data loading,
  * without making substantive changes to the data. If the wrapper changes the data,
- * then {@link DerivedGridCoverageResource} subclass should be used instead.</p>
+ * then a {@code DerivedGridCoverageResource} subclass should be used instead.</p>
+ *
+ * @todo Define {@code DerivedGridCoverageResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

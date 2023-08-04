@@ -42,7 +42,7 @@ import static java.lang.Math.*;
  * It shall also match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.
  * Note that this is <strong>not</strong> the convention used neither in physics (ISO 80000-2:2009) or in mathematics.
  *
- * <h4>Relationship with the convention used in physics</h4>
+ * <h2>Relationship with the convention used in physics</h2>
  * The ISO 80000-2 convention is (r,Ω,φ) where φ is like the spherical longitude, and Ω is measured from
  * the Z axis (North pole) instead of from the equator plane. The consequence in the formulas is that
  * {@code sin(Ω)} needs to be replaced by {@code cos(Ω)} and conversely.

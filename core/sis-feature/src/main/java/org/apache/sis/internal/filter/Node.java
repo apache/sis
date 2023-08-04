@@ -158,7 +158,7 @@ public abstract class Node implements Serializable {
 
     /**
      * Creates a name in the "SIS" scope.
-     * This is a helper method for {@link #getFunctionName()} implementations.
+     * This is a helper method for {@link Expression#getFunctionName()} implementations.
      *
      * @param  tip  the expression name in SIS namespace.
      * @return an expression name in the SIS namespace.

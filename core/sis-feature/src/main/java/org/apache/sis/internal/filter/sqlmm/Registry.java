@@ -24,6 +24,7 @@ import org.apache.sis.internal.jdk17.JDK17;
 
 // Branch-dependent imports
 import org.opengis.filter.Expression;
+import org.opengis.filter.capability.AvailableFunction;
 
 
 /**
@@ -64,6 +65,18 @@ public final class Registry implements FunctionRegister {
     @Override
     public Collection<String> getNames() {
         return JDK17.toList(Arrays.stream(SQLMM.values()).map(SQLMM::name));
+    }
+
+    /**
+     * Describes the parameters of a function.
+     *
+     * @param  name  name of the function to describe.
+     * @return description of the function parameters.
+     * @throws IllegalArgumentException if function name is unknown..
+     */
+    @Override
+    public AvailableFunction describe(final String name) {
+        return SQLMM.valueOf(name).description(library);
     }
 
     /**

@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
+import java.util.EnumMap;
 import java.util.Optional;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryType;
 
@@ -26,6 +28,7 @@ import static org.apache.sis.internal.feature.GeometryType.*;
 
 // Branch-dependent imports
 import org.opengis.filter.SpatialOperatorName;
+import org.opengis.filter.capability.AvailableFunction;
 
 
 /**
@@ -34,7 +37,7 @@ import org.opengis.filter.SpatialOperatorName;
  * Enumeration values order is the approximated declaration order in SQLMM standard.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see <a href="https://www.iso.org/standard/60343.html">ISO 13249-3 - SQLMM</a>
  *
@@ -550,17 +553,17 @@ public enum SQLMM {
      * @see #ST_MultiLineString
      * @see #ST_MultiPolygon
      */
-    ST_GeomCollection(1, 2, null, null, GEOMETRY_COLLECTION),
+    ST_GeomCollection(1, 2, null, null, GEOMETRYCOLLECTION),
 
     /**
      * The cardinality of the geometries of a geometry collection.
      */
-    ST_NumGeometries(GEOMETRY_COLLECTION, Integer.class),
+    ST_NumGeometries(GEOMETRYCOLLECTION, Integer.class),
 
     /**
      * The specified element in a geometry collection.
      */
-    ST_GeometryN(2, 2, GEOMETRY_COLLECTION, null, GEOMETRY),
+    ST_GeometryN(2, 2, GEOMETRYCOLLECTION, null, GEOMETRY),
 
     /**
      * Constructor for a geometry collection which is transformed from a Well-Known Text (WKT) representation.
@@ -573,7 +576,7 @@ public enum SQLMM {
      * @see #ST_MLineFromText
      * @see #ST_MPolyFromText
      */
-    ST_GeomCollFromText(1, 2, null, null, GEOMETRY_COLLECTION),
+    ST_GeomCollFromText(1, 2, null, null, GEOMETRYCOLLECTION),
 
     /**
      * Constructor for a geometry collection which is transformed from a Well-Known Binary (WKB) representation.
@@ -586,7 +589,7 @@ public enum SQLMM {
      * @see #ST_MLineFromWKB
      * @see #ST_MPolyFromWKB
      */
-    ST_GeomCollFromWKB(1, 2, null, null, GEOMETRY_COLLECTION),
+    ST_GeomCollFromWKB(1, 2, null, null, GEOMETRYCOLLECTION),
 
     /**
      * {@code MultiPoint} constructed from either a Well-Known Text (WKT) representation,
@@ -598,7 +601,7 @@ public enum SQLMM {
      * @see #ST_MultiLineString
      * @see #ST_MultiPolygon
      */
-    ST_MultiPoint(1, 2, null, null, MULTI_POINT),
+    ST_MultiPoint(1, 2, null, null, MULTIPOINT),
 
     /**
      * Constructor for a multi-point which is transformed from a Well-Known Text (WKT) representation.
@@ -611,7 +614,7 @@ public enum SQLMM {
      * @see #ST_MLineFromText
      * @see #ST_MPolyFromText
      */
-    ST_MPointFromText(1, 2, null, null, MULTI_POINT),
+    ST_MPointFromText(1, 2, null, null, MULTIPOINT),
 
     /**
      * Constructor for a multi-point which is transformed from a Well-Known Binary (WKB) representation.
@@ -624,7 +627,7 @@ public enum SQLMM {
      * @see #ST_MLineFromWKB
      * @see #ST_MPolyFromWKB
      */
-    ST_MPointFromWKB(1, 2, null, null, MULTI_POINT),
+    ST_MPointFromWKB(1, 2, null, null, MULTIPOINT),
 
     /**
      * {@code MultiLineString} constructed from either a Well-Known Text (WKT) representation,
@@ -636,7 +639,7 @@ public enum SQLMM {
      * @see #ST_MultiPoint
      * @see #ST_MultiPolygon
      */
-    ST_MultiLineString(1, 2, null, null, MULTI_LINESTRING),
+    ST_MultiLineString(1, 2, null, null, MULTILINESTRING),
 
     /**
      * Constructor for a multi-line string which is transformed from a Well-Known Text (WKT) representation.
@@ -649,7 +652,7 @@ public enum SQLMM {
      * @see #ST_MPointFromText
      * @see #ST_MPolyFromText
      */
-    ST_MLineFromText(1, 2, null, null, MULTI_LINESTRING),
+    ST_MLineFromText(1, 2, null, null, MULTILINESTRING),
 
     /**
      * Constructor for a multi-line string which is transformed from a Well-Known Binary (WKB) representation.
@@ -662,7 +665,7 @@ public enum SQLMM {
      * @see #ST_MPointFromWKB
      * @see #ST_MPolyFromWKB
      */
-    ST_MLineFromWKB(1, 2, null, null, MULTI_LINESTRING),
+    ST_MLineFromWKB(1, 2, null, null, MULTILINESTRING),
 
     /**
      * {@code MultiPolygon} constructed from either a Well-Known Text (WKT) representation,
@@ -674,7 +677,7 @@ public enum SQLMM {
      * @see #ST_MultiPoint
      * @see #ST_MultiLineString
      */
-    ST_MultiPolygon(1, 2, null, null, MULTI_POLYGON),
+    ST_MultiPolygon(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Constructor for a multi-polygon which is transformed from a Well-Known Text (WKT) representation.
@@ -687,7 +690,7 @@ public enum SQLMM {
      * @see #ST_MPointFromText
      * @see #ST_MLineFromText
      */
-    ST_MPolyFromText(1, 2, null, null, MULTI_POLYGON),
+    ST_MPolyFromText(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Constructor for a multi-polygon which is transformed from a Well-Known Binary (WKB) representation.
@@ -700,7 +703,7 @@ public enum SQLMM {
      * @see #ST_MPointFromWKB
      * @see #ST_MLineFromWKB
      */
-    ST_MPolyFromWKB(1, 2, null, null, MULTI_POLYGON),
+    ST_MPolyFromWKB(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Constructor for a multi-polygon which is transformed from a Well-Known Text (WKT) representation
@@ -708,13 +711,13 @@ public enum SQLMM {
      *
      * @see #ST_BdPolyFromText
      */
-    ST_BdMPolyFromText(1, 2, null, null, MULTI_POLYGON),
+    ST_BdMPolyFromText(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Constructor for a multi-polygon which is transformed from a Well-Known Binary (WKB) representation
      * of multi line string. There is one polygon for each line-string.
      */
-    ST_BdMPolyFromWKB(1, 2, null, null, MULTI_POLYGON),
+    ST_BdMPolyFromWKB(1, 2, null, null, MULTIPOLYGON),
 
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
@@ -729,22 +732,22 @@ public enum SQLMM {
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
      */
-    ST_ToMultiPoint(GEOMETRY, MULTI_POINT),
+    ST_ToMultiPoint(GEOMETRY, MULTIPOINT),
 
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
      */
-    ST_ToMultiLine(GEOMETRY, MULTI_LINESTRING),
+    ST_ToMultiLine(GEOMETRY, MULTILINESTRING),
 
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
      */
-    ST_ToMultiPolygon(GEOMETRY, MULTI_POLYGON),
+    ST_ToMultiPolygon(GEOMETRY, MULTIPOLYGON),
 
     /**
      * Cast a geometry to a specific instantiable subtype of geometry.
      */
-    ST_ToGeomColl(GEOMETRY, GEOMETRY_COLLECTION),
+    ST_ToGeomColl(GEOMETRY, GEOMETRYCOLLECTION),
 
     /**
      * Computes a geometry simplification.
@@ -783,9 +786,17 @@ public enum SQLMM {
     /**
      * Type of value returned by the method as a {@link Class} or a {@link GeometryType}.
      *
-     * @see #getReturnType()
+     * @see #getReturnType(Geometries)
      */
     private final Object returnType;
+
+    /**
+     * Description of this SQLMM function, created when first needed.
+     * The associated Java type depends on the geometry library.
+     *
+     * @see #description(Geometries)
+     */
+    private transient EnumMap<GeometryLibrary,AvailableFunction> descriptions;
 
     /**
      * Creates a new enumeration value for an operation expecting exactly one geometry object
@@ -828,12 +839,26 @@ public enum SQLMM {
     }
 
     /**
+     * Returns a description of this SQLMM function.
+     * The Java types associated to arguments and return value depend on which geometry library is used.
+     *
+     * @param  library  the geometry library implementation to use.
+     * @return description of this SQLMM function.
+     */
+    public final synchronized AvailableFunction description(final Geometries<?> library) {
+        if (descriptions == null) {
+            descriptions = new EnumMap<>(GeometryLibrary.class);
+        }
+        return descriptions.computeIfAbsent(library.library, (key) -> new FunctionDescription(this, library));
+    }
+
+    /**
      * Returns the number of parameters that are geometry objects. Those parameters shall be first.
      * This value shall be between {@link #minParamCount} and {@link #maxParamCount}.
      *
      * @return number of parameters that are geometry objects.
      */
-    public int geometryCount() {
+    public final int geometryCount() {
         return (geometryType1 == null) ? 0 :
                (geometryType2 == null) ? 1 : 2;
     }

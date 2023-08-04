@@ -18,6 +18,7 @@ package org.apache.sis.internal.filter;
 
 import java.util.Collection;
 import org.opengis.filter.Expression;
+import org.opengis.filter.capability.AvailableFunction;
 
 
 /**
@@ -36,8 +37,6 @@ import org.opengis.filter.Expression;
  * @since   1.0
  *
  * @see org.opengis.filter.FilterFactory#function(String, Expression...)
- *
- * @todo Replace by {@link org.opengis.filter.capability.ExtendedCapabilities}.
  */
 public interface FunctionRegister {
     /**
@@ -57,7 +56,16 @@ public interface FunctionRegister {
     Collection<String> getNames();
 
     /**
-     * Create a new function of the given name with given parameters.
+     * Describes the parameters of a function.
+     *
+     * @param  name  name of the function to describe (not null).
+     * @return description of the function parameters.
+     * @throws IllegalArgumentException if function name is unknown..
+     */
+    AvailableFunction describe(String name) throws IllegalArgumentException;
+
+    /**
+     * Creates a new function of the given name with given parameters.
      *
      * @param  <R>         the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
      * @param  name        name of the function to create (not null).

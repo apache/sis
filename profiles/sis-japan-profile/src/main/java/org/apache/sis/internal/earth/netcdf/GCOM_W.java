@@ -63,7 +63,7 @@ import org.apache.sis.util.CharSequences;
  *   <li>The attributes do not specify the "no data" value. A look in sample files suggest that -32768 is used.
  *       This particularity is handled by {@link #nodataValues(Variable)}.</li>
  *   <li>The global attributes have different names than CF-Convention.
- *       This particularity is handled by {@link #mapAttributeName(String)}.</li>
+ *       This particularity is handled by {@link #mapAttributeName(String, int)}.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

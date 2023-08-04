@@ -20,7 +20,7 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 
 /**
- * Possible values for {@link org.apache.sis.storage.geotiff.Tags#Predictor}.
+ * Possible values for {@code BaselineTIFFTagSet.TAG_PREDICTOR}.
  * A predictor is a mathematical operator that is applied to the image data
  * before an encoding scheme is applied.
  *

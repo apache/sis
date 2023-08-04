@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  * <h2>Serialization</h2>
  * All fields except {@link #library} should be declared {@code transient}.
  * Deserialized {@code Geometries} instances shall be replaced by a unique instance,
- * which is given by {@link #readResolve()}.
+ * which is given by {@code readResolve()} methods defined in each subclass.
  *
  * @param   <G>  the base class of all geometry objects (except point in some implementations).
  *
@@ -143,7 +143,7 @@ public abstract class Geometries<G> implements Serializable {
      *
      * @param  library  the desired library, or {@code null} for the default.
      * @return the specified or the default geometry implementation (never {@code null}).
-     * @throws IllegalArgumentException if a non-null library is specified by that library is not available.
+     * @throws IllegalArgumentException if a non-null library is specified but that library is not available.
      */
     public static Geometries<?> factory(final GeometryLibrary library) {
         Geometries<?> g = GeometryFactories.DEFAULT;

@@ -501,7 +501,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * verb tense <i>-ing</i> instead of <i>-ed</i> is for emphasizing that the data used for computation
          * are current (filtered) data instead of past (original) data.</div>
          *
-         * @see FeatureOperations#expression(Map, Function, AttributeType)
+         * @see FeatureOperations#function(Map, Function, AttributeType)
          */
         COMPUTING
     }

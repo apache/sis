@@ -69,6 +69,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      *
      * @see #type
      */
+    @SuppressWarnings("doclint:missing")
     protected enum Type {TRANSLATION, SEVEN_PARAM, FRAME_ROTATION, MOLODENSKY, CONVERSION};
 
     /**

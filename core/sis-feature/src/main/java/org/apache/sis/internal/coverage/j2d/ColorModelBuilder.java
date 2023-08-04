@@ -66,7 +66,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @version 1.4
  *
  * @see ColorModelType
- * @see ColorModelFactory#createColorModel(int, int, int, Collection)
+ * @see ColorModelFactory#createColorModel(int, int, int)
  *
  * @since 1.1
  */
@@ -111,7 +111,7 @@ public final class ColorModelBuilder {
 
     /**
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
-     * This is a possible argument for the {@link #ColorModelBuilder(Function)} constructor.
+     * This is a possible argument for the {@link #ColorModelBuilder(Function, ColorModel, boolean)} constructor.
      */
     public static final Function<Category,Color[]> GRAYSCALE =
             (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;

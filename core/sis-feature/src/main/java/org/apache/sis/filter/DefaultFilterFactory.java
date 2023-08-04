@@ -18,6 +18,7 @@ package org.apache.sis.filter;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.ServiceLoader;
 import java.time.Instant;
@@ -34,10 +35,12 @@ import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.AbstractMap;
 
 // Branch-dependent imports
 import org.opengis.filter.*;
 import org.opengis.feature.Feature;
+import org.opengis.filter.capability.AvailableFunction;
 import org.opengis.filter.capability.FilterCapabilities;
 
 
@@ -127,7 +130,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      *
      * @return factory operating on {@link Feature} instances.
      *
-     * @todo The type of temporal object is not yet determined.
+     * @todo The type of temporal objects is not yet determined.
      */
     public static FilterFactory<Feature, Object, Object> forFeatures() {
         return Features.DEFAULT;
@@ -142,7 +145,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      */
     @Override
     public FilterCapabilities getCapabilities() {
-        return Capabilities.INSTANCE;
+        return new Capabilities(this);              // Cheap to construct, no need to cache.
     }
 
     /**
@@ -160,7 +163,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
          * @see #forFeatures()
          */
         static final FilterFactory<Feature,Object,Object> DEFAULT =
-                new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);;
+                new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);
 
         /**
          * Creates a new factory operating on {@link Feature} instances.
@@ -992,23 +995,14 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     }
 
     /**
-     * Creates an implementation-specific function.
-     * The names of available functions is given by {@link #getCapabilities()}.
+     * Returns the provider for the function of the given name.
+     * If the given name is {@code null}, then this method only
+     * ensures that {@link #availableFunctions} is initialized.
      *
-     * @param  name        name of the function to call.
-     * @param  parameters  expressions providing values for the function arguments.
-     * @return an expression which will call the specified function.
-     * @throws IllegalArgumentException if the given name is not recognized,
-     *         or if the arguments are illegal for the specified function.
+     * @param  name  name of the function to get, or {@code null} if none.
+     * @return the register for the given function, or {@code null} if none.
      */
-    @Override
-    public Expression<R,?> function(final String name, Expression<R,?>[] parameters) {
-        ArgumentChecks.ensureNonNull("name", name);
-        ArgumentChecks.ensureNonNull("parameters", parameters);
-        parameters = parameters.clone();
-        for (int i=0; i<parameters.length; i++) {
-            ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
-        }
+    private FunctionRegister register(final String name) {
         final FunctionRegister register;
         synchronized (availableFunctions) {
             if (availableFunctions.isEmpty()) {
@@ -1030,6 +1024,28 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
             }
             register = availableFunctions.get(name);
         }
+        return register;
+    }
+
+    /**
+     * Creates an implementation-specific function.
+     * The names of available functions is given by {@link #getCapabilities()}.
+     *
+     * @param  name        name of the function to call.
+     * @param  parameters  expressions providing values for the function arguments.
+     * @return an expression which will call the specified function.
+     * @throws IllegalArgumentException if the given name is not recognized,
+     *         or if the arguments are illegal for the specified function.
+     */
+    @Override
+    public Expression<R,?> function(final String name, Expression<R,?>[] parameters) {
+        ArgumentChecks.ensureNonNull("name", name);
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        parameters = parameters.clone();
+        for (int i=0; i<parameters.length; i++) {
+            ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
+        }
+        final FunctionRegister register = register(name);
         if (register == null) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
         }
@@ -1037,7 +1053,83 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     }
 
     /**
-     * Indicates an property by which contents should be sorted, along with intended order.
+     * Map of all functions supported by this factory, together with their providers.
+     * This is a view over {@link #availableFunctions} which delegates descriptions
+     * to {@link FunctionRegister#describe(String)}. No values is stored in this map.
+     *
+     * @see Capabilities#getFunctions()
+     */
+    final class Functions extends AbstractMap<String, AvailableFunction> {
+        /**
+         * Creates a new map.
+         */
+        Functions() {
+        }
+
+        /**
+         * {@return the number of functions}.
+         */
+        @Override
+        public int size() {
+            synchronized (availableFunctions) {
+                register(null);     // Ensure that `availableFunctions` is initialized.
+                return availableFunctions.size();
+            }
+        }
+
+        /**
+         * Returns the description of the function of the given name.
+         * This method delegates to {@link FunctionRegister#describe(String)}.
+         *
+         * @param  key  name of the function to describe.
+         * @return description of the requested function, or {@code null} if none.
+         */
+        @Override
+        public AvailableFunction get(final Object key) {
+            if (key instanceof String) {
+                final String name = (String) key;
+                final FunctionRegister register = register(name);
+                if (register != null) {
+                    return register.describe(name);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * {@return an iterator over the entries in this map}.
+         */
+        @Override
+        protected EntryIterator<String, AvailableFunction> entryIterator() {
+            final Iterator<Entry<String, FunctionRegister>> it;
+            synchronized (availableFunctions) {
+                register(null);     // Ensure that `availableFunctions` is initialized.
+                it = availableFunctions.entrySet().iterator();
+            }
+            /*
+             * Following is theoretically not thread-safe, but it is okay in our case
+             * because the `availableFunctions` map is not changed after construction.
+             */
+            return new EntryIterator<>() {
+                private Entry<String, FunctionRegister> entry;
+
+                @Override protected boolean next() {
+                    return (entry = it.hasNext() ? it.next() : null) != null;
+                }
+
+                @Override protected String getKey() {
+                    return entry.getKey();
+                }
+
+                @Override protected AvailableFunction getValue() {
+                    return entry.getValue().describe(getKey());
+                }
+            };
+        }
+    }
+
+    /**
+     * Indicates a property by which contents should be sorted, along with intended order.
      * The given expression should evaluate to {@link Comparable} objects,
      * but {@link Iterable} objects are accepted as well.
      *

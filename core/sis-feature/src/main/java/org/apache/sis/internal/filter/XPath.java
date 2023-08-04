@@ -25,7 +25,7 @@ import static org.apache.sis.util.CharSequences.*;
 
 
 /**
- * Basic support of X-Path in {@link PropertyValue} expression.
+ * Basic support of X-Path in {@code ValueReference} expression.
  * This is intended to be only a lightweight support, not a replacement for {@link javax.xml.xpath} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)

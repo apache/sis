@@ -227,7 +227,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      *   <li>The descriptor for a {@code <gml:ParameterValue>} element. Those descriptors are more complete than the
      *       ones provided by {@code <gml:OperationParameter>} elements alone because the parameter value allows SIS
      *       to infer the {@code valueClass}.</li>
-     *   <li>A predefined parameter descriptor from the {@link org.apache.sis.internal.referencing.provider} package.</li>
+     *   <li>A predefined parameter descriptor from the {@code org.apache.sis.internal.referencing.provider} package.</li>
      * </ul>
      *
      * @param  provided  the descriptor unmarshalled from the GML document.

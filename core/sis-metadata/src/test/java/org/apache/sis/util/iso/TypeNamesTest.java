@@ -23,6 +23,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
+import org.opengis.geometry.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -52,8 +53,10 @@ public final class TypeNamesTest extends TestCase {
     }
 
     /**
-     * Verifies that the call to {@link TypeNames#toTypeName(NameFactory, Class)} returns a {@code TypeName} having the
-     * given name and namespace, then tests the reverse operation with {@link TypeNames#toClass(String, String)}.
+     * Tests fetching a name from a Java class and a fetching a Java class from a name.
+     * This method verifies that the call to {@link TypeNames#toTypeName(NameFactory, Class)}
+     * returns a {@code TypeName} having the given name and namespace,
+     * then tests the reverse operation with {@link TypeNames#toClass(String, String)}.
      */
     private static void verifyLookup(final String namespace, final String name, final Class<?> valueClass)
             throws ClassNotFoundException
@@ -77,7 +80,8 @@ public final class TypeNamesTest extends TestCase {
     /**
      * Tests the mapping of basic types like strings, URI, dates and numbers.
      *
-     * @throws ClassNotFoundException should not happen since we do invoke {@link Class#forName(String)} in this test.
+     * @throws ClassNotFoundException should not happen since we do not
+     *         invoke {@link Class#forName(String)} in this test.
      */
     @Test
     public void testBasicTypes() throws ClassNotFoundException {
@@ -106,10 +110,12 @@ public final class TypeNamesTest extends TestCase {
     /**
      * Tests the mapping of more complex object that are not basic types.
      *
-     * @throws ClassNotFoundException should not happen since we do invoke {@link Class#forName(String)} in this test.
+     * @throws ClassNotFoundException should not happen since we do not
+     *         invoke {@link Class#forName(String)} in this test.
      */
     @Test
     public void testMetadataClasses() throws ClassNotFoundException {
+        verifyLookup(OGC, "Geometry",    Geometry.class);
         verifyLookup(OGC, "MD_Metadata", Metadata.class);
         verifyLookup(OGC, "SC_CRS",      CoordinateReferenceSystem.class);
     }
@@ -127,7 +133,8 @@ public final class TypeNamesTest extends TestCase {
     /**
      * Checks for the sentinel values in case of invalid names.
      *
-     * @throws ClassNotFoundException should not happen since we do invoke {@link Class#forName(String)} in this test.
+     * @throws ClassNotFoundException should not happen since we do not
+     *         invoke {@link Class#forName(String)} in this test.
      */
     @Test
     public void testInvalidNames() throws ClassNotFoundException {

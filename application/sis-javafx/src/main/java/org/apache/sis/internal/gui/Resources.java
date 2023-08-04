@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
 /**
  * Messages that are specific to the {@code sis-javafx} module.
  * Resources in this file should not be used by any other module. For resources shared by
- * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
+ * all modules in the Apache SIS project, see {@code org.apache.sis.util.resources} package.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.4

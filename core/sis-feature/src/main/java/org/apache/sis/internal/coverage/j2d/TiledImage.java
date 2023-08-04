@@ -99,7 +99,7 @@ public class TiledImage extends PlanarImage {
      * Verifies whether image layout information and tile coordinates are consistent.
      * This method verifies the size and minimum pixel coordinates of all tiles.
      * If okay, then this method completes the check with all verifications
-     * {@linkplain ComputedImage#verify() documented in parent class}
+     * {@linkplain PlanarImage#verify() documented in parent class}
      *
      * @return {@code null} if image layout information are consistent,
      *         or the name of inconsistent attribute if a problem is found.

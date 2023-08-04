@@ -479,7 +479,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * If the given CRS is null, then the geometry is returned unchanged.
      * If this geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
      *
-     * <p>Consider using {@link #transform(CoordinateOperation)} instead of this method as much as possible,
+     * <p>Consider using {@link #transform(CoordinateOperation, boolean)} instead of this method as much as possible,
      * both for performance reasons and because not all geometry libraries provide information about the CRS
      * of their geometries.</p>
      *

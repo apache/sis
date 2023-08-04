@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+import org.opengis.referencing.operation.Matrix;        // For javadoc.
 import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.math.Fraction;
@@ -273,10 +274,10 @@ public enum Arithmetic {
     /**
      * Returns {@code true} if the given number is one, ignoring {@code DoubleDouble} error term.
      * This method does not check the error terms because those terms are not visible to the user
-     * (they cannot appear in the value returned by {@link #getElement(int, int)}, and are not shown
-     * by {@link #toString()}) - returning {@code false} while the matrix clearly looks like identity
-     * would be confusing for the user. Furthermore, the errors can be non-zero only on the diagonal,
-     * and those values are always smaller than 2.3E-16.
+     * (they cannot appear in the value returned by {@link Matrix#getElement(int, int)},
+     * and are not shown by {@link #toString()}) — returning {@code false} while the matrix clearly
+     * looks like identity would be confusing for the user. Furthermore, the errors can be non-zero
+     * only on the diagonal, and those values are always smaller than 2.3E-16.
      *
      * <p>Another argument is that the extended precision is for reducing rounding errors during
      * matrix arithmetic. But since the user provided the original data as {@code double} values,

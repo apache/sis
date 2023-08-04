@@ -123,8 +123,8 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      *
      * @param  locale  the desired locale for the string to be returned.
      * @return the string in the specified locale, or in a fallback locale.
-     * @throws MissingResourceException if no resource can be found for the base name or for the key
-     *         specified at {@linkplain #ResourceInternationalString(String, String) construction time}.
+     * @throws MissingResourceException if no resource can be found for the key specified
+     *         at {@linkplain #ResourceInternationalString(String) construction time}.
      */
     @Override
     public String toString(Locale locale) throws MissingResourceException {

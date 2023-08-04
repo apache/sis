@@ -58,7 +58,11 @@ import org.apache.sis.util.collection.Containers;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.1
+ *
+ * @param <C>  dimension of the coordinate unit (usually angular).
+ * @param <T>  dimension of the translation unit (usually angular or linear).
+ *
+ * @since 1.1
  */
 final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
     /**
