@@ -223,11 +223,11 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * The given envelope must have a {@linkplain Envelope#getCoordinateReferenceSystem() CRS},
      * and at least one dimension of that CRS shall be assignable to a property of this extent.
      *
-     * <p><b>Note:</b> this method is available only if the {@code sis-referencing} module is
-     * available on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the {@code org.apache.sis.referencing}
+     * module is available on the module path.</p>
      *
      * @param  envelope  the envelope to use for setting this temporal extent.
-     * @throws UnsupportedOperationException if the referencing module or the temporal module is not on the classpath.
+     * @throws UnsupportedOperationException if the referencing module or the temporal module is not on the module path.
      * @throws TransformException if the envelope cannot be transformed to a temporal extent.
      *
      * @see DefaultExtent#addElements(Envelope)
@@ -246,7 +246,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * @param  other  the temporal extent to intersect with this extent.
      * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
-     *         on the classpath.
+     *         on the module path.
      *
      * @see Extents#intersection(TemporalExtent, TemporalExtent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)

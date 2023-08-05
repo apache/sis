@@ -110,8 +110,8 @@ public final class Loggers extends Static {
     public static final String PARAMETER = "org.apache.sis.parameter";
 
     /*
-     * For operations related to the sis-referencing modules that do not fit into
-     * the CRS_FACTORY or COORDINATE_OPERATION categories, use Modules.REFERENCING.
+     * For operations related to the `org.apache.sis.referencing` modules that do not fit
+     * into the CRS_FACTORY or COORDINATE_OPERATION categories, use Modules.REFERENCING.
      */
 
     /**

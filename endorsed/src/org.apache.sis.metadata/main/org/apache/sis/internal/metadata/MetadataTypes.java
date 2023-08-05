@@ -41,7 +41,8 @@ import org.opengis.metadata.spatial.Georeferenceable;
 
 /**
  * Declares the classes of objects to be marshalled using a default {@code MarshallerPool}.
- * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
+ * This class is declared as a {@code org.apache.sis.internal.jaxb.TypeRegistration} service
+ * in the {@code module-info.java} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

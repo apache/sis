@@ -99,9 +99,9 @@ import org.apache.sis.util.SimpleInternationalString;
  *     }
  *     }
  *
- * The second step is to register this factory as a service with a
- * {@code META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory} file on the classpath.
- * That file shall contain the fully qualified class name of above {@code MyCRS} class.
+ * The second step is to declare this factory in the {@code module-info.java} file
+ * as a provider of the {@code org.opengis.referencing.crs.CRSAuthorityFactory} service.
+ * That file shall contain the class name of above {@code MyCRS} class.
  *
  * <h2>Errors management</h2>
  * Well-Known Text parsing is performed in two steps, each of them executed at a different time:

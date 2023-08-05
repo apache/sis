@@ -147,7 +147,7 @@ public final class Shutdown extends Thread {
     }
 
     /**
-     * Unregisters the supervisor MBean, executes the disposal tasks and shutdowns the {@code sis-utility} threads.
+     * Unregisters the supervisor MBean, executes the disposal tasks and shutdowns the {@code org.apache.sis.util} threads.
      * This method may be invoked at JVM shutdown, or if a container like OSGi is unloaded the SIS library.
      *
      * @param  caller  the class invoking this method, to be used only for logging purpose, or {@code null}

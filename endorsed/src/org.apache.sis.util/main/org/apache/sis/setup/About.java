@@ -335,7 +335,7 @@ fill:   for (int i=0; ; i++) {
                                 .getMethod("providers", Locale.class, Vocabulary.class).invoke(null, locale, resources);
                         value = resources.getString(Vocabulary.Keys.EntryCount_1, children.length / 2);
                     } catch (ClassNotFoundException e) {
-                        // sis-storage module not in the classpath.
+                        // org.apache.sis.storage module not in the classpath.
                         Logging.recoverableException(getLogger(Modules.STORAGE), About.class, "configuration", e);
                     } catch (ReflectiveOperationException e) {
                         value = Exceptions.unwrap(e).toString();

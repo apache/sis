@@ -35,8 +35,7 @@ public interface SupervisorMBean {
      * Returns information about the current configuration.
      * This method tries to focus on the information that are the most relevant to SIS.
      * Those information are grouped in sections: a "Versions" section containing the
-     * Apache SIS version, Java version and operation system version; a "Classpath"
-     * section containing bootstrap, extension and user classpath, <i>etc</i>.
+     * Apache SIS version, Java version and operation system version; <i>etc</i>.
      *
      * @param  sections  the section for which information are desired.
      * @param  locale    the locale to use for formatting the texts in the tree, or {@code null} for the default.

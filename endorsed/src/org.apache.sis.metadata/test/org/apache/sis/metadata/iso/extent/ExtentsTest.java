@@ -117,7 +117,7 @@ public final class ExtentsTest extends TestCase {
      * Tests {@link Extents#intersection(VerticalExtent, VerticalExtent)}.
      * This test does not perform any unit conversion, because it would require the use of different CRS.
      * For a test with unit conversion, see {@code ServicesForMetadataTest.testVerticalIntersection()} in
-     * {@code sis-referencing} module.
+     * {@code org.apache.sis.referencing} module.
      *
      * @throws TransformException should never happen since we do not test transformation in this class.
      */
@@ -191,10 +191,11 @@ public final class ExtentsTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Extents#centroid(GeographicBoundingBox)} method. This method is defined here but executed from
-     * the {@link org.apache.sis.internal.referencing.ServicesForMetadataTest} class in {@code sis-referencing} module.
-     * This method cannot be executed in the {@code sis-metadata} module because it has a dependency to a referencing
-     * implementation class.
+     * Tests the {@link Extents#centroid(GeographicBoundingBox)} method. This method is defined here
+     * but executed from the {@link org.apache.sis.internal.referencing.ServicesForMetadataTest} class
+     * in {@code org.apache.sis.referencing} module.
+     * This method cannot be executed in the {@code org.apache.sis.metadata} module
+     * because it has a dependency to a referencing implementation class.
      *
      * @since 0.8
      */

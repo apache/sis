@@ -31,7 +31,7 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Creates {@link DataStore} instances for a given storage object by scanning all providers on the classpath.
+ * Creates {@link DataStore} instances for a given storage object by scanning all providers on the module path.
  * Storage objects are typically {@link java.io.File} or {@link javax.sql.DataSource} instances,
  * but can also be any other objects documented in the {@link StorageConnector} class.
  *

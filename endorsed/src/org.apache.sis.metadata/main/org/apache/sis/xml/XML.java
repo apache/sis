@@ -383,7 +383,7 @@ public final class XML extends Static {
     private static volatile MarshallerPool POOL;
 
     /**
-     * Registers a listener for classpath changes. In such case, a new pool will need to
+     * Registers a listener for module path changes. In such case, a new pool will need to
      * be created because the {@code JAXBContext} may be different.
      */
     static {

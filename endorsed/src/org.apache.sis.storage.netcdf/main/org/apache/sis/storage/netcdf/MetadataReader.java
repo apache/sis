@@ -654,7 +654,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         addKeywords(publisher, KeywordType.DATA_CENTRE, null);
         /*
          * Add geospatial bounds as a geometric object. This optional operation requires
-         * an external library (ESRI or JTS) to be present on the classpath.
+         * an external library (ESRI or JTS) to be present on the module path.
          */
         final String wkt = stringValue(GEOSPATIAL_BOUNDS);
         if (wkt != null) {

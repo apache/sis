@@ -122,7 +122,7 @@ public abstract class SystemListener implements EventListener {
     }
 
     /**
-     * Notifies all registered listeners that the classpath may have changed.
+     * Notifies all registered listeners that the module path may have changed.
      */
     @SuppressWarnings("ForLoopReplaceableByForEach")
     public static void fireClasspathChanged() {
@@ -138,7 +138,7 @@ public abstract class SystemListener implements EventListener {
     }
 
     /**
-     * Invoked when the classpath is likely to have changed.
+     * Invoked when the module path is likely to have changed.
      * When this method is invoked, any classes using {@link java.util.ServiceLoader} are advised to clear their cache.
      */
     protected abstract void classpathChanged();

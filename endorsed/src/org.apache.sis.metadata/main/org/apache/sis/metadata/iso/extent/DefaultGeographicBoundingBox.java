@@ -504,10 +504,10 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * specification does not mandates a particular CRS, so we avoid transformations that are not
      * strictly necessary.</p>
      *
-     * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the referencing module is on the module path.</p>
      *
      * @param  envelope  the envelope to use for setting this geographic bounding box.
-     * @throws UnsupportedOperationException if the referencing module is not on the classpath.
+     * @throws UnsupportedOperationException if the referencing module is not on the module path.
      * @throws TransformException if the envelope cannot be transformed to a geographic extent.
      *
      * @see DefaultExtent#addElements(Envelope)

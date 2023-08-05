@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  */
 public final class Reflect implements Consumer<StackWalker.StackFrame> {
     /**
-     * Returns the context class loader, but makes sure that it has Apache SIS on its classpath.
+     * Returns the context class loader, but makes sure that it has Apache SIS on its module path.
      * First, this method invokes {@link Thread#getContextClassLoader()} for the current thread.
      * Then this method scans over all Apache SIS classes on the stack trace. For each SIS class,
      * its loader is compared to the above-cited context class loader. If the context class loader

@@ -91,7 +91,7 @@ public final class Configuration {
      *       use the data source for {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"}.
      *       That database will be created if it does not exist. Note that this is the only case where
      *       Apache SIS may create the database since it is located in the directory managed by Apache SIS.</li>
-     *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the classpath,
+     *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the module path,
      *       use the embedded database.</li>
      *   <li>Otherwise if the "{@systemProperty derby.system.home}" property is defined,
      *       use the data source for {@code "jdbc:derby:SpatialMetadata"} database.

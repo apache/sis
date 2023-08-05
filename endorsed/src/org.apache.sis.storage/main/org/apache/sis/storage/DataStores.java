@@ -40,7 +40,7 @@ public final class DataStores extends Static {
     /**
      * Returns the set of available data store providers.
      * The returned collection is live: its content may change
-     * if new modules are added on the classpath at run-time.
+     * if new modules are added on the module path at run-time.
      *
      * @return descriptions of available data stores.
      *

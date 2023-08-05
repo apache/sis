@@ -66,7 +66,7 @@ import org.apache.sis.util.Localized;
  * (see {@link SQLTranslator} for examples of tables to look for). If the tables are not found,
  * then the {@link #install(Connection)} method will be invoked for creating the EPSG schema.
  * The {@code install(…)} method can perform its work only if the definition files are reachable
- * on the classpath, or if the directory containing the files have been specified.
+ * on the module path, or if the directory containing the files have been specified.
  *
  * <h2>Data Access Object (DAO)</h2>
  * If there is no cached object for a given code, then {@code EPSGFactory} creates an {@link EPSGDataAccess} instance
@@ -351,7 +351,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *
      *   <li><b>{@code scriptProvider}:</b><br>
      *     an {@link InstallationScriptProvider} giving the SQL scripts to execute for creating the EPSG database.
-     *     If no provider is specified, then this method will search on the classpath (with {@link java.util.ServiceLoader})
+     *     If no provider is specified, then this method searches on the module path (with {@link java.util.ServiceLoader})
      *     for user-provided implementations of {@code InstallationScriptProvider}.
      *     If no user-specified provider is found, then this method will search for
      *     {@code "EPSG_*Tables.sql"}, {@code "EPSG_*Data.sql"} and {@code "EPSG_*FKeys.sql"} files in the
@@ -362,13 +362,13 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * <h4>Legal constraint</h4>
      * The EPSG dataset cannot be distributed with Apache SIS at this time for licensing reasons.
      * Users need to either install the dataset manually (for example with the help of this method),
-     * or add on the classpath to a separated bundle like {@code org.apache.sis:non-free:sis-epsg.jar}.
+     * or add on the module path to a separated bundle like {@code org.apache.sis:non-free:sis-epsg.jar}.
      * See <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> for more information.
      *
      * @param  connection  connection to the database where to create the EPSG schema.
      * @throws UnavailableFactoryException if installation failed. The exception will have a
      *         {@link FileNotFoundException} cause if a SQL script has not been found
-     *         (typically because a required resource is not on the classpath), an
+     *         (typically because a required resource is not on the module path), an
      *         {@link IOException} if an I/O error occurred while reading a SQL script, or a
      *         {@link SQLException} if an error occurred while writing to the database.
      *

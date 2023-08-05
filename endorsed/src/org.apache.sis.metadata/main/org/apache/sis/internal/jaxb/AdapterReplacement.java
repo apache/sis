@@ -29,7 +29,7 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
  * the {@link jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter} annotation).
  *
  * <p>This interface is mostly for handling extensions to metadata profile provided as extension,
- * like the {@code FRA} extension for France provided in the {@code sis-metadata-fra} module.</p>
+ * like the {@code FRA} extension for France provided in the {@code org.apache.sis.profile.france} module.</p>
  *
  * <p><b>WARNING:</b> there is currently no mechanism for ensuring that the registration performed
  * by an {@code AdapterReplacement} instance does not overwrite the registration performed by an

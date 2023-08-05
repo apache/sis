@@ -65,7 +65,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * <table class="sis">
  *   <caption>Supported value types</caption>
  *   <tr><th>Value type</th>              <th>Format type</th>                                      <th>Remarks</th></tr>
- *   <tr><td>{@link DirectPosition}</td>  <td>{@link org.apache.sis.geometry.CoordinateFormat}</td> <td>Requires {@code sis-referencing} module.</td></tr>
+ *   <tr><td>{@link DirectPosition}</td>  <td>{@link org.apache.sis.geometry.CoordinateFormat}</td> <td>Requires {@code org.apache.sis.referencing} module.</td></tr>
  *   <tr><td>{@link Angle}</td>           <td>{@link AngleFormat}</td>                              <td></td></tr>
  *   <tr><td>{@link Date}</td>            <td>{@link DateFormat}</td>                               <td>Timezone specified by {@link #getTimeZone()}.</td></tr>
  *   <tr><td>{@link Number}</td>          <td>{@link NumberFormat}</td>                             <td></td></tr>

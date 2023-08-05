@@ -24,7 +24,8 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
 
 /**
  * Completes the JAXB context with classes specific to the French profile.
- * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
+ * This class is declared in the {@code module-info.java} file as a
+ * {@code org.apache.sis.internal.jaxb.TypeRegistration} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

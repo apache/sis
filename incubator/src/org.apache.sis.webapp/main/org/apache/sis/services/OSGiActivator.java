@@ -26,8 +26,6 @@ import org.apache.sis.internal.system.SystemListener;
 
 /**
  * Bundle activator for OSGi environment.
- * This class is declared in the {@code maven-bundle-plugin} configuration in the
- * {@code sis-utility/pom.xml} file. This class should not be used directly.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
@@ -53,7 +51,7 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
 
     /**
      * Invoked when this bundle is stopped.
-     * This method shutdowns the {@code sis-utility} threads.
+     * This method shutdowns the {@code org.apache.sis.util} threads.
      *
      * @param  context  the execution context of the bundle being stopped.
      * @throws Exception if an error occurred during unregistration of the supervisor MBean or resource disposal.
@@ -66,7 +64,7 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
 
     /**
      * Invoked when another module has been installed or un-installed.
-     * This method notifies the Apache SIS library that the classpath may have changed.
+     * This method notifies the Apache SIS library that the module path may have changed.
      *
      * @param  event  the event that describe the life-cycle change.
      */

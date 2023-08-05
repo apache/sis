@@ -40,7 +40,7 @@ import org.opengis.metadata.citation.Responsibility;
 
 
 /**
- * Assertion methods used by the {@code sis-metadata} module.
+ * Assertion methods used by the {@code org.apache.sis.metadata} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

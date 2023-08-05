@@ -43,7 +43,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
  *
  * <h2>How to add custom coordinate operations to Apache SIS</h2>
  * {@link DefaultMathTransformFactory} can discover automatically new coordinate operations
- * (including map projections) by scanning the classpath. To define a custom coordinate operation,
+ * (including map projections) by scanning the module path. To define a custom coordinate operation,
  * one needs to define a <strong>thread-safe</strong> class implementing <strong>both</strong> this
  * {@code MathTransformProvider} interface and the {@link org.opengis.referencing.operation.OperationMethod} one.
  * While not mandatory, we suggest to extend {@link org.apache.sis.referencing.operation.DefaultOperationMethod}.
@@ -68,12 +68,8 @@ import org.opengis.referencing.operation.MathTransformFactory;
  *     }
  * }
  *
- * Then the fully-qualified class name of that implementation should be listed in a file reachable on the classpath
- * with this exact name:
- *
- * {@snippet :
- *     META-INF/services/org.opengis.referencing.operation.OperationMethod
- *     }
+ * Then the class name of that implementation shall be declared in {@code module-info.java}
+ * as a provider of the {@code org.opengis.referencing.operation.OperationMethod} service.
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
  * @version 0.6

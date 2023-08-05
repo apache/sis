@@ -61,7 +61,7 @@ public final class Registration {
     }
 
     /**
-     * Logs the given exception for a classpath problem.
+     * Logs the given exception for a module path problem.
      */
     private static void classpathException(final String method, final Throwable exception) {
         final String lineSeparator = System.lineSeparator();

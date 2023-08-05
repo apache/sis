@@ -230,8 +230,8 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
              * Usually this is fatal; returning null will instruct the caller to throw `OperationNotFoundException`.
              * However, in some contexts (e.g. when searching for an operation between two `GridGeometry` instances)
              * it is possible to assign a constant value to the target coordinates. Those values cannot be guessed
-             * by `sis-referencing`; they must be provided by caller. If such constants are specified, then we will
-             * try to apply them.
+             * by `org.apache.sis.referencing`; they must be provided by caller. If such constants are specified,
+             * then we will try to apply them.
              */
             final double[] constants = CoordinateOperationContext.getConstantCoordinates();
             if (constants == null || constants.length < targetEndAtDimension) {

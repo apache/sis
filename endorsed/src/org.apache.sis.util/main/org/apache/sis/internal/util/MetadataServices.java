@@ -36,7 +36,7 @@ import org.opengis.util.ControlledVocabulary;
 
 
 /**
- * Provides access to services defined in the {@code "sis-metadata"} module.
+ * Provides access to services defined in the {@code org.apache.sis.metadata} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -60,14 +60,14 @@ public class MetadataServices extends OptionalDependency {
     /**
      * For subclass only. This constructor registers this instance as a
      * {@link org.apache.sis.internal.system.SystemListener} in order to
-     * force a new {@code MetadataServices} lookup if the classpath changes.
+     * force a new {@code MetadataServices} lookup if the module path changes.
      */
     protected MetadataServices() {
-        super(Modules.UTILITIES, "sis-metadata");
+        super(Modules.UTILITIES, Modules.METADATA);
     }
 
     /**
-     * Invoked when the classpath changed. Resets the {@link #instance} to {@code null} in order
+     * Invoked when the module path changed. Resets the {@link #instance} to {@code null} in order
      * to force the next call to {@link #getInstance()} to fetch a new one, which may be different.
      */
     @Override
@@ -94,7 +94,7 @@ public class MetadataServices extends OptionalDependency {
                      * In the particular case of this class, the intent is to ensure that SystemListener.add(…)
                      * is invoked only once.
                      */
-                    c = getInstance(MetadataServices.class, ServiceLoader.load(MetadataServices.class), "sis-metadata");
+                    c = getInstance(MetadataServices.class, ServiceLoader.load(MetadataServices.class), Modules.METADATA);
                     if (c == null) {
                         c = new MetadataServices();
                     }
@@ -125,9 +125,9 @@ public class MetadataServices extends OptionalDependency {
      */
     public String getCodeTitle(final ControlledVocabulary code, final Locale locale) {
         /*
-         * Following code reproduces the work done by org.apache.sis.util.iso.Types.getCodeList(…)
-         * with less handling of special cases. It is executed only if the sis-metadata module is
-         * not on the classpath, otherwise the sis-metadata implementation will be used.
+         * Following code reproduces the work done by `org.apache.sis.util.iso.Types.getCodeList(…)` with
+         * less handling of special cases. It is executed only if the `org.apache.sis.metadata` module is
+         * not on the module path, otherwise the `org.apache.sis.metadata` implementation will be used.
          */
         final UML uml = code.getClass().getAnnotation(UML.class);
         if (uml != null) try {
@@ -135,8 +135,9 @@ public class MetadataServices extends OptionalDependency {
         } catch (MissingResourceException e) {
             /*
              * Ignore. The reason for not finding the resource may because of above code not covering enough cases.
-             * Usually the sis-metadata module will be present on the classpath, in which case this implementation
-             * will not be used. We need just enough code for allowing sis-utility tests to pass.
+             * Usually the `org.apache.sis.metadata` module will be present on the module path, in which case this
+             * implementation will not be used. We need just enough code for allowing `org.apache.sis.util` tests
+             * to pass.
              */
         }
         return CharSequences.camelCaseToSentence(code.identifier()).toString();
@@ -155,7 +156,7 @@ public class MetadataServices extends OptionalDependency {
 
     /**
      * Returns information about the Apache SIS configuration to be reported in {@link org.apache.sis.setup.About}.
-     * This method is invoked only for aspects that depends on other modules than {@code sis-utility}.
+     * This method is invoked only for aspects that depends on other modules than {@code org.apache.sis.util}.
      *
      * <p>Current keys are:</p>
      * <ul>

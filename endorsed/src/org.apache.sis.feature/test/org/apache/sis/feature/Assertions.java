@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Assertion methods used by the {@code sis-feature} module in addition of the ones inherited
+ * Assertion methods used by the {@code org.apache.sis.feature} module in addition of the ones inherited
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)

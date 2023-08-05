@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
 
 
 /**
- * Warning and error messages that are specific to the {@code sis-referencing} module.
+ * Warning and error messages that are specific to the {@code org.apache.sis.referencing} module.
  * Resources in this file should not be used by any other module. For resources shared
  * by all modules in the Apache SIS project, see {@code org.apache.sis.util.resources} package.
  *

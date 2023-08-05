@@ -36,7 +36,7 @@ INSERT INTO metadata."Format" ("ID", "formatSpecificationCitation") VALUES
 
 
 --
--- Description of bands in rasters. Not used directly by "sis-metadata" module,
+-- Description of bands in rasters. Not used directly by "org.apache.sis.metadata" module,
 -- but used by some storage modules.
 --
 CREATE TYPE metadata."TransferFunctionTypeCode" AS ENUM (

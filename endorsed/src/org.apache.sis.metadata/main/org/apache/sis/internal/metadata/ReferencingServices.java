@@ -37,7 +37,7 @@ import org.apache.sis.internal.system.Modules;
 
 
 /**
- * Provides access to services defined in the {@code "sis-referencing"} module.
+ * Provides access to services defined in the {@code org.apache.sis.referencing} module.
  * This class also opportunistically defines some methods and constants related
  * to <cite>"referencing by coordinates"</cite> but needed by metadata.
  *
@@ -69,14 +69,14 @@ public class ReferencingServices extends OptionalDependency {
     /**
      * For subclass only. This constructor registers this instance as a
      * {@link org.apache.sis.internal.system.SystemListener} in order to
-     * force a new {@code ReferencingServices} lookup if the classpath changes.
+     * force a new {@code ReferencingServices} lookup if the module path changes.
      */
     protected ReferencingServices() {
-        super(Modules.METADATA, "sis-referencing");
+        super(Modules.METADATA, Modules.REFERENCING);
     }
 
     /**
-     * Invoked when the classpath changed. Resets the {@link #instance} to {@code null}
+     * Invoked when the module path changed. Resets the {@link #instance} to {@code null}
      * in order to force the next call to {@link #getInstance()} to fetch a new one,
      * which may be different.
      */
@@ -104,7 +104,7 @@ public class ReferencingServices extends OptionalDependency {
                      * In the particular case of this class, the intent is to ensure that SystemListener.add(…)
                      * is invoked only once.
                      */
-                    c = getInstance(ReferencingServices.class, ServiceLoader.load(ReferencingServices.class), "sis-referencing");
+                    c = getInstance(ReferencingServices.class, ServiceLoader.load(ReferencingServices.class), Modules.REFERENCING);
                     if (c == null) {
                         c = new ReferencingServices();
                     }
@@ -140,7 +140,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  target        the target bounding box, or {@code null} for creating it automatically.
      * @param  findOpCaller  non-null for replacing some (not all) exceptions by {@code null} return value.
      * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      * @throws TransformException if the given envelope cannot be transformed.
      */
     public DefaultGeographicBoundingBox setBounds(Envelope envelope, DefaultGeographicBoundingBox target, String findOpCaller)
@@ -156,7 +156,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  envelope  the source envelope.
      * @param  target    the target vertical extent.
      * @throws TransformException if no vertical component can be extracted from the given envelope.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      */
     public void setBounds(Envelope envelope, DefaultVerticalExtent target) throws TransformException {
         throw moduleNotFound();
@@ -169,7 +169,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  envelope  the source envelope.
      * @param  target    the target temporal extent.
      * @throws TransformException if no temporal component can be extracted from the given envelope.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      */
     public void setBounds(Envelope envelope, DefaultTemporalExtent target) throws TransformException {
         throw moduleNotFound();
@@ -192,7 +192,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  envelope  the source envelope.
      * @param  target    the target spatiotemporal extent.
      * @throws TransformException if no temporal component can be extracted from the given envelope.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      */
     public void setBounds(Envelope envelope, DefaultSpatialTemporalExtent target) throws TransformException {
         throw moduleNotFound();
@@ -204,7 +204,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  envelope  the source envelope.
      * @param  target    the target extent.
      * @throws TransformException if a coordinate transformation was required and failed.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      */
     public void addElements(Envelope envelope, DefaultExtent target) throws TransformException {
         throw moduleNotFound();
@@ -253,7 +253,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  <T>        the type of values.
      * @param  parameter  a partially implemented parameter descriptor, or {@code null}.
      * @return a fully implemented parameter descriptor, or {@code null} if the given argument was null.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      *
      * @since 0.5
      */
@@ -285,7 +285,7 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * Returns information about the Apache SIS configuration to be reported in {@link org.apache.sis.setup.About}.
-     * This method is invoked only for aspects that depends on other modules than {@code sis-utility}.
+     * This method is invoked only for aspects that depends on other modules than {@code org.apache.sis.util}.
      *
      * <p>Current keys are:</p>
      * <ul>

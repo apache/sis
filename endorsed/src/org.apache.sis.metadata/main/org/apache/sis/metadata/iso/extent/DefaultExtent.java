@@ -296,10 +296,10 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * and creates a {@link GeographicBoundingBox}, {@link VerticalExtent} or {@link TemporalExtent}
      * elements as needed.
      *
-     * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the referencing module is on the module path.</p>
      *
      * @param  envelope  the envelope to use for inferring the additional extents.
-     * @throws UnsupportedOperationException if the referencing module is not on the classpath.
+     * @throws UnsupportedOperationException if the referencing module is not on the module path.
      * @throws TransformException if a coordinate transformation was required and failed.
      *
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)
@@ -322,7 +322,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *         {@linkplain DefaultGeographicBoundingBox#getInclusion() bounding box inclusion status} or
      *         mismatched {@linkplain DefaultVerticalExtent#getVerticalCRS() vertical datum}).
      * @throws UnsupportedOperationException if a {@code TemporalFactory} is required but no implementation
-     *         has been found on the classpath.
+     *         has been found on the module path.
      *
      * @see Extents#intersection(Extent, Extent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)

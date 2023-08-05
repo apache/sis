@@ -46,7 +46,8 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
  * Tests {@link DefaultMetadata}, without Coordinate Reference System (CRS) information.
  *
  * <p><b>Note:</b> a metadata object with CRS information is tested by a different
- * {@code org.apache.sis.test.integration.DefaultMetadataTest} class in the {@code sis-referencing} module.</p>
+ * {@code org.apache.sis.test.integration.DefaultMetadataTest} class in the
+ * {@code org.apache.sis.referencing} module.</p>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

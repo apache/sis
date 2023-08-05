@@ -50,7 +50,7 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
     }
 
     /**
-     * Replaces the {@code sis-metadata} adapter by this adapter.
+     * Replaces the {@code org.apache.sis.metadata} adapter by this adapter.
      */
     @Override
     public void register(final Marshaller marshaller) {
@@ -58,7 +58,7 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
     }
 
     /**
-     * Replaces the {@code sis-metadata} adapter by this adapter.
+     * Replaces the {@code org.apache.sis.metadata} adapter by this adapter.
      */
     @Override
     public void register(final Unmarshaller unmarshaller) {

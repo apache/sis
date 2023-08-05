@@ -1450,16 +1450,15 @@ check:  while (lower != 0 || upper != dimension) {
      * instance that manages all other factories.
      *
      * <p>The {@code authority} argument can be {@code "EPSG"}, {@code "OGC"} or any other authority found
-     * on the classpath. In the {@code "EPSG"} case, whether the full set of EPSG codes is supported or not
+     * on the module path. In the {@code "EPSG"} case, whether the full set of EPSG codes is supported or not
      * depends on whether a {@linkplain org.apache.sis.referencing.factory.sql connection to the database}
      * can be established. If no connection can be established, then this method returns a small embedded
      * EPSG factory containing at least the CRS defined in the {@link #forCode(String)} method javadoc.</p>
      *
      * <p>User-defined authorities can be added to the SIS environment by creating a {@code CRSAuthorityFactory}
-     * implementation with a public no-argument constructor, and declaring the fully-qualified name of that class
-     * in a file at the following location:</p>
-     *
-     * <pre class="text">META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory</pre>
+     * implementation with a public no-argument constructor or a public static {@code provider()} method,
+     * and declaring the name of that class in the {@code module-info.java} file as a provider of the
+     * {@code org.opengis.referencing.crs.CRSAuthorityFactory} service.</p>
      *
      * @param  authority  the authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}

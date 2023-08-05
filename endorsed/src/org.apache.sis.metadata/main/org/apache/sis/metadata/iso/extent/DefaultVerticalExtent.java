@@ -246,10 +246,10 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * be multi-dimensional, in which case the {@linkplain Envelope#getCoordinateReferenceSystem()
      * envelope CRS} must have a vertical component.
      *
-     * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the referencing module is on the module path.</p>
      *
      * @param  envelope  the envelope to use for setting this vertical extent.
-     * @throws UnsupportedOperationException if the referencing module is not on the classpath.
+     * @throws UnsupportedOperationException if the referencing module is not on the module path.
      * @throws TransformException if the envelope cannot be transformed to a vertical extent.
      *
      * @see DefaultExtent#addElements(Envelope)
@@ -321,7 +321,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      *
      * @param  source  the CRS from which to perform the conversions, or {@code null} if unknown.
      * @return the conversion from {@code source}, or {@code null} if none or unknown.
-     * @throws UnsupportedOperationException if the {@code sis-referencing} module is not on the classpath.
+     * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module is not on the module path.
      * @throws FactoryException if the coordinate operation factory is not available.
      * @throws ClassCastException if the conversion is not an instance of {@link MathTransform1D}.
      */

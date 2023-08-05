@@ -45,9 +45,8 @@ import org.apache.sis.internal.util.Constants;
 /**
  * Provides SQL scripts needed for creating a local copy of a dataset. This class allows Apache SIS users
  * to bundle the EPSG or other datasets in their own product for automatic installation when first needed.
- * Implementations of this class can be declared in the following file for automatic discovery by {@link EPSGFactory}:
- *
- * <pre class="text">META-INF/services/org.apache.sis.setup.InstallationResources</pre>
+ * Implementations of this class are discovered automatically by {@link EPSGFactory} if they are declared
+ * in {@code module-info.java} as providers of the {@code org.apache.sis.setup.InstallationResources} service.
  *
  * <h2>How this class is used</h2>
  * The first time that an {@link EPSGDataAccess} needs to be instantiated,

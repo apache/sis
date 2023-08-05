@@ -54,8 +54,8 @@ public class GazetteerFactory extends AbstractFactory {
      */
     public Set<String> getSupportedNames() {
         /*
-         * In current implementation of `sis-javafx` module, the order in this set determines the order
-         * of menu items. So we want a "nice" order and a `Set` implementation that preserve it.
+         * In current implementation of `org.apache.sis.gui` module, the order in this set determines the
+         * order of menu items. So we want a "nice" order and a `Set` implementation that preserve it.
          */
         return new LinkedHashSet<>(List.of(
                 MilitaryGridReferenceSystem.IDENTIFIER,

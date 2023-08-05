@@ -279,7 +279,7 @@ public class MetadataSource implements AutoCloseable {
 
     /**
      * The instance connected to the {@code "jdbc/SpatialMetadata"} database,
-     * created when first needed and cleared when the classpath change.
+     * created when first needed and cleared when the module path change.
      * May be {@link MetadataFallback#INSTANCE} if we failed to establish
      * a connection to the database for a non-transient reason.
      */
@@ -330,7 +330,7 @@ public class MetadataSource implements AutoCloseable {
                 warning = Errors.getResources((Locale) null).getLogRecord(Level.WARNING, Errors.Keys.CanNotConnectTo_1, Initializer.JNDI);
                 warning.setThrown(Exceptions.unwrap(e));
                 if (e instanceof ClassNotFoundException) {
-                    warning.setLevel(Level.CONFIG);                         // Derby driver not on the classpath.
+                    warning.setLevel(Level.CONFIG);                         // Derby driver not on the module path.
                 }
                 /*
                  * If the error is transient or has a transient cause, we will not save MetadataFallback.INSTANCE

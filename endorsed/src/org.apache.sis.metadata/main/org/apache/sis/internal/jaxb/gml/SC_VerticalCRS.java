@@ -20,6 +20,7 @@ import jakarta.xml.bind.annotation.XmlAnyElement;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
@@ -29,11 +30,11 @@ import org.apache.sis.util.Classes;
  * complying with OGC/ISO standard. Note that the CRS is formatted using the GML schema,
  * not the ISO 19139:2007 one.
  *
- * <p>This wrapper does not declare directly the XML element, because doing so would require
- * the implementation classes in the {@code sis-referencing} module. Instead, this wrapper
- * declares an {@code Object} property annotated with {@code XmlAnyElement}, with a default
- * implementation returning {@code null}. Modules capable to provide an instance shall create
- * a subclass like below:</p>
+ * <p>This wrapper does not declare directly the XML element, because doing so would
+ * require the implementation classes in the {@code org.apache.sis.referencing} module.
+ * Instead, this wrapper declares an {@code Object} property annotated with {@code XmlAnyElement},
+ * with a default implementation returning {@code null}.
+ * Modules capable to provide an instance shall create a subclass like below:</p>
  *
  * {@snippet lang="java" :
  * public final class MyClass extends SC_VerticalCRS implements AdapterReplacement {
@@ -51,8 +52,8 @@ import org.apache.sis.util.Classes;
  *
  * Next, the module shall provides the following:
  * <ul>
- *   <li>The path to {@code MyClass} shall be provided in the module
- *       {@code META-INF/services/org.apache.sis.internal.jaxb.AdapterReplacement} file.</li>
+ *   <li>The path to {@code MyClass} shall be provided in the {@code module-info.java} file
+ *       as a {@code org.apache.sis.internal.jaxb.AdapterReplacement} service.</li>
  *   <li>The {@code DefaultVerticalCRS} class shall have the
  *       {@code XmlRootElement(name = "VerticalCRS")} annotation.</li>
  *   <li>The {@code DefaultVerticalCRS} class shall be declared by a
@@ -118,7 +119,7 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
     @XmlAnyElement(lax = true)
     public Object getElement() {
         Context.warningOccured(Context.current(), SC_VerticalCRS.class, "getElement",
-                Errors.class, Errors.Keys.MissingRequiredModule_1, "sis-referencing");
+                Errors.class, Errors.Keys.MissingRequiredModule_1, Modules.REFERENCING);
         return null;
     }
 

@@ -43,7 +43,7 @@ import static org.junit.Assume.assumeTrue;
  * The databases are in-memory when the database engine supports this mode.
  *
  * <h2>Inspecting the Derby database content in a debugger</h2>
- * Make sure that the classpath contains the {@code derbynet.jar} file in addition to {@code derby.jar}.
+ * Make sure that the module path contains the {@code derbynet.jar} file in addition to {@code derby.jar}.
  * Then, specify the following options to the JVM (replace the 1527 port number by something else if needed):
  *
  * <pre class="text">

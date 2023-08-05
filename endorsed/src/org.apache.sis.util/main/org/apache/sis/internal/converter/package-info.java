@@ -24,19 +24,17 @@
  *
  * <h2>Adding system-wide converters</h2>
  * Applications can add system-wide custom converters either by explicit calls to the
- * {@code SystemRegistry.INSTANCE.register(ObjectConverter)} method, or by listing the
- * fully qualified classnames of their {@link org.apache.sis.util.ObjectConverter} instances
- * in a file having exactly the following name:
+ * {@code SystemRegistry.INSTANCE.register(ObjectConverter)} method, or by listing the class names
+ * of their {@link org.apache.sis.util.ObjectConverter} implementations in {@code module-info.java}
+ * as provider of the {@code org.apache.sis.util.ObjectConverter} service.
  *
- * <pre class="text">META-INF/services/org.apache.sis.util.ObjectConverter</pre>
- *
- * Applications deployed in a container framework like OSGi shall use only the service loader,
- * because system converters are discarded every time that the classpath changes.
- * Having the converters declared in {@code META-INF} ensure that they will be reloaded when needed.
+ * <p>Applications deployed in a container framework like OSGi shall use only the service loader mechanism,
+ * because system converters are discarded every time that the module-path changes. Having the converters
+ * declared in {@code module-info.java} ensures that they will be reloaded when needed.</p>
  *
  * <p>Alternatively, applications can also use their own {@code ConverterRegistry} instance.
- * Non-system instances do not scan for {@code META-INF} and do not discard their content on
- * classpath changes.</p>
+ * Non-system instances do not scan for {@code module-info.class} and do not discard their content
+ * on module-path changes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

@@ -331,7 +331,7 @@ public final class MetadataStandardTest extends TestCase {
 
     /**
      * Tests the {@link MetadataStandard#ISO_19123} constant. Getters shall
-     * be accessible even if there is no implementation on the classpath.
+     * be accessible even if there is no implementation on the module path.
      */
     @Test
     @DependsOnMethod("testGetAccessor")

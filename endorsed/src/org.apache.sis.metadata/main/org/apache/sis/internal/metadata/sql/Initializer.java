@@ -51,13 +51,11 @@ import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
 
 /**
  * Manages the unique {@link DataSource} instance to the {@code $SIS_DATA/Databases/SpatialMetadata} database.
- * This includes initialization of a new database if none existed. The schemas will be created by subclasses of
- * this {@code Initializer} class, which must be registered in the following file:
+ * This includes initialization of a new database if none existed. The schemas will be created by subclasses
+ * of this {@code Initializer} class, which must be registered in {@code module-info.java} file as a provider
+ * of the {@code org.apache.sis.internal.metadata.sql.Initializer} service.
  *
- * <pre class="text">META-INF/services/org.apache.sis.internal.metadata.sql.Initializer</pre>
- *
- * {@code Initializer} implementations should define the following methods:
- *
+ * <p>{@code Initializer} implementations should define the following methods:</p>
  * <ul>
  *   <li>{@link #createSchema(Connection)} — invoked when a new database is created.</li>
  *   <li>{@link #dataSourceChanged()} — invoked when the data source changed.</li>
@@ -113,9 +111,7 @@ public abstract class Initializer {
     }
 
     /**
-     * Returns initializers found on the class path.
-     *
-     * @return initializers found on the class path.
+     * {@return initializers found on the module path}.
      */
     public static ServiceLoader<Initializer> load() {
         return ServiceLoader.load(Initializer.class, Reflect.getContextClassLoader());
@@ -257,7 +253,7 @@ public abstract class Initializer {
      *       use the data source for {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"}.
      *       That database will be created if it does not exist. Note that this is the only case where
      *       Apache SIS may create the database since it is located in the directory managed by Apache SIS.</li>
-     *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the classpath,
+     *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the module path,
      *       use the embedded database.</li>
      *   <li>Otherwise if the {@code "derby.system.home"} property is defined,
      *       use the data source for {@code "jdbc:derby:SpatialMetadata"}.
@@ -320,7 +316,7 @@ public abstract class Initializer {
             /*
              * As a fallback, try to open the Derby database located in $SIS_DATA/Databases/SpatialMetadata directory.
              * Only if the SIS_DATA environment variable is not set, verify first if the `sis-embedded-data` module is
-             * on the classpath. Note that if SIS_DATA is defined and valid, it has precedence.
+             * on the module path. Note that if SIS_DATA is defined and valid, it has precedence.
              */
             DataSource        embedded   = null;
             LocalDataSource[] candidates = null;
@@ -356,7 +352,7 @@ public abstract class Initializer {
             /*
              * If the database does not exist, create it. We allow creation only if we are inside
              * the $SIS_DATA directory. The Java code creating the schemas is provided in other
-             * SIS modules. For example, sis-referencing may create the EPSG dataset.
+             * SIS modules. For example, `org.apache.sis.referencing` may create the EPSG dataset.
              */
             if (source instanceof LocalDataSource) {
                 ((LocalDataSource) source).createDatabase();
@@ -376,7 +372,7 @@ public abstract class Initializer {
     }
 
     /**
-     * If the {@code non-free:sis-embedded-data} module is present on the classpath,
+     * If the {@code non-free:sis-embedded-data} module is present on the module path,
      * returns the data source for embedded Derby database. Otherwise returns {@code null}.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-337">SIS-337</a>

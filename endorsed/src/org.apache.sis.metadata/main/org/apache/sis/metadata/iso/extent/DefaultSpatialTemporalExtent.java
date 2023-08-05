@@ -215,11 +215,11 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      *       of the given envelope, or {@code null} if none.</li>
      * </ul>
      *
-     * <b>Note:</b> This method is available only if the {@code sis-referencing} module is
-     * available on the classpath.
+     * <b>Note:</b> This method is available only if the {@code org.apache.sis.referencing} module
+     * is available on the module path.
      *
      * @param  envelope  the envelope to use for setting this spatiotemporal extent.
-     * @throws UnsupportedOperationException if the referencing module is not on the classpath.
+     * @throws UnsupportedOperationException if the referencing module is not on the module path.
      * @throws TransformException if the envelope cannot be transformed to a temporal extent.
      */
     @Override

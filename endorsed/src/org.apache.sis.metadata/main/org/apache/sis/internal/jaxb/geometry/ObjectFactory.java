@@ -25,9 +25,8 @@ import org.apache.sis.util.Workaround;
 
 
 /**
- * A minimalist XML object factory for getting JAXB to work without throwing exceptions when
- * there is no GML module in the classpath. This factory is extended with more complete methods
- * in the GML module.
+ * A minimalist XML object factory for getting JAXB to work without throwing exceptions when there is no
+ * GML module in the module path. This factory is extended with more complete methods in the GML module.
  *
  * @author  Guilhem Legal (Geomatys)
  * @version 1.4

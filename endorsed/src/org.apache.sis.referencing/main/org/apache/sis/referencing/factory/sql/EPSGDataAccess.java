@@ -3220,7 +3220,7 @@ next:                   while (r.next()) {
     }
 
     /**
-     * Minor shortcut for fetching the resources specific to the {@code sis-referencing} module.
+     * Minor shortcut for fetching the resources specific to the {@code org.apache.sis.referencing} module.
      */
     private Resources resources() {
         return Resources.forLocale(getLocale());

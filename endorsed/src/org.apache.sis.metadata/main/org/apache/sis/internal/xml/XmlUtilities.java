@@ -59,7 +59,7 @@ public final class XmlUtilities extends SystemListener {
     private static volatile DatatypeFactory factory;
 
     /**
-     * Resets the {@link #factory} to {@code null} if the classpath changed.
+     * Resets the {@link #factory} to {@code null} if the module path changed.
      */
     static {
         SystemListener.add(new XmlUtilities());
@@ -73,7 +73,7 @@ public final class XmlUtilities extends SystemListener {
     }
 
     /**
-     * Invoked when the classpath changed. This method resets the {@link #factory} to {@code null}
+     * Invoked when the module path changed. This method resets the {@link #factory} to {@code null}
      * in order to force the search for a new instance.
      */
     @Override

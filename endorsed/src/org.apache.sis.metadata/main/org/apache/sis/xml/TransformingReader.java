@@ -74,8 +74,8 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GML}</li>
      * </ul>
      *
-     * More namespaces may appear depending on the optional module on the classpath.
-     * For example, {@code sis-french-profile} adds {@code "http://www.cnig.gouv.fr/2005/fra"}.
+     * More namespaces may appear depending on the optional module on the module path.
+     * For example, {@code org.apache.sis.profile.france} adds {@code "http://www.cnig.gouv.fr/2005/fra"}.
      */
     private static final Set<String> LEGACY_NAMESPACES = new HashSet<>(12);
 

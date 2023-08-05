@@ -1007,7 +1007,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         synchronized (availableFunctions) {
             if (availableFunctions.isEmpty()) {
                 /*
-                 * Load functions when first needed or if classpath changed since last invocation.
+                 * Load functions when first needed or if the module path changed since last invocation.
                  * The SQLMM factory is hard-coded because it is considered as a basic service to
                  * be provided by all DefaultFilterFactory implementations, and for avoiding the
                  * need to make SQLMM registry class public.

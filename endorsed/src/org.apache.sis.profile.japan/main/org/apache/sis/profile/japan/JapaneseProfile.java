@@ -22,7 +22,7 @@ import org.apache.sis.util.Static;
 /**
  * Provides implementations of Japanese extensions.
  * There is not yet public methods provided in this class.
- * Just having this module presents on the classpath is sufficient for enabling the reading of following data:
+ * Just having this module presents on the module path is sufficient for enabling the reading of following data:
  *
  * <ul>
  *   <li>Global Change Observation Mission - Climate (GCOM-C), a.k.a. "Shikisai".</li>

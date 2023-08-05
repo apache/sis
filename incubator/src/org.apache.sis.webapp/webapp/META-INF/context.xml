@@ -16,7 +16,7 @@ License for the specific language governing permissions and limitations under
 the License.
 -->
 
-<Context path="/sis" docBase="/path/to/sis-webapp-x.y.war">
+<Context path="/sis" docBase="/path/to/org.apache.sis.webapp.war">
 
     <!-- TODO: this file is only a template. Need to be edited. -->
 

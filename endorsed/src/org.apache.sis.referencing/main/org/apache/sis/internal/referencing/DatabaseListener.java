@@ -30,9 +30,8 @@ import static java.util.logging.Logger.getLogger;
 
 /**
  * Invoked when a new database is created or when the data source changed.
- * This listener is registered in the following file:
- *
- * <pre class="text">META-INF/services/org.apache.sis.internal.metadata.sql.Initializer</pre>
+ * This listener is registered in {@code module-info.java} as a provider
+ * of the {@code org.apache.sis.internal.metadata.sql.Initializer} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7

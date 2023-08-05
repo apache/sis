@@ -73,7 +73,7 @@ public final class Threads extends Static {
      * ------------------------------------------------------------------------------------- */
 
     /**
-     * The tail of a chain of {@code DaemonThread}s created by the {@code sis-utility} module.
+     * The tail of a chain of {@code DaemonThread}s created by the {@code org.apache.sis.util} module.
      * Other modules need to maintain their own chain, if any. See the {@link DaemonThread}
      * javadoc for more information.
      */
@@ -86,7 +86,7 @@ public final class Threads extends Static {
     }
 
     /**
-     * Sends a kill signal to all daemon threads created by the {@code sis-utility} module,
+     * Sends a kill signal to all daemon threads created by the {@code org.apache.sis.util} module,
      * and waits for the threads to die before to return.
      *
      * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>

@@ -43,7 +43,7 @@ import org.apache.sis.internal.system.DelayedRunnable;
  * This class is not strictly necessary for marshalling a SIS object using JAXB, but makes
  * the job easier by allowing {@code MarshallerPool} to configure the JAXB context automatically.
  * To allow such automatic configuration, modules must declare instances of this interface
- * as a service in their {@code module-info}.
+ * as a service in their {@code module-info.java} files.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -62,7 +62,7 @@ public abstract class TypeRegistration {
     public static final String ROOT_ADAPTERS = "org.apache.sis.xml.rootAdapters";
 
     /**
-     * The JAXB context, or {@code null} if not yet created or if the classpath changed.
+     * The JAXB context, or {@code null} if not yet created or if the module path changed.
      *
      * @see #getSharedContext()
      */
@@ -70,7 +70,7 @@ public abstract class TypeRegistration {
 
     /**
      * Converters to apply before to marshal an object, or an empty array if none.
-     * This is {@code null} if not yet initialized or if classpath changed.
+     * This is {@code null} if not yet initialized or if module path changed.
      *
      * @see #getPrivateInfo(Map)
      */
@@ -85,7 +85,7 @@ public abstract class TypeRegistration {
     private static ServiceLoader<TypeRegistration> services;
 
     /**
-     * Forces reloading of JAXB context and converters if the classpath changes.
+     * Forces reloading of JAXB context and converters if the module path changes.
      */
     static {
         SystemListener.add(new SystemListener(Modules.UTILITIES) {
@@ -185,8 +185,8 @@ public abstract class TypeRegistration {
     }
 
     /**
-     * Scans the classpath for root classes to put in JAXB context and for converters to those classes.
-     * Those lists are determined dynamically from the SIS modules found on the classpath.
+     * Scans the module path for root classes to put in JAXB context and for converters to those classes.
+     * Those lists are determined dynamically from the SIS modules found on the module path.
      * This method does nothing if this class already has all required information.
      *
      * <p>The list of converters is cached (that result is stored in {@link #converters}) while the list

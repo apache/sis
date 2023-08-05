@@ -156,7 +156,7 @@ public class CitationConstant extends SimpleCitation {
     }
 
     /**
-     * Notify this instance that the database content may have changed, or that the classpath has changed.
+     * Notify this instance that the database content may have changed, or that the module path has changed.
      */
     public final void refresh() {
         delegate = null;
@@ -164,11 +164,11 @@ public class CitationConstant extends SimpleCitation {
 
     /**
      * Returns the citation instance which contain the actual data. That instance is provided by the
-     * {@code sis-metadata} module, which is optional.  If that module is not on the classpath, then
-     * this {@code delegate()} method will use the few information provided by the current instance.
+     * {@code org.apache.sis.metadata} module, which is optional. If that module is not on the module path,
+     * then this {@code delegate()} method will use the few information provided by the current instance.
      *
-     * <p>Note that it should be very rare to not have {@code sis-metadata} on the classpath,
-     * since that module is required by {@code sis-referencing} which is itself required by
+     * <p>Note that it should be very rare to not have {@code org.apache.sis.metadata} on the module path,
+     * since that module is required by {@code org.apache.sis.referencing} which is itself required by
      * almost all other SIS modules.</p>
      */
     @SuppressWarnings("DoubleCheckedLocking")

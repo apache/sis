@@ -55,7 +55,7 @@ public final class TemporalUtilities extends SystemListener {
     }
 
     /**
-     * Discards the cached factory when the classpath has changed.
+     * Discards the cached factory when the module path has changed.
      */
     @Override
     protected void classpathChanged() {
@@ -89,7 +89,7 @@ public final class TemporalUtilities extends SystemListener {
      *
      * @param  time  the date for which to create instant, or {@code null}.
      * @return the instant, or {@code null} if the given time was null.
-     * @throws UnsupportedOperationException if the temporal factory is not available on the classpath.
+     * @throws UnsupportedOperationException if the temporal factory is not available on the module path.
      */
     public static Instant createInstant(final Date time) throws UnsupportedOperationException {
         return (time != null) ? createInstant(getTemporalFactory(), time) : null;
@@ -103,7 +103,7 @@ public final class TemporalUtilities extends SystemListener {
      * @param  begin  the begin date, inclusive.
      * @param  end    the end date, inclusive.
      * @return the period.
-     * @throws UnsupportedOperationException if the temporal factory is not available on the classpath.
+     * @throws UnsupportedOperationException if the temporal factory is not available on the module path.
      */
     public static Period createPeriod(final Date begin, final Date end) throws UnsupportedOperationException {
         final TemporalFactory factory = getTemporalFactory();

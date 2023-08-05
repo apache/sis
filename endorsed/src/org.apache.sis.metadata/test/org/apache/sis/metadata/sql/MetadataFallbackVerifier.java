@@ -56,8 +56,8 @@ public final class MetadataFallbackVerifier {
     /**
      * Creates a temporary database for comparing {@link MetadataFallback} content with database content.
      * This method is provided for allowing to execute this class individually. In a complete Maven build,
-     * of {@code sis-metadata} module, the test will rather be executed by {@link MetadataSourceTest} for
-     * opportunistic reasons.
+     * of {@code org.apache.sis.metadata} module, the test will rather be executed by {@link MetadataSourceTest}
+     * for opportunistic reasons.
      *
      * @throws Exception if an exception occurred while creating or comparing the database.
      */

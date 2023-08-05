@@ -32,7 +32,7 @@ import org.apache.sis.util.Numbers;
 
 /**
  * A {@link Matrix} able to perform some operations of interest to Spatial Information Systems (SIS).
- * This class completes the GeoAPI {@link Matrix} interface with some operations used by {@code sis-referencing}.
+ * This class completes the GeoAPI {@link Matrix} interface with some operations used by {@code org.apache.sis.referencing}.
  * It is not a {@code MatrixSIS} goal to provide all possible Matrix operations, as there is too many of them.
  * This class focuses on:
  *

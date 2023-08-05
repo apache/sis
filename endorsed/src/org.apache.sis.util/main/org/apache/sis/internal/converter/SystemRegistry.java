@@ -33,7 +33,7 @@ import org.apache.sis.internal.system.Modules;
  *
  * <ul>
  *   <li>Fetch the list of converters from the content of all
- *       {@code META-INF/services/org.apache.sis.util.ObjectConverter} files found on the classpath.
+ *       {@code module-info.class} files found on the module path.
  *       The intent is to allow other modules to register their own converters.</li>
  *
  *   <li>Apply heuristic rules in addition to the explicitly registered converters.
@@ -68,9 +68,9 @@ public final class SystemRegistry extends ConverterRegistry {
     public static final ConverterRegistry INSTANCE = new SystemRegistry();
     static {
         /*
-         * Force reloading of META-INF/services files if the classpath changed,
-         * since the set of reachable META-INF/services files may have changed.
-         * If any converters were registered by explicit calls to the `register` method,
+         * Force reloading of `module-info.class` files if the module path changed,
+         * because the set of reachable `module-info.class` files may have changed.
+         * If any converters were registered by explicit calls to `register(…)`,
          * then those converters are lost. This is of concern only for applications
          * using a container framework such as Servlet or OSGi.
          * See package javadoc for more information.

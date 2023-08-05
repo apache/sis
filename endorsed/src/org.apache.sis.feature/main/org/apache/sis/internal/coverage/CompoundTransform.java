@@ -33,8 +33,9 @@ import org.apache.sis.util.ArraysExt;
 /**
  * A transform composed of an arbitrary number of juxtaposed transforms.
  *
- * This implementation is sufficient for {@code sis-feature} purposes, but incomplete for {@code sis-referencing}
- * purposes. See <a href="https://issues.apache.org/jira/browse/SIS-498">SIS-498</a>.
+ * This implementation is sufficient for {@code org.apache.sis.feature} purposes,
+ * but incomplete for {@code org.apache.sis.referencing} purposes.
+ * See <a href="https://issues.apache.org/jira/browse/SIS-498">SIS-498</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

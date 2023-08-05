@@ -92,8 +92,8 @@ public class ConverterRegistry {
      *
      * <p>The default implementation does nothing. Subclasses can override this method
      * in order to register a default set of converters. For example, a subclass could
-     * fetch the {@code ObjectConverter} instances from the {@code META-INF/services}
-     * directories as below:</p>
+     * fetch the {@code ObjectConverter} instances from the {@code module-info.class}
+     * files as below:</p>
      *
      * {@snippet lang="java" :
      *     ClassLoader loader = getClass().getClassLoader();
@@ -449,9 +449,8 @@ public class ConverterRegistry {
                 return converter;
             }
             /*
-             * If the user is invoking this method for the firt time, regiter the converers
-             * declared in all "META-INF/services/org.apache.sis.util.ObjectConverter" files
-             * found on the classpath and try again.
+             * If the user is invoking this method for the first time, register the converters
+             * declared in all `modules-info.class` files found on the module path and try again.
              */
             if (!isInitialized) {
                 isInitialized = true;       // Before 'initialize()' for preventing infinite recursivity.

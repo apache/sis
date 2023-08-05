@@ -146,8 +146,8 @@ public final class APIVerifier extends TestCase {
 
     /**
      * Generates the content of the {@code api-changes.properties} file, except for the comments.
-     * This method can be invoked by the {@code sis-metadata} module maintainer when the Apache SIS
-     * API diverges from the GeoAPI interfaces.
+     * This method can be invoked by the {@code org.apache.sis.metadata} module maintainer when
+     * the Apache SIS API diverges from the GeoAPI interfaces.
      *
      * <p>This method also opportunistically lists method signature changes if some are found.
      * This is is for information purpose and shall not be included in the {@code api-changes.properties} file.</p>

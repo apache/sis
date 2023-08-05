@@ -191,7 +191,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
      * Creates the data source using the context class loader.
      * It is caller's responsibility to {@linkplain #shutdown() shutdown} the database after usage.
      *
-     * @throws ClassNotFoundException if the database driver is not on the classpath.
+     * @throws ClassNotFoundException if the database driver is not on the module path.
      * @throws ReflectiveOperationException if an error occurred
      *         while setting the properties on the data source.
      */
@@ -226,7 +226,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
      *
      * @param  sources  the data sources to try.
      * @return the first data source for which a driver is available.
-     * @throws ClassNotFoundException if no database driver is not on the classpath.
+     * @throws ClassNotFoundException if no database driver is not on the module path.
      * @throws Exception if the operation failed for another reason.
      */
     static LocalDataSource findDriver(final LocalDataSource[] sources) throws Exception {

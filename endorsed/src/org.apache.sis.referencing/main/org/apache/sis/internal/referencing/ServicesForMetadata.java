@@ -73,7 +73,7 @@ import static java.util.logging.Logger.getLogger;
 
 
 /**
- * Implements the referencing services needed by the {@code "sis-metadata"} module.
+ * Implements the referencing services needed by the {@code org.apache.sis.metadata} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -380,7 +380,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  target    the target extent where to store envelope information.
      * @throws TransformException if a coordinate transformation was required and failed.
      * @throws UnsupportedOperationException if this method requires an Apache SIS module
-     *         which has been found on the classpath.
+     *         which has been found on the module path.
      */
     @Override
     public void addElements(final Envelope envelope, final DefaultExtent target) throws TransformException {

@@ -58,7 +58,7 @@ import org.apache.sis.util.Version;
  * The provider of {@link NetcdfStore} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a {@code NetcdfStore} using the embedded netCDF decoder.
  * If the embedded decoder cannot decode the given input and the UCAR library is reachable
- * on the classpath, then this class tries to instantiate a {@code NetcdfStore} backed by
+ * on the module path, then this class tries to instantiate a {@code NetcdfStore} backed by
  * the UCAR library.
  *
  * <h2>Thread safety</h2>
@@ -114,7 +114,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The {@link ucar.nc2.NetcdfFile} class, or {@code null} if not found. An attempt to load this class
      * will be performed when first needed since the UCAR library is optional. If not found, then this field
-     * will be assigned the {@link Void#TYPE} sentinel value, meaning "No UCAR library on the classpath".
+     * will be assigned the {@link Void#TYPE} sentinel value, meaning "No UCAR library on the module path".
      */
     private static Class<?> netcdfFileClass;
 
@@ -137,8 +137,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     private static volatile Constructor<? extends Decoder> createFromUCAR;
 
     /**
-     * Clears the cached constructors if the classpath has changed,
-     * because the UCAR library may no longer be on the classpath.
+     * Clears the cached constructors if the module path has changed,
+     * because the UCAR library may no longer be on the module path.
      */
     static {
         SystemListener.add(new SystemListener(Modules.NETCDF) {
@@ -419,7 +419,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                     }
                 } catch (ClassNotFoundException e) {
                     /*
-                     * Happen if the UCAR library is not on the classpath. Log at the configuration level without
+                     * Happen if the UCAR library is not on the module path. Log at the configuration level without
                      * reporting the exception (for avoiding scaring logs) because this is a typical use case.
                      */
                     severity = Level.CONFIG;
@@ -430,8 +430,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                      * use the UCAR library.
                      *
                      * ReflectiveOperationException should never happen because API compatibility shall be verified
-                     * by the JUnit tests. If it happen anyway  (for example because the user puts on his classpath
-                     * a different version of the netCDF library than the one we tested), report a warning.
+                     * by the JUnit tests. If it happen anyway  (for example because the user puts on module path a
+                     * different version of the netCDF library than the one we tested), report a warning.
                      */
                     severity = Level.WARNING;
                     cause = e;
@@ -450,8 +450,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Invoked when the classpath changed. Clears the cached class and constructors, since we don't know
-     * if the UCAR library is still on the classpath.
+     * Invoked when the module path changed. Clears the cached class and constructors,
+     * because we don't know if the UCAR library is still on the module path.
      */
     static synchronized void reset() {
         netcdfFileClass = null;

@@ -30,7 +30,7 @@ import java.util.zip.ZipFile;
 
 /**
  * Ask user to specify the path to JavaFX installation directory.
- * This is used when JavaFX cannot be found on the classpath.
+ * This is used when JavaFX cannot be found on the module path.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

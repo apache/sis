@@ -39,8 +39,8 @@ import org.apache.sis.internal.util.DoubleDouble;
  * or only an offset, <i>etc.</i> But we don't do that in Apache SIS implementation because we will rarely use the
  * {@code UnitConverter} for converting a lot of values. We rather use {@code MathTransform} for operations on
  * <var>n</var>-dimensional tuples, and unit conversions are only a special case of those more generic operations.
- * The {@code sis-referencing} module provided the specialized implementations needed for efficient operations
- * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.
+ * The {@code org.apache.sis.referencing} module provided the specialized implementations needed for efficient
+ * operations and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

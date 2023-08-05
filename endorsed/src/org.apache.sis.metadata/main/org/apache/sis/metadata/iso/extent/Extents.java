@@ -709,7 +709,7 @@ public final class Extents extends Static {
      * @return the intersection (may be any of the {@code e1} or {@code e2} argument if unchanged),
      *         or {@code null} if the two given extents are null.
      * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
-     *         on the classpath.
+     *         on the module path.
      *
      * @see DefaultTemporalExtent#intersect(TemporalExtent)
      *
@@ -736,7 +736,7 @@ public final class Extents extends Static {
      *         {@linkplain DefaultGeographicBoundingBox#getInclusion() bounding box inclusion status} or
      *         mismatched {@linkplain DefaultVerticalExtent#getVerticalCRS() vertical datum}).
      * @throws UnsupportedOperationException if a {@code TemporalFactory} is required but no implementation
-     *         has been found on the classpath.
+     *         has been found on the module path.
      *
      * @see DefaultExtent#intersect(Extent)
      *

@@ -53,7 +53,7 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
 /**
- * Assertion methods used by the {@code sis-referencing} module in addition of the ones inherited
+ * Assertion methods used by the {@code org.apache.sis.referencing} module in addition of the ones inherited
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)

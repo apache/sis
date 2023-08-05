@@ -65,7 +65,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     private static final GeodeticAuthorityFactory[] EPSG = new GeodeticAuthorityFactory[1];
 
     /**
-     * The unique system-wide authority factory instance that contains all factories found on the classpath,
+     * The unique system-wide authority factory instance that contains all factories found on the module path,
      * plus the EPSG factory. The {@link EPSGFactoryProxy} most be excluded from this list, since the EPSG
      * factory is handled in a special way.
      */
@@ -88,7 +88,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
 
     /**
      * Registers a hook for forcing {@code ALL} to reload all CRS, CS, datum and coordinate operation factories
-     * when the classpath changed.
+     * when the module path changed.
      */
     static {
         SystemListener.add(new SystemListener(Modules.REFERENCING) {

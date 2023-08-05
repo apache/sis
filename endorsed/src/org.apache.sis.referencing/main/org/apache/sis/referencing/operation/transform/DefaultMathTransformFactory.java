@@ -153,10 +153,10 @@ import org.apache.sis.util.resources.Errors;
  *
  * <ul>
  *   <li>{@linkplain #DefaultMathTransformFactory(Iterable) specified explicitly at construction time}, or</li>
- *   <li>{@linkplain #DefaultMathTransformFactory() discovered by scanning the classpath}.</li>
+ *   <li>{@linkplain #DefaultMathTransformFactory() discovered by scanning the module path}.</li>
  * </ul>
  *
- * The default way is to scan the classpath. See {@link MathTransformProvider} for indications about how to add
+ * The default way is to scan the module path. See {@link MathTransformProvider} for indications about how to add
  * custom coordinate operation methods in a default Apache SIS installation.
  *
  *
@@ -197,7 +197,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private static volatile Constructor<? extends Parser> parserConstructor;
 
     /**
-     * All methods specified at construction time or found on the classpath.
+     * All methods specified at construction time or found on the module path.
      * If the iterable is an instance of {@link ServiceLoader}, then it will
      * be reloaded when {@link #reload()} is invoked.
      *
@@ -270,12 +270,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
-     * The {@link OperationMethod} implementations shall be listed in the following file:
-     *
-     * <pre class="text">META-INF/services/org.opengis.referencing.operation.OperationMethod</pre>
-     *
-     * {@code DefaultMathTransformFactory} parses the above-cited files in all JAR files in order to find all available
-     * operation methods. By default, only operation methods that implement the {@link MathTransformProvider} interface
+     * The {@link OperationMethod} implementations shall be listed in {@code module-info.java}
+     * as provider of the {@code org.opengis.referencing.operation.OperationMethod} service.
+     * {@code DefaultMathTransformFactory} scans the providers of all modules in order to list
+     * all available operation methods.
+     * Currently, only operation methods implementing the {@link MathTransformProvider} interface
      * can be used by the {@code create(…)} methods in this class.
      *
      * @see #provider()
@@ -1695,8 +1694,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             /*
              * The parsing may fail because a operation parameter is not known to SIS. If this happen, replace
              * the generic exception thrown be the parser (which is FactoryException) by a more specific one.
-             * Note that InvalidGeodeticParameterException is defined only in this sis-referencing module,
-             * so we could not throw it from the sis-metadata module that contain the parser.
+             * Note that InvalidGeodeticParameterException is defined only in this `org.apache.sis.referencing` module,
+             * so we could not throw it from the `org.apache.sis.metadata` module that contain the parser.
              */
             Throwable cause = e.getCause();
             while (cause != null) {
@@ -1746,7 +1745,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * </ul>
      *
      * This method is useful to sophisticated applications which dynamically make new plug-ins available at runtime,
-     * for example following changes of the application classpath.
+     * for example following changes of the application module path.
      *
      * @see #DefaultMathTransformFactory(Iterable)
      * @see ServiceLoader#reload()

@@ -431,7 +431,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Registers a listeners to be invoked when the classpath changed.
+     * Registers a listeners to be invoked when the module path changed.
      * This will clear the cache, since the EPSG database may have changed.
      */
     static {
@@ -445,7 +445,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Invoked by when the cache needs to be cleared after a classpath change.
+     * Invoked by when the cache needs to be cleared after a module path change.
      */
     @SuppressWarnings("NestedSynchronizedStatement")    // Safe because cachedProjections never call any method of 'this'.
     final synchronized void clear() {
@@ -1333,7 +1333,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Registers a listeners to be invoked when the classpath changed.
+         * Registers a listeners to be invoked when the module path changed.
          * This will clear the cache, since the factories may have changed.
          */
         static {
@@ -1347,7 +1347,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Invoked by when the cache needs to be cleared after a classpath change.
+         * Invoked by when the cache needs to be cleared after a module path change.
          */
         final synchronized void clear() {
             cached = null;
@@ -1613,7 +1613,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Registers a listeners to be invoked when the classpath changed.
+         * Registers a listeners to be invoked when the module path changed.
          * This will clear the cache, since the factories may have changed.
          */
         static {
@@ -1627,7 +1627,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Invoked by when the cache needs to be cleared after a classpath change.
+         * Invoked by when the cache needs to be cleared after a module path change.
          */
         final synchronized void clear() {
             cached = null;

@@ -35,8 +35,8 @@ import org.apache.sis.util.resources.Errors;
  * For example, it may be more efficient to provide specialized subclasses for each target class,
  * so we don't have to execute the {@code switch} inside the {@code Numbers} class every time a
  * value is converted. However, performance is not the primary concern here, since those converters
- * will typically be used by code doing more costly work (e.g. the {@code sis-metadata} module
- * providing {@code Map} views using Java reflection). So we rather try to be more compact.
+ * will typically be used by code doing more costly work (e.g. the {@code org.apache.sis.metadata}
+ * module providing {@code Map} views using Java reflection). So we rather try to be more compact.
  * If nevertheless performance appears to be a problem, consider reverting to revision
  * {@code d73a10558dda4b41723d4f5652a792ae9c24f69e} (subversion: 1455255) of this class,
  * which was using one subclass per target type as described above.

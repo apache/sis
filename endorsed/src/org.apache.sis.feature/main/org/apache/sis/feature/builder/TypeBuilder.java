@@ -482,7 +482,7 @@ public abstract class TypeBuilder implements Localized {
     }
 
     /**
-     * Returns the {@code sis-feature} specific resources for error messages.
+     * Returns the {@code org.apache.sis.feature} specific resources for error messages.
      */
     final Resources resources() {
         return Resources.forProperties(identification);

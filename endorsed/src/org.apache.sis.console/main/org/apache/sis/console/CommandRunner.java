@@ -333,7 +333,7 @@ abstract class CommandRunner {
      * Shows the help instructions for a specific command. This method is invoked instead of {@link #run()}
      * if the the user provided the {@code --help} option. The default implementation builds a description
      * from the texts associated to the given {@code resourceKey} in various resource bundles provided in
-     * this {@code sis-console} module. Subclasses can override if needed.
+     * this {@code org.apache.sis.console} module. Subclasses can override if needed.
      *
      * @param  resourceKey  the key for the resource to print. This is usually {@link #commandName} in lower-cases.
      * @throws IOException should never happen, because we are writing to a {@code PrintWriter}.

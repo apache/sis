@@ -26,8 +26,8 @@ import org.apache.sis.util.resources.Messages;
 
 /**
  * Base class of internal hooks for accessing optional dependencies.
- * This is used for example for allowing the {@code "sis-metadata"} module to access some
- * services of the {@code "sis-referencing"} module if the latter is present on the classpath.
+ * This is used for example for allowing the {@code org.apache.sis.metadata} module to access some
+ * services of the {@code org.apache.sis.referencing} module if the latter is present on the module path.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -43,8 +43,7 @@ public abstract class OptionalDependency extends SystemListener {
      * Creates a new optional dependency.
      *
      * @param module  a constant from the {@link Modules} class which identify the module that need the optional dependency.
-     * @param dependency  the Maven artifact name (<strong>not</strong> a name from the {@link Modules} class)
-     *        of the optional module on which the {@code module} depend.
+     * @param dependency  the name of the optional module on which the specified {@code module} depends.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     protected OptionalDependency(final String module, final String dependency) {
@@ -79,7 +78,7 @@ public abstract class OptionalDependency extends SystemListener {
 
     /**
      * Returns the exception to throw when a method requiring the optional dependency is invoked
-     * but that module is not on the classpath.
+     * but that module is not on the module path.
      *
      * @return the exception to throw.
      */

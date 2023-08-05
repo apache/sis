@@ -51,14 +51,12 @@ import ucar.nc2.constants.CF;
  * By default, Apache SIS netCDF reader applies the <a href="http://cfconventions.org">CF conventions</a>.
  * But some data producers does not provides all necessary information for allowing Apache SIS to read the
  * netCDF file. Some information may be missing because considered implicit by the data producer.
- * This class provides a mechanism for supplying the implicit values.
- * Conventions can be registered in a file having this exact path:
+ * This class provides a mechanism for supplying the implicit values. Conventions can be registered in
+ * {@code module-info.java} as providers of the  {@code org.apache.sis.internal.netcdf.Convention} service.
  *
- * <blockquote><pre>META-INF/services/org.apache.sis.internal.netcdf.Convention</pre></blockquote>
- *
- * Instances of this class must be immutable and thread-safe.
+ * <p>Instances of this class must be immutable and thread-safe.
  * This class does not encapsulate all conventions needed for understanding a netCDF file,
- * but only conventions that are more likely to need to be overridden for some data producers.
+ * but only conventions that are more likely to need to be overridden for some data producers.</p>
  *
  * <p><b>This is an experimental class for internal usage only (for now).</b>
  * The API of this class is likely to change in any future Apache SIS version.
@@ -76,7 +74,7 @@ import ucar.nc2.constants.CF;
  */
 public class Convention {
     /**
-     * All conventions found on the classpath.
+     * All conventions found on the module path.
      */
     private static final ServiceLoader<Convention> AVAILABLES =
             ServiceLoader.load(Convention.class, Reflect.getContextClassLoader());

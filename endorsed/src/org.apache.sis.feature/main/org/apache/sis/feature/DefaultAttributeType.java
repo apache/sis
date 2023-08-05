@@ -215,7 +215,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      *
      * @param  in  the input stream from which to deserialize an attribute type.
      * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the module path.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

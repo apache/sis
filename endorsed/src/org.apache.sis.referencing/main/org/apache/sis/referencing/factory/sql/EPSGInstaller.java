@@ -254,19 +254,19 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
-     * Searches for a SQL script provider on the classpath before to fallback on the default provider.
+     * Searches for a SQL script provider on the module path before to fallback on the default provider.
      * The returned provider will be, in preference order:
      *
      * <ol>
      *   <li>A provider from a publicly supported dependency such as {@code sis-epsg.jar} or {@code sis-embedded.jar}.
-     *       Users have to put one of those dependencies in the classpath themselves. This action is interpreted as an
-     *       acceptance of EPSG terms of use, so no license agreement window will popup.</li>
+     *       Users have to put one of those dependencies in the module path themselves. This action is interpreted as
+     *       an acceptance of EPSG terms of use, so no license agreement window will popup.</li>
      *   <li>A provider using the SQL scripts in the {@code $SIS_DATA/Databases/ExternalSources} directory.
      *       Users have to put those scripts in that directory manually. This action is interpreted as an
      *       acceptance of EPSG terms of use, so no license agreement window will popup.</li>
      *   <li>A provider offering users to automatically download the data. Those providers are defined by
-     *       {@code sis-console} and {@code sis-javafx} modules. Users must accept EPSG terms of use before
-     *       the database can be installed.
+     *       {@code org.apache.sis.console} and {@code org.apache.sis.gui} modules.
+     *       Users must accept EPSG terms of use before the database can be installed.
      * </ol>
      *
      * @param  locale  the locale for information or warning messages, if any.
@@ -284,9 +284,9 @@ final class EPSGInstaller extends ScriptRunner {
         /*
          * If we did not found a provider ready to use such as "sis-epsg.jar" or "sis-embedded.jar",
          * we may fallback on a provider offering to download the data (those fallbacks are provided
-         * by `sis-console` and `sis-javafx` modules). Those fallbacks will ask to the user if (s)he
-         * accepts EPSG terms of use. But before to use those fallbacks, check if the data have not
-         * been downloaded manually in the "$SIS_DATA/Databases/ExternalSources" directory.
+         * by `org.apache.sis.console` and `org.apache.sis.gui` modules). Those fallbacks will ask to
+         * the user if (s)he accepts EPSG terms of use. But before to use those fallbacks, check if the
+         * data have not been downloaded manually in the "$SIS_DATA/Databases/ExternalSources" directory.
          */
         final InstallationResources manual = new InstallationScriptProvider.Default(locale);
         if (fallback != null && manual.getAuthorities().isEmpty()) {

@@ -29,7 +29,7 @@ import org.opengis.util.ControlledVocabulary;
 
 
 /**
- * Implementation of some {@link org.apache.sis.util.iso.Types} methods needed by {@code sis-utility} module.
+ * Implementation of some {@link org.apache.sis.util.iso.Types} methods needed by {@code org.apache.sis.util} module.
  * This class opportunistically implements {@link Predicate} interface, but this is an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)

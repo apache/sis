@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Implements the metadata services needed by the {@code "sis-utility"} module.
+ * Implements the metadata services needed by the {@code org.apache.sis.util} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

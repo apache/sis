@@ -56,8 +56,7 @@ import static org.opengis.test.Assert.assertMatrixEquals;
 
 /**
  * Tests the registration of operation methods in {@link DefaultMathTransformFactory}. This test uses the
- * providers registered in all {@code META-INF/services/org.opengis.referencing.operation.OperationMethod}
- * files found on the classpath.
+ * providers registered as an {@code org.opengis.referencing.operation.OperationMethod} in all available modules.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -90,8 +89,8 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
     @org.junit.Ignore("Pending the completion of migration to JDK 9")
     public void testServiceProvider() {
         final MathTransformFactory factory = ServiceLoader.load(MathTransformFactory.class).findFirst().orElse(null);
-        assertNotNull("No Apache SIS implementation of MathTransformFactory found in “META-INF/services”.", factory);
-        assertEquals("Expected the default implementation of MathTransformFactory to be first in “META-INF/services”.",
+        assertNotNull("No Apache SIS implementation of MathTransformFactory found in “module-info”.", factory);
+        assertEquals("Expected the default implementation of MathTransformFactory to be first in “module-info”.",
                 DefaultMathTransformFactory.class, factory.getClass());
         assertSame(factory(), factory);
     }

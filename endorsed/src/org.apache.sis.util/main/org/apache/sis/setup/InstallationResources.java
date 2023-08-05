@@ -57,15 +57,14 @@ import org.apache.sis.internal.system.Reflect;
  * </table>
  *
  * In order to allow those classes to discover which resources are available,
- * {@code InstallationResources} implementations shall be declared in the following file:
+ * {@code InstallationResources} implementations shall be declared in the {@code module-info.java} file
+ * as providers of the {@code org.apache.sis.setup.InstallationResources} service.
  *
- * <pre class="text">META-INF/services/org.apache.sis.setup.InstallationResources</pre>
- *
- * Above registration is usually done automatically when extension modules are added on the classpath.
+ * <p>Above registration is usually done automatically when extension modules are added on the module path.
  * For example, adding the {@code org.apache.sis.non-free:sis-epsg} Maven dependency as documented on
  * the <a href="https://sis.apache.org/epsg.html">Apache SIS web site</a> is the only step needed for
  * allowing Apache SIS to read the EPSG scripts (however SIS still needs an installation directory
- * for writing the database; see above-cited web page for more information).
+ * for writing the database; see above-cited web page for more information).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -79,9 +78,7 @@ public abstract class InstallationResources {
     }
 
     /**
-     * Returns installation resources found on the class path.
-     *
-     * @return installation resources found on the class path.
+     * {@return installation resources found on the module path}.
      *
      * @since 1.4
      */

@@ -55,7 +55,7 @@ public final class StoreTest extends TestCase {
     /**
      * Gets the path to the test directory. If the directory is not accessible through the file system
      * (for example if the test data are read from a JAR file), then skip the tests. This happen if the
-     * test are executed from another Maven module than {@code sis-storage}.
+     * test are executed from another Maven module than {@code org.apache.sis.storage}.
      */
     private static Path testDirectory() throws URISyntaxException {
         final URL sample = StoreTest.class.getResource("test-data/README.txt");

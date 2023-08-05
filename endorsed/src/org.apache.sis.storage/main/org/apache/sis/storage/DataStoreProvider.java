@@ -50,12 +50,8 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * <h2>Packaging data stores</h2>
- * JAR files that provide implementations of this class shall contain an entry with exactly the following path:
- *
- * <pre class="text">META-INF/services/org.apache.sis.storage.DataStoreProvider</pre>
- *
- * The above entry shall contain one line for each {@code DataStoreProvider} implementation provided in the JAR file,
- * where each line is the fully qualified name of the implementation class.
+ * JAR files that provide implementations of this class shall declare the implementation class names in
+ * {@code module-info.java} as providers of the {@code org.apache.sis.storage.DataStoreProvider} service.
  * See {@link java.util.ServiceLoader} for more general discussion about this lookup mechanism.
  *
  * <h2>Thread safety</h2>
