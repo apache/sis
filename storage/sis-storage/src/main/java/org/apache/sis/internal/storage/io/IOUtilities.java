@@ -322,7 +322,7 @@ public final class IOUtilities extends Static {
      *                   the character encoding (normally {@code "UTF-8"}).
      *                   If the URL is not encoded, then {@code null}.
      * @return the path converted to an uRL, or {@code null} if the given path was null.
-     * @throws MalformedURLException if the path can not be parsed as an URL.
+     * @throws MalformedURLException if the path cannot be parsed as an URL.
      * @throws IOException if a non-null {@code encoding} was specified and an encoding error is found.
      *
      * @since 1.4
