@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.
+    See the NOTICE file distributed with this work for additional information regarding copyright ownership.
+    The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use
+    this file except in compliance with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software distributed under the License is
+    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and limitations under the License.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.java.j2semodule</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/j2se-modular-project/1">
+            <name>Apache SIS on GeoAPI 4.0</name>
+            <source-roots>
+                <root id="src.dir" pathref="src.dir.path"/>
+                <root id="optional.main.dir" pathref="optional.main.dir.path"/>
+                <root id="incubator.main.dir" pathref="incubator.main.dir.path"/>
+            </source-roots>
+            <test-roots>
+                <root id="test.src.dir" pathref="test.src.dir.path"/>
+                <root id="optional.test.dir" pathref="optional.test.dir.path"/>
+                <root id="incubator.test.dir" pathref="incubator.test.dir.path"/>
+                <root id="local.test.dir" pathref="local.test.dir.path"/>
+            </test-roots>
+        </data>
+    </configuration>
+</project>

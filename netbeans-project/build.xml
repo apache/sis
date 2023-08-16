@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.
+    See the NOTICE file distributed with this work for additional information regarding copyright ownership.
+    The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use
+    this file except in compliance with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software distributed under the License is
+    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and limitations under the License.
+-->
+<project name="Apache SIS" default="default" basedir="."
+         xmlns:ivy="antlib:org.apache.ivy.ant"
+         xmlns:j2semodularproject="http://www.netbeans.org/ns/j2se-modular-project/1">
+
+    <description>Alternative to Gradle for developing Apache SIS with NetBeans.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
+      Retrieve the dependencies listed in the `ivy-modules.xml` file.
+      Those dependencies are put in a unique directory, which is put
+      on the module-path. We do not distinguish between compile-time
+      dependencies and test dependencies because we found not way to
+      configure NetBeans with  `-add-reads` and `-add-exports` javac
+      arguments for test compilation only.
+    -->
+    <target name="-pre-compile">
+        <ivy:settings file="ivy-settings.xml"/>
+        <ivy:retrieve pattern="build/dependencies/[artifact].[ext]" symlink="true" sync="true"/>
+    </target>
+    <!--
+        Called after compilation. Copies the "*.utf" resources files created by GRadle.
+        Note that the Apache SIS project must have been build by Gradle at least once
+        before it can be built by the NetBeans IDE.
+    -->
+    <target name="-post-compile">
+        <copy todir="${build.modules.dir}" preservelastmodified="true">
+            <fileset dir="../endorsed/build/classes/java/main">
+                <exclude name="*/META-INF/services/**"/>
+                <exclude name="**/*.class"/>
+            </fileset>
+        </copy>
+        <!--
+            NetBeans compiles all `package-info.java` files (and only them) as package hierarchy.
+            I could not find why. Even empty `package-info` files are compiled. But it confuses
+            other tasks which believe that there is an "org" module. So we need to delete those
+            directories.
+        -->
+        <delete dir="${build.modules.dir}/org"/>
+        <delete dir="${build.test.modules.dir}/org"/>
+    </target>
+</project>

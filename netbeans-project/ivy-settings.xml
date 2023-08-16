@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Configuration of Apache Ivy — a Maven-like dependency manager for Apache Ant.
+  This file is used by NetBeans project files instead of building with Gradle.
+  It specifies the Maven repository where the UCAR netCDF library can be found.
+
+  This file may be removed in a future version if NetBeans support of Gradle
+  is improved to the point where Module Source Hierarchy is well supported.
+-->
+<ivysettings>
+    <settings defaultResolver="central"/>
+    <resolvers>
+        <ibiblio name="central" m2compatible="true"/>
+        <url name="UCAR">
+            <artifact pattern="https://artifacts.unidata.ucar.edu/repository/unidata-releases/edu/ucar/[artifact]/[revision]/[artifact]-[revision].[ext]"/>
+        </url>
+    </resolvers>
+     <modules>
+        <module organisation="edu.ucar" resolver="UCAR"/>
+    </modules>
+</ivysettings>
