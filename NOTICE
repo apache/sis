@@ -20,15 +20,15 @@ The `org.apache.sis.referencing.operation.matrix` package contains code
 adapted from JAMA Java Matrix Package in public domain.
 http://math.nist.gov/javanumerics/jama/
 
-The `sis-feature` module can optionally use the Esri Geometry API
+The `org.apache.sis.feature` module can optionally use the Esri Geometry API
 developed by ESRI under Apache license 2.
 https://github.com/Esri/geometry-api-java/
 
-The `sis-netcdf` module can optionally use the UCAR netCDF library
+The `org.apache.sis.storage.netcdf` module can optionally use the UCAR netCDF library
 developed by Unidata under MIT-style license.
 https://www.unidata.ucar.edu/software/netcdf-java/
 
-The `sis-cloud-aws` module depends on the Amazon SDK library
+The `org.apache.sis.cloud.aws` module depends on the Amazon SDK library
 developed by Amazon under Apache 2 license.
 https://aws.amazon.com/sdk-for-java/
 
@@ -44,6 +44,6 @@ The optional `non-free` group of modules contain geodetic data
 collected by the International Association of Oil and Gas Producers.
 https://epsg.org/terms-of-use.html
 
-The optional `sis-javafx` module depends on JavaFX
+The optional `org.apache.sis.gui` module depends on JavaFX
 published under GPL 2 with classpath exception.
 https://github.com/openjdk/jfx/blob/master/LICENSE
