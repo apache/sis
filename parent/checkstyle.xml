@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+
+<!--
+  This is a checkstyle configuration file.
+  For descriptions of what the following rules do,
+  please see the checkstyle configuration page at
+  http://checkstyle.sourceforge.net/config.html
+-->
+
+<module name="Checker">
+  <!--
+    Whether whitespaces should be present before or after various kind of tokens,
+    and where line wraps are allowed or mandated.
+  -->
+  <module name="FileTabCharacter"/>                 <!-- No tab characters in the file. -->
+  <module name="NewlineAtEndOfFile"/>               <!-- Newline at the end of each file. -->
+  <module name="TreeWalker">
+    <module name="RegexpSinglelineJava">
+      <property name="format" value="\s+$"/>
+      <property name="message" value="Trailing spaces not allowed."/>
+    </module>
+    <module name="NoLineWrap"/>                     <!-- Imports and package statements are not line-wrapped. -->
+    <module name="RedundantImport"/>                <!-- No redundant import statements. -->
+    <module name="GenericWhitespace"/>              <!-- Whitespace around the Generic tokens follow typical convention. -->
+    <module name="TypecastParenPad"/>               <!-- No space inside parentheses for typecasts. -->
+    <module name="SeparatorWrap">                   <!-- No line wrapping before comma. -->
+      <property name="tokens" value="COMMA"/>
+    </module>
+    <module name="WhitespaceAfter">                 <!-- Checks that a token is followed by whitespace. -->
+      <property name="tokens" value="TYPECAST, LITERAL_IF, LITERAL_ELSE, LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, DO_WHILE"/>
+    </module>
+    <module name="NoWhitespaceAfter">               <!-- No whitespace after "++" in ++x, etc. -->
+      <property name="tokens" value="INC, DEC, BNOT, LNOT"/>
+    </module>
+    <module name="NoWhitespaceBefore">              <!-- No whitespace before "++" in x++, etc. -->
+      <property name="tokens" value="COMMA, POST_INC, POST_DEC, ELLIPSIS"/>
+    </module>
+    <module name="WhitespaceAround">
+      <property name="tokens" value=
+       "MINUS_ASSIGN, STAR_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, MOD,
+        SL, SL_ASSIGN, SR, SR_ASSIGN, BSR, BSR_ASSIGN,
+        BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BXOR, BXOR_ASSIGN,
+        TYPE_EXTENSION_AND, LAND, LOR, QUESTION, LAMBDA,
+        COLON, DO_WHILE, LITERAL_DO, LITERAL_WHILE, LITERAL_FOR,
+        LITERAL_ELSE, LITERAL_SWITCH,
+        LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY,
+        LITERAL_SYNCHRONIZED"/>
+      <property name="allowEmptyConstructors" value="true"/>
+      <property name="allowEmptyMethods"      value="true"/>
+      <property name="allowEmptyTypes"        value="true"/>
+      <property name="allowEmptyLoops"        value="true"/>
+      <property name="allowEmptyLambdas"      value="true"/>
+      <property name="allowEmptyCatches"      value="true"/>
+    </module>
+    <!--
+      Code formatting on other aspects than whitespaces. When there is different ways to express
+      the same thing (e.g. Java-style versus C-style of array declarations), the following rules
+      enforce one specific convention.
+    -->
+    <module name="UpperEll"/>                       <!-- Upper-case 'L' suffix for longs, not 'l'. -->
+    <module name="ArrayTypeStyle"/>                 <!-- Java-style arrays, not C-style. -->
+    <module name="ModifierOrder"/>                  <!-- Order of public, static, etc. keywords. -->
+    <module name="AvoidEscapedUnicodeCharacters">
+      <property name="allowEscapesForControlCharacters" value="true"/>
+      <property name="allowNonPrintableEscapes"         value="true"/>
+      <property name="allowIfAllCharactersEscaped"      value="true"/>
+      <property name="allowByTailComment"               value="true"/>
+    </module>
+    <!--
+      Programming language constructs: number of elements, modifiers, etc.
+    -->
+    <module name="OuterTypeNumber"/>                <!-- Only one outer type per file. -->
+    <module name="OuterTypeFilename"/>              <!-- Outer type name and file name shall match. -->
+    <module name="InterfaceIsType"/>                <!-- Do not allow interface without methods. -->
+    <module name="FinalClass"/>                     <!-- Class having only private constructors should be final. -->
+    <module name="PackageDeclaration"/>             <!-- All classes shall be in a package. -->
+    <module name="HideUtilityClassConstructor"/>    <!-- No public constructor in utility classes. -->
+    <module name="MissingOverride"/>                <!-- @Override annotation everywhere applicable. -->
+    <module name="PackageAnnotation"/>              <!-- Package annotations shall be used only in package-info files. -->
+    <module name="EmptyCatchBlock"/>                <!-- No empty catch unless there is a comment inside. -->
+    <module name="CovariantEquals"/>                <!-- No equals(Foo), unless equals(Object) also exists. -->
+    <module name="ExplicitInitialization"/>         <!-- No unnecessary initialization to 0 or null. -->
+    <module name="SimplifyBooleanReturn"/>          <!-- No if (boolean) return true; else return false. -->
+    <module name="RedundantModifier">               <!-- No modifiers that were implicit. -->
+      <property name="tokens" value="VARIABLE_DEF, ANNOTATION_FIELD_DEF, INTERFACE_DEF, CLASS_DEF, ENUM_DEF, RESOURCE"/>
+    </module>
+  </module>
+  <module name="UniqueProperties"/>                 <!-- No duplicated keys in *.properties files. -->
+  <module name="BeforeExecutionExclusionFileFilter"><!-- Exclude module-info.java, as of october 21, 2022 checkstyle does not support the module syntax -->
+    <property name="fileNamePattern" value="module\-info\.java$"/>
+  </module>
+</module>

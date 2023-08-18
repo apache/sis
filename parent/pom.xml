@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<project xmlns              = "http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
+                               http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>30</version>
+  </parent>
+
+
+
+  <!-- ==============================================================
+         Project description. The <organization> and <licenses>
+         elements are inherited from the parent Apache pom.xml.
+       ============================================================== -->
+  <groupId>org.apache.sis</groupId>
+  <artifactId>parent</artifactId>
+  <version>1.x-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Apache SIS</name>
+  <url>http://sis.apache.org</url>
+  <description>
+    Apache Spatial Information System (SIS) is a free software, Java language library for developing geospatial applications.
+    SIS provides data structures for geographic features and associated metadata along with methods to manipulate those data structures.
+    The library is an implementation of GeoAPI 3.0.2 interfaces and can be used for desktop or server applications.
+    The SIS metadata module forms the base of the library and enables the creation of metadata objects which comply with the ISO 19115 international standard.
+    The SIS referencing module enable the construction of geodetic data structures for geospatial referencing as defined by ISO 19111 standard,
+    along with the associated operations which enable the transformation of coordinates between different reference systems.
+    The SIS storage modules provide a common approach to the reading and writing of metadata, features and coverages
+    applicable to simple imagery as to many dimensional data structures.
+  </description>
+  <inceptionYear>2010</inceptionYear>
+
+
+
+  <!-- ==============================================================
+         Source code repository, issue managements and mailing lists.
+       ============================================================== -->
+  <scm>
+    <connection>
+      scm:git:https://gitbox.apache.org/repos/asf/sis.git
+    </connection>
+    <developerConnection>
+      scm:git:https://gitbox.apache.org/repos/asf/sis.git
+    </developerConnection>
+    <url>https://gitbox.apache.org/repos/asf?p=sis.git</url>
+  </scm>
+
+  <ciManagement>
+    <system>jenkins</system>
+    <url>https://ci-builds.apache.org/job/SIS/</url>
+  </ciManagement>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/SIS</url>
+  </issueManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>User mailing list</name>
+      <subscribe>user-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@sis.apache.org</unsubscribe>
+      <post>user@sis.apache.org</post>
+      <archive>https://lists.apache.org/list.html?user@sis.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>Development mailing list</name>
+      <subscribe>dev-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@sis.apache.org</unsubscribe>
+      <post>dev@sis.apache.org</post>
+      <archive>https://lists.apache.org/list.html?dev@sis.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>Issues mailing list</name>
+      <subscribe>issues-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>issues-unsubscribe@sis.apache.org</unsubscribe>
+      <archive>https://lists.apache.org/list.html?issues@sis.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>Commit mailing list</name>
+      <subscribe>commits-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@sis.apache.org</unsubscribe>
+      <archive>https://lists.apache.org/list.html?commits@sis.apache.org</archive>
+    </mailingList>
+  </mailingLists>
+
+
+
+  <!-- ==============================================================
+         Developers and Contributors.
+       ============================================================== -->
+  <developers>
+    <developer>
+      <name>Adam Estrada</name>
+      <id>aestrada</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Alexis Manin</name>
+      <id>alexismanin</id>
+      <email>alexis.manin@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Andrew Hart</name>
+      <id>ahart</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Charitha Madusanka</name>
+      <id>charithcc</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Chris A. Mattmann</name>
+      <id>mattmann</id>
+      <email>mattmann@apache.org</email>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <roles>
+        <role>PMC emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Gregory D. Reddin</name>
+      <id>greddin</id>
+      <roles>
+        <role>PMC member</role>
+        <role>mentor</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Ian Holsman</name>
+      <id>ianh</id>
+      <roles>
+        <role>PMC emeritus</role>
+        <role>mentor</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Joe Schaefer</name>
+      <id>joes</id>
+      <roles>
+        <role>PMC emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Joseph F. White</name>
+      <id>jwhite</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Marc Le Bihan</name>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
+      <email>desruisseaux@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>PMC member</role>
+        <role>chair</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Nga Thien Chung</name>
+      <id>nchung</id>
+      <email>nchung@apache.org</email>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Olivier Nouguier</name>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Patrick O'Leary</name>
+      <id>pjaol</id>
+      <email>pjaol@apache.org</email>
+      <organization>AT&amp;T Interactive</organization>
+      <timezone>-8</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Paul Michael Ramirez</name>
+      <id>pramirez</id>
+      <email>pramirez@apache.org</email>
+      <url>http://people.apache.org/~pramirez/</url>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Peter Karich</name>
+      <id>pk</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Rémi Maréchal</name>
+      <id>rmarechal</id>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Ross Laidlaw</name>
+      <id>rlaidlaw</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Sean William McCleese</name>
+      <id>smcclees</id>
+      <email>smcclees@apache.org</email>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Suresh Marru</name>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Travis L. Pinney</name>
+      <id>tlpinney</id>
+      <email>travis.pinney@gmail.com</email>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Adrian Custer</name>
+      <roles>
+        <role>documentation</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Antoine Hnawia</name>
+      <organization>Institut de Recherche pour le Développement</organization>
+      <organizationUrl>https://www.ird.fr</organizationUrl>
+      <timezone>+11</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Cédric Briançon</name>
+      <email>cedric.briancon@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Christina Hough</name>
+      <roles>
+        <role>translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Cullen Rombach</name>
+      <organization>Image Matters</organization>
+      <organizationUrl>https://www.imagemattersllc.com</organizationUrl>
+      <timezone>-5</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Guilhem Legal</name>
+      <email>guilhem.legal@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Kevan Miller</name>
+      <roles>
+        <role>mentor</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Maxime Gavens</name>
+      <organization>Geomatys</organization>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Minh Chinh Vu</name>
+      <email>chinhvm.uet.1995@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>https://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Richard Deplanque</name>
+      <organization>Université de Nouvelle-Calédonie</organization>
+      <timezone>+11</timezone>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Smaniotto Enzo</name>
+      <roles>
+        <role>GSoC student</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Thi Phuong Hao Nguyen</name>
+      <email>nguyenthiphuonghao243@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>https://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Touraïvane</name>
+      <organization>Institut de Recherche pour le Développement (IRD)</organization>
+      <organizationUrl>https://www.ird.fr</organizationUrl>
+      <timezone>+11</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+  </contributors>
+
+  <!-- ===================================================================
+         Properties used in dependency management and build configuration.
+       =================================================================== -->
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+  </properties>
+
+</project>
