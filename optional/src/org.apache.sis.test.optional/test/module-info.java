@@ -22,6 +22,6 @@
  * @version 1.4
  * @since   1.4
  */
-module org.apache.sis.test {
+module org.apache.sis.test.optional {
     requires transitive org.opengis.geoapi.conformance;
 }

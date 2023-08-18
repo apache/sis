@@ -63,7 +63,7 @@ dependencies {
 
 /*
  * Generate ANTLR4 source files, then compile main and tests classes from Module Source Hierarchy.
- * The test classes require some additional dependencies declared in the `org.apache.sis.test` module.
+ * The test classes require some additional dependencies declared in the `org.apache.sis.test.incubator` module.
  *
  * Note: as of Gradle 8.2, the ANTLR task does not work well with arbitrary source directories.
  * We have to keep default convention even if it does not fit well in Module Source Hierarchy.
@@ -82,7 +82,7 @@ tasks.compileJava {
 }
 tasks.compileTestJava {
     srcDir.list().forEach {
-        addRead(options.compilerArgs, it, "org.apache.sis.test,junit")
+        addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,junit")
     }
 }
 

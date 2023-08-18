@@ -22,6 +22,8 @@
  * @version 1.4
  * @since   1.4
  */
-module org.apache.sis.test {
+module org.apache.sis.test.endorsed {
     requires transitive org.opengis.geoapi.conformance;
+    requires transitive org.apache.derby.tools;
+    requires transitive org.hsqldb;
 }

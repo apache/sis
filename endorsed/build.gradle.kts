@@ -89,7 +89,7 @@ dependencies {
 
 /*
  * Compile main and tests classes from Module Source Hierarchy.
- * The test classes require some additional dependencies declared in the `org.apache.sis.test` module.
+ * The test classes require some additional dependencies declared in the `org.apache.sis.test.endorsed` module.
  */
 var srcDir = file("src")            // Must be the same as the hard-coded value in `BuildHelper.java`.
 tasks.compileJava {
@@ -97,7 +97,7 @@ tasks.compileJava {
 }
 tasks.compileTestJava {
     srcDir.list().forEach {
-        addRead(options.compilerArgs, it, "org.apache.sis.test,junit")
+        addRead(options.compilerArgs, it, "org.apache.sis.test.endorsed,junit")
     }
     addExportForTests(options.compilerArgs)
 }
