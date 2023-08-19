@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  List of all dependencies managed by Ivy for the whole Apache SIS project.
+  All those dependencies are put together on the same module-path given to
+  all SIS modules. The `module-info` files will filter which dependencies
+  are actually needed for each Apache SIS module.
+
+  This file may be removed in a future version if NetBeans support of Gradle
+  is improved to the point where Module Source Hierarchy is well supported.
+-->
+<ivy-module version="2.0">
+    <info organisation="org.apache" module="sis"/>
+    <dependencies defaultconf="default">
+        <dependency org="org.opengis"            name="geoapi"                  rev="3.0.2"/>
+        <dependency org="org.opengis"            name="geoapi-conformance"      rev="3.0.2"/>
+        <dependency org="javax.measure"          name="unit-api"                rev="2.1.3"/>
+        <dependency org="org.glassfish.jaxb"     name="jaxb-runtime"            rev="4.0.2"/>
+        <dependency org="com.esri.geometry"      name="esri-geometry-api"       rev="2.2.4"/>
+        <dependency org="org.locationtech.jts"   name="jts-core"                rev="1.19.0"/>
+        <dependency org="org.postgresql"         name="postgresql"              rev="42.6.0"/>
+        <dependency org="edu.ucar"               name="cdm-core"                rev="5.5.3"/>
+        <dependency org="edu.ucar"               name="udunits"                 rev="5.5.3"/>
+        <dependency org="org.jdom"               name="jdom2"                   rev="2.0.6"/>
+        <dependency org="joda-time"              name="joda-time"               rev="2.10.3"/>
+        <dependency org="com.google.guava"       name="guava"                   rev="30.1-jre"/>
+        <dependency org="org.libreoffice"        name="libreoffice"             rev="7.3.6"/>
+        <dependency org="software.amazon.awssdk" name="s3"                      rev="2.18.40"/>
+        <dependency org="org.antlr"              name="antlr4-maven-plugin"     rev="4.11.1"/>
+        <dependency org="jakarta.servlet"        name="jakarta.servlet-api"     rev="6.0.0"/>
+        <dependency org="org.osgi"               name="osgi.core"               rev="8.0.0"/>
+        <dependency org="org.junit.platform"     name="junit-platform-launcher" rev="1.9.3"/>
+        <dependency org="org.junit.vintage"      name="junit-vintage-engine"    rev="5.9.3"/>
+        <dependency org="junit"                  name="junit"                   rev="4.13.2"/>
+        <dependency org="org.apache.derby"       name="derby"                   rev="10.15.2.0"/>
+        <dependency org="org.apache.derby"       name="derbytools"              rev="10.15.2.0"/>
+        <dependency org="org.apache.derby"       name="derbyshared"             rev="10.15.2.0"/>
+        <dependency org="org.hsqldb"             name="hsqldb"                  rev="2.7.2"/>
+        <dependency org="com.h2database"         name="h2"                      rev="2.2.220"/>
+        <dependency org="gov.nist.math"          name="jama"                    rev="1.0.3"/>
+        <dependency org="net.sf.geographiclib"   name="GeographicLib-Java"      rev="2.0"/>
+    </dependencies>
+</ivy-module>
