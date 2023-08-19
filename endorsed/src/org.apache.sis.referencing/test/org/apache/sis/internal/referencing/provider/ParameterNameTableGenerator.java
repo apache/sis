@@ -126,7 +126,7 @@ public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
      * @throws IOException if an error occurred while reading or writing the given file.
      */
     @Override
-    public FileVisitResult visitFile​(final Path file, final BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
         final String name = file.getFileName().toString();
         if (name.endsWith(".java")) {
             addCommentsToJavaFile(file);

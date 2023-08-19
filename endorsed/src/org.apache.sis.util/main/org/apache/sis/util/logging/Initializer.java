@@ -95,7 +95,7 @@ public class Initializer {
      * This constructor gets the configuration file referenced by
      * the {@code "java.util.logging.config.file"} system property,
      * applies the filtering described in class javadoc,
-     * then gives the filtered configuration to {@link LogManager#readConfiguration​(InputStream)}.
+     * then gives the filtered configuration to {@link LogManager#readConfiguration(InputStream)}.
      *
      * <p>This constructor should not be invoked directly.
      * See class javadoc for usage example.</p>
@@ -125,7 +125,7 @@ public class Initializer {
                     }
                 }
             }
-            LogManager.getLogManager().readConfiguration​(new ByteArrayInputStream(buffer.toString().getBytes()));
+            LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(buffer.toString().getBytes()));
         }
     }
 }

@@ -176,7 +176,7 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
             do {
                 final ToggleButton b = new ToggleButton(owner.format(++i));
                 b.setToggleGroup(pageGroup);
-                b.setOnAction​(this);
+                b.setOnAction(this);
                 pages.add(b);
             } while (i < n);
         } else if (i > n) {

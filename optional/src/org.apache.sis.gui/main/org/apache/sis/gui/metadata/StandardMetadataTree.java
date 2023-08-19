@@ -147,7 +147,7 @@ public class StandardMetadataTree extends MetadataTree {
          * depending on whether or not we can format XML document for currently selected row.
          */
         @Override
-        protected void updateItem​(final TreeTable.Node item, final boolean empty) {
+        protected void updateItem(final TreeTable.Node item, final boolean empty) {
             super.updateItem(item, empty);
             if (!empty && copyAs != null) {
                 boolean disabled = true;

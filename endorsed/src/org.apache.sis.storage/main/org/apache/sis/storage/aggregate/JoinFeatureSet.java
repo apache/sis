@@ -533,7 +533,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
          * Executes the given action on the next feature in the {@code JoinFeatureSet}.
          */
         @Override
-        public boolean tryAdvance​(final Consumer<? super Feature> action) {
+        public boolean tryAdvance(final Consumer<? super Feature> action) {
             for (;;) {
                 if (mainFeature == null) {
                     do if (!mainIterator.tryAdvance(this)) {

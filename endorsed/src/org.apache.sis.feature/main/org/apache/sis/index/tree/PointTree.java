@@ -436,7 +436,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
      */
     @Override
     @SuppressWarnings("unchecked")
-    public boolean contains​(final Object element) {
+    public boolean contains(final Object element) {
         if (!elementType.isInstance(element)) {
             return false;
         }
