@@ -21,6 +21,7 @@ val geoapiVersion = "3.1-SNAPSHOT"
  * The sub-projects to include in the build.
  * They are directory names relative to this file.
  */
+include("geoapi")
 include("endorsed")
 include("incubator")
 if (System.getenv("PATH_TO_FX") != null) {
