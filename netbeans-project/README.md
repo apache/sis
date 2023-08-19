@@ -33,10 +33,10 @@ javafx.module.path=${PATH_TO_FX}/lib
 
 
 ### GeoAPI 3.1/4.0 development branches
-If developing on the `geoapi-3.1` or `geoapi-4.0` branch instead of `master`,
+If developing on the `geoapi-3.1` or `geoapi-4.0` branch instead of `main`,
 then `gradle compileJava` should be executed on the command-line before to
 open the NetBeans project, in order to install the right GeoAPI development
-snapshot. This step is not necessary if developing on the `master` branch.
+snapshot. This step is not necessary if developing on the `main` branch.
 
 
 ## Known limitations

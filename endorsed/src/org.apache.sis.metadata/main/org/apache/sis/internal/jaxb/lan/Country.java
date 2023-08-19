@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.lan;
 
-import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import java.util.Locale;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -24,6 +23,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 import org.apache.sis.internal.util.Strings;

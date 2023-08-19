@@ -16,7 +16,6 @@
  */
 package org.apache.sis.cloud.aws.s3;
 
-import java.net.URI;
 import java.nio.file.Path;
 import java.util.Iterator;
 import org.junit.Test;
@@ -34,11 +33,6 @@ import static org.junit.Assert.*;
  * @since   1.2
  */
 public final class KeyPathTest extends TestCase {
-    /**
-     * A URI to use for testing purpose.
-     */
-    static final URI DUMMY_URI = URI.create("S3://the-bucket/first/second/third/the-file");
-
     /**
      * The file system used in for the test paths.
      */
