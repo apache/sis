@@ -20,7 +20,7 @@ options {
     language = Java;
 }
 @header {
-    package org.apache.sis.internal.cql;
+    package org.apache.sis.cql.internal;
 }
 
 //-----------------------------------------------------------------//
