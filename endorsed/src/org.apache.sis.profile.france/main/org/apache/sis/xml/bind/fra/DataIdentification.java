@@ -14,29 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.profile.fra;
+package org.apache.sis.xml.bind.fra;
 
 import java.util.Collection;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 
 
 /**
- * AFNOR extension to ISO {@link Constraints}.
- * This extension adds a {@link #getCitations()} property citing the documents that specify the constraints.
- * In the 2013 revision of ISO 19115, this property is available as {@link #getReferences()}.
+ * AFNOR extension to ISO {@link DataIdentification}.
+ * This extension adds a {@link #getRelatedCitations()} property citing the documents that specify the constraints.
+ * In the 2013 revision of ISO 19115, this property is available as {@link #getAdditionalDocumentations()}.
  *
  * <p>The following schema fragment specifies the expected content contained within this class.</p>
  *
  * {@snippet lang="xml" :
- *   <complexType name="FRA_Constraints_Type">
+ *   <complexType name="FRA_DataIdentification_Type">
  *     <complexContent>
- *       <extension base="{http://www.isotc211.org/2005/gmd}MD_Constraints_Type">
+ *       <extension base="{http://www.isotc211.org/2005/gmd}MD_DataIdentification_Type">
  *         <sequence>
- *           <element name="citation" type="{http://www.isotc211.org/2005/gmd}CI_Citation_PropertyType" maxOccurs="unbounded" minOccurs="0"/>
+ *           <element name="relatedCitation" type="{http://www.isotc211.org/2005/gmd}CI_Citation_PropertyType" maxOccurs="unbounded" minOccurs="0"/>
  *         </sequence>
  *       </extension>
  *     </complexContent>
@@ -45,28 +45,27 @@ import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.4
  */
-@XmlType(name = "FRA_Constraints_Type")
-@XmlRootElement(name= "FRA_Constraints")
-public class Constraints extends DefaultConstraints {
+@XmlType(name = "FRA_DataIdentification_Type")
+@XmlRootElement(name = "FRA_DataIdentification")
+public class DataIdentification extends DefaultDataIdentification {
     /**
      * For serialization purpose.
      */
-    private static final long serialVersionUID = -5558935205709762055L;
+    private static final long serialVersionUID = 2491310165988749063L;
 
     /**
-     * The documents that specifies the nature of the constraints.
+     * The documents at the origin of the creation of the identified resources.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private Collection<Citation> citations;
+    private Collection<Citation> relatedCitations;
 
     /**
-     * Constructs an initially empty constraints.
+     * Constructs an initially empty data identification.
      */
-    public Constraints() {
+    public DataIdentification() {
     }
 
     /**
@@ -75,26 +74,26 @@ public class Constraints extends DefaultConstraints {
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
      */
-    public Constraints(final org.opengis.metadata.constraint.Constraints object) {
+    public DataIdentification(final org.opengis.metadata.identification.DataIdentification object) {
         super(object);
     }
 
     /**
-     * Returns the documents that specifies the nature of the constraints.
+     * Returns the documents at the origin of the creation of the identified resources.
      *
      * @return citations to the current documents.
      */
-    @XmlElement(name = "citation")
-    public Collection<Citation> getCitations() {
-        return citations = nonNullCollection(citations, Citation.class);
+    @XmlElement(name = "relatedCitation")
+    public Collection<Citation> getRelatedCitations() {
+        return relatedCitations = nonNullCollection(relatedCitations, Citation.class);
     }
 
     /**
-     * Sets the documents that specifies the nature of the constraints.
+     * Sets the documents at the origin of the creation of the identified resources.
      *
      * @param  newValues  citation to the new documents.
      */
-    public void setCitations(final Collection<? extends Citation> newValues) {
-        citations = writeCollection(newValues, citations, Citation.class);
+    public void setRelatedCitations(final Collection<? extends Citation> newValues) {
+        relatedCitations = writeCollection(newValues, relatedCitations, Citation.class);
     }
 }

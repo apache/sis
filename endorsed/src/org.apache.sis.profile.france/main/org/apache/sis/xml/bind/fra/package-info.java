@@ -35,7 +35,7 @@
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class)
 })
-package org.apache.sis.internal.profile.fra;
+package org.apache.sis.xml.bind.fra;
 
 import jakarta.xml.bind.annotation.XmlNs;
 import jakarta.xml.bind.annotation.XmlNsForm;
