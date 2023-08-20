@@ -27,11 +27,11 @@ module org.apache.sis.profile.japan {
     requires cdm.core;
 
     provides org.apache.sis.internal.netcdf.Convention
-        with org.apache.sis.internal.earth.netcdf.GCOM_C,
-             org.apache.sis.internal.earth.netcdf.GCOM_W;
+        with org.apache.sis.profile.japan.netcdf.GCOM_C,
+             org.apache.sis.profile.japan.netcdf.GCOM_W;
 
     provides ucar.nc2.dataset.spi.CoordSystemBuilderFactory
-        with org.apache.sis.internal.earth.netcdf.FactoryForUCAR;
+        with org.apache.sis.profile.japan.netcdf.FactoryForUCAR;
 
     exports org.apache.sis.profile.japan;
 }

@@ -24,4 +24,4 @@
  * @version 1.3
  * @since   1.0
  */
-package org.apache.sis.internal.earth.netcdf;
+package org.apache.sis.profile.japan.netcdf;

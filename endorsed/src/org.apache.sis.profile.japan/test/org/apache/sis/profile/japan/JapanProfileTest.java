@@ -16,7 +16,7 @@
  */
 package org.apache.sis.profile.japan;
 
-import org.apache.sis.internal.earth.netcdf.GCOM_C;
+import org.apache.sis.profile.japan.netcdf.GCOM_C;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
