@@ -47,7 +47,7 @@ import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
-import org.apache.sis.internal.gazetteer.Resources;
+import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
