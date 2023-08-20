@@ -29,7 +29,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.gui.internal.Styles;
 
 
 /**

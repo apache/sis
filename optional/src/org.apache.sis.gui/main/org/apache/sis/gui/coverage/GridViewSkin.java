@@ -37,8 +37,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
-import org.apache.sis.internal.gui.MouseDrags;
-import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.gui.internal.MouseDrags;
+import org.apache.sis.gui.internal.Styles;
 
 
 /**

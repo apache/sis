@@ -26,9 +26,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import org.apache.sis.gui.dataset.LogViewer;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.DataStoreOpener;
-import org.apache.sis.internal.gui.io.FileAccessView;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.DataStoreOpener;
+import org.apache.sis.gui.internal.io.FileAccessView;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.util.resources.Vocabulary;
 

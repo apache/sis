@@ -31,7 +31,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Exceptions;
 

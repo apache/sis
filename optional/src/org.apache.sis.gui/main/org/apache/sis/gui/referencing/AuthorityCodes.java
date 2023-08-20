@@ -42,10 +42,10 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.internal.util.Strings;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

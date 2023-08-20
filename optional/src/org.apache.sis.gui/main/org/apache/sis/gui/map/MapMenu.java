@@ -32,8 +32,8 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.referencing.PositionableProjection;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.ArgumentChecks;
 

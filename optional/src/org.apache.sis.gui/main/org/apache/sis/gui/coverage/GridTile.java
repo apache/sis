@@ -19,7 +19,7 @@ package org.apache.sis.gui.coverage;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import javafx.concurrent.Task;
-import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.gui.internal.BackgroundThreads;
 
 
 /**

@@ -46,16 +46,16 @@ import javafx.scene.input.ClipboardContent;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.PropertyView;
-import org.apache.sis.internal.gui.PropertyValueFormatter;
-import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.PropertyView;
+import org.apache.sis.gui.internal.PropertyValueFormatter;
+import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

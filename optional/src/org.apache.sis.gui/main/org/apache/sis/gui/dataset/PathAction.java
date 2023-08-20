@@ -29,7 +29,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.TreeCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.io.IOUtilities;

@@ -47,10 +47,9 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.gui.IdentityValueFactory;
-import org.apache.sis.internal.gui.ExceptionReporter;
-
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import org.apache.sis.gui.internal.IdentityValueFactory;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

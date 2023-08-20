@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
- * @see org.apache.sis.internal.gui.BackgroundThreads
+ * @see org.apache.sis.gui.internal.BackgroundThreads
  * @see java.util.concurrent.ForkJoinPool#commonPool()
  *
  * @since 1.1

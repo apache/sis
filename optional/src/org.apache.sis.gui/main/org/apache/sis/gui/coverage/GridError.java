@@ -24,8 +24,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 
 

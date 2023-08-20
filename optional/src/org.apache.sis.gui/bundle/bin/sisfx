@@ -26,7 +26,7 @@ export SIS_DATA
 
 if [ -z "$PATH_TO_FX" ]
 then
-    java --class-path "$BASE_DIR/lib/*" org.apache.sis.internal.setup.FXFinder $BASE_DIR/conf/setenv.sh
+    java --class-path "$BASE_DIR/lib/*" org.apache.sis.gui.setup.FXFinder $BASE_DIR/conf/setenv.sh
     if [ $? -ne 0 ]
     then
         exit
