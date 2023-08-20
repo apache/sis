@@ -49,7 +49,7 @@ enum OutputFormat {
     /**
      * XML format used for GPS data exchange.
      */
-    GPX(org.apache.sis.internal.storage.gpx.StoreProvider.class);
+    GPX(org.apache.sis.storage.gpx.StoreProvider.class);
 
     /**
      * The provider class for this format.

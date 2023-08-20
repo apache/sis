@@ -240,7 +240,7 @@ public class DataViewer extends Application {
                      */
                     case org.apache.sis.internal.storage.wkt.StoreProvider.NAME: continue;
                     case org.apache.sis.internal.storage.xml.StoreProvider.NAME: write = false; break;
-                    case org.apache.sis.internal.storage.gpx.StoreProvider.NAME: read  = false; break;
+                    case org.apache.sis.storage.gpx.StoreProvider.NAME: read  = false; break;
                 }
                 String label = null;
                 for (final String suffix : md.fileSuffixes()) {

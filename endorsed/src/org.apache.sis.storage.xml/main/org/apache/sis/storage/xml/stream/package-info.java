@@ -16,29 +16,15 @@
  */
 
 /**
- * XML files store.
+ * Helper classes for reading and writing XML documents using StAX (Streaming API for XML).
+ * This package uses the <cite>cursor API</cite> through {@link javax.xml.stream.XMLStreamReader}
+ * and {@link javax.xml.stream.XMLStreamWriter} interfaces.
+ * Implementations can optionally use JAXB for some specific elements,
+ * typically for metadata before the stream of features.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
  */
-module org.apache.sis.storage.xml {
-    requires jakarta.xml.bind;
-    requires transitive org.apache.sis.storage;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.gpx.StoreProvider;
-
-    exports org.apache.sis.storage.gps;
-
-    exports org.apache.sis.storage.gpx to
-            org.apache.sis.console,
-            org.apache.sis.gui;                     // In the "optional" sub-project.
-
-    /*
-     * Allow JAXB to use reflection for marshalling and
-     * unmarshalling Apache SIS objects in XML documents.
-     */
-    opens org.apache.sis.storage.gpx to jakarta.xml.bind;
-}
+package org.apache.sis.storage.xml.stream;

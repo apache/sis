@@ -22,8 +22,8 @@
  *
  * <p>This base package is designed for use with JAXB, which allows this package to be very small since most of the
  * XML (un)marshalling rules are specified in external classes designed for use with JAXB. However, some classes can
- * also be used in other contexts. In particular, the {@code org.apache.sis.internal.storage.xml.stream} package in
- * the {@code org.apache.sis.storage.xml} module extends this package with classes designed for use with StAX cursor API.</p>
+ * also be used in other contexts. In particular, the {@code org.apache.sis.storage.xml.stream} package in the
+ * {@code org.apache.sis.storage.xml} module extends this package with classes designed for use with StAX cursor API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
