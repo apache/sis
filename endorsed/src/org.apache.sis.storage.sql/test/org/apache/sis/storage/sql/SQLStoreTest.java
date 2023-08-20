@@ -32,8 +32,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.sql.feature.SchemaModifier;
-import org.apache.sis.internal.sql.feature.TableReference;
+import org.apache.sis.storage.sql.feature.SchemaModifier;
+import org.apache.sis.storage.sql.feature.TableReference;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestUtilities;
 
