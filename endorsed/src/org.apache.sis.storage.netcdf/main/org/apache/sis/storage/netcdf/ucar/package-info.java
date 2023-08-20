@@ -16,25 +16,11 @@
  */
 
 /**
- * NetCDF store.
+ * Implementation of the {@link org.apache.sis.storage.netcdf.base} API
+ * as wrappers around the UCAR netCDF library.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
  * @since   0.3
  */
-module org.apache.sis.storage.netcdf {
-    requires transitive org.apache.sis.storage;
-    requires static cdm.core;
-    requires static udunits;
-    requires static com.google.common;
-
-    uses org.apache.sis.storage.netcdf.base.Convention;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.netcdf.NetcdfStoreProvider;
-
-    exports org.apache.sis.storage.netcdf;
-
-    exports org.apache.sis.storage.netcdf.base to
-            org.apache.sis.profile.japan;
-}
+package org.apache.sis.storage.netcdf.ucar;

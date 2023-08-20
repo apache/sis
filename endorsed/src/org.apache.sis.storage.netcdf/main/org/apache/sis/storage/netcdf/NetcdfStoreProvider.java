@@ -26,10 +26,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
-import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.storage.netcdf.base.Decoder;
+import org.apache.sis.storage.netcdf.internal.Resources;
+import org.apache.sis.storage.netcdf.classic.ChannelDecoder;
+import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.StoreMetadata;
@@ -410,7 +410,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                          * using reflection for avoiding "hard" dependency from this provider to the UCAR library.
                          */
                         final Class<? extends Decoder> wrapper =
-                                Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
+                                Class.forName("org.apache.sis.storage.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
                         final Class<?>[] parameterTypes = new Class<?>[] {netcdfFileClass, GeometryLibrary.class, StoreListeners.class};
                         createFromUCAR = wrapper.getConstructor(parameterTypes);
                         parameterTypes[0] = String.class;

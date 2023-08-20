@@ -14,27 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.netcdf.internal;
+
 
 /**
- * NetCDF store.
- *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
+ * Messages in French language.
  */
-module org.apache.sis.storage.netcdf {
-    requires transitive org.apache.sis.storage;
-    requires static cdm.core;
-    requires static udunits;
-    requires static com.google.common;
-
-    uses org.apache.sis.storage.netcdf.base.Convention;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.netcdf.NetcdfStoreProvider;
-
-    exports org.apache.sis.storage.netcdf;
-
-    exports org.apache.sis.storage.netcdf.base to
-            org.apache.sis.profile.japan;
+public class Resources_fr extends Resources {
+    /**
+     * Constructs a new resource bundle loading data from
+     * the resource file of the same name than this class.
+     */
+    public Resources_fr() {
+    }
 }

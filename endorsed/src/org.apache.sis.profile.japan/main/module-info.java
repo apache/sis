@@ -26,7 +26,7 @@ module org.apache.sis.profile.japan {
     requires transitive org.apache.sis.storage.netcdf;
     requires cdm.core;
 
-    provides org.apache.sis.internal.netcdf.Convention
+    provides org.apache.sis.storage.netcdf.base.Convention
         with org.apache.sis.profile.japan.netcdf.GCOM_C,
              org.apache.sis.profile.japan.netcdf.GCOM_W;
 

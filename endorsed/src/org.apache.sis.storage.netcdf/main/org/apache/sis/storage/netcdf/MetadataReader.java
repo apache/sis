@@ -55,12 +55,12 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.internal.netcdf.Axis;
-import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.VariableRole;
-import org.apache.sis.internal.netcdf.Dimension;
-import org.apache.sis.internal.netcdf.Grid;
+import org.apache.sis.storage.netcdf.base.Axis;
+import org.apache.sis.storage.netcdf.base.Decoder;
+import org.apache.sis.storage.netcdf.base.Variable;
+import org.apache.sis.storage.netcdf.base.VariableRole;
+import org.apache.sis.storage.netcdf.base.Dimension;
+import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
@@ -152,7 +152,7 @@ final class MetadataReader extends MetadataBuilder {
     private final Decoder decoder;
 
     /**
-     * The actual search path, as a subset of {@link org.apache.sis.internal.netcdf.Convention#SEARCH_PATH}
+     * The actual search path, as a subset of {@link org.apache.sis.storage.netcdf.base.Convention#SEARCH_PATH}
      * with only the name of the groups which have been found in the NeCDF file.
      */
     private final String[] searchPath;
@@ -878,7 +878,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final Map<List<String>, List<Variable>> coverages = new LinkedHashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
             if (VariableRole.isCoverage(variable)) {
-                final List<org.apache.sis.internal.netcdf.Dimension> dimensions = variable.getGridDimensions();
+                final List<org.apache.sis.storage.netcdf.base.Dimension> dimensions = variable.getGridDimensions();
                 final String[] names = new String[dimensions.size()];
                 for (int i=0; i<names.length; i++) {
                     names[i] = dimensions.get(i).getName();

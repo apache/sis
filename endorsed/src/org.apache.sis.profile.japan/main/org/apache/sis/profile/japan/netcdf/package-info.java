@@ -17,7 +17,7 @@
 
 /**
  * Extensions to netCDF conventions applied on a case-by-case basis depending on the product.
- * Classes defined in this packages are declared as {@link org.apache.sis.internal.netcdf.Convention} services.
+ * Classes defined in this packages are declared as {@link org.apache.sis.storage.netcdf.base.Convention} services.
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

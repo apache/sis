@@ -16,25 +16,21 @@
  */
 
 /**
- * NetCDF store.
+ * Implementation of the {@link org.apache.sis.storage.netcdf.base} API as a standalone library.
+ * This is useful only for the netCDF binary format (no NcML, no GRIB, no BUFR).
+ * This package works with channels instead of files, which is a little bit easier to use
+ * in some environments.
  *
- * @author  Martin Desruisseaux (IRD, Geomatys)
+ * <h2>Reference</h2>
+ * <ul>
+ *   <li><a href="https://www.ogc.org/standards/netcdf">NetCDF standards on OGC web site</a></li>
+ *   <li><a href="https://portal.ogc.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a></li>
+ *   <li><a href="https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html">NetCDF on UCAR web site.</a></li>
+ * </ul>
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.3
  */
-module org.apache.sis.storage.netcdf {
-    requires transitive org.apache.sis.storage;
-    requires static cdm.core;
-    requires static udunits;
-    requires static com.google.common;
-
-    uses org.apache.sis.storage.netcdf.base.Convention;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.netcdf.NetcdfStoreProvider;
-
-    exports org.apache.sis.storage.netcdf;
-
-    exports org.apache.sis.storage.netcdf.base to
-            org.apache.sis.profile.japan;
-}
+package org.apache.sis.storage.netcdf.classic;

@@ -18,11 +18,11 @@ package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
 import ucar.nc2.NetcdfFile;
-import org.apache.sis.internal.netcdf.TestCase;
-import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
-import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
+import org.apache.sis.storage.netcdf.base.TestCase;
+import org.apache.sis.storage.netcdf.base.Decoder;
+import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.storage.netcdf.classic.ChannelDecoder;
+import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;

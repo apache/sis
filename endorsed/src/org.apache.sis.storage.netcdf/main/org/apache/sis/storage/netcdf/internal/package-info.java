@@ -16,25 +16,15 @@
  */
 
 /**
- * NetCDF store.
+ * Utility classes for the implementation of netCDF reader and writer.
+ *
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
  * @since   0.3
  */
-module org.apache.sis.storage.netcdf {
-    requires transitive org.apache.sis.storage;
-    requires static cdm.core;
-    requires static udunits;
-    requires static com.google.common;
-
-    uses org.apache.sis.storage.netcdf.base.Convention;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.netcdf.NetcdfStoreProvider;
-
-    exports org.apache.sis.storage.netcdf;
-
-    exports org.apache.sis.storage.netcdf.base to
-            org.apache.sis.profile.japan;
-}
+package org.apache.sis.storage.netcdf.internal;

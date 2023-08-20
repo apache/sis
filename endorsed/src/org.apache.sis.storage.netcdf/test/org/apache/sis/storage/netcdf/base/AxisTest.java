@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.profile.japan;
+package org.apache.sis.storage.netcdf.base;
 
-import org.apache.sis.profile.japan.netcdf.GCOM_C;
-import org.apache.sis.storage.netcdf.base.Convention;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -25,31 +24,31 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the Japanese profile.
+ * Tests {@link Axis}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
+ * @version 0.7
+ * @since   0.3
  */
-public final class JapanProfileTest extends TestCase {
+public final class AxisTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public JapanProfileTest() {
+    public AxisTest() {
     }
 
     /**
-     * Tests {@link GCOM_C#mapAttributeName(String, int)}.
+     * Tests {@link Axis#direction(String)}.
      */
     @Test
-    public void testMapAttributeName() {
-        final Convention c = new GCOM_C();
-        assertEquals("title",               c.mapAttributeName("title", 0));
-        assertEquals("Product_name",        c.mapAttributeName("title", 1));
-        assertNull  (                       c.mapAttributeName("title", 2));
-        assertEquals("time_coverage_start", c.mapAttributeName("time_coverage_start", 0));
-        assertEquals("Scene_start_time",    c.mapAttributeName("time_coverage_start", 1));
-        assertEquals("Image_start_time",    c.mapAttributeName("time_coverage_start", 2));
-        assertNull  (                       c.mapAttributeName("time_coverage_start", 3));
+    public void testDirection() {
+        assertSame(AxisDirection.EAST,  Axis.direction("degrees_east"));
+        assertSame(AxisDirection.NORTH, Axis.direction("degrees_north"));
+        assertSame(AxisDirection.EAST,  Axis.direction("degree_east"));
+        assertSame(AxisDirection.NORTH, Axis.direction("degree_north"));
+        assertSame(AxisDirection.EAST,  Axis.direction("degrees_E"));
+        assertSame(AxisDirection.NORTH, Axis.direction("degrees_N"));
+        assertSame(AxisDirection.EAST,  Axis.direction("degree_E"));
+        assertSame(AxisDirection.NORTH, Axis.direction("degree_N"));
     }
 }
