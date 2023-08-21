@@ -331,7 +331,7 @@ fill:   for (int i=0; ; i++) {
                 case 10: {
                     newSection = PLUGINS;
                     if (sections.contains(PLUGINS)) try {
-                        children = (String[]) Class.forName("org.apache.sis.internal.storage.Capability")
+                        children = (String[]) Class.forName("org.apache.sis.storage.base.Capability")
                                 .getMethod("providers", Locale.class, Vocabulary.class).invoke(null, locale, resources);
                         value = resources.getString(Vocabulary.Keys.EntryCount_1, children.length / 2);
                     } catch (ClassNotFoundException e) {

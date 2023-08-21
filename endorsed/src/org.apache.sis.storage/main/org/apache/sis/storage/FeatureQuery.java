@@ -38,7 +38,7 @@ import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.SortByComparator;
 import org.apache.sis.internal.filter.XPath;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentChecks;

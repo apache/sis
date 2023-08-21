@@ -23,7 +23,7 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.storage.MemoryGridResource;
+import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;

@@ -29,7 +29,7 @@ import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.util.resources.Errors;
 

@@ -44,11 +44,11 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.setup.OptionKey;
 
 

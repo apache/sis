@@ -30,7 +30,7 @@ module org.apache.sis.storage {
     requires transitive org.apache.sis.feature;
 
     provides java.nio.file.spi.FileTypeDetector
-        with org.apache.sis.internal.storage.StoreTypeDetector;
+        with org.apache.sis.storage.internal.StoreTypeDetector;
 
     uses     org.apache.sis.storage.DataStoreProvider;
     provides org.apache.sis.storage.DataStoreProvider
@@ -47,7 +47,7 @@ module org.apache.sis.storage {
     exports org.apache.sis.storage.tiling;
     exports org.apache.sis.storage.aggregate;
 
-    exports org.apache.sis.internal.storage to
+    exports org.apache.sis.storage.base to
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,

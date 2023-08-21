@@ -36,7 +36,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.coverage.RangeArgument;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.storage.DataStoreException;

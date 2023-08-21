@@ -50,7 +50,7 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.storage.CodeType;
+import org.apache.sis.storage.base.CodeType;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;

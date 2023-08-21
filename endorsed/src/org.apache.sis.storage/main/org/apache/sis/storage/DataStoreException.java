@@ -19,7 +19,7 @@ package org.apache.sis.storage;
 import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.LocalizedException;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.util.Workaround;
 

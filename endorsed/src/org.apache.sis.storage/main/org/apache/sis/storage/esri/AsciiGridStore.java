@@ -37,7 +37,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.coverage.RangeArgument;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.operation.matrix.Matrix3;

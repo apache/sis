@@ -51,10 +51,10 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.aggregate.CoverageAggregator;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.StoreUtilities;
-import org.apache.sis.internal.storage.StoreResource;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.storage.base.StoreResource;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 

@@ -26,7 +26,7 @@ import java.time.Instant;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeatures;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 

@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.IOUtilities;
 
 

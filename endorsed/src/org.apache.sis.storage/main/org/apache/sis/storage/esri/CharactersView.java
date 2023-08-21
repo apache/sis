@@ -24,7 +24,7 @@ import java.io.EOFException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.jdk17.JDK17;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.resources.Errors;

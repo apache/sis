@@ -32,7 +32,7 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;

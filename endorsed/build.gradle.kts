@@ -172,7 +172,7 @@ fun addExportForTests(args : MutableList<String>) {
                     "org.apache.sis.storage.sql," +
                     "org.apache.sis.portrayal")
 
-    addExport(args, "org.apache.sis.storage",           "org.apache.sis.internal.storage",
+    addExport(args, "org.apache.sis.storage",           "org.apache.sis.storage.base",
                     "org.apache.sis.portrayal")
 }
 

@@ -37,7 +37,7 @@ import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.internal.storage.CodeType;
+import org.apache.sis.storage.base.CodeType;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;

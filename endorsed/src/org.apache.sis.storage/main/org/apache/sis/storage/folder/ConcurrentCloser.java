@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.internal.system.CommonExecutor;
 
 

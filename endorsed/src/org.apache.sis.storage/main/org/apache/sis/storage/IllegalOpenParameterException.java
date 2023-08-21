@@ -72,7 +72,7 @@ public class IllegalOpenParameterException extends DataStoreException {
      * Creates a new exception which will format a localized message in the given locale.
      *
      * @param locale      the locale for the message to be returned by {@link #getLocalizedMessage()}.
-     * @param key         one of {@link org.apache.sis.internal.storage.Resources.Keys} constants.
+     * @param key         one of {@link org.apache.sis.storage.internal.Resources.Keys} constants.
      * @param parameters  parameters to use for formatting the messages.
      */
     IllegalOpenParameterException(final Locale locale, final short key, final Object... parameters) {

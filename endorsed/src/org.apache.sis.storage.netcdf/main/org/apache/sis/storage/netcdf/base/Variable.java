@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 import ucar.nc2.constants.CF;
 
-import static org.apache.sis.internal.storage.StoreUtilities.ALLOW_LAST_RESORT_STATISTICS;
+import static org.apache.sis.storage.base.StoreUtilities.ALLOW_LAST_RESORT_STATISTICS;
 
 
 /**

@@ -38,8 +38,8 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.internal.Resources;
 
 
 /**

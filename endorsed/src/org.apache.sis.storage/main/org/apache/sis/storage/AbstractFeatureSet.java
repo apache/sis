@@ -21,7 +21,7 @@ import java.util.OptionalLong;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.base.MetadataBuilder;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;

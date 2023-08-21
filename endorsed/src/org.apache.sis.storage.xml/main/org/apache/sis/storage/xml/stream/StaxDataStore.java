@@ -40,7 +40,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.Markable;

@@ -39,7 +39,7 @@ import javax.xml.transform.stax.StAXSource;
 import jakarta.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.DefaultTreeTable;

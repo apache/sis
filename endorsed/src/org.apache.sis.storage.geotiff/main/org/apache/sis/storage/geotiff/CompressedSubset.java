@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.image.Raster;
-import org.apache.sis.internal.storage.TiledGridResource;
+import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.geotiff.inflater.Inflater;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.storage.DataStoreException;

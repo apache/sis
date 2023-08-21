@@ -42,7 +42,7 @@ import org.apache.sis.gui.Widget;
 import org.apache.sis.util.Classes;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.storage.base.StoreResource;
 
 
 /**

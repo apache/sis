@@ -37,8 +37,8 @@ import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.setup.OptionKey;
 

@@ -45,7 +45,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 
 
 /**

@@ -28,7 +28,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.NonWritableChannelException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.util.Strings;
@@ -39,7 +39,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.RangeSet;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.internal.storage.StoreUtilities.LOGGER;
+import static org.apache.sis.storage.base.StoreUtilities.LOGGER;
 
 
 /**

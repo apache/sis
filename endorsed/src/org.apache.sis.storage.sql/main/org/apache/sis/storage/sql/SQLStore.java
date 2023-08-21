@@ -39,7 +39,7 @@ import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;

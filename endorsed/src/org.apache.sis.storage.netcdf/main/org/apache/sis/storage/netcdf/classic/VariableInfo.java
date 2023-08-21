@@ -40,7 +40,7 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.storage.netcdf.base.GridAdjustment;
-import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.Region;

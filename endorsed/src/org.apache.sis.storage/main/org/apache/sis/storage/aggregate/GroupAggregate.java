@@ -30,7 +30,7 @@ import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.coverage.SampleDimension;

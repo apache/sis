@@ -43,7 +43,7 @@ import org.apache.sis.internal.metadata.sql.Syntax;
 import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryType;
 import org.apache.sis.internal.system.Modules;

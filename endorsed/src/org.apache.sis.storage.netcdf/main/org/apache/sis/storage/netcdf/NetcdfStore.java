@@ -35,7 +35,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.RasterResource;
-import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.setup.OptionKey;

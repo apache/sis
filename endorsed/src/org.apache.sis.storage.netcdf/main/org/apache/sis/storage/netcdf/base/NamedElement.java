@@ -23,7 +23,7 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.storage.netcdf.internal.Resources;

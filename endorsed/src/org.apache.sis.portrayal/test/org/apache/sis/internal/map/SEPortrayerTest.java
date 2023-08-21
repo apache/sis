@@ -37,7 +37,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.style.se1.FeatureTypeStyle;
 import org.apache.sis.style.se1.Symbology;
 import org.apache.sis.storage.FeatureQuery;

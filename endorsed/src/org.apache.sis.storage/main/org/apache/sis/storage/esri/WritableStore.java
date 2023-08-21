@@ -32,7 +32,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.WritableGridCoverageResource;
-import org.apache.sis.internal.storage.WritableResourceSupport;
+import org.apache.sis.storage.internal.WritableResourceSupport;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;

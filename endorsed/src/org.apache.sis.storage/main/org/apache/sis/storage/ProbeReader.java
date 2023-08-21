@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.FilterReader;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 
 
 /**

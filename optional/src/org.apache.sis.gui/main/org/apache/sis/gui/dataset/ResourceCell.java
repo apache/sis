@@ -27,7 +27,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.paint.Color;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.DataStoreOpener;

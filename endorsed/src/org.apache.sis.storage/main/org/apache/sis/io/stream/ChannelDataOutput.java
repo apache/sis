@@ -30,7 +30,7 @@ import java.nio.ShortBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 

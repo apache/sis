@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.test.DependsOnMethod;

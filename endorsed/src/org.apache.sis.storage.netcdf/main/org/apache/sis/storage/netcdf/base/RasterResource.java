@@ -31,7 +31,7 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.storage.ResourceOnFileSystem;
+import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.coverage.RangeArgument;
@@ -55,8 +55,8 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.netcdf.internal.Resources;
 
 

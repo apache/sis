@@ -23,8 +23,8 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.storage.base.Capability;
 
 
 /**

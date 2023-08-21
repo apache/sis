@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.aggregate;
 
-import org.apache.sis.internal.storage.GridResourceWrapper;
+import org.apache.sis.storage.base.GridResourceWrapper;
 import org.apache.sis.storage.GridCoverageResource;
 
 

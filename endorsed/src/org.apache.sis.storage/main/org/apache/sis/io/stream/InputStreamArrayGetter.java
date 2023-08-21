@@ -25,7 +25,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.function.Supplier;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.storage.base.StoreUtilities;
 
 
 /**

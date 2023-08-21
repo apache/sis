@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
 import javax.imageio.stream.ImageOutputStream;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 
 
 /**
@@ -32,7 +32,7 @@ import org.apache.sis.internal.storage.Resources;
  * implementation may do so.
  *
  * <p>We do not implement {@link ImageOutputStream} yet because the latter inherits all read operations from
- * {@code ImageInputStream}, while the {@code org.apache.sis.internal.storage} package keeps the concerns
+ * {@code ImageInputStream}, while the {@code org.apache.sis.storage.base} package keeps the concerns
  * separated. Despite that, the name of this {@code ChannelImageOutputStream} anticipates a future version
  * which would implement the image I/O interface.</p>
  *

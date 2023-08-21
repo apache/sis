@@ -34,9 +34,9 @@ import org.apache.sis.coverage.grid.DimensionalityReduction;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 

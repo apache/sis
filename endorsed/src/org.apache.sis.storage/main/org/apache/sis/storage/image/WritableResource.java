@@ -23,8 +23,8 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableGridCoverageResource;
-import org.apache.sis.internal.storage.WritableResourceSupport;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.WritableResourceSupport;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.event.StoreListeners;
 
 

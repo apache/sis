@@ -29,7 +29,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;

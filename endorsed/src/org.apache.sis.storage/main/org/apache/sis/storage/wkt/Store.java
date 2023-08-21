@@ -27,12 +27,12 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
@@ -43,7 +43,7 @@ import org.apache.sis.util.CharSequences;
  * A data store which creates data objects from a WKT definition.
  *
  * <h4>Design note</h4>
- * this class differs from {@link org.apache.sis.internal.storage.PRJDataStore} in that
+ * this class differs from {@link org.apache.sis.storage.base.PRJDataStore} in that
  * the file containing WKT definition is the main file, not an auxiliary file.
  *
  * @author  Martin Desruisseaux (Geomatys)

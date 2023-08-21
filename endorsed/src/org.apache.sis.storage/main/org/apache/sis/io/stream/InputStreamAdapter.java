@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import javax.imageio.stream.ImageInputStream;
 import org.apache.sis.io.InvalidSeekException;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.internal.Resources;
 
 
 /**

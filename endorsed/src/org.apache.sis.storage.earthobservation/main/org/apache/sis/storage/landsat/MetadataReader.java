@@ -65,7 +65,7 @@ import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Strings;
