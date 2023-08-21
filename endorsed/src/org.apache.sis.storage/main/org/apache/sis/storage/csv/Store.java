@@ -58,7 +58,7 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.URIDataStore;
-import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;

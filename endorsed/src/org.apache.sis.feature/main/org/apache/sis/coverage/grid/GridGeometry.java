@@ -60,7 +60,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.TreeTable;

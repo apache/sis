@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 import java.util.logging.Level;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.storage.sql.feature.BinaryEncoding;
 import org.apache.sis.storage.sql.feature.InfoStatements;
 import org.apache.sis.storage.sql.feature.TableReference;

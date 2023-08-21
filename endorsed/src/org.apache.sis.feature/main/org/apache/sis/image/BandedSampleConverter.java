@@ -31,11 +31,11 @@ import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
-import org.apache.sis.internal.coverage.j2d.ImageLayout;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
-import org.apache.sis.internal.coverage.SampleDimensions;
+import org.apache.sis.coverage.grid.j2d.ColorModelBuilder;
+import org.apache.sis.coverage.grid.j2d.ImageLayout;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.grid.j2d.TileOpExecutor;
+import org.apache.sis.coverage.internal.SampleDimensions;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
@@ -44,7 +44,7 @@ import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 
-import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
+import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
 
 
 /**

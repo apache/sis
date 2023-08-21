@@ -36,9 +36,9 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.FillValues;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.grid.j2d.FillValues;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
@@ -49,7 +49,7 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
-import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
+import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
 
 
 /**

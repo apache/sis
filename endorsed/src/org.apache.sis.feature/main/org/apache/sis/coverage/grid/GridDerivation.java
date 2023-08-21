@@ -39,7 +39,7 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.WraparoundAdjustment;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import org.apache.sis.internal.filter.XPath;
+import org.apache.sis.filter.internal.XPath;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

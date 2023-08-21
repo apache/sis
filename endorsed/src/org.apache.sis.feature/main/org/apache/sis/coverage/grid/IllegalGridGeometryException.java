@@ -16,7 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

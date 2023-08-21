@@ -28,10 +28,10 @@ import javax.measure.Quantity;
 import org.opengis.util.CodeList;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.filter.FunctionNames;
-import org.apache.sis.internal.filter.Visitor;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.filter.internal.FunctionNames;
+import org.apache.sis.filter.internal.Visitor;
 import org.apache.sis.internal.util.StandardDateFormat;
 
 // Branch-dependent imports

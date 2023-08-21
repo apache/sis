@@ -20,7 +20,7 @@ import java.util.Random;
 import java.awt.image.DataBuffer;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.internal.coverage.j2d.ImageLayout;
+import org.apache.sis.coverage.grid.j2d.ImageLayout;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 

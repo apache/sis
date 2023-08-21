@@ -35,7 +35,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.ArgumentCheckByAssertion;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.geometry.GeneralDirectPosition;

@@ -34,7 +34,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;

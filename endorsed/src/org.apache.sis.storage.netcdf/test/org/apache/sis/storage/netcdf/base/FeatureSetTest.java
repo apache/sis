@@ -25,7 +25,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;

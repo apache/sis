@@ -74,7 +74,7 @@ import org.opengis.filter.SortProperty;
  */
 public final class CQL {
 
-    private static final GeometryFactory GF = org.apache.sis.internal.feature.jts.Factory.INSTANCE.factory(false);
+    private static final GeometryFactory GF = org.apache.sis.geometry.wrapper.jts.Factory.INSTANCE.factory(false);
 
     private CQL() {
     }

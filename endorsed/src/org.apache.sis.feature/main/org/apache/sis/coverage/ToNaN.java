@@ -19,7 +19,7 @@ package org.apache.sis.coverage;
 import java.util.HashSet;
 import java.util.function.DoubleToIntFunction;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

@@ -43,7 +43,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.sql.feature.BinaryEncoding;
 import org.apache.sis.storage.sql.feature.GeometryGetterTest;
-import org.apache.sis.internal.feature.jts.JTS;
+import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.sql.TestDatabase;

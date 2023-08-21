@@ -45,6 +45,6 @@ abstract class CQLTestCase {
      */
     CQLTestCase() {
         FF = DefaultFilterFactory.forFeatures();
-        GF = org.apache.sis.internal.feature.jts.Factory.INSTANCE.factory(false);
+        GF = org.apache.sis.geometry.wrapper.jts.Factory.INSTANCE.factory(false);
     }
 }

@@ -32,8 +32,8 @@ import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.coverage.grid.j2d.TileOpExecutor;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.internal.util.Strings;
 
 

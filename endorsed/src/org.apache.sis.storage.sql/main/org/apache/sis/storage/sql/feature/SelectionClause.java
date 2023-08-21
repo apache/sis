@@ -21,8 +21,8 @@ import org.opengis.geometry.Geometry;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 
 // Branch-dependent imports

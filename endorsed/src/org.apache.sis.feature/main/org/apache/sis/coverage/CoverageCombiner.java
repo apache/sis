@@ -38,7 +38,7 @@ import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.internal.coverage.SampleDimensions;
+import org.apache.sis.coverage.internal.SampleDimensions;
 
 import static java.lang.Math.round;
 import static org.apache.sis.internal.util.Numerics.saturatingAdd;

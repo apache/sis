@@ -38,7 +38,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 // Branch-dependent imports
 import org.opengis.feature.IdentifiedType;

@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;

@@ -22,7 +22,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;

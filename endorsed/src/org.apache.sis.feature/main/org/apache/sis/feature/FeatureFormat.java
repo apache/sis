@@ -45,8 +45,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 

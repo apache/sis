@@ -18,7 +18,7 @@ package org.apache.sis.filter;
 
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.internal.filter.FunctionNames;
+import org.apache.sis.filter.internal.FunctionNames;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

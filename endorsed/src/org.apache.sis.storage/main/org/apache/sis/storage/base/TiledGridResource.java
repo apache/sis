@@ -34,7 +34,7 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.internal.coverage.RangeArgument;
+import org.apache.sis.coverage.internal.RangeArgument;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;

@@ -30,7 +30,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
-import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;

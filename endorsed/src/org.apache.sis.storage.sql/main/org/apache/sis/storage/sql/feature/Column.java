@@ -26,7 +26,7 @@ import java.util.Optional;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
-import org.apache.sis.internal.feature.GeometryType;
+import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;

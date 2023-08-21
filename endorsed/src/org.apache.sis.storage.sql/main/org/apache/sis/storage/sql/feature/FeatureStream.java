@@ -31,7 +31,7 @@ import org.apache.sis.filter.Optimization;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
-import org.apache.sis.internal.filter.SortByComparator;
+import org.apache.sis.filter.internal.SortByComparator;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;

@@ -168,7 +168,10 @@ fun addExportForTests(args : MutableList<String>) {
     addExport(args, "org.apache.sis.metadata",          "org.apache.sis.internal.jaxb.gcx",
                     "org.apache.sis.referencing")
 
-    addExport(args, "org.apache.sis.feature",           "org.apache.sis.internal.feature.jts",
+    addExport(args, "org.apache.sis.feature",           "org.apache.sis.feature.internal",
+                    "org.apache.sis.storage.sql")
+
+    addExport(args, "org.apache.sis.feature",           "org.apache.sis.geometry.wrapper.jts",
                     "org.apache.sis.storage.sql," +
                     "org.apache.sis.portrayal")
 

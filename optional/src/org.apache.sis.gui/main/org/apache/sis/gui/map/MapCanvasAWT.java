@@ -41,7 +41,7 @@ import javafx.scene.image.WritableImage;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.util.Callback;
-import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.internal.system.Configuration;
 
 

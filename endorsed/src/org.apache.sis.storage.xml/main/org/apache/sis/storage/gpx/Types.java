@@ -39,8 +39,8 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
-import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.storage.base.FeatureCatalogBuilder;
 import org.apache.sis.util.iso.DefaultNameFactory;
 

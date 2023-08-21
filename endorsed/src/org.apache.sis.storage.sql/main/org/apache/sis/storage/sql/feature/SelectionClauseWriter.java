@@ -26,8 +26,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.opengis.util.CodeList;
-import org.apache.sis.internal.filter.FunctionNames;
-import org.apache.sis.internal.filter.Visitor;
+import org.apache.sis.filter.internal.FunctionNames;
+import org.apache.sis.filter.internal.Visitor;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

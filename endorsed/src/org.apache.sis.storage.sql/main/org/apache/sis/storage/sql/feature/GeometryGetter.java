@@ -20,8 +20,8 @@ import java.util.OptionalInt;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.geometry.wrapper.Geometries;
 
 
 /**

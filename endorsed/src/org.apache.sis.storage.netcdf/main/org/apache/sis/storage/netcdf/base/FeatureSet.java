@@ -38,7 +38,7 @@ import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.feature.MovingFeatures;
+import org.apache.sis.feature.internal.MovingFeatures;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;

@@ -17,7 +17,7 @@
 package org.apache.sis.storage.netcdf.base;
 
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.AbstractFeatureSet;

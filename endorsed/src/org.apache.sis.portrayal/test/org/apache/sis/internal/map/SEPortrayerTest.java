@@ -36,7 +36,7 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.style.se1.FeatureTypeStyle;
 import org.apache.sis.style.se1.Symbology;
@@ -95,7 +95,7 @@ public class SEPortrayerTest extends TestCase {
     public SEPortrayerTest() {
         filterFactory = DefaultFilterFactory.forFeatures();
 
-        final GeometryFactory gf = org.apache.sis.internal.feature.jts.Factory.INSTANCE.factory(false);
+        final GeometryFactory gf = org.apache.sis.geometry.wrapper.jts.Factory.INSTANCE.factory(false);
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
 
         final FeatureTypeBuilder fishbuilder = new FeatureTypeBuilder();

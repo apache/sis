@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.filter.Node;
+import org.apache.sis.filter.internal.Node;
 import org.apache.sis.internal.util.CollectionsExt;
 
 // Branch-dependent imports

@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.DoubleDouble;

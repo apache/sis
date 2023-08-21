@@ -19,8 +19,8 @@ package org.apache.sis.filter;
 import java.util.List;
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.filter.Node;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.filter.internal.Node;
+import org.apache.sis.feature.internal.AttributeConvention;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

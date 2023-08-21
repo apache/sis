@@ -23,7 +23,7 @@ import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.AbstractMapEntry;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;

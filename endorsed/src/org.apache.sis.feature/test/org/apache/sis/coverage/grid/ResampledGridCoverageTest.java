@@ -37,7 +37,7 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.TiledImageMock;
-import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.CommonCRS;

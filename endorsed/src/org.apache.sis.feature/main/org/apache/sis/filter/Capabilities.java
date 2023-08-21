@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Optional;
 import org.opengis.util.LocalName;
 import org.apache.sis.util.collection.CodeListSet;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 
 // Branch-dependent imports
 import org.opengis.filter.ComparisonOperatorName;

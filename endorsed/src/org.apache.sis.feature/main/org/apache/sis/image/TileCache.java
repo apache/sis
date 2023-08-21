@@ -22,7 +22,7 @@ import java.awt.image.Raster;
 import java.lang.ref.Reference;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**
