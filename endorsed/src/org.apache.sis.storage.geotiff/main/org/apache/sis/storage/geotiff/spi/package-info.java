@@ -14,17 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
-
 
 /**
- * Messages in French language.
+ * Extensions to GeoTIFF reader.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.2
+ * @since   1.1
  */
-public class Resources_fr extends Resources {
-    /**
-     * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
-     */
-    public Resources_fr() {
-    }
-}
+package org.apache.sis.storage.geotiff.spi;

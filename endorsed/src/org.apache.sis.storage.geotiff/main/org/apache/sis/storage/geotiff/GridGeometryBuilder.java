@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;

@@ -222,7 +222,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                 final short[] names = ImageUtilities.bandNames(type.getColorModel(), type.getSampleModel());
                 for (int i=0; i<bands.length; i++) {
                     /*
-                     * TODO: we could consider a mechanism similar to org.apache.sis.internal.geotiff.SchemaModifier
+                     * TODO: we could consider a mechanism similar to org.apache.sis.storage.geotiff.spi.SchemaModifier
                      * if there is a need to customize the sample dimensions. `SchemaModifier` could become a shared
                      * public interface.
                      */

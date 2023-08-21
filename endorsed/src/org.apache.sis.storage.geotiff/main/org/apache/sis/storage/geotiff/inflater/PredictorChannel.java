@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.inflater;
+package org.apache.sis.storage.geotiff.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.internal.geotiff.Predictor;
+import org.apache.sis.storage.geotiff.internal.Predictor;
 import org.apache.sis.internal.jdk17.JDK17;
 
 

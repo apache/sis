@@ -30,8 +30,8 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.internal.geotiff.Compression;
-import org.apache.sis.internal.geotiff.Predictor;
+import org.apache.sis.storage.geotiff.internal.Compression;
+import org.apache.sis.storage.geotiff.internal.Predictor;
 
 import static java.lang.Math.addExact;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;

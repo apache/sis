@@ -58,7 +58,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.util.FactoryException;
 
-import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;

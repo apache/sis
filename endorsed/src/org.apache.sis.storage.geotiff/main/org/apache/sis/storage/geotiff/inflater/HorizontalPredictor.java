@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.inflater;
+package org.apache.sis.storage.geotiff.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -23,7 +23,7 @@ import org.apache.sis.internal.jdk17.JDK17;
 
 
 /**
- * Implementation of {@link org.apache.sis.internal.geotiff.Predictor#HORIZONTAL}.
+ * Implementation of {@link org.apache.sis.storage.geotiff.internal.Predictor#HORIZONTAL}.
  * Current implementation works only on 8, 16, 32 or 64-bits samples.
  * Values packed on 4, 2 or 1 bits are not yet supported.
  *

@@ -45,4 +45,4 @@
  * @version 1.4
  * @since   1.1
  */
-package org.apache.sis.internal.storage.inflater;
+package org.apache.sis.storage.geotiff.inflater;

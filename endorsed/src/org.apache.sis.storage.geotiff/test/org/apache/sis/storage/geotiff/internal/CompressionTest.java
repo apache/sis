@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.storage.geotiff.internal;
 
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

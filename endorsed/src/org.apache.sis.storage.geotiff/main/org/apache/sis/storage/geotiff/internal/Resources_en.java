@@ -14,26 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.geotiff.internal;
+
 
 /**
- * GeoTIFF store.
- *
- * @author  Rémi Maréchal (Geomatys)
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Minh Chinh Vu (VNSC)
- * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
+ * Resource in English language.
  */
-module org.apache.sis.storage.geotiff {
-    requires jakarta.xml.bind;
-    requires transitive org.apache.sis.storage;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.geotiff.GeoTiffStoreProvider;
-
-    exports org.apache.sis.storage.geotiff;
-
-    exports org.apache.sis.storage.geotiff.spi to
-            org.apache.sis.storage.earthobservation;
+public class Resources_en extends Resources {
+    /**
+     * Constructs a new resource bundle loading data from
+     * the resource file of the same name than this class.
+     */
+    public Resources_en() {
+    }
 }

@@ -50,7 +50,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.geotiff.SchemaModifier;
+import org.apache.sis.storage.geotiff.spi.SchemaModifier;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.ListOfUnknownSize;
 import org.apache.sis.metadata.iso.DefaultMetadata;

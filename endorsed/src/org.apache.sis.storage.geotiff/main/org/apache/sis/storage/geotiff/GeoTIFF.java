@@ -22,7 +22,7 @@ import java.io.Closeable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.geotiff.internal.Resources;
 
 
 /**

@@ -40,7 +40,7 @@ import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;

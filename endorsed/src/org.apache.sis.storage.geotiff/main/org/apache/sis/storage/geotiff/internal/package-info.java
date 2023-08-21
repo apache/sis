@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
-
 
 /**
- * Resource in English language.
+ * Utility classes for the implementation of GeoTIFF reader and writer.
+ *
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.4
+ * @since   0.8
  */
-public class Resources_en extends Resources {
-    /**
-     * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
-     */
-    public Resources_en() {
-    }
-}
+package org.apache.sis.storage.geotiff.internal;

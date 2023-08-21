@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.inflater;
+package org.apache.sis.storage.geotiff.inflater;
 
 import java.util.Arrays;
 import java.io.IOException;
 import java.io.EOFException;
 import java.nio.ByteBuffer;
-import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
 

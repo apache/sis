@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.inflater;
+package org.apache.sis.storage.geotiff.inflater;
 
 import java.util.Arrays;
 import java.io.Closeable;
@@ -23,9 +23,9 @@ import java.nio.Buffer;
 import org.apache.sis.image.DataType;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.geotiff.Compression;
-import org.apache.sis.internal.geotiff.Predictor;
-import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.geotiff.internal.Compression;
+import org.apache.sis.storage.geotiff.internal.Predictor;
+import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.event.StoreListeners;

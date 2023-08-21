@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.storage.geotiff.spi;
 
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
