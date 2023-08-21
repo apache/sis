@@ -18,7 +18,7 @@ package org.apache.sis.storage.gpx;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.internal.storage.xml.GeographicEnvelope;
+import org.apache.sis.storage.xml.GeographicEnvelope;
 
 
 /**

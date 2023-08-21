@@ -34,13 +34,13 @@ module org.apache.sis.storage {
 
     uses     org.apache.sis.storage.DataStoreProvider;
     provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.internal.storage.image.WorldFileStoreProvider,
-             org.apache.sis.internal.storage.esri.AsciiGridStoreProvider,
-             org.apache.sis.internal.storage.esri.RawRasterStoreProvider,
-             org.apache.sis.internal.storage.csv.StoreProvider,
-             org.apache.sis.internal.storage.xml.StoreProvider,
-             org.apache.sis.internal.storage.wkt.StoreProvider,
-             org.apache.sis.internal.storage.folder.StoreProvider;
+        with org.apache.sis.storage.image.WorldFileStoreProvider,
+             org.apache.sis.storage.esri.AsciiGridStoreProvider,
+             org.apache.sis.storage.esri.RawRasterStoreProvider,
+             org.apache.sis.storage.csv.StoreProvider,
+             org.apache.sis.storage.xml.StoreProvider,
+             org.apache.sis.storage.wkt.StoreProvider,
+             org.apache.sis.storage.folder.StoreProvider;
 
     exports org.apache.sis.storage;
     exports org.apache.sis.storage.event;
@@ -65,16 +65,16 @@ module org.apache.sis.storage {
             org.apache.sis.cloud.aws,
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.storage.xml to
+    exports org.apache.sis.storage.xml to
             org.apache.sis.storage.xml,
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.storage.wkt to
+    exports org.apache.sis.storage.wkt to
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.earthobservation,
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.storage.folder to
+    exports org.apache.sis.storage.folder to
             org.apache.sis.storage.earthobservation,
             org.apache.sis.gui;                         // In the "optional" sub-project.
 }

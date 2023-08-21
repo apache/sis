@@ -20,7 +20,7 @@ import java.util.Map;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.internal.storage.xml.AbstractProvider;
+import org.apache.sis.storage.xml.AbstractProvider;
 
 
 /**

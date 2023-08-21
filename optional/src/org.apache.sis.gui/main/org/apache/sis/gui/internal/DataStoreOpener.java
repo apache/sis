@@ -48,7 +48,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.InternalOptionKey;
-import org.apache.sis.internal.storage.folder.ConcurrentCloser;
+import org.apache.sis.storage.folder.ConcurrentCloser;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.gui.DataViewer;
 

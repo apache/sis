@@ -17,7 +17,7 @@
 package org.apache.sis.gui.internal;
 
 import javafx.scene.input.DataFormat;
-import org.apache.sis.internal.storage.xml.AbstractProvider;
+import org.apache.sis.storage.xml.AbstractProvider;
 
 
 /**

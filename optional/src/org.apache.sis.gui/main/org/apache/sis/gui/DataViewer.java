@@ -238,8 +238,8 @@ public class DataViewer extends Application {
                      * we can auto-detect the format. Keep GPX at writing time because we need
                      * to be specific about the format to write.
                      */
-                    case org.apache.sis.internal.storage.wkt.StoreProvider.NAME: continue;
-                    case org.apache.sis.internal.storage.xml.StoreProvider.NAME: write = false; break;
+                    case org.apache.sis.storage.wkt.StoreProvider.NAME: continue;
+                    case org.apache.sis.storage.xml.StoreProvider.NAME: write = false; break;
                     case org.apache.sis.storage.gpx.StoreProvider.NAME: read  = false; break;
                 }
                 String label = null;

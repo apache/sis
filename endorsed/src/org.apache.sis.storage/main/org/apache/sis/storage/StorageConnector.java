@@ -1656,7 +1656,7 @@ public class StorageConnector implements Serializable {
      * with cache file, we want to propagate the original exception to user because its message
      * may tell that there is no space left on device or no write permission.
      *
-     * @see org.apache.sis.internal.storage.image.FormatFinder#unwrap(IIOException)
+     * @see org.apache.sis.storage.image.FormatFinder#unwrap(IIOException)
      */
     @Workaround(library = "JDK", version = "18")
     private static IOException unwrap(final IIOException e) {

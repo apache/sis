@@ -29,7 +29,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.aggregate.MergeStrategy;
-import org.apache.sis.internal.storage.folder.UnstructuredAggregate;
+import org.apache.sis.storage.folder.UnstructuredAggregate;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.GUIUtilities;
