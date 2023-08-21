@@ -26,7 +26,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.PRJDataStore;
-import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.ProbeResult;

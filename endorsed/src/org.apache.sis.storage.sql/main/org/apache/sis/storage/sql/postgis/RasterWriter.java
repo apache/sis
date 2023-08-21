@@ -42,7 +42,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.InfoStatements;
-import org.apache.sis.internal.storage.io.ChannelDataOutput;
+import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.util.resources.Errors;

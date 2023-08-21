@@ -57,7 +57,7 @@ module org.apache.sis.storage {
             org.apache.sis.openoffice,
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.storage.io to
+    exports org.apache.sis.io.stream to
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,

@@ -269,7 +269,7 @@ public final class RangeArgument {
      * {@link java.awt.image.BandedSampleModel} fashion). This method converts the specified domain
      * (decomposed in {@code areaOfInterest} and {@code subsampling} parameters) into a larger domain
      * encompassing band dimension as if it was an ordinary space or time dimension. It makes possible
-     * to use this domain with {@link org.apache.sis.internal.storage.io.HyperRectangleReader} for example.
+     * to use this domain with {@link org.apache.sis.io.stream.HyperRectangleReader} for example.
      *
      * @param  areaOfInterest  the extent to which to add a new dimension for bands.
      * @param  bandDimension   index of the band dimension.

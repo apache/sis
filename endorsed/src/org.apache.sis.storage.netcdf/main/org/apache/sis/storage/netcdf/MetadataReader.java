@@ -61,7 +61,7 @@ import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.storage.netcdf.base.VariableRole;
 import org.apache.sis.storage.netcdf.base.Dimension;
 import org.apache.sis.storage.netcdf.base.Grid;
-import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.storage.wkt.StoreFormat;
 import org.apache.sis.internal.referencing.AxisDirections;

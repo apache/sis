@@ -18,7 +18,7 @@ package org.apache.sis.cloud.aws.s3;
 
 import java.util.List;
 import java.io.IOException;
-import org.apache.sis.internal.storage.io.FileCacheByteChannel;
+import org.apache.sis.io.stream.FileCacheByteChannel;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.core.ResponseInputStream;

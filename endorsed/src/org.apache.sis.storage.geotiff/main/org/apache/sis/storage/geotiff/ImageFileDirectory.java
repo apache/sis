@@ -40,7 +40,7 @@ import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.storage.geotiff.internal.Predictor;
 import org.apache.sis.storage.geotiff.internal.Compression;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
 import org.apache.sis.internal.util.UnmodifiableArrayList;

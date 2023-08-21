@@ -28,7 +28,7 @@ import org.opengis.util.NameFactory;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;

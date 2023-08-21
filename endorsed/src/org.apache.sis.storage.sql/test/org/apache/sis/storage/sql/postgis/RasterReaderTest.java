@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.awt.image.RenderedImage;
 import java.awt.image.DataBufferUShort;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

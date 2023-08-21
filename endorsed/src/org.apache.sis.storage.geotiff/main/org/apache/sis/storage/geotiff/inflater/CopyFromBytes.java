@@ -24,7 +24,7 @@ import java.nio.IntBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import org.apache.sis.image.DataType;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.util.resources.Errors;
 

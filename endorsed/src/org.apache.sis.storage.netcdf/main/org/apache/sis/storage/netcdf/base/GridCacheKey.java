@@ -23,7 +23,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.storage.io.ByteWriter;
+import org.apache.sis.io.stream.ByteWriter;
 import org.apache.sis.math.Vector;
 
 

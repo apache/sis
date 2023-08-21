@@ -40,7 +40,7 @@ import javafx.util.Duration;
 import org.apache.sis.measure.Range;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.RangeSet;
-import org.apache.sis.internal.storage.io.ByteRangeChannel;
+import org.apache.sis.io.stream.ByteRangeChannel;
 
 
 /**

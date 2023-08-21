@@ -40,7 +40,7 @@ import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.sql.feature.BinaryEncoding;
 import org.apache.sis.storage.sql.feature.GeometryGetterTest;
 import org.apache.sis.internal.feature.jts.JTS;

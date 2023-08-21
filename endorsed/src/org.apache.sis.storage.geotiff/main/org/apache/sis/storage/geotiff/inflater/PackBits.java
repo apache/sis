@@ -19,7 +19,7 @@ package org.apache.sis.storage.geotiff.inflater;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataInput;
 
 
 /**

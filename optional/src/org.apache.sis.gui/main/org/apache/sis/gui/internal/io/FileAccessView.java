@@ -32,8 +32,8 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.internal.FixedHeaderColumnSize;
 import org.apache.sis.gui.internal.ImmutableObjectProperty;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.internal.storage.io.ChannelFactory;
-import org.apache.sis.internal.storage.io.FileCacheByteChannel;
+import org.apache.sis.io.stream.ChannelFactory;
+import org.apache.sis.io.stream.FileCacheByteChannel;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 

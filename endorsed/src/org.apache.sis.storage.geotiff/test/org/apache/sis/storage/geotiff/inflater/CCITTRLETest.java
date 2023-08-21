@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.lang.reflect.Field;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

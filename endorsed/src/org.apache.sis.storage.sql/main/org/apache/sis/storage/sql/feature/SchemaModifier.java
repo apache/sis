@@ -18,7 +18,7 @@ package org.apache.sis.storage.sql.feature;
 
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.io.InternalOptionKey;
+import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.setup.OptionKey;
 
 // Branch-dependent imports

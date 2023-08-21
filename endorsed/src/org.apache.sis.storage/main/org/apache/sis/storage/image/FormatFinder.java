@@ -34,7 +34,7 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.FileImageOutputStream;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.util.Workaround;
 
 

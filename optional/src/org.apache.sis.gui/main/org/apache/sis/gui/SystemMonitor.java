@@ -29,7 +29,7 @@ import org.apache.sis.gui.dataset.LogViewer;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.io.FileAccessView;
-import org.apache.sis.internal.storage.io.ChannelFactory;
+import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.util.resources.Vocabulary;
 
 

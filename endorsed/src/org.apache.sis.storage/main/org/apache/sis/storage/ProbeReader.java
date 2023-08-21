@@ -29,7 +29,7 @@ import org.apache.sis.internal.storage.Resources;
  * The {@link #close()} method closes this reader but not the wrapped reader, which is only reset.
  *
  * <p>Note: this wrapper is not used if the reader is an instance of
- * {@link org.apache.sis.internal.storage.io.RewindableLineReader}.</p>
+ * {@link org.apache.sis.io.stream.RewindableLineReader}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

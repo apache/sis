@@ -22,7 +22,7 @@ import java.nio.BufferOverflowException;
 import java.util.zip.Inflater;
 import java.util.zip.DataFormatException;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataInput;
 
 
 /**
