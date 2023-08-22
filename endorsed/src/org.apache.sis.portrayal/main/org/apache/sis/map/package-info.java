@@ -14,35 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.map;
-
-import org.apache.sis.style.se1.StyleFactory;
-import org.apache.sis.style.se1.Symbolizer;
 
 
 /**
- * Resource symbolizers act on a resource as a whole, not on individual features.
- * Such symbolizers are not defined by the Symbology Encoding specification but are
- * often required to produce uncommon presentations.
+ * Symbology and map representations, together with a rendering engine for display.
  *
- * <p>
- * NOTE: this class is a first draft subject to modifications.
- * </p>
+ * <p><b>WARNING:</b> this package is work in progress and is not yet part of public API.
+ * Some classes in this package will move to public API after we gained enough confidence
+ * about their stability.</p>
+ *
+ * <h2>Synchronization</h2>
+ * Unless otherwise specified, classes in this package are not thread-safe.
+ * Synchronization, if desired, must be done by the caller.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.5
- *
- * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
- *
- * @since 1.5
+ * @since   1.5
  */
-public abstract class ResourceSymbolizer<R> extends Symbolizer<R> {
-    /**
-     * Constructs a new symbolozer.
-     *
-     * @param  context  context (features or coverages) in which this style element will be used.
-     */
-    public ResourceSymbolizer(final StyleFactory<R> context) {
-        super(context);
-    }
-}
+package org.apache.sis.map;

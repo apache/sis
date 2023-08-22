@@ -14,15 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.map;
+package org.apache.sis.map;
 
-import java.util.Set;
-import java.util.HashSet;
-import org.opengis.filter.ValueReference;
+import org.apache.sis.style.se1.StyleFactory;
+import org.apache.sis.style.se1.Symbolizer;
 
 
 /**
- * Collects all properties used in style elements.
+ * Resource symbolizers act on a resource as a whole, not on individual features.
+ * Such symbolizers are not defined by the Symbology Encoding specification but are
+ * often required to produce uncommon presentations.
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
@@ -30,30 +31,18 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.5
- * @since   1.5
+ *
+ * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
+ *
+ * @since 1.5
  */
-final class PropertyNameCollector extends SymbologyVisitor {
+public abstract class ResourceSymbolizer<R> extends Symbolizer<R> {
     /**
-     * All value references found.
+     * Constructs a new symbolozer.
      *
-     * @see ValueReference#getXPath()
+     * @param  context  context (features or coverages) in which this style element will be used.
      */
-    final Set<String> references;
-
-    /**
-     * Creates a new collector.
-     */
-    PropertyNameCollector() {
-        references = new HashSet<>();
-    }
-
-    /**
-     * Invoked for each value reference found.
-     */
-    @Override
-    protected void visitProperty(final ValueReference<?,?> expression) {
-        if (expression != null) {
-            references.add(expression.getXPath());
-        }
+    public ResourceSymbolizer(final StyleFactory<R> context) {
+        super(context);
     }
 }

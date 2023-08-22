@@ -35,7 +35,7 @@ import javafx.scene.image.WritableImage;
 import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.internal.map.coverage.RenderingWorkaround;
+import org.apache.sis.map.coverage.RenderingWorkaround;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.util.internal.Numerics;

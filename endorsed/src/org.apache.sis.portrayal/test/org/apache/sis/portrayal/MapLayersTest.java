@@ -19,7 +19,7 @@ package org.apache.sis.portrayal;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.sis.internal.map.ListChangeEvent;
+import org.apache.sis.map.ListChangeEvent;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.TestCase;
 import static org.junit.Assert.*;

@@ -67,7 +67,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.portrayal.RenderException;
-import org.apache.sis.internal.map.coverage.RenderingWorkaround;
+import org.apache.sis.map.coverage.RenderingWorkaround;
 import org.apache.sis.coverage.grid.j2d.TileErrorHandler;
 import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.gui.internal.BackgroundThreads;

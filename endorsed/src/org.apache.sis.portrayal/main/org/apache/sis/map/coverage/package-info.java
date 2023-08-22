@@ -26,4 +26,4 @@
  * @version 1.4
  * @since   1.2
  */
-package org.apache.sis.internal.map.coverage;
+package org.apache.sis.map.coverage;
