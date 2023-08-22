@@ -16,7 +16,7 @@ The commit SHA1 is updated when needed for keeping Apache SIS `geoapi-xxx` branc
 Following command should be executed once after a fresh checkout of SIS `geoapi-3.1` or `geoapi-4.0` branch:
 
 ```bash
-git submodule update --init --recommend-shallow
+git submodule update --init
 ```
 
 Following command should be used for pulling changes from Apache SIS Git repository.
