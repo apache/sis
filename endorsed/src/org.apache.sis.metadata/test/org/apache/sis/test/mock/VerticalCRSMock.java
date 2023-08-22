@@ -119,7 +119,9 @@ public final class VerticalCRSMock extends IdentifiedObjectMock
     }
 
     @Override public String               getAbbreviation()      {return up ? "h" : "d";}
+    @SuppressWarnings("removal")
     @Override public InternationalString  getScope()             {return null;}
+    @SuppressWarnings("removal")
     @Override public Extent               getDomainOfValidity()  {return null;}
     @Override public VerticalDatumType    getVerticalDatumType() {return type;}
     @Override public VerticalDatum        getDatum()             {return this;}

@@ -41,7 +41,6 @@ import org.opengis.metadata.identification.*;                       // Really us
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -68,6 +67,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.PropertyAccessor.APPEND;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
+
+// Branch-dependent imports
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
@@ -236,22 +238,22 @@ public final class PropertyAccessorTest extends TestCase {
 
     /**
      * Tests the constructor with a method which override another method with covariant return type.
-     * This test may need to be updated if a future GeoAPI release modifies the {@link GeographicCRS} interface.
+     * This test may need to be updated if a future GeoAPI release modifies the {@link GeographicCRS}
+     * interface or one of its parent interfaces.
      */
     @Test
     @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
         assertMappingEquals(new PropertyAccessor(type, type, type),
-        //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
-            GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
-            GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
-            IdentifiedObject.class, "getName",             "name",             "name",             "Name",               Identifier.class,
-            IdentifiedObject.class, "getAlias",            "alias",            "alias",            "Alias",              GenericName[].class,
-            ReferenceSystem.class,  "getDomainOfValidity", "domainOfValidity", "domainOfValidity", "Domain of validity", Extent.class,
-            IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",       "Identifiers",        Identifier[].class,
-            IdentifiedObject.class, "getRemarks",          "remarks",          "remarks",          "Remarks",            InternationalString.class,
-            ReferenceSystem.class,  "getScope",            "scope",            "SC_CRS.scope",     "Scope",              InternationalString.class);
+        //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier……………………Sentence………………………………Type…………………………………………………………
+            GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem",   "Coordinate system", EllipsoidalCS.class,       // Covariant return type
+            GeodeticCRS.class,      "getDatum",            "datum",            "datum",              "Datum",             GeodeticDatum.class,       // Covariant return type
+            IdentifiedObject.class, "getName",             "name",             "name",               "Name",              Identifier.class,
+            IdentifiedObject.class, "getAlias",            "alias",            "alias",              "Alias",             GenericName[].class,
+            IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",         "Identifiers",       Identifier[].class,
+            IdentifiedObject.class, "getDomains",          "domains",          "ObjectUsage.domain", "Domains",           ObjectDomain[].class,
+            IdentifiedObject.class, "getRemarks",          "remarks",          "remarks",            "Remarks",           InternationalString.class);
     }
 
     /**
