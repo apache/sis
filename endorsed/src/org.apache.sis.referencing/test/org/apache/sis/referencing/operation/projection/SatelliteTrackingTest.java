@@ -20,7 +20,7 @@ import java.util.Map;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.referencing.util.NilReferencingObject;
 import org.apache.sis.referencing.operation.provider.SatelliteTracking;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;

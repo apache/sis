@@ -33,7 +33,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -46,7 +46,7 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
+import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
 
 
 /**
@@ -534,7 +534,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractCRS() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
         /*
          * The coordinate system is mandatory for SIS working. We do not verify its presence here
          * because the verification would have to be done in an 'afterMarshal(…)' method and throwing

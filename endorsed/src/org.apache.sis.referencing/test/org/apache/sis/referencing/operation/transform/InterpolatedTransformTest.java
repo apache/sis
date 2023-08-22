@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.NADCON;
 import org.apache.sis.referencing.operation.provider.NTv2;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;

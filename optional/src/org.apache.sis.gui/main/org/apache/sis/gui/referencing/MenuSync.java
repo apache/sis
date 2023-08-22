@@ -33,7 +33,7 @@ import javafx.scene.control.ToggleGroup;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;

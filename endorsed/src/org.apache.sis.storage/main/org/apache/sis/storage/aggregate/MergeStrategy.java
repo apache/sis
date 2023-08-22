@@ -23,7 +23,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
-import org.apache.sis.internal.referencing.ExtentSelector;
+import org.apache.sis.referencing.util.ExtentSelector;
 import org.apache.sis.internal.util.Strings;
 
 

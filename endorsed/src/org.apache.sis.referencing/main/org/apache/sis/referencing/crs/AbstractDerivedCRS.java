@@ -36,7 +36,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.xml.bind.referencing.CC_Conversion;
-import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.system.Semaphores;

@@ -23,7 +23,7 @@ import java.io.UncheckedIOException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 import static java.lang.Math.*;     // Not StrictMath in this particular case.

@@ -42,7 +42,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.AxisNames;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.util.resources.Vocabulary;

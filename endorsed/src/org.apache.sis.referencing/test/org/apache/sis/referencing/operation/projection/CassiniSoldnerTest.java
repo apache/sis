@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.MapProjection;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.parameter.Parameters;
 import org.junit.Test;

@@ -34,8 +34,8 @@ import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.ArraysExt;
@@ -187,9 +187,8 @@ public final class Linearizer {
     final InternationalString getPotentialCause(final Node owner) {
         if (longitudeSpan >= 180 - 6) {         // 180° of longitude minus a UTM zone width.
             final String name = IdentifiedObjects.getDisplayName(targetCRS, owner.getLocale());
-            return org.apache.sis.internal.referencing.Resources.formatInternational(
-                   org.apache.sis.internal.referencing.Resources.Keys.GridLongitudeSpanTooWide_2,
-                   longitudeSpan, (name != null) ? name : type);
+            return Resources.formatInternational(Resources.Keys.GridLongitudeSpanTooWide_2,
+                                                 longitudeSpan, (name != null) ? name : type);
         }
         return null;
     }

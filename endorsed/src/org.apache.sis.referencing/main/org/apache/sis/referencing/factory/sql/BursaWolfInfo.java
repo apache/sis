@@ -24,7 +24,7 @@ import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.Extent;
-import org.apache.sis.internal.referencing.ExtentSelector;
+import org.apache.sis.referencing.util.ExtentSelector;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.TimeDependentBWP;
 import org.apache.sis.referencing.factory.FactoryDataException;

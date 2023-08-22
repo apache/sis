@@ -26,7 +26,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 

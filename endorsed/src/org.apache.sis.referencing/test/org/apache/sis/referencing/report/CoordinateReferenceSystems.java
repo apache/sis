@@ -45,7 +45,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.test.report.AuthorityCodesReport;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.referencing.DeprecatedCode;
+import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;

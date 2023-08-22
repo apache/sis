@@ -37,8 +37,8 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.AxisNames;
-import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -67,7 +67,7 @@ import static org.apache.sis.util.collection.Containers.property;
  * guess what the new name should be. This constant is used as a sentinel value set by Normalizer and checked
  * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
  */
-import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
+import static org.apache.sis.referencing.util.NilReferencingObject.UNNAMED;
 
 
 /**
@@ -879,7 +879,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultCoordinateSystemAxis() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
         minimumValue = NEGATIVE_INFINITY;
         maximumValue = POSITIVE_INFINITY;
         /*

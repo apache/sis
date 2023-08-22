@@ -34,8 +34,8 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.referencing.operation.provider.PolarStereographicC;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
@@ -43,7 +43,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.math.MathFunctions;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.referencing.Formulas.fastHypot;
+import static org.apache.sis.referencing.util.Formulas.fastHypot;
 
 
 /**

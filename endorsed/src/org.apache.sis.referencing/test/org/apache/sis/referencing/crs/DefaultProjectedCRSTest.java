@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
-import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
+import org.apache.sis.referencing.util.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.Convention;

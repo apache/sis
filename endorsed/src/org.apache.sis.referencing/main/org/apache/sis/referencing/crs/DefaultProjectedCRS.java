@@ -31,14 +31,14 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
+import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
 
 
 /**

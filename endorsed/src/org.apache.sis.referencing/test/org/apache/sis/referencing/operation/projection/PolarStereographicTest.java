@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;

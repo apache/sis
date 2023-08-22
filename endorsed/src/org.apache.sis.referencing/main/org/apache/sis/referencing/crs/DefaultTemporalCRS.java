@@ -35,7 +35,7 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;

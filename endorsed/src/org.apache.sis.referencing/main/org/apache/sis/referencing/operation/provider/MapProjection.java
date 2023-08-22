@@ -36,7 +36,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;

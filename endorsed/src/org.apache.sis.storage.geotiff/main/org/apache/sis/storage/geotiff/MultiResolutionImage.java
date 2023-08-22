@@ -38,7 +38,7 @@ import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.base.GridResourceWrapper;
 import org.apache.sis.storage.base.ResourceOnFileSystem;
-import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.CRS;
 

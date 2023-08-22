@@ -38,15 +38,15 @@ import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.LambertConformalWest;
 import org.apache.sis.referencing.operation.provider.LambertConformalBelgium;
 import org.apache.sis.referencing.operation.provider.LambertConformalMichigan;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
-import static org.apache.sis.internal.referencing.Formulas.fastHypot;
+import static org.apache.sis.referencing.util.Formulas.fastHypot;
 
 
 /**

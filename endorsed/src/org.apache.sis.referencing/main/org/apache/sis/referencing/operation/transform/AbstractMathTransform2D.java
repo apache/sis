@@ -28,8 +28,8 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.util.j2d.ShapeUtilities;
 
 
 /**

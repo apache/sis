@@ -51,7 +51,7 @@ import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.PRJDataStore;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.internal.util.ListOfUnknownSize;
 import org.apache.sis.metadata.sql.MetadataStoreException;

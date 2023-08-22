@@ -32,7 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;

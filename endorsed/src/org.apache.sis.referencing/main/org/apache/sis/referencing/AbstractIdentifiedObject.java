@@ -48,7 +48,7 @@ import org.apache.sis.xml.bind.referencing.Code;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;
-import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;

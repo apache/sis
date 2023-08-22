@@ -34,8 +34,8 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWithCRS;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.sqlmm.SQLMM;
-import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
-import org.apache.sis.internal.referencing.j2d.AbstractShape;
+import org.apache.sis.referencing.util.j2d.ShapeUtilities;
+import org.apache.sis.referencing.util.j2d.AbstractShape;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 

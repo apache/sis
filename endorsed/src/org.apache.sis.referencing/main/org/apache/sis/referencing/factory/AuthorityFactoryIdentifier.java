@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.NameMeaning;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 
 
 /**

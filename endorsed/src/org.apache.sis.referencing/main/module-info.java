@@ -31,7 +31,7 @@ module org.apache.sis.referencing {
     requires transitive org.apache.sis.metadata;
 
     provides org.apache.sis.internal.metadata.sql.Initializer
-        with org.apache.sis.internal.referencing.DatabaseListener;
+        with org.apache.sis.referencing.internal.DatabaseListener;
 
     provides org.opengis.referencing.crs.CRSFactory
         with org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -50,20 +50,20 @@ module org.apache.sis.referencing {
 
     uses     org.opengis.referencing.crs.CRSAuthorityFactory;
     provides org.opengis.referencing.crs.CRSAuthorityFactory
-        with org.apache.sis.internal.referencing.EPSGFactoryProxyCRS,
+        with org.apache.sis.referencing.internal.EPSGFactoryProxyCRS,
              org.apache.sis.referencing.factory.CommonAuthorityFactory;
 
     uses     org.opengis.referencing.cs.CSAuthorityFactory;
     provides org.opengis.referencing.cs.CSAuthorityFactory
-        with org.apache.sis.internal.referencing.EPSGFactoryProxyCS;
+        with org.apache.sis.referencing.internal.EPSGFactoryProxyCS;
 
     uses     org.opengis.referencing.datum.DatumAuthorityFactory;
     provides org.opengis.referencing.datum.DatumAuthorityFactory
-        with org.apache.sis.internal.referencing.EPSGFactoryProxyDatum;
+        with org.apache.sis.referencing.internal.EPSGFactoryProxyDatum;
 
     uses     org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
     provides org.opengis.referencing.operation.CoordinateOperationAuthorityFactory
-        with org.apache.sis.internal.referencing.EPSGFactoryProxyCOP;
+        with org.apache.sis.referencing.internal.EPSGFactoryProxyCOP;
 
     // Heavier classes (e.g. having more dependencies) or classes less likely to be used should be last.
     uses     org.opengis.referencing.operation.OperationMethod;
@@ -145,13 +145,13 @@ module org.apache.sis.referencing {
              org.apache.sis.referencing.operation.provider.GeographicToTopocentric;
 
     provides org.apache.sis.internal.jaxb.TypeRegistration
-        with org.apache.sis.internal.referencing.ReferencingTypes;
+        with org.apache.sis.referencing.internal.ReferencingTypes;
 
     provides org.apache.sis.internal.jaxb.AdapterReplacement
         with org.apache.sis.xml.bind.referencing.SC_VerticalCRS;
 
     provides org.apache.sis.internal.metadata.ReferencingServices
-        with org.apache.sis.internal.referencing.ServicesForMetadata;
+        with org.apache.sis.referencing.internal.ServicesForMetadata;
 
     exports org.apache.sis.geometry;
     exports org.apache.sis.io.wkt;
@@ -168,7 +168,7 @@ module org.apache.sis.referencing {
     exports org.apache.sis.referencing.operation.projection;
     exports org.apache.sis.referencing.operation.transform;
 
-    exports org.apache.sis.internal.referencing to
+    exports org.apache.sis.referencing.util to
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
             org.apache.sis.storage,
@@ -181,7 +181,7 @@ module org.apache.sis.referencing {
             org.apache.sis.openoffice,
             org.apache.sis.gui;                             // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.referencing.j2d to
+    exports org.apache.sis.referencing.util.j2d to
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
             org.apache.sis.storage,

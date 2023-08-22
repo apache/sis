@@ -20,7 +20,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.provider.Mercator2SP;
 import org.apache.sis.referencing.operation.provider.MercatorSpherical;

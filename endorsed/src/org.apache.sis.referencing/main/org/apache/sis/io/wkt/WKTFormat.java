@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.ImmutableIdentifier;
 
 

@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.Formatter;
 

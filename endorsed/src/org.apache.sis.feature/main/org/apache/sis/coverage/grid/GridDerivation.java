@@ -34,7 +34,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;

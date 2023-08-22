@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.TransverseMercatorSouth;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;

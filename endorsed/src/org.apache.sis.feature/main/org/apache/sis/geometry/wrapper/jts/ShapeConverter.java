@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
-import org.apache.sis.internal.referencing.j2d.AbstractShape;
+import org.apache.sis.referencing.util.j2d.AbstractShape;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 

@@ -27,7 +27,7 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.EPSGFactoryProxy;
+import org.apache.sis.referencing.internal.EPSGFactoryProxy;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.factory.CommonAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;

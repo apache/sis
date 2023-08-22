@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;

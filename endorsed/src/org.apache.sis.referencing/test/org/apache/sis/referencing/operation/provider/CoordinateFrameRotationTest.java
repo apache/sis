@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.provider;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.DependsOnMethod;

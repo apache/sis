@@ -25,7 +25,7 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.ImageDatum;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;

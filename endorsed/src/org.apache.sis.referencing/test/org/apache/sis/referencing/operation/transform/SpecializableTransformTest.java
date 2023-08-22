@@ -21,7 +21,7 @@ import java.util.HashMap;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;

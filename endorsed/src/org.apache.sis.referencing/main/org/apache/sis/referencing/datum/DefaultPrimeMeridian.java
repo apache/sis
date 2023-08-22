@@ -29,11 +29,11 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.util.WKTUtilities;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
@@ -408,7 +408,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultPrimeMeridian() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
         /*
          * Angular units are mandatory for SIS working. We do not verify their presence here (because the
          * verification would have to be done in an 'afterMarshal(…)' method and throwing an exception in

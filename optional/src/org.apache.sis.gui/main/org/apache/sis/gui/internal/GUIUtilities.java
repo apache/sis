@@ -36,7 +36,7 @@ import javafx.stage.Window;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;

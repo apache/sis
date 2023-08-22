@@ -46,7 +46,7 @@ import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import ucar.nc2.constants.CF;
 

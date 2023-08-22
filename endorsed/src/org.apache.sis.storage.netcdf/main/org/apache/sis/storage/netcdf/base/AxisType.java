@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.measure.Units;
 import javax.measure.Unit;
 import ucar.nc2.constants.CF;

@@ -27,7 +27,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
 import org.apache.sis.referencing.operation.provider.AbridgedMolodensky;
 import org.apache.sis.referencing.operation.provider.Molodensky;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Statistics;

@@ -23,7 +23,7 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
+import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
 
 
 /**

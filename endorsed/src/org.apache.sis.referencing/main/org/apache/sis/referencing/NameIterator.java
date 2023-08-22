@@ -23,7 +23,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.metadata.NameMeaning;
-import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.referencing.util.NilReferencingObject;
 
 import static org.apache.sis.internal.util.Strings.appendUnicodeIdentifier;
 

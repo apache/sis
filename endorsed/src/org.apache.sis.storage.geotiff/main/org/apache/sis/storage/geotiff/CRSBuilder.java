@@ -59,10 +59,10 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.util.FactoryException;
 
 import org.apache.sis.storage.geotiff.internal.Resources;
-import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.referencing.NilReferencingObject;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.util.NilReferencingObject;
+import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.internal.util.Constants;

@@ -55,7 +55,7 @@ import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.internal.SampleDimensions;
 import org.apache.sis.coverage.grid.j2d.ColorModelType;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
-import org.apache.sis.internal.referencing.WraparoundApplicator;
+import org.apache.sis.referencing.util.WraparoundApplicator;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.CloneAccess;
 import org.apache.sis.io.TableAppender;

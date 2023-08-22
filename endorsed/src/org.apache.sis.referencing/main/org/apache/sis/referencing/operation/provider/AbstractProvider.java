@@ -44,7 +44,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 
 
 /**
@@ -362,7 +362,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      *
      * @return the inverse of this operation method (possibly {@code this}), or {@code null} if none.
      *
-     * @see org.apache.sis.internal.referencing.SignReversalComment
+     * @see org.apache.sis.referencing.internal.SignReversalComment
      */
     public AbstractProvider inverse() {
         return null;

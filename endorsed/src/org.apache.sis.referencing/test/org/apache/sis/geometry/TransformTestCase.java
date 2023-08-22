@@ -38,8 +38,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.referencing.Formulas.ANGULAR_TOLERANCE;
-import static org.apache.sis.internal.referencing.Formulas.LINEAR_TOLERANCE;
+import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
+import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
 
 
 /**

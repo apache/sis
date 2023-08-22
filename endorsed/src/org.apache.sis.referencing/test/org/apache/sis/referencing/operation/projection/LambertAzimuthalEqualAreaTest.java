@@ -28,8 +28,8 @@ import org.junit.Test;
 import static java.lang.Double.NaN;
 import static java.lang.StrictMath.*;
 import static org.apache.sis.math.MathFunctions.SQRT_2;
-import static org.apache.sis.internal.referencing.Formulas.LINEAR_TOLERANCE;
-import static org.apache.sis.internal.referencing.Formulas.ANGULAR_TOLERANCE;
+import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
+import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 import static org.junit.Assert.*;
 
 

@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
-import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
+import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;

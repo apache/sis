@@ -17,14 +17,14 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 
-import static org.apache.sis.internal.referencing.Arithmetic.add;
-import static org.apache.sis.internal.referencing.Arithmetic.subtract;
-import static org.apache.sis.internal.referencing.Arithmetic.multiply;
-import static org.apache.sis.internal.referencing.Arithmetic.divide;
+import static org.apache.sis.referencing.internal.Arithmetic.add;
+import static org.apache.sis.referencing.internal.Arithmetic.subtract;
+import static org.apache.sis.referencing.internal.Arithmetic.multiply;
+import static org.apache.sis.referencing.internal.Arithmetic.divide;
 
 
 /**

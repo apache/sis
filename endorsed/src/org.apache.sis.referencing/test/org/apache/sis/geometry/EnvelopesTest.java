@@ -39,7 +39,7 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;

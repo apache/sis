@@ -69,17 +69,17 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 
 import org.apache.sis.internal.metadata.TransformationAccuracy;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
-import org.apache.sis.internal.referencing.CoordinateOperations;
-import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
-import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
-import org.apache.sis.internal.referencing.DeprecatedCode;
-import org.apache.sis.internal.referencing.EPSGParameterDomain;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.SignReversalComment;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.CoordinateOperations;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
+import org.apache.sis.referencing.internal.DeprecatedCode;
+import org.apache.sis.referencing.internal.EPSGParameterDomain;
+import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.internal.SignReversalComment;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.Constants;
@@ -121,7 +121,7 @@ import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
-import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
+import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 
 /**

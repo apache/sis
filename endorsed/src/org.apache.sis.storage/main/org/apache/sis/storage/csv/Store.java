@@ -49,7 +49,7 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
+import org.apache.sis.referencing.util.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;

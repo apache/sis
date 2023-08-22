@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.internal.util.Numerics;
 
 

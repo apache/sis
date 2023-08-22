@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.LambertConformal1SP;
 import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.LambertConformalWest;

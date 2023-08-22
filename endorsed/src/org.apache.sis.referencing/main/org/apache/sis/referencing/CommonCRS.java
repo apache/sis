@@ -69,8 +69,8 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
@@ -493,8 +493,8 @@ public enum CommonCRS {
         } else {
             single = CRS.getHorizontalComponent(crs);
             if (single == null) {
-                throw new IllegalArgumentException(Resources.format(
-                        Resources.Keys.NonHorizontalCRS_1, IdentifiedObjects.getDisplayName(crs, null)));
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.NonHorizontalCRS_1, IdentifiedObjects.getDisplayName(crs, null)));
             }
         }
         final Datum datum = single.getDatum();

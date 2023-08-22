@@ -32,7 +32,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.provider.NorthPoleRotation;
 import org.apache.sis.referencing.operation.provider.SouthPoleRotation;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;

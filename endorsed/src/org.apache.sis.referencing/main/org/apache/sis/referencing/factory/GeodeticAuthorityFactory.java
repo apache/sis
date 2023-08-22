@@ -33,7 +33,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.AbstractFactory;

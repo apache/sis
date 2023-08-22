@@ -36,7 +36,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.AxisNames;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.internal.util.Constants;
 
 // Test dependencies

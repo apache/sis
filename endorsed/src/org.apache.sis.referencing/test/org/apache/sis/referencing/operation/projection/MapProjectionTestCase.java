@@ -237,7 +237,7 @@ abstract class MapProjectionTestCase extends MathTransformTestCase {
     /**
      * Tests coordinates close to zero. Callers must set the transform and tolerance threshold before to invoke
      * this method. This method tests (among others) the 1.4914711209038602E-154 value, which is the threshold
-     * documented in {@link org.apache.sis.internal.referencing.Formulas#fastHypot(double, double)}.
+     * documented in {@link org.apache.sis.referencing.util.Formulas#fastHypot(double, double)}.
      *
      * @throws TransformException if an error occurred while projecting the coordinate.
      */

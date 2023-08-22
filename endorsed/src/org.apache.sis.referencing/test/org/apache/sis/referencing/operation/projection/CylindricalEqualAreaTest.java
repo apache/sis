@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.ToleranceModifier;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualAreaSpherical;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
