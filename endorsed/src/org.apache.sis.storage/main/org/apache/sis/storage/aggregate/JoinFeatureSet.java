@@ -27,7 +27,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureQuery;
@@ -533,7 +533,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
          * Executes the given action on the next feature in the {@code JoinFeatureSet}.
          */
         @Override
-        public boolean tryAdvance​(final Consumer<? super Feature> action) {
+        public boolean tryAdvance(final Consumer<? super Feature> action) {
             for (;;) {
                 if (mainFeature == null) {
                     do if (!mainIterator.tryAdvance(this)) {

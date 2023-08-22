@@ -21,8 +21,8 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.metadata.internal.ReferencingServices;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Utilities;
 

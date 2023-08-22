@@ -17,7 +17,7 @@
 package org.apache.sis.profile.france;
 
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.internal.profile.fra.*;
+import org.apache.sis.xml.bind.fra.*;
 import org.apache.sis.util.Static;
 
 

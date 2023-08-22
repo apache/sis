@@ -16,7 +16,7 @@
  */
 package org.apache.sis.gui.dataset;
 
-import org.apache.sis.internal.storage.folder.UnstructuredAggregate;
+import org.apache.sis.storage.folder.UnstructuredAggregate;
 
 
 /**

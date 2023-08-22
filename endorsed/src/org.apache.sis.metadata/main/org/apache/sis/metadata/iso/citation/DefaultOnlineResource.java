@@ -24,8 +24,8 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
-import org.apache.sis.internal.jaxb.gco.StringAdapter;
-import org.apache.sis.internal.jaxb.gco.URIAdapter;
+import org.apache.sis.xml.bind.gco.StringAdapter;
+import org.apache.sis.xml.bind.gco.URIAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 

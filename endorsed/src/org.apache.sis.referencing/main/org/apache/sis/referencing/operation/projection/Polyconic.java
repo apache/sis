@@ -26,12 +26,12 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.referencing.provider.Polyconic.*;
+import static org.apache.sis.referencing.operation.provider.Polyconic.*;
 
 
 /**

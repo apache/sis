@@ -17,7 +17,7 @@
 package org.apache.sis.xml;
 
 import java.util.UUID;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 
 
 /**

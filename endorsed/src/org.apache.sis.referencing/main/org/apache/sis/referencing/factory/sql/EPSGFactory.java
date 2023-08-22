@@ -37,11 +37,11 @@ import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.internal.metadata.sql.Initializer;
-import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
-import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.metadata.sql.util.Initializer;
+import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.resources.Messages;
@@ -58,7 +58,7 @@ import org.apache.sis.util.Localized;
  *
  * <p>If no data source has been specified to the constructor, then {@code EPSGFactory} searches for a
  * default data source in JNDI, or in the directory given by the {@code SIS_DATA} environment variable,
- * or in the directory given by the {@code "derby​.system​.home"} property, in that order.
+ * or in the directory given by the {@code "derby.system.home"} property, in that order.
  * See the {@linkplain org.apache.sis.referencing.factory.sql package documentation} for more information.</p>
  *
  * <h2>EPSG dataset installation</h2>

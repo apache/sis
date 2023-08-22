@@ -35,12 +35,12 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.ObservableImage;
-import org.apache.sis.internal.coverage.j2d.TiledImage;
-import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.coverage.grid.j2d.ColorModelBuilder;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.grid.j2d.ObservableImage;
+import org.apache.sis.coverage.grid.j2d.TiledImage;
+import org.apache.sis.coverage.grid.j2d.WritableTiledImage;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -68,7 +68,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * {@snippet lang="java" :
  *     public GridCoverage createCoverage() {
- *         WritableRaster data = Raster.createBandedRaster​(DataBuffer.TYPE_USHORT, width, height, numBands, null);
+ *         WritableRaster data = Raster.createBandedRaster(DataBuffer.TYPE_USHORT, width, height, numBands, null);
  *         for (int y=0; y<height; y++) {
  *             for (int x=0; x<width; x++) {
  *                 int value = ...;                     // Compute a value here.

@@ -23,7 +23,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.sis.image.TiledImageMock;
-import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.gui.internal.BackgroundThreads;
 
 
 /**

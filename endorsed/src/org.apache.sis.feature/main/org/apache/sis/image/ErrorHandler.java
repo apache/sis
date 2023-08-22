@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

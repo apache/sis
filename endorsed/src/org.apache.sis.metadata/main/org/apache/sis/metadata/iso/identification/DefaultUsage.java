@@ -25,13 +25,13 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.identification.Usage;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
-import static org.apache.sis.internal.metadata.ImplementationHelper.toDate;
-import static org.apache.sis.internal.metadata.ImplementationHelper.toMilliseconds;
+import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
+import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;
 
 
 /**

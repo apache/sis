@@ -36,10 +36,10 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.bind.TypeRegistration;
 
 
 /**

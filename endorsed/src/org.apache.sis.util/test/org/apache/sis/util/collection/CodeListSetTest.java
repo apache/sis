@@ -237,32 +237,32 @@ public final class CodeListSetTest extends TestCase {
      */
     @Test
     public void testLargeCodeList() {
-        final Set<LargeCodeList> master = new HashSet<>(Arrays.asList(LargeCodeList.values()));
-        assertTrue("This test requires more than 64 elements.", master.size() > Long.SIZE);
+        final Set<LargeCodeList> main = new HashSet<>(Arrays.asList(LargeCodeList.values()));
+        assertTrue("This test requires more than 64 elements.", main.size() > Long.SIZE);
         final CodeListSet<LargeCodeList> c = new CodeListSet<>(LargeCodeList.class);
         /*
-         * Copy all content from the master to the CodeListSet. This will indirectly
+         * Copy all content from the `main` to the CodeListSet. This will indirectly
          * test CodeListSet.add(E), through the AbstractSet.addAll(Collection) method.
          */
-        assertTrue(c.addAll(master));
-        assertEquals(master.size(), c.size());
-        assertEquals(master, c);
-        assertFalse("Invoking a second time should not make any difference.", c.addAll(master));
+        assertTrue(c.addAll(main));
+        assertEquals(main.size(), c.size());
+        assertEquals(main, c);
+        assertFalse("Invoking a second time should not make any difference.", c.addAll(main));
         /*
          * Keep a copy of the set before we modify it.
          */
         final CodeListSet<LargeCodeList> clone = c.clone();
         assertNotSame("Clone shall be a new instance.", c, clone);
-        assertEquals("Clone shall be equal to the original.", master, clone);
+        assertEquals("Clone shall be equal to the original.", main, clone);
         assertEquals(clone, new CodeListSet<>(LargeCodeList.class, true));
         /*
          * Tests contains(Object) and remove(Object). We also remove elements
-         * from the master set, then we verify that the result is the same.
+         * from the `main` set, then we verify that the result is the same.
          */
         LargeCodeList lastRemoved = null;
         final Random random = new Random();
         do {
-            for (final Iterator<LargeCodeList> it=master.iterator(); it.hasNext();) {
+            for (final Iterator<LargeCodeList> it=main.iterator(); it.hasNext();) {
                 final LargeCodeList code = it.next();
                 assertTrue(code.name(), c.contains(code));
                 if (random.nextBoolean()) {
@@ -270,7 +270,7 @@ public final class CodeListSetTest extends TestCase {
                     assertFalse(code.name(), c.contains(code));
                     it.remove();
                     lastRemoved = code;
-                    if (master.size() == 1) {
+                    if (main.size() == 1) {
                         // Very unlikely, but let be safe since the tests
                         // after the look require at least one element.
                         break;
@@ -278,7 +278,7 @@ public final class CodeListSetTest extends TestCase {
                 }
             }
         } while (lastRemoved == null);
-        assertEquals(master, c);
+        assertEquals(main, c);
         assertFalse(c.isEmpty());
         /*
          * Test containsAll(Collection) and removeAll(Collection).
@@ -288,7 +288,7 @@ public final class CodeListSetTest extends TestCase {
         assertTrue ("Original set minus one element.",                     clone.remove(lastRemoved));
         assertTrue ("Add an element to be ignored by removeAll(…).",       c.add(lastRemoved));
         assertTrue ("Remove all elements found in the decimated set.",     clone.removeAll(c));
-        assertTrue ("Expect no common elements.", Collections.disjoint(master, clone));
+        assertTrue ("Expect no common elements.", Collections.disjoint(main, clone));
         assertFalse("Invoking a second time should not make any difference.", clone.removeAll(c));
         /*
          * Test retainAll(Collection).

@@ -43,8 +43,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.internal.converter.SurjectiveConverter;
-import org.apache.sis.internal.metadata.RecordSchemaSIS;
+import org.apache.sis.converter.SurjectiveConverter;
+import org.apache.sis.metadata.internal.RecordSchemaSIS;
 
 
 /**

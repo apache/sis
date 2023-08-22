@@ -24,8 +24,8 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.MetadataServices;
 
 
 /**

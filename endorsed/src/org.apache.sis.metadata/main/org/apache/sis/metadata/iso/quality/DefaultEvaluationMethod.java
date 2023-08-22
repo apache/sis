@@ -31,14 +31,14 @@ import org.opengis.metadata.quality.EvaluationMethod;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.metadata.quality.DataEvaluation;
 import org.opengis.metadata.quality.AggregationDerivation;
-import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.util.CloneAccess;
+import org.apache.sis.system.Semaphores;
+import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**

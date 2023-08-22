@@ -44,10 +44,10 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.util.internal.X364;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 
 /**

@@ -34,11 +34,11 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.internal.jaxb.metadata.replace.QualityParameter;
-import org.apache.sis.internal.jaxb.referencing.CC_OperationParameter;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.gco.PropertyType;
+import org.apache.sis.xml.bind.metadata.replace.QualityParameter;
+import org.apache.sis.xml.bind.referencing.CC_OperationParameter;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;

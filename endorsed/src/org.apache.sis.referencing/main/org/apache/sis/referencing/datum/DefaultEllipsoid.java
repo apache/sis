@@ -29,13 +29,13 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.jaxb.gml.Measure;
-import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
-import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.xml.bind.gml.Measure;
+import org.apache.sis.xml.bind.referencing.SecondDefiningParameter;
+import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -687,7 +687,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultEllipsoid() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
         /*
          * We need to let the DefaultEllipsoid fields unitialized because afterUnmarshal(…)
          * will check for zero values. We cannot thrown an exception from 'afterUnmarshal'

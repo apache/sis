@@ -33,7 +33,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 

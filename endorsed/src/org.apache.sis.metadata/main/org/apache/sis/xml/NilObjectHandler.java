@@ -32,9 +32,9 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
-import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.xml.bind.IdentifierMapAdapter;
+import org.apache.sis.xml.bind.ModifiableIdentifierMap;
 
 
 /**

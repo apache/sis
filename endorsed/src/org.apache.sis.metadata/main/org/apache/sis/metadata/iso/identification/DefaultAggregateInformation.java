@@ -30,10 +30,10 @@ import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.code.DS_AssociationTypeCode;
-import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.bind.metadata.code.DS_AssociationTypeCode;
+import org.apache.sis.xml.bind.metadata.code.DS_InitiativeTypeCode;
 
 
 /**

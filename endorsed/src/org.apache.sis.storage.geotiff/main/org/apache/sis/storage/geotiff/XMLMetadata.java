@@ -38,8 +38,8 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.transform.stax.StAXSource;
 import jakarta.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
-import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.DefaultTreeTable;
@@ -47,7 +47,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.XML;
 
-import static org.apache.sis.internal.metadata.TemporalUtilities.toDate;
+import static org.apache.sis.metadata.internal.TemporalUtilities.toDate;
 
 
 /**

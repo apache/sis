@@ -34,15 +34,15 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
-import static org.apache.sis.internal.util.StandardDateFormat.MILLIS_PER_SECOND;
+import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
+import static org.apache.sis.util.internal.StandardDateFormat.MILLIS_PER_SECOND;
 
 
 /**

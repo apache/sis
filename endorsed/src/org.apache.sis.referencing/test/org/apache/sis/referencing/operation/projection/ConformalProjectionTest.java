@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.Random;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.TransformTestCase;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;

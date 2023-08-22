@@ -28,11 +28,11 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.internal.VerticalDatumTypes;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 

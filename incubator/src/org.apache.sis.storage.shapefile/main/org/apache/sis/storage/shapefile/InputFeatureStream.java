@@ -16,6 +16,11 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import org.apache.sis.storage.shapefile.internal.ShapefileDescriptor;
+import org.apache.sis.storage.shapefile.internal.SQLShapefileNotFoundException;
+import org.apache.sis.storage.shapefile.internal.SQLInvalidRecordNumberForDirectAccessException;
+import org.apache.sis.storage.shapefile.internal.ShapefileByteReader;
+import org.apache.sis.storage.shapefile.internal.SQLNoDirectAccessAvailableException;
 import java.io.File;
 import java.io.InputStream;
 import java.sql.SQLFeatureNotSupportedException;
@@ -27,16 +32,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.internal.shapefile.*;
-import org.apache.sis.internal.shapefile.jdbc.*;
-import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
-import org.apache.sis.internal.shapefile.jdbc.metadata.DBFDatabaseMetaData;
-import org.apache.sis.internal.shapefile.jdbc.resultset.*;
-import org.apache.sis.internal.shapefile.jdbc.sql.SQLIllegalParameterException;
-import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
-import org.apache.sis.internal.shapefile.jdbc.sql.SQLUnsupportedParsingFeatureException;
-import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.storage.shapefile.jdbc.*;
+import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
+import org.apache.sis.storage.shapefile.jdbc.metadata.DBFDatabaseMetaData;
+import org.apache.sis.storage.shapefile.jdbc.resultset.*;
+import org.apache.sis.storage.shapefile.jdbc.sql.SQLIllegalParameterException;
+import org.apache.sis.storage.shapefile.jdbc.sql.SQLInvalidStatementException;
+import org.apache.sis.storage.shapefile.jdbc.sql.SQLUnsupportedParsingFeatureException;
+import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
+import org.apache.sis.system.Modules;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.opengis.feature.Feature;
 

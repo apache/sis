@@ -18,7 +18,7 @@ package org.apache.sis.io;
 
 import java.io.IOException;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.util.internal.X364;
 import org.junit.Before;
 
 import static org.junit.Assert.*;

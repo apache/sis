@@ -26,9 +26,9 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.apache.sis.internal.sql.feature.Resources;
-import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.StoreMetadata;
+import org.apache.sis.storage.sql.feature.Resources;
+import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -43,7 +43,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
+import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
 
 
 /**

@@ -35,7 +35,7 @@ import javafx.scene.layout.TilePane;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.gui.internal.Styles;
 
 
 /**
@@ -176,7 +176,7 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
             do {
                 final ToggleButton b = new ToggleButton(owner.format(++i));
                 b.setToggleGroup(pageGroup);
-                b.setOnAction​(this);
+                b.setOnAction(this);
                 pages.add(b);
             } while (i < n);
         } else if (i > n) {

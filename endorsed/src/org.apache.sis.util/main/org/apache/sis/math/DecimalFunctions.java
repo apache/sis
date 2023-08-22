@@ -19,9 +19,9 @@ package org.apache.sis.math;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 
-import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
+import static org.apache.sis.util.internal.Numerics.SIGNIFICAND_SIZE;
 
 
 /**

@@ -21,7 +21,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 import static org.junit.Assert.*;
 
 
@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 @DependsOn({
     // Following dependency is where the basic parameters (e.g. SEMI_MAJOR) are tested.
     // Those parameters are needed by NoOp pseudo-projection, which is used in this package.
-    org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
+    org.apache.sis.referencing.operation.provider.MapProjectionTest.class,
     InitializerTest.class
 })
 public final class NormalizedProjectionTest extends TransformTestCase {

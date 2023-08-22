@@ -28,13 +28,13 @@ module org.apache.sis.storage.netcdf {
     requires static udunits;
     requires static com.google.common;
 
-    uses org.apache.sis.internal.netcdf.Convention;
+    uses org.apache.sis.storage.netcdf.base.Convention;
 
     provides org.apache.sis.storage.DataStoreProvider
         with org.apache.sis.storage.netcdf.NetcdfStoreProvider;
 
     exports org.apache.sis.storage.netcdf;
 
-    exports org.apache.sis.internal.netcdf to
+    exports org.apache.sis.storage.netcdf.base to
             org.apache.sis.profile.japan;
 }

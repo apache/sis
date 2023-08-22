@@ -4,7 +4,7 @@ The Apache SIS source code repository has two branches, named `geoapi-3.1` and `
 which depend on [GeoAPI](https://www.geoapi.org/) versions that are still in development.
 Those GeoAPI versions are not deployed on Maven Central, because they are not yet officially approved OGC releases.
 The Apache SIS branches that use those versions are never deployed on Maven Central neither.
-Official Apache SIS releases are made from the `master` branch, which depends on the standard GeoAPI 3.0.2 release only.
+Official Apache SIS releases are made from the `main` branch, which depends on the standard GeoAPI 3.0.2 release only.
 
 The Apache SIS `geoapi-3.1` and `geoapi-4.0` branches are nevertheless useful for testing latest GeoAPI developments.
 The implementation experience gained is used for adjusting the GeoAPI interfaces before submission as an OGC standard.
@@ -27,6 +27,6 @@ which is necessary for keeping the Apache SIS code in sync with the GeoAPI snaps
 git pull --recurse-submodules
 ```
 
-## Prerequites
+## Prerequisites
 Maven must be available on the classpath.
 The GeoAPI snapshot is built by a call to `mvn clean install`.

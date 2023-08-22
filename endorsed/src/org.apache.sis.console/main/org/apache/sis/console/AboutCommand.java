@@ -36,12 +36,12 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.system.Supervisor;
-import org.apache.sis.internal.system.SupervisorMBean;
-import org.apache.sis.internal.system.DataDirectory;
-import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.system.Supervisor;
+import org.apache.sis.system.SupervisorMBean;
+import org.apache.sis.system.DataDirectory;
+import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.internal.X364;
 
 
 /**

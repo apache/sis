@@ -21,7 +21,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.FactoryException;
 import org.opengis.test.wkt.CRSParserTest;
-import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -570,7 +570,7 @@ public final class WKTParserTest extends CRSParserTest {
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      *
-     * @see org.apache.sis.internal.referencing.provider.SeismicBinGridMock
+     * @see org.apache.sis.referencing.operation.provider.SeismicBinGridMock
      */
     @Test
     @Override

@@ -28,7 +28,7 @@ import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 

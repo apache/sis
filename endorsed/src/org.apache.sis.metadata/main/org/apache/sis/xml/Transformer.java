@@ -35,7 +35,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.xml.bind.TypeRegistration;
 
 
 /**

@@ -23,7 +23,7 @@ import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import org.apache.sis.internal.processing.isoline.IsolinesTest;
+import org.apache.sis.image.processing.isoline.IsolinesTest;
 import org.apache.sis.test.DependsOn;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.test.TestCase;
@@ -40,7 +40,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 1.4
  * @since   1.1
  */
-@DependsOn(org.apache.sis.internal.processing.isoline.IsolinesTest.class)
+@DependsOn(org.apache.sis.image.processing.isoline.IsolinesTest.class)
 public final class ImageProcessorTest extends TestCase {
     /**
      * The processor to test.

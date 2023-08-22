@@ -33,7 +33,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -42,8 +42,8 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
-import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 
 
 /**
@@ -107,7 +107,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  *
  * <p>Apache SIS <a href="https://issues.apache.org/jira/browse/SIS-487">does not yet define a synchronization policy</a>
  * between {@link #getTile(int, int) getTile(…)} method and {@link WritableRenderedImage#getWritableTile(int, int)
- * WritableRenderedImage​.getWritableTile}/{@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)} methods.
+ * WritableRenderedImage.getWritableTile}/{@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)} methods.
  * For example if a call to {@code getTile(tileX, tileY)} is followed by a call to {@code getWritableTile(tileX, tileY)}
  * in another thread, there is no guarantee about whether or not the sample values seen in the {@link Raster} would be
  * isolated from the write operations done concurrently in the {@link WritableRaster}.

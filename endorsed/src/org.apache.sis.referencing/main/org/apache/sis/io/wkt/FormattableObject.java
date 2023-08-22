@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.X364;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.X364;
+import org.apache.sis.util.internal.Constants;
 
 
 /**

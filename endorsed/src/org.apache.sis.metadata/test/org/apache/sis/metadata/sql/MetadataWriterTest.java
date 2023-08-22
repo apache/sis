@@ -28,7 +28,7 @@ import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.internal.util.URLs;
+import org.apache.sis.util.internal.URLs;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;

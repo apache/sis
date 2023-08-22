@@ -24,8 +24,8 @@ import java.util.Locale;
 import org.opengis.test.Validators;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.datum.AbstractDatum;
-import org.apache.sis.internal.jaxb.referencing.Code;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.referencing.Code;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -46,7 +46,7 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
  */
 @DependsOn({
     IdentifiedObjectsTest.class, NamedIdentifierTest.class,
-    org.apache.sis.internal.jaxb.referencing.CodeTest.class
+    org.apache.sis.xml.bind.referencing.CodeTest.class
 })
 public final class AbstractIdentifiedObjectTest extends TestCase {
     /**

@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.ServiceLoader;
-import org.apache.sis.internal.system.Reflect;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.referencing.LazySet;
+import org.apache.sis.system.Reflect;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.SystemListener;
+import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.referencing.util.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 

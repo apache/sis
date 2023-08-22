@@ -43,12 +43,12 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 
 import static java.lang.Math.floorDiv;
-import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.util.internal.Numerics.ceilDiv;
 
 
 /**
@@ -1073,18 +1073,18 @@ public class PixelIterator {
      * <h4>Example</h4>
      * If an image has Red, Green, Blue and Alpha bands, then the {@link #getPixel(int[])} methods will return
      * arrays of length 4 containing the individual values for each band, no matter how those bands are stored
-     * in the image. By contrast this {@code getDataElements​(…)} method may return an array of length 1 with
+     * in the image. By contrast this {@code getDataElements(…)} method may return an array of length 1 with
      * all sample values packed as a single ARGB value.
      *
      * @param  dest  a pre-allocated array where to store the data elements, or {@code null} if none.
      * @return the data elements for current pixel.
      *
-     * @see Raster#getDataElements​(int, int, Object)
+     * @see Raster#getDataElements(int, int, Object)
      *
      * @since 1.1
      */
     public Object getDataElements(final Object dest) {
-        return currentRaster.getDataElements​(x, y, dest);
+        return currentRaster.getDataElements(x, y, dest);
     }
 
     /**

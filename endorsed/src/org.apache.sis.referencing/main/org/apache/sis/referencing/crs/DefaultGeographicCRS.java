@@ -35,11 +35,11 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.internal.util.Constants.CRS;
-import static org.apache.sis.internal.util.Constants.EPSG;
-import static org.apache.sis.internal.util.Constants.CRS27;
-import static org.apache.sis.internal.util.Constants.CRS83;
-import static org.apache.sis.internal.util.Constants.CRS84;
+import static org.apache.sis.util.internal.Constants.CRS;
+import static org.apache.sis.util.internal.Constants.EPSG;
+import static org.apache.sis.util.internal.Constants.CRS27;
+import static org.apache.sis.util.internal.Constants.CRS83;
+import static org.apache.sis.util.internal.Constants.CRS84;
 
 
 /**

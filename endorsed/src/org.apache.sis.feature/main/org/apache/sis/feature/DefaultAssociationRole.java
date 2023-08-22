@@ -24,8 +24,8 @@ import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.feature.internal.AttributeConvention;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 

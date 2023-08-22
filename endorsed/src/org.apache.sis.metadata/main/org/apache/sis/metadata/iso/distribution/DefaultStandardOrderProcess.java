@@ -26,12 +26,12 @@ import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.StandardOrderProcess;
-import org.apache.sis.internal.jaxb.gco.GO_RecordType;
-import org.apache.sis.internal.jaxb.gco.GO_Record;
+import org.apache.sis.xml.bind.gco.GO_RecordType;
+import org.apache.sis.xml.bind.gco.GO_Record;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.ImplementationHelper.toDate;
-import static org.apache.sis.internal.metadata.ImplementationHelper.toMilliseconds;
+import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
+import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;
 
 
 /**

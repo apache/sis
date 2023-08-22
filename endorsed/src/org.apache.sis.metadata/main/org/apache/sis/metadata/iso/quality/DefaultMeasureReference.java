@@ -25,7 +25,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.MeasureReference;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 
 
 /**

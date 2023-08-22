@@ -38,7 +38,7 @@ import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 
 
 /**

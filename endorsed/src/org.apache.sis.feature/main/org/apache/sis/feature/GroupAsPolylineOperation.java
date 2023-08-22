@@ -22,11 +22,11 @@ import java.util.Iterator;
 import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.feature.FeatureUtilities;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.feature.internal.FeatureUtilities;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Branch-dependent imports

@@ -19,8 +19,8 @@ package org.apache.sis.metadata.iso.identification;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -30,7 +30,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
-import static org.apache.sis.internal.jaxb.gml.MeasureTest.UOM_URL;
+import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
 
 
 /**

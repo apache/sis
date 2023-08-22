@@ -22,11 +22,11 @@ import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.feature.SpatialOperationContext;
-import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.filter.Node;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.geometry.wrapper.SpatialOperationContext;
+import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.filter.internal.Node;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports

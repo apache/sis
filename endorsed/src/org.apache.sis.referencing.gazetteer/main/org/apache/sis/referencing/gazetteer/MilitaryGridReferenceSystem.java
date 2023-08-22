@@ -45,9 +45,9 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.TransverseMercator;
-import org.apache.sis.internal.referencing.provider.PolarStereographicA;
-import org.apache.sis.internal.gazetteer.Resources;
+import org.apache.sis.referencing.operation.provider.TransverseMercator;
+import org.apache.sis.referencing.operation.provider.PolarStereographicA;
+import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -55,7 +55,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
+import org.apache.sis.referencing.util.j2d.IntervalRectangle;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.math.MathFunctions;
@@ -71,8 +71,8 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
@@ -817,8 +817,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             IteratorAllZones(final Envelope areaOfInterest) throws FactoryException, TransformException {
                 final SingleCRS sourceCRS = CRS.getHorizontalComponent(areaOfInterest.getCoordinateReferenceSystem());
                 if (sourceCRS == null) {
-                    throw new GazetteerException(org.apache.sis.internal.referencing.Resources.format(
-                            org.apache.sis.internal.referencing.Resources.Keys.NonHorizontalCRS_1, "areaOfInterest"));
+                    throw new GazetteerException(Errors.format(Errors.Keys.NonHorizontalCRS_1, "areaOfInterest"));
                 }
                 final int precision = (int) getPrecision();
                 if (precision <= 0 || precision > GRID_SQUARE_SIZE) {

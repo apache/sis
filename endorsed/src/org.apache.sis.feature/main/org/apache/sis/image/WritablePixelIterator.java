@@ -24,7 +24,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.opengis.coverage.grid.SequenceType;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**
@@ -258,7 +258,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      *
      * @param  values  the new the data elements.
      *
-     * @see WritableRaster#setDataElements​(int, int, Object)
+     * @see WritableRaster#setDataElements(int, int, Object)
      * @see #getDataElements(Object)
      *
      * @since 1.1

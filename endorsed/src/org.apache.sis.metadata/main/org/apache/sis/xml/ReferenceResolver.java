@@ -23,8 +23,8 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LenientComparable;
-import org.apache.sis.internal.jaxb.gcx.Anchor;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.gcx.Anchor;
+import org.apache.sis.xml.bind.Context;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 

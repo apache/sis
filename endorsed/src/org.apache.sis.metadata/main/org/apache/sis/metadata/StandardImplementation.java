@@ -26,7 +26,7 @@ import org.opengis.annotation.Classifier;
 import org.opengis.annotation.Stereotype;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 
 
 

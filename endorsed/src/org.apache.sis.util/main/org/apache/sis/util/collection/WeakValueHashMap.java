@@ -152,7 +152,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         }
 
         /**
-         * Invoked by {@link org.apache.sis.internal.system.ReferenceQueueConsumer}
+         * Invoked by {@link org.apache.sis.system.ReferenceQueueConsumer}
          * for removing the reference from the enclosing collection.
          */
         @Override

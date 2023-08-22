@@ -20,8 +20,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
-import org.apache.sis.internal.system.Shutdown;
-import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.system.Shutdown;
+import org.apache.sis.system.SystemListener;
 
 
 /**

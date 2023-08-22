@@ -59,7 +59,7 @@ public interface Resource {
      * <ul>
      *   <li>It shall be unique in the {@link DataStore} which contains it, if there is one.</li>
      *   <li>It's value shall not change after closing and reopening the {@link DataStore} on the same data.</li>
-     *   <li>It should be consistent with the <code>{@linkplain #getMetadata()}/​identificationInfo/​citation/​identifier</code> value.</li>
+     *   <li>It should be consistent with the <code>{@linkplain #getMetadata()}/identificationInfo/citation/identifier</code> value.</li>
      * </ul>
      *
      * If any of above conditions is not met, then this identifier should be absent.

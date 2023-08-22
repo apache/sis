@@ -19,8 +19,8 @@ package org.apache.sis.util;
 import java.util.Map;
 import java.util.Set;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.internal.converter.IdentityConverter;
-import org.apache.sis.internal.converter.SystemRegistry;
+import org.apache.sis.converter.IdentityConverter;
+import org.apache.sis.converter.SystemRegistry;
 
 
 /**

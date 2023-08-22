@@ -23,7 +23,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import java.util.function.DoubleUnaryOperator;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 
 /**
  * Tests {@link StatisticsCalculator}. This will also (indirectly) tests
- * {@link org.apache.sis.internal.coverage.j2d.TileOpExecutor} with multi-threading.
+ * {@link org.apache.sis.coverage.grid.j2d.TileOpExecutor} with multi-threading.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

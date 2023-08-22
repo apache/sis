@@ -77,7 +77,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.portrayal.RenderException;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Classes;
@@ -90,16 +90,16 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.GUIUtilities;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.GUIUtilities;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

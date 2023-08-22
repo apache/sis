@@ -28,11 +28,11 @@ import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.SQRT_2;
-import static org.apache.sis.internal.referencing.provider.Mollweide.*;
+import static org.apache.sis.referencing.operation.provider.Mollweide.*;
 
 
 /**

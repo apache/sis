@@ -19,7 +19,7 @@ package org.apache.sis.services;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-import org.apache.sis.internal.system.Shutdown;
+import org.apache.sis.system.Shutdown;
 
 
 /**

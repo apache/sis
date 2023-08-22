@@ -28,12 +28,12 @@ import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
+import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
 
 // Branch-dependent imports
 import org.opengis.coverage.CannotEvaluateException;

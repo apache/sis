@@ -20,7 +20,7 @@ import java.util.Set;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.test.xml.TestCase;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.junit.Test;
 
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

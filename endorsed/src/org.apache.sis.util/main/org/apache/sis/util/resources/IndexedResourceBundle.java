@@ -44,11 +44,11 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.util.AutoMessageFormat;
-import org.apache.sis.internal.util.MetadataServices;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.util.internal.AutoMessageFormat;
+import org.apache.sis.util.internal.MetadataServices;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 

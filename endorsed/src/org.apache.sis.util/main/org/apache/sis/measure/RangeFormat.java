@@ -42,9 +42,9 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.internal.util.LocalizedParseException;
-import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.LocalizedParseException;
+import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.internal.Numerics;
 
 
 /**

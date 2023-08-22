@@ -121,7 +121,7 @@ public final class UUIDMarshallingTest extends TestCase {
      *   }
      *
      * On an implementation note, the {@code uuid} and other attributes of the {@code <cit:CI_Series>}
-     * elements are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
+     * elements are handled by {@link org.apache.sis.xml.bind.gco.PropertyType}.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
@@ -172,7 +172,7 @@ public final class UUIDMarshallingTest extends TestCase {
      *   }
      *
      * On an implementation note, the {@code uuidref}, {@code xlink:href} and other attributes of the
-     * {@code <cit:series>} element are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
+     * {@code <cit:series>} element are handled by {@link org.apache.sis.xml.bind.gco.PropertyType}.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      */

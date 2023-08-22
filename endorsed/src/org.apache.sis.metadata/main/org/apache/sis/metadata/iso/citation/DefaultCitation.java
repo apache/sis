@@ -31,17 +31,17 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.bind.NonMarshalledAuthority;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifierMap;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.ImplementationHelper.toDate;
-import static org.apache.sis.internal.metadata.ImplementationHelper.toMilliseconds;
+import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
+import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;
 
 
 /**

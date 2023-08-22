@@ -28,7 +28,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Locales;
 

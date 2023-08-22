@@ -23,7 +23,7 @@ import org.opengis.metadata.lineage.NominalResolution;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 
 /**

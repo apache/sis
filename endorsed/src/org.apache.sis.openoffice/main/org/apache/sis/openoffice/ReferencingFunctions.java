@@ -40,7 +40,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.storage.CodeType;
+import org.apache.sis.storage.base.CodeType;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;

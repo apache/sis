@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOn;
 import org.junit.*;
@@ -49,7 +49,7 @@ public final class OrthographicTest extends MapProjectionTestCase {
      * @param  φ0  latitude of projection centre.
      */
     private void createSpherical(final double φ0) {
-        final MapProjection provider = new org.apache.sis.internal.referencing.provider.Orthographic();
+        final MapProjection provider = new org.apache.sis.referencing.operation.provider.Orthographic();
         final Parameters parameters = parameters(provider, false);
         parameters.parameter("latitude_of_origin").setValue(φ0);
         transform = new Orthographic(provider, parameters);
@@ -162,6 +162,6 @@ public final class OrthographicTest extends MapProjectionTestCase {
      */
     @Test
     public void runGeoapiTest() throws FactoryException, TransformException {
-        createGeoApiTest(new org.apache.sis.internal.referencing.provider.Orthographic()).testOrthographic();
+        createGeoApiTest(new org.apache.sis.referencing.operation.provider.Orthographic()).testOrthographic();
     }
 }

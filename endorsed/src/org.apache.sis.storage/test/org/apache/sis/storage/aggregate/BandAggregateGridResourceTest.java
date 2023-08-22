@@ -31,7 +31,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.BufferedGridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
-import org.apache.sis.internal.storage.MemoryGridResource;
+import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.referencing.crs.HardCodedCRS;

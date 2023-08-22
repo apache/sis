@@ -19,7 +19,7 @@ package org.apache.sis.test;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Files;
-import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.system.DataDirectory;
 
 import static org.junit.Assume.*;
 

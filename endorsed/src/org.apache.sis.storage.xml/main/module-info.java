@@ -28,11 +28,11 @@ module org.apache.sis.storage.xml {
     requires transitive org.apache.sis.storage;
 
     provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.internal.storage.gpx.StoreProvider;
+        with org.apache.sis.storage.gpx.StoreProvider;
 
     exports org.apache.sis.storage.gps;
 
-    exports org.apache.sis.internal.storage.gpx to
+    exports org.apache.sis.storage.gpx to
             org.apache.sis.console,
             org.apache.sis.gui;                     // In the "optional" sub-project.
 
@@ -40,5 +40,5 @@ module org.apache.sis.storage.xml {
      * Allow JAXB to use reflection for marshalling and
      * unmarshalling Apache SIS objects in XML documents.
      */
-    opens org.apache.sis.internal.storage.gpx to jakarta.xml.bind;
+    opens org.apache.sis.storage.gpx to jakarta.xml.bind;
 }

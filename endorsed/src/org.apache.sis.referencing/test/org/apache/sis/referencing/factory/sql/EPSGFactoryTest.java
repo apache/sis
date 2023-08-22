@@ -46,7 +46,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.util.FactoryException;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;

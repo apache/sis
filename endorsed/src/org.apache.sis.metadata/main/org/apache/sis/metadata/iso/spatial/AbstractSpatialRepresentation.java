@@ -26,7 +26,7 @@ import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
 import org.opengis.metadata.spatial.VectorSpatialRepresentation;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.metadata.MD_Scope;
+import org.apache.sis.xml.bind.metadata.MD_Scope;
 
 
 /**

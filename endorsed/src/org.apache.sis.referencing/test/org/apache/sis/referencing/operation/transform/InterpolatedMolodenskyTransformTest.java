@@ -18,12 +18,12 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
+import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
-import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
-import org.apache.sis.internal.referencing.provider.MolodenskyInterpolation;
+import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
+import org.apache.sis.referencing.operation.provider.MolodenskyInterpolation;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 

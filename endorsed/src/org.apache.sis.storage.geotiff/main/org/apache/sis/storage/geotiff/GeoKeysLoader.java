@@ -19,7 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.Map;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.geotiff.internal.Resources;
 
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 

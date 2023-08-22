@@ -65,13 +65,13 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * This set will contain at least the following namespaces:
      *
      * <ul>
-     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GMI}</li>
-     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GMI_ALIAS}</li>
-     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GMD}</li>
-     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#SRV}</li>
-     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GCO}</li>
-     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GMX}</li>
-     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GML}</li>
+     *   <li>{@value org.apache.sis.xml.util.LegacyNamespaces#GMI}</li>
+     *   <li>{@value org.apache.sis.xml.util.LegacyNamespaces#GMI_ALIAS}</li>
+     *   <li>{@value org.apache.sis.xml.util.LegacyNamespaces#GMD}</li>
+     *   <li>{@value org.apache.sis.xml.util.LegacyNamespaces#SRV}</li>
+     *   <li>{@value org.apache.sis.xml.util.LegacyNamespaces#GCO}</li>
+     *   <li>{@value org.apache.sis.xml.util.LegacyNamespaces#GMX}</li>
+     *   <li>{@value org.apache.sis.xml.util.LegacyNamespaces#GML}</li>
      * </ul>
      *
      * More namespaces may appear depending on the optional module on the module path.
@@ -411,7 +411,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * Get the value of a feature/property from the underlying implementation.
      */
     @Override
-    public Object getProperty​(final String name) {
+    public Object getProperty(final String name) {
         return in.getProperty(name);
     }
 

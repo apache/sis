@@ -31,13 +31,13 @@ import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.internal.jaxb.gco.GO_Real;
-import org.apache.sis.internal.jaxb.gco.GO_Integer;
-import org.apache.sis.internal.jaxb.gco.GO_Record;
-import org.apache.sis.internal.jaxb.gco.GO_RecordType;
-import org.apache.sis.internal.jaxb.metadata.MI_RangeElementDescription;
+import org.apache.sis.xml.bind.gco.GO_Real;
+import org.apache.sis.xml.bind.gco.GO_Integer;
+import org.apache.sis.xml.bind.gco.GO_Record;
+import org.apache.sis.xml.bind.gco.GO_RecordType;
+import org.apache.sis.xml.bind.metadata.MI_RangeElementDescription;
 
-import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 
 /**

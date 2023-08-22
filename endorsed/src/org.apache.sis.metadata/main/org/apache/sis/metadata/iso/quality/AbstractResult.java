@@ -27,8 +27,8 @@ import org.opengis.metadata.quality.CoverageResult;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.metadata.quality.DescriptiveResult;
-import org.apache.sis.internal.jaxb.metadata.MD_Scope;
-import org.apache.sis.internal.jaxb.gco.GO_Temporal;
+import org.apache.sis.xml.bind.metadata.MD_Scope;
+import org.apache.sis.xml.bind.gco.GO_Temporal;
 
 // Branch-dependent imports
 import org.opengis.metadata.maintenance.Scope;

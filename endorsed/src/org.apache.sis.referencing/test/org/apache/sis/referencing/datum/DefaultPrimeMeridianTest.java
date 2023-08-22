@@ -27,7 +27,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOnMethod;

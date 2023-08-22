@@ -18,7 +18,7 @@ package org.apache.sis.metadata.iso.maintenance;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.feature.type.FeatureType;
-import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
+import org.apache.sis.xml.bind.gco.GO_CharacterString;
 
 
 /**

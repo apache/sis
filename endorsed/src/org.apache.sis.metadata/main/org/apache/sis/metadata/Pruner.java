@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.metadata.ValueExistencePolicy.*;
 

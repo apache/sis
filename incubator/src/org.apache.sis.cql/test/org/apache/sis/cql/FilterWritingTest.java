@@ -21,7 +21,7 @@ import java.text.ParseException;
 import org.opengis.filter.Filter;
 import org.opengis.feature.Feature;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.junit.Test;

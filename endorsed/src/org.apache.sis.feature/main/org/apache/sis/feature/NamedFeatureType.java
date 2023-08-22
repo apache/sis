@@ -27,8 +27,8 @@ import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.FeatureInstantiationException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

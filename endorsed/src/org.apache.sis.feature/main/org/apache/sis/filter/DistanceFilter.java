@@ -21,9 +21,9 @@ import java.util.Collection;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Geometry;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.feature.SpatialOperationContext;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports

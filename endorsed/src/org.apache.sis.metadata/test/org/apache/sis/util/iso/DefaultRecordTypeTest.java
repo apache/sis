@@ -20,7 +20,7 @@ import java.util.Map;
 import org.opengis.util.Type;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
-import org.apache.sis.internal.simple.SimpleAttributeType;
+import org.apache.sis.metadata.simple.SimpleAttributeType;
 
 // Test imports
 import org.junit.Test;

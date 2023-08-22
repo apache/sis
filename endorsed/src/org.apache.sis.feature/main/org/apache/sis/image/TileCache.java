@@ -21,8 +21,8 @@ import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.lang.ref.Reference;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**
@@ -66,7 +66,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
      * @return memory used by the given tile, in bytes.
      */
     @Override
-    protected int cost​(final Raster tile) {
+    protected int cost(final Raster tile) {
         long numBits = Math.multiplyFull(tile.getWidth(), tile.getHeight()) * tile.getNumBands();
         final DataBuffer buffer = tile.getDataBuffer();
         if (buffer != null) try {

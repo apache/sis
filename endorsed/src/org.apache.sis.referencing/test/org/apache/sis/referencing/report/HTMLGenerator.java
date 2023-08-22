@@ -26,7 +26,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.Closeable;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Deprecable;
 

@@ -19,7 +19,7 @@ package org.apache.sis.referencing.factory.sql;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.apache.sis.internal.system.ReferenceQueueConsumer;
+import org.apache.sis.system.ReferenceQueueConsumer;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 

@@ -31,7 +31,7 @@ import java.nio.charset.Charset;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.util.internal.X364;
 
 
 /**

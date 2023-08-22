@@ -31,7 +31,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
+import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -93,7 +93,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * <h4>Note on JAXB annotation</h4>
      * The {@link XmlElement} annotation applied here is appropriate for {@code TypeName} and {@code MemberName}
      * subtypes only. It is <strong>not</strong> appropriate when (un)marshalling directly a {@code LocalName}.
-     * The distinction between the two cases is done by {@link org.apache.sis.internal.jaxb.gco.GO_GenericName},
+     * The distinction between the two cases is done by {@link org.apache.sis.xml.bind.gco.GO_GenericName},
      * which replace the {@code LocalName} instance by an internal {@code NameValue} object (so the XML element
      * declared here is never marshalled). Example:
      *

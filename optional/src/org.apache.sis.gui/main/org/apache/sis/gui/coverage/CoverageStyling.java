@@ -33,10 +33,10 @@ import javafx.scene.control.ContextMenu;
 import org.opengis.util.InternationalString;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.image.Colorizer;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.ImmutableObjectProperty;
-import org.apache.sis.internal.gui.control.ColorRamp;
-import org.apache.sis.internal.gui.control.ColorColumnHandler;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.ImmutableObjectProperty;
+import org.apache.sis.gui.controls.ColorRamp;
+import org.apache.sis.gui.controls.ColorColumnHandler;
 import org.apache.sis.util.resources.Vocabulary;
 
 

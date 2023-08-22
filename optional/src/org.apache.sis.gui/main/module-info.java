@@ -41,7 +41,7 @@ module org.apache.sis.gui {
     requires org.apache.sis.referencing.gazetteer;
 
     provides org.apache.sis.setup.InstallationResources
-        with org.apache.sis.internal.gui.OptionalDataDownloader;
+        with org.apache.sis.gui.internal.io.OptionalDataDownloader;
 
     exports org.apache.sis.gui;
     exports org.apache.sis.gui.metadata;

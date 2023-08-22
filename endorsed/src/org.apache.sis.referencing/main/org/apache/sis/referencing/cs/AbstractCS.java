@@ -39,12 +39,12 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.referencing.util.WKTUtilities;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.system.Modules;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
@@ -566,7 +566,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * to JAXB, which will assign values to the fields using reflection.
      */
     AbstractCS() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
         axes = EMPTY;
         /*
          * Coordinate system axes are mandatory for SIS working. We do not verify their presence here

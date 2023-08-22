@@ -30,20 +30,20 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.internal.cql.AntlrCQL;
-import org.apache.sis.internal.cql.CQLParser.CoordinateContext;
-import org.apache.sis.internal.cql.CQLParser.CoordinateSerieContext;
-import org.apache.sis.internal.cql.CQLParser.CoordinateSeriesContext;
-import org.apache.sis.internal.cql.CQLParser.ExpressionContext;
-import org.apache.sis.internal.cql.CQLParser.ExpressionFctParamContext;
-import org.apache.sis.internal.cql.CQLParser.ExpressionGeometryContext;
-import org.apache.sis.internal.cql.CQLParser.ExpressionNumContext;
-import org.apache.sis.internal.cql.CQLParser.ExpressionTermContext;
-import org.apache.sis.internal.cql.CQLParser.ExpressionUnaryContext;
-import org.apache.sis.internal.cql.CQLParser.FilterContext;
-import org.apache.sis.internal.cql.CQLParser.FilterGeometryContext;
-import org.apache.sis.internal.cql.CQLParser.FilterTermContext;
-import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.cql.internal.AntlrCQL;
+import org.apache.sis.cql.internal.CQLParser.CoordinateContext;
+import org.apache.sis.cql.internal.CQLParser.CoordinateSerieContext;
+import org.apache.sis.cql.internal.CQLParser.CoordinateSeriesContext;
+import org.apache.sis.cql.internal.CQLParser.ExpressionContext;
+import org.apache.sis.cql.internal.CQLParser.ExpressionFctParamContext;
+import org.apache.sis.cql.internal.CQLParser.ExpressionGeometryContext;
+import org.apache.sis.cql.internal.CQLParser.ExpressionNumContext;
+import org.apache.sis.cql.internal.CQLParser.ExpressionTermContext;
+import org.apache.sis.cql.internal.CQLParser.ExpressionUnaryContext;
+import org.apache.sis.cql.internal.CQLParser.FilterContext;
+import org.apache.sis.cql.internal.CQLParser.FilterGeometryContext;
+import org.apache.sis.cql.internal.CQLParser.FilterTermContext;
+import org.apache.sis.util.internal.StandardDateFormat;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
@@ -60,7 +60,7 @@ import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.ValueReference;
 
-import static org.apache.sis.internal.cql.CQLParser.*;
+import static org.apache.sis.cql.internal.CQLParser.*;
 import org.opengis.filter.Literal;
 import org.opengis.filter.SortOrder;
 import org.opengis.filter.SortProperty;
@@ -74,7 +74,7 @@ import org.opengis.filter.SortProperty;
  */
 public final class CQL {
 
-    private static final GeometryFactory GF = org.apache.sis.internal.feature.jts.Factory.INSTANCE.factory(false);
+    private static final GeometryFactory GF = org.apache.sis.geometry.wrapper.jts.Factory.INSTANCE.factory(false);
 
     private CQL() {
     }

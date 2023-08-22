@@ -18,7 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import org.junit.Test;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

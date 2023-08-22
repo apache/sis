@@ -59,19 +59,19 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.StoreUtilities;
-import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.storage.io.ChannelFactory;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.internal.storage.io.ChannelDataOutput;
-import org.apache.sis.internal.storage.io.ChannelImageInputStream;
-import org.apache.sis.internal.storage.io.ChannelImageOutputStream;
-import org.apache.sis.internal.storage.io.InputStreamAdapter;
-import org.apache.sis.internal.storage.io.RewindableLineReader;
-import org.apache.sis.internal.storage.io.InternalOptionKey;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.io.stream.ChannelFactory;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataOutput;
+import org.apache.sis.io.stream.ChannelImageInputStream;
+import org.apache.sis.io.stream.ChannelImageOutputStream;
+import org.apache.sis.io.stream.InputStreamAdapter;
+import org.apache.sis.io.stream.RewindableLineReader;
+import org.apache.sis.io.stream.InternalOptionKey;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
 
@@ -1656,7 +1656,7 @@ public class StorageConnector implements Serializable {
      * with cache file, we want to propagate the original exception to user because its message
      * may tell that there is no space left on device or no write permission.
      *
-     * @see org.apache.sis.internal.storage.image.FormatFinder#unwrap(IIOException)
+     * @see org.apache.sis.storage.image.FormatFinder#unwrap(IIOException)
      */
     @Workaround(library = "JDK", version = "18")
     private static IOException unwrap(final IIOException e) {

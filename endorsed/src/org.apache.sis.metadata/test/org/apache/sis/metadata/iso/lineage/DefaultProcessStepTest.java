@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.lineage;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
+import org.apache.sis.xml.bind.gmi.LE_ProcessStep;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.junit.Test;

@@ -38,12 +38,12 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.floor;
-import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
-import static org.apache.sis.internal.referencing.provider.ZonedTransverseMercator.*;
+import static org.apache.sis.referencing.operation.provider.TransverseMercator.*;
+import static org.apache.sis.referencing.operation.provider.ZonedTransverseMercator.*;
 
 
 /**

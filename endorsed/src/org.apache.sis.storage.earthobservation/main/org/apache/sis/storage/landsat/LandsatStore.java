@@ -45,9 +45,9 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.storage.folder.ConcurrentCloser;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.folder.ConcurrentCloser;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.setup.OptionKey;
 
@@ -187,7 +187,7 @@ public class LandsatStore extends DataStore implements Aggregate {
     /**
      * Returns the value associated to {@code LANDSAT_SCENE_ID} in the Landsat metadata file.
      * This value is fetched from
-     * <code>{@linkplain #getMetadata()}/​identificationInfo/​citation/​identifier</code>.
+     * <code>{@linkplain #getMetadata()}/identificationInfo/citation/identifier</code>.
      *
      * @return the identifier fetched from metadata, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading the metadata.

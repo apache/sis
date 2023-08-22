@@ -46,10 +46,10 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.MetadataServices;
-import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.util.internal.MetadataServices;
+import org.apache.sis.util.internal.LocalizedParseException;
 
-import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 
 /**

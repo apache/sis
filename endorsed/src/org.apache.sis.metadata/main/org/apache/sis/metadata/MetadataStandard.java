@@ -33,12 +33,12 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.simple.SimpleCitation;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.Semaphores;
+import org.apache.sis.system.SystemListener;
+import org.apache.sis.metadata.simple.SimpleCitation;
+import org.apache.sis.util.internal.Strings;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -476,7 +476,7 @@ public class MetadataStandard implements Serializable {
      * <p>If the given class is the return value of a property, then the type of that property should be specified
      * in the {@code key.propertyType} argument. This information allows this method to take in account only types
      * that are assignable to {@code propertyType}, so we can handle classes that implement many metadata interfaces.
-     * For example, the {@link org.apache.sis.internal.simple} package have various examples of implementing more than
+     * For example, the {@link org.apache.sis.metadata.simple} package have various examples of implementing more than
      * one interface for convenience.</p>
      *
      * <p>This method ignores dependencies. Fallback on metadata standard dependencies shall be done by the caller.</p>
@@ -547,7 +547,7 @@ public class MetadataStandard implements Serializable {
      * <p>If the given class is the return value of a property, then the type of that property should be specified
      * in the {@code propertyType} argument. This information allows this method to take in account only the types
      * that are assignable to {@code propertyType}, so we can handle classes that implement many metadata interfaces.
-     * For example, the {@link org.apache.sis.internal.simple} package have various examples of implementing more than
+     * For example, the {@link org.apache.sis.metadata.simple} package have various examples of implementing more than
      * one interface for convenience.</p>
      *
      * @see Classes#getAllInterfaces(Class)

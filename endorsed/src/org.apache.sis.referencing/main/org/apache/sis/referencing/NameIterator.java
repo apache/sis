@@ -21,11 +21,11 @@ import java.util.Collection;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.metadata.NameMeaning;
-import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.metadata.internal.NameMeaning;
+import org.apache.sis.referencing.util.NilReferencingObject;
 
-import static org.apache.sis.internal.util.Strings.appendUnicodeIdentifier;
+import static org.apache.sis.util.internal.Strings.appendUnicodeIdentifier;
 
 
 /**
@@ -126,7 +126,7 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
      * Then, this method returns the concatenation of the following elements separated by hyphens:</p>
      * <ul>
      *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
-     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.util.internal.DefinitionURI})</li>
      *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
      * </ul>
      *

@@ -21,7 +21,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.measure.Units;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.util.internal.X364;
 
 // Test imports
 import org.apache.sis.test.mock.VerticalCRSMock;

@@ -35,11 +35,11 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapMenu;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.internal.gui.GUIUtilities;
-import org.apache.sis.internal.gui.control.ValueColorMapper;
-import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.control.SyncWindowList;
+import org.apache.sis.gui.internal.GUIUtilities;
+import org.apache.sis.gui.controls.ValueColorMapper;
+import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.controls.SyncWindowList;
 import org.apache.sis.util.resources.Vocabulary;
 
 

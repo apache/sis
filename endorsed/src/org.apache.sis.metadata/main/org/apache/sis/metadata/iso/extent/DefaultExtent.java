@@ -37,7 +37,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 

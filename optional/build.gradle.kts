@@ -130,7 +130,7 @@ tasks.test {
     patchForTests(args);
     addRead  (args, "org.apache.sis.util",                                "ALL-UNNAMED")
     addExport(args, "org.apache.sis.util", "org.apache.sis.test",         "ALL-UNNAMED")
-    addExport(args, "org.apache.sis.gui",  "org.apache.sis.internal.gui", "ALL-UNNAMED")
+    addExport(args, "org.apache.sis.gui",  "org.apache.sis.gui.internal", "ALL-UNNAMED")
     setAllJvmArgs(args)
     testLogging {
         events("FAILED", "STANDARD_OUT", "STANDARD_ERROR")

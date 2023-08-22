@@ -26,17 +26,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
-import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.storage.netcdf.base.Decoder;
+import org.apache.sis.storage.netcdf.internal.Resources;
+import org.apache.sis.storage.netcdf.classic.ChannelDecoder;
+import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.system.SystemListener;
+import org.apache.sis.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
@@ -410,7 +410,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                          * using reflection for avoiding "hard" dependency from this provider to the UCAR library.
                          */
                         final Class<? extends Decoder> wrapper =
-                                Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
+                                Class.forName("org.apache.sis.storage.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
                         final Class<?>[] parameterTypes = new Class<?>[] {netcdfFileClass, GeometryLibrary.class, StoreListeners.class};
                         createFromUCAR = wrapper.getConstructor(parameterTypes);
                         parameterTypes[0] = String.class;

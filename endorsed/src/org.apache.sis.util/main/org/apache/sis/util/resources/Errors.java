@@ -688,6 +688,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short NonEquilibratedParenthesis_2 = 101;
 
         /**
+         * No horizontal component found in the “{0}” coordinate reference system.
+         */
+        public static final short NonHorizontalCRS_1 = 201;
+
+        /**
          * Conversion is not invertible.
          */
         public static final short NonInvertibleConversion = 102;

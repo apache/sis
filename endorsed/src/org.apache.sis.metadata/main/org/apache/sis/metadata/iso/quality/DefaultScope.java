@@ -21,9 +21,9 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.util.internal.CollectionsExt;
 
 
 /**

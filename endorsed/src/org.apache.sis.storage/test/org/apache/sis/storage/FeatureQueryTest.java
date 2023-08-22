@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;

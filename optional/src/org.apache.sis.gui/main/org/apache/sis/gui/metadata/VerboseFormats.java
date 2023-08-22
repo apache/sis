@@ -22,7 +22,7 @@ import java.text.Format;
 import java.text.DateFormat;
 import javax.measure.Unit;
 import org.apache.sis.measure.UnitFormat;
-import org.apache.sis.internal.gui.PropertyValueFormats;
+import org.apache.sis.gui.internal.PropertyValueFormats;
 
 
 /**

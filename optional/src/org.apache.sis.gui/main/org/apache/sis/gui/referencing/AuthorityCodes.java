@@ -41,11 +41,11 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.util.internal.Strings;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

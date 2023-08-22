@@ -37,8 +37,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
-import org.apache.sis.internal.gui.MouseDrags;
-import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.gui.internal.MouseDrags;
+import org.apache.sis.gui.internal.Styles;
 
 
 /**
@@ -678,7 +678,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
                 final double cellHeight = flow.getFixedCellSize();
                 final double width  = area.width  * cellWidth;
                 final double height = area.height * cellHeight;
-                layoutInArea​(error,
+                layoutInArea(error,
                         cellWidth  * (area.x - firstVisibleColumn) + leftBackground.getWidth(),
                         cellHeight * (area.y - firstVisibleRow)    + topBackground.getHeight(),
                         width, height, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);

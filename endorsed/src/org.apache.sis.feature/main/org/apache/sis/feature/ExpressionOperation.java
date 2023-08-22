@@ -24,9 +24,9 @@ import java.util.function.Function;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.internal.feature.FeatureUtilities;
-import org.apache.sis.internal.filter.FunctionNames;
-import org.apache.sis.internal.filter.Visitor;
+import org.apache.sis.feature.internal.FeatureUtilities;
+import org.apache.sis.filter.internal.FunctionNames;
+import org.apache.sis.filter.internal.Visitor;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

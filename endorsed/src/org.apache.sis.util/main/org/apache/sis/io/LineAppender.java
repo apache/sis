@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.util.internal.X364;
 
 
 /**

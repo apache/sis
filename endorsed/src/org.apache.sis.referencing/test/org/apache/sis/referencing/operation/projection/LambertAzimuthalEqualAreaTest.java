@@ -20,16 +20,16 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
-import org.apache.sis.internal.referencing.provider.MapProjection;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.referencing.operation.provider.MapProjection;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.parameter.Parameters;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static java.lang.StrictMath.*;
 import static org.apache.sis.math.MathFunctions.SQRT_2;
-import static org.apache.sis.internal.referencing.Formulas.LINEAR_TOLERANCE;
-import static org.apache.sis.internal.referencing.Formulas.ANGULAR_TOLERANCE;
+import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
+import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 import static org.junit.Assert.*;
 
 
@@ -59,8 +59,8 @@ public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
      * Returns the provider for the map projection to tesT.
      */
     private static MapProjection provider(final boolean elliptical) {
-        return elliptical ? new org.apache.sis.internal.referencing.provider.LambertAzimuthalEqualArea()
-                          : new org.apache.sis.internal.referencing.provider.LambertAzimuthalEqualAreaSpherical();
+        return elliptical ? new org.apache.sis.referencing.operation.provider.LambertAzimuthalEqualArea()
+                          : new org.apache.sis.referencing.operation.provider.LambertAzimuthalEqualAreaSpherical();
     }
 
     /**

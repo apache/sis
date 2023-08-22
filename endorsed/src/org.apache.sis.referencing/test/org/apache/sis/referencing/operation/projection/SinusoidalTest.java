@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public final class SinusoidalTest extends MapProjectionTestCase {
      * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
     private void createProjection(final boolean ellipsoidal) throws FactoryException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.Sinusoidal(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.Sinusoidal(),
                 ellipsoidal ? CLARKE_A : RADIUS,        // Semi-major axis (Clarke 1866)
                 ellipsoidal ? CLARKE_B : RADIUS,        // Semi-minor axis (Clarke 1866)
                 -90,                                    // Central meridian

@@ -32,8 +32,8 @@ import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.gui.GUIUtilities;
-import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.gui.internal.GUIUtilities;
+import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.util.resources.Vocabulary;
 
 

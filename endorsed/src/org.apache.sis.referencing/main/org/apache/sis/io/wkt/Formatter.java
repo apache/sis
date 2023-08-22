@@ -70,15 +70,15 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.util.X364;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.simple.SimpleExtent;
-import org.apache.sis.internal.metadata.Resources;
-import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.util.internal.X364;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.metadata.simple.SimpleExtent;
+import org.apache.sis.metadata.internal.Resources;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.geometry.AbstractDirectPosition;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -129,13 +129,13 @@ public class Formatter implements Localized {
 
     /**
      * The value of {@code X364.FOREGROUND_DEFAULT.sequence()}, hard-coded for avoiding
-     * {@link org.apache.sis.internal.util.X364} class loading.
+     * {@link org.apache.sis.util.internal.X364} class loading.
      */
     static final String FOREGROUND_DEFAULT = "\u001B[39m";
 
     /**
      * The value of {@code X364.BACKGROUND_DEFAULT.sequence()}, hard-coded for avoiding
-     * {@link org.apache.sis.internal.util.X364} class loading.
+     * {@link org.apache.sis.util.internal.X364} class loading.
      */
     static final String BACKGROUND_DEFAULT = "\u001B[49m";
 

@@ -28,8 +28,8 @@ import org.opengis.feature.FeatureType;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.system.Configuration;
 
 
 /**

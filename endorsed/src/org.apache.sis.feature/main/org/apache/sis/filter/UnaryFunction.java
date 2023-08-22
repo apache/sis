@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Optional;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.filter.Node;
+import org.apache.sis.filter.internal.Node;
 
 // Branch-dependent imports
 import org.opengis.filter.Filter;

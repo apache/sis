@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.operation.provider.TransverseMercatorSouth;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.CharSequences;
@@ -35,7 +35,7 @@ import static java.lang.Double.NaN;
 import static java.lang.StrictMath.abs;
 import static java.lang.StrictMath.toRadians;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN;
+import static org.apache.sis.referencing.operation.provider.TransverseMercator.LATITUDE_OF_ORIGIN;
 import org.opengis.test.CalculationType;
 
 
@@ -99,8 +99,8 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
      * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
     private void createNormalizedProjection(final boolean ellipsoidal, final double latitudeOfOrigin) {
-        final org.apache.sis.internal.referencing.provider.TransverseMercator method =
-                new org.apache.sis.internal.referencing.provider.TransverseMercator();
+        final org.apache.sis.referencing.operation.provider.TransverseMercator method =
+                new org.apache.sis.referencing.operation.provider.TransverseMercator();
         final Parameters parameters = parameters(method, ellipsoidal);
         parameters.getOrCreate(LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
         transform = new TransverseMercator(method, parameters);
@@ -119,7 +119,7 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
      */
     @Test
     public void testTransverseMercator() throws FactoryException, TransformException {
-        createGeoApiTest(new org.apache.sis.internal.referencing.provider.TransverseMercator()).testTransverseMercator();
+        createGeoApiTest(new org.apache.sis.referencing.operation.provider.TransverseMercator()).testTransverseMercator();
     }
 
     /**
@@ -148,7 +148,7 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod("testTransverseMercator")
     public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.TransverseMercator(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.TransverseMercator(),
                 6371007,    // Semi-major axis length
                 6371007,    // Semi-minor axis length
                 0,          // Central meridian
@@ -242,7 +242,7 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
     @Test
     public void compareAgainstDataset() throws IOException, FactoryException, TransformException {
         try (LineNumberReader reader = OptionalTestData.TRANSVERSE_MERCATOR.reader()) {
-            createCompleteProjection(new org.apache.sis.internal.referencing.provider.TransverseMercator(),
+            createCompleteProjection(new org.apache.sis.referencing.operation.provider.TransverseMercator(),
                     WGS84_A,    // Semi-major axis length
                     WGS84_B,    // Semi-minor axis length
                     0,          // Central meridian

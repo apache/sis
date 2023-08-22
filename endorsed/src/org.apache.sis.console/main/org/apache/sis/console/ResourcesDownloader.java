@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.io.Console;
-import org.apache.sis.internal.util.X364;
-import org.apache.sis.internal.system.Fallback;
+import org.apache.sis.util.internal.X364;
+import org.apache.sis.system.Fallback;
 import org.apache.sis.setup.OptionalInstallations;
 
 

@@ -25,8 +25,8 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.code.CI_RoleCode;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.code.CI_RoleCode;
 
 // Branch-specific imports
 import org.opengis.metadata.citation.Party;

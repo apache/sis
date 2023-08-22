@@ -24,7 +24,7 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.gui.internal.BackgroundThreads;
 
 
 /**

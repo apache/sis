@@ -28,7 +28,7 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  *
- * @see org.apache.sis.internal.jaxb.gml.MeasureList
+ * @see org.apache.sis.xml.bind.gml.MeasureList
  *
  * @since 0.6
  */

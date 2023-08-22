@@ -30,10 +30,10 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.DataFormats;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.DataFormats;
+import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.io.wkt.WKTFormat;
@@ -147,7 +147,7 @@ public class StandardMetadataTree extends MetadataTree {
          * depending on whether or not we can format XML document for currently selected row.
          */
         @Override
-        protected void updateItem​(final TreeTable.Node item, final boolean empty) {
+        protected void updateItem(final TreeTable.Node item, final boolean empty) {
             super.updateItem(item, empty);
             if (!empty && copyAs != null) {
                 boolean disabled = true;

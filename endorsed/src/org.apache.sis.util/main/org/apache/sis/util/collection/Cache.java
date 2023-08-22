@@ -34,9 +34,9 @@ import java.lang.ref.SoftReference;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.DelayedRunnable;
-import org.apache.sis.internal.system.DelayedExecutor;
-import org.apache.sis.internal.system.ReferenceQueueConsumer;
+import org.apache.sis.system.DelayedRunnable;
+import org.apache.sis.system.DelayedExecutor;
+import org.apache.sis.system.ReferenceQueueConsumer;
 
 
 /**

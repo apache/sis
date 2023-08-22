@@ -27,8 +27,8 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.GeoTiffStore;
-import org.apache.sis.internal.geotiff.SchemaModifier;
-import org.apache.sis.internal.storage.GridResourceWrapper;
+import org.apache.sis.storage.geotiff.spi.SchemaModifier;
+import org.apache.sis.storage.base.GridResourceWrapper;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
@@ -40,7 +40,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Vocabulary;
 
-import static org.apache.sis.internal.util.CollectionsExt.first;
+import static org.apache.sis.util.internal.CollectionsExt.first;
 
 
 /**

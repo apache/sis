@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Iterator;
-import org.apache.sis.internal.util.AbstractIterator;
+import org.apache.sis.util.internal.AbstractIterator;
 
 
 /**

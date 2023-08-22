@@ -35,14 +35,14 @@ import org.opengis.metadata.Metadata;               // For javadoc
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.CheckedHashSet;
-import org.apache.sis.internal.util.CheckedArrayList;
-import org.apache.sis.internal.metadata.Resources;
-import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.CheckedHashSet;
+import org.apache.sis.util.internal.CheckedArrayList;
+import org.apache.sis.metadata.internal.Resources;
+import org.apache.sis.system.Semaphores;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**

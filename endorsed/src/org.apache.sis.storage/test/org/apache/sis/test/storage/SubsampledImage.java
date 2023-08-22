@@ -28,7 +28,7 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 
 import static java.lang.StrictMath.floorDiv;
 import static org.junit.Assert.*;

@@ -18,14 +18,14 @@ package org.apache.sis.referencing.crs;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.xml.bind.gco.PropertyType;
 
 
 /**
  * JAXB adapter for {@link GeographicCRS}, in order to integrate the value in an element
  * complying with OGC/ISO standard.
  *
- * <p><b>Note:</b> JAXB adapters are usually declared in the {@link org.apache.sis.internal.jaxb.referencing}
+ * <p><b>Note:</b> JAXB adapters are usually declared in the {@link org.apache.sis.xml.bind.referencing}
  * package, but this one is an exception because it needs access to package-privated {@link DefaultGeodeticCRS}
  * class.</p>
  *

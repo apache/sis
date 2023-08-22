@@ -28,8 +28,8 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.coverage.CommonDomainFinder;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.coverage.internal.CommonDomainFinder;
+import org.apache.sis.util.internal.Strings;
 
 
 /**

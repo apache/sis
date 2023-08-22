@@ -19,10 +19,10 @@ package org.apache.sis.storage;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.internal.feature.FeatureUtilities;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.StoreUtilities;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.feature.internal.FeatureUtilities;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.storage.internal.Resources;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

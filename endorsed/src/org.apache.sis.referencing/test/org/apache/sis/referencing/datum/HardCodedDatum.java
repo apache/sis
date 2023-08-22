@@ -22,12 +22,12 @@ import java.util.HashMap;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.datum.Datum.*;
-import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 
 /**

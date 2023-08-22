@@ -26,8 +26,8 @@ import javafx.scene.layout.BorderPane;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.control.ColorRamp;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.controls.ColorRamp;
 import org.apache.sis.measure.Units;
 
 

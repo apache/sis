@@ -24,8 +24,8 @@ import java.awt.Point;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.system.ReferenceQueueConsumer;
+import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.system.ReferenceQueueConsumer;
 import org.apache.sis.util.Disposable;
 
 
