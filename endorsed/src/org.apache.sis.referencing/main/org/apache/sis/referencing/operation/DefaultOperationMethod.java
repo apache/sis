@@ -47,7 +47,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
-import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
+import org.apache.sis.xml.bind.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.ImplementationHelper;
@@ -719,7 +719,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * predefined methods, or by unmarshalling the enclosing {@link AbstractSingleOperation}.</p>
      *
      * <p><b>Maintenance note:</b> the {@code "setDescriptors"} method name is also hard-coded in
-     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
+     * {@link org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
      *
      * @see AbstractSingleOperation#setParameters
      */

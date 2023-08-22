@@ -60,4 +60,4 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.UnitAdapter;
-import org.apache.sis.internal.jaxb.referencing.*;
+import org.apache.sis.xml.bind.referencing.*;

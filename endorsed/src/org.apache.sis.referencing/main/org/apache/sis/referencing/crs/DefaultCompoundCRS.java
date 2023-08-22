@@ -46,7 +46,7 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.jaxb.referencing.SC_CRS;
+import org.apache.sis.xml.bind.referencing.SC_CRS;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;

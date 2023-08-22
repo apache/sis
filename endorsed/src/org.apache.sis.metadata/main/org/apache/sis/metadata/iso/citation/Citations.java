@@ -128,7 +128,7 @@ public final class Citations extends Static {
      * }
      *
      * @see #fromName(String)
-     * @see org.apache.sis.internal.jaxb.referencing.Code#getIdentifier()
+     * @see org.apache.sis.xml.bind.referencing.Code#getIdentifier()
      * @see <a href="http://issues.apache.org/jira/browse/SIS-200">SIS-200</a>
      */
     static final CitationConstant IOGP = new CitationConstant(Constants.IOGP);

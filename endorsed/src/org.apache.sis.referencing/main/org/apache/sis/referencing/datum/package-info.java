@@ -89,4 +89,4 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.gml.DateAdapter;
 import org.apache.sis.internal.jaxb.metadata.*;
-import org.apache.sis.internal.jaxb.referencing.*;
+import org.apache.sis.xml.bind.referencing.*;

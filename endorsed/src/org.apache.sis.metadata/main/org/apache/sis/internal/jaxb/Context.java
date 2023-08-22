@@ -473,7 +473,7 @@ public final class Context extends MarshalContext {
      * <p>For performance reasons, this {@code wrapper} information is not provided by default.
      * To get this information, the {@code PropertyType} implementation needs to define the
      * {@code beforeUnmarshal(…)} method. For an implementation example, see
-     * {@link org.apache.sis.internal.jaxb.referencing.CC_OperationParameter}.</p>
+     * {@link org.apache.sis.xml.bind.referencing.CC_OperationParameter}.</p>
      *
      * @param context  the current context, or {@code null} if none.
      * @param wrapper  the {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal,

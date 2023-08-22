@@ -585,7 +585,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      * implementation, because the property type is an array (it would not work with a list).
      *
      * <p><b>Maintenance note:</b> the {@code "setValues"} method name is also hard-coded in
-     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
+     * {@link org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
      */
     private void setValues(final GeneralParameterValue[] parameters) {
         ParameterValueList addTo = values;

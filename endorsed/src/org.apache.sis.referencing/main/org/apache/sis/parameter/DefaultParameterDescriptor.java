@@ -38,7 +38,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.metadata.replace.QualityParameter;
-import org.apache.sis.internal.jaxb.referencing.CC_OperationParameter;
+import org.apache.sis.xml.bind.referencing.CC_OperationParameter;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;

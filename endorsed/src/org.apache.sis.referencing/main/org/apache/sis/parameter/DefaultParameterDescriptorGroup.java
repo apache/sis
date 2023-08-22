@@ -30,7 +30,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
-import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
+import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroup;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;

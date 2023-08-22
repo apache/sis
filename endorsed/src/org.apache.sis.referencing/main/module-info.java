@@ -148,7 +148,7 @@ module org.apache.sis.referencing {
         with org.apache.sis.internal.referencing.ReferencingTypes;
 
     provides org.apache.sis.internal.jaxb.AdapterReplacement
-        with org.apache.sis.internal.jaxb.referencing.SC_VerticalCRS;
+        with org.apache.sis.xml.bind.referencing.SC_VerticalCRS;
 
     provides org.apache.sis.internal.metadata.ReferencingServices
         with org.apache.sis.internal.referencing.ServicesForMetadata;
@@ -197,7 +197,7 @@ module org.apache.sis.referencing {
             org.apache.sis.storage.earthobservation,
             org.apache.sis.profile.japan;
 
-    exports org.apache.sis.internal.jaxb.referencing to
+    exports org.apache.sis.xml.bind.referencing to
             org.glassfish.jaxb.runtime,                     // For access to beforeUnmarshal(…).
             org.glassfish.jaxb.core,                        // For access to various classes.
             jakarta.xml.bind;                               // Seems ignored.

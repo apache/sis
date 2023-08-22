@@ -34,7 +34,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
+import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
 
 /**

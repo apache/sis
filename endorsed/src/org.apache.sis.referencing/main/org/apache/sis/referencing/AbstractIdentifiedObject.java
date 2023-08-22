@@ -44,7 +44,7 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.UseLegacyMetadata;
-import org.apache.sis.internal.jaxb.referencing.Code;
+import org.apache.sis.xml.bind.referencing.Code;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;

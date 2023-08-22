@@ -125,4 +125,4 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.metadata.*;
-import org.apache.sis.internal.jaxb.referencing.RS_Identifier;
+import org.apache.sis.xml.bind.referencing.RS_Identifier;
