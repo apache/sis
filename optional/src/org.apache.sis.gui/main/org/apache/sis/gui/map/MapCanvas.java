@@ -75,9 +75,9 @@ import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.system.DelayedExecutor;
-import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.system.DelayedExecutor;
+import org.apache.sis.system.DelayedRunnable;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.GUIUtilities;
@@ -90,7 +90,7 @@ import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
 
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
-import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISECOND;
+import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 
 /**

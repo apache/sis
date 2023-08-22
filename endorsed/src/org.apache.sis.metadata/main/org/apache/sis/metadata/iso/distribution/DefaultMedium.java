@@ -39,7 +39,7 @@ import org.apache.sis.metadata.iso.legacy.MediumName;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 

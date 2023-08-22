@@ -40,8 +40,8 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.coverage.internal.RangeArgument;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.ArraysExt;
 
 

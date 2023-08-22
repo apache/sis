@@ -24,10 +24,10 @@ import java.util.NoSuchElementException;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
-import org.apache.sis.internal.util.CodeLists;
+import org.apache.sis.util.internal.CodeLists;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.NullArgumentException;
-import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.util.internal.CheckedArrayList;
 
 
 /**

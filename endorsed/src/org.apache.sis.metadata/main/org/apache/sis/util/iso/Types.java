@@ -46,8 +46,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.util.CodeLists;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.internal.CodeLists;
+import org.apache.sis.system.Modules;
 
 
 /**

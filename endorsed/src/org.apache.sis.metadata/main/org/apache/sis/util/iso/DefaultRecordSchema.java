@@ -36,8 +36,8 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.metadata.simple.SimpleAttributeType;
-import org.apache.sis.internal.converter.SurjectiveConverter;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.converter.SurjectiveConverter;
+import org.apache.sis.util.internal.Strings;
 
 
 /**

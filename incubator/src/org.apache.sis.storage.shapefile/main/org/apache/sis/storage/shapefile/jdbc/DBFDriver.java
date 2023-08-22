@@ -25,7 +25,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 
 
 /**

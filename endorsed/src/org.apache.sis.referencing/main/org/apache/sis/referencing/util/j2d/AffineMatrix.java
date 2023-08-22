@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.awt.geom.AffineTransform;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.internal.util.CloneAccess;
+import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;

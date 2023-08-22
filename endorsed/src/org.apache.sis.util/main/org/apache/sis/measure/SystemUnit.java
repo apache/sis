@@ -32,7 +32,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.math.Fraction;
 
 

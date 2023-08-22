@@ -20,7 +20,7 @@ import java.util.logging.LogRecord;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.image.ErrorHandler;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 
 
 /**

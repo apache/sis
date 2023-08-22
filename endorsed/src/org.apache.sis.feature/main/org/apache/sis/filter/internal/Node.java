@@ -39,7 +39,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.system.Loggers;
 
 // Branch-dependent imports
 import org.opengis.filter.Filter;

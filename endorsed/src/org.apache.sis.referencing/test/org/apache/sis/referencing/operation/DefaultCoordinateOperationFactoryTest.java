@@ -29,7 +29,7 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.referencing.CRS;

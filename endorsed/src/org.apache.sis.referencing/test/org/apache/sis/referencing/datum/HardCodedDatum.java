@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.datum.Datum.*;
-import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 
 /**

@@ -29,7 +29,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
 

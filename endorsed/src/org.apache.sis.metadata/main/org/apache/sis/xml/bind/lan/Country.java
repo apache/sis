@@ -26,7 +26,7 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.xml.bind.gco.GO_CharacterString;
 import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 
 

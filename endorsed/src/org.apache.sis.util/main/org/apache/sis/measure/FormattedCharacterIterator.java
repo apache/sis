@@ -26,8 +26,8 @@ import java.text.Format;
 import java.text.AttributedCharacterIterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.internal.converter.SurjectiveConverter;
-import org.apache.sis.internal.util.SimpleCharacterIterator;
+import org.apache.sis.converter.SurjectiveConverter;
+import org.apache.sis.util.internal.SimpleCharacterIterator;
 
 
 /**

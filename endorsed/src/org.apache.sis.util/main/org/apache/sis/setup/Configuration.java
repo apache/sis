@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.function.Supplier;
 import java.util.concurrent.TimeUnit;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.util.internal.MetadataServices;
 
 
 /**

@@ -21,7 +21,7 @@
  *
  * <h2>SIS installation on remote machines</h2>
  * Some sub-commands can operate on SIS installation on remote machines, provided that Apache SIS
- * has been {@linkplain org.apache.sis.internal.system.Supervisor#ENABLED compiled with MBeans enabled}
+ * has been {@linkplain org.apache.sis.system.Supervisor#ENABLED compiled with MBeans enabled}
  * and that the remote Java Virtual Machine has been started with the following options:
  *
  * {@snippet lang="shell" :

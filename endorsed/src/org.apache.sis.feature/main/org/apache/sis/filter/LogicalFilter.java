@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import org.opengis.filter.Filter;

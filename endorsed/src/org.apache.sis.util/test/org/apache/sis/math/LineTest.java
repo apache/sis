@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * @version 0.5
  * @since   0.5
  */
-@DependsOn(org.apache.sis.internal.util.DoubleDoubleTest.class)
+@DependsOn(org.apache.sis.util.internal.DoubleDoubleTest.class)
 public final class LineTest extends TestCase {
     /**
      * Tolerance factor for comparisons for floating point values.

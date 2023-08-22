@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.filter.internal.FunctionRegister;
-import org.apache.sis.internal.jdk17.JDK17;
+import org.apache.sis.pending.jdk.JDK17;
 
 // Branch-dependent imports
 import org.opengis.filter.Expression;

@@ -26,7 +26,7 @@ import org.apache.sis.gui.DataViewer;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.internal.system.Fallback;
+import org.apache.sis.system.Fallback;
 import org.apache.sis.setup.OptionalInstallations;
 
 

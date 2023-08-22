@@ -42,7 +42,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 @DependsOn({
     UnitFormatTest.class,
     SexagesimalConverterTest.class,
-    org.apache.sis.internal.util.DefinitionURITest.class
+    org.apache.sis.util.internal.DefinitionURITest.class
 })
 public final class UnitsTest extends TestCase {
     /**

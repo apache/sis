@@ -27,7 +27,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 
-import static org.apache.sis.internal.util.Strings.trimOrNull;
+import static org.apache.sis.util.internal.Strings.trimOrNull;
 
 
 /**

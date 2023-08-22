@@ -31,7 +31,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 

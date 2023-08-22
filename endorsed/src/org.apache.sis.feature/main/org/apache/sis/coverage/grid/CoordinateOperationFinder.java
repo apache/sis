@@ -43,7 +43,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 
 
 /**

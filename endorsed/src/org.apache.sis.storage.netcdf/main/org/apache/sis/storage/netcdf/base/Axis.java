@@ -38,7 +38,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.referencing.operation.builder.LocalizationGridException;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;

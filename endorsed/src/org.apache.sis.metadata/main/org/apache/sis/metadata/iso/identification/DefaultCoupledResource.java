@@ -32,7 +32,7 @@ import org.apache.sis.xml.bind.metadata.SV_OperationMetadata;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
 

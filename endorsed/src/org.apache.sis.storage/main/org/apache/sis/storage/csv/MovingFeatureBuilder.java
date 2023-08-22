@@ -28,7 +28,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.MovingFeatures;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;

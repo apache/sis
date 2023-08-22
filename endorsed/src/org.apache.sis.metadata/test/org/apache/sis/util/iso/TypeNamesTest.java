@@ -30,7 +30,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.util.Constants.OGC;
+import static org.apache.sis.util.internal.Constants.OGC;
 
 
 /**

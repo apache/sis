@@ -24,7 +24,7 @@ import org.opengis.filter.ValueReference;
 import org.apache.sis.style.se1.*;
 import org.apache.sis.style.Style;
 
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 
 /**

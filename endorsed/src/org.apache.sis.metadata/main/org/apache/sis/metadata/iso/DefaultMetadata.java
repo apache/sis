@@ -70,7 +70,7 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.xml.bind.lan.LocaleAdapter;
 import org.apache.sis.xml.bind.lan.OtherLocales;
@@ -82,7 +82,7 @@ import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.math.FunctionProperty;
 
 

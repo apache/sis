@@ -31,7 +31,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.TransformationList;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.gui.internal.Styles;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Feature;

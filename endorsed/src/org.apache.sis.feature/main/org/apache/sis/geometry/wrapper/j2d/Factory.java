@@ -31,7 +31,7 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.util.j2d.AbstractShape;
 import org.apache.sis.referencing.util.j2d.ShapeUtilities;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.UnsupportedImplementationException;
 

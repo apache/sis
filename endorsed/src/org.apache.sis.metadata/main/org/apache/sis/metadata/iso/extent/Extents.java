@@ -64,7 +64,7 @@ import org.apache.sis.util.Static;
 
 import static java.lang.Math.*;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Branch-dependent imports

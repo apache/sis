@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.simple;
 
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.opengis.temporal.Duration;
 
 

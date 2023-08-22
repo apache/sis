@@ -23,7 +23,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.awt.image.BandedSampleModel;
 import org.apache.sis.coverage.grid.j2d.TiledImage;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

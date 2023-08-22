@@ -38,7 +38,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.Styles;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;

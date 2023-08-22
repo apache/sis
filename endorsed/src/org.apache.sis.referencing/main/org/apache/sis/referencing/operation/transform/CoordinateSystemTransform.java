@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.cs.AxesConvention;

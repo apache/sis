@@ -29,7 +29,7 @@ import org.apache.sis.test.sql.TestDatabase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.util.CollectionsExt.first;
+import static org.apache.sis.util.internal.CollectionsExt.first;
 
 
 /**

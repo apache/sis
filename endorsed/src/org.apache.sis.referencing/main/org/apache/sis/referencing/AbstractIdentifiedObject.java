@@ -45,8 +45,8 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.UseLegacyMetadata;
 import org.apache.sis.xml.bind.referencing.Code;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.metadata.internal.ImplementationHelper;
@@ -64,9 +64,9 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
-import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
-import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.CollectionsExt.nonEmpty;
+import static org.apache.sis.util.internal.CollectionsExt.immutableSet;
 
 
 /**
@@ -941,7 +941,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * elements separated by hyphens:</p>
      * <ul>
      *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
-     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.util.internal.DefinitionURI})</li>
      *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
      * </ul>
      *

@@ -29,9 +29,9 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.NonWritableChannelException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.internal.system.DelayedExecutor;
-import org.apache.sis.internal.system.DelayedRunnable;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.system.DelayedExecutor;
+import org.apache.sis.system.DelayedRunnable;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -83,7 +83,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
      * Information about an input stream and its range of bytes.
      * This is the return value of {@link #openConnection(long, long)}.
      */
-    protected static final class Connection extends org.apache.sis.internal.jdk17.Record {
+    protected static final class Connection extends org.apache.sis.pending.jdk.Record {
         /** The unit of ranges used in HTTP connections. */
         private static final String RANGES_UNIT = "bytes";
 

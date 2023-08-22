@@ -37,7 +37,7 @@ import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.util.TemporalAccessor;
 import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.internal.util.ArgumentCheckByAssertion;
+import org.apache.sis.util.internal.ArgumentCheckByAssertion;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;

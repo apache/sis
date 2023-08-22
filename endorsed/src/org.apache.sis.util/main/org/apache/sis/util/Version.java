@@ -19,8 +19,8 @@ package org.apache.sis.util;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 
-import static org.apache.sis.internal.system.Modules.MAJOR_VERSION;
-import static org.apache.sis.internal.system.Modules.MINOR_VERSION;
+import static org.apache.sis.system.Modules.MAJOR_VERSION;
+import static org.apache.sis.system.Modules.MINOR_VERSION;
 
 
 /**

@@ -24,7 +24,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.opengis.temporal.Instant;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.util.XmlUtilities;
 
 

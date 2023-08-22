@@ -29,14 +29,14 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.metadata.simple.CitationConstant;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
 
 

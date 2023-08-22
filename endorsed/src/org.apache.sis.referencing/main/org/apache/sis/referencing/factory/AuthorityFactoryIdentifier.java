@@ -29,7 +29,7 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.referencing.internal.Resources;
 
@@ -105,7 +105,7 @@ final class AuthorityFactoryIdentifier {
      * <h4>Example</h4>
      * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.
      *
-     * @see org.apache.sis.internal.util.DefinitionURI
+     * @see org.apache.sis.util.internal.DefinitionURI
      * @see org.apache.sis.metadata.internal.NameMeaning
      */
     private String authority;

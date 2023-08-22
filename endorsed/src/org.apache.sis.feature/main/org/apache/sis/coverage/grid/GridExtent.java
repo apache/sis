@@ -47,9 +47,9 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
@@ -65,7 +65,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
@@ -1036,7 +1036,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * A (dimension, size) tuple. Used for sorting dimensions by their size.
      * This is used for {@link GridExtent#getLargestDimensions()} implementation.
      */
-    private static final class DimSize extends org.apache.sis.internal.jdk17.Record implements Comparable<DimSize> {
+    private static final class DimSize extends org.apache.sis.pending.jdk.Record implements Comparable<DimSize> {
         /** Index of the dimension.      */ private final int  dim;
         /** Size as an unsigned integer. */ private final long size;
 

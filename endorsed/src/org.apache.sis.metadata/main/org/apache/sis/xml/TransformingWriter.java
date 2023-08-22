@@ -37,7 +37,7 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.util.LegacyNamespaces;
 
 import static javax.xml.stream.XMLStreamConstants.*;

@@ -25,7 +25,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.TensorParameters;
@@ -72,7 +72,7 @@ public final class Affine extends AbstractProvider {
      *
      * <p>Note: in contrast, the name used by OGC is just "Affine".</p>
      *
-     * @see org.apache.sis.internal.util.Constants#AFFINE
+     * @see org.apache.sis.util.internal.Constants#AFFINE
      */
     public static final String NAME = "Affine parametric transformation";
 

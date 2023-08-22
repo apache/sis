@@ -34,7 +34,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.bind.metadata.replace.QualityParameter;

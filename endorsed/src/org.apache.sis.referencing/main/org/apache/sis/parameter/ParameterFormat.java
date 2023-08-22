@@ -56,8 +56,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.internal.NameToIdentifier;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.X364;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 

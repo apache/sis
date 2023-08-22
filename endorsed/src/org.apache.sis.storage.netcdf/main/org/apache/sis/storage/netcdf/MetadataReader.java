@@ -65,9 +65,9 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.wkt.StoreFormat;
 import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.referencing.CRS;
@@ -81,7 +81,7 @@ import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
-import static org.apache.sis.internal.util.CollectionsExt.first;
+import static org.apache.sis.util.internal.CollectionsExt.first;
 
 
 /**

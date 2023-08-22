@@ -22,8 +22,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.sis.internal.system.CommonExecutor;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.system.CommonExecutor;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 

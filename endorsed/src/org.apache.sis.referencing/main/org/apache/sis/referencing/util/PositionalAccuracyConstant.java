@@ -36,7 +36,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 

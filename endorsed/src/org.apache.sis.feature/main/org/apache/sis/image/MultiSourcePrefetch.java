@@ -22,7 +22,7 @@ import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.Disposable;
-import org.apache.sis.internal.system.CommonExecutor;
+import org.apache.sis.system.CommonExecutor;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 
 

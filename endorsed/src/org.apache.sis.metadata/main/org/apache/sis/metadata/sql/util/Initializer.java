@@ -38,15 +38,15 @@ import javax.naming.event.NamingEvent;
 import javax.naming.event.NamingExceptionEvent;
 import javax.naming.event.ObjectChangeListener;
 import org.apache.sis.setup.InstallationResources;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.system.DataDirectory;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.system.Shutdown;
-import org.apache.sis.internal.system.Reflect;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.system.DataDirectory;
+import org.apache.sis.system.SystemListener;
+import org.apache.sis.system.Shutdown;
+import org.apache.sis.system.Reflect;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
+import static org.apache.sis.util.internal.MetadataServices.EMBEDDED;
 
 
 /**

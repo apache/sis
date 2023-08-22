@@ -25,7 +25,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.internal.MultiSourceArgument;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 
 
 /**

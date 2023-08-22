@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.provider;
 
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

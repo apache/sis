@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.temporal.Period;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 
 import static org.apache.sis.xml.util.LegacyNamespaces.VERSION_3_0;
 

@@ -33,8 +33,8 @@ import java.math.BigDecimal;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 
 /**

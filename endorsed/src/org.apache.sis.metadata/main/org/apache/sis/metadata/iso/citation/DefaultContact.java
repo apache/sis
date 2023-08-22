@@ -37,7 +37,7 @@ import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 
 
 /**

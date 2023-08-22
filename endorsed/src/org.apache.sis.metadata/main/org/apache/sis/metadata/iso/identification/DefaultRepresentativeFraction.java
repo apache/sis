@@ -34,7 +34,7 @@ import org.apache.sis.xml.bind.IdentifierMapAdapter;
 import org.apache.sis.xml.bind.gco.GO_Integer64;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Resources;
-import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;

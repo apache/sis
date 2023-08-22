@@ -43,7 +43,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.metadata.sql.util.SQLUtilities;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;

@@ -33,7 +33,7 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.Styles;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;

@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 
 
 /**

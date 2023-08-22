@@ -53,7 +53,7 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.internal.util.ListOfUnknownSize;
+import org.apache.sis.util.internal.ListOfUnknownSize;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;

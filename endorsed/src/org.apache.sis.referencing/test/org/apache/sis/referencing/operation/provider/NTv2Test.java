@@ -33,7 +33,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.system.DataDirectory;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 

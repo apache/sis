@@ -70,8 +70,8 @@ import org.apache.sis.io.stream.ChannelImageOutputStream;
 import org.apache.sis.io.stream.InputStreamAdapter;
 import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.io.stream.InternalOptionKey;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
 

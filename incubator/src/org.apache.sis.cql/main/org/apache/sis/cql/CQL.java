@@ -43,7 +43,7 @@ import org.apache.sis.cql.internal.CQLParser.ExpressionUnaryContext;
 import org.apache.sis.cql.internal.CQLParser.FilterContext;
 import org.apache.sis.cql.internal.CQLParser.FilterGeometryContext;
 import org.apache.sis.cql.internal.CQLParser.FilterTermContext;
-import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.util.internal.StandardDateFormat;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;

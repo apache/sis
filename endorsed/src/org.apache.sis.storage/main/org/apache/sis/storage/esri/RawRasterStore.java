@@ -50,8 +50,8 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.image.DataType;
 
 import static java.lang.Math.multiplyExact;
-import static org.apache.sis.internal.util.Numerics.ceilDiv;
-import static org.apache.sis.internal.util.Numerics.wholeDiv;
+import static org.apache.sis.util.internal.Numerics.ceilDiv;
+import static org.apache.sis.util.internal.Numerics.wholeDiv;
 
 
 /**

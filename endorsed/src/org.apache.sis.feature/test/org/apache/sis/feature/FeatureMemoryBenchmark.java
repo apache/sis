@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.opengis.feature.Feature;
-import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.util.internal.StandardDateFormat;
 
 
 /**

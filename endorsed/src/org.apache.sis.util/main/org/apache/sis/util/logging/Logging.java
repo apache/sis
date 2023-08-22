@@ -27,8 +27,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.Configuration;
 
 
 /**

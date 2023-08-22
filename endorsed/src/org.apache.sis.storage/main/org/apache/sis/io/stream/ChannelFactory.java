@@ -44,7 +44,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.DataStoreException;

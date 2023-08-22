@@ -19,7 +19,7 @@ package org.apache.sis.parameter;
 import javax.measure.Unit;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValue;
-import org.apache.sis.internal.util.Cloner;
+import org.apache.sis.util.internal.Cloner;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 

@@ -36,7 +36,7 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.referencing.util.DefinitionVerifier;

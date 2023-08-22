@@ -44,13 +44,13 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.TemporalAccessor;
-import org.apache.sis.internal.util.ArgumentCheckByAssertion;
+import org.apache.sis.util.internal.ArgumentCheckByAssertion;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.Vector;
 
 import static java.lang.Double.doubleToLongBits;
-import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
+import static org.apache.sis.util.internal.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;

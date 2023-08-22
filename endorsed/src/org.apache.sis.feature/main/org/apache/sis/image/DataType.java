@@ -26,7 +26,7 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.internal.util.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
+import static org.apache.sis.util.internal.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
 
 
 /**

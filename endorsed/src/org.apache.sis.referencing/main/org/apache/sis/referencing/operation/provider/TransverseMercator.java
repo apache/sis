@@ -26,8 +26,8 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
 

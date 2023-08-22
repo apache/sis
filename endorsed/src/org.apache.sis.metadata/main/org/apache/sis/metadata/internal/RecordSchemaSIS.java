@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.io.ObjectStreamException;
 import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.iso.DefaultRecordType;
 import org.apache.sis.util.iso.DefaultRecordSchema;
 import org.apache.sis.util.resources.Vocabulary;

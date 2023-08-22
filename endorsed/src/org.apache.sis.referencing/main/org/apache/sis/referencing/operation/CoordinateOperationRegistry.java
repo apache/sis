@@ -70,7 +70,7 @@ import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
-import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;

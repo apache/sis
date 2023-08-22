@@ -67,11 +67,11 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.metadata.internal.ImplementationHelper;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.system.Semaphores;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
 
 import static org.apache.sis.util.Utilities.deepEquals;

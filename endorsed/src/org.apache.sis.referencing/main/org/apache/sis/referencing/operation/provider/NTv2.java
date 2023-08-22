@@ -45,7 +45,7 @@ import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.collection.Containers;

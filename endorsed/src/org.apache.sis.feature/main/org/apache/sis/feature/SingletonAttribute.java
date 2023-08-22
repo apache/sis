@@ -17,7 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Objects;
-import org.apache.sis.internal.util.CloneAccess;
+import org.apache.sis.util.internal.CloneAccess;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;

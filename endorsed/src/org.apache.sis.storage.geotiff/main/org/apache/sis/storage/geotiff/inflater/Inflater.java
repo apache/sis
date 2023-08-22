@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.nio.Buffer;
 import org.apache.sis.image.DataType;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.storage.geotiff.internal.Compression;
 import org.apache.sis.storage.geotiff.internal.Predictor;
 import org.apache.sis.storage.geotiff.internal.Resources;
@@ -31,7 +31,7 @@ import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.util.internal.Numerics.ceilDiv;
 
 
 /**

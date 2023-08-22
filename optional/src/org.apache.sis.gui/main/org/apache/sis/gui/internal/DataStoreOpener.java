@@ -44,7 +44,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.io.stream.InternalOptionKey;

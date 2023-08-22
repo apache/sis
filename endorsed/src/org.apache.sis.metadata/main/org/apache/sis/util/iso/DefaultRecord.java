@@ -32,8 +32,8 @@ import org.opengis.util.RecordType;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.AbstractMapEntry;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.AbstractMapEntry;
 import org.apache.sis.metadata.internal.RecordSchemaSIS;
 
 

@@ -23,8 +23,8 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 import org.opengis.referencing.cs.AxisDirection;
 
-import static org.apache.sis.internal.util.Constants.EPSG_METRE;
-import static org.apache.sis.internal.util.Constants.EPSG_AXIS_DEGREES;
+import static org.apache.sis.util.internal.Constants.EPSG_METRE;
+import static org.apache.sis.util.internal.Constants.EPSG_AXIS_DEGREES;
 
 
 /**

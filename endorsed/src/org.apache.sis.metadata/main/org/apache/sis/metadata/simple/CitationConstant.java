@@ -33,8 +33,8 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.logging.Logging;
 
 

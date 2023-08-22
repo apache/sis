@@ -37,8 +37,8 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.internal.system.CommonExecutor;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.system.CommonExecutor;
+import org.apache.sis.util.internal.Strings;
 
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;

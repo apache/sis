@@ -29,7 +29,7 @@ import org.opengis.referencing.cs.AxisDirection;    // For javadoc
 import org.apache.sis.util.Static;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 
 import static org.apache.sis.measure.UnitRegistry.SI;
 import static org.apache.sis.measure.UnitRegistry.ACCEPTED;

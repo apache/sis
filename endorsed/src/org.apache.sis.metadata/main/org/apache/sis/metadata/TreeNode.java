@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
 import java.util.function.Function;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.CharSequences;

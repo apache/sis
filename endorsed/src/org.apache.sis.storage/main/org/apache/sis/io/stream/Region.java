@@ -23,7 +23,7 @@ import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.incrementExact;
 import static java.lang.Math.toIntExact;
-import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.util.internal.Numerics.ceilDiv;
 
 
 /**

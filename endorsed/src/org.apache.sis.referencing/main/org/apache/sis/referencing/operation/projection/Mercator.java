@@ -34,7 +34,7 @@ import org.apache.sis.referencing.operation.provider.MercatorSpherical;
 import org.apache.sis.referencing.operation.provider.MercatorAuxiliarySphere;
 import org.apache.sis.referencing.operation.provider.RegionalMercator;
 import org.apache.sis.referencing.operation.provider.PseudoMercator;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;

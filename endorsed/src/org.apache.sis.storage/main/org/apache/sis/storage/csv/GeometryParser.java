@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.csv;
 
-import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.util.CharSequences;
 
 

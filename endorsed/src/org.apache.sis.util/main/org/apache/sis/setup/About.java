@@ -50,18 +50,18 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
 import org.apache.sis.util.collection.DefaultTreeTable;
-import org.apache.sis.internal.util.MetadataServices;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.Shutdown;
-import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.util.internal.MetadataServices;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.Shutdown;
+import org.apache.sis.system.DataDirectory;
 
 import static java.lang.System.getProperty;
 import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
-import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 
 /**

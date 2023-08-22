@@ -22,7 +22,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 

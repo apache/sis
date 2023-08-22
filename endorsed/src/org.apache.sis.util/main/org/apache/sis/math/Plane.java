@@ -21,9 +21,9 @@ import java.io.Serializable;
 import java.util.function.DoubleBinaryOperator;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
-import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 

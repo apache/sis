@@ -49,7 +49,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.feature.internal.Resources;

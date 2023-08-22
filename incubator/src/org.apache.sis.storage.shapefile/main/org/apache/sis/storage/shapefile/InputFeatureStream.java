@@ -40,7 +40,7 @@ import org.apache.sis.storage.shapefile.jdbc.sql.SQLIllegalParameterException;
 import org.apache.sis.storage.shapefile.jdbc.sql.SQLInvalidStatementException;
 import org.apache.sis.storage.shapefile.jdbc.sql.SQLUnsupportedParsingFeatureException;
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.opengis.feature.Feature;
 

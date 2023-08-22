@@ -40,7 +40,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.resources.Errors;

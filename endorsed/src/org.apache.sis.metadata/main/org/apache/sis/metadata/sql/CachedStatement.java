@@ -26,7 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.system.Loggers;
 
 
 /**

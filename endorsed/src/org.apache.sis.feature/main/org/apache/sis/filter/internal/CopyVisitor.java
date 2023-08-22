@@ -26,7 +26,7 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 
 // Branch-dependent imports
 import org.opengis.filter.*;

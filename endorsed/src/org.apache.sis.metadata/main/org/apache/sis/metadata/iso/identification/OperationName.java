@@ -25,7 +25,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.CoupledResource;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 
 
 /**

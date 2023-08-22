@@ -48,7 +48,7 @@ import static java.lang.Math.incrementExact;
 import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
-import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.util.internal.Numerics.ceilDiv;
 
 
 /**

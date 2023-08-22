@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.DefinitionURI;
 
 
 /**

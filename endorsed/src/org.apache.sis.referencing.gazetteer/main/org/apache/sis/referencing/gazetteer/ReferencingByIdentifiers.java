@@ -40,8 +40,8 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.util.WKTUtilities;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.system.Modules;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.resources.Vocabulary;
 

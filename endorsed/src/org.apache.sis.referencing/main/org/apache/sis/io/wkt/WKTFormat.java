@@ -52,9 +52,9 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.ImmutableIdentifier;
 

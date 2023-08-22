@@ -50,8 +50,8 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
 import org.apache.sis.metadata.sql.util.Reflection;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.IdentifiedObject;
 
 // Branch-dependent imports

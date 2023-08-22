@@ -44,7 +44,7 @@ module org.apache.sis.metadata {
     provides org.apache.sis.xml.bind.TypeRegistration
         with org.apache.sis.metadata.internal.MetadataTypes;
 
-    provides org.apache.sis.internal.util.MetadataServices
+    provides org.apache.sis.util.internal.MetadataServices
         with org.apache.sis.metadata.internal.ServicesForUtility;
 
     uses org.apache.sis.metadata.internal.ReferencingServices;

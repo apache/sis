@@ -25,8 +25,8 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
 
 

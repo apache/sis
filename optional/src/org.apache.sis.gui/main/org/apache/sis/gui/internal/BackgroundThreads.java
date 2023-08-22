@@ -28,7 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import org.apache.sis.gui.DataViewer;
-import org.apache.sis.internal.system.Threads;
+import org.apache.sis.system.Threads;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Exceptions;
@@ -38,7 +38,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 /**
  * Provides the thread pool for JavaFX application. This thread pool is different than the pool used by
- * the {@link org.apache.sis.internal.system.CommonExecutor} shared by the rest of Apache SIS library.
+ * the {@link org.apache.sis.system.CommonExecutor} shared by the rest of Apache SIS library.
  * Contrarily to {@code CommonExecutor}, this {@code BackgroundThreads} class always allocates threads
  * to new tasks immediately (no queuing of tasks), no matter if all processors are already busy or not.
  * The intent is to have quicker responsiveness to user actions, even at the cost of lower throughput.

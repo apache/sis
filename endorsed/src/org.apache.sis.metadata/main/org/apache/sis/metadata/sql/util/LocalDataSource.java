@@ -31,10 +31,10 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.system.DataDirectory;
-import org.apache.sis.internal.system.Reflect;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.system.DataDirectory;
+import org.apache.sis.system.Reflect;
+import org.apache.sis.util.internal.Strings;
 
 
 /**

@@ -28,7 +28,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -38,8 +38,8 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
-import static org.apache.sis.internal.util.Constants.NUM_ROW;
-import static org.apache.sis.internal.util.Constants.NUM_COL;
+import static org.apache.sis.util.internal.Constants.NUM_ROW;
+import static org.apache.sis.util.internal.Constants.NUM_COL;
 
 
 /**

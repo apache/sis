@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 
 
 /**

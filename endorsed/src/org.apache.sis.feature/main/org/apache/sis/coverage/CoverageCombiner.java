@@ -41,8 +41,8 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.internal.SampleDimensions;
 
 import static java.lang.Math.round;
-import static org.apache.sis.internal.util.Numerics.saturatingAdd;
-import static org.apache.sis.internal.util.Numerics.saturatingSubtract;
+import static org.apache.sis.util.internal.Numerics.saturatingAdd;
+import static org.apache.sis.util.internal.Numerics.saturatingSubtract;
 
 // Branch-dependent imports
 import org.opengis.coverage.CannotEvaluateException;

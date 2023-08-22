@@ -32,8 +32,8 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
-import org.apache.sis.internal.system.OptionalDependency;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.OptionalDependency;
+import org.apache.sis.system.Modules;
 
 
 /**
@@ -68,7 +68,7 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * For subclass only. This constructor registers this instance as a
-     * {@link org.apache.sis.internal.system.SystemListener} in order to
+     * {@link org.apache.sis.system.SystemListener} in order to
      * force a new {@code ReferencingServices} lookup if the module path changes.
      */
     protected ReferencingServices() {
@@ -296,7 +296,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  locale  language to use if possible.
      * @return the information, or {@code null} if none.
      *
-     * @see org.apache.sis.internal.util.MetadataServices#getInformation(String, Locale)
+     * @see org.apache.sis.util.internal.MetadataServices#getInformation(String, Locale)
      *
      * @since 0.7
      */

@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.storage.DataStoreReferencingException;

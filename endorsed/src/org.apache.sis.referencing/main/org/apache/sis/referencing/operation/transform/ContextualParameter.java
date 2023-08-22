@@ -33,7 +33,7 @@ import org.apache.sis.parameter.DefaultParameterValue;
  * instances of the {@link org.apache.sis.parameter} package that do the checks.
  *
  * <p>Skipping redundant verifications allows us to avoid redundant logging messages when
- * the {@link org.apache.sis.internal.system.Semaphores#SUSPEND_PARAMETER_CHECK} flag is set.
+ * the {@link org.apache.sis.system.Semaphores#SUSPEND_PARAMETER_CHECK} flag is set.
  * Furthermore, it is a little bit late for checking parameter validity here; that verification should have been done
  * at {@link AbstractMathTransform} construction time or even before, and the job of the {@link ContextualParameters}
  * class is just to record what have been used.</p></div>

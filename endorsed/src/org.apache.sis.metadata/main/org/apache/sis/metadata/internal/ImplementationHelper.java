@@ -27,8 +27,8 @@ import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.CollectionsExt;
 
 
 /**
@@ -218,7 +218,7 @@ public final class ImplementationHelper extends Static {
      * @param  newValue  the new value to set, or {@code null} for instead removing the first element.
      * @return the collection (may or may not be the given {@code values} collection).
      *
-     * @see org.apache.sis.internal.util.CollectionsExt#first(Iterable)
+     * @see org.apache.sis.util.internal.CollectionsExt#first(Iterable)
      */
     public static <T> Collection<T> setFirst(Collection<T> values, final T newValue) {
         if (values == null) {

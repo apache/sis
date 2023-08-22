@@ -38,7 +38,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 
 /**

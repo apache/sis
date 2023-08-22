@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Field;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 
 import static java.util.logging.Logger.getLogger;
 

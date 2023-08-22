@@ -22,7 +22,7 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.VerticalExtent;
 
-import static org.apache.sis.internal.util.CollectionsExt.singletonOrEmpty;
+import static org.apache.sis.util.internal.CollectionsExt.singletonOrEmpty;
 
 
 /**

@@ -25,7 +25,7 @@ import java.util.GregorianCalendar;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.util.internal.StandardDateFormat;
 
 
 /**

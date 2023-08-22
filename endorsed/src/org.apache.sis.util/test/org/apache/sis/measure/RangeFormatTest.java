@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 import static java.lang.StrictMath.*;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 
 /**

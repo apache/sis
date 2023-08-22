@@ -36,7 +36,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.system.Configuration;
 
 
 /**

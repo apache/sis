@@ -33,7 +33,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.util.DefinitionVerifier;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;
 

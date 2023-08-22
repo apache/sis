@@ -23,7 +23,7 @@ import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 
 
 /**

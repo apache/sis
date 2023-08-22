@@ -22,7 +22,7 @@ import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.CodeLists;
+import org.apache.sis.util.internal.CodeLists;
 import org.apache.sis.util.iso.Types;
 
 import static org.opengis.annotation.Obligation.*;

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.geotiff.internal.Predictor;
-import org.apache.sis.internal.jdk17.JDK17;
+import org.apache.sis.pending.jdk.JDK17;
 
 
 /**

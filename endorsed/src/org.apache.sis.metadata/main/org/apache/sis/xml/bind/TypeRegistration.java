@@ -31,11 +31,11 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.Reflect;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.system.DelayedExecutor;
-import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.Reflect;
+import org.apache.sis.system.SystemListener;
+import org.apache.sis.system.DelayedExecutor;
+import org.apache.sis.system.DelayedRunnable;
 
 
 /**

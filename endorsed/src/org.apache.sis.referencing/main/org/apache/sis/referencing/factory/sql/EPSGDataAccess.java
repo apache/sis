@@ -80,13 +80,13 @@ import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.internal.SignReversalComment;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.URLs;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.system.Semaphores;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.URLs;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -120,7 +120,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
-import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 

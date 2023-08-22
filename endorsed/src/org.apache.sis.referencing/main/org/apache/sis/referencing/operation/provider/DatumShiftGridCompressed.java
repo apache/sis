@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.provider;
 import java.util.Arrays;
 import javax.measure.Quantity;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 
 
 /**

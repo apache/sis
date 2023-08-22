@@ -56,10 +56,10 @@ import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 

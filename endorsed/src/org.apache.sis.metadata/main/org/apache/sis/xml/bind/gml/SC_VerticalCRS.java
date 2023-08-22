@@ -20,7 +20,7 @@ import jakarta.xml.bind.annotation.XmlAnyElement;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 

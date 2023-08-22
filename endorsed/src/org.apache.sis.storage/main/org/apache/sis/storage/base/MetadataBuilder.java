@@ -56,7 +56,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.simple.SimpleDuration;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -83,7 +83,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.metadata.internal.Merger;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
@@ -93,7 +93,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 
-import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
 import org.opengis.temporal.Duration;

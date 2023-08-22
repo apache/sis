@@ -38,7 +38,7 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.internal.map.coverage.RenderingWorkaround;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;

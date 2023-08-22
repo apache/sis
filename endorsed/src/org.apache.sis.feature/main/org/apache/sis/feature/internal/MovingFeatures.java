@@ -23,7 +23,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.math.Vector;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;

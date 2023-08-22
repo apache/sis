@@ -81,9 +81,9 @@ import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 

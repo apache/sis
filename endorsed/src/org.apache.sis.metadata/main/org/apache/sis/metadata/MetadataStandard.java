@@ -33,12 +33,12 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.Semaphores;
+import org.apache.sis.system.SystemListener;
 import org.apache.sis.metadata.simple.SimpleCitation;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;

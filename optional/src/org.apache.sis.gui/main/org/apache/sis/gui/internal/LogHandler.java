@@ -33,8 +33,8 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.system.Modules;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.CharSequences;
 

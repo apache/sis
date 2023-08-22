@@ -36,7 +36,7 @@ import org.apache.sis.coverage.grid.j2d.ImageLayout;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.TileOpExecutor;
 import org.apache.sis.coverage.internal.SampleDimensions;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;

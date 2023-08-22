@@ -25,7 +25,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;

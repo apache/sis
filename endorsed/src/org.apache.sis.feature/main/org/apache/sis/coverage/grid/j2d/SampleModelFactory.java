@@ -25,7 +25,7 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.image.DataType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;

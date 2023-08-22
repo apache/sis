@@ -26,12 +26,12 @@ import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 
 /**

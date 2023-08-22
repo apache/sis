@@ -29,10 +29,10 @@ import java.io.FileNotFoundException;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Fallback;
-import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.system.Fallback;
+import org.apache.sis.system.DataDirectory;
 
-import static org.apache.sis.internal.util.Constants.EPSG;
+import static org.apache.sis.util.internal.Constants.EPSG;
 
 
 /**

@@ -41,8 +41,8 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
-import static org.apache.sis.internal.util.StandardDateFormat.MILLIS_PER_SECOND;
+import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
+import static org.apache.sis.util.internal.StandardDateFormat.MILLIS_PER_SECOND;
 
 
 /**

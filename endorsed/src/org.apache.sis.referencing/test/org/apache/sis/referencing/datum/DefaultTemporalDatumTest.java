@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 
 /**

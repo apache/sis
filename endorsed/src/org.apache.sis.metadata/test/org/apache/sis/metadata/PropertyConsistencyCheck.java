@@ -27,7 +27,7 @@ import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.test.xml.AnnotationConsistencyCheck;
 import org.apache.sis.test.TestUtilities;

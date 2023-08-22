@@ -35,8 +35,8 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.util.j2d.ParameterizedAffine;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.internal.Constants;
 
 import static java.lang.Math.*;
 

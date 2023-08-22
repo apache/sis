@@ -24,7 +24,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;

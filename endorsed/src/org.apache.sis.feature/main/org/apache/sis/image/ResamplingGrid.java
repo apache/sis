@@ -28,7 +28,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;

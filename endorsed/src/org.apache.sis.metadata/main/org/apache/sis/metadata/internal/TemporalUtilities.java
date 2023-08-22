@@ -22,10 +22,10 @@ import org.opengis.temporal.Instant;
 import org.opengis.temporal.Period;
 import org.opengis.temporal.TemporalFactory;
 import org.opengis.temporal.TemporalPrimitive;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.Reflect;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.temporal.DefaultTemporalFactory;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.Reflect;
+import org.apache.sis.system.SystemListener;
+import org.apache.sis.pending.temporal.DefaultTemporalFactory;
 
 
 /**

@@ -31,8 +31,8 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.system.ReferenceQueueConsumer;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.system.ReferenceQueueConsumer;
 
 
 /**

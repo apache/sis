@@ -25,7 +25,7 @@ import javafx.scene.control.ComboBox;
 import javafx.collections.ObservableList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.FrequencySortedSet;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.system.Configuration;
 
 
 /**

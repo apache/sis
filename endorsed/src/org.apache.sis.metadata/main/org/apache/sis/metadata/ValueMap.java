@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.apache.sis.internal.util.AbstractMapEntry;
+import org.apache.sis.util.internal.AbstractMapEntry;
 
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;

@@ -32,8 +32,8 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.SetOfUnknownSize;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.SetOfUnknownSize;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 

@@ -29,7 +29,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertOgcIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
-import static org.apache.sis.internal.util.Constants.*;
+import static org.apache.sis.util.internal.Constants.*;
 
 
 /**

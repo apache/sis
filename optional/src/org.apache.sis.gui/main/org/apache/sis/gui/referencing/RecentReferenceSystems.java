@@ -62,8 +62,8 @@ import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.NonNullObjectProperty;
 import org.apache.sis.gui.internal.RecentChoices;
 import org.apache.sis.gui.internal.io.OptionalDataDownloader;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 

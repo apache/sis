@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.system.Configuration;
 
 
 /**

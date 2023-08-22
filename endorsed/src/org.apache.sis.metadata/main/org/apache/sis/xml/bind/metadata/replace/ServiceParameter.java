@@ -35,7 +35,7 @@ import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
 
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 
 /**

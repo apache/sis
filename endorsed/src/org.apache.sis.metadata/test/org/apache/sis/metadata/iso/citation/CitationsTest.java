@@ -28,7 +28,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.simple.CitationConstant;
 import org.apache.sis.metadata.simple.SimpleCitation;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;

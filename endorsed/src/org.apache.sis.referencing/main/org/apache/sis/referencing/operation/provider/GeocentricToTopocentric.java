@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.measure.Units;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;

@@ -31,7 +31,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.io.stream.Region;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.storage.base.TiledGridCoverage;
@@ -50,7 +50,7 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.multiplyFull;
-import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import static org.apache.sis.util.internal.Numerics.ceilDiv;
 import static java.lang.Math.toIntExact;
 
 

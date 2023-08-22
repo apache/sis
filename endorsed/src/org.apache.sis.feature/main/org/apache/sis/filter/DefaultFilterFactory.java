@@ -35,7 +35,7 @@ import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.AbstractMap;
+import org.apache.sis.util.internal.AbstractMap;
 
 // Branch-dependent imports
 import org.opengis.filter.*;

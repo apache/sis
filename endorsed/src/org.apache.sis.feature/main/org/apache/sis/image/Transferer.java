@@ -30,9 +30,9 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.ImageLayout;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 
 
 /**
