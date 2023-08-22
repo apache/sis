@@ -570,7 +570,7 @@ public final class WKTParserTest extends CRSParserTest {
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      *
-     * @see org.apache.sis.internal.referencing.provider.SeismicBinGridMock
+     * @see org.apache.sis.referencing.operation.provider.SeismicBinGridMock
      */
     @Test
     @Override

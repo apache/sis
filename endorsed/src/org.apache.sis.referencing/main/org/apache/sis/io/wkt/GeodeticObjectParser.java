@@ -74,7 +74,7 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
-import org.apache.sis.internal.referencing.provider.AbstractProvider;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;

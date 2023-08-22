@@ -20,7 +20,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
-import org.apache.sis.internal.referencing.provider.ZonedTransverseMercator;
+import org.apache.sis.referencing.operation.provider.ZonedTransverseMercator;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameterized;

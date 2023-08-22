@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.Random;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.internal.referencing.provider.LambertCylindricalEqualArea;
+import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.TestUtilities;

@@ -33,7 +33,7 @@ import static java.lang.StrictMath.toRadians;
 
 // Test dependencies
 import org.opengis.test.ToleranceModifier;
-import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
+import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;

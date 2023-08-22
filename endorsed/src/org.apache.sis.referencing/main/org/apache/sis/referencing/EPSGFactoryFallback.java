@@ -42,7 +42,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
-import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Fallback;
 import org.apache.sis.internal.util.MetadataServices;

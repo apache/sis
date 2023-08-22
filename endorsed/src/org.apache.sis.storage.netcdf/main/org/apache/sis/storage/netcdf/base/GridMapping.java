@@ -64,7 +64,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.referencing.provider.PseudoPlateCarree;
+import org.apache.sis.referencing.operation.provider.PseudoPlateCarree;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Vocabulary;

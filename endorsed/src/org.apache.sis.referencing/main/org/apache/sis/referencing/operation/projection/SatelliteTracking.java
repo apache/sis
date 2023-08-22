@@ -35,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.referencing.provider.SatelliteTracking.*;
+import static org.apache.sis.referencing.operation.provider.SatelliteTracking.*;
 
 
 /**
@@ -77,15 +77,15 @@ public class SatelliteTracking extends NormalizedProjection {
      * Sines and cosines of inclination between the plane of the Earth's Equator and the plane
      * of the satellite orbit. The angle variable name is <var>i</var> in Snyder's book.
      *
-     * @see org.apache.sis.internal.referencing.provider.SatelliteTracking#SATELLITE_ORBIT_INCLINATION
+     * @see org.apache.sis.referencing.operation.provider.SatelliteTracking#SATELLITE_ORBIT_INCLINATION
      */
     private final double cos_i, sin_i, cos2_i;
 
     /**
      * Ratio of satellite orbital period (P₂) over ascending node period (P₁).
      *
-     * @see org.apache.sis.internal.referencing.provider.SatelliteTracking#SATELLITE_ORBITAL_PERIOD
-     * @see org.apache.sis.internal.referencing.provider.SatelliteTracking#ASCENDING_NODE_PERIOD
+     * @see org.apache.sis.referencing.operation.provider.SatelliteTracking#SATELLITE_ORBITAL_PERIOD
+     * @see org.apache.sis.referencing.operation.provider.SatelliteTracking#ASCENDING_NODE_PERIOD
      */
     private final double p2_on_p1;
 

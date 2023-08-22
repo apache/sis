@@ -40,7 +40,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.CartesianCS;
-import org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner;
+import org.apache.sis.referencing.operation.provider.TransverseMercator.Zoner;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;

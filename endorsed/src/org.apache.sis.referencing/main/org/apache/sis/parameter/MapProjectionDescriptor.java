@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;

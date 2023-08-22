@@ -32,7 +32,7 @@ import org.apache.sis.util.AbstractInternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  *
- * @see org.apache.sis.internal.referencing.provider.AbstractProvider#inverse()
+ * @see org.apache.sis.referencing.operation.provider.AbstractProvider#inverse()
  *
  * @since 0.7
  */

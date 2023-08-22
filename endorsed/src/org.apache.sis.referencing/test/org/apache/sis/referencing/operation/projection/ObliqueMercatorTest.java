@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter;
+import org.apache.sis.referencing.operation.provider.ObliqueMercatorCenter;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOn;

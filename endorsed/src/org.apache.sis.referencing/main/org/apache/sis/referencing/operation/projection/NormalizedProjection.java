@@ -53,7 +53,7 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Modules;

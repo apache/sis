@@ -34,7 +34,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
+import static org.apache.sis.referencing.operation.provider.AlbersEqualArea.*;
 
 
 /**

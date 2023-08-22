@@ -42,8 +42,8 @@ import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.floor;
-import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
-import static org.apache.sis.internal.referencing.provider.ZonedTransverseMercator.*;
+import static org.apache.sis.referencing.operation.provider.TransverseMercator.*;
+import static org.apache.sis.referencing.operation.provider.ZonedTransverseMercator.*;
 
 
 /**

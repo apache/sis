@@ -46,7 +46,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.Parameterized;

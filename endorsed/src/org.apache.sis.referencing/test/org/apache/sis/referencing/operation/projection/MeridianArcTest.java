@@ -58,7 +58,7 @@ public final class MeridianArcTest extends MapProjectionTestCase {
      * @return a test instance of the projection.
      */
     private MeridianArcBased create(final boolean ellipsoidal) {
-        final DefaultOperationMethod provider = new org.apache.sis.internal.referencing.provider.Sinusoidal();
+        final DefaultOperationMethod provider = new org.apache.sis.referencing.operation.provider.Sinusoidal();
         final Sinusoidal projection = new Sinusoidal(provider, parameters(provider, ellipsoidal));
         tolerance = NormalizedProjection.ANGULAR_TOLERANCE;     // = linear tolerance on a sphere of radius 1.
         return projection;

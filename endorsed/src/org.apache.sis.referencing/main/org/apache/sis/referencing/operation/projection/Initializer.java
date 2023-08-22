@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.DoubleDouble;

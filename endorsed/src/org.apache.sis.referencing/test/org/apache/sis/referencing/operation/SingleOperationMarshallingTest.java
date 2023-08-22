@@ -35,7 +35,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.test.Validators;
 import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.internal.referencing.provider.Mercator1SP;
+import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;

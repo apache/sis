@@ -32,7 +32,7 @@ import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.SQRT_2;
-import static org.apache.sis.internal.referencing.provider.Mollweide.*;
+import static org.apache.sis.referencing.operation.provider.Mollweide.*;
 
 
 /**

@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 @DependsOn({
     // Following dependency is where the basic parameters (e.g. SEMI_MAJOR) are tested.
     // Those parameters are needed by NoOp pseudo-projection, which is used in this package.
-    org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
+    org.apache.sis.referencing.operation.provider.MapProjectionTest.class,
     InitializerTest.class
 })
 public final class NormalizedProjectionTest extends TransformTestCase {

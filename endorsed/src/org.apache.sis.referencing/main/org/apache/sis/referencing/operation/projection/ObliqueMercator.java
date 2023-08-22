@@ -28,14 +28,14 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole;
-import org.apache.sis.internal.referencing.provider.ObliqueMercatorTwoPoints;
+import org.apache.sis.referencing.operation.provider.ObliqueMercatorTwoPoints;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
 import static org.apache.sis.internal.referencing.Formulas.fastHypot;
-import static org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter.*;
+import static org.apache.sis.referencing.operation.provider.ObliqueMercatorCenter.*;
 
 
 /**

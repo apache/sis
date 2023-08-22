@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
+import org.apache.sis.referencing.operation.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
@@ -41,7 +41,7 @@ import org.apache.sis.util.Debug;
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
 import static org.apache.sis.math.MathFunctions.atanh;
-import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
+import static org.apache.sis.referencing.operation.provider.TransverseMercator.*;
 
 
 /**

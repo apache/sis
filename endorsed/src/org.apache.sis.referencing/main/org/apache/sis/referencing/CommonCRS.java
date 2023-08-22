@@ -68,7 +68,7 @@ import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.SystemListener;

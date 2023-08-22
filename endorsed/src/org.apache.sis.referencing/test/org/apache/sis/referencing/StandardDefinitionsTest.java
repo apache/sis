@@ -58,7 +58,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  */
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
-    org.apache.sis.internal.referencing.provider.TransverseMercatorTest.class
+    org.apache.sis.referencing.operation.provider.TransverseMercatorTest.class
 })
 public final class StandardDefinitionsTest extends TestCase {
     /**

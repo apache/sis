@@ -22,7 +22,7 @@ import java.io.ObjectStreamException;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.provider.EPSGName;
+import org.apache.sis.referencing.operation.provider.EPSGName;
 
 import static org.apache.sis.internal.util.CollectionsExt.first;
 
@@ -77,7 +77,7 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
     /**
      * Creates a new parameter descriptor for a matrix element at the given indices. This method creates both the
      * OGC name (e.g. {@code "elt_1_2"}) and the EPSG name (e.g. {@code "B2"}), together with the EPSG identifier
-     * (e.g. {@code "EPSG:8641"}) if it exists. See {@link org.apache.sis.internal.referencing.provider.Affine}
+     * (e.g. {@code "EPSG:8641"}) if it exists. See {@link org.apache.sis.referencing.operation.provider.Affine}
      * for a table summarizing the parameter names and identifiers.
      */
     @Override

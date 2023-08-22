@@ -28,7 +28,7 @@ import org.apache.sis.internal.system.Semaphores;
  * An affine transform that remember the parameters used for its construction.
  * Those parameters may be very different than the usual affine transform parameters.
  *
- * For example, an {@link org.apache.sis.internal.referencing.provider.Equirectangular} projection
+ * For example, an {@link org.apache.sis.referencing.operation.provider.Equirectangular} projection
  * can be expressed as an affine transform. In such case, the same affine transform can be described
  * by two equivalent set of parameters:
  *

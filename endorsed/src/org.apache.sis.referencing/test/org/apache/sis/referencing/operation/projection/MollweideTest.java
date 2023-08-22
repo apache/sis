@@ -49,7 +49,7 @@ public final class MollweideTest extends MapProjectionTestCase {
      * @param  ellipse  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
     private void createProjection(final boolean ellipse) throws FactoryException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.Mollweide(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.Mollweide(),
                 WGS84_A, ellipse ? WGS84_B : WGS84_A,
                 Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         tolerance = Formulas.LINEAR_TOLERANCE;  // Not NORMALIZED_TOLERANCE since this is not a NormalizedProjection.

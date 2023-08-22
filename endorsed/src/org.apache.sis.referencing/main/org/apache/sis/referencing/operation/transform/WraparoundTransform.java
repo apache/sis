@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.MathTransformsOrFactory;
-import org.apache.sis.internal.referencing.provider.Wraparound;
+import org.apache.sis.referencing.operation.provider.Wraparound;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;

@@ -29,7 +29,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.referencing.provider.AbstractProvider;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
@@ -59,7 +59,7 @@ public final class Benchmark {
      */
     public static void main(String[] args) throws Exception {
         final Benchmark benchmark = new Benchmark(  // Put on next line the provider of the projection to benchmark.
-                new org.apache.sis.internal.referencing.provider.LambertConformal2SP(),
+                new org.apache.sis.referencing.operation.provider.LambertConformal2SP(),
                 8,      // Central meridian
                 25,     // Standard parallel 1
                 40);    // Standard parallel 2

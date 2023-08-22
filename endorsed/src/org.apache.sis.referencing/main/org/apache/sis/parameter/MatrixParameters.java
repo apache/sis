@@ -22,7 +22,7 @@ import java.io.ObjectStreamException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 

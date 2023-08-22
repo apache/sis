@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.LenientComparable;
@@ -434,7 +434,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * <p>This special case exists in order to allow developers to attach additional information to their own subclass
      * of {@code AffineTransform2D}, and still distinguish their specialized subclass from ordinary affine transforms
      * in a pool of {@code MathTransform} instances. The main application is the
-     * {@linkplain org.apache.sis.internal.referencing.provider.Equirectangular Equirectangular} map projection,
+     * {@linkplain org.apache.sis.referencing.operation.provider.Equirectangular Equirectangular} map projection,
      * which can be simplified to an affine transform but still needs to remember the projection parameters.</p>
      *
      * @param  object  the object to compare with this affine transform for equality.

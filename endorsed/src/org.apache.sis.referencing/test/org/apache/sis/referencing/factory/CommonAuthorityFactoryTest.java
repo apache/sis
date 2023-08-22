@@ -34,7 +34,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.iso.citation.Citations;

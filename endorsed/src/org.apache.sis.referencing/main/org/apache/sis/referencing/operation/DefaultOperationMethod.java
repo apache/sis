@@ -539,13 +539,13 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             /*
              * No name found for the given authority. We may use the primary name as a fallback.
              * But before doing that, maybe we can find the name that we are looking for in the
-             * hard-coded values in the 'org.apache.sis.internal.referencing.provider' package.
+             * hard-coded values in the 'org.apache.sis.referencing.operation.provider' package.
              * The typical use case is when this DefaultOperationMethod has been instantiated
              * by the EPSG factory using only the information found in the EPSG database.
              *
              * We can find the hard-coded names by looking at the ParameterDescriptorGroup of the
              * enclosing ProjectedCRS or DerivedCRS. This is because that parameter descriptor was
-             * typically provided by the 'org.apache.sis.internal.referencing.provider' package in
+             * typically provided by the 'org.apache.sis.referencing.operation.provider' package in
              * order to create the MathTransform associated with the enclosing CRS.  The enclosing
              * CRS is either the immediate parent in WKT 1, or the parent of the parent in WKT 2.
              */

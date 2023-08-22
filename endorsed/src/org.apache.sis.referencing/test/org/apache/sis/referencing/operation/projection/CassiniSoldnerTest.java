@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.parameter.Parameters;
@@ -50,8 +50,8 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
      * @param  hyperbolic  {@code false} for standard case, or {@code true} for hyperbolic case.
      */
     private static MapProjection method(final boolean hyperbolic) {
-        return hyperbolic ? new org.apache.sis.internal.referencing.provider.HyperbolicCassiniSoldner()
-                          : new org.apache.sis.internal.referencing.provider.CassiniSoldner();
+        return hyperbolic ? new org.apache.sis.referencing.operation.provider.HyperbolicCassiniSoldner()
+                          : new org.apache.sis.referencing.operation.provider.CassiniSoldner();
     }
 
     /**

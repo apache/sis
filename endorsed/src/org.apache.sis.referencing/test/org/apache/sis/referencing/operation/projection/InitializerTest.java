@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.provider.ObliqueStereographic;
+import org.apache.sis.referencing.operation.provider.ObliqueStereographic;
 import org.apache.sis.parameter.Parameters;
 import org.opengis.test.TestCase;
 import org.junit.Test;

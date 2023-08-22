@@ -29,7 +29,7 @@ import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
 import static org.apache.sis.internal.referencing.Formulas.fastHypot;
-import static org.apache.sis.internal.referencing.provider.LambertAzimuthalEqualArea.*;
+import static org.apache.sis.referencing.operation.provider.LambertAzimuthalEqualArea.*;
 
 
 /**

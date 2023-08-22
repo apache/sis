@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOn;
@@ -44,7 +44,7 @@ public class AzimuthalEquidistantTest extends MapProjectionTestCase {
      * Returns the method to be tested.
      */
     MapProjection method() {
-        return new org.apache.sis.internal.referencing.provider.AzimuthalEquidistantSpherical();
+        return new org.apache.sis.referencing.operation.provider.AzimuthalEquidistantSpherical();
     }
 
     /**

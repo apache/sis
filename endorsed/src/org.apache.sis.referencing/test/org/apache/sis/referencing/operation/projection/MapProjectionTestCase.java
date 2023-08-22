@@ -24,7 +24,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;

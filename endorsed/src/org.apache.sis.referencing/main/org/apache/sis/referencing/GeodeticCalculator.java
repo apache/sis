@@ -44,7 +44,7 @@ import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.internal.referencing.PositionTransformer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
@@ -60,8 +60,8 @@ import org.apache.sis.io.TableAppender;
 
 import static java.lang.Math.*;
 import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
-import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEquidistant.LATITUDE_OF_ORIGIN;
-import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEquidistant.LONGITUDE_OF_ORIGIN;
+import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.LATITUDE_OF_ORIGIN;
+import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.LONGITUDE_OF_ORIGIN;
 
 
 /**
