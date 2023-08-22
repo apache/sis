@@ -50,7 +50,7 @@ import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.SetOfUnknownSize;
-import org.apache.sis.internal.metadata.NameMeaning;
+import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.referencing.util.LazySet;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;

@@ -27,7 +27,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.internal.xml.XmlUtilities;
+import org.apache.sis.xml.util.XmlUtilities;
 import org.apache.sis.internal.temporal.DefaultTemporalFactory;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.BeforeClass;

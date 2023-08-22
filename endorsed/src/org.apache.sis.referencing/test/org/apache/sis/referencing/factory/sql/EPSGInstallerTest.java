@@ -33,7 +33,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 

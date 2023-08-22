@@ -33,7 +33,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.ReferencingUtilities;

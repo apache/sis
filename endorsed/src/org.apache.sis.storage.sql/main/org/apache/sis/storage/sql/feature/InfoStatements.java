@@ -39,7 +39,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.referencing.util.DefinitionVerifier;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.metadata.sql.util.SQLBuilder;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;

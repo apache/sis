@@ -21,8 +21,8 @@ import org.opengis.util.TypeName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
-import org.apache.sis.internal.simple.SimpleIdentifiedObject;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.metadata.simple.SimpleIdentifiedObject;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.Utilities.deepEquals;

@@ -35,7 +35,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 import static org.junit.Assert.*;
 
 

@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
-import org.apache.sis.internal.simple.SimpleAttributeType;
+import org.apache.sis.metadata.simple.SimpleAttributeType;
 
 // Test imports
 import org.junit.Test;

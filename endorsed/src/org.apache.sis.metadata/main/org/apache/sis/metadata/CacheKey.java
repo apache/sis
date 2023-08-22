@@ -37,7 +37,7 @@ final class CacheKey {
     /**
      * If the {@link #type} is an implementation class of a property, then the type declared in the signature for
      * that property. This information allows to handle classes that implement more than one metadata interfaces
-     * for their convenience. Some examples are found in the {@link org.apache.sis.internal.simple} package.
+     * for their convenience. Some examples are found in the {@link org.apache.sis.metadata.simple} package.
      *
      * <p>This field shall never be null. If there is no property type information,
      * then this field shall be set to {@code Object.class}.</p>

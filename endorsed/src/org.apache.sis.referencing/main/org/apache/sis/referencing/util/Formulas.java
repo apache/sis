@@ -25,7 +25,7 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 
 
 /**

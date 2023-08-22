@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
-import org.apache.sis.internal.simple.SimpleIdentifiedObject;
+import org.apache.sis.metadata.simple.SimpleIdentifiedObject;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.ComparisonMode;

@@ -22,7 +22,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.measure.Units;
 
 

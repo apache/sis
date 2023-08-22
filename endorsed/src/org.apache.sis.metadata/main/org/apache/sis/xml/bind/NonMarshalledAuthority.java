@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.io.ObjectStreamException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.simple.CitationConstant;
+import org.apache.sis.metadata.simple.CitationConstant;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.xml.IdentifierSpace;

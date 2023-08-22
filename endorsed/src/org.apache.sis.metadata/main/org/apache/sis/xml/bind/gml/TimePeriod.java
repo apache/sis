@@ -24,7 +24,7 @@ import org.opengis.temporal.Period;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.internal.util.Strings;
 
-import static org.apache.sis.internal.xml.LegacyNamespaces.VERSION_3_0;
+import static org.apache.sis.xml.util.LegacyNamespaces.VERSION_3_0;
 
 
 /**

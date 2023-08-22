@@ -30,7 +30,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.DataFormats;
 import org.apache.sis.gui.internal.Resources;

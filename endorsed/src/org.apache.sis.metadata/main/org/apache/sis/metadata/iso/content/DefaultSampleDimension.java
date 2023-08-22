@@ -37,7 +37,7 @@ import org.apache.sis.xml.bind.gco.GO_Record;
 import org.apache.sis.xml.bind.gco.GO_RecordType;
 import org.apache.sis.xml.bind.metadata.MI_RangeElementDescription;
 
-import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 
 /**

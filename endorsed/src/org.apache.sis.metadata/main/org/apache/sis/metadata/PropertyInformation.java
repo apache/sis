@@ -28,7 +28,7 @@ import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.simple.SimpleIdentifier;
+import org.apache.sis.metadata.simple.SimpleIdentifier;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;

@@ -23,12 +23,12 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.ImagingCondition;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.ImplementationHelper.ensureInRange;
-import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ensureInRange;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 
 /**

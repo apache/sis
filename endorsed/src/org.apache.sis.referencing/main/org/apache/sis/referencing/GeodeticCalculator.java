@@ -59,7 +59,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.TableAppender;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.LATITUDE_OF_ORIGIN;
 import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.LONGITUDE_OF_ORIGIN;
 

@@ -24,7 +24,7 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.metadata.simple.SimpleCitation;
 
 // Branch-dependent imports
 import org.opengis.filter.*;

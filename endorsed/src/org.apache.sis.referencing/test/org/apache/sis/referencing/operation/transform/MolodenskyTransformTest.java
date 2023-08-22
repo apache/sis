@@ -33,7 +33,7 @@ import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Statistics;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;

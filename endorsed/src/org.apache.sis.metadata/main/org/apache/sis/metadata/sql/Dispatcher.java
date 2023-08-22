@@ -30,7 +30,7 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.internal.util.Numerics;
 
 

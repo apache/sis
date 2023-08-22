@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.metadata.sql.util.Reflection;
 
 
 /**

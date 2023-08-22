@@ -38,7 +38,7 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.Containers;

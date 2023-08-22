@@ -47,7 +47,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.XML;
 
-import static org.apache.sis.internal.metadata.TemporalUtilities.toDate;
+import static org.apache.sis.metadata.internal.TemporalUtilities.toDate;
 
 
 /**

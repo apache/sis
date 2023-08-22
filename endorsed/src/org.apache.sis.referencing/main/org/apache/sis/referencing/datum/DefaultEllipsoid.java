@@ -33,7 +33,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.xml.bind.referencing.SecondDefiningParameter;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;

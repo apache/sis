@@ -21,10 +21,10 @@ import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.Period;
 import org.opengis.temporal.Instant;
 import org.opengis.temporal.TemporalPrimitive;
-import org.apache.sis.internal.xml.XmlUtilities;
+import org.apache.sis.xml.util.XmlUtilities;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.internal.metadata.TemporalUtilities;
+import org.apache.sis.metadata.internal.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
 
 

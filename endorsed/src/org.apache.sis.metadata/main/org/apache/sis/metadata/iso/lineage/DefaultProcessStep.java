@@ -36,10 +36,10 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gml.TM_Primitive;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
-import org.apache.sis.internal.metadata.TemporalUtilities;
+import org.apache.sis.metadata.internal.TemporalUtilities;
 
 
 /**

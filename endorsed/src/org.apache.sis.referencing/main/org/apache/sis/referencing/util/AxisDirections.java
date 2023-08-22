@@ -25,7 +25,7 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Utilities;

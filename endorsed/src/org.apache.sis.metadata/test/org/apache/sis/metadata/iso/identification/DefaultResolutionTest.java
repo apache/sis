@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.xml.TestCase;

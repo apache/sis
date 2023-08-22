@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static java.lang.StrictMath.toRadians;
-import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**

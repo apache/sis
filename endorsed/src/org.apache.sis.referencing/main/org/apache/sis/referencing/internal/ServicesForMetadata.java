@@ -63,7 +63,7 @@ import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Vocabulary;

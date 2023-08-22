@@ -33,7 +33,7 @@ import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;

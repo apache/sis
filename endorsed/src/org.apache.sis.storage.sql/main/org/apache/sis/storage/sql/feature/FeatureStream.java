@@ -28,7 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.metadata.sql.util.SQLBuilder;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
 import org.apache.sis.filter.internal.SortByComparator;

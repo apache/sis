@@ -68,9 +68,9 @@ import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 
-import org.apache.sis.internal.metadata.TransformationAccuracy;
+import org.apache.sis.metadata.internal.TransformationAccuracy;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.metadata.sql.util.SQLUtilities;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;

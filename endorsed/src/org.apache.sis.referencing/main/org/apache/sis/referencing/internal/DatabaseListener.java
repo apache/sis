@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
-import org.apache.sis.internal.metadata.sql.Initializer;
+import org.apache.sis.metadata.sql.util.Initializer;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 
@@ -31,7 +31,7 @@ import static java.util.logging.Logger.getLogger;
 /**
  * Invoked when a new database is created or when the data source changed.
  * This listener is registered in {@code module-info.java} as a provider
- * of the {@code org.apache.sis.internal.metadata.sql.Initializer} service.
+ * of the {@code org.apache.sis.metadata.sql.util.Initializer} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7

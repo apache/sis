@@ -20,7 +20,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.metadata.internal.AxisNames;
 
 // Test imports
 import org.apache.sis.test.mock.CoordinateSystemAxisMock;

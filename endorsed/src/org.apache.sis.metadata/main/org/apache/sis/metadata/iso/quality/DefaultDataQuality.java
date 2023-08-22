@@ -26,7 +26,7 @@ import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.StandaloneQualityReportInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Branch-dependent imports
 import org.opengis.metadata.maintenance.Scope;

@@ -168,7 +168,7 @@ public class MetadataServices extends OptionalDependency {
      * @param  locale  language to use if possible.
      * @return the information, or {@code null} if none.
      *
-     * @see org.apache.sis.internal.metadata.ReferencingServices#getInformation(String, Locale)
+     * @see org.apache.sis.metadata.internal.ReferencingServices#getInformation(String, Locale)
      */
     public String getInformation(String key, Locale locale) {
         return null;

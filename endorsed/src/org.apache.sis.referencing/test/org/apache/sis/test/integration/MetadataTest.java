@@ -54,7 +54,7 @@ import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;

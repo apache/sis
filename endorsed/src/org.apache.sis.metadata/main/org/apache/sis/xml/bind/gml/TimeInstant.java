@@ -25,7 +25,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import org.opengis.temporal.Instant;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.xml.XmlUtilities;
+import org.apache.sis.xml.util.XmlUtilities;
 
 
 /**

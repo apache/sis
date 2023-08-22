@@ -29,8 +29,8 @@ import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.SampleDimension;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 

@@ -36,13 +36,13 @@ import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.xml.bind.IdentifierMapAdapter;
 import org.apache.sis.xml.bind.ModifiableIdentifierMap;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.collection.Containers;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**

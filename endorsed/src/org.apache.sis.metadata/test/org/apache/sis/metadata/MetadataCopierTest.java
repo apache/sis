@@ -42,7 +42,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  *
- * @see org.apache.sis.internal.metadata.MergerTest
+ * @see org.apache.sis.metadata.internal.MergerTest
  *
  * @since 0.8
  */

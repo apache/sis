@@ -27,7 +27,7 @@ import org.opengis.annotation.ResourceBundles;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.Context;
 
-import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 
 /**

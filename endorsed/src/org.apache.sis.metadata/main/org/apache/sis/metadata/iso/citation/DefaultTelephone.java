@@ -28,10 +28,10 @@ import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.StringAdapter;
 import org.apache.sis.xml.bind.metadata.code.CI_TelephoneTypeCode;
-import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.metadata.internal.Dependencies;
 
 
 /**

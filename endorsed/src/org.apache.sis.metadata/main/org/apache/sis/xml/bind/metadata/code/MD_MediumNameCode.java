@@ -19,8 +19,8 @@ package org.apache.sis.xml.bind.metadata.code;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.apache.sis.xml.bind.cat.CodeListAdapter;
 import org.apache.sis.xml.bind.cat.CodeListUID;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.metadata.legacy.MediumName;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.metadata.iso.legacy.MediumName;
 
 
 /**

@@ -42,13 +42,13 @@ module org.apache.sis.metadata {
         with org.apache.sis.util.iso.DefaultNameFactory;
 
     provides org.apache.sis.xml.bind.TypeRegistration
-        with org.apache.sis.internal.metadata.MetadataTypes;
+        with org.apache.sis.metadata.internal.MetadataTypes;
 
     provides org.apache.sis.internal.util.MetadataServices
-        with org.apache.sis.internal.metadata.ServicesForUtility;
+        with org.apache.sis.metadata.internal.ServicesForUtility;
 
-    uses org.apache.sis.internal.metadata.ReferencingServices;
-    uses org.apache.sis.internal.metadata.sql.Initializer;
+    uses org.apache.sis.metadata.internal.ReferencingServices;
+    uses org.apache.sis.metadata.sql.util.Initializer;
     uses org.apache.sis.xml.bind.AdapterReplacement;
     uses org.apache.sis.xml.bind.TypeRegistration;
     uses org.opengis.temporal.TemporalFactory;
@@ -76,7 +76,7 @@ module org.apache.sis.metadata {
     /*
      * Internal API open only to other Apache SIS modules.
      */
-    exports org.apache.sis.internal.metadata to
+    exports org.apache.sis.metadata.internal to
             org.apache.sis.referencing,
             org.apache.sis.feature,
             org.apache.sis.storage,
@@ -147,17 +147,17 @@ module org.apache.sis.metadata {
             org.glassfish.jaxb.core,            // For access to various classes.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.metadata.sql to
+    exports org.apache.sis.metadata.sql.util to
             org.apache.sis.referencing,
             org.apache.sis.storage.sql;
 
-    exports org.apache.sis.internal.simple to
+    exports org.apache.sis.metadata.simple to
             org.apache.sis.referencing,
             org.apache.sis.feature,
             org.apache.sis.storage,
             org.apache.sis.storage.xml;
 
-    exports org.apache.sis.internal.xml to
+    exports org.apache.sis.xml.util to
             org.apache.sis.referencing,
             org.apache.sis.storage,
             org.apache.sis.storage.xml,

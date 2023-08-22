@@ -26,7 +26,7 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.function.BiPredicate;
-import org.apache.sis.internal.metadata.sql.Dialect;
+import org.apache.sis.metadata.sql.util.Dialect;
 import org.apache.sis.storage.sql.TestOnAllDatabases;
 import org.apache.sis.test.sql.TestDatabase;
 

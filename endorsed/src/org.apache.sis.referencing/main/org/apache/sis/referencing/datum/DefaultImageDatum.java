@@ -27,7 +27,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;

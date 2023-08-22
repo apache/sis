@@ -23,9 +23,9 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
-import org.apache.sis.internal.metadata.NameMeaning;
+import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.internal.metadata.Identifiers;
+import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.apache.sis.metadata.iso.citation.Citations.toCodeSpace;

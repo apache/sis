@@ -39,7 +39,7 @@ import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;

@@ -27,7 +27,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConstants;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.internal.xml.XmlUtilities;
+import org.apache.sis.xml.util.XmlUtilities;
 
 
 /**

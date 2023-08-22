@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.metadata.distribution.Format;
-import org.apache.sis.internal.simple.SimpleFormat;
+import org.apache.sis.metadata.simple.SimpleFormat;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.io.stream.Markable;
 import org.apache.sis.io.stream.RewindableLineReader;

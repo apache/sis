@@ -28,7 +28,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CodeListSet;
-import org.apache.sis.internal.metadata.Resources;
+import org.apache.sis.metadata.internal.Resources;
 
 
 /**

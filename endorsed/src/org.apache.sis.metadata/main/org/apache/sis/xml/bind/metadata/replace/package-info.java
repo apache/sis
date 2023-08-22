@@ -63,7 +63,7 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.xml.bind.metadata.DQM_Description;
 import org.apache.sis.xml.bind.metadata.code.SV_ParameterDirection;

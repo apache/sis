@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertBetween;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.opengis.test.Assert.assertAxisDirectionsEqual;
-import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**

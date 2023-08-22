@@ -18,7 +18,7 @@ package org.apache.sis.util.iso;
 
 import org.opengis.util.Factory;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.metadata.simple.SimpleCitation;
 
 
 /**

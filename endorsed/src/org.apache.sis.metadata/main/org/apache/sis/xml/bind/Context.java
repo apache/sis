@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.xml.IdentifierSpace;

@@ -101,7 +101,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.*;
 import org.apache.sis.xml.bind.metadata.code.*;
 import org.apache.sis.xml.bind.gts.TM_PeriodDuration;

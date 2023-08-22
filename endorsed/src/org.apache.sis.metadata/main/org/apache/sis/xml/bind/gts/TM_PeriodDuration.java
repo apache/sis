@@ -26,9 +26,9 @@ import org.opengis.temporal.PeriodDuration;
 import org.opengis.temporal.TemporalFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.internal.xml.XmlUtilities;
+import org.apache.sis.xml.util.XmlUtilities;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.internal.metadata.TemporalUtilities;
+import org.apache.sis.metadata.internal.TemporalUtilities;
 import org.apache.sis.util.SimpleInternationalString;
 
 

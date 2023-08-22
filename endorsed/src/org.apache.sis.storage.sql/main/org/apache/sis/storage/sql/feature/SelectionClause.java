@@ -23,7 +23,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.metadata.sql.util.SQLBuilder;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

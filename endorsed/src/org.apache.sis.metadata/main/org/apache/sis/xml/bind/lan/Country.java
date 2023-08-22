@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.xml.bind.gco.GO_CharacterString;
 import org.apache.sis.xml.bind.gco.CharSequenceAdapter;

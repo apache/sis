@@ -41,7 +41,7 @@ import org.opengis.geoapi.SchemaException;
 import org.opengis.geoapi.SchemaInformation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 
 import static org.opengis.geoapi.SchemaInformation.ROOT_NAMESPACE;

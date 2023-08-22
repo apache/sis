@@ -40,8 +40,8 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.metadata.internal.ReferencingServices;
+import org.apache.sis.metadata.sql.util.SQLUtilities;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -53,7 +53,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
+import static org.apache.sis.metadata.internal.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 
 /**

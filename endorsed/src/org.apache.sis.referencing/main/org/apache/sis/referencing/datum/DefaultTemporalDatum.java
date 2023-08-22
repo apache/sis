@@ -30,7 +30,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.xml.bind.gml.UniversalTimeAdapter;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;

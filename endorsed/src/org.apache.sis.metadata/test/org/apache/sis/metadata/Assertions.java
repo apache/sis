@@ -30,7 +30,7 @@ import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.util.Static;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.xml.DocumentComparator;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;

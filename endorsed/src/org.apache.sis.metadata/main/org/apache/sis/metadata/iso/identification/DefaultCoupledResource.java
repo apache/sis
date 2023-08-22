@@ -30,7 +30,7 @@ import org.opengis.metadata.identification.OperationMetadata;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.bind.metadata.SV_OperationMetadata;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.iso.Names;

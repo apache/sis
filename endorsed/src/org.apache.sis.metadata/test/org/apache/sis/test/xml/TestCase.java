@@ -32,7 +32,7 @@ import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.JAXBException;
 import java.io.IOException;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;

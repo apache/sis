@@ -20,7 +20,7 @@ import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.internal.metadata.Resources;
+import org.apache.sis.metadata.internal.Resources;
 import org.apache.sis.util.collection.BackingStoreException;
 
 

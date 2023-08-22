@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.internal.simple.SimpleIdentifiedObject;
+import org.apache.sis.metadata.simple.SimpleIdentifiedObject;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;

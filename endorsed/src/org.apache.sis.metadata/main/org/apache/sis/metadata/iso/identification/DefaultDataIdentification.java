@@ -32,8 +32,8 @@ import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.xml.bind.lan.OtherLocales;
 import org.apache.sis.xml.bind.lan.PT_Locale;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.metadata.internal.Dependencies;
 
 
 /**

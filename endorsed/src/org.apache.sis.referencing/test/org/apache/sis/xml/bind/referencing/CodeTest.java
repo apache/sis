@@ -20,7 +20,7 @@ import java.util.Set;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
