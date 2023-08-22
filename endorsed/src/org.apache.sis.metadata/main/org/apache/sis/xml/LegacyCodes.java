@@ -23,7 +23,7 @@ import java.util.Properties;
 import java.io.InputStream;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 

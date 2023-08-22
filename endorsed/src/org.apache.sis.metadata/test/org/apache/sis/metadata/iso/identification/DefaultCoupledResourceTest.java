@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.OperationMetadata;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
-import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameterTest;
+import org.apache.sis.xml.bind.metadata.replace.ServiceParameterTest;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;

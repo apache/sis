@@ -34,7 +34,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.simple.CitationConstant;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.xml.bind.NonMarshalledAuthority;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc

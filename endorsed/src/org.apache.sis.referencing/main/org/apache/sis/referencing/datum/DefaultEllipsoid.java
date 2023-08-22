@@ -31,7 +31,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.jaxb.gml.Measure;
+import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.xml.bind.referencing.SecondDefiningParameter;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.referencing.util.Formulas;

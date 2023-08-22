@@ -27,7 +27,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Exceptions;

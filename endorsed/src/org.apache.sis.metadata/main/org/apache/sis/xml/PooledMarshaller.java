@@ -36,8 +36,8 @@ import javax.xml.transform.Result;
 import javax.xml.validation.Schema;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.UseLegacyMetadata;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.UseLegacyMetadata;
 
 
 /**

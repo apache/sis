@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.xml.bind.NonMarshalledAuthority;
 
 
 /**

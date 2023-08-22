@@ -18,7 +18,7 @@ package org.apache.sis.referencing.crs;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.xml.bind.gco.PropertyType;
 
 
 /**

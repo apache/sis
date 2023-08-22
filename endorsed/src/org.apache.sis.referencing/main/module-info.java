@@ -144,10 +144,10 @@ module org.apache.sis.referencing {
              org.apache.sis.referencing.operation.provider.GeocentricToTopocentric,
              org.apache.sis.referencing.operation.provider.GeographicToTopocentric;
 
-    provides org.apache.sis.internal.jaxb.TypeRegistration
+    provides org.apache.sis.xml.bind.TypeRegistration
         with org.apache.sis.referencing.internal.ReferencingTypes;
 
-    provides org.apache.sis.internal.jaxb.AdapterReplacement
+    provides org.apache.sis.xml.bind.AdapterReplacement
         with org.apache.sis.xml.bind.referencing.SC_VerticalCRS;
 
     provides org.apache.sis.internal.metadata.ReferencingServices

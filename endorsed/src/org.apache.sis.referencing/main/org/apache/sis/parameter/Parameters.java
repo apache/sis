@@ -28,7 +28,7 @@ import org.opengis.util.MemberName;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.*;                                         // We use almost all types from this package.
-import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameter;
+import org.apache.sis.xml.bind.metadata.replace.ServiceParameter;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;

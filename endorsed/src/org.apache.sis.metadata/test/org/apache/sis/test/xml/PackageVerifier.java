@@ -261,7 +261,7 @@ final class PackageVerifier {
          * If both of them are present, verify that they are consistent (same namespace and
          * same name with "_Type" suffix in @XmlType). If the type name is not declared, we
          * assume that it is the same than the class name (this is what Apache SIS 1.0 does
-         * in its org.apache.sis.internal.jaxb.code package for CodeList adapters).
+         * in its org.apache.sis.xml.bind.metadata.code package for CodeList adapters).
          */
         final String isoName;       // ISO class name (not the same than Java class name).
         if (xmlRoot != null) {
@@ -281,7 +281,7 @@ final class PackageVerifier {
         } else {
             /*
              * If there is neither @XmlRootElement or @XmlType annotation, it may be a code list as implemented
-             * in the org.apache.sis.internal.jaxb.code package. Those adapters have a single @XmlElement which
+             * in the org.apache.sis.xml.bind.metadata.code package. Those adapters have a single @XmlElement which
              * is to be interpreted as if it was the actual type.
              */
             for (final Method method : type.getDeclaredMethods()) {

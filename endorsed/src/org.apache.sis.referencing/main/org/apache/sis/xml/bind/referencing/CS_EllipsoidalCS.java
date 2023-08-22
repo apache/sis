@@ -19,7 +19,7 @@ package org.apache.sis.xml.bind.referencing;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.xml.bind.gco.PropertyType;
 
 
 /**

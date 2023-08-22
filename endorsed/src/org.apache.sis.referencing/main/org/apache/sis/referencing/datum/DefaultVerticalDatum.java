@@ -28,7 +28,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;

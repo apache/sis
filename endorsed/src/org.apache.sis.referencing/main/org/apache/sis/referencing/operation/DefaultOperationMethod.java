@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.xml.bind.gco.StringAdapter;
 import org.apache.sis.xml.bind.referencing.CC_OperationMethod;
 import org.apache.sis.referencing.util.NilReferencingObject;
 import org.apache.sis.internal.metadata.Identifiers;

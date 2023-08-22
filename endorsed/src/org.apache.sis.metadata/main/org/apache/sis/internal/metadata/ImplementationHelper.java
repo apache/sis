@@ -26,7 +26,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
 

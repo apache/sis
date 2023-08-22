@@ -27,7 +27,7 @@ import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
 

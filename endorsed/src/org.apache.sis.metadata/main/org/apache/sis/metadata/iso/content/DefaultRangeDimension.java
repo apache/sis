@@ -31,8 +31,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 
 
 /**

@@ -38,7 +38,7 @@ import javax.xml.stream.util.StreamReaderDelegate;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.io.stream.IOUtilities;

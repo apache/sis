@@ -25,7 +25,7 @@ import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.util.InternationalString;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
 

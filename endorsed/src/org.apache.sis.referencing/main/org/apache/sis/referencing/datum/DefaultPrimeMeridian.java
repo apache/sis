@@ -34,7 +34,7 @@ import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.internal.jaxb.gml.Measure;
+import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;

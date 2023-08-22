@@ -26,7 +26,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.identification.KeywordClass;
-import org.apache.sis.internal.jaxb.metadata.MD_KeywordClass;
+import org.apache.sis.xml.bind.metadata.MD_KeywordClass;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 

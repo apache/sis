@@ -404,7 +404,7 @@ public final class Types extends Static {
     /**
      * The {@link InternationalString} returned by the {@code Types.getCodeTitle(…)} method.
      * The code below is a duplicated - in a different way - of {@code CodeListUID(CodeList)}
-     * constructor ({@link org.apache.sis.internal.jaxb.code package}). This duplication exists
+     * constructor ({@link org.apache.sis.xml.bind.metadata.code package}). This duplication exists
      * because {@code CodeListUID} constructor stores more information in an opportunist way.
      * If this class is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
@@ -540,7 +540,7 @@ public final class Types extends Static {
                 }
             }
             // Following code list is not defined in ISO 19115-2 but appears in XML schemas.
-            typeForNames.putIfAbsent("MI_SensorTypeCode", "org.apache.sis.internal.jaxb.metadata.replace.SensorType");
+            typeForNames.putIfAbsent("MI_SensorTypeCode", "org.apache.sis.xml.bind.metadata.replace.SensorType");
         }
         /*
          * Get the interface class for the given identifier, loading the class when first needed.

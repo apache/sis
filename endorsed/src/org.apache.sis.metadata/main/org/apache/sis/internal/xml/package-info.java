@@ -24,7 +24,7 @@
  * may change in incompatible ways in any future version without notice.
  *
  * <p>The content of this class is independent of our JAXB usage, except
- * {@link org.apache.sis.internal.jaxb.Context} which is used for fetching
+ * {@link org.apache.sis.xml.bind.Context} which is used for fetching
  * locale and timezone information.</p>
  *
  * @author  Cédric Briançon (Geomatys)

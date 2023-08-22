@@ -20,7 +20,7 @@ import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Stereotype;
 import org.opengis.util.ControlledVocabulary;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.PropertyConsistencyCheck;
 import org.apache.sis.test.LoggingWatcher;
@@ -284,9 +284,9 @@ public final class AllMetadataTest extends PropertyConsistencyCheck {
              */
             return null;
         }
-        final String classname = "org.apache.sis.internal.jaxb." +
-                (ControlledVocabulary.class.isAssignableFrom(type) ? "code" : "metadata") +
-                '.' + type.getAnnotation(UML.class).identifier();
+        final String classname = "org.apache.sis.xml.bind.metadata." +
+                (ControlledVocabulary.class.isAssignableFrom(type) ? "code." : "") +
+                type.getAnnotation(UML.class).identifier();
         final Class<?> wrapper = Class.forName(classname);
         Class<?>[] expectedFinalClasses = wrapper.getClasses();   // "Since2014" internal class.
         if (expectedFinalClasses.length == 0) {

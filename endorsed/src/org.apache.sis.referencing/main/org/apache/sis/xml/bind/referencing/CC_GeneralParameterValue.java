@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.xml.bind.gco.PropertyType;
 
 
 /**

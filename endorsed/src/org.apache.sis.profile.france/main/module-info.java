@@ -27,7 +27,7 @@ module org.apache.sis.profile.france {
     requires jakarta.xml.bind;
     requires transitive org.apache.sis.metadata;
 
-    provides org.apache.sis.internal.jaxb.TypeRegistration
+    provides org.apache.sis.xml.bind.TypeRegistration
         with org.apache.sis.xml.bind.fra.ProfileTypes;
 
     exports org.apache.sis.profile.france;

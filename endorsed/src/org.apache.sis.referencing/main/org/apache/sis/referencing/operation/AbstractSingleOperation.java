@@ -42,7 +42,7 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroup;
 import org.apache.sis.xml.bind.referencing.CC_OperationMethod;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ImplementationHelper;

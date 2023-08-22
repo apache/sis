@@ -21,7 +21,7 @@ import java.util.Collection;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.referencing.util.NilReferencingObject;
 

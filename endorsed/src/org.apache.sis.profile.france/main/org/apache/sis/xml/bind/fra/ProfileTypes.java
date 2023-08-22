@@ -19,13 +19,13 @@ package org.apache.sis.xml.bind.fra;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Optional;
-import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.xml.bind.TypeRegistration;
 
 
 /**
  * Completes the JAXB context with classes specific to the French profile.
  * This class is declared in the {@code module-info.java} file as a
- * {@code org.apache.sis.internal.jaxb.TypeRegistration} service.
+ * {@code org.apache.sis.xml.bind.TypeRegistration} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

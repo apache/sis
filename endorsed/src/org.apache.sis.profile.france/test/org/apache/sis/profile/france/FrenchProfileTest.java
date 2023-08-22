@@ -23,7 +23,7 @@ import org.opengis.metadata.constraint.SecurityConstraints;
 import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 import org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints;
-import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
+import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.xml.bind.fra.IndirectReferenceSystem;
 import org.apache.sis.xml.bind.fra.DirectReferenceSystem;
 import org.apache.sis.metadata.iso.DefaultIdentifier;

@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;

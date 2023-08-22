@@ -35,8 +35,8 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.MD_Identifier;
 
 import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
 
@@ -75,7 +75,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
 @XmlRootElement(name = "MD_CoverageDescription")
 @XmlSeeAlso({
     DefaultImageDescription.class,
-    org.apache.sis.internal.jaxb.gmi.MI_CoverageDescription.class
+    org.apache.sis.xml.bind.gmi.MI_CoverageDescription.class
 })
 public class DefaultCoverageDescription extends AbstractContentInformation implements CoverageDescription {
     /**

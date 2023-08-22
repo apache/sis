@@ -40,7 +40,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 
 import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 

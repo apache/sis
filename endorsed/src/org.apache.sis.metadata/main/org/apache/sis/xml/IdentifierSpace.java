@@ -19,7 +19,7 @@ package org.apache.sis.xml;
 import java.net.URI;
 import java.util.UUID;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.xml.bind.NonMarshalledAuthority;
 
 
 /**

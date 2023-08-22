@@ -23,7 +23,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.util.CorruptedObjectException;

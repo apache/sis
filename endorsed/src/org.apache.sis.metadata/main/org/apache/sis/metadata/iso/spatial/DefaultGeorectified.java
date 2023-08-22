@@ -27,7 +27,7 @@ import org.opengis.metadata.spatial.Georectified;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.geometry.primitive.Point;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.resources.Messages;
 
 
@@ -81,7 +81,7 @@ import org.apache.sis.util.resources.Messages;
     "checkPoints"
 })
 @XmlRootElement(name = "MD_Georectified")
-@XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.MI_Georectified.class)
+@XmlSeeAlso(org.apache.sis.xml.bind.gmi.MI_Georectified.class)
 public class DefaultGeorectified extends DefaultGridSpatialRepresentation implements Georectified {
     /**
      * Serial number for inter-operability with different versions.

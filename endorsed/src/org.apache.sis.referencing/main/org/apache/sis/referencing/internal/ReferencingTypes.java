@@ -18,7 +18,7 @@ package org.apache.sis.referencing.internal;
 
 import java.util.Collection;
 import java.util.function.UnaryOperator;
-import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.xml.bind.TypeRegistration;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -29,7 +29,7 @@ import org.opengis.referencing.ReferenceSystem;
 /**
  * Declares the classes of objects to be marshalled using a default {@code MarshallerPool}.
  * This class is declared in {@code module-info.java} as a provider of the
- * {@code org.apache.sis.internal.jaxb.TypeRegistration} service.
+ * {@code org.apache.sis.xml.bind.TypeRegistration} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

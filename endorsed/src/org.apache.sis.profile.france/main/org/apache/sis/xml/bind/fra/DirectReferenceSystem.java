@@ -20,7 +20,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
+import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.util.ComparisonMode;
 
 

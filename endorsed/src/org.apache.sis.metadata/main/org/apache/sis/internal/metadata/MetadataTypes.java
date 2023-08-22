@@ -23,16 +23,16 @@ import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.lineage.Source;
-import org.apache.sis.internal.jaxb.TypeRegistration;
-import org.apache.sis.internal.jaxb.gco.Multiplicity;
-import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
-import org.apache.sis.internal.jaxb.gmi.LE_Source;
-import org.apache.sis.internal.jaxb.gmi.MI_Band;
-import org.apache.sis.internal.jaxb.gmi.MI_CoverageDescription;
-import org.apache.sis.internal.jaxb.gmi.MI_Georectified;
-import org.apache.sis.internal.jaxb.gmi.MI_Georeferenceable;
-import org.apache.sis.internal.jaxb.gmi.MI_ImageDescription;
-import org.apache.sis.internal.jaxb.gmi.MI_Metadata;
+import org.apache.sis.xml.bind.TypeRegistration;
+import org.apache.sis.xml.bind.gco.Multiplicity;
+import org.apache.sis.xml.bind.gmi.LE_ProcessStep;
+import org.apache.sis.xml.bind.gmi.LE_Source;
+import org.apache.sis.xml.bind.gmi.MI_Band;
+import org.apache.sis.xml.bind.gmi.MI_CoverageDescription;
+import org.apache.sis.xml.bind.gmi.MI_Georectified;
+import org.apache.sis.xml.bind.gmi.MI_Georeferenceable;
+import org.apache.sis.xml.bind.gmi.MI_ImageDescription;
+import org.apache.sis.xml.bind.gmi.MI_Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.spatial.Georectified;
@@ -41,7 +41,7 @@ import org.opengis.metadata.spatial.Georeferenceable;
 
 /**
  * Declares the classes of objects to be marshalled using a default {@code MarshallerPool}.
- * This class is declared as a {@code org.apache.sis.internal.jaxb.TypeRegistration} service
+ * This class is declared as a {@code org.apache.sis.xml.bind.TypeRegistration} service
  * in the {@code module-info.java} file.
  *
  * @author  Martin Desruisseaux (Geomatys)

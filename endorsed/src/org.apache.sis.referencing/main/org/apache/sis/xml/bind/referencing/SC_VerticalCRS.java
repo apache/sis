@@ -19,7 +19,7 @@ package org.apache.sis.xml.bind.referencing;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.apache.sis.internal.jaxb.AdapterReplacement;
+import org.apache.sis.xml.bind.AdapterReplacement;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 
 
@@ -33,7 +33,7 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
  * @version 1.4
  * @since   0.4
  */
-public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_VerticalCRS implements AdapterReplacement {
+public final class SC_VerticalCRS extends org.apache.sis.xml.bind.gml.SC_VerticalCRS implements AdapterReplacement {
     /**
      * Empty constructor for JAXB only.
      */
@@ -54,7 +54,7 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
      */
     @Override
     public void register(final Marshaller marshaller) {
-        marshaller.setAdapter(org.apache.sis.internal.jaxb.gml.SC_VerticalCRS.class, this);
+        marshaller.setAdapter(org.apache.sis.xml.bind.gml.SC_VerticalCRS.class, this);
     }
 
     /**
@@ -62,7 +62,7 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
      */
     @Override
     public void register(final Unmarshaller unmarshaller) {
-        unmarshaller.setAdapter(org.apache.sis.internal.jaxb.gml.SC_VerticalCRS.class, this);
+        unmarshaller.setAdapter(org.apache.sis.xml.bind.gml.SC_VerticalCRS.class, this);
     }
 
     /**
@@ -72,7 +72,7 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
      * @return the wrapper for the metadata value.
      */
     @Override
-    protected org.apache.sis.internal.jaxb.gml.SC_VerticalCRS wrap(final VerticalCRS value) {
+    protected org.apache.sis.xml.bind.gml.SC_VerticalCRS wrap(final VerticalCRS value) {
         return new SC_VerticalCRS(value);
     }
 

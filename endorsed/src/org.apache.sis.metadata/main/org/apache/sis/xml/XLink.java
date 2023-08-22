@@ -29,7 +29,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 
 
 /**

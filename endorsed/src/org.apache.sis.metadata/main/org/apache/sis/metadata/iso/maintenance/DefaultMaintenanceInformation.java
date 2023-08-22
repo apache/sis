@@ -37,7 +37,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.util.CollectionsExt;
 

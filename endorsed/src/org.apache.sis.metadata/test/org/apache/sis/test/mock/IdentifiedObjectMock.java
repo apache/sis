@@ -27,7 +27,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.gco.GO_GenericName;
+import org.apache.sis.xml.bind.gco.GO_GenericName;
 
 
 /**

@@ -30,7 +30,7 @@ import org.opengis.metadata.identification.CoupledResource;
 import org.opengis.metadata.identification.CouplingType;
 import org.opengis.metadata.identification.OperationChainMetadata;
 import org.opengis.metadata.identification.OperationMetadata;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.Namespaces;
 
 

@@ -17,7 +17,7 @@
 package org.apache.sis.xml.bind.referencing;
 
 import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
+import org.apache.sis.xml.bind.gml.CodeListAdapter;
 
 import static org.apache.sis.internal.util.Constants.EPSG;
 

@@ -19,8 +19,8 @@ package org.apache.sis.xml.bind.referencing;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.Conversion;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.referencing.operation.DefaultConversion;
 
 

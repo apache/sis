@@ -28,8 +28,8 @@ import org.opengis.metadata.content.BandDefinition;
 import org.opengis.metadata.content.PolarisationOrientation;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.internal.jaxb.gco.GO_Real;
-import org.apache.sis.internal.jaxb.gco.UnitAdapter;
+import org.apache.sis.xml.bind.gco.GO_Real;
+import org.apache.sis.xml.bind.gco.UnitAdapter;
 
 import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
@@ -72,7 +72,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
     "detectedPolarisation"
 })
 @XmlRootElement(name = "MD_Band")
-@XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.MI_Band.class)
+@XmlSeeAlso(org.apache.sis.xml.bind.gmi.MI_Band.class)
 public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Serial number for inter-operability with different versions.

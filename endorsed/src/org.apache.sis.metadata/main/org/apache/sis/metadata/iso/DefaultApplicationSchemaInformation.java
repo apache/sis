@@ -24,8 +24,8 @@ import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
-import org.apache.sis.internal.jaxb.metadata.CI_OnlineResource;
+import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
+import org.apache.sis.xml.bind.metadata.CI_OnlineResource;
 
 
 /**

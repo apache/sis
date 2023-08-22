@@ -21,8 +21,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gml.Measure;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.util.resources.Errors;
 
 

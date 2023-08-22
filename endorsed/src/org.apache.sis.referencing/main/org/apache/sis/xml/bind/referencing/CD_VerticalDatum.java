@@ -18,7 +18,7 @@ package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 
 

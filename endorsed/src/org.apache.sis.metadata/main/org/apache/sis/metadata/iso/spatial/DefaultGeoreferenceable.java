@@ -72,7 +72,7 @@ import org.opengis.metadata.spatial.GeolocationInformation;
     "geolocationInformation"
 })
 @XmlRootElement(name = "MD_Georeferenceable")
-@XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.MI_Georeferenceable.class)
+@XmlSeeAlso(org.apache.sis.xml.bind.gmi.MI_Georeferenceable.class)
 public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation implements Georeferenceable {
     /**
      * Serial number for inter-operability with different versions.

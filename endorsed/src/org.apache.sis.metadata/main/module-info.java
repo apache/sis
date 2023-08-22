@@ -41,7 +41,7 @@ module org.apache.sis.metadata {
     provides org.opengis.util.NameFactory
         with org.apache.sis.util.iso.DefaultNameFactory;
 
-    provides org.apache.sis.internal.jaxb.TypeRegistration
+    provides org.apache.sis.xml.bind.TypeRegistration
         with org.apache.sis.internal.metadata.MetadataTypes;
 
     provides org.apache.sis.internal.util.MetadataServices
@@ -49,8 +49,8 @@ module org.apache.sis.metadata {
 
     uses org.apache.sis.internal.metadata.ReferencingServices;
     uses org.apache.sis.internal.metadata.sql.Initializer;
-    uses org.apache.sis.internal.jaxb.AdapterReplacement;
-    uses org.apache.sis.internal.jaxb.TypeRegistration;
+    uses org.apache.sis.xml.bind.AdapterReplacement;
+    uses org.apache.sis.xml.bind.TypeRegistration;
     uses org.opengis.temporal.TemporalFactory;
 
     /*
@@ -83,52 +83,52 @@ module org.apache.sis.metadata {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff;
 
-    exports org.apache.sis.internal.jaxb to
+    exports org.apache.sis.xml.bind to
             org.apache.sis.referencing,
             org.apache.sis.storage.xml,
             org.apache.sis.portrayal,
             org.apache.sis.profile.france;
 
-    exports org.apache.sis.internal.jaxb.gco to
+    exports org.apache.sis.xml.bind.gco to
             org.apache.sis.referencing,
             org.apache.sis.portrayal;
 
-    exports org.apache.sis.internal.jaxb.gcx to
+    exports org.apache.sis.xml.bind.gcx to
             org.glassfish.jaxb.runtime,         // TODO: need to export to Jakarta only.
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.lan to
+    exports org.apache.sis.xml.bind.lan to
             org.glassfish.jaxb.runtime,         // TODO: need to export to Jakarta only.
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.cat to
+    exports org.apache.sis.xml.bind.cat to
             org.glassfish.jaxb.runtime,         // TODO: need to export to Jakarta only.
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.gml to
+    exports org.apache.sis.xml.bind.gml to
             org.apache.sis.referencing,
             org.apache.sis.storage.xml,
             org.glassfish.jaxb.runtime,         // TODO: need to export to Jakarta only.
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.gmi to
+    exports org.apache.sis.xml.bind.gmi to
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.gts to
+    exports org.apache.sis.xml.bind.gts to
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.code to
+    exports org.apache.sis.xml.bind.metadata.code to
             org.glassfish.jaxb.runtime,         // TODO: need to export to Jakarta only.
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.metadata to
+    exports org.apache.sis.xml.bind.metadata to
             org.apache.sis.referencing,
             org.apache.sis.storage,
             org.apache.sis.profile.france,
@@ -136,11 +136,11 @@ module org.apache.sis.metadata {
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.geometry to
+    exports org.apache.sis.xml.bind.metadata.geometry to
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.internal.jaxb.metadata.replace to
+    exports org.apache.sis.xml.bind.metadata.replace to
             org.apache.sis.referencing,
             org.apache.sis.profile.france,
             org.glassfish.jaxb.runtime,         // For access to beforeUnmarshal(…).
@@ -185,6 +185,6 @@ module org.apache.sis.metadata {
     opens org.apache.sis.metadata.iso.distribution   to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens org.apache.sis.metadata.iso.maintenance    to jakarta.xml.bind, org.glassfish.jaxb.runtime;
 
-    opens org.apache.sis.internal.jaxb.gco to jakarta.xml.bind;
-    opens org.apache.sis.internal.jaxb.gml to jakarta.xml.bind;
+    opens org.apache.sis.xml.bind.gco to jakarta.xml.bind;
+    opens org.apache.sis.xml.bind.gml to jakarta.xml.bind;
 }

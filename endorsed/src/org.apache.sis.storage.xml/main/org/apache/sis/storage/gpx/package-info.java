@@ -76,4 +76,4 @@ import jakarta.xml.bind.annotation.XmlSchema;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
+import org.apache.sis.xml.bind.gml.UniversalTimeAdapter;

@@ -26,7 +26,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
+import org.apache.sis.xml.bind.lan.LocaleAdapter;
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.xml.Namespaces;
 

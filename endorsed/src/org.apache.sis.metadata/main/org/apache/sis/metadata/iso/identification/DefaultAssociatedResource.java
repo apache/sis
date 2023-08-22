@@ -24,9 +24,9 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
-import org.apache.sis.internal.jaxb.metadata.CI_Citation;
-import org.apache.sis.internal.jaxb.code.DS_AssociationTypeCode;
-import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
+import org.apache.sis.xml.bind.metadata.CI_Citation;
+import org.apache.sis.xml.bind.metadata.code.DS_AssociationTypeCode;
+import org.apache.sis.xml.bind.metadata.code.DS_InitiativeTypeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 

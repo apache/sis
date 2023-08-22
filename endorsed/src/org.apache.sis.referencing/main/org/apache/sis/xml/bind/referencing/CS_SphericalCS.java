@@ -19,7 +19,7 @@ package org.apache.sis.xml.bind.referencing;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.cs.SphericalCS;
 import org.apache.sis.referencing.cs.DefaultSphericalCS;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.xml.bind.gco.PropertyType;
 
 
 /**

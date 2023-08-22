@@ -25,7 +25,7 @@ import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.StandaloneQualityReportInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
 // Branch-dependent imports

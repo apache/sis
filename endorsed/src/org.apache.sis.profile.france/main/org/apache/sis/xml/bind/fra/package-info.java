@@ -44,5 +44,5 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-import org.apache.sis.internal.jaxb.metadata.CI_Citation;
+import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.profile.france.FrenchProfile;

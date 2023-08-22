@@ -24,7 +24,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.ImagingCondition;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.measure.ValueRange;
 
 import static org.apache.sis.internal.metadata.ImplementationHelper.ensureInRange;
@@ -68,7 +68,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
     "lensDistortionInformationAvailable"
 })
 @XmlRootElement(name = "MD_ImageDescription")
-@XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.MI_ImageDescription.class)
+@XmlSeeAlso(org.apache.sis.xml.bind.gmi.MI_ImageDescription.class)
 public class DefaultImageDescription extends DefaultCoverageDescription implements ImageDescription {
     /**
      * Serial number for inter-operability with different versions.

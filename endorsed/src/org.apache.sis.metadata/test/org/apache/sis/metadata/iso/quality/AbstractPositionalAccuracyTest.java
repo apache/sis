@@ -21,7 +21,7 @@ import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.quality.Result;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest;
+import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;

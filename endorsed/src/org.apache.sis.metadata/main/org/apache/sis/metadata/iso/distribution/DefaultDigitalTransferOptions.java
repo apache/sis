@@ -31,8 +31,8 @@ import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.jaxb.gts.TM_PeriodDuration;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.gts.TM_PeriodDuration;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.internal.util.CollectionsExt;
 
 import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
