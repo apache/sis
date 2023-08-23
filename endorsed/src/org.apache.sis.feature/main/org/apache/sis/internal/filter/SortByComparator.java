@@ -191,7 +191,7 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Comparator<R> thenComparing​(final Comparator<? super R> other) {
+    public Comparator<R> thenComparing(final Comparator<? super R> other) {
         if (other instanceof SortBy<?>) {
             /*
              * The (SortBy<R>) cast is unsafe — it should be (SortBy<? super R>) — but it is okay in this context
@@ -201,6 +201,6 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
              */
             return concatenate(this, (SortBy<R>) other);
         }
-        return SortBy.super.thenComparing​(other);
+        return SortBy.super.thenComparing(other);
     }
 }

@@ -58,7 +58,7 @@ import org.apache.sis.util.Localized;
  *
  * <p>If no data source has been specified to the constructor, then {@code EPSGFactory} searches for a
  * default data source in JNDI, or in the directory given by the {@code SIS_DATA} environment variable,
- * or in the directory given by the {@code "derby​.system​.home"} property, in that order.
+ * or in the directory given by the {@code "derby.system.home"} property, in that order.
  * See the {@linkplain org.apache.sis.referencing.factory.sql package documentation} for more information.</p>
  *
  * <h2>EPSG dataset installation</h2>

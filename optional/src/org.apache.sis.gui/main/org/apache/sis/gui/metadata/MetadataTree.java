@@ -422,7 +422,7 @@ check:      if (data != null) {
          * This method sets the contextual menu on the row and updates the disabled state.
          */
         @Override
-        protected void updateItem​(final TreeTable.Node item, final boolean empty) {
+        protected void updateItem(final TreeTable.Node item, final boolean empty) {
             super.updateItem(item, empty);
             setContextMenu(empty ? null : menu);
             final boolean disabled = empty || getValue() == null;

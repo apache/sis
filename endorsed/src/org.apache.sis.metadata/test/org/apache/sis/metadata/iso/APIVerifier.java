@@ -45,8 +45,8 @@ import static org.junit.Assert.*;
  *
  * <p>The content of the {@code api-changes.properties} files is typically empty on Apache SIS
  * branches that use a snapshot version of GeoAPI, thus making this test a no-op. However, the
- * {@code api-changes.properties} file content is non-empty on master if the GeoAPI release used
- * by the master branch is behind the snapshot developments.</p>
+ * {@code api-changes.properties} file content is non-empty on the main branch if the GeoAPI
+ * release used by the main branch is behind the snapshot developments.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5

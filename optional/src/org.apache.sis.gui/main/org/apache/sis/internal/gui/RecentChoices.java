@@ -50,7 +50,7 @@ public final class RecentChoices {
      * The nodes where to store user information (for example last directory opened).
      * We want node for the {@code "org.apache.sis.gui"} package, which is the public one.
      */
-    private static final Preferences NODE = Preferences.userNodeForPackage​(org.apache.sis.gui.DataViewer.class);
+    private static final Preferences NODE = Preferences.userNodeForPackage(org.apache.sis.gui.DataViewer.class);
 
     /**
      * The node where to store the directory containing last data loaded.

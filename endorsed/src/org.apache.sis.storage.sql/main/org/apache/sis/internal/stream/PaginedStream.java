@@ -97,7 +97,7 @@ public final class PaginedStream<T> extends StreamWrapper<T> {
      * @return the new stream.
      */
     @Override
-    public DoubleStream mapToDouble​(ToDoubleFunction<? super T> mapper) {
+    public DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper) {
         return new PaginedDoubleStream(super.mapToDouble(mapper), root);
     }
 

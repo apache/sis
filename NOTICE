@@ -1,5 +1,5 @@
 Apache Spatial Information System (SIS)
-Copyright 2010-2022 The Apache Software Foundation
+Copyright 2010-2023 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (https://www.apache.org/).
@@ -8,7 +8,7 @@ The Javadoc contains documentation from the Open Geospatial Consortium (OGC®)
 specifications (https://www.ogc.org/standards/), also known as OpenGIS.
 
 Apache SIS depends on GeoAPI published by OGC under BSD-style license.
-https://www.ogc.org/ogc/software/1.0
+https://www.ogc.org/about-ogc/policies/software-licenses/
 
 Apache SIS depends on JSR-385 (API only) published under BSD license.
 https://jcp.org/en/jsr/detail?id=385

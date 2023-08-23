@@ -66,7 +66,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
      * @return memory used by the given tile, in bytes.
      */
     @Override
-    protected int cost​(final Raster tile) {
+    protected int cost(final Raster tile) {
         long numBits = Math.multiplyFull(tile.getWidth(), tile.getHeight()) * tile.getNumBands();
         final DataBuffer buffer = tile.getDataBuffer();
         if (buffer != null) try {

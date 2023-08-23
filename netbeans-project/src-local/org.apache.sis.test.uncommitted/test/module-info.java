@@ -1,7 +1,7 @@
 /**
  * A dummy module for performing tests in a NetBeans environment.
- * This module imports all Apache SIS endorsed modules for making
- * easy to test any feature.
+ * This module imports all Apache SIS modules for making easy to
+ * test any feature.
  *
  * <p>This module is <em>not</em> versioned. It is ignored by Git,
  * except for this {@code module-info} and one {@code package-info}.

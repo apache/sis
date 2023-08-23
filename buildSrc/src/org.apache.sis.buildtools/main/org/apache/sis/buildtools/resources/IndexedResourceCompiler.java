@@ -229,7 +229,7 @@ public class IndexedResourceCompiler {
     /**
      * Recursively scans the source directory and finds all Java classes having a property files of the same name.
      * Then invokes the resource compiler for those files by calls to {@link #onJavaSource(File)}.
-     * Property files that can not be compiled are linked or copied verbatim to the destination directory.
+     * Property files that cannot be compiled are linked or copied verbatim to the destination directory.
      *
      * @return the number of logical errors found in properties.
      * @throws IOException if an error occurred while reading or writing a file.

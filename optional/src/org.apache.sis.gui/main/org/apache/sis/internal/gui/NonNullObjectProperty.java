@@ -48,7 +48,7 @@ public final class NonNullObjectProperty<T> extends SimpleObjectProperty<T> {
      * @param  newValue  the new property value.
      */
     @Override
-    public void set​(final T newValue) {
+    public void set(final T newValue) {
         super.set(Objects.requireNonNull(newValue));
     }
 }

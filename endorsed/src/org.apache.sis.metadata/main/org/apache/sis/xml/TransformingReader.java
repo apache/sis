@@ -411,7 +411,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * Get the value of a feature/property from the underlying implementation.
      */
     @Override
-    public Object getProperty​(final String name) {
+    public Object getProperty(final String name) {
         return in.getProperty(name);
     }
 

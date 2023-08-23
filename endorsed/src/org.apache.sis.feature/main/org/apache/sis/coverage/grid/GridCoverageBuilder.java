@@ -68,7 +68,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * {@snippet lang="java" :
  *     public GridCoverage createCoverage() {
- *         WritableRaster data = Raster.createBandedRaster​(DataBuffer.TYPE_USHORT, width, height, numBands, null);
+ *         WritableRaster data = Raster.createBandedRaster(DataBuffer.TYPE_USHORT, width, height, numBands, null);
  *         for (int y=0; y<height; y++) {
  *             for (int x=0; x<width; x++) {
  *                 int value = ...;                     // Compute a value here.

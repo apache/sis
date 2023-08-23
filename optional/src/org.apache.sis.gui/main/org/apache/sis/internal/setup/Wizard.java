@@ -130,7 +130,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
      * Conceptually a {@code static final} constant, but declared non-static for initializing
      * it only at {@link Wizard} creation time and because that creation will happen only once.
      */
-    private final Border JAVAFX_PATH_BORDER = new LineBorder​(Color.GRAY);
+    private final Border JAVAFX_PATH_BORDER = new LineBorder(Color.GRAY);
 
     /**
      * The {@link #javafxPath} border during drag and drop action. We use a green border.
@@ -138,7 +138,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
      * Conceptually a {@code static final} constant, but declared non-static for initializing
      * it only at {@link Wizard} creation time and because that creation will happen only once.
      */
-    private final Border JAVAFX_PATH_BORDER_DND = new LineBorder​(new Color(40, 180, 99), 3);
+    private final Border JAVAFX_PATH_BORDER_DND = new LineBorder(new Color(40, 180, 99), 3);
 
     /**
      * The top-level window where wizard will be shown.

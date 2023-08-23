@@ -48,8 +48,8 @@ import org.apache.sis.util.Debug;
  *       of the table containing this {@code Relation}.</li>
  * </ul>
  *
- * Instances of this class are created from the results of {@link DatabaseMetaData#getImportedKeys​ getImportedKeys​}
- * or {@link DatabaseMetaData#getExportedKeys​ getExportedKeys​} with {@code (catalog, schema, table)} parameters.
+ * Instances of this class are created from the results of {@link DatabaseMetaData#getImportedKeys getImportedKeys}
+ * or {@link DatabaseMetaData#getExportedKeys getExportedKeys} with {@code (catalog, schema, table)} parameters.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -180,7 +180,7 @@ final class Relation extends TableReference {
 
     /**
      * Creates a new relation for an imported key. The given {@code ResultSet} must be positioned
-     * on the first row of {@code DatabaseMetaData.getImportedKeys​(catalog, schema, table)} result,
+     * on the first row of {@code DatabaseMetaData.getImportedKeys(catalog, schema, table)} result,
      * and the result must be sorted in the order of the given keys:
      *
      * <ol>
@@ -190,7 +190,7 @@ final class Relation extends TableReference {
      * </ol>
      *
      * Note that JDBC specification ensures this order if {@link Direction#IMPORT} is used with the result of
-     * {@code getImportedKeys​} and {@link Direction#EXPORT} is used with the result of {@code getExportedKeys​}.
+     * {@code getImportedKeys} and {@link Direction#EXPORT} is used with the result of {@code getExportedKeys}.
      *
      * <p>After construction, the {@code ResultSet} will be positioned on the first row of the next relation,
      * or be closed if the last row has been reached. This constructor always moves the given result set by at

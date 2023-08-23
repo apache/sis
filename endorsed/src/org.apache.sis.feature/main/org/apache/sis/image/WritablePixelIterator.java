@@ -257,7 +257,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      *
      * @param  values  the new the data elements.
      *
-     * @see WritableRaster#setDataElements​(int, int, Object)
+     * @see WritableRaster#setDataElements(int, int, Object)
      * @see #getDataElements(Object)
      *
      * @since 1.1

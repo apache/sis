@@ -46,7 +46,7 @@ final class GridTileCache extends LinkedHashMap<GridTile,GridTile> {
      * @return whether to remove the entry.
      */
     @Override
-    protected boolean removeEldestEntry​(final Map.Entry<GridTile,GridTile> entry) {
+    protected boolean removeEldestEntry(final Map.Entry<GridTile,GridTile> entry) {
         if (size() > ImageUtilities.SUGGESTED_TILE_CACHE_SIZE) {
             return entry.getValue().clearTile();
         }

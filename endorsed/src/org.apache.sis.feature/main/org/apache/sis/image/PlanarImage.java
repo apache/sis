@@ -84,7 +84,7 @@ import static java.lang.Math.multiplyFull;
  *
  * <h2>Writable images</h2>
  * Some subclasses may implement the {@link WritableRenderedImage} interface. If this image is writable,
- * then the {@link WritableRenderedImage#getWritableTile WritableRenderedImage​.getWritableTile(…)} and
+ * then the {@link WritableRenderedImage#getWritableTile WritableRenderedImage.getWritableTile(…)} and
  * {@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)} methods should be invoked in
  * {@code try ... finally} blocks like below:
  *
