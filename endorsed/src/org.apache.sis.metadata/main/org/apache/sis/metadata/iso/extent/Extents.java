@@ -47,7 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.Longitude;
@@ -63,13 +63,13 @@ import org.apache.sis.util.Static;
 
 import static java.lang.Math.*;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
-import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Branch-dependent imports
 import org.opengis.geometry.Geometry;
 import org.opengis.metadata.identification.DataIdentification;
-import org.apache.sis.internal.geoapi.evolution.Interim;
+import org.apache.sis.pending.geoapi.evolution.Interim;
 
 
 /**

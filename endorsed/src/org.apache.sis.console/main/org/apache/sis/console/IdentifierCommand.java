@@ -28,7 +28,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.util.internal.X364;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.CharSequences;

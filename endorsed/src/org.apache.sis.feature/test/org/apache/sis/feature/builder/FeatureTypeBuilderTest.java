@@ -22,7 +22,7 @@ import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.feature.AbstractOperation;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.referencing.crs.HardCodedCRS;

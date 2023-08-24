@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 
 
 /**

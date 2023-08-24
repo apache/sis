@@ -28,7 +28,7 @@ import org.opengis.metadata.quality.Result;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

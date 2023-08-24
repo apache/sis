@@ -27,9 +27,9 @@ import java.sql.Types;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.metadata.sql.Reflection;
-import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.metadata.sql.util.Reflection;
+import org.apache.sis.metadata.sql.util.SQLUtilities;
 
 
 /**

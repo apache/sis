@@ -20,7 +20,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;

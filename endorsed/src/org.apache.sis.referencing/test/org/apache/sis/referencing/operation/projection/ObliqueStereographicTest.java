@@ -24,7 +24,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -120,7 +120,7 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      * @param  ellipse  {@code false} for the spherical case, or {@code true} for the ellipsoidal case.
      */
     private void createNormalizedProjection(final boolean ellipse) {
-        final OperationMethod op = new org.apache.sis.internal.referencing.provider.ObliqueStereographic();
+        final OperationMethod op = new org.apache.sis.referencing.operation.provider.ObliqueStereographic();
         final ParameterValueGroup p = op.getParameters().createValue();
         /*
          * Following parameters are not given explicitly by EPSG definitions since they are
@@ -236,7 +236,7 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      */
     @Test
     public void testObliqueStereographicConsistency() throws FactoryException, TransformException {
-        final OperationMethod op = new org.apache.sis.internal.referencing.provider.ObliqueStereographic();
+        final OperationMethod op = new org.apache.sis.referencing.operation.provider.ObliqueStereographic();
         final ParameterValueGroup p = op.getParameters().createValue();
         p.parameter("semi_major").setValue(WGS84_A);
         p.parameter("semi_minor").setValue(WGS84_B);
@@ -387,7 +387,7 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      */
     @Test
     public void testPolarStereographic() throws FactoryException, TransformException {
-        final OperationMethod op = new org.apache.sis.internal.referencing.provider.ObliqueStereographic();
+        final OperationMethod op = new org.apache.sis.referencing.operation.provider.ObliqueStereographic();
         final ParameterValueGroup p = op.getParameters().createValue();
         p.parameter("semi_major")                    .setValue(WGS84_A);
         p.parameter("inverse_flattening")            .setValue(298.2572236);

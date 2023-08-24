@@ -36,8 +36,8 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * @since   0.4
  */
 @DependsOn({
-    org.apache.sis.internal.referencing.FormulasTest.class,
-    org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class
+    org.apache.sis.referencing.util.FormulasTest.class,
+    org.apache.sis.xml.bind.referencing.SecondDefiningParameterTest.class
 })
 public final class DefaultEllipsoidTest extends TestCase {
     /**

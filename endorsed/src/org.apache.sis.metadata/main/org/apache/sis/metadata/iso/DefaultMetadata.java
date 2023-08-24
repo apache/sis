@@ -67,22 +67,22 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
-import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
-import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
-import org.apache.sis.internal.jaxb.lan.OtherLocales;
-import org.apache.sis.internal.jaxb.lan.PT_Locale;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.metadata.CI_Citation;
-import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.xml.bind.lan.LocaleAndCharset;
+import org.apache.sis.xml.bind.lan.LocaleAdapter;
+import org.apache.sis.xml.bind.lan.OtherLocales;
+import org.apache.sis.xml.bind.lan.PT_Locale;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.metadata.CI_Citation;
+import org.apache.sis.xml.bind.metadata.MD_Identifier;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.math.FunctionProperty;
 
 // Branch-specific imports
@@ -91,7 +91,7 @@ import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
+import org.apache.sis.xml.bind.metadata.code.MD_CharacterSetCode;
 
 
 /**
@@ -204,7 +204,7 @@ import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
     "acquisitionInformation"
 })
 @XmlRootElement(name = "MD_Metadata")
-@XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.MI_Metadata.class)
+@XmlSeeAlso(org.apache.sis.xml.bind.gmi.MI_Metadata.class)
 public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Serial number for inter-operability with different versions.

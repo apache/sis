@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 

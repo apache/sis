@@ -31,18 +31,18 @@ import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.internal.jaxb.gco.GO_Real;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.metadata.CI_Citation;
-import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.CodeLists;
+import org.apache.sis.xml.bind.gco.GO_Real;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.CI_Citation;
+import org.apache.sis.xml.bind.metadata.MD_Identifier;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.CodeLists;
 
-import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
-import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;

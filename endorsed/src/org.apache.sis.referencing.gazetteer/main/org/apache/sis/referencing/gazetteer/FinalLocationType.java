@@ -24,7 +24,7 @@ import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.util.ArgumentChecks;

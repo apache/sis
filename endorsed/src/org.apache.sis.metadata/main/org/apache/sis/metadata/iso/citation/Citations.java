@@ -30,14 +30,14 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.metadata.Identifiers;
-import org.apache.sis.internal.simple.SimpleCitation;
-import org.apache.sis.internal.simple.CitationConstant;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.metadata.internal.Identifiers;
+import org.apache.sis.metadata.simple.SimpleCitation;
+import org.apache.sis.metadata.simple.CitationConstant;
+import org.apache.sis.xml.bind.NonMarshalledAuthority;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
 
 
@@ -129,7 +129,7 @@ public final class Citations extends Static {
      * }
      *
      * @see #fromName(String)
-     * @see org.apache.sis.internal.jaxb.referencing.Code#getIdentifier()
+     * @see org.apache.sis.xml.bind.referencing.Code#getIdentifier()
      * @see <a href="http://issues.apache.org/jira/browse/SIS-200">SIS-200</a>
      */
     static final CitationConstant IOGP = new CitationConstant(Constants.IOGP);
@@ -522,7 +522,7 @@ public final class Citations extends Static {
             return IOGP;
         }
         /*
-         * If we found no match, org.apache.sis.internal.metadata.ServicesForUtility expects
+         * If we found no match, org.apache.sis.metadata.internal.ServicesForUtility expects
          * that we return anything that is not an instance of CitationConstant.
          */
         return new SimpleCitation(identifier);

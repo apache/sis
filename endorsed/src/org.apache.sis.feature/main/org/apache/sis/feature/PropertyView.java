@@ -25,7 +25,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

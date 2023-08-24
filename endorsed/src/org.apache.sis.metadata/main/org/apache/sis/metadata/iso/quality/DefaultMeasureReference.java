@@ -24,7 +24,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Element;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 
 // Branch-dependent imports
 import org.opengis.annotation.UML;

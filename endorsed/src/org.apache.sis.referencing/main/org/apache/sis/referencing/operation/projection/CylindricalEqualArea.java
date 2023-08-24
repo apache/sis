@@ -25,9 +25,9 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.internal.referencing.provider.Mercator1SP;
-import org.apache.sis.internal.referencing.provider.LambertCylindricalEqualAreaSpherical;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.referencing.operation.provider.Mercator1SP;
+import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualAreaSpherical;
+import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -35,7 +35,7 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqualArea.*;
+import static org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea.*;
 
 
 /**

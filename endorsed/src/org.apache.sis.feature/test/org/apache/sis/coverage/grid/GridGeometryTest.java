@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

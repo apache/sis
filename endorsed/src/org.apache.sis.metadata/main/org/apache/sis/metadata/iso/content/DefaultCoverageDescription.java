@@ -30,18 +30,18 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.MD_Identifier;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**
@@ -78,7 +78,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
 @XmlRootElement(name = "MD_CoverageDescription")
 @XmlSeeAlso({
     DefaultImageDescription.class,
-    org.apache.sis.internal.jaxb.gmi.MI_CoverageDescription.class
+    org.apache.sis.xml.bind.gmi.MI_CoverageDescription.class
 })
 public class DefaultCoverageDescription extends AbstractContentInformation implements CoverageDescription {
     /**

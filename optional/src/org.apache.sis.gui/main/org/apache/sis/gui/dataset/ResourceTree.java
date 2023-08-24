@@ -40,15 +40,15 @@ import javafx.scene.input.TransferMode;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.gui.DataStoreOpener;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.gui.internal.DataStoreOpener;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

@@ -21,12 +21,12 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
-import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
-import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
+import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;

@@ -38,16 +38,16 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
-import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
-import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.util.DirectPositionView;
+import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
+import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
+import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -58,10 +58,10 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.referencing.provider.MapProjection.SEMI_MAJOR;
-import static org.apache.sis.internal.referencing.provider.MapProjection.SEMI_MINOR;
-import static org.apache.sis.internal.referencing.provider.MapProjection.ECCENTRICITY;
-import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetweenGeographic.DIMENSION;
+import static org.apache.sis.referencing.operation.provider.MapProjection.SEMI_MAJOR;
+import static org.apache.sis.referencing.operation.provider.MapProjection.SEMI_MINOR;
+import static org.apache.sis.referencing.operation.provider.MapProjection.ECCENTRICITY;
+import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetweenGeographic.DIMENSION;
 
 
 /**

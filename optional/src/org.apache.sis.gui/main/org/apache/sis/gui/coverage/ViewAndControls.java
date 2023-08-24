@@ -31,7 +31,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.collections.ObservableList;
-import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;

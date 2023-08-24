@@ -41,11 +41,11 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.LogHandler;
-import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.gui.internal.LogHandler;
+import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.gui.internal.ExceptionReporter;
 
 
 /**

@@ -30,7 +30,7 @@ import javax.measure.spi.ServiceProvider;
 import javax.measure.spi.SystemOfUnits;
 import javax.measure.spi.SystemOfUnitsService;
 import javax.measure.spi.FormatService;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;

@@ -19,11 +19,11 @@ package org.apache.sis.feature;
 import java.util.Map;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.Cloner;
-import org.apache.sis.internal.util.CloneAccess;
-import org.apache.sis.internal.util.AbstractMap;
-import org.apache.sis.internal.util.AbstractMapEntry;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.util.internal.Cloner;
+import org.apache.sis.util.internal.CloneAccess;
+import org.apache.sis.util.internal.AbstractMap;
+import org.apache.sis.util.internal.AbstractMapEntry;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

@@ -34,7 +34,7 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
@@ -43,7 +43,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 import static org.apache.sis.measure.Units.ARC_MINUTE;
 import static org.junit.Assert.*;
 

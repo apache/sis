@@ -31,8 +31,8 @@ import javafx.scene.text.Font;
 import javafx.geometry.Rectangle2D;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.ToolbarButton;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.ToolbarButton;
 
 
 /**

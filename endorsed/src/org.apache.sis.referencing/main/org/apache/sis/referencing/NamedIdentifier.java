@@ -34,7 +34,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.InvalidParameterValueException;
-import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.ArgumentChecks;
@@ -283,7 +283,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
             return c;
         }
         /*
-         * May happen if the user gave us an instance of 'org.apache.sis.internal.jaxb.gcx.Anchor' class
+         * May happen if the user gave us an instance of 'org.apache.sis.xml.bind.gcx.Anchor' class
          * (maybe he got the instance indirectly) and the construction of that instance is not completed.
          */
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "code", code.getClass()));

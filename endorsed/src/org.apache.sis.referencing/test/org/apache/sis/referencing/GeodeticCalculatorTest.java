@@ -28,8 +28,8 @@ import java.io.LineNumberReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.j2d.ShapeUtilitiesExt;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.j2d.ShapeUtilitiesExt;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.CharSequences;
@@ -49,7 +49,7 @@ import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertBetween;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**

@@ -30,8 +30,8 @@ import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.metadata.MD_Scope;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.MD_Scope;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;

@@ -28,7 +28,7 @@ import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
+import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;

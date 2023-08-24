@@ -35,16 +35,16 @@ import org.apache.sis.storage.event.CloseEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.gui.map.MapCanvas;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.DataStoreOpener;
-import org.apache.sis.internal.gui.GUIUtilities;
-import org.apache.sis.internal.gui.PrivateAccess;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.gui.internal.DataStoreOpener;
+import org.apache.sis.gui.internal.GUIUtilities;
+import org.apache.sis.gui.internal.PrivateAccess;
+import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

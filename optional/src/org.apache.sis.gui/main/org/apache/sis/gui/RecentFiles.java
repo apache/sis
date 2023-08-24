@@ -26,9 +26,9 @@ import javafx.scene.control.MenuItem;
 import javafx.collections.ObservableList;
 import org.apache.sis.gui.dataset.ResourceEvent;
 import org.apache.sis.gui.dataset.ResourceExplorer;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.RecentChoices;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.RecentChoices;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.util.ArraysExt;
 
 

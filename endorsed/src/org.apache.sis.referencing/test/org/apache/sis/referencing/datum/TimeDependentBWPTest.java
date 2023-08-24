@@ -29,7 +29,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
+import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
 
 
 /**

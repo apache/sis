@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.AttributeType;
-import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
+import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
 import org.apache.sis.util.ArgumentChecks;
 
 

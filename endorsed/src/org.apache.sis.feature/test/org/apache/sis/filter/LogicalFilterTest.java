@@ -34,7 +34,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.internal.geoapi.filter.LogicalOperator;
+import org.apache.sis.pending.geoapi.filter.LogicalOperator;
 
 
 /**

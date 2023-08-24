@@ -28,8 +28,8 @@ import java.lang.reflect.InvocationTargetException;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
@@ -48,8 +48,8 @@ import org.apache.sis.xml.IdentifiedObject;
 
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
-import static org.apache.sis.internal.util.CollectionsExt.snapshot;
-import static org.apache.sis.internal.util.CollectionsExt.modifiableCopy;
+import static org.apache.sis.util.internal.CollectionsExt.snapshot;
+import static org.apache.sis.util.internal.CollectionsExt.modifiableCopy;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 

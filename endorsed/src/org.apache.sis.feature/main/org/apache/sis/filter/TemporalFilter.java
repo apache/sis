@@ -20,8 +20,8 @@ import java.util.Date;
 import java.time.Instant;
 
 // Branch-dependent imports
-import org.apache.sis.internal.geoapi.temporal.Period;
-import org.apache.sis.internal.geoapi.filter.TemporalOperatorName;
+import org.apache.sis.pending.geoapi.temporal.Period;
+import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
 
 
 /**
@@ -65,12 +65,12 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
 
     /**
      * Converts a GeoAPI instant to a Java instant. This is a temporary method
-     * to be removed after we revisited {@link org.apache.sis.internal.geoapi.temporal} package.
+     * to be removed after we revisited {@link org.apache.sis.pending.geoapi.temporal} package.
      *
      * @param  instant  the GeoAPI instant, or {@code null}.
      * @return the Java instant, or {@code null}.
      */
-    private static Instant toInstant(final org.apache.sis.internal.geoapi.temporal.Instant instant) {
+    private static Instant toInstant(final org.apache.sis.pending.geoapi.temporal.Instant instant) {
         if (instant != null) {
             final Date t = instant.getDate();
             if (t != null) {
@@ -84,7 +84,7 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * Returns {@code true} if {@code self} is non null and before {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isBefore(final org.apache.sis.internal.geoapi.temporal.Instant self, final Instant other) {
+    private static boolean isBefore(final org.apache.sis.pending.geoapi.temporal.Instant self, final Instant other) {
         final Instant t = toInstant(self);
         return (t != null) && t.isBefore(other);
     }
@@ -93,7 +93,7 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * Returns {@code true} if {@code self} is non null and after {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isAfter(final org.apache.sis.internal.geoapi.temporal.Instant self, final Instant other) {
+    private static boolean isAfter(final org.apache.sis.pending.geoapi.temporal.Instant self, final Instant other) {
         final Instant t = toInstant(self);
         return (t != null) && t.isAfter(other);
     }
@@ -102,7 +102,7 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * Returns {@code true} if {@code self} is non null and equal to {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isEqual(final org.apache.sis.internal.geoapi.temporal.Instant self, final Instant other) {
+    private static boolean isEqual(final org.apache.sis.pending.geoapi.temporal.Instant self, final Instant other) {
         final Instant t = toInstant(self);
         return (t != null) && t.equals(other);
     }
@@ -111,8 +111,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * Returns {@code true} if {@code self} is non null and before {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isBefore(final org.apache.sis.internal.geoapi.temporal.Instant self,
-                                    final org.apache.sis.internal.geoapi.temporal.Instant other)
+    private static boolean isBefore(final org.apache.sis.pending.geoapi.temporal.Instant self,
+                                    final org.apache.sis.pending.geoapi.temporal.Instant other)
     {
         final Instant t, o;
         return ((t = toInstant(self)) != null) && ((o = toInstant(other)) != null) && t.isBefore(o);
@@ -122,8 +122,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * Returns {@code true} if {@code self} is non null and after {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isAfter(final org.apache.sis.internal.geoapi.temporal.Instant self,
-                                   final org.apache.sis.internal.geoapi.temporal.Instant other)
+    private static boolean isAfter(final org.apache.sis.pending.geoapi.temporal.Instant self,
+                                   final org.apache.sis.pending.geoapi.temporal.Instant other)
     {
         final Instant t, o;
         return ((t = toInstant(self)) != null) && ((o = toInstant(other)) != null) && t.isAfter(o);
@@ -133,8 +133,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * Returns {@code true} if {@code self} is non null and equal to {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isEqual(final org.apache.sis.internal.geoapi.temporal.Instant self,
-                                   final org.apache.sis.internal.geoapi.temporal.Instant other)
+    private static boolean isEqual(final org.apache.sis.pending.geoapi.temporal.Instant self,
+                                   final org.apache.sis.pending.geoapi.temporal.Instant other)
     {
         final Instant t = toInstant(self);
         return (t != null) && t.equals(toInstant(other));

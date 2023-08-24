@@ -33,8 +33,8 @@ import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
-import static org.apache.sis.internal.util.Constants.NUM_ROW;
-import static org.apache.sis.internal.util.Constants.NUM_COL;
+import static org.apache.sis.util.internal.Constants.NUM_ROW;
+import static org.apache.sis.util.internal.Constants.NUM_COL;
 
 
 /**

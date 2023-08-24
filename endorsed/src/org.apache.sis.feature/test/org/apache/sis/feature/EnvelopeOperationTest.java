@@ -21,14 +21,14 @@ import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Geometry;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
 
 // Test dependencies
 import org.apache.sis.test.TestCase;

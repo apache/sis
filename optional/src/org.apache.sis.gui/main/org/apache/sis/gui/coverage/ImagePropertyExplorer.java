@@ -55,11 +55,11 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ResampledImage;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.internal.gui.PropertyView;
-import org.apache.sis.internal.gui.ImmutableObjectProperty;
-import org.apache.sis.internal.gui.PropertyValueFormatter;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.gui.internal.PropertyView;
+import org.apache.sis.gui.internal.ImmutableObjectProperty;
+import org.apache.sis.gui.internal.PropertyValueFormatter;
+import org.apache.sis.gui.internal.Resources;
 
 
 /**

@@ -23,15 +23,15 @@ import java.util.Collection;
 import java.util.function.Function;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.internal.feature.FeatureUtilities;
-import org.apache.sis.internal.filter.FunctionNames;
-import org.apache.sis.internal.filter.Visitor;
+import org.apache.sis.feature.internal.FeatureUtilities;
+import org.apache.sis.filter.internal.FunctionNames;
+import org.apache.sis.filter.internal.Visitor;
 
 // Branch-dependent imports
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
-import org.apache.sis.internal.geoapi.filter.LogicalOperator;
-import org.apache.sis.internal.geoapi.filter.ValueReference;
+import org.apache.sis.pending.geoapi.filter.LogicalOperator;
+import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
 /**

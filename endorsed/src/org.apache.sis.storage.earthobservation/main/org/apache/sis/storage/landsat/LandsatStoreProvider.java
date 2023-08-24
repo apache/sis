@@ -27,10 +27,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
-import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
+import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.wkt.FirstKeywordPeek;
 
 
 /**

@@ -20,14 +20,14 @@ import java.util.Set;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 
 /**

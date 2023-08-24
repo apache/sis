@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 /**
  * Compares values declared in the {@link GeoKeys} class with values declared in Apache SIS operations.
  * Despite its name, this class is actually more a verification of GeoTIFF names and identifiers in the
- * {@code org.apache.sis.internal.referencing.provider} package than a verification of {@code GeoKeys}.
+ * {@code org.apache.sis.referencing.operation.provider} package than a verification of {@code GeoKeys}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -60,7 +60,7 @@ public final class GeoKeysTest extends TestCase {
     /**
      * Verifies GeoTIFF projection aliases and identifiers. Verification includes:
      * <ul>
-     *   <li>that GeoTIFF projection aliases registered in the {@code org.apache.sis.internal.referencing.provider}
+     *   <li>that GeoTIFF projection aliases registered in the {@code org.apache.sis.referencing.operation.provider}
      *       package match the name of fields listed in {@link GeoIdentifiers}, and</li>
      *   <li>that GeoTIFF numerical codes correspond.</li>
      * </ul>
@@ -90,7 +90,7 @@ public final class GeoKeysTest extends TestCase {
     /**
      * Verifies GeoTIFF projection parameters.
      * This method verifies that parameter names registered in the
-     * {@code org.apache.sis.internal.referencing.provider} package
+     * {@code org.apache.sis.referencing.operation.provider} package
      * match the name of fields listed in {@link GeoKeys}.
      */
     @Test

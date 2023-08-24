@@ -24,8 +24,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.image.ErrorHandler;
-import org.apache.sis.internal.processing.isoline.Isolines;
-import org.apache.sis.internal.map.coverage.RenderingData;
+import org.apache.sis.image.processing.isoline.Isolines;
+import org.apache.sis.map.coverage.RenderingData;
 
 
 /**

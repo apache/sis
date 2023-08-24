@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import org.apache.sis.internal.gazetteer.Resources;
+import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;

@@ -26,7 +26,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.feature.internal.FeatureExpression;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 
@@ -44,7 +44,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @param  <S>  the type of value computed by the wrapped exception. This is the type to convert.
  * @param  <V>  the type of value computed by this expression. This is the type after conversion.
  *
- * @see org.apache.sis.internal.filter.GeometryConverter
+ * @see org.apache.sis.filter.internal.GeometryConverter
  *
  * @since 1.1
  */

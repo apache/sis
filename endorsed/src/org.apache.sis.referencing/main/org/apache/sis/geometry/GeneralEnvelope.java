@@ -34,10 +34,9 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.internal.referencing.TemporalAccessor;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.util.ArgumentCheckByAssertion;
+import org.apache.sis.referencing.util.TemporalAccessor;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.util.internal.ArgumentCheckByAssertion;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -1224,7 +1223,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         }
         String name = IdentifiedObjects.getDisplayName(crs, null);
         if (name == null) name = Integer.toString(dimension) + 'D';
-        throw new IllegalStateException(Resources.format(Resources.Keys.NonHorizontalCRS_1, name));
+        throw new IllegalStateException(Errors.format(Errors.Keys.NonHorizontalCRS_1, name));
     }
 
     /*

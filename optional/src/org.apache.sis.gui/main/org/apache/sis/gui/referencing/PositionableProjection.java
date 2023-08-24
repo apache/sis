@@ -25,9 +25,9 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.referencing.util.GeodeticObjectBuilder;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -39,7 +39,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

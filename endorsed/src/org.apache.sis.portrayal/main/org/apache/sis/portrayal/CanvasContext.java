@@ -33,8 +33,8 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 

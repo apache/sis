@@ -46,8 +46,8 @@ import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Range;
@@ -59,7 +59,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Vocabulary;
 
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 
 /**

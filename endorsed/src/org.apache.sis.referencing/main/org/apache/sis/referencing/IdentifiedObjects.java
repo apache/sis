@@ -40,18 +40,18 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.DefinitionURI;
-import org.apache.sis.internal.metadata.Identifiers;
-import org.apache.sis.internal.metadata.NameMeaning;
-import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.DefinitionURI;
+import org.apache.sis.metadata.internal.Identifiers;
+import org.apache.sis.metadata.internal.NameMeaning;
+import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
-import static org.apache.sis.internal.util.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 
 /**

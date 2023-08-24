@@ -32,7 +32,7 @@ import org.apache.sis.xml.Namespaces;
 // Branch-specific imports
 import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
-import org.apache.sis.internal.jaxb.code.DCPList;
+import org.apache.sis.xml.bind.metadata.code.DCPList;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;

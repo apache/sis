@@ -28,8 +28,8 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.opengis.metadata.identification.ServiceIdentification;
-import org.apache.sis.internal.jaxb.code.SV_CouplingType;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.code.SV_CouplingType;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.Namespaces;
 
 // Branch-specific imports

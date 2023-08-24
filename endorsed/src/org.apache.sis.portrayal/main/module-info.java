@@ -30,7 +30,7 @@ module org.apache.sis.portrayal {
 
     exports org.apache.sis.portrayal;
 
-    exports org.apache.sis.internal.map.coverage to
+    exports org.apache.sis.map.coverage to
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
     /*

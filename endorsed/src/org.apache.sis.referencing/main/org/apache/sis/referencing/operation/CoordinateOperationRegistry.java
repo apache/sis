@@ -62,15 +62,15 @@ import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.referencing.CoordinateOperations;
-import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
-import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
-import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.provider.Affine;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.provider.AbstractProvider;
-import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.referencing.util.CoordinateOperations;
+import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
+import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
+import org.apache.sis.referencing.util.PositionalAccuracyConstant;
+import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
+import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -129,14 +129,14 @@ class CoordinateOperationRegistry {
      * Only the changes in ellipsoid axis-length are taken in account.
      * Such ellipsoid shifts are approximations and may have 1 kilometre error.
      *
-     * @see org.apache.sis.internal.referencing.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
+     * @see org.apache.sis.referencing.util.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
      */
     static final Identifier ELLIPSOID_CHANGE = createIdentifier(Vocabulary.Keys.EllipsoidChange);
 
     /**
      * The identifier for a transformation which is a datum shift.
      *
-     * @see org.apache.sis.internal.referencing.PositionalAccuracyConstant#DATUM_SHIFT_APPLIED
+     * @see org.apache.sis.referencing.util.PositionalAccuracyConstant#DATUM_SHIFT_APPLIED
      */
     static final Identifier DATUM_SHIFT = createIdentifier(Vocabulary.Keys.DatumShift);
 

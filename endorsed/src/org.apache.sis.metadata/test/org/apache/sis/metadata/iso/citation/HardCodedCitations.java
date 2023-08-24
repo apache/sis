@@ -23,8 +23,8 @@ import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.URLs;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.URLs;
 import org.apache.sis.util.Static;
 
 import static java.util.Collections.singleton;

@@ -24,7 +24,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.OnlineResource;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 

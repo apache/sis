@@ -25,10 +25,10 @@ import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.filter.sqlmm.Registry;
-import org.apache.sis.internal.filter.FunctionRegister;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.filter.sqlmm.Registry;
+import org.apache.sis.filter.internal.FunctionRegister;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.ArgumentChecks;
@@ -36,9 +36,9 @@ import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.internal.geoapi.filter.MatchAction;
-import org.apache.sis.internal.geoapi.filter.SpatialOperatorName;
-import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
+import org.apache.sis.pending.geoapi.filter.MatchAction;
+import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
+import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
 
 
 /**

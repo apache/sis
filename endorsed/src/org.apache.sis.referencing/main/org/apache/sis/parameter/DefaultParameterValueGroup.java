@@ -35,8 +35,8 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
-import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
@@ -585,7 +585,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      * implementation, because the property type is an array (it would not work with a list).
      *
      * <p><b>Maintenance note:</b> the {@code "setValues"} method name is also hard-coded in
-     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
+     * {@link org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
      */
     private void setValues(final GeneralParameterValue[] parameters) {
         ParameterValueList addTo = values;

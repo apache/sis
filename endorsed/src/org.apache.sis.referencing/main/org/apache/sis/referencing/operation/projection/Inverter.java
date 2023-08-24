@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 
 import static java.lang.Math.abs;

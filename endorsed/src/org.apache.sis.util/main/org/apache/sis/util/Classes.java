@@ -35,7 +35,7 @@ import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
-import static org.apache.sis.internal.system.Modules.INTERNAL_CLASSNAME_PREFIX;
+import static org.apache.sis.system.Modules.INTERNAL_CLASSNAME_PREFIX;
 
 
 /**

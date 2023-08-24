@@ -41,12 +41,12 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.internal.coverage.SampleDimensions;
-import org.apache.sis.internal.coverage.MultiSourceArgument;
+import org.apache.sis.coverage.internal.SampleDimensions;
+import org.apache.sis.coverage.internal.MultiSourceArgument;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 
 

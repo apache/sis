@@ -19,7 +19,7 @@ package org.apache.sis.xml;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

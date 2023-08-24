@@ -21,7 +21,7 @@ import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.operation.Formula;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;

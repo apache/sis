@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.PropertyConsistencyCheck;
 import org.apache.sis.test.LoggingWatcher;
@@ -262,8 +262,8 @@ public final class AllMetadataTest extends PropertyConsistencyCheck {
             identifier = "MI_PolarisationOrientationCode";
             // https://issues.apache.org/jira/browse/SIS-398
         }
-        final String classname = "org.apache.sis.internal.jaxb." +
-                (CodeList.class.isAssignableFrom(type) ? "code" : "metadata") + '.' + identifier;
+        final String classname = "org.apache.sis.xml.bind.metadata." +
+                (CodeList.class.isAssignableFrom(type) ? "code." : "") + identifier;
         final Class<?> wrapper = Class.forName(classname);
         Class<?>[] expectedFinalClasses = wrapper.getClasses();   // "Since2014" internal class.
         if (expectedFinalClasses.length == 0) {

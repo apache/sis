@@ -30,8 +30,8 @@ import java.text.AttributedCharacterIterator;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.LocalizedParseException;
 
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;

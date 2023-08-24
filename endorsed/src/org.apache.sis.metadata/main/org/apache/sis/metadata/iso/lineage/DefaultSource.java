@@ -38,12 +38,12 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
-import org.apache.sis.internal.jaxb.metadata.RS_ReferenceSystem;
-import org.apache.sis.internal.jaxb.metadata.MD_Resolution;
-import org.apache.sis.internal.jaxb.metadata.MD_Scope;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.xml.bind.metadata.RS_ReferenceSystem;
+import org.apache.sis.xml.bind.metadata.MD_Resolution;
+import org.apache.sis.xml.bind.metadata.MD_Scope;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.util.iso.Types;
 
 // Branch-specific imports
@@ -105,7 +105,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "resolution"                    // ISO 19115-2 extension
 })
 @XmlRootElement(name = "LI_Source")
-@XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.LE_Source.class)
+@XmlSeeAlso(org.apache.sis.xml.bind.gmi.LE_Source.class)
 public class DefaultSource extends ISOMetadata implements Source {
     /**
      * Serial number for inter-operability with different versions.

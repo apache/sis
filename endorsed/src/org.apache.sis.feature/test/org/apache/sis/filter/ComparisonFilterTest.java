@@ -25,8 +25,8 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.internal.geoapi.filter.ComparisonOperatorName;
-import org.apache.sis.internal.geoapi.filter.BetweenComparisonOperator;
+import org.apache.sis.pending.geoapi.filter.ComparisonOperatorName;
+import org.apache.sis.pending.geoapi.filter.BetweenComparisonOperator;
 
 
 /**

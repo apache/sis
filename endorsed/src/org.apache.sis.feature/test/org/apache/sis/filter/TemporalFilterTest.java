@@ -24,11 +24,11 @@ import org.apache.sis.test.TestUtilities;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.internal.geoapi.filter.TemporalOperatorName;
+import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
 
 
 /**

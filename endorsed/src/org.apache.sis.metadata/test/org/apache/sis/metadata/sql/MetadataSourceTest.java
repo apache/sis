@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.8
  */
-@DependsOn(org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class)
+@DependsOn(org.apache.sis.metadata.sql.util.ScriptRunnerTest.class)
 public final class MetadataSourceTest extends TestCase {
     /**
      * Creates a new test case.

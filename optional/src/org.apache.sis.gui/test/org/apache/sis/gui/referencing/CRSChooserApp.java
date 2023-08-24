@@ -24,7 +24,7 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.referencing.CommonCRS;
 
 

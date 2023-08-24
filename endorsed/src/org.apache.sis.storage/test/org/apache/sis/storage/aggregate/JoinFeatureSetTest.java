@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.test.DependsOnMethod;
@@ -39,7 +39,7 @@ import org.apache.sis.filter.Filter;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.internal.geoapi.filter.BinaryComparisonOperator;
+import org.apache.sis.pending.geoapi.filter.BinaryComparisonOperator;
 
 
 /**

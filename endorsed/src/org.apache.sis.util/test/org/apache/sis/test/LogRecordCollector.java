@@ -23,7 +23,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.IOException;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.system.Modules;
 import org.apache.sis.io.TableAppender;
 import org.junit.runner.Description;
 

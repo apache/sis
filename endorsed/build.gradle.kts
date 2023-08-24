@@ -154,24 +154,27 @@ fun addExportForTests(args : MutableList<String>) {
      * an internal API.
      */
     // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
-    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.internal.metadata",
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.internal",
                     "org.apache.sis.referencing.gazetteer")
 
     addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.xml",
                     "org.apache.sis.storage," +
                     "org.apache.sis.console")
 
-    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.internal.xml",
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.util",
                     "org.apache.sis.storage.geotiff")
 
-    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.internal.jaxb.gcx",
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.bind.gcx",
                     "org.apache.sis.referencing")
 
-    addExport(args, "org.apache.sis.feature",           "org.apache.sis.internal.feature.jts",
+    addExport(args, "org.apache.sis.feature",           "org.apache.sis.feature.internal",
+                    "org.apache.sis.storage.sql")
+
+    addExport(args, "org.apache.sis.feature",           "org.apache.sis.geometry.wrapper.jts",
                     "org.apache.sis.storage.sql," +
                     "org.apache.sis.portrayal")
 
-    addExport(args, "org.apache.sis.storage",           "org.apache.sis.internal.storage",
+    addExport(args, "org.apache.sis.storage",           "org.apache.sis.storage.base",
                     "org.apache.sis.portrayal")
 }
 

@@ -22,7 +22,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.internal.referencing.Legacy;
+import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;

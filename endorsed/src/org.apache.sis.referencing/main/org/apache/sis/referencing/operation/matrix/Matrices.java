@@ -33,12 +33,12 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.Arithmetic;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.Arithmetic;
+import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.MathTransforms;       // For javadoc
 
 

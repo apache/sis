@@ -28,9 +28,9 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.gco.GO_GenericName;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.xml.bind.gco.GO_GenericName;
 
 
 /**

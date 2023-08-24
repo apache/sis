@@ -27,7 +27,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
 // Branch-dependent imports
 import org.apache.sis.filter.Expression;
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.internal.geoapi.filter.Literal;
+import org.apache.sis.pending.geoapi.filter.Literal;
 
 
 /**

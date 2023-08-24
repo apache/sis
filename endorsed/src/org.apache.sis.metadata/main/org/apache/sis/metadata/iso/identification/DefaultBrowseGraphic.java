@@ -27,8 +27,8 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.gcx.MimeFileTypeAdapter;
-import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.Namespaces;
 
 // Branch-specific imports

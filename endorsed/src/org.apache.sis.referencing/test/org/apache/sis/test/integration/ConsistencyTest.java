@@ -29,7 +29,7 @@ import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.io.wkt.WKTFormat;

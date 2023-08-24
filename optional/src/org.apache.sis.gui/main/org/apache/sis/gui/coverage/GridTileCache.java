@@ -18,7 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 
 
 /**

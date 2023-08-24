@@ -37,7 +37,7 @@ import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.internal.storage.CodeType;
+import org.apache.sis.storage.base.CodeType;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -268,7 +268,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                      * Note: after such generalization is done, revert the xml-store dependency
                      *       scope in pom.xml from "compile" to "runtime".
                      */
-                    final org.apache.sis.internal.storage.gpx.WritableStore fs = (org.apache.sis.internal.storage.gpx.WritableStore) store;
+                    final org.apache.sis.storage.gpx.WritableStore fs = (org.apache.sis.storage.gpx.WritableStore) store;
                     if (version != null) {
                         fs.setVersion(version);
                     }

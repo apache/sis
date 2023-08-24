@@ -31,8 +31,8 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.internal.gui.RecentChoices;
+import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.gui.internal.RecentChoices;
 
 
 /**

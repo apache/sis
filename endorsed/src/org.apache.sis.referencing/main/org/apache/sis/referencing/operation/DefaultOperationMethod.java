@@ -45,12 +45,12 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.jaxb.gco.StringAdapter;
-import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
-import org.apache.sis.internal.referencing.NilReferencingObject;
-import org.apache.sis.internal.metadata.Identifiers;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.xml.bind.gco.StringAdapter;
+import org.apache.sis.xml.bind.referencing.CC_OperationMethod;
+import org.apache.sis.referencing.util.NilReferencingObject;
+import org.apache.sis.metadata.internal.Identifiers;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -539,13 +539,13 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             /*
              * No name found for the given authority. We may use the primary name as a fallback.
              * But before doing that, maybe we can find the name that we are looking for in the
-             * hard-coded values in the 'org.apache.sis.internal.referencing.provider' package.
+             * hard-coded values in the 'org.apache.sis.referencing.operation.provider' package.
              * The typical use case is when this DefaultOperationMethod has been instantiated
              * by the EPSG factory using only the information found in the EPSG database.
              *
              * We can find the hard-coded names by looking at the ParameterDescriptorGroup of the
              * enclosing ProjectedCRS or DerivedCRS. This is because that parameter descriptor was
-             * typically provided by the 'org.apache.sis.internal.referencing.provider' package in
+             * typically provided by the 'org.apache.sis.referencing.operation.provider' package in
              * order to create the MathTransform associated with the enclosing CRS.  The enclosing
              * CRS is either the immediate parent in WKT 1, or the parent of the parent in WKT 2.
              */
@@ -617,7 +617,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultOperationMethod() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
     }
 
     /**
@@ -719,7 +719,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * predefined methods, or by unmarshalling the enclosing {@link AbstractSingleOperation}.</p>
      *
      * <p><b>Maintenance note:</b> the {@code "setDescriptors"} method name is also hard-coded in
-     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
+     * {@link org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
      *
      * @see AbstractSingleOperation#setParameters
      */

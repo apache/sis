@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 import org.opengis.util.GenericName;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Deprecable;
 

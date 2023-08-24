@@ -63,8 +63,8 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.internal.referencing.CoordinateOperations;
-import org.apache.sis.internal.referencing.Legacy;
+import org.apache.sis.referencing.util.CoordinateOperations;
+import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -72,19 +72,18 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
-import org.apache.sis.internal.metadata.AxisNames;
-import org.apache.sis.internal.metadata.TransformationAccuracy;
-import org.apache.sis.internal.referencing.ServicesForMetadata;
-import org.apache.sis.internal.referencing.provider.AbstractProvider;
-import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
-import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.metadata.internal.AxisNames;
+import org.apache.sis.metadata.internal.TransformationAccuracy;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
+import org.apache.sis.referencing.internal.VerticalDatumTypes;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.util.WKTUtilities;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
@@ -93,6 +92,7 @@ import static java.util.Collections.singletonMap;
 // Branch-dependent imports
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.referencing.internal.ServicesForMetadata;
 
 
 /**

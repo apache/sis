@@ -25,7 +25,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.MonolineFormatter;
 

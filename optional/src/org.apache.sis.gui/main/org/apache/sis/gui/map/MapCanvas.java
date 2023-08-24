@@ -75,22 +75,22 @@ import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.system.DelayedExecutor;
-import org.apache.sis.internal.system.DelayedRunnable;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.GUIUtilities;
-import org.apache.sis.internal.gui.MouseDrags;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.system.DelayedExecutor;
+import org.apache.sis.system.DelayedRunnable;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.GUIUtilities;
+import org.apache.sis.gui.internal.MouseDrags;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
-import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISECOND;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
+import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 
 /**

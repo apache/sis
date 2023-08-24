@@ -28,7 +28,7 @@ import java.io.UncheckedIOException;
 
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
-import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;

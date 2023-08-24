@@ -31,7 +31,7 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.AbstractFeatureSet;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.storage.base.MetadataBuilder;
 
 // Branch-dependent imports
 import org.apache.sis.feature.DefaultFeatureType;

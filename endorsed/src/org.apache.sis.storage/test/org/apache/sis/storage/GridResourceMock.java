@@ -29,10 +29,10 @@ import static org.junit.Assert.*;
 
 /**
  * A resource for one-banded images generated on-the-fly when {@link #read(GridGeometry, int...)} is invoked.
- * This class has some similarities with {@link org.apache.sis.internal.storage.MemoryGridResource} except that
+ * This class has some similarities with {@link org.apache.sis.storage.base.MemoryGridResource} except that
  * the {@link GridCoverage} returned by {@link #read read(…)} is guaranteed to wrap an image having exactly the
  * requested size (i.e. the size specified by {@link GridGeometry#getExtent()}).
- * By contrast {@code org.apache.sis.internal.storage.MemoryGridResource} may return images larger than requested,
+ * By contrast {@code org.apache.sis.storage.base.MemoryGridResource} may return images larger than requested,
  * which make testing more difficult.
  *
  * @author  Johann Sorel (Geomatys)

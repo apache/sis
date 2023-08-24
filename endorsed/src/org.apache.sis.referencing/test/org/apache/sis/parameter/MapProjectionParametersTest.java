@@ -25,15 +25,15 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.util.Constants.SEMI_MAJOR;
-import static org.apache.sis.internal.util.Constants.SEMI_MINOR;
-import static org.apache.sis.internal.util.Constants.EARTH_RADIUS;
-import static org.apache.sis.internal.util.Constants.INVERSE_FLATTENING;
-import static org.apache.sis.internal.util.Constants.IS_IVF_DEFINITIVE;
-import static org.apache.sis.internal.util.Constants.CENTRAL_MERIDIAN;
-import static org.apache.sis.internal.util.Constants.STANDARD_PARALLEL;
-import static org.apache.sis.internal.util.Constants.STANDARD_PARALLEL_1;
-import static org.apache.sis.internal.util.Constants.STANDARD_PARALLEL_2;
+import static org.apache.sis.util.internal.Constants.SEMI_MAJOR;
+import static org.apache.sis.util.internal.Constants.SEMI_MINOR;
+import static org.apache.sis.util.internal.Constants.EARTH_RADIUS;
+import static org.apache.sis.util.internal.Constants.INVERSE_FLATTENING;
+import static org.apache.sis.util.internal.Constants.IS_IVF_DEFINITIVE;
+import static org.apache.sis.util.internal.Constants.CENTRAL_MERIDIAN;
+import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL;
+import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL_1;
+import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL_2;
 
 
 /**

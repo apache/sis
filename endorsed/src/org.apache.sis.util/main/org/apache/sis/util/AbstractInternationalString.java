@@ -21,7 +21,7 @@ import java.util.Formatter;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.internal.Strings;
 
 
 /**

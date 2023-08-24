@@ -48,7 +48,7 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.referencing.CRS;

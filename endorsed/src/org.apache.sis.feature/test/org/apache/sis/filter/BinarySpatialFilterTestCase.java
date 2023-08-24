@@ -27,7 +27,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.WraparoundMethod;
-import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
@@ -42,8 +42,8 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.internal.geoapi.filter.Literal;
-import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
+import org.apache.sis.pending.geoapi.filter.Literal;
+import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
 
 
 /**

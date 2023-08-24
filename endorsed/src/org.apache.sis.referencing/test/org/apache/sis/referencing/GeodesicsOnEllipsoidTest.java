@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
@@ -32,7 +32,7 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 
 
 /**

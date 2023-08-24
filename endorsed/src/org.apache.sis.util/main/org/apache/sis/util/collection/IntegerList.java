@@ -32,7 +32,7 @@ import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 
 
 /**

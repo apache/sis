@@ -17,10 +17,10 @@
 package org.apache.sis.test.integration;
 
 import java.net.URI;
-import org.apache.sis.internal.referencing.provider.NTv2Test;
-import org.apache.sis.internal.referencing.provider.NADCONTest;
-import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
-import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.referencing.operation.provider.NTv2Test;
+import org.apache.sis.referencing.operation.provider.NADCONTest;
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
+import org.apache.sis.system.DataDirectory;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

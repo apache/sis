@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.ComparisonMode;
 
 

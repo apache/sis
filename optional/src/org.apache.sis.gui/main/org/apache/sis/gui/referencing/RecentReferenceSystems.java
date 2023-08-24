@@ -56,16 +56,16 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.GUIUtilities;
-import org.apache.sis.internal.gui.NonNullObjectProperty;
-import org.apache.sis.internal.gui.OptionalDataDownloader;
-import org.apache.sis.internal.gui.RecentChoices;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.GUIUtilities;
+import org.apache.sis.gui.internal.NonNullObjectProperty;
+import org.apache.sis.gui.internal.RecentChoices;
+import org.apache.sis.gui.internal.io.OptionalDataDownloader;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**

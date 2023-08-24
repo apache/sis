@@ -30,8 +30,8 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.simple.SimpleAttributeType;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.metadata.simple.SimpleAttributeType;
 
 
 /**

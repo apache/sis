@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 
 import static java.lang.StrictMath.*;
 import static java.lang.Double.NaN;
@@ -65,7 +65,7 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
      */
     @Test
     public void testSphere() throws FactoryException, TransformException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 6370997,    // Semi-major axis from Snyder table 15
                 6370997,    // Semi-minor axis
                 0,          // Central meridian
@@ -113,7 +113,7 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod("testSphere")
     public void testEllipse() throws FactoryException, TransformException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 CLARKE_A,   // Semi-major axis from Snyder table 15
                 CLARKE_B,   // Semi-minor axis
                 0,          // Central meridian
@@ -168,7 +168,7 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
         tolerance = Formulas.LINEAR_TOLERANCE;
 
         // Spherical case
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 RADIUS,     // Semi-major axis
                 RADIUS,     // Semi-minor axis
                 0,          // Central meridian
@@ -182,7 +182,7 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
         verifyTransform(new double[] {2, 1}, new double[] {223334.085, 111780.432});
 
         // Ellipsoidal case
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 6378137,            // Semi-major axis (not WGS84 despite same values)
                 6356752.314140347,  // Semi-minor axis
                 0,                  // Central meridian
@@ -204,7 +204,7 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod("testEllipse")
     public void testSingularity() throws FactoryException, TransformException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 WGS84_A,    // Semi-major axis length
                 WGS84_B,    // Semi-minor axis length
                 0,          // Central meridian
@@ -234,7 +234,7 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod("testEllipse")
     public void testRandomPoints() throws FactoryException, TransformException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 WGS84_A,    // Semi-major axis length
                 WGS84_B,    // Semi-minor axis length
                 12,         // Central meridian
@@ -279,7 +279,7 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
      */
     @Test
     public void testLongitudeWraparound() throws FactoryException, TransformException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+        createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 6378206.4,  // Semi-major axis length
                 6356583.8,  // Semi-minor axis length
                 -154,       // Central meridian

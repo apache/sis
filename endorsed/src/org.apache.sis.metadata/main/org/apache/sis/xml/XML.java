@@ -45,9 +45,9 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.SystemListener;
+import org.apache.sis.xml.bind.TypeRegistration;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 

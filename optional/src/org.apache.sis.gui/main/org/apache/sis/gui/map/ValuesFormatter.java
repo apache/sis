@@ -42,9 +42,9 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 
-import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 // Branch-dependent imports
 import org.apache.sis.coverage.CannotEvaluateException;

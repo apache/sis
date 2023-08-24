@@ -21,7 +21,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test imports
 import org.apache.sis.referencing.datum.GeodeticDatumMock;

@@ -29,7 +29,7 @@ import org.opengis.util.NameSpace;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;

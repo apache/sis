@@ -30,9 +30,9 @@ import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.SecurityConstraints;
 import org.opengis.metadata.quality.Scope;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.metadata.MD_Releasability;
-import org.apache.sis.internal.jaxb.metadata.MD_Scope;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.MD_Releasability;
+import org.apache.sis.xml.bind.metadata.MD_Scope;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 

@@ -67,11 +67,11 @@ import javafx.util.StringConverter;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.internal.gui.LogHandler;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.ImmutableObjectProperty;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.gui.internal.LogHandler;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.ImmutableObjectProperty;
+import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.CharSequences;
 

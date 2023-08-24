@@ -34,6 +34,6 @@ module org.apache.sis.storage.geotiff {
 
     exports org.apache.sis.storage.geotiff;
 
-    exports org.apache.sis.internal.geotiff to
+    exports org.apache.sis.storage.geotiff.spi to
             org.apache.sis.storage.earthobservation;
 }

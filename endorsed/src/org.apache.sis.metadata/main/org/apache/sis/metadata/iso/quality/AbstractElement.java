@@ -39,12 +39,12 @@ import org.opengis.metadata.quality.LogicalConsistency;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.metadata.quality.Usability;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
-import org.apache.sis.internal.metadata.legacy.DateToTemporal;
-import org.apache.sis.internal.metadata.legacy.TemporalToDate;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
+import org.apache.sis.metadata.iso.legacy.DateToTemporal;
+import org.apache.sis.metadata.iso.legacy.TemporalToDate;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.xml.util.LegacyNamespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 

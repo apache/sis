@@ -39,7 +39,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 

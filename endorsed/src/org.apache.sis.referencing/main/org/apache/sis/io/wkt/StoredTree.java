@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import java.util.function.Consumer;
 import java.io.Serializable;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 
 
 /**

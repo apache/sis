@@ -24,7 +24,7 @@ import java.util.Objects;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;

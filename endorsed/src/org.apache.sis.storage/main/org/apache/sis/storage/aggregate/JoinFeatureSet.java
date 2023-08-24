@@ -27,7 +27,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureQuery;
@@ -43,7 +43,7 @@ import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.internal.geoapi.filter.BinaryComparisonOperator;
+import org.apache.sis.pending.geoapi.filter.BinaryComparisonOperator;
 
 
 /**

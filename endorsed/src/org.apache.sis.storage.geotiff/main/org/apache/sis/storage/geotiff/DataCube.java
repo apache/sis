@@ -28,12 +28,12 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.geotiff.Resources;
-import org.apache.sis.internal.geotiff.Predictor;
-import org.apache.sis.internal.geotiff.Compression;
-import org.apache.sis.internal.storage.TiledGridResource;
-import org.apache.sis.internal.storage.ResourceOnFileSystem;
-import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.storage.geotiff.internal.Resources;
+import org.apache.sis.storage.geotiff.internal.Predictor;
+import org.apache.sis.storage.geotiff.internal.Compression;
+import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.base.ResourceOnFileSystem;
+import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.math.Vector;
 
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_COMPRESSION;

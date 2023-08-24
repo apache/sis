@@ -19,7 +19,7 @@ package org.apache.sis.style.se1;
 import java.net.URI;
 import java.awt.Color;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
 // Branch-dependent imports

@@ -29,8 +29,8 @@ import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.internal.jaxb.metadata.EX_Extent;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.xml.bind.metadata.EX_Extent;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;

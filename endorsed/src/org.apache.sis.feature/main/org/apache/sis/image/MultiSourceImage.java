@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.util.Disposable;
 
 

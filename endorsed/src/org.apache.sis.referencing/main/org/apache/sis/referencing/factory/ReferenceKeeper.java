@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.factory;
 
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.system.DelayedExecutor;
-import org.apache.sis.internal.system.DelayedRunnable;
-import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.system.DelayedExecutor;
+import org.apache.sis.system.DelayedRunnable;
+import org.apache.sis.util.internal.StandardDateFormat;
 
 
 /**

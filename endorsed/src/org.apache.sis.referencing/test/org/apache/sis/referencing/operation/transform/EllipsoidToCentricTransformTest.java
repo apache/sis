@@ -23,7 +23,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -32,7 +32,7 @@ import org.apache.sis.measure.Units;
 import static java.lang.StrictMath.toRadians;
 
 // Test dependencies
-import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
+import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;

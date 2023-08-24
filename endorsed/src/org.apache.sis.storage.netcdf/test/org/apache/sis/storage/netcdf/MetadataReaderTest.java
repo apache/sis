@@ -27,10 +27,10 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.internal.netcdf.TestData;
-import org.apache.sis.internal.netcdf.TestCase;
-import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
+import org.apache.sis.storage.netcdf.base.TestData;
+import org.apache.sis.storage.netcdf.base.TestCase;
+import org.apache.sis.storage.netcdf.base.Decoder;
+import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.ContentVerifier;
 import org.apache.sis.storage.DataStoreMock;
@@ -51,7 +51,7 @@ import static org.apache.sis.test.TestUtilities.date;
  */
 @DependsOn({
     ChannelDecoderTest.class,
-    org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
+    org.apache.sis.storage.netcdf.classic.VariableInfoTest.class
 })
 public final class MetadataReaderTest extends TestCase {
     /**

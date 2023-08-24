@@ -29,7 +29,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.storage.DataStoreException;

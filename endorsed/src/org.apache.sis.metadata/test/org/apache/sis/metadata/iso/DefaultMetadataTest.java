@@ -54,7 +54,7 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
  * @version 1.4
  * @since   0.3
  */
-@DependsOn(org.apache.sis.internal.jaxb.lan.OtherLocalesTest.class)
+@DependsOn(org.apache.sis.xml.bind.lan.OtherLocalesTest.class)
 public final class DefaultMetadataTest extends TestCase {
     /**
      * Creates a new test case.

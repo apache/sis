@@ -26,19 +26,19 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.lan.PT_Locale;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.bind.lan.PT_Locale;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**

@@ -23,7 +23,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.measure.Units;
 
 

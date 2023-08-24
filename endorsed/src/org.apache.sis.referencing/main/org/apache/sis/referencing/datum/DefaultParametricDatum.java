@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
-import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 

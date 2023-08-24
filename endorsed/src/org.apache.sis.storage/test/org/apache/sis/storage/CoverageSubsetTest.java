@@ -28,7 +28,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.internal.storage.MemoryGridResource;
+import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestCase;

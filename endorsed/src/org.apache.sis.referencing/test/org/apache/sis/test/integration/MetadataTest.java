@@ -53,11 +53,11 @@ import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
-import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.gcx.Anchor;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.bind.gcx.Anchor;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.Namespaces;
@@ -78,7 +78,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
+import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 
 
 /**

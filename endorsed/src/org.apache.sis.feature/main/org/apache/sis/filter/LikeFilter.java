@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.Collection;
 import java.util.regex.Pattern;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.filter.Node;
+import org.apache.sis.filter.internal.Node;
 
 // Branch-dependent imports
-import org.apache.sis.internal.geoapi.filter.ComparisonOperatorName;
+import org.apache.sis.pending.geoapi.filter.ComparisonOperatorName;
 
 
 /**

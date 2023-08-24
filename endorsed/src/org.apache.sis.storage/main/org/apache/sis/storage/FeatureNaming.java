@@ -25,8 +25,8 @@ import org.opengis.util.GenericName;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.storage.internal.Resources;
 
 
 /**

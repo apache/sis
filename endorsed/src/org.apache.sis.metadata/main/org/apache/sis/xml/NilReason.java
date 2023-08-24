@@ -30,7 +30,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.internal.jaxb.FinalClassExtensions;
+import org.apache.sis.xml.bind.FinalClassExtensions;
 import org.apache.sis.math.MathFunctions;
 
 

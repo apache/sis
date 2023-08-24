@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.util.internal.DoubleDouble;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

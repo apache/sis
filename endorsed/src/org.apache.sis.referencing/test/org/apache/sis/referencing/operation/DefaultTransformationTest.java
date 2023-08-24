@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.parameter.DefaultParameterDescriptorTest;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.HardCodedCS;

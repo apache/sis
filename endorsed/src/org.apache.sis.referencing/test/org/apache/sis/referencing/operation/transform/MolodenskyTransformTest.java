@@ -22,16 +22,16 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
-import org.apache.sis.internal.referencing.provider.Molodensky;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
+import org.apache.sis.referencing.operation.provider.Molodensky;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.CommonCRS;
 
 import static java.lang.StrictMath.*;
 
 // Test dependencies
-import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
-import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
+import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;

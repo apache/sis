@@ -26,7 +26,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
-import org.apache.sis.internal.gazetteer.Resources;
+import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;

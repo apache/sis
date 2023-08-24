@@ -35,7 +35,7 @@ import javafx.scene.layout.TilePane;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.gui.internal.Styles;
 
 
 /**

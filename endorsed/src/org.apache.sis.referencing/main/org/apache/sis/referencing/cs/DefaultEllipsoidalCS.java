@@ -23,8 +23,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.measure.Units;
 
 

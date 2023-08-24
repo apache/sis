@@ -25,8 +25,8 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.internal.geoapi.filter.Literal;
-import org.apache.sis.internal.geoapi.filter.ValueReference;
+import org.apache.sis.pending.geoapi.filter.Literal;
+import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
 /**

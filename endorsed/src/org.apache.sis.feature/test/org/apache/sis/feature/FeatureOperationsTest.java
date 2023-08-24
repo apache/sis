@@ -23,7 +23,7 @@ import com.esri.core.geometry.Polygon;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
 

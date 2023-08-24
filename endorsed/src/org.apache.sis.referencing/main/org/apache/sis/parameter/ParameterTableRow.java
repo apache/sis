@@ -41,12 +41,12 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
-import org.apache.sis.internal.metadata.NameToIdentifier;
-import org.apache.sis.internal.util.X364;
+import org.apache.sis.metadata.internal.NameToIdentifier;
+import org.apache.sis.util.internal.X364;
 
-import static org.apache.sis.internal.util.X364.*;
+import static org.apache.sis.util.internal.X364.*;
 import static org.apache.sis.util.CharSequences.spaces;
-import static org.apache.sis.internal.util.Constants.DEFAULT_SEPARATOR;
+import static org.apache.sis.util.internal.Constants.DEFAULT_SEPARATOR;
 
 
 /**

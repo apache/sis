@@ -35,17 +35,17 @@ import org.opengis.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
-import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.util.internal.CollectionsExt;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**

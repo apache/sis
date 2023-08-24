@@ -44,50 +44,50 @@ module org.apache.sis.util {
         with org.apache.sis.measure.UnitServices;
 
     provides org.apache.sis.util.ObjectConverter
-        with org.apache.sis.internal.converter.StringConverter.Number,
-             org.apache.sis.internal.converter.StringConverter.Byte,
-             org.apache.sis.internal.converter.StringConverter.Short,
-             org.apache.sis.internal.converter.StringConverter.Integer,
-             org.apache.sis.internal.converter.StringConverter.Long,
-             org.apache.sis.internal.converter.StringConverter.Float,
-             org.apache.sis.internal.converter.StringConverter.Double,
-             org.apache.sis.internal.converter.StringConverter.BigInteger,
-             org.apache.sis.internal.converter.StringConverter.BigDecimal,
-             org.apache.sis.internal.converter.StringConverter.Boolean,
-             org.apache.sis.internal.converter.StringConverter.Locale,
-             org.apache.sis.internal.converter.StringConverter.Charset,
-             org.apache.sis.internal.converter.StringConverter.InternationalString,
-             org.apache.sis.internal.converter.StringConverter.File,
-             org.apache.sis.internal.converter.StringConverter.Path,
-             org.apache.sis.internal.converter.StringConverter.URI,
-             org.apache.sis.internal.converter.StringConverter.URL,
-             org.apache.sis.internal.converter.StringConverter.Unit,
-             org.apache.sis.internal.converter.StringConverter.Angle,
-             org.apache.sis.internal.converter.AngleConverter,
-             org.apache.sis.internal.converter.AngleConverter.Inverse,
-             org.apache.sis.internal.converter.PathConverter.FilePath,
-             org.apache.sis.internal.converter.PathConverter.URLPath,
-             org.apache.sis.internal.converter.PathConverter.URIPath,
-             org.apache.sis.internal.converter.PathConverter.PathURI,
-             org.apache.sis.internal.converter.PathConverter.PathURL,
-             org.apache.sis.internal.converter.PathConverter.PathFile,
-             org.apache.sis.internal.converter.PathConverter.FileURI,
-             org.apache.sis.internal.converter.PathConverter.FileURL,
-             org.apache.sis.internal.converter.PathConverter.URLFile,
-             org.apache.sis.internal.converter.PathConverter.URIFile,
-             org.apache.sis.internal.converter.PathConverter.URL_URI,
-             org.apache.sis.internal.converter.PathConverter.URI_URL,
-             org.apache.sis.internal.converter.DateConverter.Long,
-             org.apache.sis.internal.converter.DateConverter.SQL,
-             org.apache.sis.internal.converter.DateConverter.Timestamp,
-             org.apache.sis.internal.converter.CollectionConverter.List,
-             org.apache.sis.internal.converter.CollectionConverter.Set,
-             org.apache.sis.internal.converter.FractionConverter,
-             org.apache.sis.internal.converter.FractionConverter.FromInteger;
+        with org.apache.sis.converter.StringConverter.Number,
+             org.apache.sis.converter.StringConverter.Byte,
+             org.apache.sis.converter.StringConverter.Short,
+             org.apache.sis.converter.StringConverter.Integer,
+             org.apache.sis.converter.StringConverter.Long,
+             org.apache.sis.converter.StringConverter.Float,
+             org.apache.sis.converter.StringConverter.Double,
+             org.apache.sis.converter.StringConverter.BigInteger,
+             org.apache.sis.converter.StringConverter.BigDecimal,
+             org.apache.sis.converter.StringConverter.Boolean,
+             org.apache.sis.converter.StringConverter.Locale,
+             org.apache.sis.converter.StringConverter.Charset,
+             org.apache.sis.converter.StringConverter.InternationalString,
+             org.apache.sis.converter.StringConverter.File,
+             org.apache.sis.converter.StringConverter.Path,
+             org.apache.sis.converter.StringConverter.URI,
+             org.apache.sis.converter.StringConverter.URL,
+             org.apache.sis.converter.StringConverter.Unit,
+             org.apache.sis.converter.StringConverter.Angle,
+             org.apache.sis.converter.AngleConverter,
+             org.apache.sis.converter.AngleConverter.Inverse,
+             org.apache.sis.converter.PathConverter.FilePath,
+             org.apache.sis.converter.PathConverter.URLPath,
+             org.apache.sis.converter.PathConverter.URIPath,
+             org.apache.sis.converter.PathConverter.PathURI,
+             org.apache.sis.converter.PathConverter.PathURL,
+             org.apache.sis.converter.PathConverter.PathFile,
+             org.apache.sis.converter.PathConverter.FileURI,
+             org.apache.sis.converter.PathConverter.FileURL,
+             org.apache.sis.converter.PathConverter.URLFile,
+             org.apache.sis.converter.PathConverter.URIFile,
+             org.apache.sis.converter.PathConverter.URL_URI,
+             org.apache.sis.converter.PathConverter.URI_URL,
+             org.apache.sis.converter.DateConverter.Long,
+             org.apache.sis.converter.DateConverter.SQL,
+             org.apache.sis.converter.DateConverter.Timestamp,
+             org.apache.sis.converter.CollectionConverter.List,
+             org.apache.sis.converter.CollectionConverter.Set,
+             org.apache.sis.converter.FractionConverter,
+             org.apache.sis.converter.FractionConverter.FromInteger;
 
     uses org.apache.sis.util.ObjectConverter;
     uses org.apache.sis.setup.InstallationResources;
-    uses org.apache.sis.internal.util.MetadataServices;
+    uses org.apache.sis.util.internal.MetadataServices;
 
     exports org.apache.sis.io;
     exports org.apache.sis.math;
@@ -114,7 +114,7 @@ module org.apache.sis.util {
             org.apache.sis.openoffice,
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.util to
+    exports org.apache.sis.util.internal to
             org.apache.sis.metadata,
             org.apache.sis.referencing,
             org.apache.sis.referencing.gazetteer,
@@ -131,20 +131,20 @@ module org.apache.sis.util {
             org.apache.sis.console,
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.temporal to
+    exports org.apache.sis.pending.temporal to
             org.apache.sis.metadata;
 
-    exports org.apache.sis.internal.geoapi.temporal to
+    exports org.apache.sis.pending.geoapi.temporal to
             org.apache.sis.metadata,
             org.apache.sis.feature;
 
-    exports org.apache.sis.internal.converter to
+    exports org.apache.sis.converter to
             org.apache.sis.metadata,
             org.apache.sis.referencing,
             org.apache.sis.feature,
             org.apache.sis.storage;
 
-    exports org.apache.sis.internal.system to
+    exports org.apache.sis.system to
             org.apache.sis.metadata,
             org.apache.sis.referencing,
             org.apache.sis.referencing.gazetteer,
@@ -161,7 +161,7 @@ module org.apache.sis.util {
             org.apache.sis.webapp,                      // In the "incubator" sub-project.
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.jdk17 to
+    exports org.apache.sis.pending.jdk to
             org.apache.sis.feature,
             org.apache.sis.storage,
             org.apache.sis.storage.sql,

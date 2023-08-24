@@ -30,8 +30,8 @@ module org.apache.sis.referencing {
     requires transitive java.desktop;
     requires transitive org.apache.sis.metadata;
 
-    provides org.apache.sis.internal.metadata.sql.Initializer
-        with org.apache.sis.internal.referencing.DatabaseListener;
+    provides org.apache.sis.metadata.sql.util.Initializer
+        with org.apache.sis.referencing.internal.DatabaseListener;
 
     provides org.opengis.referencing.crs.CRSFactory
         with org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -50,108 +50,108 @@ module org.apache.sis.referencing {
 
     uses     org.opengis.referencing.crs.CRSAuthorityFactory;
     provides org.opengis.referencing.crs.CRSAuthorityFactory
-        with org.apache.sis.internal.referencing.EPSGFactoryProxyCRS,
+        with org.apache.sis.referencing.internal.EPSGFactoryProxyCRS,
              org.apache.sis.referencing.factory.CommonAuthorityFactory;
 
     uses     org.opengis.referencing.cs.CSAuthorityFactory;
     provides org.opengis.referencing.cs.CSAuthorityFactory
-        with org.apache.sis.internal.referencing.EPSGFactoryProxyCS;
+        with org.apache.sis.referencing.internal.EPSGFactoryProxyCS;
 
     uses     org.opengis.referencing.datum.DatumAuthorityFactory;
     provides org.opengis.referencing.datum.DatumAuthorityFactory
-        with org.apache.sis.internal.referencing.EPSGFactoryProxyDatum;
+        with org.apache.sis.referencing.internal.EPSGFactoryProxyDatum;
 
     uses     org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
     provides org.opengis.referencing.operation.CoordinateOperationAuthorityFactory
-        with org.apache.sis.internal.referencing.EPSGFactoryProxyCOP;
+        with org.apache.sis.referencing.internal.EPSGFactoryProxyCOP;
 
     // Heavier classes (e.g. having more dependencies) or classes less likely to be used should be last.
     uses     org.opengis.referencing.operation.OperationMethod;
     provides org.opengis.referencing.operation.OperationMethod
-        with org.apache.sis.internal.referencing.provider.Affine,
-             org.apache.sis.internal.referencing.provider.AxisOrderReversal,
-             org.apache.sis.internal.referencing.provider.AxisOrderReversal3D,
-             org.apache.sis.internal.referencing.provider.Geographic3Dto2D,
-             org.apache.sis.internal.referencing.provider.Geographic2Dto3D,
-             org.apache.sis.internal.referencing.provider.GeographicOffsets,
-             org.apache.sis.internal.referencing.provider.GeographicOffsets2D,
-             org.apache.sis.internal.referencing.provider.GeographicAndVerticalOffsets,
-             org.apache.sis.internal.referencing.provider.VerticalOffset,
-             org.apache.sis.internal.referencing.provider.LongitudeRotation,
-             org.apache.sis.internal.referencing.provider.GeocentricTranslation,
-             org.apache.sis.internal.referencing.provider.PositionVector7Param,
-             org.apache.sis.internal.referencing.provider.CoordinateFrameRotation,
-             org.apache.sis.internal.referencing.provider.GeographicToGeocentric,
-             org.apache.sis.internal.referencing.provider.GeocentricToGeographic,
-             org.apache.sis.internal.referencing.provider.GeocentricTranslation3D,
-             org.apache.sis.internal.referencing.provider.GeocentricTranslation2D,
-             org.apache.sis.internal.referencing.provider.PositionVector7Param3D,
-             org.apache.sis.internal.referencing.provider.PositionVector7Param2D,
-             org.apache.sis.internal.referencing.provider.CoordinateFrameRotation3D,
-             org.apache.sis.internal.referencing.provider.CoordinateFrameRotation2D,
-             org.apache.sis.internal.referencing.provider.Molodensky,
-             org.apache.sis.internal.referencing.provider.AbridgedMolodensky,
-             org.apache.sis.internal.referencing.provider.PseudoPlateCarree,
-             org.apache.sis.internal.referencing.provider.Equirectangular,
-             org.apache.sis.internal.referencing.provider.Mercator1SP,
-             org.apache.sis.internal.referencing.provider.Mercator2SP,
-             org.apache.sis.internal.referencing.provider.MercatorSpherical,
-             org.apache.sis.internal.referencing.provider.PseudoMercator,
-             org.apache.sis.internal.referencing.provider.MercatorAuxiliarySphere,
-             org.apache.sis.internal.referencing.provider.RegionalMercator,
-             org.apache.sis.internal.referencing.provider.MillerCylindrical,
-             org.apache.sis.internal.referencing.provider.LambertConformal1SP,
-             org.apache.sis.internal.referencing.provider.LambertConformal2SP,
-             org.apache.sis.internal.referencing.provider.LambertConformalWest,
-             org.apache.sis.internal.referencing.provider.LambertConformalBelgium,
-             org.apache.sis.internal.referencing.provider.LambertConformalMichigan,
-             org.apache.sis.internal.referencing.provider.LambertCylindricalEqualArea,
-             org.apache.sis.internal.referencing.provider.LambertCylindricalEqualAreaSpherical,
-             org.apache.sis.internal.referencing.provider.LambertAzimuthalEqualArea,
-             org.apache.sis.internal.referencing.provider.LambertAzimuthalEqualAreaSpherical,
-             org.apache.sis.internal.referencing.provider.AlbersEqualArea,
-             org.apache.sis.internal.referencing.provider.TransverseMercator,
-             org.apache.sis.internal.referencing.provider.TransverseMercatorSouth,
-             org.apache.sis.internal.referencing.provider.CassiniSoldner,
-             org.apache.sis.internal.referencing.provider.HyperbolicCassiniSoldner,
-             org.apache.sis.internal.referencing.provider.PolarStereographicA,
-             org.apache.sis.internal.referencing.provider.PolarStereographicB,
-             org.apache.sis.internal.referencing.provider.PolarStereographicC,
-             org.apache.sis.internal.referencing.provider.PolarStereographicNorth,
-             org.apache.sis.internal.referencing.provider.PolarStereographicSouth,
-             org.apache.sis.internal.referencing.provider.ObliqueStereographic,
-             org.apache.sis.internal.referencing.provider.ObliqueMercator,
-             org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter,
-             org.apache.sis.internal.referencing.provider.ObliqueMercatorTwoPoints,
-             org.apache.sis.internal.referencing.provider.ObliqueMercatorTwoPointsCenter,
-             org.apache.sis.internal.referencing.provider.Orthographic,
-             org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEquidistant,
-             org.apache.sis.internal.referencing.provider.AzimuthalEquidistantSpherical,
-             org.apache.sis.internal.referencing.provider.ZonedTransverseMercator,
-             org.apache.sis.internal.referencing.provider.Sinusoidal,
-             org.apache.sis.internal.referencing.provider.PseudoSinusoidal,
-             org.apache.sis.internal.referencing.provider.Polyconic,
-             org.apache.sis.internal.referencing.provider.Mollweide,
-             org.apache.sis.internal.referencing.provider.SouthPoleRotation,
-             org.apache.sis.internal.referencing.provider.NorthPoleRotation,
-             org.apache.sis.internal.referencing.provider.NTv2,
-             org.apache.sis.internal.referencing.provider.NTv1,
-             org.apache.sis.internal.referencing.provider.NADCON,
-             org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation,
-             org.apache.sis.internal.referencing.provider.Interpolation1D,
-             org.apache.sis.internal.referencing.provider.SatelliteTracking,
-             org.apache.sis.internal.referencing.provider.Wraparound,
-             org.apache.sis.internal.referencing.provider.GeocentricToTopocentric,
-             org.apache.sis.internal.referencing.provider.GeographicToTopocentric;
+        with org.apache.sis.referencing.operation.provider.Affine,
+             org.apache.sis.referencing.operation.provider.AxisOrderReversal,
+             org.apache.sis.referencing.operation.provider.AxisOrderReversal3D,
+             org.apache.sis.referencing.operation.provider.Geographic3Dto2D,
+             org.apache.sis.referencing.operation.provider.Geographic2Dto3D,
+             org.apache.sis.referencing.operation.provider.GeographicOffsets,
+             org.apache.sis.referencing.operation.provider.GeographicOffsets2D,
+             org.apache.sis.referencing.operation.provider.GeographicAndVerticalOffsets,
+             org.apache.sis.referencing.operation.provider.VerticalOffset,
+             org.apache.sis.referencing.operation.provider.LongitudeRotation,
+             org.apache.sis.referencing.operation.provider.GeocentricTranslation,
+             org.apache.sis.referencing.operation.provider.PositionVector7Param,
+             org.apache.sis.referencing.operation.provider.CoordinateFrameRotation,
+             org.apache.sis.referencing.operation.provider.GeographicToGeocentric,
+             org.apache.sis.referencing.operation.provider.GeocentricToGeographic,
+             org.apache.sis.referencing.operation.provider.GeocentricTranslation3D,
+             org.apache.sis.referencing.operation.provider.GeocentricTranslation2D,
+             org.apache.sis.referencing.operation.provider.PositionVector7Param3D,
+             org.apache.sis.referencing.operation.provider.PositionVector7Param2D,
+             org.apache.sis.referencing.operation.provider.CoordinateFrameRotation3D,
+             org.apache.sis.referencing.operation.provider.CoordinateFrameRotation2D,
+             org.apache.sis.referencing.operation.provider.Molodensky,
+             org.apache.sis.referencing.operation.provider.AbridgedMolodensky,
+             org.apache.sis.referencing.operation.provider.PseudoPlateCarree,
+             org.apache.sis.referencing.operation.provider.Equirectangular,
+             org.apache.sis.referencing.operation.provider.Mercator1SP,
+             org.apache.sis.referencing.operation.provider.Mercator2SP,
+             org.apache.sis.referencing.operation.provider.MercatorSpherical,
+             org.apache.sis.referencing.operation.provider.PseudoMercator,
+             org.apache.sis.referencing.operation.provider.MercatorAuxiliarySphere,
+             org.apache.sis.referencing.operation.provider.RegionalMercator,
+             org.apache.sis.referencing.operation.provider.MillerCylindrical,
+             org.apache.sis.referencing.operation.provider.LambertConformal1SP,
+             org.apache.sis.referencing.operation.provider.LambertConformal2SP,
+             org.apache.sis.referencing.operation.provider.LambertConformalWest,
+             org.apache.sis.referencing.operation.provider.LambertConformalBelgium,
+             org.apache.sis.referencing.operation.provider.LambertConformalMichigan,
+             org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea,
+             org.apache.sis.referencing.operation.provider.LambertCylindricalEqualAreaSpherical,
+             org.apache.sis.referencing.operation.provider.LambertAzimuthalEqualArea,
+             org.apache.sis.referencing.operation.provider.LambertAzimuthalEqualAreaSpherical,
+             org.apache.sis.referencing.operation.provider.AlbersEqualArea,
+             org.apache.sis.referencing.operation.provider.TransverseMercator,
+             org.apache.sis.referencing.operation.provider.TransverseMercatorSouth,
+             org.apache.sis.referencing.operation.provider.CassiniSoldner,
+             org.apache.sis.referencing.operation.provider.HyperbolicCassiniSoldner,
+             org.apache.sis.referencing.operation.provider.PolarStereographicA,
+             org.apache.sis.referencing.operation.provider.PolarStereographicB,
+             org.apache.sis.referencing.operation.provider.PolarStereographicC,
+             org.apache.sis.referencing.operation.provider.PolarStereographicNorth,
+             org.apache.sis.referencing.operation.provider.PolarStereographicSouth,
+             org.apache.sis.referencing.operation.provider.ObliqueStereographic,
+             org.apache.sis.referencing.operation.provider.ObliqueMercator,
+             org.apache.sis.referencing.operation.provider.ObliqueMercatorCenter,
+             org.apache.sis.referencing.operation.provider.ObliqueMercatorTwoPoints,
+             org.apache.sis.referencing.operation.provider.ObliqueMercatorTwoPointsCenter,
+             org.apache.sis.referencing.operation.provider.Orthographic,
+             org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant,
+             org.apache.sis.referencing.operation.provider.AzimuthalEquidistantSpherical,
+             org.apache.sis.referencing.operation.provider.ZonedTransverseMercator,
+             org.apache.sis.referencing.operation.provider.Sinusoidal,
+             org.apache.sis.referencing.operation.provider.PseudoSinusoidal,
+             org.apache.sis.referencing.operation.provider.Polyconic,
+             org.apache.sis.referencing.operation.provider.Mollweide,
+             org.apache.sis.referencing.operation.provider.SouthPoleRotation,
+             org.apache.sis.referencing.operation.provider.NorthPoleRotation,
+             org.apache.sis.referencing.operation.provider.NTv2,
+             org.apache.sis.referencing.operation.provider.NTv1,
+             org.apache.sis.referencing.operation.provider.NADCON,
+             org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation,
+             org.apache.sis.referencing.operation.provider.Interpolation1D,
+             org.apache.sis.referencing.operation.provider.SatelliteTracking,
+             org.apache.sis.referencing.operation.provider.Wraparound,
+             org.apache.sis.referencing.operation.provider.GeocentricToTopocentric,
+             org.apache.sis.referencing.operation.provider.GeographicToTopocentric;
 
-    provides org.apache.sis.internal.jaxb.TypeRegistration
-        with org.apache.sis.internal.referencing.ReferencingTypes;
+    provides org.apache.sis.xml.bind.TypeRegistration
+        with org.apache.sis.referencing.internal.ReferencingTypes;
 
-    provides org.apache.sis.internal.jaxb.AdapterReplacement
-        with org.apache.sis.internal.jaxb.referencing.SC_VerticalCRS;
+    provides org.apache.sis.xml.bind.AdapterReplacement
+        with org.apache.sis.xml.bind.referencing.SC_VerticalCRS;
 
-    provides org.apache.sis.internal.metadata.ReferencingServices
-        with org.apache.sis.internal.referencing.ServicesForMetadata;
+    provides org.apache.sis.metadata.internal.ReferencingServices
+        with org.apache.sis.referencing.internal.ServicesForMetadata;
 
     exports org.apache.sis.geometry;
     exports org.apache.sis.io.wkt;
@@ -168,7 +168,7 @@ module org.apache.sis.referencing {
     exports org.apache.sis.referencing.operation.projection;
     exports org.apache.sis.referencing.operation.transform;
 
-    exports org.apache.sis.internal.referencing to
+    exports org.apache.sis.referencing.util to
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
             org.apache.sis.storage,
@@ -181,7 +181,7 @@ module org.apache.sis.referencing {
             org.apache.sis.openoffice,
             org.apache.sis.gui;                             // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.referencing.j2d to
+    exports org.apache.sis.referencing.util.j2d to
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
             org.apache.sis.storage,
@@ -190,14 +190,14 @@ module org.apache.sis.referencing {
             org.apache.sis.portrayal,
             org.apache.sis.gui;                             // In the "optional" sub-project.
 
-    exports org.apache.sis.internal.referencing.provider to
+    exports org.apache.sis.referencing.operation.provider to
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.earthobservation,
             org.apache.sis.profile.japan;
 
-    exports org.apache.sis.internal.jaxb.referencing to
+    exports org.apache.sis.xml.bind.referencing to
             org.glassfish.jaxb.runtime,                     // For access to beforeUnmarshal(…).
             org.glassfish.jaxb.core,                        // For access to various classes.
             jakarta.xml.bind;                               // Seems ignored.

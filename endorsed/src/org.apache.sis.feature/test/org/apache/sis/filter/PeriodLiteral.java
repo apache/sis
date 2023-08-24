@@ -22,8 +22,8 @@ import org.apache.sis.test.TestUtilities;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.internal.geoapi.filter.Literal;
-import org.apache.sis.internal.geoapi.temporal.Period;
+import org.apache.sis.pending.geoapi.filter.Literal;
+import org.apache.sis.pending.geoapi.temporal.Period;
 
 
 /**
@@ -54,12 +54,12 @@ final class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Se
     @Override public Period apply(AbstractFeature input) {return this;}
 
     /** Returns a bound of this period. */
-    @Override public org.apache.sis.internal.geoapi.temporal.Instant getBeginning() {return instant(begin);}
-    @Override public org.apache.sis.internal.geoapi.temporal.Instant getEnding()    {return instant(end);}
+    @Override public org.apache.sis.pending.geoapi.temporal.Instant getBeginning() {return instant(begin);}
+    @Override public org.apache.sis.pending.geoapi.temporal.Instant getEnding()    {return instant(end);}
 
     /** Wraps the value that defines a period. */
-    private static org.apache.sis.internal.geoapi.temporal.Instant instant(final long t) {
-        return new org.apache.sis.internal.geoapi.temporal.Instant() {
+    private static org.apache.sis.pending.geoapi.temporal.Instant instant(final long t) {
+        return new org.apache.sis.pending.geoapi.temporal.Instant() {
             @Override public Date   getDate()  {return new Date(t);}
             @Override public String toString() {return "Instant[" + TestUtilities.format(getDate()) + '[';}
         };

@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.text.AttributedCharacterIterator;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.internal.util.SimpleCharacterIterator;
+import org.apache.sis.util.internal.SimpleCharacterIterator;
 import org.junit.Test;
 
 import static java.lang.StrictMath.min;

@@ -21,10 +21,10 @@ import java.util.Locale;
 import java.util.ServiceLoader;
 import java.io.IOException;
 import java.io.BufferedReader;
-import org.apache.sis.internal.util.URLs;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.MetadataServices;
-import org.apache.sis.internal.system.Reflect;
+import org.apache.sis.util.internal.URLs;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.MetadataServices;
+import org.apache.sis.system.Reflect;
 
 
 /**

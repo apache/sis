@@ -21,8 +21,8 @@ import java.util.HashMap;
 import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.internal.metadata.AxisNames;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.metadata.internal.AxisNames;
+import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.measure.Units;
 
 

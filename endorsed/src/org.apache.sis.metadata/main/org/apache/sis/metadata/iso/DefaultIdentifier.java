@@ -107,7 +107,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "description"
 })
 @XmlRootElement(name = "MD_Identifier", namespace = Namespaces.MCC)
-@XmlSeeAlso(org.apache.sis.internal.jaxb.metadata.replace.RS_Identifier.class)
+@XmlSeeAlso(org.apache.sis.xml.bind.metadata.replace.RS_Identifier.class)
 public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Serial number for inter-operability with different versions.

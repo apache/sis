@@ -20,9 +20,9 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.awt.geom.AffineTransform;                       // For javadoc
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.internal.referencing.Arithmetic;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.internal.Arithmetic;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;

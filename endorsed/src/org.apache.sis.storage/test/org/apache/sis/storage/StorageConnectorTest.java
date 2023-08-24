@@ -31,9 +31,9 @@ import javax.imageio.ImageIO;
 import java.sql.Connection;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.internal.storage.io.ChannelImageInputStream;
-import org.apache.sis.internal.storage.io.InputStreamAdapter;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelImageInputStream;
+import org.apache.sis.io.stream.InputStreamAdapter;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -52,7 +52,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * @version 1.4
  * @since   0.3
  */
-@DependsOn(org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class)
+@DependsOn(org.apache.sis.io.stream.ChannelImageInputStreamTest.class)
 public final class StorageConnectorTest extends TestCase {
     /**
      * Name of the test file, in the same directory than this {@code StorageConnectorTest} file.

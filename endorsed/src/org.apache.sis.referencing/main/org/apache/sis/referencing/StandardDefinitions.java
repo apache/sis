@@ -40,11 +40,11 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.NoSuchIdentifierException;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.metadata.AxisNames;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.provider.TransverseMercator;
-import org.apache.sis.internal.referencing.provider.PolarStereographicA;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.metadata.internal.AxisNames;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.operation.provider.TransverseMercator;
+import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -74,7 +74,7 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 import static org.opengis.referencing.datum.Datum.DOMAIN_OF_VALIDITY_KEY;
-import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**
@@ -100,7 +100,7 @@ final class StandardDefinitions {
     /**
      * The EPSG code for Greenwich meridian.
      *
-     * @see org.apache.sis.internal.util.Constants#EPSG_GREENWICH
+     * @see org.apache.sis.util.internal.Constants#EPSG_GREENWICH
      */
     static final String GREENWICH = "8901";
 

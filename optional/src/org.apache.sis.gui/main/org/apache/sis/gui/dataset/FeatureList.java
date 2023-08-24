@@ -24,8 +24,8 @@ import javafx.application.Platform;
 import javafx.collections.ObservableListBase;
 import javafx.concurrent.Worker;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.feature.AbstractFeature;
 

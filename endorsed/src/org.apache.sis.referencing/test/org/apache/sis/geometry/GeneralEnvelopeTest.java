@@ -20,7 +20,7 @@ import java.time.Instant;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Range;
-import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

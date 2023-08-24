@@ -22,7 +22,7 @@ import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
-import org.apache.sis.internal.system.LocalizedStaticObject;
+import org.apache.sis.system.LocalizedStaticObject;
 import org.apache.sis.io.TableAppender;
 
 

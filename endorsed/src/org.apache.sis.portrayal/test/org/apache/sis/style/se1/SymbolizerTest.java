@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
 // Branch-dependent imports
-import org.apache.sis.internal.geoapi.filter.ValueReference;
+import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
 /**

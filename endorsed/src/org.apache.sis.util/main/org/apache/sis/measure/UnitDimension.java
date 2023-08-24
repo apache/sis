@@ -28,8 +28,8 @@ import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnsupportedImplementationException;
-import org.apache.sis.internal.converter.FractionConverter;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.converter.FractionConverter;
+import org.apache.sis.util.internal.CollectionsExt;
 
 
 /**

@@ -43,14 +43,14 @@ import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.apache.sis.gui.dataset.ResourceExplorer;
-import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.LogHandler;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.RecentChoices;
-import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.StoreMetadata;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.LogHandler;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.RecentChoices;
+import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStore;
@@ -238,9 +238,9 @@ public class DataViewer extends Application {
                      * we can auto-detect the format. Keep GPX at writing time because we need
                      * to be specific about the format to write.
                      */
-                    case org.apache.sis.internal.storage.wkt.StoreProvider.NAME: continue;
-                    case org.apache.sis.internal.storage.xml.StoreProvider.NAME: write = false; break;
-                    case org.apache.sis.internal.storage.gpx.StoreProvider.NAME: read  = false; break;
+                    case org.apache.sis.storage.wkt.StoreProvider.NAME: continue;
+                    case org.apache.sis.storage.xml.StoreProvider.NAME: write = false; break;
+                    case org.apache.sis.storage.gpx.StoreProvider.NAME: read  = false; break;
                 }
                 String label = null;
                 for (final String suffix : md.fileSuffixes()) {

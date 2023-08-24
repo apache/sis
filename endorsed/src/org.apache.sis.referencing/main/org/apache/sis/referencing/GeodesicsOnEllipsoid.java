@@ -19,8 +19,8 @@ package org.apache.sis.referencing;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.Debug;
 

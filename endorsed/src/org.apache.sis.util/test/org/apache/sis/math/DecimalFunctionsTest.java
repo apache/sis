@@ -36,7 +36,7 @@ import static org.apache.sis.math.DecimalFunctions.*;
  * @version 1.0
  * @since   0.4
  */
-@DependsOn(org.apache.sis.internal.util.NumericsTest.class)
+@DependsOn(org.apache.sis.util.internal.NumericsTest.class)
 public final class DecimalFunctionsTest extends TestCase {
     /**
      * Creates a new test case.

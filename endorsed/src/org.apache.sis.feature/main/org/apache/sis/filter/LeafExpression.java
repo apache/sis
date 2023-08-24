@@ -26,8 +26,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.internal.feature.FeatureExpression;
-import org.apache.sis.internal.filter.Node;
+import org.apache.sis.feature.internal.FeatureExpression;
+import org.apache.sis.filter.internal.Node;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.math.FunctionProperty;
@@ -91,7 +91,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
      * @param  <R>  the type of resources used as inputs.
      * @param  <V>  the type of value computed by the expression.
      */
-    static class Literal<R,V> extends LeafExpression<R,V> implements org.apache.sis.internal.geoapi.filter.Literal<R,V> {
+    static class Literal<R,V> extends LeafExpression<R,V> implements org.apache.sis.pending.geoapi.filter.Literal<R,V> {
         /** The properties of this function, which returns constants. */
         private static final Set<FunctionProperty> CONSTANT =
                 Set.of(FunctionProperty.ORDER_PRESERVING, FunctionProperty.ORDER_REVERSING);

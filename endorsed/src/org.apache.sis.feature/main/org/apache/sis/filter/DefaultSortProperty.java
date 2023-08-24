@@ -24,9 +24,9 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.geoapi.filter.SortOrder;
-import org.apache.sis.internal.geoapi.filter.SortProperty;
-import org.apache.sis.internal.geoapi.filter.ValueReference;
+import org.apache.sis.pending.geoapi.filter.SortOrder;
+import org.apache.sis.pending.geoapi.filter.SortProperty;
+import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
 /**

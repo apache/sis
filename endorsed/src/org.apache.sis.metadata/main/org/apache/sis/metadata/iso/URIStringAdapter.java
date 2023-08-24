@@ -19,9 +19,9 @@ package org.apache.sis.metadata.iso;
 import java.net.URI;
 import java.net.URISyntaxException;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
-import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
-import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
+import org.apache.sis.xml.bind.gco.GO_CharacterString;
 
 
 /**

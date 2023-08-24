@@ -22,8 +22,8 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
@@ -220,7 +220,7 @@ abstract class MapProjectionTestCase extends MathTransformTestCase {
     /**
      * Tests coordinates close to zero. Callers must set the transform and tolerance threshold before to invoke
      * this method. This method tests (among others) the 1.4914711209038602E-154 value, which is the threshold
-     * documented in {@link org.apache.sis.internal.referencing.Formulas#fastHypot(double, double)}.
+     * documented in {@link org.apache.sis.referencing.util.Formulas#fastHypot(double, double)}.
      *
      * @throws TransformException if an error occurred while projecting the coordinate.
      */

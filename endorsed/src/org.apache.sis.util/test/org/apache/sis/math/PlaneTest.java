@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * @version 0.8
  * @since   0.5
  */
-@DependsOn(org.apache.sis.internal.util.DoubleDoubleTest.class)
+@DependsOn(org.apache.sis.util.internal.DoubleDoubleTest.class)
 public final class PlaneTest extends TestCase {
     /**
      * The Pearson coefficient computed by the last call to

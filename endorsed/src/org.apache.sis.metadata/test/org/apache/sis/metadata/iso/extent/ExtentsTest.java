@@ -35,7 +35,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 import static org.junit.Assert.*;
 
 
@@ -192,7 +192,7 @@ public final class ExtentsTest extends TestCase {
 
     /**
      * Tests the {@link Extents#centroid(GeographicBoundingBox)} method. This method is defined here
-     * but executed from the {@link org.apache.sis.internal.referencing.ServicesForMetadataTest} class
+     * but executed from the {@link org.apache.sis.referencing.internal.ServicesForMetadataTest} class
      * in {@code org.apache.sis.referencing} module.
      * This method cannot be executed in the {@code org.apache.sis.metadata} module
      * because it has a dependency to a referencing implementation class.

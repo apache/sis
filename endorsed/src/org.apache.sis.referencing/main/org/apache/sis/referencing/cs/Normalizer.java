@@ -30,9 +30,9 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.PolarCS;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
@@ -47,7 +47,7 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
  * guess what the new name should be. This constant is used as a sentinel value set by Normalizer and checked
  * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
  */
-import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
+import static org.apache.sis.referencing.util.NilReferencingObject.UNNAMED;
 
 
 /**

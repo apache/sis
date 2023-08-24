@@ -34,11 +34,11 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.feature.FeatureExpression;
-import org.apache.sis.internal.filter.SortByComparator;
-import org.apache.sis.internal.filter.XPath;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.feature.internal.FeatureExpression;
+import org.apache.sis.filter.internal.SortByComparator;
+import org.apache.sis.filter.internal.XPath;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentChecks;
@@ -54,10 +54,10 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
-import org.apache.sis.internal.geoapi.filter.Literal;
-import org.apache.sis.internal.geoapi.filter.ValueReference;
-import org.apache.sis.internal.geoapi.filter.SortBy;
-import org.apache.sis.internal.geoapi.filter.SortProperty;
+import org.apache.sis.pending.geoapi.filter.Literal;
+import org.apache.sis.pending.geoapi.filter.ValueReference;
+import org.apache.sis.pending.geoapi.filter.SortBy;
+import org.apache.sis.pending.geoapi.filter.SortProperty;
 
 
 /**

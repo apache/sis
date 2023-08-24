@@ -20,7 +20,7 @@ import java.util.Locale;
 import javafx.util.StringConverter;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.gui.internal.Resources;
 
 
 /**

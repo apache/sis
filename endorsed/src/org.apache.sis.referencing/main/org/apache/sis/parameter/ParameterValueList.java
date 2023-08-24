@@ -35,7 +35,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.internal.Resources;
 
 
 /**

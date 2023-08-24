@@ -22,7 +22,7 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
+import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.util.iso.DefaultNameFactory;

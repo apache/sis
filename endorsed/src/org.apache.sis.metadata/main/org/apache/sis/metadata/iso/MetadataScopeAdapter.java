@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 
 
 /**

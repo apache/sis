@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.*;
 import static org.apache.sis.util.ArraysExt.isSorted;
-import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
+import static org.apache.sis.util.internal.Numerics.SIGNIFICAND_SIZE;
 
 
 /**
@@ -40,7 +40,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  */
 @DependsOn({
     org.apache.sis.util.ArraysExtTest.class,
-    org.apache.sis.internal.util.NumericsTest.class
+    org.apache.sis.util.internal.NumericsTest.class
 })
 public final class MathFunctionsTest extends TestCase {
     /**

@@ -20,7 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientException;
-import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.metadata.sql.util.SQLBuilder;
 
 
 /**

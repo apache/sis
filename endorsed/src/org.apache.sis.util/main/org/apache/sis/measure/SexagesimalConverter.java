@@ -20,7 +20,7 @@ import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.math.MathFunctions;
 
 import static org.apache.sis.math.MathFunctions.truncate;

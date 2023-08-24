@@ -25,12 +25,12 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.gco.StringAdapter;
-import org.apache.sis.internal.jaxb.code.CI_TelephoneTypeCode;
-import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.bind.gco.StringAdapter;
+import org.apache.sis.xml.bind.metadata.code.CI_TelephoneTypeCode;
+import org.apache.sis.metadata.internal.Dependencies;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
@@ -39,8 +39,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
 // Branch-specific imports
 import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
-import org.apache.sis.internal.geoapi.evolution.InterimType;
-import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
+import org.apache.sis.pending.geoapi.evolution.InterimType;
+import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 
 
 /**

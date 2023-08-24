@@ -23,11 +23,11 @@ import java.io.UncheckedIOException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.metadata.internal.ReferencingServices;
 
 import static java.lang.Math.*;     // Not StrictMath in this particular case.
-import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
+import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
 
 
 /**

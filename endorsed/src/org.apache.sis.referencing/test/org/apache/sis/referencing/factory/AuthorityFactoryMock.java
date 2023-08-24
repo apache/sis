@@ -36,7 +36,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.datum.HardCodedDatum;

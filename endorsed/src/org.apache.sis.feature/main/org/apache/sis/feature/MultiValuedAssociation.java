@@ -17,9 +17,9 @@
 package org.apache.sis.feature;
 
 import java.util.Collection;
-import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**

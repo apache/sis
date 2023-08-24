@@ -29,12 +29,12 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.UnmodifiableMetadataException;
-import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
-import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
-import org.apache.sis.internal.jaxb.gco.GO_Integer64;
-import org.apache.sis.internal.metadata.ImplementationHelper;
-import org.apache.sis.internal.metadata.Resources;
-import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.xml.bind.ModifiableIdentifierMap;
+import org.apache.sis.xml.bind.IdentifierMapAdapter;
+import org.apache.sis.xml.bind.gco.GO_Integer64;
+import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.metadata.internal.Resources;
+import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
@@ -44,7 +44,7 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 
 /**

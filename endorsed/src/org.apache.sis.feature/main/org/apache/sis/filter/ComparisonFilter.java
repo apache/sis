@@ -36,13 +36,13 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.filter.Node;
+import org.apache.sis.filter.internal.Node;
 
 // Branch-dependent imports
-import org.apache.sis.internal.geoapi.filter.MatchAction;
-import org.apache.sis.internal.geoapi.filter.ComparisonOperatorName;
-import org.apache.sis.internal.geoapi.filter.BinaryComparisonOperator;
-import org.apache.sis.internal.geoapi.filter.BetweenComparisonOperator;
+import org.apache.sis.pending.geoapi.filter.MatchAction;
+import org.apache.sis.pending.geoapi.filter.ComparisonOperatorName;
+import org.apache.sis.pending.geoapi.filter.BinaryComparisonOperator;
+import org.apache.sis.pending.geoapi.filter.BetweenComparisonOperator;
 
 
 /**

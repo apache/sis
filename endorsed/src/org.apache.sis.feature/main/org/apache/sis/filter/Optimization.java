@@ -26,14 +26,14 @@ import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.filter.Node;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.filter.internal.Node;
+import org.apache.sis.util.internal.CollectionsExt;
 
 // Branch-dependent imports
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.internal.geoapi.filter.Literal;
-import org.apache.sis.internal.geoapi.filter.LogicalOperator;
-import org.apache.sis.internal.geoapi.filter.LogicalOperatorName;
+import org.apache.sis.pending.geoapi.filter.Literal;
+import org.apache.sis.pending.geoapi.filter.LogicalOperator;
+import org.apache.sis.pending.geoapi.filter.LogicalOperatorName;
 
 
 /**

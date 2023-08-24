@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  */
 @DependsOn({
   org.apache.sis.util.CharSequencesTest.class,
-  org.apache.sis.internal.util.X364Test.class
+  org.apache.sis.util.internal.X364Test.class
 })
 public class LineAppenderTest extends AppenderTestCase {
     /**

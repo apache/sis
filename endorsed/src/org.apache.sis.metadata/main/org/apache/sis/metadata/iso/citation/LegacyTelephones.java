@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.citation.Telephone;
-import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 
 
 /**

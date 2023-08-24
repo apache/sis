@@ -30,18 +30,18 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
-import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
-import org.apache.sis.internal.jaxb.lan.OtherLocales;
-import org.apache.sis.internal.jaxb.lan.PT_Locale;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.xml.bind.lan.LocaleAndCharset;
+import org.apache.sis.xml.bind.lan.OtherLocales;
+import org.apache.sis.xml.bind.lan.PT_Locale;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.metadata.internal.Dependencies;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
+import org.apache.sis.xml.bind.metadata.code.MD_CharacterSetCode;
 
 
 /**

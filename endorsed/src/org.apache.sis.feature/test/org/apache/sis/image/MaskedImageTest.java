@@ -30,7 +30,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Debug;
 import org.junit.Test;

@@ -35,9 +35,9 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.util.DirectPositionView;
 
 
 /**

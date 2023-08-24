@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
-import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.system.Semaphores;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.Exceptions;
 
 

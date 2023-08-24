@@ -20,7 +20,7 @@ import java.util.WeakHashMap;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.internal.map.coverage.MultiResolutionCoverageLoader;
+import org.apache.sis.map.coverage.MultiResolutionCoverageLoader;
 
 
 /**
