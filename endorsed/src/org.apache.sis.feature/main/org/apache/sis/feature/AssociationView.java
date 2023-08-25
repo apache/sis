@@ -19,7 +19,7 @@ package org.apache.sis.feature;
 import java.util.Collection;
 import org.opengis.util.GenericName;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;

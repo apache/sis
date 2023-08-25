@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.geoapi;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
 import org.junit.Ignore;

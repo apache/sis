@@ -26,8 +26,8 @@ import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 
 

@@ -17,15 +17,15 @@
 package org.apache.sis.console;
 
 import java.net.URI;
-import java.util.EnumSet;
 import java.net.URISyntaxException;
+import java.util.EnumSet;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.FileSystemNotFoundException;
 import org.apache.sis.storage.DataStores;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

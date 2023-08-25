@@ -19,10 +19,10 @@ package org.apache.sis.storage.shapefile;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
-
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.storage.shapefile.internal.ShapefileDescriptor;
 import org.apache.sis.storage.shapefile.jdbc.DBase3FieldDescriptor;
+
 
 /**
  * Provides a ShapeFile Reader.

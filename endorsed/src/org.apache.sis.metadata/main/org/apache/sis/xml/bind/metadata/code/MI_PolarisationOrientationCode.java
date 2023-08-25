@@ -17,10 +17,12 @@
 package org.apache.sis.xml.bind.metadata.code;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import org.opengis.metadata.content.PolarisationOrientation;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.cat.CodeListAdapter;
 import org.apache.sis.xml.bind.cat.CodeListUID;
-import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.content.PolarisationOrientation;
 
 
 /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.map;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.apache.sis.style.se1.StyleFactory;
 import org.apache.sis.style.se1.Symbolizer;
 

@@ -23,16 +23,18 @@ import java.util.Collection;
 import java.util.Map;
 import java.lang.reflect.Method;
 import org.opengis.util.CodeList;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.test.xml.AnnotationConsistencyCheck;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.xml.AnnotationConsistencyCheck;
 import org.junit.Test;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

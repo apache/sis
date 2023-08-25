@@ -21,10 +21,10 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import static org.apache.sis.metadata.Assertions.assertContentInfoEquals;
 import static org.apache.sis.metadata.Assertions.assertFeatureSourceEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 

@@ -27,12 +27,12 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 
 /**

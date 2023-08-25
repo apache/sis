@@ -29,6 +29,7 @@ import java.util.function.BiConsumer;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Geometry;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
@@ -39,7 +40,6 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.metadata.identification.Identification;
-import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -48,27 +48,27 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.metadata.InvalidMetadataException;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.OptionalCandidate;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
-// Branch-dependent imports
-import org.opengis.geometry.Geometry;
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.geometry.MismatchedReferenceSystemException;
 
 
 /**

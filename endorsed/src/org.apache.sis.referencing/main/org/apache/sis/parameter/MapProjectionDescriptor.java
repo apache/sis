@@ -24,10 +24,10 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.operation.provider.MapProjection;
-import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.internal.Constants;
 
 
 /**

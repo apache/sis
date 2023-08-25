@@ -23,11 +23,13 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**

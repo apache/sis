@@ -25,13 +25,15 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.BandDefinition;
-import org.opengis.metadata.content.PolarisationOrientation;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.xml.bind.gco.UnitAdapter;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.content.PolarisationOrientation;
 
 
 /**

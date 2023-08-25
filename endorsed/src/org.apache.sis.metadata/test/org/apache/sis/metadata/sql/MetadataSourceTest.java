@@ -23,16 +23,18 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestStep;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

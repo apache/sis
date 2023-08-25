@@ -17,9 +17,11 @@
 package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import org.opengis.referencing.datum.ParametricDatum;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.ParametricDatum;
 
 
 /**

@@ -21,13 +21,15 @@ import java.util.Collection;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import org.opengis.metadata.citation.Telephone;
-import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.TelephoneType;
 
 
 /**

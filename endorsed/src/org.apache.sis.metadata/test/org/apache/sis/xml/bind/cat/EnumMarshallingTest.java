@@ -17,7 +17,6 @@
 package org.apache.sis.xml.bind.cat;
 
 import java.util.List;
-import java.util.EnumSet;
 import java.util.Collection;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.identification.TopicCategory;
@@ -29,6 +28,9 @@ import org.junit.Test;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+
+// Specific to the geoapi-4.0 branch:
+import java.util.EnumSet;
 
 
 /**

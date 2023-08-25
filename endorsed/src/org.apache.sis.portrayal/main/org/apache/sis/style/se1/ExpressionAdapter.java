@@ -18,7 +18,7 @@ package org.apache.sis.style.se1;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
 

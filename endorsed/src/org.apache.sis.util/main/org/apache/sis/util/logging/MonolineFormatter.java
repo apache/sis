@@ -33,15 +33,15 @@ import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.logging.*;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.internal.X364;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.internal.AutoMessageFormat;
 import org.apache.sis.system.Configuration;
-import org.apache.sis.io.IO;
-import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.internal.X364;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.AutoMessageFormat;
+import org.apache.sis.io.IO;
+import org.apache.sis.io.LineAppender;
 
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 

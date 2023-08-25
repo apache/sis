@@ -29,9 +29,9 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

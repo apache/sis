@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter.internal;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,8 +28,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.internal.CollectionsExt;
-
-// Branch-dependent imports
 import org.opengis.filter.*;
 
 

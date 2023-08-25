@@ -20,8 +20,10 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.quality.SourceReference;
 import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.quality.SourceReference;
 
 
 /**

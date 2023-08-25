@@ -25,16 +25,18 @@ import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.ScopedName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.identification.CoupledResource;
-import org.opengis.metadata.identification.OperationMetadata;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.xml.bind.metadata.SV_OperationMetadata;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.SV_OperationMetadata;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.identification.CoupledResource;
+import org.opengis.metadata.identification.OperationMetadata;
 
 
 /**

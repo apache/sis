@@ -25,8 +25,8 @@ import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
-import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.gco.PropertyType;
 
 
 /**

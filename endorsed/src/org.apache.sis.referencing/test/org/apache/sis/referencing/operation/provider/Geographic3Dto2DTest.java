@@ -29,6 +29,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;
 
 

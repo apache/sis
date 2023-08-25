@@ -26,7 +26,6 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
-import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -34,6 +33,9 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.metadata.code.DS_AssociationTypeCode;
 import org.apache.sis.xml.bind.metadata.code.DS_InitiativeTypeCode;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.identification.AssociatedResource;
 
 
 /**

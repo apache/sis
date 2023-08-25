@@ -17,9 +17,9 @@
 package org.apache.sis.referencing.operation.provider;
 
 import java.net.URISyntaxException;
+import java.net.URI;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URI;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;

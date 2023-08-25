@@ -17,7 +17,6 @@
 package org.apache.sis.storage.shapefile.jdbc;
 
 import java.sql.*;
-
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
 import org.junit.*;
 

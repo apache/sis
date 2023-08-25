@@ -18,13 +18,13 @@ package org.apache.sis.storage.geotiff;
 
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.storage.geotiff.internal.Compression;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;

@@ -23,15 +23,17 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.maintenance.Scope;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.lineage.ProcessStep;
-import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.maintenance.Scope;
 
 
 /**

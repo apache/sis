@@ -29,8 +29,8 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

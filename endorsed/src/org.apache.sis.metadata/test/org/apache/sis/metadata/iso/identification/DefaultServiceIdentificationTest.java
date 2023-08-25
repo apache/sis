@@ -20,14 +20,8 @@ import java.util.Set;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
-import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.CouplingType;
-import org.opengis.metadata.identification.CoupledResource;
-import org.opengis.metadata.identification.OperationMetadata;
-import org.opengis.metadata.identification.ServiceIdentification;
-import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -38,6 +32,14 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.parameter.ParameterDirection;
+import org.opengis.metadata.identification.CouplingType;
+import org.opengis.metadata.identification.CoupledResource;
+import org.opengis.metadata.identification.OperationMetadata;
+import org.opengis.metadata.identification.ServiceIdentification;
+import org.opengis.metadata.identification.DistributedComputingPlatform;
 
 
 /**

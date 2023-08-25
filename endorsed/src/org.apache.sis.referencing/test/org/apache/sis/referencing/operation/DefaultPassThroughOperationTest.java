@@ -30,8 +30,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.opengis.test.Assert.assertIdentifierEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertIdentifierEquals;
 
 
 /**

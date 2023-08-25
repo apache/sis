@@ -22,7 +22,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.ValueReference;

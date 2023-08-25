@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.awt.image.RenderedImage;
-import org.opengis.coverage.grid.SequenceType;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.PixelIterator;
@@ -38,6 +37,9 @@ import org.apache.sis.util.Debug;
 import static org.apache.sis.image.processing.isoline.Tracer.UPPER_LEFT;
 import static org.apache.sis.image.processing.isoline.Tracer.UPPER_RIGHT;
 import static org.apache.sis.image.processing.isoline.Tracer.LOWER_RIGHT;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.grid.SequenceType;
 
 
 /**

@@ -27,7 +27,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.math.FunctionProperty;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
@@ -23,8 +24,6 @@ import java.util.Optional;
 import org.opengis.util.LocalName;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.feature.internal.AttributeConvention;
-
-// Branch-dependent imports
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.capability.Conformance;
 import org.opengis.filter.capability.IdCapabilities;

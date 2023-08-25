@@ -22,9 +22,9 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.DBase3FieldDescriptor;
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
+
 
 /**
  * Special ResultSet listing columns contained in this DBase 3.

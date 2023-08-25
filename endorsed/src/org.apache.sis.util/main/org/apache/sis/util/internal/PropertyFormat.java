@@ -28,13 +28,15 @@ import org.opengis.util.Type;
 import org.opengis.util.Record;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.resources.Vocabulary;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

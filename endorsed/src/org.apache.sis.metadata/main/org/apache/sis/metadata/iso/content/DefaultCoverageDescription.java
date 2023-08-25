@@ -24,7 +24,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.content.ImageDescription;
@@ -39,6 +38,9 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.content.AttributeGroup;
 
 
 /**

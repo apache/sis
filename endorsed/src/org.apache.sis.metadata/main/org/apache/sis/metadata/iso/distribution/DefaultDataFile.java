@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
 import org.apache.sis.xml.Namespaces;
@@ -30,7 +30,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
-import org.opengis.util.InternationalString;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.util.GenericName;
 
 
 /**

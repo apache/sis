@@ -19,6 +19,7 @@ package org.apache.sis.storage.shapefile.jdbc;
 import java.io.File;
 import java.sql.SQLException;
 
+
 /**
  * Exception thrown when a connection is closed.
  * @author Marc LE BIHAN

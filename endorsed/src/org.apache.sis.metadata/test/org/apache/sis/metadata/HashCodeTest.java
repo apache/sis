@@ -22,15 +22,12 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Individual;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.acquisition.Platform;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 import org.apache.sis.test.DependsOnMethod;
@@ -39,6 +36,13 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Individual;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.citation.Responsibility;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**

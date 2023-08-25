@@ -24,6 +24,8 @@ import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-4.0 branch:
 import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
 import org.apache.sis.xml.bind.metadata.CI_OnlineResource;
 

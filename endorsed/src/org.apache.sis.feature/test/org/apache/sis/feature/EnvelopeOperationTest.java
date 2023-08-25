@@ -29,8 +29,6 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-
-// Test dependencies
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -38,7 +36,7 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;

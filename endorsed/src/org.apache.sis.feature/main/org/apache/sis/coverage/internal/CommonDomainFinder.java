@@ -25,8 +25,8 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -34,8 +34,8 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.internal.Numerics;
 
 
 /**

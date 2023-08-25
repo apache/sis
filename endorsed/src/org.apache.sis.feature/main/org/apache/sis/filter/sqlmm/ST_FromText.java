@@ -19,7 +19,7 @@ package org.apache.sis.filter.sqlmm;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
 

@@ -32,16 +32,16 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.feature.internal.FeatureUtilities;
-import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;

@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.util.internal.CollectionsExt;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;

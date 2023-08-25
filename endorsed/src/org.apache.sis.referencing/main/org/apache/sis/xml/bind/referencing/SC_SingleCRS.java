@@ -18,9 +18,9 @@ package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.crs.SingleCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Errors;
 
 

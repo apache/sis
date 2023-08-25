@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-
 import org.apache.sis.storage.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
 import org.junit.Test;
 

@@ -18,10 +18,10 @@ package org.apache.sis.gui.internal;
 
 import java.net.URI;
 import java.net.URL;
-import java.io.File;
-import java.nio.file.Path;
-import java.io.IOException;
 import java.net.URISyntaxException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.FileSystemNotFoundException;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +42,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.internal.Strings;
@@ -49,7 +50,6 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.storage.folder.ConcurrentCloser;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.gui.DataViewer;
 
 

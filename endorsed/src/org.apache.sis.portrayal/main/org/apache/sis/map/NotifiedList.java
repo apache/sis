@@ -16,10 +16,12 @@
  */
 package org.apache.sis.map;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.AbstractList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.sis.measure.NumberRange;
+
 
 /**
  * Decorate a CopyOnWriteArrayList and notify changes when elements are added or removed.

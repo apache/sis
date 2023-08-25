@@ -20,10 +20,12 @@ import java.util.Collection;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
-import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.RangeDimension;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.content.AttributeGroup;
 
 
 /**

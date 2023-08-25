@@ -25,7 +25,7 @@ import org.apache.sis.feature.internal.FeatureUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Property;

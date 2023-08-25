@@ -26,9 +26,9 @@ import java.lang.reflect.InaccessibleObjectException;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**

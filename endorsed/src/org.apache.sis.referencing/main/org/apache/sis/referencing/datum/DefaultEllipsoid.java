@@ -19,34 +19,36 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.Objects;
 import javax.measure.Unit;
-import javax.measure.quantity.Length;
 import javax.measure.UnitConverter;
+import javax.measure.quantity.Length;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.xml.bind.referencing.SecondDefiningParameter;
 import org.apache.sis.metadata.internal.ImplementationHelper;
-import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.measure.Units;
 
 import static java.lang.Double.*;
 import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

@@ -26,9 +26,12 @@ import java.util.logging.Level;
 import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.crs.SingleCRS;
@@ -36,13 +39,9 @@ import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -56,10 +55,13 @@ import org.apache.sis.metadata.internal.TemporalUtilities;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.internal.Resources;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 
 
 /**

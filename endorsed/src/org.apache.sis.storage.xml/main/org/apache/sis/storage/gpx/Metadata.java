@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import jakarta.xml.bind.annotation.XmlList;
 import jakarta.xml.bind.annotation.XmlElement;
-
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
@@ -41,20 +40,19 @@ import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
-
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.metadata.simple.SimpleMetadata;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Responsibility;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**

@@ -25,7 +25,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.ValueReference;

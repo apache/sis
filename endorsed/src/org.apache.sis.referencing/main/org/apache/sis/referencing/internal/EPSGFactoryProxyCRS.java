@@ -24,12 +24,14 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ImageCRS;
-import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.crs.ParametricCRS;
 
 
 /**

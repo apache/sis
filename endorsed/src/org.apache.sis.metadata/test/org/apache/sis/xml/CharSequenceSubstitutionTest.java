@@ -18,7 +18,6 @@ package org.apache.sis.xml;
 
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Address;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.InitiativeType;
@@ -34,6 +33,9 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

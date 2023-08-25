@@ -16,11 +16,14 @@
  */
 package org.apache.sis.pending.temporal;
 
-import org.opengis.metadata.Identifier;
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Duration;
 import org.opengis.temporal.RelativePosition;
 import org.opengis.temporal.TemporalGeometricPrimitive;
 import org.opengis.temporal.TemporalPrimitive;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**

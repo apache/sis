@@ -40,18 +40,18 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroup;
 import org.apache.sis.xml.bind.referencing.CC_OperationMethod;
-import org.apache.sis.xml.bind.Context;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Identifiers;
-import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.collection.Containers;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 

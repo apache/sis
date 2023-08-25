@@ -31,7 +31,6 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.DependsOnMethod;
@@ -41,6 +40,9 @@ import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.grid.SequenceType;
 
 
 /**

@@ -24,7 +24,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicDescription;
@@ -39,6 +38,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static java.util.AbstractMap.SimpleEntry;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

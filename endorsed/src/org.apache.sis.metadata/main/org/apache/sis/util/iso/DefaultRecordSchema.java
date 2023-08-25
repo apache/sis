@@ -29,7 +29,6 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.RecordSchema;
 import org.opengis.util.RecordType;
-import org.opengis.feature.AttributeType;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
@@ -38,6 +37,9 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.metadata.simple.SimpleAttributeType;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.util.internal.Strings;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.AttributeType;
 
 
 /**

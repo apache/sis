@@ -22,12 +22,14 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
-import org.opengis.util.ControlledVocabulary;
-import org.opengis.annotation.ResourceBundles;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.Context;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
+import org.opengis.annotation.ResourceBundles;
 
 
 /**

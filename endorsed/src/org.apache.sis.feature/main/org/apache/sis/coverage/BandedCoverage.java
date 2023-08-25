@@ -21,9 +21,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

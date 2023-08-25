@@ -25,14 +25,14 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.IdentifiedType;
 
 

@@ -20,9 +20,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -32,6 +30,10 @@ import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.citation.Responsibility;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 
 
 /**

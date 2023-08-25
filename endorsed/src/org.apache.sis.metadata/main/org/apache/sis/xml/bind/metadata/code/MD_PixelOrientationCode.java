@@ -18,8 +18,10 @@ package org.apache.sis.xml.bind.metadata.code;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.PixelOrientation;
-import org.apache.sis.xml.bind.cat.EnumAdapter;
 import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.xml.bind.cat.EnumAdapter;
 
 
 /**

@@ -33,10 +33,10 @@ import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.provider.TransverseMercatorSouth;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.internal.DoubleDouble;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.parameter.Parameters;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;

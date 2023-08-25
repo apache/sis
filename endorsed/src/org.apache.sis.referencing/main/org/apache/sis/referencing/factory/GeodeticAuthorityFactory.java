@@ -32,14 +32,14 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.iso.AbstractFactory;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.util.iso.AbstractFactory;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

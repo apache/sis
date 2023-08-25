@@ -21,9 +21,9 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.StreamSupport;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -33,10 +33,10 @@ import java.nio.file.StandardCopyOption;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ReadOnlyStorageException;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.BackingStoreException;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 

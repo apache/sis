@@ -24,9 +24,9 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.internal.Identifiers;
-import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.internal.Constants;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 

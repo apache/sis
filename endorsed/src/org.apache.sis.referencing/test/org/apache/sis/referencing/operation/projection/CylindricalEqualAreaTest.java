@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.test.ToleranceModifier;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualAreaSpherical;
@@ -28,6 +27,9 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static java.lang.Double.NaN;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.ToleranceModifier;
 
 
 /**

@@ -19,6 +19,7 @@ package org.apache.sis.storage.shapefile.jdbc.resultset;
 import java.io.File;
 import java.sql.SQLException;
 
+
 /**
  * Exception thrown when there is no more result.
  * @author Marc LE BIHAN

@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 

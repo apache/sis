@@ -21,13 +21,15 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.gazetteer.LocationType;
 
 
 /**

@@ -21,7 +21,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
-import org.opengis.metadata.Identifier;
 import org.opengis.test.Validators;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.DefaultInternationalString;
@@ -32,6 +31,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

@@ -31,13 +31,13 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameSpace;
-import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.AttributeType;

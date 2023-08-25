@@ -29,11 +29,11 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.AbstractFeatureSet;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.FeatureType;
 
 

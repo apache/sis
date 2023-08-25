@@ -33,19 +33,21 @@ import org.apache.sis.referencing.internal.AnnotatedMatrix;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestStep;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.opengis.test.Assert.assertMatrixEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.geoapi;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;

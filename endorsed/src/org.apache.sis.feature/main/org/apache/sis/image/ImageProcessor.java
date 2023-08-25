@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.NavigableMap;
 import java.util.function.Function;
-import java.util.logging.LogRecord;
 import java.util.function.DoubleUnaryOperator;
+import java.util.logging.LogRecord;
 import java.awt.Color;
 import java.awt.Shape;
 import java.awt.Rectangle;
@@ -36,31 +36,29 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRenderedImage;
 import javax.measure.Quantity;
 import org.apache.sis.coverage.Category;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.RegionOfInterest;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.j2d.ImageLayout;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.system.Modules;
-import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-
-// For javadoc
-import org.apache.sis.coverage.RegionOfInterest;
-import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridCoverageProcessor;
 
 
 /**

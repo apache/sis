@@ -23,7 +23,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-
 import org.apache.sis.storage.shapefile.jdbc.*;
 import org.apache.sis.storage.shapefile.jdbc.metadata.DBFDatabaseMetaData;
 import org.apache.sis.storage.shapefile.jdbc.resultset.*;
@@ -316,7 +315,7 @@ public class DBFConnection extends AbstractConnection {
     public Map<String, byte[]> readNextRowAsObjects() {
         return this.byteReader.readNextRowAsObjects();
     }
-    
+
     /**
      * Returns the record number of the last record red.
      * @return The record number.

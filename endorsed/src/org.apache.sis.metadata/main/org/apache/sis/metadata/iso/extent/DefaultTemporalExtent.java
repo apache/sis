@@ -22,8 +22,6 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.geometry.Envelope;
-import org.opengis.temporal.Period;
-import org.opengis.temporal.Instant;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
@@ -33,6 +31,10 @@ import org.apache.sis.metadata.internal.TemporalUtilities;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.temporal.Period;
+import org.opengis.temporal.Instant;
 
 
 /**

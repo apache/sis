@@ -19,8 +19,10 @@ package org.apache.sis.metadata.iso.citation;
 import java.util.Collection;
 import java.util.Iterator;
 import org.opengis.metadata.citation.Telephone;
-import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.TelephoneType;
 
 
 /**

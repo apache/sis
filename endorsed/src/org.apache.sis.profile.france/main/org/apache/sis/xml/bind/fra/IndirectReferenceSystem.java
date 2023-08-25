@@ -18,10 +18,12 @@ package org.apache.sis.xml.bind.fra;
 
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.util.ComparisonMode;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**

@@ -26,7 +26,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
 import org.opengis.filter.DistanceOperator;

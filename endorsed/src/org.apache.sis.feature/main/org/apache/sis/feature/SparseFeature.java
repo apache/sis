@@ -22,12 +22,12 @@ import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
-import org.apache.sis.util.internal.CloneAccess;
-import org.apache.sis.util.internal.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.util.internal.CloneAccess;
+import org.apache.sis.util.internal.Cloner;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Property;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.FeatureAssociation;

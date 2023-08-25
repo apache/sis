@@ -19,10 +19,10 @@ package org.apache.sis.storage.shapefile.jdbc.sql;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.internal.AutoChecker;
 import org.apache.sis.storage.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.storage.shapefile.jdbc.resultset.*;
+
 
 /**
  * Base class for clause resolver.

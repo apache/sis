@@ -21,9 +21,11 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Contact;
+import org.opengis.metadata.identification.BrowseGraphic;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Individual;
 import org.opengis.metadata.citation.Organisation;
-import org.opengis.metadata.identification.BrowseGraphic;
 
 
 /**

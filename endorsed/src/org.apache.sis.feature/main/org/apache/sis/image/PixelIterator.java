@@ -18,6 +18,7 @@ package org.apache.sis.image;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.NoSuchElementException;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.nio.FloatBuffer;
@@ -36,12 +37,10 @@ import java.awt.image.ComponentSampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
-import java.util.NoSuchElementException;
-import org.opengis.coverage.grid.SequenceType;
-import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.feature.internal.Resources;
@@ -49,6 +48,9 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.util.internal.Numerics.ceilDiv;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.grid.SequenceType;
 
 
 /**

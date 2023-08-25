@@ -17,9 +17,9 @@
 package org.apache.sis.xml.bind.cat;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
-import org.apache.sis.util.iso.Types;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.util.iso.Types;
 import org.opengis.util.ControlledVocabulary;
 
 

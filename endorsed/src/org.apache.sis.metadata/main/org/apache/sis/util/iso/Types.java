@@ -28,10 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.io.IOException;
-import org.opengis.annotation.ResourceBundles;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
-import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
@@ -48,6 +46,10 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.CodeLists;
 import org.apache.sis.system.Modules;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.annotation.ResourceBundles;
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

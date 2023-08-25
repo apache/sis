@@ -24,12 +24,14 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
-import org.opengis.referencing.cs.ParametricCS;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.apache.sis.referencing.CRS;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.cs.ParametricCS;
 
 
 /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter.internal;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Instant;
 import java.util.Map;
 import java.util.Arrays;
@@ -25,8 +26,6 @@ import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.simple.SimpleCitation;
-
-// Branch-dependent imports
 import org.opengis.filter.*;
 import org.opengis.filter.capability.FilterCapabilities;
 

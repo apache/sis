@@ -18,11 +18,13 @@ package org.apache.sis.metadata;
 
 import java.util.Iterator;
 import java.util.Collection;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.metadata.ValueExistencePolicy.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

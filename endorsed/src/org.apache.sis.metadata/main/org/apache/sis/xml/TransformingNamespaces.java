@@ -19,8 +19,8 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 
 
 /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso;
 
+// Specific to the geoapi-4.0 branch:
 import java.util.Date;
 import java.util.Locale;
 import java.util.List;
@@ -23,9 +24,9 @@ import java.util.Set;
 import java.util.Map;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.MissingResourceException;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
-import java.util.MissingResourceException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.StringWriter;
@@ -52,9 +53,10 @@ import org.apache.sis.metadata.iso.extent.*;
 import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
-import org.apache.sis.util.iso.DefaultRecordSchema;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
+import org.apache.sis.util.iso.DefaultRecordSchema;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.NilReason;
@@ -63,7 +65,6 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.metadata.xml.TestUsingFile;
-import org.apache.sis.util.iso.Names;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

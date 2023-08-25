@@ -16,6 +16,7 @@
  */
 package org.apache.sis.portrayal;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.sis.storage.Aggregate;

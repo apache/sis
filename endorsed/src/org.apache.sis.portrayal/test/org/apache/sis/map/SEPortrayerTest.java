@@ -16,6 +16,7 @@
  */
 package org.apache.sis.map;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -37,39 +38,36 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.storage.FeatureQuery;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.style.se1.FeatureTypeStyle;
 import org.apache.sis.style.se1.Symbology;
-import org.apache.sis.storage.FeatureQuery;
+import org.apache.sis.style.se1.StyleFactory;
+import org.apache.sis.style.se1.Symbolizer;
+import org.apache.sis.style.se1.SemanticType;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.portrayal.MapLayers;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
-import org.apache.sis.style.se1.StyleFactory;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.style.se1.Symbolizer;
-import org.apache.sis.style.se1.SemanticType;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
-
 import org.junit.Test;
 
 import static org.junit.Assert.*;

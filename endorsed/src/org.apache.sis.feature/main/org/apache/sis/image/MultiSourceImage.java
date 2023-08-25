@@ -17,8 +17,8 @@
 package org.apache.sis.image;
 
 import java.awt.Point;
-import java.util.Objects;
 import java.awt.Rectangle;
+import java.util.Objects;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;

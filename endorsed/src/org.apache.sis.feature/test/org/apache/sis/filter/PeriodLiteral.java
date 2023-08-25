@@ -18,10 +18,9 @@ package org.apache.sis.filter;
 
 import java.util.Date;
 import java.io.Serializable;
-import org.opengis.metadata.Identifier;
 import org.apache.sis.test.TestUtilities;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
@@ -31,6 +30,9 @@ import org.opengis.temporal.RelativePosition;
 import org.opengis.temporal.TemporalPosition;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.temporal.TemporalGeometricPrimitive;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**

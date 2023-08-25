@@ -19,11 +19,13 @@ package org.apache.sis.metadata.iso.quality;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
-import org.opengis.metadata.quality.TemporalQuality;
 import org.opengis.metadata.quality.TemporalValidity;
 import org.opengis.metadata.quality.TemporalConsistency;
 import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
 import org.opengis.metadata.quality.TemporalAccuracy;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.quality.TemporalQuality;
 
 
 /**

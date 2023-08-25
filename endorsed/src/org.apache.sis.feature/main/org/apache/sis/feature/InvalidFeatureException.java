@@ -19,7 +19,7 @@ package org.apache.sis.feature;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.LocalizedException;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.InvalidPropertyValueException;
 

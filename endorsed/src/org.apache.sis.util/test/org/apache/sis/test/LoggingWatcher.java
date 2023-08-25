@@ -24,10 +24,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 
 /**

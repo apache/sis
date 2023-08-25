@@ -21,17 +21,19 @@ import java.util.HashMap;
 import java.util.Collection;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.Identifier;
-import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.internal.AbstractMap;
 import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.util.Deprecable;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**

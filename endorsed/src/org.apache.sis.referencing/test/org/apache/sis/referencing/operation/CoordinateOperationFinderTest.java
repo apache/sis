@@ -38,18 +38,21 @@ import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.OperationNotFoundException;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.measure.Units;
 
@@ -57,14 +60,9 @@ import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.util.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
 
-// Test dependencies
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.opengis.test.Assert;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -72,6 +70,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.Assert;
 
 
 /**

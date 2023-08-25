@@ -21,10 +21,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import java.sql.*;
-
 import org.apache.sis.storage.shapefile.jdbc.AbstractTestBaseForInternalJDBC;
 import org.apache.sis.storage.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
 import org.junit.Test;
+
 
 /**
  * Testing of the WHERE clause in SQL Statements.

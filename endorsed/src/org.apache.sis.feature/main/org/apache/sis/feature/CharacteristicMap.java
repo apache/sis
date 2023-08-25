@@ -25,7 +25,7 @@ import org.apache.sis.util.internal.AbstractMap;
 import org.apache.sis.util.internal.AbstractMapEntry;
 import org.apache.sis.feature.internal.Resources;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.InvalidPropertyValueException;

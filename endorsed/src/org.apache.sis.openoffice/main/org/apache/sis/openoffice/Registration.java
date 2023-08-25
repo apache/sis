@@ -21,7 +21,6 @@ import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.registry.XRegistryKey;

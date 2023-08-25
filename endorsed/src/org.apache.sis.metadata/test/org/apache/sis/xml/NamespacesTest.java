@@ -20,7 +20,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 

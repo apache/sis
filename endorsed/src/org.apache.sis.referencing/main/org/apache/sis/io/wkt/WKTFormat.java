@@ -38,7 +38,6 @@ import java.text.ParseException;
 import javax.measure.Unit;
 import org.opengis.util.Factory;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CSFactory;
@@ -55,8 +54,11 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.StandardDateFormat;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

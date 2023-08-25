@@ -32,10 +32,10 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.AbstractDirectPosition;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
-import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
@@ -46,7 +46,7 @@ import org.apache.sis.util.internal.Numerics;
 
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 
 

@@ -22,15 +22,12 @@ import java.util.Locale;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Party;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultAddress;
 import org.apache.sis.metadata.iso.citation.DefaultContact;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
@@ -43,6 +40,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Party;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.citation.Responsibility;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**

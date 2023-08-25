@@ -21,8 +21,10 @@ import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertMatrixEquals;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

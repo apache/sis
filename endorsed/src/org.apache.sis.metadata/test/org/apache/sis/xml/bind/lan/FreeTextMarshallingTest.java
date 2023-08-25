@@ -20,8 +20,8 @@ import java.util.Locale;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.DefaultInternationalString;
-import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 

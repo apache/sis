@@ -19,12 +19,14 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import org.apache.sis.util.collection.Containers;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Properties;
 import java.io.InputStream;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
 

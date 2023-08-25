@@ -33,6 +33,8 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.gui.internal.Styles;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Feature;
 

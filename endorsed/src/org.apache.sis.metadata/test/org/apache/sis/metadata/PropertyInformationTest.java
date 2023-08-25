@@ -18,12 +18,11 @@ package org.apache.sis.metadata;
 
 import java.util.Locale;
 import org.opengis.util.InternationalString;
-import org.opengis.annotation.Obligation;
 import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -39,6 +38,9 @@ import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.annotation.Obligation;
 
 
 /**

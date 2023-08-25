@@ -36,9 +36,9 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

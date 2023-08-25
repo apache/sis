@@ -41,5 +41,5 @@ import jakarta.xml.bind.annotation.XmlSchema;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.apache.sis.xml.bind.gco.InternationalStringConverter;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.gco.InternationalStringConverter;

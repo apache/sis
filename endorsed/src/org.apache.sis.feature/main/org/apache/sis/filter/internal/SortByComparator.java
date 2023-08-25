@@ -25,7 +25,7 @@ import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.SortBy;
 import org.opengis.filter.SortProperty;
 import org.opengis.filter.ValueReference;

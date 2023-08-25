@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cql;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +24,7 @@ import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.SortProperty;
+
 
 /**
  *

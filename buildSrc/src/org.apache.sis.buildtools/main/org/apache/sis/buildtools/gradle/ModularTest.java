@@ -25,8 +25,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.module.ModuleDescriptor;
-import org.gradle.api.tasks.testing.Test;
 import org.gradle.api.Project;
+import org.gradle.api.tasks.testing.Test;
 
 
 /**

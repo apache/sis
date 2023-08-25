@@ -25,8 +25,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

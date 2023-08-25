@@ -27,18 +27,20 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.test.dataset.ContentVerifier;
-import org.opengis.test.dataset.TestData;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.base.TestCase;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.dataset.ContentVerifier;
+import org.opengis.test.dataset.TestData;
 
 
 /**

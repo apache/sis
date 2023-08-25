@@ -16,10 +16,11 @@
  */
 package org.apache.sis.xml.bind.metadata.code;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.parameter.ParameterDirection;
-import org.apache.sis.xml.bind.cat.EnumAdapter;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.cat.EnumAdapter;
 
 
 /**

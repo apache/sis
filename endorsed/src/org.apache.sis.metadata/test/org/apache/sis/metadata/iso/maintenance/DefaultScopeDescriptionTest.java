@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.maintenance;
 
-import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
@@ -25,6 +24,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.util.SimpleInternationalString;
 
 
 /**

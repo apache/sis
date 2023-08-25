@@ -18,14 +18,12 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.List;
 import java.util.HashSet;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Completeness;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.coverage.grid.RectifiedGrid;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
@@ -43,6 +41,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.List;
+import org.opengis.coverage.grid.RectifiedGrid;
 
 
 /**

@@ -24,7 +24,7 @@ import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.Expression;

@@ -29,18 +29,18 @@ import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.SetOfUnknownSize;
 import org.apache.sis.util.internal.AbstractIterator;
 import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.util.UnconvertibleObjectException;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
 
 

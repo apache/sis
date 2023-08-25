@@ -17,6 +17,8 @@
 package org.apache.sis.filter.internal;
 
 import java.util.Collection;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 import org.opengis.filter.capability.AvailableFunction;
 

@@ -26,7 +26,6 @@ import org.apache.sis.referencing.operation.provider.LambertConformal1SP;
 import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.LambertConformalWest;
 import org.apache.sis.referencing.operation.provider.LambertConformalBelgium;
-import org.apache.sis.referencing.operation.provider.LambertConformalMichigan;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
@@ -38,6 +37,9 @@ import static java.lang.StrictMath.*;
 import static java.lang.Double.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.referencing.operation.provider.LambertConformalMichigan;
 
 
 /**

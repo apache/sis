@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.bind.metadata;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.identification.AssociatedResource;
 import org.apache.sis.metadata.iso.identification.DefaultAssociatedResource;

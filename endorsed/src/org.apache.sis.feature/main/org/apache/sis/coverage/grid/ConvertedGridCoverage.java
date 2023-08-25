@@ -32,7 +32,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 
 

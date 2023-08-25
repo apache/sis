@@ -29,7 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.referencing.crs.AbstractCRS.isBaseCRS;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.cs.ParametricCS;
 import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.datum.ParametricDatum;

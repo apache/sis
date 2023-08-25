@@ -27,18 +27,20 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.quality.EvaluationMethod;
 import org.opengis.metadata.quality.EvaluationMethodType;
-import org.opengis.metadata.quality.DataEvaluation;
-import org.opengis.metadata.quality.AggregationDerivation;
 import org.apache.sis.system.Semaphores;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.quality.EvaluationMethod;
+import org.opengis.metadata.quality.DataEvaluation;
+import org.opengis.metadata.quality.AggregationDerivation;
 
 
 /**

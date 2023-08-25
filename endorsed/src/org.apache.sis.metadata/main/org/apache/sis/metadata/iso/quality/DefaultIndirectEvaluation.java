@@ -20,8 +20,10 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.quality.IndirectEvaluation;
 import org.apache.sis.util.iso.Types;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.quality.IndirectEvaluation;
 
 
 /**

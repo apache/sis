@@ -2,6 +2,7 @@ package org.apache.sis.storage.shapefile;
 
 import org.apache.sis.storage.DataStoreException;
 
+
 /**
  * Thrown when the DBF file format seems to be invalid.
  *

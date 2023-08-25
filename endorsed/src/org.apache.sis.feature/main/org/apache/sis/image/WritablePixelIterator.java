@@ -23,8 +23,10 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.feature.internal.Resources;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.grid.SequenceType;
 
 
 /**

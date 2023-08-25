@@ -22,7 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Modifier;
-
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;

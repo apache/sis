@@ -21,11 +21,11 @@ import java.util.function.Consumer;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.apache.sis.storage.sql.SQLStoreProvider;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.internal.Strings.trimOrNull;
 

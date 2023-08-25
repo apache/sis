@@ -37,14 +37,14 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.ArgumentCheckByAssertion;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.referencing.CRS;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.PointOutsideCoverageException;
 
 

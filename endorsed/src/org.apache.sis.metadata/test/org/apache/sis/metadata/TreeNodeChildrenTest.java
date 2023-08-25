@@ -19,7 +19,6 @@ package org.apache.sis.metadata;
 import java.util.Date;
 import java.util.Random;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import org.opengis.metadata.citation.Citation;
@@ -38,6 +37,9 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-4.0 branch:
+import java.util.Set;
 
 
 /**

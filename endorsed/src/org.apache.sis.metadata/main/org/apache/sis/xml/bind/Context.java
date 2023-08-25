@@ -29,18 +29,18 @@ import java.util.logging.LogRecord;
 import java.util.logging.Filter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
-import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.system.Semaphores;
-import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.xml.bind.gco.PropertyType;
+import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.system.Semaphores;
+import org.apache.sis.system.Loggers;
 
 
 /**

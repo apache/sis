@@ -26,9 +26,10 @@ import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 
-// Branch-dependent imports
-import org.opengis.feature.AttributeType;
 import org.apache.sis.util.iso.Names;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.AttributeType;
 
 
 /**

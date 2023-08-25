@@ -18,9 +18,9 @@ package org.apache.sis.measure;
 
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.IncommensurableException;
 import javax.measure.quantity.*;
 import javax.measure.quantity.Angle;
-import javax.measure.IncommensurableException;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

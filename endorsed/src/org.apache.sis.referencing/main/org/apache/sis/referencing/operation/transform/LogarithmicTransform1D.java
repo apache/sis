@@ -21,10 +21,10 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.math.MathFunctions;
 
 
 /**

@@ -30,8 +30,8 @@ import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

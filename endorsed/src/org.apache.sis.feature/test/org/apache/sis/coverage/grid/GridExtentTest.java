@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.AxisDirection;
@@ -40,11 +39,15 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
-import static org.opengis.test.Assert.assertMatrixEquals;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.PointOutsideCoverageException;
+
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

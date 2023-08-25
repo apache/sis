@@ -23,7 +23,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
 
 

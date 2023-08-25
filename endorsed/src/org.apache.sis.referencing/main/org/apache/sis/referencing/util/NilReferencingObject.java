@@ -18,11 +18,13 @@ package org.apache.sis.referencing.util;
 
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.resources.Vocabulary;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**

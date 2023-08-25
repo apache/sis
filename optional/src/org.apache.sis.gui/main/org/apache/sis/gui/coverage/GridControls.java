@@ -24,8 +24,8 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.internal.Styles;
 

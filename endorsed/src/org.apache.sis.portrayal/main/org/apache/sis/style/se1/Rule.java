@@ -25,10 +25,10 @@ import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
 
 

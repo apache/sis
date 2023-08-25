@@ -22,8 +22,8 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;

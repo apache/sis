@@ -27,13 +27,13 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.feature.internal.Resources;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.PropertyNotFoundException;

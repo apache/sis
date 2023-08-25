@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
@@ -35,7 +35,7 @@ import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 
 

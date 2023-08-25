@@ -27,9 +27,9 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.test.Validators;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultConversionTest;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.measure.Units;
@@ -39,10 +39,12 @@ import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
-import static org.opengis.test.Assert.assertMatrixEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

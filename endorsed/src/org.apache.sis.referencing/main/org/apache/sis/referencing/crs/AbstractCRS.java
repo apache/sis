@@ -25,7 +25,6 @@ import javax.measure.Unit;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -33,11 +32,11 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.util.ComparisonMode;
@@ -47,6 +46,9 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

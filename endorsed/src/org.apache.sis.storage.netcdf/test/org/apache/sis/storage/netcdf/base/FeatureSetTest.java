@@ -16,14 +16,15 @@
  */
 package org.apache.sis.storage.netcdf.base;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Optional;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.DataStore;
@@ -34,7 +35,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;

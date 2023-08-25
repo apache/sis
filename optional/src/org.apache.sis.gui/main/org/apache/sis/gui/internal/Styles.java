@@ -29,8 +29,8 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 

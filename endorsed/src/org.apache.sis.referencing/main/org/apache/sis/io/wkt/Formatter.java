@@ -33,9 +33,7 @@ import java.lang.reflect.Array;
 import java.math.RoundingMode;
 import javax.measure.Unit;
 import javax.measure.Quantity;
-
 import org.opengis.util.InternationalString;
-import org.opengis.util.ControlledVocabulary;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
@@ -53,12 +51,14 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.geometry.coordinate.Position;
 import org.opengis.geometry.Envelope;
-
+import org.opengis.geometry.coordinate.Position;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.measure.Range;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.util.iso.Types;
+import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
@@ -66,6 +66,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.IntegerList;
@@ -77,17 +78,16 @@ import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.metadata.simple.SimpleExtent;
 import org.apache.sis.metadata.internal.Resources;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.util.WKTUtilities;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.geometry.AbstractDirectPosition;
 import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.measure.UnitFormat;
-import org.apache.sis.measure.Range;
-import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.math.Vector;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

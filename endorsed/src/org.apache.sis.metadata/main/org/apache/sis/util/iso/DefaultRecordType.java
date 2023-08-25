@@ -34,17 +34,19 @@ import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
-import org.opengis.util.NameFactory;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.metadata.internal.RecordSchemaSIS;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.NameFactory;
 
 
 /**

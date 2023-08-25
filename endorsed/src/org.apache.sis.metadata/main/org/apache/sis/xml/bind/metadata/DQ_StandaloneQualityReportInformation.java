@@ -17,9 +17,11 @@
 package org.apache.sis.xml.bind.metadata;
 
 import jakarta.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.quality.StandaloneQualityReportInformation;
 import org.apache.sis.metadata.iso.quality.DefaultEvaluationReportInformation;
 import org.apache.sis.xml.bind.gco.PropertyType;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.quality.StandaloneQualityReportInformation;
 
 
 /**

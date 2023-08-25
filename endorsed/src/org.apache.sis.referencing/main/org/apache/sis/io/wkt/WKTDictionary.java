@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.function.Predicate;
+import java.util.function.Consumer;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.io.LineNumberReader;
@@ -31,30 +32,31 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.ParsePosition;
-import java.util.function.Consumer;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.FrequencySortedSet;
-import org.apache.sis.util.SimpleInternationalString;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

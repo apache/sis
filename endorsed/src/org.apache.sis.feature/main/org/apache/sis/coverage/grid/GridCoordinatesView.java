@@ -17,9 +17,11 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
+import org.apache.sis.util.ArgumentChecks;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.grid.GridCoordinates;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**

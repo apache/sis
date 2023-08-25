@@ -26,14 +26,16 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.internal.ExcludedSet;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.iso.Types;
-import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.util.iso.Types;
 
 
 /**

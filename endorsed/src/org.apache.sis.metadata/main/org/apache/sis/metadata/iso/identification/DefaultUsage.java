@@ -23,15 +23,17 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.identification.Usage;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
 import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

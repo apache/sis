@@ -16,15 +16,11 @@
  */
 package org.apache.sis.metadata.iso;
 
-import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.Iterator;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.Obligation;
 import org.opengis.metadata.Datatype;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
@@ -40,6 +36,14 @@ import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.AbstractSet;
+import java.util.Iterator;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.annotation.Obligation;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

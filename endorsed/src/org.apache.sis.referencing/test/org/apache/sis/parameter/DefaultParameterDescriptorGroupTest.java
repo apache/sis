@@ -19,7 +19,6 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
-import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.util.internal.Constants;
@@ -34,6 +33,9 @@ import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.opengis.referencing.IdentifiedObject.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.parameter.ParameterDirection;
 
 
 /**

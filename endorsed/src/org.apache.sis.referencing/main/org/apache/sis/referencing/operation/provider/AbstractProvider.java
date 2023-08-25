@@ -22,13 +22,14 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.SingleOperation;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Latitude;
@@ -40,11 +41,12 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.referencing.internal.Resources;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**

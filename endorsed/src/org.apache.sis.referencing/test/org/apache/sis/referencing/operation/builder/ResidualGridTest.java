@@ -25,6 +25,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;
 
 

@@ -29,8 +29,10 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertMatrixEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

@@ -24,7 +24,6 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
@@ -33,6 +32,9 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 
 
 /**

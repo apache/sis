@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cql;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Instant;
 import java.text.ParseException;
 import org.locationtech.jts.geom.Coordinate;

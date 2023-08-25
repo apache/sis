@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatumType;

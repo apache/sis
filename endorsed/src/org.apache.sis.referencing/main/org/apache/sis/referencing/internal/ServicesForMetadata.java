@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
-
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
@@ -34,7 +33,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
@@ -43,7 +41,6 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -65,14 +62,17 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.system.Modules;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.Utilities;
 
 import static java.util.logging.Logger.getLogger;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

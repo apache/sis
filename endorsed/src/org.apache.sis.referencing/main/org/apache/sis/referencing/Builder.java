@@ -33,9 +33,9 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.referencing.internal.DeprecatedName;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;

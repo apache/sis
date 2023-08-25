@@ -25,10 +25,12 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.KeywordType;
-import org.opengis.metadata.identification.KeywordClass;
 import org.apache.sis.xml.bind.metadata.MD_KeywordClass;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.identification.KeywordClass;
 
 
 /**

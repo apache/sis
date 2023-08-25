@@ -20,7 +20,7 @@ import java.util.Map;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 
 

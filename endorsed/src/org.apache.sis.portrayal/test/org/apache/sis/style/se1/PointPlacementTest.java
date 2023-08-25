@@ -17,9 +17,10 @@
 package org.apache.sis.style.se1;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 

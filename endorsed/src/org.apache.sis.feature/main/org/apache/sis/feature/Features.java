@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
@@ -31,7 +30,8 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.feature.internal.Resources;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;

@@ -21,7 +21,6 @@ import java.util.Locale;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
-
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.GO_CharacterString;

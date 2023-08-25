@@ -20,15 +20,14 @@ import java.util.Set;
 import java.util.List;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
-import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.measure.Units;
@@ -37,6 +36,9 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**

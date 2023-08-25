@@ -28,7 +28,6 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.xml.bind.Context;
@@ -38,6 +37,9 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.internal.CollectionsExt;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.TelephoneType;
 
 
 /**

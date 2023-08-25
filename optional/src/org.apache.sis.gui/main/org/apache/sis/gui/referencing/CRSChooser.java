@@ -59,6 +59,7 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
@@ -67,9 +68,8 @@ import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**

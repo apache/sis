@@ -21,9 +21,11 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.quality.Description;
 import org.opengis.metadata.quality.BasicMeasure;
-import org.apache.sis.xml.Namespaces;
 
 
 /**

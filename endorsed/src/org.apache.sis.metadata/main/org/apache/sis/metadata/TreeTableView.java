@@ -27,9 +27,9 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.internal.TreeFormatCustomization;
 import org.apache.sis.xml.bind.SpecializedIdentifier;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
-import org.apache.sis.util.internal.TreeFormatCustomization;
 import org.apache.sis.system.Semaphores;
 
 

@@ -22,9 +22,9 @@ import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.feature.AbstractOperation;
-import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.IdentifiedType;

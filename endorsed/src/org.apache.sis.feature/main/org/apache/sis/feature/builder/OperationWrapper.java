@@ -19,7 +19,7 @@ package org.apache.sis.feature.builder;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.PropertyType;
 
 

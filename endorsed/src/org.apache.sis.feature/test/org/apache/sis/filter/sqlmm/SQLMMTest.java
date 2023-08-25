@@ -22,20 +22,20 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.apache.sis.geometry.wrapper.jts.JTS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Literal;
-import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.FilterFactory;
+import org.opengis.feature.Feature;
 
 
 /**

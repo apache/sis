@@ -24,11 +24,13 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
-import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.xml.Namespaces;
 
 
 /**

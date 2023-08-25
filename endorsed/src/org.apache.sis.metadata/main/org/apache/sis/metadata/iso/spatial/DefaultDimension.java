@@ -25,8 +25,8 @@ import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.xml.bind.gco.GO_Measure;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.ArgumentChecks;
 

@@ -24,7 +24,6 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.content.Band;
-import org.opengis.metadata.content.SampleDimension;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.content.RangeElementDescription;
@@ -38,6 +37,9 @@ import org.apache.sis.xml.bind.gco.GO_RecordType;
 import org.apache.sis.xml.bind.metadata.MI_RangeElementDescription;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.content.SampleDimension;
 
 
 /**

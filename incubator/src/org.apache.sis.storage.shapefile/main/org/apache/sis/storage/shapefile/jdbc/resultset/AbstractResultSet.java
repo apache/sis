@@ -23,7 +23,6 @@ import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
-
 import org.apache.sis.storage.shapefile.jdbc.AbstractJDBC;
 
 

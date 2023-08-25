@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
 
 

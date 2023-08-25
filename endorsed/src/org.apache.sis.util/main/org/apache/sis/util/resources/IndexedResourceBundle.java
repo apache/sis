@@ -35,7 +35,6 @@ import java.util.logging.LogRecord;
 import java.lang.reflect.Modifier;
 import javax.measure.Unit;
 import org.opengis.util.CodeList;
-import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
@@ -52,6 +51,8 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

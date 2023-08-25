@@ -28,6 +28,8 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.grid.SequenceType;
 
 

@@ -24,8 +24,8 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.TreeTable;
 
 
 /**

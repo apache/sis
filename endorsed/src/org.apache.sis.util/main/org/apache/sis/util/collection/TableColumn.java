@@ -22,8 +22,8 @@ import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**

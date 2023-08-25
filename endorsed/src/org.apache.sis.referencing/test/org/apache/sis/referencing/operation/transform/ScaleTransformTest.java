@@ -21,14 +21,15 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.util.internal.DoubleDouble;
-
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.opengis.test.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.Assert;
 
 
 /**

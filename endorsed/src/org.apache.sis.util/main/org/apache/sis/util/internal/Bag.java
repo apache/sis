@@ -16,7 +16,6 @@
  */
 package org.apache.sis.util.internal;
 
-
 import java.util.Objects;
 import java.util.AbstractCollection;
 import org.apache.sis.util.ArraysExt;

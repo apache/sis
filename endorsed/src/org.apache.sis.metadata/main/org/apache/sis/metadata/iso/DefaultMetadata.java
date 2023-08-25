@@ -36,7 +36,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.MetadataExtensionInformation;
 import org.opengis.metadata.PortrayalCatalogueReference;
@@ -45,7 +44,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
@@ -60,6 +58,7 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.Emptiable;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -71,19 +70,24 @@ import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.xml.bind.lan.LocaleAdapter;
 import org.apache.sis.xml.bind.lan.OtherLocales;
 import org.apache.sis.xml.bind.lan.PT_Locale;
-import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.math.FunctionProperty;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.MetadataScope;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

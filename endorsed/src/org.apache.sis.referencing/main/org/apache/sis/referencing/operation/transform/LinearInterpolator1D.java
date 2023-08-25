@@ -27,8 +27,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.referencing.operation.provider.Interpolation1D;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 

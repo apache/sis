@@ -28,12 +28,12 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.storage.shapefile.jdbc.metadata.DBFResultSetMataData;
 import org.apache.sis.storage.shapefile.jdbc.sql.*;
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
+
 
 /**
  * A ResultSet based on a record.
@@ -48,10 +48,10 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
     /** Indicates that the last result set record matching conditions has already been returned, and a further call of next() shall throw a "no more record" exception. */
     private boolean lastResultSetRecordAlreadyReturned;
-    
+
     /** The record number of this record. */
     private int recordNumber;
-    
+
     /**
      * Constructs a result set.
      * @param stmt Parent statement.
@@ -396,7 +396,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public Object getObject(String columnLabel) throws SQLConnectionClosedException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
         int index = -1;
-        
+
         try {
             index = findColumn(columnLabel);
             return getObject(index);
@@ -414,7 +414,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public int getRowNum()  {
         return this.recordNumber;
     }
-    
+
     /**
      * @see java.sql.ResultSet#getShort(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
@@ -469,7 +469,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         // If a non null value has been readed, convert it to the wished Charset (provided one has been given).
         DBFConnection cnt = (DBFConnection)((DBFStatement)getStatement()).getConnection();
         Charset charset = cnt.getCharset();
-        
+
         if (charset == null) {
             return new String(bytes);
         }
@@ -582,7 +582,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
         try(DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(columnLabel, this.sql)) {
             String textValue = getString(columnLabel);
-            
+
             if (textValue == null) {
                 return null;
             }

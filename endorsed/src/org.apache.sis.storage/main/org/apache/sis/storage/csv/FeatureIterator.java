@@ -26,7 +26,7 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.collection.BackingStoreException;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;

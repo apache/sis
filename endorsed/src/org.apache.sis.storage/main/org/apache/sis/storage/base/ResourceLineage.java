@@ -18,7 +18,6 @@ package org.apache.sis.storage.base;
 
 import java.util.Collection;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -32,6 +31,9 @@ import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.MetadataScope;
 
 
 /**

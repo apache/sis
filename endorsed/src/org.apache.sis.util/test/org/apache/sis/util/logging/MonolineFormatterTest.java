@@ -18,8 +18,8 @@ package org.apache.sis.util.logging;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

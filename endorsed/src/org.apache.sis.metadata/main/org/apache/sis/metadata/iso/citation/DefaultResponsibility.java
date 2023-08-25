@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.code.CI_RoleCode;
 
-// Branch-specific imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
 

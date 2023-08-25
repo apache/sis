@@ -25,11 +25,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
-
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
-import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;

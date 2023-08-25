@@ -36,8 +36,10 @@ import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.cs.AxisDirection.*;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
-import static org.opengis.annotation.Specification.ISO_19162;
 import static org.apache.sis.util.CharSequences.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.annotation.Specification.ISO_19162;
 
 
 /**

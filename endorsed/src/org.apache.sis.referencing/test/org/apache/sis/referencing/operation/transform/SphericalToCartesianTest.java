@@ -22,11 +22,12 @@ import org.opengis.referencing.operation.MathTransformFactory;
 
 import static java.lang.StrictMath.*;
 
-// Test dependencies
-import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.referencing.TransformTestCase;
 
 
 /**

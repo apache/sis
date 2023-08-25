@@ -20,9 +20,9 @@ import java.util.Collection;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.MetadataExtensionInformation;
+import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.xml.Namespaces;
 
 

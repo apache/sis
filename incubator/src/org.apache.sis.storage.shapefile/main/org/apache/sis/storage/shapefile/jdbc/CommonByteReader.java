@@ -21,8 +21,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Objects;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.internal.AutoChecker;
+
 
 /**
  * Common byte reader.

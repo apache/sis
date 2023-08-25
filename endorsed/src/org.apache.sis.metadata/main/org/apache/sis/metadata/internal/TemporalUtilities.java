@@ -18,14 +18,16 @@ package org.apache.sis.metadata.internal;
 
 import java.util.Date;
 import java.util.ServiceLoader;
-import org.opengis.temporal.Instant;
-import org.opengis.temporal.Period;
-import org.opengis.temporal.TemporalFactory;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Reflect;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.pending.temporal.DefaultTemporalFactory;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.temporal.Instant;
+import org.opengis.temporal.Period;
+import org.opengis.temporal.TemporalFactory;
 
 
 /**

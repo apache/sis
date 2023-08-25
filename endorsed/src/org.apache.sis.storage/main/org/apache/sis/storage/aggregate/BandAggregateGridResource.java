@@ -28,18 +28,18 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.coverage.internal.MultiSourceArgument;
 import org.apache.sis.coverage.internal.RangeArgument;
-import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**

@@ -31,7 +31,6 @@ import java.util.logging.Level;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opengis.util.NameSpace;
-import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.GeometryLibrary;
@@ -49,6 +48,9 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import ucar.nc2.constants.CF;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.NameFactory;
 
 
 /**

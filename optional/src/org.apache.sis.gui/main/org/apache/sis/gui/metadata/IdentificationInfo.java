@@ -42,7 +42,6 @@ import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.distribution.Format;
-import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -60,6 +59,9 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Vocabulary;
 
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.util.InternationalString;
 
 
 /**

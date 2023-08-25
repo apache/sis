@@ -21,13 +21,15 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.code.DS_AssociationTypeCode;
 import org.apache.sis.xml.bind.metadata.code.DS_InitiativeTypeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.identification.AssociatedResource;
 
 
 /**

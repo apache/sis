@@ -61,6 +61,6 @@ import jakarta.xml.bind.annotation.XmlNsForm;
 import jakarta.xml.bind.annotation.XmlSchema;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.gco.InternationalStringConverter;
 import org.apache.sis.xml.bind.gco.UnitAdapter;
-import org.apache.sis.xml.Namespaces;

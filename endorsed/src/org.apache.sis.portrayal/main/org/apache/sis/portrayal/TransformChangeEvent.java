@@ -26,8 +26,8 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 
 
 /**

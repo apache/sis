@@ -26,15 +26,14 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.metadata.internal.ImplementationHelper;
@@ -44,6 +43,9 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

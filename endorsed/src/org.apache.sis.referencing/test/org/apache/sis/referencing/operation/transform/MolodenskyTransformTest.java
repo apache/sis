@@ -17,40 +17,43 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
-import org.apache.sis.referencing.operation.provider.AbridgedMolodensky;
-import org.apache.sis.referencing.operation.provider.Molodensky;
-import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.math.StatisticsFormat;
-import org.apache.sis.math.Statistics;
-
-import static java.lang.StrictMath.*;
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
-
-// Test dependencies
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
+import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
+import org.apache.sis.referencing.util.Formulas;
+
+import static java.lang.StrictMath.*;
+
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.io.IOException;
+import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.referencing.operation.provider.AbridgedMolodensky;
+import org.apache.sis.math.StatisticsFormat;
+import org.apache.sis.math.Statistics;
+
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
+
 import org.apache.sis.test.TestCase;
 import org.opengis.test.CalculationType;
 import org.opengis.test.ToleranceModifier;
 import org.opengis.test.ToleranceModifiers;
 import org.opengis.test.referencing.ParameterizedTransformTest;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

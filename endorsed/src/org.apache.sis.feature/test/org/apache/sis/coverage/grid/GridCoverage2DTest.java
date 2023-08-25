@@ -26,7 +26,6 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.datum.PixelInCell;
@@ -45,6 +44,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**

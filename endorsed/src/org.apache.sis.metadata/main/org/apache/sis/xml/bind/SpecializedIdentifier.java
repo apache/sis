@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.metadata.iso.citation.Citations;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
 
 

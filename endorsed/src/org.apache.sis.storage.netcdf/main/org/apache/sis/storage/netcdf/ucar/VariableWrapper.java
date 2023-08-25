@@ -40,20 +40,20 @@ import ucar.nc2.dataset.EnhanceScaleMissingUnsigned;
 import ucar.nc2.units.SimpleUnit;
 import ucar.nc2.units.DateUnit;
 import ucar.nc2.constants._Coordinate;
+import ucar.nc2.constants.AxisType;
+import ucar.nc2.constants.CF;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.DataType;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.GridAdjustment;
 import org.apache.sis.util.internal.Strings;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-import ucar.nc2.constants.AxisType;
-import ucar.nc2.constants.CF;
 
 
 /**

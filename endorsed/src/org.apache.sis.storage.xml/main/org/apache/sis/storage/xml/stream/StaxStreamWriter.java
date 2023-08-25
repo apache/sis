@@ -34,7 +34,7 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 

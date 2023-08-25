@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 
 

@@ -18,8 +18,8 @@ package org.apache.sis.referencing.internal;
 
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.ArraysExt;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

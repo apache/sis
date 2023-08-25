@@ -24,19 +24,21 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

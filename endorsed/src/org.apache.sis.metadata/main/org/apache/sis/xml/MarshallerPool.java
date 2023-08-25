@@ -25,6 +25,8 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Reflect;
 import org.apache.sis.system.Configuration;
@@ -34,8 +36,6 @@ import org.apache.sis.xml.bind.AdapterReplacement;
 import org.apache.sis.xml.bind.TypeRegistration;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.CharSequences;
 
 
 /**

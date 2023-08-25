@@ -29,14 +29,14 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**

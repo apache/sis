@@ -30,10 +30,10 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
 
 

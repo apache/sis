@@ -34,27 +34,29 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
-import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.xml.bind.referencing.SC_CRS;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.crs.ParametricCRS;
 
 
 /**

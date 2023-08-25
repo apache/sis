@@ -18,8 +18,8 @@ package org.apache.sis.storage.shapefile.internal;
 
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
-
 import org.apache.sis.storage.shapefile.ShapeTypeEnum;
+
 
 /**
  * Shapefile Descriptor.

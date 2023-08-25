@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.wkt.Formatter;
@@ -30,6 +29,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.geometry.MismatchedReferenceSystemException;
 
 
 /**

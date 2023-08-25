@@ -19,8 +19,8 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
+import org.opengis.metadata.citation.Citation;
 
 
 /**

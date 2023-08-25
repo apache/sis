@@ -26,8 +26,10 @@ import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
-import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.bind.Context;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
 

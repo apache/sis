@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
-
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.system.ReferenceQueueConsumer;

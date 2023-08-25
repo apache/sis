@@ -30,7 +30,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.InvalidPropertyValueException;

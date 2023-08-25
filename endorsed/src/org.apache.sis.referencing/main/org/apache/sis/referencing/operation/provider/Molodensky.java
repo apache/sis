@@ -35,10 +35,10 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MolodenskyTransform;
 import org.apache.sis.referencing.util.NilReferencingObject;
 import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 
 /**

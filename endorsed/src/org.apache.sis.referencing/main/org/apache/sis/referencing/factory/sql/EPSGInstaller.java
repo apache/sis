@@ -17,21 +17,21 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.metadata.sql.util.ScriptRunner;
 import org.apache.sis.metadata.sql.util.SQLUtilities;
 import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.system.Fallback;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.setup.InstallationResources;

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-
 import java.util.Collection;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -24,8 +23,10 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.MeasureReference;
 import org.apache.sis.util.internal.CollectionsExt;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.quality.MeasureReference;
 
 
 /**

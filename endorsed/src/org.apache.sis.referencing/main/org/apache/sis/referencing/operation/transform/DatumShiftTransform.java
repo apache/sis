@@ -21,8 +21,8 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.measure.Unit;
-import javax.measure.quantity.Length;
 import javax.measure.UnitConverter;
+import javax.measure.quantity.Length;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,9 +33,9 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

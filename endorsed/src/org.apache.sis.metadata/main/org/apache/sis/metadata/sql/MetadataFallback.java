@@ -16,20 +16,24 @@
  */
 package org.apache.sis.metadata.sql;
 
-import org.opengis.util.ControlledVocabulary;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.NilReason;
 
 import static java.util.Collections.singleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**

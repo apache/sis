@@ -21,10 +21,8 @@ import java.util.Set;
 import java.util.Collection;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.util.TypeName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.Range;
@@ -38,7 +36,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.parameter.ParameterDirection;
+import org.opengis.util.TypeName;
+
+// Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
 
 

@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.image.DataType;
 
-// Branch-specific imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 

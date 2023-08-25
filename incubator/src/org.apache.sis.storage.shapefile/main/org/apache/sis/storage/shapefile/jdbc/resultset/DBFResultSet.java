@@ -26,10 +26,10 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
+
 
 /**
  * Common implemented features of all ResultSets : those based on a record, but also those returning results forged in memory.

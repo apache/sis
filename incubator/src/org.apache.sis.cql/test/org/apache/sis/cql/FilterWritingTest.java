@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cql;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Instant;
 import java.text.ParseException;
 import org.opengis.filter.Filter;
@@ -25,11 +26,10 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 import org.junit.Ignore;
 
-// Optional dependencies
+import static org.junit.Assert.*;
+
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LinearRing;

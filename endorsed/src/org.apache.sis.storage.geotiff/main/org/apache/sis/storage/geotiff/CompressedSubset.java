@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.image.Raster;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.geotiff.inflater.Inflater;
 import org.apache.sis.coverage.grid.j2d.RasterFactory;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.image.DataType;
 
 import static java.lang.Math.toIntExact;

@@ -44,7 +44,7 @@ import static java.lang.Math.round;
 import static org.apache.sis.util.internal.Numerics.saturatingAdd;
 import static org.apache.sis.util.internal.Numerics.saturatingSubtract;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 
 

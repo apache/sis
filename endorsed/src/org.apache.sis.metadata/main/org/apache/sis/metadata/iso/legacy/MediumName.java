@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.legacy;
 
+// Specific to the geoapi-4.0 branch:
 import java.util.List;
 import java.util.ArrayList;
 import org.opengis.annotation.UML;

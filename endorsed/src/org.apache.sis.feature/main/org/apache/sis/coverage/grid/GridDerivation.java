@@ -29,31 +29,31 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.WraparoundAdjustment;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.StringBuilders;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.StringBuilders;
 import org.apache.sis.math.MathFunctions;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.PointOutsideCoverageException;
 
 

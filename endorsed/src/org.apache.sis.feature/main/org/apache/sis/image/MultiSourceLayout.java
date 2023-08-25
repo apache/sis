@@ -30,12 +30,12 @@ import java.awt.image.WritableRenderedImage;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.FrequencySortedSet;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.grid.j2d.ImageLayout;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.coverage.internal.MultiSourceArgument;
 import org.apache.sis.coverage.internal.CommonDomainFinder;
-import org.apache.sis.coverage.grid.DisjointExtentException;
 
 
 /**

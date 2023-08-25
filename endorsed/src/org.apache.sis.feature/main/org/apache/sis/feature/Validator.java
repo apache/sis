@@ -28,11 +28,10 @@ import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.quality.DefaultDomainConsistency;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
-import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.Attribute;
@@ -41,6 +40,9 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 
 
 /**

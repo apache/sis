@@ -26,7 +26,6 @@ import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -37,6 +36,9 @@ import static org.opengis.test.Assert.assertInstanceOf;
 import static java.util.AbstractMap.SimpleEntry;
 import static org.opengis.metadata.citation.PresentationForm.DOCUMENT_HARDCOPY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**

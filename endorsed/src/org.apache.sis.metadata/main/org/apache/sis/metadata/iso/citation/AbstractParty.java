@@ -24,14 +24,16 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Contact;
-import org.opengis.metadata.citation.Individual;
-import org.opengis.metadata.citation.Organisation;
-import org.opengis.metadata.citation.Party;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Individual;
+import org.opengis.metadata.citation.Organisation;
+import org.opengis.metadata.citation.Party;
 
 
 /**

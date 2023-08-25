@@ -24,7 +24,6 @@ import java.util.OptionalDouble;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -34,7 +33,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Localized;
@@ -45,12 +43,12 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.WraparoundApplicator;
@@ -58,6 +56,10 @@ import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coverage.CannotEvaluateException;
 
 
 /**

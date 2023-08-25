@@ -24,12 +24,12 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.feature.internal.FeatureUtilities;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.setup.GeometryLibrary;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;

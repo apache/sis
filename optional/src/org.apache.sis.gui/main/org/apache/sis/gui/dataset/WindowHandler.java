@@ -28,7 +28,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.CloseEvent;
@@ -41,8 +43,6 @@ import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.PrivateAccess;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 

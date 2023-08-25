@@ -17,8 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Random;
-
-// Test imports
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

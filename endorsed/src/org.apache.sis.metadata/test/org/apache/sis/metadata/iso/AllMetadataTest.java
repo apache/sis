@@ -18,8 +18,6 @@ package org.apache.sis.metadata.iso;
 
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
-import org.opengis.annotation.Stereotype;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.PropertyConsistencyCheck;
@@ -27,6 +25,10 @@ import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.junit.Rule;
 import org.junit.Test;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.annotation.Stereotype;
+import org.opengis.util.ControlledVocabulary;
 
 
 /**
