@@ -19,7 +19,7 @@ package org.apache.sis.feature;
 import java.util.Collection;
 import org.opengis.util.GenericName;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import java.util.Objects;
 
 

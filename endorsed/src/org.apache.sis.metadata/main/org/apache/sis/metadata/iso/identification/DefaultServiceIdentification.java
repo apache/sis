@@ -21,19 +21,20 @@ import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.opengis.metadata.identification.ServiceIdentification;
-import org.apache.sis.xml.bind.metadata.code.SV_CouplingType;
-import org.apache.sis.xml.bind.FilterByVersion;
+import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.FilterByVersion;
 
-// Branch-specific imports
+// Specific to the main branch:
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.CodeList;
+import org.apache.sis.xml.bind.metadata.code.SV_CouplingType;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Obligation.CONDITIONAL;

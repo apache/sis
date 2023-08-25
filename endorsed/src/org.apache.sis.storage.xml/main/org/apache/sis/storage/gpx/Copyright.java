@@ -28,23 +28,23 @@ import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.Role;
-import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 
-// Branch-dependent imports
+// Specific to the main branch:
+import org.opengis.metadata.citation.Contact;
+import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
 
 
 /**

@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.Namespaces;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.MANDATORY;

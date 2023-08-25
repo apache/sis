@@ -24,7 +24,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.util.iso.Types;
 

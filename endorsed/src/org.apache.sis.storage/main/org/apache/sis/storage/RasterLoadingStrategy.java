@@ -22,6 +22,8 @@ import java.awt.image.ImagingOpException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
+
+// Specific to the main branch:
 import org.apache.sis.coverage.CannotEvaluateException;
 
 

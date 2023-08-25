@@ -35,6 +35,8 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
@@ -50,10 +52,8 @@ import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Classes;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 

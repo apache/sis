@@ -27,9 +27,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
@@ -43,6 +42,9 @@ import org.apache.sis.util.internal.Strings;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

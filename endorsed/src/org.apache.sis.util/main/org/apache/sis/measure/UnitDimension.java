@@ -26,8 +26,8 @@ import java.io.ObjectStreamException;
 import javax.measure.Dimension;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnsupportedImplementationException;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.converter.FractionConverter;
 import org.apache.sis.util.internal.CollectionsExt;
 

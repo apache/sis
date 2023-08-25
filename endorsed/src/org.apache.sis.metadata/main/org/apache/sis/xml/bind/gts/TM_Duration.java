@@ -17,12 +17,14 @@
 package org.apache.sis.xml.bind.gts;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import javax.xml.datatype.Duration;
 import org.opengis.temporal.PeriodDuration;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
+
+// Specific to the main branch:
+import javax.xml.datatype.Duration;
 
 
 /**

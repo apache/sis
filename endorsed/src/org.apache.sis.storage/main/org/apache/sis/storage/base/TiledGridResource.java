@@ -33,17 +33,19 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.internal.RangeArgument;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.WeakValueHashMap;
 
 import static org.apache.sis.storage.base.TiledGridCoverage.X_DIMENSION;
 import static org.apache.sis.storage.base.TiledGridCoverage.Y_DIMENSION;
+
+// Specific to the main branch:
+import org.apache.sis.coverage.CannotEvaluateException;
 
 
 /**

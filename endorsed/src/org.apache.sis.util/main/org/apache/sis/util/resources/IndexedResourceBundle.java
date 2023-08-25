@@ -52,7 +52,6 @@ import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 
 
-
 /**
  * {@link ResourceBundle} implementation accepting integers instead of strings for resource keys.
  * Using integers allow implementations to avoid adding large string constants into their

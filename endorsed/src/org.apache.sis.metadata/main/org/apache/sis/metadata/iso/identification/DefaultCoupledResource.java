@@ -26,16 +26,17 @@ import org.opengis.util.ScopedName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.xml.bind.metadata.SV_OperationMetadata;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.SV_OperationMetadata;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.xml.Namespaces;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

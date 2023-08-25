@@ -22,7 +22,7 @@ import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 
 

@@ -29,8 +29,9 @@ import org.apache.sis.xml.bind.metadata.MD_KeywordClass;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

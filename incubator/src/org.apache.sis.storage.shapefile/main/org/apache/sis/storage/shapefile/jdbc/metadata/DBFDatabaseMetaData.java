@@ -20,11 +20,11 @@ import java.io.File;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.Objects;
-
 import org.apache.sis.storage.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.storage.shapefile.jdbc.resultset.*;
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
+
 
 /**
  * Database Metadata.

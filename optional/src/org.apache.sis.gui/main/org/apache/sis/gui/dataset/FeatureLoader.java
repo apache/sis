@@ -27,9 +27,11 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.system.Configuration;
+
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.system.Configuration;
 
 
 /**

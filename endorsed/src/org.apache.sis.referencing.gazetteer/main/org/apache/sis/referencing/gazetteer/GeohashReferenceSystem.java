@@ -18,8 +18,8 @@ package org.apache.sis.referencing.gazetteer;
 
 import javax.measure.Unit;
 import javax.measure.Quantity;
-import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
+import javax.measure.quantity.Length;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -37,11 +37,11 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 

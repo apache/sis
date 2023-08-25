@@ -44,6 +44,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.util.NilReferencingObject;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -52,7 +53,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
 

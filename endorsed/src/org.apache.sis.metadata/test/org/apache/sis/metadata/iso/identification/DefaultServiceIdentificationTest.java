@@ -22,7 +22,6 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -33,6 +32,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the main branch:
+import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 
 
 /**

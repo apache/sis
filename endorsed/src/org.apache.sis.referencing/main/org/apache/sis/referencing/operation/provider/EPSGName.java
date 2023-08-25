@@ -23,8 +23,8 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;

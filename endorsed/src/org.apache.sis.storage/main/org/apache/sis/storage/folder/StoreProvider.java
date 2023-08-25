@@ -51,7 +51,7 @@ import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.setup.OptionKey;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 
 

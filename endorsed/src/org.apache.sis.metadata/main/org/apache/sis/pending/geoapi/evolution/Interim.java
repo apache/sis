@@ -16,6 +16,7 @@
  */
 package org.apache.sis.pending.geoapi.evolution;
 
+// Specific to the main branch:
 import java.lang.reflect.Method;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;

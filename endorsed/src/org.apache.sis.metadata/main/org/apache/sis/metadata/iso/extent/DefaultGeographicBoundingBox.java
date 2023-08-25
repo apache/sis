@@ -32,8 +32,8 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.metadata.InvalidMetadataException;
+import org.apache.sis.metadata.internal.ReferencingServices;
 
 import static java.lang.Double.doubleToLongBits;
 

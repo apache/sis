@@ -24,9 +24,9 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.feature.internal.FeatureUtilities;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.setup.GeometryLibrary;
 
 

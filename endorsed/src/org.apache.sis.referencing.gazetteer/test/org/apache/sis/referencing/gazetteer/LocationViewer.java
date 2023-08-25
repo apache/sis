@@ -34,11 +34,11 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.j2d.IntervalRectangle;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Debug;
 
 

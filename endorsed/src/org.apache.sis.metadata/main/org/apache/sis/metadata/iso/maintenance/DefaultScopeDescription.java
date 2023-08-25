@@ -26,15 +26,15 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.internal.ExcludedSet;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.FeatureType;
 

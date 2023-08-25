@@ -36,15 +36,17 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.operation.SingleOperation;
+
 
 /**
  * An ordered sequence of two or more single coordinate operations. The sequence of operations is constrained

@@ -22,7 +22,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 
 

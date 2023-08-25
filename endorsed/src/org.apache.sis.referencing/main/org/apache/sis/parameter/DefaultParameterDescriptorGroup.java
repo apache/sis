@@ -31,12 +31,12 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroup;
 import org.apache.sis.metadata.internal.ImplementationHelper;
-import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 

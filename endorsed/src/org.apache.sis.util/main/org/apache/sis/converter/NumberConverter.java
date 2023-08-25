@@ -19,9 +19,9 @@ package org.apache.sis.converter;
 import java.util.Set;
 import java.util.EnumSet;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 
 

@@ -43,12 +43,12 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.WraparoundApplicator;
@@ -57,7 +57,7 @@ import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.geometry.MismatchedReferenceSystemException;
 import org.apache.sis.coverage.CannotEvaluateException;
 

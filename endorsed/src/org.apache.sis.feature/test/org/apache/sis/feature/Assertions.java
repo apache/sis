@@ -21,11 +21,13 @@ import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.geom.PathIterator;
-import org.apache.sis.image.SequenceType;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.Static;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.apache.sis.image.SequenceType;
 
 
 /**

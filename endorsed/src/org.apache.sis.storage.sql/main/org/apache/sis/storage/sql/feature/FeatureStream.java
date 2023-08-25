@@ -17,11 +17,11 @@
 package org.apache.sis.storage.sql.feature;
 
 import java.util.Spliterator;
+import java.util.Comparator;
 import java.util.stream.Stream;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
-import java.util.Comparator;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -29,17 +29,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
 import org.apache.sis.filter.internal.SortByComparator;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
-import org.apache.sis.feature.AbstractFeature;
+// Specific to the main branch:
 import org.apache.sis.filter.Filter;
+import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.filter.SortBy;
 
 

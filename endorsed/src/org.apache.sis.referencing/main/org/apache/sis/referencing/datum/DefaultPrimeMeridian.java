@@ -25,24 +25,26 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.xml.bind.gml.Measure;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

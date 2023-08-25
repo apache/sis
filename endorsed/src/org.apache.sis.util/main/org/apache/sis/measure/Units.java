@@ -19,13 +19,12 @@ package org.apache.sis.measure;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
-import javax.measure.format.MeasurementParseException;
 import javax.measure.Quantity;
+import javax.measure.format.MeasurementParseException;
 import javax.measure.quantity.*;
 import javax.measure.quantity.Angle;                // Because of name collision with Angle in this SIS package.
 import org.opengis.geometry.DirectPosition;         // For javadoc
 import org.opengis.referencing.cs.AxisDirection;    // For javadoc
-
 import org.apache.sis.util.Static;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Errors;

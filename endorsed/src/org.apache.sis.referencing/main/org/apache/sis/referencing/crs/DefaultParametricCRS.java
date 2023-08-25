@@ -29,7 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.referencing.crs.AbstractCRS.isBaseCRS;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 

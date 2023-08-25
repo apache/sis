@@ -20,8 +20,8 @@ import java.util.Locale;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import org.apache.sis.measure.Angle;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

@@ -25,12 +25,10 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
-import org.opengis.metadata.quality.Scope;
 import org.opengis.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -41,11 +39,17 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.internal.CollectionsExt;
 
-// Branch-specific imports
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the main branch:
+import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**

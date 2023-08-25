@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry;
 
+
 /*
  * Do not add dependency to java.awt.geom.Point2D in this class, because not all platforms
  * support Java2D (e.g. Android), or applications that do not need it may want to avoid to

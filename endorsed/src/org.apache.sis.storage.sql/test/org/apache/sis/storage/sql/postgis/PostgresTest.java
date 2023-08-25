@@ -34,10 +34,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.storage.sql.ResourceDefinition;
-import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -46,21 +46,19 @@ import org.apache.sis.storage.sql.feature.GeometryGetterTest;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.util.Version;
 import org.junit.Test;
-
-// Branch-dependent imports
-import org.apache.sis.feature.AbstractFeature;
-
-// Optional dependencies
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Geometry;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+
+// Specific to the main branch:
+import org.apache.sis.feature.AbstractFeature;
 
 
 /**

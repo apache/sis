@@ -28,7 +28,7 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.system.OptionalDependency;
 import org.apache.sis.util.CharSequences;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.util.CodeList;
 
 

@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.function.BiConsumer;
 import org.apache.sis.feature.internal.Resources;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.LogicalOperatorName;

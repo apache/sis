@@ -17,8 +17,10 @@
 package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.Identifier;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

@@ -27,13 +27,13 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.xml.NilReason;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

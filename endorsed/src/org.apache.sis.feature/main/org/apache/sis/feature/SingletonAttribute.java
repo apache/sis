@@ -19,8 +19,6 @@ package org.apache.sis.feature;
 import java.util.Objects;
 import org.apache.sis.util.internal.CloneAccess;
 
-// Branch-dependent imports
-
 
 /**
  * An instance of an {@linkplain DefaultAttributeType attribute type} containing at most one value.

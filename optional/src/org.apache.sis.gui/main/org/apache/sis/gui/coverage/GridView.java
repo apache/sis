@@ -44,8 +44,8 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.gui.internal.Styles;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 
 
 /**

@@ -23,7 +23,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.Namespaces;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;

@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Instant;
 
 

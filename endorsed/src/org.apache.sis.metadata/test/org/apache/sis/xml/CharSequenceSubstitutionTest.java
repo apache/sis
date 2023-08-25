@@ -21,7 +21,6 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.InitiativeType;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.xml.bind.metadata.replace.SensorType;
 import org.apache.sis.xml.util.LegacyNamespaces;
@@ -35,7 +34,8 @@ import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
-// Branch-dependent imports
+// Specific to the main branch:
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.opengis.referencing.ReferenceIdentifier;
 
 

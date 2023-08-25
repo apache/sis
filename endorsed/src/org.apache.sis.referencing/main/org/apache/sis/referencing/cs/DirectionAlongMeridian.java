@@ -19,6 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Longitude;
@@ -27,7 +28,6 @@ import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 

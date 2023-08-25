@@ -16,6 +16,7 @@
  */
 package org.apache.sis.pending.geoapi.filter;
 
+// Specific to the main branch:
 import java.util.List;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;

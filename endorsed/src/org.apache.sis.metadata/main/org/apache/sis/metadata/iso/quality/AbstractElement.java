@@ -32,7 +32,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Completeness;
-import org.opengis.metadata.quality.TemporalAccuracy;
 import org.opengis.metadata.quality.ThematicAccuracy;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.LogicalConsistency;
@@ -48,7 +47,8 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
-// Branch-dependent imports
+// Specific to the main branch:
+import org.opengis.metadata.quality.TemporalAccuracy;
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;

@@ -30,7 +30,7 @@ import org.apache.sis.feature.internal.FeatureExpression;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 
 

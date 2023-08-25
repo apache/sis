@@ -24,8 +24,8 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.cs.AxesConvention;
 
 
 /**

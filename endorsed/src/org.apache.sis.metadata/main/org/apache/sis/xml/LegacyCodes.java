@@ -19,8 +19,10 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.util.collection.Containers;
+
+// Specific to the main branch:
+import org.opengis.metadata.identification.CharacterSet;
 
 
 /**

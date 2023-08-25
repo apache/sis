@@ -35,7 +35,7 @@ import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.system.OptionalDependency;
 import org.apache.sis.system.Modules;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.util.TypeName;
 
 

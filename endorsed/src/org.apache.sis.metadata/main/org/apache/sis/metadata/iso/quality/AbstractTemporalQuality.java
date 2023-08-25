@@ -24,7 +24,7 @@ import org.opengis.metadata.quality.TemporalConsistency;
 import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
 import org.opengis.metadata.quality.TemporalAccuracy;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Specification.UNSPECIFIED;

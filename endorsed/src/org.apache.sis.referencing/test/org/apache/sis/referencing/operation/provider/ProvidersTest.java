@@ -25,12 +25,14 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.apache.sis.parameter.DefaultParameterDescriptor;
 
 
 /**

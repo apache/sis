@@ -38,8 +38,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.util.internal.Constants;
-
-// Test dependencies
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -47,9 +45,11 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.TestUtilities.*;
+
+// Specific to the main branch:
+import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 
 /**

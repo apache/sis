@@ -27,7 +27,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
 
 
-
 /**
  * Information about an Apache SIS metadata standard implementation.
  *

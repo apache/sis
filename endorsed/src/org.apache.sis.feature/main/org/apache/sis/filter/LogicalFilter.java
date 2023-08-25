@@ -24,7 +24,7 @@ import org.apache.sis.filter.internal.Node;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.LogicalOperator;
 import org.apache.sis.pending.geoapi.filter.LogicalOperatorName;
 

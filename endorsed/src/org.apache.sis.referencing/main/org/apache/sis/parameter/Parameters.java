@@ -29,17 +29,17 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.*;                                         // We use almost all types from this package.
 import org.apache.sis.xml.bind.metadata.replace.ServiceParameter;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

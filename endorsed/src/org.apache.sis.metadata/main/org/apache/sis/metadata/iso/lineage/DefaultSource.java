@@ -32,22 +32,23 @@ import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.RepresentativeFraction;
-import org.opengis.metadata.quality.Scope;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.RS_ReferenceSystem;
 import org.apache.sis.xml.bind.metadata.MD_Resolution;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
-import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.util.iso.Types;
 
-// Branch-specific imports
+// Specific to the main branch:
+import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;

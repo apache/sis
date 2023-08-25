@@ -23,10 +23,10 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.FactoryException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 
 

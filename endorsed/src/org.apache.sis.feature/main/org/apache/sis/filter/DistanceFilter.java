@@ -26,7 +26,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
 

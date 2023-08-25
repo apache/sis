@@ -17,6 +17,7 @@
 package org.apache.sis.storage.base;
 
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.time.Instant;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.MemberName;
@@ -38,6 +38,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.*;
 import org.opengis.metadata.acquisition.*;
 import org.opengis.metadata.citation.*;
@@ -50,13 +51,17 @@ import org.opengis.metadata.lineage.*;
 import org.opengis.metadata.maintenance.*;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.spatial.*;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.util.AbstractInternationalString;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.iso.*;
@@ -78,23 +83,18 @@ import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.metadata.internal.Merger;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Characters;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 
 

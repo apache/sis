@@ -21,7 +21,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.MANDATORY;

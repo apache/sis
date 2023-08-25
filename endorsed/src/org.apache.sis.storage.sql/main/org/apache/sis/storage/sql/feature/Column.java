@@ -27,12 +27,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.metadata.sql.util.SQLUtilities;
 import org.apache.sis.geometry.wrapper.GeometryType;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Localized;
 
 
 /**

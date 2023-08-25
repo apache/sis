@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Date;
-
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Series;
@@ -31,7 +30,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.CoverageContentType;
@@ -40,23 +38,17 @@ import org.opengis.metadata.identification.*;                       // Really us
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.util.InternationalString;
 import org.opengis.util.GenericName;
-
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
-import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
-import org.apache.sis.metadata.iso.identification.AbstractIdentification;
-import org.apache.sis.metadata.iso.identification.DefaultAssociatedResource;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -70,6 +62,16 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.PropertyAccessor.APPEND;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.ReferenceIdentifier;
+
+// Specific to the main branch:
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
+import org.apache.sis.metadata.iso.identification.AbstractIdentification;
+import org.apache.sis.metadata.iso.identification.DefaultAssociatedResource;
 
 
 /**

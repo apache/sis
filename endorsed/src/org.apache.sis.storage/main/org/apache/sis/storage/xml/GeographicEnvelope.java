@@ -23,11 +23,13 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
+import org.apache.sis.referencing.CommonCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+// Specific to the main branch:
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.util.InternationalString;
-import org.apache.sis.referencing.CommonCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

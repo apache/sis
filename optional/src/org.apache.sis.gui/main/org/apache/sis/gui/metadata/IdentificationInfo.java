@@ -41,7 +41,6 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
-import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -60,6 +59,9 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Vocabulary;
 
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+
+// Specific to the main branch:
+import org.opengis.metadata.identification.DataIdentification;
 
 
 /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.pending.geoapi.temporal;
 
+// Specific to the main branch:
 import java.util.Date;
 import org.opengis.temporal.TemporalPrimitive;
 

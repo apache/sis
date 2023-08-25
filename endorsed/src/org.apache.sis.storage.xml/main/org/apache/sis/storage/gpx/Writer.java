@@ -21,16 +21,16 @@ import java.io.OutputStream;
 import java.util.Collection;
 import javax.xml.stream.XMLStreamException;
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalFeatureTypeException;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.xml.stream.StaxStreamWriter;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.Version;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 

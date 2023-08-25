@@ -26,8 +26,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Emptiable;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
@@ -38,9 +38,6 @@ import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isNegativeZero;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.referencing.util.Formulas.isPoleToPole;
-
-// Following imports are needed because we cannot extend AbstractEnvelope.
-// We want to write this class as if it was an AbstractEnvelope subclass.
 import static org.apache.sis.geometry.AbstractEnvelope.getAxis;
 import static org.apache.sis.geometry.AbstractEnvelope.getCommonCRS;
 import static org.apache.sis.geometry.AbstractEnvelope.fixSpan;

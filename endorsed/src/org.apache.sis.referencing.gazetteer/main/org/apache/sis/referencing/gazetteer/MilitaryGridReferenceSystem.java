@@ -24,13 +24,13 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
-import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
+import java.util.function.Consumer;
 import java.awt.geom.Rectangle2D;
 import javax.measure.Unit;
 import javax.measure.Quantity;
-import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
+import javax.measure.quantity.Length;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -45,18 +45,20 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.provider.TransverseMercator;
-import org.apache.sis.referencing.operation.provider.PolarStereographicA;
-import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.provider.TransverseMercator;
+import org.apache.sis.referencing.operation.provider.PolarStereographicA;
+import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.j2d.IntervalRectangle;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
@@ -68,15 +70,13 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.util.internal.Strings;
-import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 

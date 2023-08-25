@@ -29,7 +29,7 @@ import org.opengis.metadata.quality.QuantitativeResult;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
 import org.apache.sis.xml.bind.gco.GO_Temporal;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
 

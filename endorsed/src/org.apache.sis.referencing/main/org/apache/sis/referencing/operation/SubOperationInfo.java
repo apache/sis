@@ -25,7 +25,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.referencing.crs.DefaultParametricCRS;
 
 

@@ -19,9 +19,9 @@ package org.apache.sis.storage.shapefile.jdbc.sql;
 import java.io.File;
 import java.util.Objects;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.AbstractJDBC;
 import org.apache.sis.storage.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
+
 
 /**
  * Simple and temporary SQL parser.

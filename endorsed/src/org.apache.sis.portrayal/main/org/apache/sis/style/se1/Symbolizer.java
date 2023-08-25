@@ -28,7 +28,7 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-depend imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

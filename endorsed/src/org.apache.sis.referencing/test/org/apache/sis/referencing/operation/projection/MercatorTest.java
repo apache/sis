@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertBetween;
 import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
 
-// Branch-specific imports
+// Specific to the main branch:
 import static org.junit.Assume.assumeTrue;
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 

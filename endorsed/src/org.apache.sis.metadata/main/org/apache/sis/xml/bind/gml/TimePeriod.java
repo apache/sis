@@ -20,11 +20,13 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.apache.sis.pending.geoapi.temporal.Period;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.internal.Strings;
 
 import static org.apache.sis.xml.util.LegacyNamespaces.VERSION_3_0;
+
+// Specific to the main branch:
+import org.apache.sis.pending.geoapi.temporal.Period;
 
 
 /**

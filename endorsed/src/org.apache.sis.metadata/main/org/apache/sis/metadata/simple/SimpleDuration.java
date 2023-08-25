@@ -17,6 +17,8 @@
 package org.apache.sis.metadata.simple;
 
 import org.apache.sis.util.internal.Numerics;
+
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Duration;
 
 

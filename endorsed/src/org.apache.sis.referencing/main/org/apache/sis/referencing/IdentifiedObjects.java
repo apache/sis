@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Locale;
-
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
@@ -30,11 +29,9 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
-
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -52,6 +49,9 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

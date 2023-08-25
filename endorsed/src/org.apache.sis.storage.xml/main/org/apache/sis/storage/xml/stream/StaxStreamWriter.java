@@ -34,7 +34,7 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 
 

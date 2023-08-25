@@ -29,7 +29,7 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.setup.GeometryLibrary;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

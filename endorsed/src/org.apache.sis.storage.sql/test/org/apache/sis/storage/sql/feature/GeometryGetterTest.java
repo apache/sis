@@ -21,8 +21,8 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.GeometryWithCRS;
@@ -32,8 +32,6 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
-
-// Optional dependencies
 import org.locationtech.jts.geom.Geometry;
 
 import static org.junit.Assert.*;

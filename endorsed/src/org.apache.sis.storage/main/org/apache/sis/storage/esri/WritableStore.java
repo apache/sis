@@ -32,16 +32,16 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.WritableGridCoverageResource;
+import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.internal.WritableResourceSupport;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.image.SequenceType;
 
 

@@ -21,7 +21,6 @@ import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.SingleOperation;
@@ -29,14 +28,12 @@ import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.wkt.WKTFormat;
-
-// Test dependencies
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -48,6 +45,9 @@ import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.Arrays;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.util.internal.Cloner;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**

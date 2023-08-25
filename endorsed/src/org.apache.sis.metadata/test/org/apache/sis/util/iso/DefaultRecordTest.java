@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import org.opengis.util.MemberName;
 import org.opengis.util.RecordType;
-
-// Test imports
 import org.junit.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

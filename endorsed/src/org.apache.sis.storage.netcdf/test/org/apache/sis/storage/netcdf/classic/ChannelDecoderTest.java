@@ -20,13 +20,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import org.apache.sis.storage.netcdf.base.TestData;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.DecoderTest;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
+
+// Specific to the main branch:
+import org.apache.sis.storage.netcdf.base.TestData;
 
 
 /**

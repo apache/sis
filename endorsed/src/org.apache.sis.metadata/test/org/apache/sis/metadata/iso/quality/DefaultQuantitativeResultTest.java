@@ -27,12 +27,12 @@ import org.opengis.util.MemberName;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.apache.sis.metadata.internal.RecordSchemaSIS;
+import org.apache.sis.xml.XML;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultRecord;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.xml.XML;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

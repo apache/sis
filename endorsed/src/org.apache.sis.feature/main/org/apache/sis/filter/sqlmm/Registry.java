@@ -22,7 +22,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.filter.internal.FunctionRegister;
 import org.apache.sis.pending.jdk.JDK17;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

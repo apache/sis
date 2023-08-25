@@ -27,15 +27,13 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
-
-// Test dependencies
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;

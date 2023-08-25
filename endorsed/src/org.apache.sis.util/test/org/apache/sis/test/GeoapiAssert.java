@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test;
 
+// Specific to the main branch:
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.cs.AxisDirection;

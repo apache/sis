@@ -25,7 +25,7 @@ import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractAttribute;
 
 

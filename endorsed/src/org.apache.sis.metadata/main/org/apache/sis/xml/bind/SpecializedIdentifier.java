@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.metadata.iso.citation.Citations;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
 
 

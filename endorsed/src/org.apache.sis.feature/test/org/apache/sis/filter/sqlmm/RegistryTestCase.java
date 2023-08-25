@@ -24,14 +24,13 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.Optimization;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.math.Vector;
-
-// Test dependencies
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
@@ -42,11 +41,10 @@ import org.junit.After;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.filter.Expression;
-import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.pending.geoapi.filter.Literal;
 
 

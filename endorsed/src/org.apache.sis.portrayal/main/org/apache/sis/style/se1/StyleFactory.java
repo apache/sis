@@ -22,7 +22,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 import org.apache.sis.filter.DefaultFilterFactory;
 

@@ -33,39 +33,40 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.IncommensurableException;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import javax.measure.Quantity;
 import javax.measure.quantity.Time;
 import javax.measure.format.MeasurementParseException;
-import javax.measure.IncommensurableException;
-
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.util.FactoryException;
-
-// While start import is usually a deprecated practice, we use such a large amount
-// of interfaces in those packages that it we choose to exceptionnaly use * here.
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
-
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.util.CoordinateOperations;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
+import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.util.WKTUtilities;
+import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.internal.Legacy;
-import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -75,12 +76,6 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.metadata.internal.TransformationAccuracy;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
-import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
-import org.apache.sis.referencing.internal.VerticalDatumTypes;
-import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.referencing.util.WKTUtilities;
-import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Strings;
@@ -89,10 +84,12 @@ import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+
+// Specific to the main branch:
 import org.apache.sis.referencing.internal.ServicesForMetadata;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 
 
 /**

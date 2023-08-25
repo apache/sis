@@ -18,9 +18,9 @@ package org.apache.sis.gui.dataset;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.FileSystemNotFoundException;
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.nio.file.FileSystemNotFoundException;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.List;
@@ -40,12 +40,12 @@ import javafx.scene.input.TransferMode;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;

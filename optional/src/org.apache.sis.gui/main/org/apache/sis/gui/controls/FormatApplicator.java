@@ -26,10 +26,10 @@ import javafx.util.StringConverter;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ReadOnlyProperty;
-import javafx.beans.InvalidationListener;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.util.CharSequences;
 

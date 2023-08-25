@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

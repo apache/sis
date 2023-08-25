@@ -25,9 +25,9 @@ import java.util.UUID;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.IdentifierMap;
+import org.apache.sis.xml.XLink;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.xml.XLink;
 import org.junit.Test;
 
 import static java.util.UUID.fromString;

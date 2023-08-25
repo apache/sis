@@ -27,9 +27,9 @@ import org.opengis.geometry.Envelope;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.opengis.util.GenericName;
 

@@ -32,7 +32,6 @@ import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import javax.measure.format.MeasurementParseException;
-
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
@@ -46,9 +45,8 @@ import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -64,23 +62,22 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.wkt.StoreFormat;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-
-// The following dependency is used only for static final String constants.
-// Consequently, the compiled class files should not have this dependency.
 import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
+
+// Specific to the main branch:
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**

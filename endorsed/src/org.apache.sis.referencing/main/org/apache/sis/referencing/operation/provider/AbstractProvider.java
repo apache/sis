@@ -28,6 +28,8 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.SingleOperation;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Latitude;
@@ -39,13 +41,11 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.referencing.internal.Resources;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
 
 

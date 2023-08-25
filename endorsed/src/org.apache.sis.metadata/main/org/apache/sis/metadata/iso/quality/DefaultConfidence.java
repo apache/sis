@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.quality;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Specification.UNSPECIFIED;

@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.iso.Names;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.iso.Names;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.feature.internal.FeatureExpression;
 import org.apache.sis.filter.internal.Node;
@@ -32,7 +32,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.math.FunctionProperty;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 

@@ -21,7 +21,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.setup.OptionKey;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 
 

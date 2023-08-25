@@ -44,9 +44,10 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.gui.internal.IdentityValueFactory;
 import org.apache.sis.gui.internal.ExceptionReporter;
+
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.AbstractIdentifiedType;

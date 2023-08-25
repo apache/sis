@@ -23,7 +23,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SortOrder;
 import org.apache.sis.pending.geoapi.filter.SortProperty;
 import org.apache.sis.pending.geoapi.filter.ValueReference;

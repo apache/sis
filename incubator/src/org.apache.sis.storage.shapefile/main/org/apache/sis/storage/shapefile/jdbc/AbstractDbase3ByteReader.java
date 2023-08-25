@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.logging.Level;
 
+
 /**
  * The Abstract Byte Reader.
  * @author  Marc Le Bihan

@@ -38,7 +38,7 @@ import static java.lang.Double.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
-// Branch-specific imports
+// Specific to the main branch:
 import static org.junit.Assume.assumeTrue;
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 

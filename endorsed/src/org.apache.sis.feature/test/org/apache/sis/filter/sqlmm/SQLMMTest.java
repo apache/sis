@@ -16,25 +16,25 @@
  */
 package org.apache.sis.filter.sqlmm;
 
-import java.util.function.Function;
 import java.util.function.BiFunction;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.apache.sis.geometry.wrapper.jts.JTS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
-import org.apache.sis.feature.AbstractFeature;
+// Specific to the main branch:
+import java.util.function.Function;
 import org.apache.sis.filter.Expression;
+import org.apache.sis.feature.AbstractFeature;
 
 
 /**

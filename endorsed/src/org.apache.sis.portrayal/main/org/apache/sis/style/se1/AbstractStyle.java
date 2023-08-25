@@ -27,7 +27,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import org.opengis.util.GenericName;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Filter;
 
 

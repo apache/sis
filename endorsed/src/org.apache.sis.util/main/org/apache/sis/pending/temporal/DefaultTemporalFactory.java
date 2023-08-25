@@ -18,6 +18,8 @@ package org.apache.sis.pending.temporal;
 
 import java.util.Date;
 import org.opengis.util.InternationalString;
+
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.*;
 
 

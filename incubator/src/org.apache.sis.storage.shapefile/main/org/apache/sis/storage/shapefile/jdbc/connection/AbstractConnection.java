@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.AbstractJDBC;
 
 

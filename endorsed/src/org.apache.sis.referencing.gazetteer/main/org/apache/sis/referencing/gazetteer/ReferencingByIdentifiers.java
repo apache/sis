@@ -29,23 +29,23 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.internal.Constants;
-import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.resources.Vocabulary;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 

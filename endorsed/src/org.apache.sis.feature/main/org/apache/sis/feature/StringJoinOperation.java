@@ -25,18 +25,18 @@ import java.io.Serializable;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.feature.internal.FeatureUtilities;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Classes;
 
 
 /**

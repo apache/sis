@@ -23,8 +23,9 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.identification.BrowseGraphic;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;

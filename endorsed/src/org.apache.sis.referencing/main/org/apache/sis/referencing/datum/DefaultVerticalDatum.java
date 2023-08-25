@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.io.wkt.Formatter;
@@ -35,6 +34,9 @@ import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.Namespaces;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;

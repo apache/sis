@@ -20,13 +20,12 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
-
-// Test imports
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
+
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.junit.Ignore;
 
 

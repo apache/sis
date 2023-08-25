@@ -27,9 +27,11 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
@@ -38,8 +40,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Utilities;
+
+// Specific to the main branch:
 import org.apache.sis.coverage.CannotEvaluateException;
 
 

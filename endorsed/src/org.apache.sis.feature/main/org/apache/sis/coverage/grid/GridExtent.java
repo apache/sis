@@ -41,6 +41,9 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
@@ -60,12 +63,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
+
+// Specific to the main branch:
 import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.PointOutsideCoverageException;
 

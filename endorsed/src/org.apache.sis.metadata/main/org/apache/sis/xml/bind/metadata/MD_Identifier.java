@@ -18,11 +18,13 @@ package org.apache.sis.xml.bind.metadata;
 
 import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.Identifier;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.bind.metadata.replace.RS_Identifier;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

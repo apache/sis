@@ -24,7 +24,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.collection.BackingStoreException;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.Literal;
 

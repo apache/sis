@@ -24,7 +24,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.apache.sis.referencing.IdentifiedObjects.getIdentifier;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
 
 

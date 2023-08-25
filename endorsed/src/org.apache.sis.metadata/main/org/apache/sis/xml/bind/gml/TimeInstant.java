@@ -26,7 +26,7 @@ import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.util.XmlUtilities;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Instant;
 
 

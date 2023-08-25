@@ -27,12 +27,12 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.math.FunctionProperty;
 
-// Branch-dependent imports
-import org.opengis.util.ScopedName;
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.opengis.util.ScopedName;
 import org.apache.sis.pending.geoapi.filter.Name;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 

@@ -17,6 +17,8 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Date;
+
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Instant;
 
 

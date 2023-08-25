@@ -46,11 +46,11 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationNotFoundException;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -62,6 +62,10 @@ import org.apache.sis.referencing.util.DefinitionVerifier;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Loggers;
+import org.apache.sis.util.OptionalCandidate;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Static;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -81,10 +85,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.OptionalCandidate;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Static;
 
 
 /**

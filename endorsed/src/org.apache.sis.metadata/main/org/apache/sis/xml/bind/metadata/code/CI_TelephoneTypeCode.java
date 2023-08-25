@@ -17,10 +17,12 @@
 package org.apache.sis.xml.bind.metadata.code;
 
 import jakarta.xml.bind.annotation.XmlElement;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.cat.CodeListUID;
+
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeListAdapter;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.bind.cat.CodeListUID;
-import org.apache.sis.xml.Namespaces;
 
 
 /**

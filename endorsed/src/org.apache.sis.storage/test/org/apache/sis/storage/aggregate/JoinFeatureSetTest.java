@@ -25,16 +25,16 @@ import java.util.stream.Stream;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Filter;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractFeature;

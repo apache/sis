@@ -21,11 +21,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
-import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.cat.CodeListUID;
+
+// Specific to the main branch:
+import org.opengis.metadata.identification.CharacterSet;
 
 
 /**

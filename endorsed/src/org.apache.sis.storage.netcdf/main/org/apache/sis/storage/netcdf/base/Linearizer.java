@@ -28,17 +28,17 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.netcdf.internal.Resources;
-import org.apache.sis.util.ArraysExt;
 
 
 /**

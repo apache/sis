@@ -27,9 +27,9 @@ import java.util.function.Predicate;
 import java.time.temporal.Temporal;
 import java.time.format.DateTimeParseException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.io.IOException;
 import java.io.EOFException;
-import java.net.URISyntaxException;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -47,7 +47,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 
 

@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.image.DataType;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.PointOutsideCoverageException;
 

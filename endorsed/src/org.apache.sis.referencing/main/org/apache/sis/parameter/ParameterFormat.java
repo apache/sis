@@ -35,24 +35,20 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.measure.Unit;
-
 import org.opengis.parameter.*;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.util.CodeList;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.OperationMethod;
-
 import org.apache.sis.measure.Range;
-import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
-import org.apache.sis.util.iso.Types;
+import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -61,6 +57,12 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.X364;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
+
+// Specific to the main branch:
+import org.opengis.util.CodeList;
 
 
 /**

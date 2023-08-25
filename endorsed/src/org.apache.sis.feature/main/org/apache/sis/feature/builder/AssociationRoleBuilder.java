@@ -20,7 +20,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.DefaultAssociationRole;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 
 

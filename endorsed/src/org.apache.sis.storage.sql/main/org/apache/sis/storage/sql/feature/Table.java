@@ -31,13 +31,13 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameSpace;
-import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;

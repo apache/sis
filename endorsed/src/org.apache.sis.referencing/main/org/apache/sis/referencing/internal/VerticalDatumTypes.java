@@ -24,9 +24,9 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.measure.Units;
 
 
 /**

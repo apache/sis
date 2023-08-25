@@ -32,20 +32,22 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import org.opengis.util.CodeList;
-import org.opengis.metadata.Metadata;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Metadata;
+import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.gui.Widget;
+
+// Specific to the main branch:
+import org.opengis.util.CodeList;
 
 
 /**

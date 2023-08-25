@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.io.IOException;
-import java.io.InputStream;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
@@ -47,6 +46,9 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.CodeLists;
 import org.apache.sis.system.Modules;
+
+// Specific to the main branch:
+import java.io.InputStream;
 
 
 /**

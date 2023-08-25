@@ -25,18 +25,20 @@ import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
 import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
+
+// Specific to the main branch:
 import org.apache.sis.metadata.internal.ReferencingServices;
 
 

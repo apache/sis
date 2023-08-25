@@ -35,13 +35,13 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Localized;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Localized;
-import org.apache.sis.util.Classes;
 
 
 /**

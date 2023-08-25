@@ -33,8 +33,9 @@ import org.apache.sis.util.resources.Messages;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

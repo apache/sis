@@ -31,6 +31,8 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.CollectionsExt;
+
+// Specific to the main branch:
 import org.apache.sis.metadata.simple.SimpleAttributeType;
 
 

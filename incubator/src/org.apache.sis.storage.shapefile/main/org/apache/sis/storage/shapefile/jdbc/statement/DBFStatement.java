@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-
 import org.apache.sis.storage.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.storage.shapefile.jdbc.resultset.DBFResultSet;

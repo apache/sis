@@ -27,8 +27,8 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.ReadableByteChannel;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

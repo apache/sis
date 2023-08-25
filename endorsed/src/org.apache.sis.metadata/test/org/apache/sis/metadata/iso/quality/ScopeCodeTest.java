@@ -17,13 +17,15 @@
 package org.apache.sis.metadata.iso.quality;
 
 import jakarta.xml.bind.JAXBException;
-import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+
+// Specific to the main branch:
+import org.opengis.metadata.quality.Scope;
 
 
 /**

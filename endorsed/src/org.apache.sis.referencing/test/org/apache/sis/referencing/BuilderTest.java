@@ -22,9 +22,8 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.metadata.simple.SimpleIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -35,6 +34,9 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

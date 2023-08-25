@@ -29,14 +29,12 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.util.GeodeticObjectBuilder;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.LenientComparable;
 import org.apache.sis.measure.Units;
-
-// Test dependencies
 import org.opengis.test.Validators;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
@@ -47,9 +45,11 @@ import org.junit.Test;
 import org.junit.Rule;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the main branch:
+import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 
 /**

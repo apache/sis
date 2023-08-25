@@ -18,7 +18,6 @@ package org.apache.sis.xml.bind.referencing;
 
 import java.util.Set;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.referencing.ImmutableIdentifier;
@@ -29,6 +28,9 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

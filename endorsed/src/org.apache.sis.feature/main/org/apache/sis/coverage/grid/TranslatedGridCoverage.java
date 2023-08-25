@@ -18,7 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.awt.image.RenderedImage;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.coverage.CannotEvaluateException;
 
 

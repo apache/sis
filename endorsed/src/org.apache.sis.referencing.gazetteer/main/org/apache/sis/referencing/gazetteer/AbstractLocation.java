@@ -28,7 +28,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 

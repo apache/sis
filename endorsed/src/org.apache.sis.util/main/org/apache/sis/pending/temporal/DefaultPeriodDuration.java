@@ -17,8 +17,10 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Objects;
-import org.apache.sis.pending.geoapi.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
+
+// Specific to the main branch:
+import org.apache.sis.pending.geoapi.temporal.PeriodDuration;
 
 
 /**

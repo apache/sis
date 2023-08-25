@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.StorageConnector;
 
 
 /**

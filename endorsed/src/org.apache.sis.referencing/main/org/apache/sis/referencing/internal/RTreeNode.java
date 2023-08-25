@@ -29,6 +29,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
+
+// Specific to the main branch:
 import org.apache.sis.geometry.MismatchedReferenceSystemException;
 
 

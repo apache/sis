@@ -16,20 +16,22 @@
  */
 package org.apache.sis.metadata.simple;
 
-import java.util.Date;
 import java.util.Objects;
+import java.io.Serializable;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.util.InternationalString;
+import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.internal.Strings;
+
+// Specific to the main branch:
+import java.util.Date;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.Serializable;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
-import org.opengis.util.InternationalString;
-import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.internal.Strings;
 
 
 /**

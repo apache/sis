@@ -27,11 +27,13 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Arithmetic;
-import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.internal.DoubleDouble;
+
+
 /*
  * We really want to use doubleToRawLongBits, not doubleToLongBits, because the
  * coverage module needs the raw bits for differentiating various NaN values.

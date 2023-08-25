@@ -19,7 +19,7 @@ package org.apache.sis.filter;
 import java.util.Date;
 import java.time.Instant;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Period;
 import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
 

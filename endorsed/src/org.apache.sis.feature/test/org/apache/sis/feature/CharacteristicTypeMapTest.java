@@ -28,6 +28,7 @@ import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 
 import org.apache.sis.util.iso.Names;
 
+
 /**
  * Tests {@link CharacteristicTypeMap} indirectly, through {@link DefaultAttributeType} construction.
  *

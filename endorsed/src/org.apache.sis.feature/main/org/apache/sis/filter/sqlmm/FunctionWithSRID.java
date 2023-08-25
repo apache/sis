@@ -22,15 +22,15 @@ import java.io.ObjectInputStream;
 import java.io.InvalidObjectException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.Literal;

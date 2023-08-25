@@ -17,6 +17,8 @@
 package org.apache.sis.filter.internal;
 
 import java.util.Collection;
+
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

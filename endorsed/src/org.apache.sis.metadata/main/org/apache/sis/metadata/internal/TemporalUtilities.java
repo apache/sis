@@ -19,13 +19,15 @@ package org.apache.sis.metadata.internal;
 import java.util.Date;
 import java.util.ServiceLoader;
 import org.opengis.temporal.TemporalPrimitive;
-import org.apache.sis.pending.geoapi.temporal.Instant;
-import org.apache.sis.pending.geoapi.temporal.Period;
-import org.apache.sis.pending.geoapi.temporal.TemporalFactory;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Reflect;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.pending.temporal.DefaultTemporalFactory;
+
+// Specific to the main branch:
+import org.apache.sis.pending.geoapi.temporal.Instant;
+import org.apache.sis.pending.geoapi.temporal.Period;
+import org.apache.sis.pending.geoapi.temporal.TemporalFactory;
 
 
 /**

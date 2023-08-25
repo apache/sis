@@ -22,12 +22,14 @@ import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 
 
 /**

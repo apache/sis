@@ -36,11 +36,11 @@ import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.feature.internal.FeatureExpression;
+import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.SortByComparator;
 import org.apache.sis.filter.internal.XPath;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -48,7 +48,7 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Vocabulary;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;

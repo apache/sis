@@ -23,9 +23,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.resultset.SQLIllegalColumnIndexException;
 import org.apache.sis.storage.shapefile.jdbc.resultset.SQLNoSuchFieldException;
+
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 
 

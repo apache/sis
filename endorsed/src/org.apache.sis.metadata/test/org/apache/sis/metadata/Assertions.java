@@ -33,7 +33,7 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;

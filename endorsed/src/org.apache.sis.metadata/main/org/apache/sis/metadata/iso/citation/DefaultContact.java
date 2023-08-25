@@ -34,14 +34,15 @@ import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.internal.CollectionsExt;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.opengis.util.CodeList;
+import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

@@ -17,11 +17,13 @@
 package org.apache.sis.storage.netcdf.classic;
 
 import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.VariableTest;
-import org.apache.sis.storage.netcdf.base.TestData;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
+
+// Specific to the main branch:
+import org.apache.sis.storage.netcdf.base.TestData;
 
 
 /**

@@ -27,12 +27,13 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
-import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

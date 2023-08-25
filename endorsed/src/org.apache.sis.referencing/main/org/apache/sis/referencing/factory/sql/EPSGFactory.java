@@ -39,16 +39,16 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.metadata.sql.util.Initializer;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
-import org.apache.sis.referencing.factory.UnavailableFactoryException;
-import org.apache.sis.util.resources.Messages;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.util.resources.Messages;
 
 
 /**

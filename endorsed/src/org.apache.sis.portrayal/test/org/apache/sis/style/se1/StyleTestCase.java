@@ -24,7 +24,7 @@ import org.apache.sis.test.TestCase;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.filter.Literal;

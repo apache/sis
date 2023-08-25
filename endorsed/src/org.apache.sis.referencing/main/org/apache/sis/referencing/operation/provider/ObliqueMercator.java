@@ -26,7 +26,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.measure.Units;
 
 
-
 /**
  * The provider for <cite>"Hotine Oblique Mercator (variant A)"</cite> projection (EPSG:9812).
  * Also the parent class for all variants.

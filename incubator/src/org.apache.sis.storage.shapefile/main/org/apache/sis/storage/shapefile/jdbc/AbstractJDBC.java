@@ -19,7 +19,6 @@ package org.apache.sis.storage.shapefile.jdbc;
 import java.io.File;
 import java.sql.*;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.internal.AutoChecker;
 
 

@@ -24,15 +24,16 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.storage.shapefile.jdbc.*;
 import org.apache.sis.storage.shapefile.InvalidShapefileFormatException;
 import org.apache.sis.storage.shapefile.ShapeTypeEnum;
+import org.apache.sis.storage.shapefile.jdbc.*;
+import com.esri.core.geometry.*;
+
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 
-import com.esri.core.geometry.*;
 
 /**
  * Reader of a Shapefile Binary content by the way of a {@link java.nio.MappedByteBuffer}

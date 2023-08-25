@@ -32,11 +32,11 @@ import org.apache.sis.xml.bind.gco.StringAdapter;
 import org.apache.sis.xml.bind.metadata.code.CI_TelephoneTypeCode;
 import org.apache.sis.metadata.internal.Dependencies;
 
+// Specific to the main branch:
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
-// Branch-specific imports
 import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.apache.sis.pending.geoapi.evolution.InterimType;

@@ -22,10 +22,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
-import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
-import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -36,6 +32,12 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertPartyNameEquals;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the main branch:
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
+import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
+import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
 
 
 /**

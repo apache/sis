@@ -17,20 +17,24 @@
 package org.apache.sis.test.mock;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.Collection;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
+
+// Specific to the main branch:
+import java.util.Set;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
 
 
 /**

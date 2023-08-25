@@ -21,11 +21,11 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.xml.stream.RewriteOnUpdate;
 import org.apache.sis.storage.xml.stream.StaxStreamWriter;
-import org.apache.sis.storage.DataStoreException;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 
 

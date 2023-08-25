@@ -27,7 +27,7 @@ import java.util.logging.SimpleFormatter;
 
 import static org.junit.Assert.*;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.junit.rules.TestWatchman;
 import org.junit.runners.model.FrameworkMethod;
 

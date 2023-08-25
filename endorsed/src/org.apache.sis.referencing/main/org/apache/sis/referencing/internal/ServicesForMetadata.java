@@ -16,35 +16,23 @@
  */
 package org.apache.sis.referencing.internal;
 
-import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
-
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.CRSFactory;
-import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
@@ -53,46 +41,56 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.CoordinateFormat;
-import org.apache.sis.metadata.internal.NameToIdentifier;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.TemporalAccessor;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.referencing.cs.DefaultParametricCS;
-import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.system.Modules;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.Utilities;
 
 import static java.util.logging.Logger.getLogger;
 
-// Branch-dependent imports
+// Specific to the main branch:
+import java.util.Map;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.TypeName;
+import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
+import org.apache.sis.metadata.internal.NameToIdentifier;
+import org.apache.sis.referencing.cs.DefaultParametricCS;
+import org.apache.sis.referencing.datum.DefaultParametricDatum;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.util.Deprecable;
 
 
 /**

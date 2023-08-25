@@ -33,14 +33,14 @@ import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 

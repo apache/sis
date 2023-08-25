@@ -18,12 +18,12 @@ package org.apache.sis.storage.netcdf.ucar;
 
 import java.util.stream.Stream;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.netcdf.base.DiscreteSampling;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.DataStore;
 import ucar.nc2.ft.DsgFeatureCollection;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 

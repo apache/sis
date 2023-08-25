@@ -22,6 +22,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -31,18 +32,17 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.math.Fraction;
-
-// Test imports
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.junit.After;
 import org.junit.Test;
+
+// Specific to the main branch:
+import org.junit.Ignore;
+
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.opengis.test.Assert.*;
 
-// Branch-dependent imports
-import org.junit.Ignore;
-import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.TransformTestCase;
 
 

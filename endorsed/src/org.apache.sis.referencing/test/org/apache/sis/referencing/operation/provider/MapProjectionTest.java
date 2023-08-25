@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.provider;
 
 import java.util.Iterator;
 import org.opengis.util.GenericName;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -30,6 +29,9 @@ import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertOgcIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 import static org.apache.sis.util.internal.Constants.*;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

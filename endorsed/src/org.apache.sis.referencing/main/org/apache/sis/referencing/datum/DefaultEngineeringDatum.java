@@ -21,10 +21,12 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

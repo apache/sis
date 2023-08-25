@@ -35,14 +35,14 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.filter.DefaultFilterFactory;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
-import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.pending.geoapi.filter.BinaryComparisonOperator;
 
 

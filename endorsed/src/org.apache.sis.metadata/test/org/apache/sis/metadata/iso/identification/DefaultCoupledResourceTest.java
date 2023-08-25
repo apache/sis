@@ -21,15 +21,17 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
-import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.metadata.replace.ServiceParameterTest;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 
 
 /**

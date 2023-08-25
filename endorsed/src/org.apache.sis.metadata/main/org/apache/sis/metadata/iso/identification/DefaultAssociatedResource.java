@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.AggregateInformation;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
@@ -29,8 +28,10 @@ import org.apache.sis.xml.bind.metadata.code.DS_AssociationTypeCode;
 import org.apache.sis.xml.bind.metadata.code.DS_InitiativeTypeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-// Branch-specific imports.
+// Specific to the main branch:
+import org.opengis.metadata.identification.AggregateInformation;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Obligation.CONDITIONAL;

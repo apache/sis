@@ -33,13 +33,14 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
+
 import static java.lang.StrictMath.*;
 
-// Test imports
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.Assertions;
 import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
+
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 

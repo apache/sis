@@ -29,10 +29,10 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import javax.imageio.ImageReader;                           // For javadoc
 import org.opengis.metadata.spatial.PixelOrientation;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.TableAppender;
 
 

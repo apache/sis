@@ -29,13 +29,13 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.filter.internal.XPath;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
-import org.opengis.util.ScopedName;
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.opengis.util.ScopedName;
 import org.apache.sis.pending.geoapi.filter.Name;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 

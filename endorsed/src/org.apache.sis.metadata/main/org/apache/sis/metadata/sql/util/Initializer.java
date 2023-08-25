@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.sql.util;
 
 import java.util.Locale;
+import java.util.ServiceLoader;
 import java.util.function.Supplier;
 import java.util.concurrent.Callable;
-import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.sql.DataSource;

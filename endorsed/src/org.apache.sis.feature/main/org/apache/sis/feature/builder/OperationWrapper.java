@@ -19,7 +19,7 @@ package org.apache.sis.feature.builder;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractIdentifiedType;
 
 

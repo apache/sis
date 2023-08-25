@@ -34,7 +34,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.util.Characters;
@@ -47,6 +46,9 @@ import org.apache.sis.util.internal.X364;
 import static org.apache.sis.util.internal.X364.*;
 import static org.apache.sis.util.CharSequences.spaces;
 import static org.apache.sis.util.internal.Constants.DEFAULT_SEPARATOR;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

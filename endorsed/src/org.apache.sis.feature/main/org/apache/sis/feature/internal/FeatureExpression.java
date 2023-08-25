@@ -23,13 +23,13 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.filter.internal.Node;
+
+// Specific to the main branch:
+import org.apache.sis.filter.Expression;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
-import org.apache.sis.filter.internal.Node;
-
-// Branch-dependent imports
-import org.apache.sis.filter.Expression;
 
 
 /**

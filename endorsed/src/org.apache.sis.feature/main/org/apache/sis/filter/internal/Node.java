@@ -30,9 +30,9 @@ import org.opengis.util.ScopedName;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.feature.internal.FeatureExpression;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.feature.internal.FeatureExpression;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
 

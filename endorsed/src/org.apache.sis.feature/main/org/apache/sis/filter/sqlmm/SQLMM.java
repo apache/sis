@@ -24,7 +24,7 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 
 import static org.apache.sis.geometry.wrapper.GeometryType.*;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 
 

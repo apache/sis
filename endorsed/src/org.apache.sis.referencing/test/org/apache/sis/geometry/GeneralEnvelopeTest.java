@@ -36,7 +36,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 

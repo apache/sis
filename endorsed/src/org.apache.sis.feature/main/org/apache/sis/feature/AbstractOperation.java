@@ -31,8 +31,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Classes;
 
-// Branch-dependent imports
-
 
 /**
  * Describes the behaviour of a feature type as a function or a method.

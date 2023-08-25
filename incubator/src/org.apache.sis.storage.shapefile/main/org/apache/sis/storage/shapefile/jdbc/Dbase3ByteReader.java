@@ -21,10 +21,12 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.sis.storage.shapefile.jdbc.resultset.SQLIllegalColumnIndexException;
 import org.apache.sis.storage.shapefile.jdbc.resultset.SQLNoSuchFieldException;
+
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
+
 
 /**
  * Database byte reader contract. Used to allow refactoring of core byte management of a DBase file.

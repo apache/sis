@@ -28,12 +28,12 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.storage.shapefile.jdbc.metadata.DBFResultSetMataData;
 import org.apache.sis.storage.shapefile.jdbc.sql.*;
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
+
 
 /**
  * A ResultSet based on a record.

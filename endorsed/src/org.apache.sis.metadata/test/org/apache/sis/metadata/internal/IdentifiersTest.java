@@ -20,13 +20,15 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import org.opengis.metadata.Identifier;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

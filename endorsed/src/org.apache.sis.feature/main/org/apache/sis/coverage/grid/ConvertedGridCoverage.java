@@ -32,7 +32,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.coverage.CannotEvaluateException;
 
 

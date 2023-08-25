@@ -20,7 +20,7 @@ import java.util.Date;
 import java.io.Serializable;
 import org.apache.sis.test.TestUtilities;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.temporal.Period;

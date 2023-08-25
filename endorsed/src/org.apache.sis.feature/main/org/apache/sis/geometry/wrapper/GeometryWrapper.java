@@ -21,8 +21,8 @@ import java.util.Iterator;
 import java.util.OptionalInt;
 import javax.measure.Unit;
 import javax.measure.Quantity;
-import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Geometry;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -32,14 +32,14 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
 

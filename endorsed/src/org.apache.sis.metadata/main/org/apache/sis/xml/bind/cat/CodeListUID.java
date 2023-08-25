@@ -17,7 +17,6 @@
 package org.apache.sis.xml.bind.cat;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
@@ -25,9 +24,12 @@ import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.internal.CodeLists;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
+
+// Specific to the main branch:
+import java.util.ResourceBundle;
+import org.apache.sis.util.internal.CodeLists;
 
 
 /**

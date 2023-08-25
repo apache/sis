@@ -26,14 +26,12 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.Processing;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.lineage.ProcessStepReport;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
@@ -41,8 +39,13 @@ import org.apache.sis.xml.bind.gml.TM_Primitive;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
 import org.apache.sis.metadata.internal.TemporalUtilities;
 
-// Branch-specific imports
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the main branch:
+import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

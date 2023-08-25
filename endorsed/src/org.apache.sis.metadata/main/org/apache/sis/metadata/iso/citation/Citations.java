@@ -25,7 +25,6 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
@@ -39,6 +38,9 @@ import org.apache.sis.xml.bind.NonMarshalledAuthority;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

@@ -23,7 +23,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-
 import org.apache.sis.storage.shapefile.jdbc.*;
 import org.apache.sis.storage.shapefile.jdbc.metadata.DBFDatabaseMetaData;
 import org.apache.sis.storage.shapefile.jdbc.resultset.*;

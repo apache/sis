@@ -24,9 +24,9 @@ import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 
-// Branch-dependent imports
-import org.apache.sis.feature.DefaultFeatureType;
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
+import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 

@@ -28,10 +28,10 @@ import java.sql.SQLException;
 import org.apache.sis.filter.internal.FunctionNames;
 import org.apache.sis.filter.internal.Visitor;
 
-// Branch-dependent imports
-import org.apache.sis.feature.AbstractFeature;
+// Specific to the main branch:
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
+import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 import org.apache.sis.pending.geoapi.filter.LogicalOperator;

@@ -19,14 +19,12 @@ package org.apache.sis.openoffice;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-
 import com.sun.star.lang.Locale;
 import com.sun.star.lang.XLocalizable;
 import com.sun.star.lang.XServiceInfo;
 import com.sun.star.lang.XServiceName;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.lib.uno.helper.WeakBase;
-
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;

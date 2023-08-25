@@ -25,7 +25,6 @@ import java.util.IdentityHashMap;
 import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.simple.CitationConstant;
 import org.apache.sis.metadata.simple.SimpleCitation;
@@ -41,6 +40,9 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.iso.citation.Citations.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

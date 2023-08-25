@@ -25,16 +25,18 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.util.internal.Numerics;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the main branch:
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 

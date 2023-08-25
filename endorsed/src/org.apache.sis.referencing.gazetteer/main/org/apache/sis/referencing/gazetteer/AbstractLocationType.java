@@ -22,15 +22,15 @@ import java.util.Objects;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.apache.sis.referencing.gazetteer.internal.Resources;
-import org.apache.sis.util.collection.DefaultTreeTable;
-import org.apache.sis.util.collection.TableColumn;
-import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import java.util.Collection;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.GeographicExtent;

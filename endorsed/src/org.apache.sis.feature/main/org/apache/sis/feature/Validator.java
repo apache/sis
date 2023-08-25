@@ -28,9 +28,11 @@ import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.quality.DefaultDomainConsistency;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
-import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.metadata.iso.quality.DefaultScope;
 
 
 /**

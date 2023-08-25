@@ -35,6 +35,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.ToolbarButton;
@@ -45,7 +46,6 @@ import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.StatusBar;
-import org.apache.sis.gui.Widget;
 
 
 /**

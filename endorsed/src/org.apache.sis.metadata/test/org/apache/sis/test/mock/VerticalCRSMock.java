@@ -16,7 +16,6 @@
  */
 package org.apache.sis.test.mock;
 
-import java.util.Date;
 import javax.measure.Unit;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -28,6 +27,9 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.Units;
+
+// Specific to the main branch:
+import java.util.Date;
 
 
 /**

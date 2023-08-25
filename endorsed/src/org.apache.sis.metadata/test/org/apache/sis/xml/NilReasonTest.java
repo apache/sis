@@ -19,7 +19,6 @@ package org.apache.sis.xml;
 import java.net.URISyntaxException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
@@ -28,6 +27,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+
+// Specific to the main branch:
+import org.opengis.metadata.citation.ResponsibleParty;
 
 
 /**

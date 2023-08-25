@@ -28,16 +28,17 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.SecurityConstraints;
-import org.opengis.metadata.quality.Scope;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.MD_Releasability;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
-// Branch-specific imports
+// Specific to the main branch:
+import org.opengis.metadata.quality.Scope;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

@@ -35,7 +35,6 @@ import javax.management.JMException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.InstanceAlreadyExistsException;
 import java.lang.management.ManagementFactory;
-
 import org.apache.sis.setup.About;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;

@@ -22,7 +22,7 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

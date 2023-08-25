@@ -29,7 +29,7 @@ import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.ValueReference;

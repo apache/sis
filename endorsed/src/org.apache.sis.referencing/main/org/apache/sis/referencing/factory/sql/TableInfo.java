@@ -25,7 +25,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.util.CharSequences;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.referencing.crs.DefaultParametricCRS;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;

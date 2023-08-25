@@ -21,7 +21,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.Citations;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
 
 

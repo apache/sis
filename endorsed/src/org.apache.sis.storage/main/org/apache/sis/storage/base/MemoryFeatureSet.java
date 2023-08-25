@@ -23,7 +23,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 

@@ -17,7 +17,6 @@
 package org.apache.sis.referencing;
 
 import java.util.Locale;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
@@ -32,6 +31,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

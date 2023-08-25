@@ -40,12 +40,12 @@ import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.setup.OptionKey;
 
 
 /**

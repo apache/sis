@@ -23,7 +23,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.Identification;
-import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.internal.CollectionsExt;
@@ -32,6 +31,9 @@ import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+
+// Specific to the main branch:
+import org.opengis.metadata.identification.DataIdentification;
 
 
 /**

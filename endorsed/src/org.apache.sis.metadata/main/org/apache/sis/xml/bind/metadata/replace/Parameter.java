@@ -16,9 +16,7 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
-import java.util.Set;
 import java.util.Objects;
-import javax.measure.Unit;
 import org.opengis.util.TypeName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
@@ -26,6 +24,10 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.metadata.simple.SimpleIdentifiedObject;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.util.ComparisonMode;
+
+// Specific to the main branch:
+import java.util.Set;
+import javax.measure.Unit;
 
 
 /**

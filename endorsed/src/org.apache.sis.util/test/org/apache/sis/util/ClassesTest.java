@@ -25,6 +25,7 @@ import org.apache.sis.test.TestCase;
 import static org.junit.Assert.*;
 import static org.apache.sis.util.Classes.*;
 
+
 /*
  * Following imports are not used for actual code.
  * The are used only as various Class<?> arguments

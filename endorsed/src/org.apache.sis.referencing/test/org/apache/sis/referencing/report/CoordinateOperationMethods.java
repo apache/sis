@@ -32,12 +32,18 @@ import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Characters;
+import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.URLs;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.AlbersEqualArea;
 import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.ObliqueMercator;
-import org.apache.sis.util.internal.URLs;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -45,14 +51,8 @@ import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Characters;
-import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Version;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
 
 

@@ -18,32 +18,36 @@ package org.apache.sis.metadata.simple;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Locale;
-import org.opengis.metadata.ApplicationSchemaInformation;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.MetadataExtensionInformation;
-import org.opengis.metadata.PortrayalCatalogueReference;
-import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.PresentationForm;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.identification.*;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.opengis.util.InternationalString;
+
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the main branch:
+import java.util.Date;
+import org.opengis.metadata.ApplicationSchemaInformation;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.MetadataExtensionInformation;
+import org.opengis.metadata.PortrayalCatalogueReference;
+import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.distribution.Format;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.identification.*;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
-import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.spatial.SpatialRepresentation;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.util.InternationalString;
 
 
 /**

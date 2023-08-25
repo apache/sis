@@ -18,7 +18,7 @@ package org.apache.sis.storage.sql.postgis;
 
 import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 
 

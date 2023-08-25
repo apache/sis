@@ -25,17 +25,17 @@ import org.apache.sis.feature.Features;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.AbstractFeatureSet;
+import org.apache.sis.storage.Query;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.storage.AbstractFeatureSet;
-import org.apache.sis.storage.Query;
-import org.apache.sis.storage.Resource;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 

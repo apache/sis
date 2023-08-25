@@ -30,7 +30,6 @@ import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.PixelIterator;
-import org.apache.sis.image.SequenceType;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
@@ -38,6 +37,9 @@ import org.apache.sis.util.Debug;
 import static org.apache.sis.image.processing.isoline.Tracer.UPPER_LEFT;
 import static org.apache.sis.image.processing.isoline.Tracer.UPPER_RIGHT;
 import static org.apache.sis.image.processing.isoline.Tracer.LOWER_RIGHT;
+
+// Specific to the main branch:
+import org.apache.sis.image.SequenceType;
 
 
 /**

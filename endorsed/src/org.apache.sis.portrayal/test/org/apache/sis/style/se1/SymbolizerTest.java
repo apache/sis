@@ -18,10 +18,11 @@ package org.apache.sis.style.se1;
 
 import org.apache.sis.measure.Units;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 

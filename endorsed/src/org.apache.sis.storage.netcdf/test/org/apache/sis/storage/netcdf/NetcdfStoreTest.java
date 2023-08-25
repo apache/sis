@@ -22,10 +22,12 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.util.Version;
-import org.apache.sis.storage.netcdf.base.TestData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.apache.sis.storage.netcdf.base.TestData;
 
 
 /**

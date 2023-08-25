@@ -18,9 +18,11 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.opengis.util.CodeList;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+
+// Specific to the main branch:
+import org.opengis.util.CodeList;
 
 
 /**

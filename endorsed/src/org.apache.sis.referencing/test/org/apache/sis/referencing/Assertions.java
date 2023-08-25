@@ -29,7 +29,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.cs.AxisDirection;
@@ -51,6 +50,9 @@ import org.apache.sis.test.TestUtilities;
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

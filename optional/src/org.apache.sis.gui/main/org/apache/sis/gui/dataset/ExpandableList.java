@@ -34,6 +34,7 @@ import javafx.scene.layout.BackgroundFill;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.gui.internal.Styles;
 
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 
 

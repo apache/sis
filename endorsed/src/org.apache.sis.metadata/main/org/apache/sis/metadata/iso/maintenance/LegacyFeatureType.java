@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.maintenance;
 
+// Specific to the main and geoapi-3.1 branches:
 import java.util.Set;
 import java.util.LinkedHashSet;
 import org.opengis.feature.type.FeatureType;

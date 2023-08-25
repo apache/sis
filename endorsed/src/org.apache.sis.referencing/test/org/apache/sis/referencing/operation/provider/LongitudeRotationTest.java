@@ -27,8 +27,10 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the main branch:
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**

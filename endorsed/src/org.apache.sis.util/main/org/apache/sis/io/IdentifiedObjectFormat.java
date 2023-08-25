@@ -22,10 +22,12 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.MetadataServices;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

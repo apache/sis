@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.isNaN;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

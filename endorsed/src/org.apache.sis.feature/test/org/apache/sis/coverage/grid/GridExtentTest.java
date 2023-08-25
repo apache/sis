@@ -29,7 +29,6 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
-import org.apache.sis.coverage.PointOutsideCoverageException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -40,11 +39,15 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
+
+// Specific to the main branch:
+import org.apache.sis.coverage.PointOutsideCoverageException;
+
+import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**

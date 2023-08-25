@@ -36,15 +36,14 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -52,6 +51,9 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

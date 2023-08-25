@@ -30,7 +30,7 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.CONDITIONAL;

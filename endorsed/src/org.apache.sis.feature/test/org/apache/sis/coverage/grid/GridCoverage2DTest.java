@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.coverage.PointOutsideCoverageException;
 
 

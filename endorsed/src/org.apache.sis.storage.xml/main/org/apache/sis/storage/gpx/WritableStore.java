@@ -30,7 +30,7 @@ import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.IllegalFeatureTypeException;
 import org.apache.sis.util.collection.BackingStoreException;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 

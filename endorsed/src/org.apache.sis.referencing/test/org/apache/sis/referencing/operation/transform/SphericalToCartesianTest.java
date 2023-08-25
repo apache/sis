@@ -22,7 +22,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 
 import static java.lang.StrictMath.*;
 
-// Test dependencies
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;

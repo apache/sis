@@ -32,16 +32,16 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.logging.Logging;
 
 
 /**

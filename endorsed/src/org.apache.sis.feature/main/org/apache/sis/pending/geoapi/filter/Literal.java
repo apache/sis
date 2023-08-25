@@ -16,6 +16,7 @@
  */
 package org.apache.sis.pending.geoapi.filter;
 
+// Specific to the main branch:
 import java.util.List;
 import java.util.Collections;
 import org.opengis.util.ScopedName;

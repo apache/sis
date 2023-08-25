@@ -34,15 +34,13 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.util.internal.Constants;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
-
-// Test imports
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -51,11 +49,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEqualsRegex;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the main branch:
+import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 
 /**

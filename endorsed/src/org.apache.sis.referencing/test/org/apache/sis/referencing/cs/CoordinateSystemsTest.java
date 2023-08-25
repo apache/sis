@@ -41,8 +41,10 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 import static org.apache.sis.referencing.cs.CoordinateSystems.*;
 import static org.junit.Assert.*;
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
+
+// Specific to the main branch:
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**

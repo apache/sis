@@ -23,8 +23,8 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

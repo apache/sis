@@ -19,9 +19,9 @@ package org.apache.sis.buildtools.gradle;
 import java.util.Map;
 import java.util.HashMap;
 import org.gradle.api.Project;
+import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPom;
 import org.gradle.api.publish.maven.MavenPublication;
-import org.gradle.api.publish.PublishingExtension;
 import org.apache.sis.buildtools.maven.Generator;
 
 

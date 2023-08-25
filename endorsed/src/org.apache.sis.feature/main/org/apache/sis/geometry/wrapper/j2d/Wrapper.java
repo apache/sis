@@ -39,7 +39,7 @@ import org.apache.sis.referencing.util.j2d.AbstractShape;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 
 

@@ -31,8 +31,8 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

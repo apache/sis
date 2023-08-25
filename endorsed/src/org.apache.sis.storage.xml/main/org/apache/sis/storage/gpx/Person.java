@@ -26,10 +26,10 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Role;
-import org.opengis.metadata.citation.Telephone;
 import org.opengis.util.InternationalString;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.citation.ResponsibleParty;
 
 

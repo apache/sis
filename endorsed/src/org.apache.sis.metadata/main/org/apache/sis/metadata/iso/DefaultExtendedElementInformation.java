@@ -21,8 +21,6 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Datatype;
-import org.opengis.metadata.Obligation;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
@@ -39,8 +37,13 @@ import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
-// Branch-specific imports
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.Obligation;
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

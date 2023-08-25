@@ -40,7 +40,7 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
 
 

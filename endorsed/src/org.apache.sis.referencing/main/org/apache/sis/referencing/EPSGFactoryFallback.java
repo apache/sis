@@ -45,12 +45,12 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Fallback;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.MetadataServices;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.URLs;
 import org.apache.sis.setup.InstallationResources;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 

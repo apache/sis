@@ -32,6 +32,8 @@ import org.junit.Test;
 import static java.lang.StrictMath.PI;
 import static java.lang.StrictMath.toRadians;
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 

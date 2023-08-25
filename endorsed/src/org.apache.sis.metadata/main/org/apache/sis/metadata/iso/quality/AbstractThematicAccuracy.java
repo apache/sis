@@ -22,6 +22,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.ThematicAccuracy;
 import org.opengis.metadata.quality.ThematicClassificationCorrectness;
 import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
+
+// Specific to the main branch:
 import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
 
 

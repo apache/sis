@@ -27,18 +27,20 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.storage.netcdf.base.TestData;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.base.TestCase;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.test.ContentVerifier;
-import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
+
+// Specific to the main branch:
+import org.apache.sis.storage.netcdf.base.TestData;
+import org.apache.sis.test.ContentVerifier;
 
 
 /**

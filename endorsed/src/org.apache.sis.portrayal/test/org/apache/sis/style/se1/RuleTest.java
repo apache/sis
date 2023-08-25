@@ -22,7 +22,7 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Filter;
 
 

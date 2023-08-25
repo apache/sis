@@ -28,12 +28,13 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.util.ArraysExt;
-
-// Test imports
 import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
+
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 

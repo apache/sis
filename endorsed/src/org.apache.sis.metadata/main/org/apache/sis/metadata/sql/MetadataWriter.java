@@ -31,12 +31,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import java.lang.reflect.Modifier;
-
-import org.opengis.util.CodeList;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.util.FactoryException;
-
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -55,7 +52,8 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.IdentifiedObject;
 
-// Branch-dependent imports
+// Specific to the main branch:
+import org.opengis.util.CodeList;
 import org.opengis.referencing.ReferenceIdentifier;
 
 

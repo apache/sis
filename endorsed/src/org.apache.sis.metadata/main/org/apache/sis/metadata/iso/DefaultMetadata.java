@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +44,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
@@ -60,6 +58,7 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.Emptiable;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -71,26 +70,31 @@ import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.xml.bind.lan.LocaleAdapter;
 import org.apache.sis.xml.bind.lan.OtherLocales;
 import org.apache.sis.xml.bind.lan.PT_Locale;
-import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.math.FunctionProperty;
 
-// Branch-specific imports
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the main branch:
+import java.util.LinkedHashMap;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+
 import org.apache.sis.xml.bind.metadata.code.MD_CharacterSetCode;
 
 

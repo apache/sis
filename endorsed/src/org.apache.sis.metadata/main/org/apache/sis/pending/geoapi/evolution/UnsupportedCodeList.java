@@ -15,6 +15,7 @@
  */
 package org.apache.sis.pending.geoapi.evolution;
 
+// Specific to the main branch:
 import java.util.List;
 import java.util.ArrayList;
 import org.opengis.annotation.UML;

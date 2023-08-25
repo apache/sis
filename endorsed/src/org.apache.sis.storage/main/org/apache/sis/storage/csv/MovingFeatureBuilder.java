@@ -30,7 +30,7 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractFeature;
 

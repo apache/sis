@@ -32,7 +32,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Angle;

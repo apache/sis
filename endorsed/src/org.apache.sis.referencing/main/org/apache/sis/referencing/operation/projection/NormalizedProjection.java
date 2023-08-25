@@ -64,7 +64,7 @@ import org.apache.sis.util.logging.Logging;
 
 import static java.lang.Math.*;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
 
 

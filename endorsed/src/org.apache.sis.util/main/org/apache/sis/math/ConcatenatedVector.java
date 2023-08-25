@@ -18,8 +18,8 @@ package org.apache.sis.math;
 
 import java.io.Serializable;
 import org.apache.sis.util.Classes;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.measure.NumberRange;
 
 
 /**

@@ -23,8 +23,9 @@ import org.opengis.metadata.citation.Contact;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

@@ -21,9 +21,10 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
 import jakarta.xml.bind.annotation.XmlType;
-
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
+
+// Specific to the main branch:
 import org.opengis.metadata.citation.ResponsibleParty;
 
 

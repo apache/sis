@@ -30,8 +30,8 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.provider.HyperbolicCassiniSoldner;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static org.apache.sis.referencing.operation.provider.CassiniSoldner.*;

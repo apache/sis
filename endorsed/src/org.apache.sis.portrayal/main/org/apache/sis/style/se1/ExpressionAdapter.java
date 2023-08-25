@@ -18,7 +18,7 @@ package org.apache.sis.style.se1;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

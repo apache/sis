@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.GenericName;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import java.util.Objects;
 
 

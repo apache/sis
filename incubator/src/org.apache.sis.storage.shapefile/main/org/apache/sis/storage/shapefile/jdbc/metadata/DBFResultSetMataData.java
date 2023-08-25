@@ -22,12 +22,12 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Objects;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.AbstractJDBC;
 import org.apache.sis.storage.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
 import org.apache.sis.storage.shapefile.jdbc.resultset.*;
+
 
 /**
  * ResultSet Metadata.

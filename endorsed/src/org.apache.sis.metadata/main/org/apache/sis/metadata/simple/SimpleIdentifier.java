@@ -19,12 +19,14 @@ package org.apache.sis.metadata.simple;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.internal.Constants;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

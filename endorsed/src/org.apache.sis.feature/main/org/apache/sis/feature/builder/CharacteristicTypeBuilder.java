@@ -23,8 +23,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 
-// Branch-dependent imports
-
 
 /**
  * Describes one characteristic of the {@code AttributeType} will will be built by a {@code FeatureTypeBuilder}.

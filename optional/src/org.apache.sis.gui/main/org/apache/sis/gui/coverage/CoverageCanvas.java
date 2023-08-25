@@ -26,9 +26,9 @@ import java.io.IOException;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.image.RenderedImage;
 import java.awt.Stroke;
 import java.awt.BasicStroke;
+import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
@@ -74,11 +74,11 @@ import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.LogHandler;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 

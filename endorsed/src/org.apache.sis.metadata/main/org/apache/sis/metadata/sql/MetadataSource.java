@@ -55,12 +55,16 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.DelayedExecutor;
 import org.apache.sis.system.DelayedRunnable;
+import org.apache.sis.system.Configuration;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.metadata.sql.util.Initializer;
 import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
 import org.apache.sis.metadata.internal.ReferencingServices;
-import org.apache.sis.system.Configuration;
-import org.apache.sis.system.Loggers;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
@@ -69,13 +73,9 @@ import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.evolution.Interim;
 
 

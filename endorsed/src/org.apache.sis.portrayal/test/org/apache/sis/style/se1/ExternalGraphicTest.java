@@ -20,6 +20,7 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 

@@ -37,10 +37,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
-import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.util.collection.BackingStoreException;
 

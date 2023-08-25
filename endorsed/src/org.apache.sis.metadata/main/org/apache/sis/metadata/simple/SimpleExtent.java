@@ -21,9 +21,11 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.VerticalExtent;
-import org.opengis.util.InternationalString;
 
 import static org.apache.sis.util.internal.CollectionsExt.singletonOrEmpty;
+
+// Specific to the main branch:
+import org.opengis.util.InternationalString;
 
 
 /**

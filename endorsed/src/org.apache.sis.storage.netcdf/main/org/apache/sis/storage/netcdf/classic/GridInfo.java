@@ -21,16 +21,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.SortedMap;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.Axis;
 import org.apache.sis.storage.netcdf.base.AxisType;
 import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Dimension;
 import org.apache.sis.storage.netcdf.internal.Resources;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import ucar.nc2.constants.CF;
 
 

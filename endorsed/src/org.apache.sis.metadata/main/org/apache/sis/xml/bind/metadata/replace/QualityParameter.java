@@ -28,13 +28,15 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.xml.Namespaces;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
+
+// Specific to the main branch:
 import org.apache.sis.metadata.internal.ReferencingServices;
 
 

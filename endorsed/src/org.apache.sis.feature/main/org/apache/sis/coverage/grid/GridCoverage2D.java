@@ -43,21 +43,21 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Debug;
 
 import static java.lang.Math.min;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.toIntExact;
 
-// Branch-specific imports
+// Specific to the main branch:
 import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.PointOutsideCoverageException;
 

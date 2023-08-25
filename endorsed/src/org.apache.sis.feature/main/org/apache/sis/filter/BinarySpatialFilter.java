@@ -18,13 +18,13 @@ package org.apache.sis.filter;
 
 import java.util.Collection;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 
 

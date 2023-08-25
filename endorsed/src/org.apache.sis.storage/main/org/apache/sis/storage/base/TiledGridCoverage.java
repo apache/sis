@@ -31,7 +31,6 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.grid.j2d.DeferredProperty;
 import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.storage.DataStoreException;
@@ -49,6 +48,9 @@ import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.util.internal.Numerics.ceilDiv;
+
+// Specific to the main branch:
+import org.apache.sis.coverage.CannotEvaluateException;
 
 
 /**

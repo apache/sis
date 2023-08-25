@@ -18,8 +18,8 @@ package org.apache.sis.xml.bind.metadata.code;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.annotation.Obligation;
-import org.apache.sis.xml.bind.cat.EnumAdapter;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.cat.EnumAdapter;
 
 
 /**

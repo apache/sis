@@ -25,7 +25,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.pending.geoapi.filter.ValueReference;

@@ -24,7 +24,7 @@ import java.time.Instant;
 import java.time.DateTimeException;
 import java.io.IOException;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractFeature;
 

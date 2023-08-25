@@ -30,27 +30,29 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.DefinitionVerifier;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.Modules;
+import org.apache.sis.util.Localized;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
-import org.apache.sis.util.Localized;
-import org.apache.sis.util.Utilities;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

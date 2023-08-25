@@ -25,7 +25,7 @@ import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.metadata.internal.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Period;
 import org.apache.sis.pending.geoapi.temporal.Instant;
 

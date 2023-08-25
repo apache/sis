@@ -31,10 +31,10 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
 
 

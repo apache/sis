@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+// Specific to the main branch:
 import java.util.List;
 import java.util.function.Predicate;
 

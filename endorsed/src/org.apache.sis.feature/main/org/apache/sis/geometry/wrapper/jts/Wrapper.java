@@ -25,6 +25,9 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.IntFunction;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Debug;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -39,12 +42,7 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Debug;
-
-// Optional dependencies
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
@@ -62,7 +60,7 @@ import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
 

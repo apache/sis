@@ -23,10 +23,11 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.logging.Logger;
-
 import org.apache.sis.storage.DataStoreException;
 import org.junit.Ignore;
 import org.junit.Test;
+
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractAttribute;
 

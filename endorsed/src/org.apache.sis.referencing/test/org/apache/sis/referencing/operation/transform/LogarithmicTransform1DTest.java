@@ -18,12 +18,13 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
+
 import static java.lang.StrictMath.*;
 
-// Test imports
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
 

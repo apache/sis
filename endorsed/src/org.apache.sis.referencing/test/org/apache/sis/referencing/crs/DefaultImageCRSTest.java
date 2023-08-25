@@ -24,9 +24,9 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import org.apache.sis.referencing.datum.DefaultImageDatum;
 import org.apache.sis.referencing.cs.DefaultAffineCS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
+import org.apache.sis.referencing.datum.DefaultImageDatum;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.Namespaces;
@@ -34,9 +34,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the main branch:
+import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 
 /**

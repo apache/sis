@@ -24,7 +24,6 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
@@ -34,6 +33,9 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.storage.DataStoreException;
@@ -33,7 +34,6 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 
 /**

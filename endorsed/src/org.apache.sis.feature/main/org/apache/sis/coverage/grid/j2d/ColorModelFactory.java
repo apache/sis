@@ -33,14 +33,14 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.apache.sis.image.DataType;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.Debug;
 
 
 /**

@@ -22,17 +22,19 @@ import java.util.TimeZone;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.function.Supplier;
-import org.opengis.util.CodeList;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.MetadataServices;
 import org.apache.sis.metadata.sql.util.Initializer;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the main branch:
+import org.opengis.util.CodeList;
 
 
 /**

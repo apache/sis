@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso;
 
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
-import org.opengis.util.CodeList;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.PropertyConsistencyCheck;
@@ -26,6 +25,9 @@ import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.junit.Rule;
 import org.junit.Test;
+
+// Specific to the main branch:
+import org.opengis.util.CodeList;
 
 
 /**

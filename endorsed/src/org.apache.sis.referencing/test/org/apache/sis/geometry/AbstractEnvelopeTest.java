@@ -31,7 +31,7 @@ import static org.apache.sis.referencing.Assertions.assertContains;
 import static org.apache.sis.referencing.Assertions.assertDisjoint;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 

@@ -17,8 +17,8 @@
 package org.apache.sis.storage.shapefile.jdbc.metadata;
 
 import java.sql.*;
-
 import org.apache.sis.storage.shapefile.jdbc.AbstractJDBC;
+
 
 /**
  * Unimplemented methods of DatabaseMetaData.

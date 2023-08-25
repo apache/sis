@@ -20,7 +20,6 @@ import java.net.URI;
 import java.util.Locale;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
-
 import org.opengis.metadata.*;
 import org.opengis.metadata.citation.*;
 import org.opengis.metadata.extent.Extent;
@@ -29,7 +28,6 @@ import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.metadata.spatial.GeometricObjectType;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.VectorSpatialRepresentation;
-import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.AxisDirection;
@@ -38,23 +36,24 @@ import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-
-// Test dependencies
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the main branch:
+import org.opengis.metadata.identification.CharacterSet;
+
+import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
 
 
 /**

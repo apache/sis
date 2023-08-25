@@ -19,10 +19,10 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import java.util.HashMap;
 import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 

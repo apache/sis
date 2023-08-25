@@ -37,11 +37,13 @@ import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 
-// Branch-specific imports
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
+
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**

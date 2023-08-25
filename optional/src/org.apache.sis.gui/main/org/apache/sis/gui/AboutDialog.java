@@ -22,8 +22,8 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.setup.About;
 
 

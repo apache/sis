@@ -21,17 +21,18 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
-import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.Namespaces;
 
-// Branch-specific imports
+// Specific to the main branch:
+import org.opengis.metadata.quality.Scope;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

@@ -16,8 +16,6 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Collection;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -26,7 +24,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.extent.Extent;
@@ -44,15 +41,21 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.xml.bind.metadata.MD_Identifier;
-import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.MD_Identifier;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.iso.Types;
 
-// Branch-specific imports
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the main branch:
+import java.util.List;
+import java.util.ArrayList;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;

@@ -17,9 +17,8 @@
 package org.apache.sis.xml.bind.metadata.replace;
 
 import jakarta.xml.bind.JAXBException;
-import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.Namespaces;
@@ -27,6 +26,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

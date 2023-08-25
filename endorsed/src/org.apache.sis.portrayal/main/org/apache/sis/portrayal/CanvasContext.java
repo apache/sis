@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
@@ -35,7 +36,6 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.system.Configuration;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 
 /**

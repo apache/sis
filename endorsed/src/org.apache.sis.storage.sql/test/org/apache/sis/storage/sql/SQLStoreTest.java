@@ -34,14 +34,14 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.sql.feature.TableReference;
-import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.sql.TestDatabase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.AbstractIdentifiedType;

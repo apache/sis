@@ -32,12 +32,12 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.feature.internal.FeatureUtilities;
-import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
 

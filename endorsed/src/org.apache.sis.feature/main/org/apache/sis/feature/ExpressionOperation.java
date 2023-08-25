@@ -27,7 +27,7 @@ import org.apache.sis.feature.internal.FeatureUtilities;
 import org.apache.sis.filter.internal.FunctionNames;
 import org.apache.sis.filter.internal.Visitor;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.LogicalOperator;

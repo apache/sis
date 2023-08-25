@@ -20,12 +20,14 @@ import java.util.Iterator;
 import java.util.Collection;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.referencing.util.NilReferencingObject;
 
 import static org.apache.sis.util.internal.Strings.appendUnicodeIdentifier;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

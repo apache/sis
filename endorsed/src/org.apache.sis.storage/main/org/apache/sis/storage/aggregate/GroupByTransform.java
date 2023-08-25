@@ -27,11 +27,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**

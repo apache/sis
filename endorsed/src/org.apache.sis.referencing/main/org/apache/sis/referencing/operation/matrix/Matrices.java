@@ -20,11 +20,11 @@ import java.util.Arrays;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystem;             // For javadoc
+import org.opengis.referencing.cs.CoordinateSystem;                         // For javadoc
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
@@ -36,9 +36,9 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.Arithmetic;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.MathTransforms;       // For javadoc
 
 

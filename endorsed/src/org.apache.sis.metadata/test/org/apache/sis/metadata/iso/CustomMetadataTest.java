@@ -26,15 +26,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.constraint.Constraints;
-import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.maintenance.MaintenanceInformation;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -43,6 +38,13 @@ import org.apache.sis.xml.XML;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main branch:
+import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.constraint.Constraints;
+import org.opengis.metadata.distribution.Format;
+import org.opengis.metadata.maintenance.MaintenanceInformation;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
 
 
 /**

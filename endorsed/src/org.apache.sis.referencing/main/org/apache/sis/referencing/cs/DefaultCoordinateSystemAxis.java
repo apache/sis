@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import javax.measure.Unit;
-import javax.measure.quantity.Angle;
 import javax.measure.UnitConverter;
+import javax.measure.quantity.Angle;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -37,11 +37,11 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.internal.AxisNames;
-import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -60,6 +60,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.collection.Containers.property;
+
 
 /*
  * The identifier for axis of unknown name. We have to use this identifier when the axis direction changed,

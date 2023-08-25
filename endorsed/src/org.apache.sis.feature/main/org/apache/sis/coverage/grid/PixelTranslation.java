@@ -18,11 +18,11 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Map;
 import java.io.Serializable;
-
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.metadata.spatial.PixelOrientation;
+
 import static org.opengis.metadata.spatial.PixelOrientation.*;
 
 import org.apache.sis.util.Static;

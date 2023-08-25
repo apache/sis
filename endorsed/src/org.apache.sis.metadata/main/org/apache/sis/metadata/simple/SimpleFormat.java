@@ -19,9 +19,11 @@ package org.apache.sis.metadata.simple;
 import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.util.internal.Strings;
+
+// Specific to the main branch:
+import org.opengis.metadata.distribution.Distributor;
 
 
 /**

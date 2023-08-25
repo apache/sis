@@ -16,6 +16,7 @@
  */
 package org.apache.sis.style.se1;
 
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
 
 

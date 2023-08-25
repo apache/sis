@@ -22,7 +22,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.feature.internal.AttributeConvention;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 
 

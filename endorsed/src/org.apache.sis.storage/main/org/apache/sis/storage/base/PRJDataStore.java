@@ -19,12 +19,12 @@ package org.apache.sis.storage.base;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownServiceException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.net.UnknownServiceException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,10 +52,10 @@ import org.apache.sis.storage.wkt.StoreFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**

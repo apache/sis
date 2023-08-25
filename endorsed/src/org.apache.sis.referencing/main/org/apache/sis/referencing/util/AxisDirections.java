@@ -36,8 +36,10 @@ import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.cs.AxisDirection.*;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
-import static org.opengis.annotation.Specification.UNSPECIFIED;
 import static org.apache.sis.util.CharSequences.*;
+
+// Specific to the main branch:
+import static org.opengis.annotation.Specification.UNSPECIFIED;
 
 
 /**

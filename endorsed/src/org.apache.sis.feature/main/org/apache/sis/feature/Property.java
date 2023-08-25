@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+// Specific to the main branch:
 import org.opengis.util.GenericName;
 
 

@@ -100,5 +100,5 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.*;
-import org.apache.sis.xml.bind.metadata.code.*;
 import org.apache.sis.xml.bind.metadata.*;
+import org.apache.sis.xml.bind.metadata.code.*;

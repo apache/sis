@@ -21,6 +21,7 @@ import java.util.function.UnaryOperator;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.ImageDescription;
+import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.lineage.Source;
 import org.apache.sis.xml.bind.TypeRegistration;
@@ -34,7 +35,6 @@ import org.apache.sis.xml.bind.gmi.MI_Georeferenceable;
 import org.apache.sis.xml.bind.gmi.MI_ImageDescription;
 import org.apache.sis.xml.bind.gmi.MI_Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.spatial.Georectified;
 import org.opengis.metadata.spatial.Georeferenceable;
 

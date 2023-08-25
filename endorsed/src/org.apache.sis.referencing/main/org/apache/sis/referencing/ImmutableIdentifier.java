@@ -22,13 +22,11 @@ import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.metadata.internal.NameMeaning;
@@ -41,6 +39,12 @@ import org.apache.sis.io.wkt.ElementKind;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.Containers.property;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
+
+// Specific to the main branch:
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 
 
 /**

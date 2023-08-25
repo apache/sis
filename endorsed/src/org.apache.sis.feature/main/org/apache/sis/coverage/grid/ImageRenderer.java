@@ -48,10 +48,10 @@ import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.coverage.grid.j2d.WritableTiledImage;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.NullArgumentException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 
 import static java.lang.Math.addExact;

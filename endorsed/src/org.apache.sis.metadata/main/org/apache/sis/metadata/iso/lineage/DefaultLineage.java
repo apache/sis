@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.lineage.ProcessStep;
@@ -33,8 +32,10 @@ import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
 
-// Branch-specific imports
+// Specific to the main branch:
+import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

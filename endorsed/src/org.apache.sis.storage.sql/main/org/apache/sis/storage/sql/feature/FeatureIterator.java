@@ -30,7 +30,7 @@ import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.filter.SortOrder;
 import org.apache.sis.pending.geoapi.filter.SortProperty;

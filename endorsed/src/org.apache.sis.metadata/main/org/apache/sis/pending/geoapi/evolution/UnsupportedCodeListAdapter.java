@@ -16,6 +16,7 @@
  */
 package org.apache.sis.pending.geoapi.evolution;
 
+// Specific to the main branch:
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;

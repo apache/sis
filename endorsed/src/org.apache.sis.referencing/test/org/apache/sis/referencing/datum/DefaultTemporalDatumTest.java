@@ -28,10 +28,12 @@ import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
+
+// Specific to the main branch:
+import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
 
 
 /**

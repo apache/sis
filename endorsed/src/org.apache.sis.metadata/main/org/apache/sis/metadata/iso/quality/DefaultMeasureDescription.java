@@ -24,7 +24,7 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
-// Branch-dependent imports
+// Specific to the main branch:
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;

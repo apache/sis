@@ -19,8 +19,8 @@ package org.apache.sis.feature;
 import java.util.Collection;
 import java.util.Iterator;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

@@ -17,12 +17,12 @@
 package org.apache.sis.storage.netcdf.ucar;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Set;
 import java.util.List;
 import java.util.Formatter;
 import java.util.Collection;
-import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
@@ -44,6 +44,8 @@ import ucar.nc2.ft.DsgFeatureCollection;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.storage.netcdf.base.Dimension;
@@ -52,8 +54,6 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Convention;
 import org.apache.sis.storage.netcdf.base.DiscreteSampling;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 
 

@@ -23,18 +23,18 @@ import org.opengis.util.ScopedName;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.FeatureExpression;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Names;
 
-// Branch-dependent imports
-import org.apache.sis.feature.DefaultFeatureType;
+// Specific to the main branch:
 import org.apache.sis.filter.Expression;
+import org.apache.sis.feature.DefaultFeatureType;
 
 
 /**

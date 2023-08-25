@@ -26,9 +26,9 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.logging.Logger;
-
 import org.apache.sis.storage.shapefile.ShapeFileTest;
 import org.junit.Before;
+
 
 /**
  * Base class to settle a common environment to all the JDBC tests :

@@ -29,16 +29,18 @@ import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.lan.PT_Locale;
+import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 
-// Branch-specific imports
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
+
+// Specific to the main branch:
 import org.opengis.annotation.UML;
+
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**
