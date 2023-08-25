@@ -77,7 +77,7 @@ public final class AffineTransforms2D extends Static {
      * If the given matrix is already an instance of {@link AffineTransform}, then it is returned directly.
      * Otherwise the values are copied in a new {@code AffineTransform} instance.
      *
-     * @param  matrix  the matrix to returns as an affine transform, or {@code null}.
+     * @param  matrix  the matrix to return as an affine transform, or {@code null}.
      * @return the matrix argument if it can be safely casted (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
      * @throws IllegalArgumentException if the given matrix size is not 3×3 or if the matrix is not affine.

@@ -52,6 +52,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
@@ -535,6 +536,8 @@ public enum CommonCRS {
 
     /**
      * Returns the default two-dimensional normalized geographic CRS.
+     * This CRS is okay for <em>computational purposes</em> but should
+     * not be used for showing coordinates in graphical user interfaces.
      * The CRS returned by this method has the following properties:
      *
      * <ul>
@@ -544,15 +547,14 @@ public enum CommonCRS {
      *   <li>Prime meridian in Greenwich.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Default reference frame</h4>
      * This method makes no guarantees about the datum. The current default datum is WGS 84,
-     * but this may change in future SIS versions if a WGS 84 replacement become in wide use.</div>
+     * but this may change or become configurable in any future SIS versions.
      *
-     * This default CRS is assigned to
-     * {@linkplain org.apache.sis.geometry.GeneralEnvelope#GeneralEnvelope(org.opengis.metadata.extent.GeographicBoundingBox)
-     * envelopes created from a geographic bounding box}.
-     * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximated by definition,
-     * their datum can be arbitrary.
+     * <p>This default CRS is assigned to
+     * {@linkplain org.apache.sis.geometry.GeneralEnvelope#GeneralEnvelope(GeographicBoundingBox) envelopes created
+     * from a geographic bounding box}. Since ISO 19115 {@link GeographicBoundingBox} is approximated by definition,
+     * their datum can be arbitrary.</p>
      *
      * @return the default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
      */

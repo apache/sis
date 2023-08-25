@@ -142,7 +142,7 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
     }
 
     /**
-     * The string to returns when a formula does not have any value to return.
+     * The string to return when a formula does not have any value to return.
      *
      * @return the string with a message for missing values.
      */

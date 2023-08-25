@@ -367,7 +367,7 @@ final class Verifier {
     /**
      * Convenience method returning the name of the specified descriptor.
      * This method is used mostly for output to be read by human, not for processing.
-     * Consequently, we may consider to returns a localized name in a future version.
+     * Consequently, we may consider to return a localized name in a future version.
      *
      * <p>This method is null-safe even if none of the references checked here should be null.
      * We make this method safe because it is indirectly invoked by methods like {@code toString()}

@@ -186,7 +186,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Tries to returns an optimized concatenation, for example by merging two affine transforms
+     * Tries to return an optimized concatenation, for example by merging two affine transforms
      * into a single one. If no optimized case has been found, returns {@code null}. In the latter
      * case, the caller will need to create a more heavy {@link ConcatenatedTransform} instance.
      *
