@@ -25,10 +25,10 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.util.MathTransformsOrFactory;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

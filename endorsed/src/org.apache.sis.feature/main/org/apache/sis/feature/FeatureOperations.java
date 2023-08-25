@@ -29,7 +29,7 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.setup.GeometryLibrary;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyType;

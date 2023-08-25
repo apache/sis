@@ -19,14 +19,14 @@ package org.apache.sis.feature;
 import java.util.Collection;
 import java.util.Iterator;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.MultiValuedPropertyException;
 import org.opengis.feature.InvalidPropertyValueException;
-import org.apache.sis.util.Deprecable;
 
 
 /**

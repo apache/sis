@@ -27,6 +27,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;
 
 

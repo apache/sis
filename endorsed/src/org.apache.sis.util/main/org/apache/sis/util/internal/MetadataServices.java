@@ -20,18 +20,18 @@ import java.text.Format;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.ServiceLoader;
-import java.util.MissingResourceException;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import org.opengis.annotation.UML;
-import org.opengis.annotation.ResourceBundles;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.OptionalDependency;
 import org.apache.sis.util.CharSequences;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.MissingResourceException;
+import org.opengis.annotation.UML;
+import org.opengis.annotation.ResourceBundles;
 import org.opengis.util.ControlledVocabulary;
 
 

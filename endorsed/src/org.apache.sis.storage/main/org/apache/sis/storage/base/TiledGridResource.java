@@ -26,7 +26,6 @@ import java.awt.image.ComponentSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
-import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverage2D;
@@ -39,11 +38,14 @@ import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.WeakValueHashMap;
 
 import static org.apache.sis.storage.base.TiledGridCoverage.X_DIMENSION;
 import static org.apache.sis.storage.base.TiledGridCoverage.Y_DIMENSION;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.CannotEvaluateException;
 
 
 /**

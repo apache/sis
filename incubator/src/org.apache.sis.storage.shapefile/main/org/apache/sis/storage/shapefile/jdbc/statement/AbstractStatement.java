@@ -19,7 +19,6 @@ package org.apache.sis.storage.shapefile.jdbc.statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import org.apache.sis.storage.shapefile.jdbc.AbstractJDBC;
 
 

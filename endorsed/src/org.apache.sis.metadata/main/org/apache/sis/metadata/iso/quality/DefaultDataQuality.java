@@ -23,13 +23,15 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.StandaloneQualityReportInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 
-// Branch-dependent imports
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.quality.Scope;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.quality.StandaloneQualityReportInformation;
 
 
 /**

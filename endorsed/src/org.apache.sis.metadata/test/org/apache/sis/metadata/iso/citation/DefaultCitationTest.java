@@ -28,24 +28,21 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Role;
-import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
+import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.UnmodifiableMetadataException;
-import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.xml.TestUsingFile;
-import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -53,6 +50,13 @@ import org.junit.Test;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.junit.Assert.*;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

@@ -31,9 +31,9 @@ import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 

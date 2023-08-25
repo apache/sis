@@ -26,10 +26,12 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
-import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.dataset.TestData;
 
 
 /**

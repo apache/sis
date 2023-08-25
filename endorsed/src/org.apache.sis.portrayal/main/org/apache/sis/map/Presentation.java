@@ -16,6 +16,7 @@
  */
 package org.apache.sis.map;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Objects;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.portrayal.MapLayer;

@@ -20,10 +20,9 @@ import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -31,6 +30,9 @@ import org.junit.Test;
 
 import static org.junit.Assume.assumeNotNull;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.test.DependsOn;
 
 
 /**

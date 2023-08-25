@@ -27,12 +27,12 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Medium;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.xml.bind.gts.TM_PeriodDuration;
 import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.gts.TM_PeriodDuration;
 import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;

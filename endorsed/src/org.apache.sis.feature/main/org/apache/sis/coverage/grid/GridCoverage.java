@@ -28,6 +28,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.BandedCoverage;
@@ -40,11 +43,8 @@ import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 
-// Branch-specific imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 
 

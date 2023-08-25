@@ -23,16 +23,14 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.measure.Units;
 
 import static java.lang.StrictMath.toRadians;
 
-// Test dependencies
-import org.opengis.test.ToleranceModifier;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -41,6 +39,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.ToleranceModifier;
 
 
 /**

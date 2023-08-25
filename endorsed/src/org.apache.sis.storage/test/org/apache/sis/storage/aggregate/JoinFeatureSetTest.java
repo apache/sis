@@ -25,16 +25,16 @@ import java.util.stream.Stream;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.FilterFactory;

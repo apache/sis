@@ -37,9 +37,9 @@ import java.io.UncheckedIOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.Quantity;
+import javax.measure.IncommensurableException;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Length;
-import javax.measure.IncommensurableException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -47,19 +47,20 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.util.internal.LocalizedParseException;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.internal.LocalizedParseException;
+import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
@@ -69,8 +70,6 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.QuantityFormat;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.io.CompoundFormat;
-import org.apache.sis.referencing.CRS;
-
 
 
 /**

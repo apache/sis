@@ -25,6 +25,7 @@ import org.apache.sis.metadata.simple.SimpleIdentifiedObject;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.util.ComparisonMode;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.apache.sis.util.Utilities.deepEquals;
 
 

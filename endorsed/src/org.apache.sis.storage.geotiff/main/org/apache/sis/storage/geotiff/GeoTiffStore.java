@@ -51,6 +51,7 @@ import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.geotiff.spi.SchemaModifier;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.ListOfUnknownSize;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -59,7 +60,6 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**

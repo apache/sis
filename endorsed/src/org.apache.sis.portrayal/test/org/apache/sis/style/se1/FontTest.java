@@ -18,6 +18,7 @@ package org.apache.sis.style.se1;
 
 import java.util.List;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 

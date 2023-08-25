@@ -30,7 +30,6 @@ import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransfor
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.io.wkt.Convention;
-
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
@@ -38,9 +37,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.opengis.test.Assert.assertIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertIdentifierEquals;
 
 
 /**

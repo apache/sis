@@ -23,7 +23,6 @@ import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Conversion;
@@ -31,6 +30,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.GeodeticException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.util.ReferencingUtilities;
@@ -40,12 +40,14 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.referencing.CRS;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.parameter.ParameterValueGroup;
+
 
 /**
  * Specifies that a subset of a coordinate tuple is subject to a specific coordinate operation.

@@ -26,11 +26,9 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.lang.IllegalArgumentException;
-
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -40,10 +38,10 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.storage.base.CodeType;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.CodeType;
 
 
 /**

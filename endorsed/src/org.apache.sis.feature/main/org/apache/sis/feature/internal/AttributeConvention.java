@@ -21,12 +21,12 @@ import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.feature.Features;
 import org.apache.sis.geometry.wrapper.Geometries;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;

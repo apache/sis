@@ -23,9 +23,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Level;
-
 import org.apache.sis.storage.shapefile.jdbc.resultset.SQLIllegalColumnIndexException;
 import org.apache.sis.storage.shapefile.jdbc.resultset.SQLNoSuchFieldException;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 
@@ -42,7 +43,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
 
     /** Connection properties. */
     private Properties info;
-    
+
     /**
      * Construct a mapped byte reader on a file.
      * @param dbase3File File.
@@ -53,18 +54,18 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     public MappedByteReader(File dbase3File, Properties connectionInfos) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
         super(dbase3File);
         this.info = connectionInfos;
-        
+
         // React to special features asked.
         if (this.info != null) {
             // Sometimes, DBF files have a wrong charset, or more often : none, and you have to specify it.
             String recordCharset = (String)this.info.get("record_charset");
-            
+
             if (recordCharset != null) {
                 Charset cs = Charset.forName(recordCharset);
                 setCharset(cs);
             }
         }
-        
+
         loadDescriptor();
     }
 
@@ -101,13 +102,13 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
         if (getByteBuffer().hasRemaining() == false) {
             return false;
         }
-        
+
         // 2) Check that the immediate next byte read isn't the EOF signal.
         byte eofCheck = getByteBuffer().get();
-        
+
         boolean isEOF = (eofCheck == 0x1A);
         this.log(Level.FINER, "log.delete_status", getRowNum(), eofCheck, isEOF ? "EOF" : "Active");
-        
+
         if (eofCheck == 0x1A) {
             return false;
         }
@@ -137,7 +138,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     public Map<String, byte[]> readNextRowAsObjects() {
         // TODO: ignore deleted records
         /* byte isDeleted = */ getByteBuffer().get(); // denotes whether deleted or current
-        
+
         // read first part of record
         HashMap<String, byte[]> fieldsValues = new HashMap<>();
 
@@ -147,18 +148,18 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
 
             // Trim the bytes right.
             int length = data.length;
-            
+
             while (length != 0 && Byte.toUnsignedInt(data[length - 1]) <= ' ') {
                 length--;
             }
-            
+
             if (length != data.length) {
                 byte[] dataTrimmed = new byte[length];
-                
+
                 for(int index=0; index < length; index ++) {
                     dataTrimmed[index] = data[index];
                 }
-                
+
                 fieldsValues.put(fd.getName(), dataTrimmed);
             }
             else {
@@ -193,7 +194,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
 
             // Translate code page value to a known charset.
             this.codePage = getByteBuffer().get();
-            
+
             if (this.charset == null) {
                 try {
                     this.charset = toCharset(this.codePage);

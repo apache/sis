@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter.internal;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
 

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cql;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -33,8 +34,6 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.internal.FunctionNames;
 import org.apache.sis.filter.internal.Visitor;
 import org.apache.sis.util.internal.StandardDateFormat;
-
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
@@ -49,8 +48,6 @@ import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BetweenComparisonOperator;
 import org.opengis.filter.LikeOperator;
 import org.opengis.filter.Expression;
-
-// Optional dependencies
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTWriter;
 

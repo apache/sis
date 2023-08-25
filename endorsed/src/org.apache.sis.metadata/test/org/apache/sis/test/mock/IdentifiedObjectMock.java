@@ -24,10 +24,12 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

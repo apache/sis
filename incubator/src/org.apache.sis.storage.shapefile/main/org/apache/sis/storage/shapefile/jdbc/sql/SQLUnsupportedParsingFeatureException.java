@@ -19,6 +19,7 @@ package org.apache.sis.storage.shapefile.jdbc.sql;
 import java.io.File;
 import java.sql.SQLException;
 
+
 /**
  * Exception thrown when a parsing feature is not supported.
  * @author Marc LE BIHAN

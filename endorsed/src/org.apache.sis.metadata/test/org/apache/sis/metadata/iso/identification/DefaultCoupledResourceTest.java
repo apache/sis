@@ -21,16 +21,18 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.identification.OperationMetadata;
-import org.opengis.metadata.identification.DistributedComputingPlatform;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.metadata.replace.ServiceParameterTest;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.identification.OperationMetadata;
+import org.opengis.metadata.identification.DistributedComputingPlatform;
 
 
 /**

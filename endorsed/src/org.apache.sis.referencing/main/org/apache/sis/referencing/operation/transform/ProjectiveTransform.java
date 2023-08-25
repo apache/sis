@@ -20,13 +20,13 @@ import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.util.DirectPositionView;
+import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Arithmetic;
-import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.math.Fraction;
 
 

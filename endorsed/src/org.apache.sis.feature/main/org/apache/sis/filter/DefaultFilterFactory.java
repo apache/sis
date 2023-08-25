@@ -18,26 +18,26 @@ package org.apache.sis.filter;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Collection;
 import java.util.ServiceLoader;
-import java.time.Instant;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.filter.sqlmm.Registry;
 import org.apache.sis.filter.internal.FunctionRegister;
-import org.apache.sis.geometry.WraparoundMethod;
-import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.AbstractMap;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Iterator;
+import java.time.Instant;
+import org.apache.sis.util.internal.AbstractMap;
 import org.opengis.filter.*;
 import org.opengis.feature.Feature;
 import org.opengis.filter.capability.AvailableFunction;

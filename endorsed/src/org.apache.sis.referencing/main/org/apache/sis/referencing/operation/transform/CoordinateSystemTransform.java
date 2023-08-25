@@ -29,6 +29,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.CoordinateOperations;
@@ -37,7 +38,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 

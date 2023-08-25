@@ -27,15 +27,14 @@ import java.util.stream.Stream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -43,8 +42,12 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
+
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
 
 
 /**

@@ -27,7 +27,6 @@ import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import org.opengis.util.GenericName;
-import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -49,6 +48,9 @@ import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.util.internal.Numerics.ceilDiv;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.CannotEvaluateException;
 
 
 /**

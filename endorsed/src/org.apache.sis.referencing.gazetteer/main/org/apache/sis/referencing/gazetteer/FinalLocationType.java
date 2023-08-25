@@ -24,12 +24,12 @@ import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.MetadataCopier;
-import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;

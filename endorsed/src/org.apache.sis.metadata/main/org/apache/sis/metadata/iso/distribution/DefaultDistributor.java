@@ -20,12 +20,14 @@ import java.util.Collection;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
 
 
 /**

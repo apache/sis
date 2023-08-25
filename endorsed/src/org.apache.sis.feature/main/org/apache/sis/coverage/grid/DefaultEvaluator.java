@@ -29,24 +29,24 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.WraparoundAxesFinder;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 

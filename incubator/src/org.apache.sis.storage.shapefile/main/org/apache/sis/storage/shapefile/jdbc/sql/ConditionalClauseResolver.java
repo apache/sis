@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.shapefile.jdbc.sql;
 
+
 /**
  * Conditional Clause resolver : resolves a single part of an expression :
  * <br>- Only resolve comparison of simple statements like F = 2, not those involving intermediate calculations (F + 4 = 6).

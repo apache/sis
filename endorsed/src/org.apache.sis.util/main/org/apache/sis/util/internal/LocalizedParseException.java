@@ -22,8 +22,8 @@ import java.text.ParseException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LocalizedException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

@@ -24,7 +24,7 @@ import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.referencing.NamedIdentifier;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
 
 

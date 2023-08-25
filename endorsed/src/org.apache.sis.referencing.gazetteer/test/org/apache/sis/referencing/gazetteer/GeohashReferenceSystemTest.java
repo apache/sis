@@ -18,8 +18,8 @@ package org.apache.sis.referencing.gazetteer;
 
 import java.util.Locale;
 import javax.measure.Quantity;
-import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
+import javax.measure.quantity.Length;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
 

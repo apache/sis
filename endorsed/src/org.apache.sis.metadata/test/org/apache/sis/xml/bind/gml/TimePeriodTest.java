@@ -39,6 +39,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.format;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Instant;
 
 

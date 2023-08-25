@@ -28,12 +28,10 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.math.Vector;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
-
-// Optional dependencies
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.CoordinateSequence;

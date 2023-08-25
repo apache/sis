@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.report;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
@@ -24,7 +25,6 @@ import java.util.TreeMap;
 import java.util.NavigableMap;
 import java.io.File;
 import java.io.IOException;
-
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -45,20 +45,20 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.test.report.AuthorityCodesReport;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.internal.DeprecatedCode;
-import org.apache.sis.util.internal.Constants;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.util.iso.DefaultNameSpace;
-import org.apache.sis.util.logging.Logging;
+import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.logging.Logging;
 
 import static org.junit.Assert.*;
 

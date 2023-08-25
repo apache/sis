@@ -24,12 +24,14 @@ import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.quality.Measure;
 import org.opengis.metadata.quality.BasicMeasure;
 import org.opengis.metadata.quality.Description;
 import org.opengis.metadata.quality.SourceReference;
 import org.opengis.metadata.quality.ValueStructure;
-import org.apache.sis.xml.Namespaces;
 
 
 /**

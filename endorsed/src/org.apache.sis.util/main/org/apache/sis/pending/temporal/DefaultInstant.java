@@ -17,6 +17,8 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Date;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Instant;
 import org.opengis.temporal.TemporalPosition;
 

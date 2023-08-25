@@ -22,7 +22,7 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
 
 

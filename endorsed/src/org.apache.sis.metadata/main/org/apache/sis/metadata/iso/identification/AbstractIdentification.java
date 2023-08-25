@@ -24,12 +24,10 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.AggregateInformation;
-import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.BrowseGraphic;
@@ -41,15 +39,21 @@ import org.opengis.metadata.identification.Usage;
 import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.opengis.temporal.Duration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.xml.bind.metadata.MD_Identifier;
-import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.MD_Identifier;
+import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.iso.Types;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.identification.AssociatedResource;
+import org.opengis.temporal.Duration;
 
 
 /**

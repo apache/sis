@@ -19,10 +19,12 @@ package org.apache.sis.storage;
 import java.lang.ref.SoftReference;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
-import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.CannotEvaluateException;
 
 
 /**

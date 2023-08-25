@@ -24,7 +24,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 

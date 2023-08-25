@@ -21,7 +21,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.cs.ParametricCS;
 
 

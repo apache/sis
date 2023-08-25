@@ -34,14 +34,14 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.Restriction;
-import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
+import org.apache.sis.util.SimpleInternationalString;
+import org.opengis.metadata.identification.BrowseGraphic;
 
 
 /**

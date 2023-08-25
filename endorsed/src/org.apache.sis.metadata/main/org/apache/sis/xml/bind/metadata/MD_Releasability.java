@@ -19,6 +19,8 @@ package org.apache.sis.xml.bind.metadata;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.metadata.iso.constraint.DefaultReleasability;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.constraint.Releasability;
 
 

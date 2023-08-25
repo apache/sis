@@ -24,7 +24,6 @@ import java.util.Collections;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -32,14 +31,17 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroup;
 import org.apache.sis.metadata.internal.ImplementationHelper;
-import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.Utilities.deepEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.parameter.ParameterDirection;
 
 
 /**

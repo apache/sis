@@ -21,15 +21,17 @@ import jakarta.xml.bind.annotation.XmlValue;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.DefinitionURI;
 import org.apache.sis.metadata.internal.NameMeaning;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.internal.Identifiers;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.apache.sis.metadata.iso.citation.Citations.toCodeSpace;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

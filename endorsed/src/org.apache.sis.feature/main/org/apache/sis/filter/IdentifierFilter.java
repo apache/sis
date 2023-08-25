@@ -22,7 +22,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.feature.internal.AttributeConvention;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ResourceId;

@@ -24,7 +24,7 @@ import java.time.Instant;
 import java.time.DateTimeException;
 import java.io.IOException;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
 import org.opengis.feature.Feature;
 

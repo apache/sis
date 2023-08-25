@@ -22,8 +22,6 @@ import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
 import org.apache.sis.metadata.simple.SimpleAttributeType;
-
-// Test imports
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;

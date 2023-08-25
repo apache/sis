@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -64,6 +63,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
 import static java.lang.Math.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

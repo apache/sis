@@ -25,9 +25,9 @@ import java.io.UnsupportedEncodingException;
 import com.esri.core.geometry.Point;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -39,7 +39,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 

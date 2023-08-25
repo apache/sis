@@ -50,7 +50,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;

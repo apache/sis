@@ -23,10 +23,11 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.logging.Logger;
-
 import org.apache.sis.storage.DataStoreException;
 import org.junit.Ignore;
 import org.junit.Test;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 

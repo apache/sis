@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cql;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
@@ -25,10 +26,8 @@ import java.time.temporal.TemporalAccessor;
 import java.text.ParseException;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
-
 import org.opengis.geometry.Envelope;
 import org.opengis.util.CodeList;
-
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -36,18 +35,14 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
 
-// Optional dependencies
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LinearRing;
-
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.*;
 

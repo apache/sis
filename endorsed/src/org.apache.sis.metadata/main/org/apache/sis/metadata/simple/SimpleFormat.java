@@ -19,9 +19,11 @@ package org.apache.sis.metadata.simple;
 import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.util.internal.Strings;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Citation;
 
 
 /**

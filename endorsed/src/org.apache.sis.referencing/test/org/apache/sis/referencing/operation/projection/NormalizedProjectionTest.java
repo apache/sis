@@ -16,13 +16,15 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.referencing.TransformTestCase;
 
 
 /**

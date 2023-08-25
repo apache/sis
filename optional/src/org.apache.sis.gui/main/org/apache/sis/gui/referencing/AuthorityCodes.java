@@ -36,14 +36,14 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.StandardDateFormat;
-import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.util.internal.Strings;
+import org.apache.sis.gui.internal.BackgroundThreads;
 
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 

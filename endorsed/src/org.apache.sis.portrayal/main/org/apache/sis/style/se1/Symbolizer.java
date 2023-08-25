@@ -28,7 +28,7 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-depend imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 import org.opengis.filter.ValueReference;
 

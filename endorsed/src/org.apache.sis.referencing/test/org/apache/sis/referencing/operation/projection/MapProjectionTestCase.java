@@ -21,11 +21,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.internal.Constants;
-import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
@@ -36,6 +35,9 @@ import org.apache.sis.test.TestUtilities;
 import static java.lang.Double.isNaN;
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.referencing.ParameterizedTransformTest;
 
 
 /**

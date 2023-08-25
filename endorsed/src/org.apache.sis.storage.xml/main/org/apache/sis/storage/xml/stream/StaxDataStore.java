@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.nio.charset.Charset;
 import java.nio.file.StandardOpenOption;
+import java.nio.charset.Charset;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLInputFactory;
@@ -40,7 +40,13 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.ConcurrentReadException;
+import org.apache.sis.storage.ConcurrentWriteException;
+import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.ForwardOnlyStorageException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.Markable;
@@ -48,12 +54,6 @@ import org.apache.sis.util.internal.AbstractMap;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.io.InvalidSeekException;
-import org.apache.sis.storage.ConcurrentReadException;
-import org.apache.sis.storage.ConcurrentWriteException;
-import org.apache.sis.storage.DataStoreClosedException;
-import org.apache.sis.storage.ForwardOnlyStorageException;
-import org.apache.sis.storage.UnsupportedStorageException;
 
 
 /**

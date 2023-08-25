@@ -17,7 +17,6 @@
 package org.apache.sis.storage.shapefile.jdbc;
 
 import java.nio.MappedByteBuffer;
-
 import org.apache.sis.storage.shapefile.internal.AutoChecker;
 
 
@@ -31,7 +30,7 @@ import org.apache.sis.storage.shapefile.internal.AutoChecker;
 public class DBase3FieldDescriptor extends AutoChecker {
     /** Field name. */
     private byte[] fieldName = new byte[11];
-    
+
     /** Field name as String, for performance issues. */
     private String stringFieldName;
 
@@ -123,10 +122,10 @@ public class DBase3FieldDescriptor extends AutoChecker {
             while (length != 0 && Byte.toUnsignedInt(this.fieldName[length - 1]) <= ' ') {
                 length--;
             }
-            
+
             this.stringFieldName = new String(this.fieldName, 0, length);
         }
-        
+
         return this.stringFieldName;
     }
 

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.provider.MapProjection;
@@ -25,6 +24,9 @@ import org.apache.sis.test.DependsOn;
 import org.junit.*;
 
 import static java.lang.StrictMath.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.FactoryException;
 
 
 /**

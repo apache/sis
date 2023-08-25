@@ -21,8 +21,10 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import org.opengis.metadata.MetadataScope;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.MetadataScope;
 
 
 /**

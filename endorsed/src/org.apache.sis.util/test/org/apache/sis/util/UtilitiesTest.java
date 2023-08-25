@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import org.apache.sis.test.TestCase;
-
 import org.junit.*;
+
 import static org.junit.Assert.*;
 
 

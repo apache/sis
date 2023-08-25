@@ -19,13 +19,15 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
+import org.apache.sis.util.internal.Strings;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.CoupledResource;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
-import org.apache.sis.util.internal.Strings;
 
 
 /**

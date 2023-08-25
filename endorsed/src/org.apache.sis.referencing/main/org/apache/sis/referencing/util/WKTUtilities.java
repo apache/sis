@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
@@ -62,6 +61,9 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Vector;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

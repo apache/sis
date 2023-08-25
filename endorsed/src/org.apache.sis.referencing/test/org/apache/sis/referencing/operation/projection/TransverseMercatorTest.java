@@ -36,6 +36,8 @@ import static java.lang.StrictMath.abs;
 import static java.lang.StrictMath.toRadians;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.operation.provider.TransverseMercator.LATITUDE_OF_ORIGIN;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.CalculationType;
 
 

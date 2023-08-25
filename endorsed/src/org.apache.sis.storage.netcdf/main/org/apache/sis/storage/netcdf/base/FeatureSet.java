@@ -24,10 +24,10 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Spliterator;
+import java.util.OptionalLong;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
-import java.util.OptionalLong;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import javax.measure.Unit;
@@ -39,6 +39,7 @@ import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.feature.internal.MovingFeatures;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -47,11 +48,10 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.Characters;
 import org.apache.sis.math.Vector;
 import ucar.nc2.constants.CF;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Attribute;

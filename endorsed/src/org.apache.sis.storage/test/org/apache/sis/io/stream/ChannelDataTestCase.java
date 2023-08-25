@@ -16,7 +16,6 @@
  */
 package org.apache.sis.io.stream;
 
-
 import java.util.Random;
 import java.io.IOException;
 import org.apache.sis.test.TestCase;

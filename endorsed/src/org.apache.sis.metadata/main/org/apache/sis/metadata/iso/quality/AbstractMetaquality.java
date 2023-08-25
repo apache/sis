@@ -19,6 +19,8 @@ package org.apache.sis.metadata.iso.quality;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.quality.Metaquality;
 import org.opengis.metadata.quality.Confidence;
 import org.opengis.metadata.quality.Representativity;

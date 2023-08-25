@@ -22,18 +22,20 @@ import java.util.Collections;
 import java.lang.reflect.Method;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.Datatype;
-import org.opengis.metadata.Obligation;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.simple.SimpleIdentifier;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.logging.Logging;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.Obligation;
+import org.opengis.metadata.citation.ResponsibleParty;
 
 
 /**

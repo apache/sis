@@ -24,16 +24,16 @@ import java.util.Objects;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.AbstractIdentifiedType;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyNotFoundException;
 

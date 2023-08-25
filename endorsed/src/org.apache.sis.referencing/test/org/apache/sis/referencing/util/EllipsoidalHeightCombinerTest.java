@@ -39,9 +39,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertArrayEqualsIgnoreMetadata;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
 
 
 /**

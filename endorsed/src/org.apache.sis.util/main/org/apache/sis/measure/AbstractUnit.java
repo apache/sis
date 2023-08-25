@@ -37,7 +37,6 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Configuration;
 
 
-
 /**
  * Base class of all unit implementations. There is conceptually 4 kinds of units,
  * but some of them are implemented by the same class:

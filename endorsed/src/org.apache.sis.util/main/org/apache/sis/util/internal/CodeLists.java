@@ -19,13 +19,13 @@ package org.apache.sis.util.internal;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.ControlledVocabulary;
+import java.util.function.Predicate;
 
 
 /**

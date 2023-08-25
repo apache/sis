@@ -17,12 +17,11 @@
 package org.apache.sis.referencing.crs;
 
 import org.opengis.test.Validators;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -33,6 +32,9 @@ import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

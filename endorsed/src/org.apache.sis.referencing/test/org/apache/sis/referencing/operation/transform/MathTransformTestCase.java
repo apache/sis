@@ -19,36 +19,37 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import org.opengis.util.Factory;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
+
 import static java.lang.StrictMath.*;
 
-// Test imports
 import org.opengis.test.Validators;
-import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.Assertions;
 import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
+
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.CalculationType;
+import org.opengis.util.Factory;
+import org.opengis.geometry.DirectPosition;
+import org.apache.sis.measure.Longitude;
+import org.opengis.test.referencing.TransformTestCase;
 
 
 /**

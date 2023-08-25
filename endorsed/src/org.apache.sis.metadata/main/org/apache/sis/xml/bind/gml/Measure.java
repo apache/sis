@@ -30,8 +30,8 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.DefinitionURI;
 import org.apache.sis.measure.UnitFormat;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

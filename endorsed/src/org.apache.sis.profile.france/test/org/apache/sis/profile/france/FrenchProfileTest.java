@@ -26,13 +26,15 @@ import org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.xml.bind.fra.IndirectReferenceSystem;
 import org.apache.sis.xml.bind.fra.DirectReferenceSystem;
-import org.apache.sis.xml.bind.metadata.replace.RS_Identifier;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.xml.bind.metadata.replace.RS_Identifier;
 
 
 /**

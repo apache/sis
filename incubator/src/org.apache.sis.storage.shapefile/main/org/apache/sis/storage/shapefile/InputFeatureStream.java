@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.shapefile.internal.ShapefileDescriptor;
 import org.apache.sis.storage.shapefile.internal.SQLShapefileNotFoundException;
 import org.apache.sis.storage.shapefile.internal.SQLInvalidRecordNumberForDirectAccessException;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.storage.shapefile.jdbc.*;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
@@ -41,8 +41,10 @@ import org.apache.sis.storage.shapefile.jdbc.sql.SQLInvalidStatementException;
 import org.apache.sis.storage.shapefile.jdbc.sql.SQLUnsupportedParsingFeatureException;
 import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
 import org.apache.sis.system.Modules;
-import org.apache.sis.storage.DataStoreClosedException;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
+
 
 /**
  * Input Stream of features.

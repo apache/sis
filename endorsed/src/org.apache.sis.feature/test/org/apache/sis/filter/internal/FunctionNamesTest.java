@@ -16,7 +16,6 @@
  */
 package org.apache.sis.filter.internal;
 
-import java.util.List;
 import java.lang.reflect.Field;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.test.TestCase;
@@ -24,6 +23,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.List;
 import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
 import org.opengis.filter.ComparisonOperator;

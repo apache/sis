@@ -21,14 +21,14 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collection;
 import java.util.function.Function;
-import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.feature.internal.FeatureUtilities;
 import org.apache.sis.filter.internal.FunctionNames;
 import org.apache.sis.filter.internal.Visitor;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.CodeList;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.AttributeType;

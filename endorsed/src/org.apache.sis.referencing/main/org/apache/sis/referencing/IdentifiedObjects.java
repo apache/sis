@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Locale;
-
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
@@ -33,7 +32,6 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
-
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;

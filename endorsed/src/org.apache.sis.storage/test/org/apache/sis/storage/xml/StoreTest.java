@@ -18,7 +18,6 @@ package org.apache.sis.storage.xml;
 
 import java.util.Locale;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
@@ -32,6 +31,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.nio.charset.StandardCharsets;
 
 
 /**

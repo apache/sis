@@ -19,9 +19,7 @@ package org.apache.sis.test.integration;
 import java.net.URI;
 import java.util.Locale;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import jakarta.xml.bind.JAXBException;
-
 import org.opengis.metadata.*;
 import org.opengis.metadata.citation.*;
 import org.opengis.metadata.extent.Extent;
@@ -38,23 +36,24 @@ import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-
-// Test dependencies
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.opengis.test.Assert.assertIdentifierEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertIdentifierEquals;
+
+import java.nio.charset.StandardCharsets;
 
 
 /**

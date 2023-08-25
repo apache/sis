@@ -32,8 +32,6 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.factory.CommonAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
-
-// Test imports
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;

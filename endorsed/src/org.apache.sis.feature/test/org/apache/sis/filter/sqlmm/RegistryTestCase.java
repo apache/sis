@@ -31,8 +31,6 @@ import org.apache.sis.filter.internal.Node;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.math.Vector;
-
-// Test dependencies
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
@@ -43,7 +41,7 @@ import org.junit.After;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Literal;

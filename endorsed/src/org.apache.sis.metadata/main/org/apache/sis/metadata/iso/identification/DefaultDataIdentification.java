@@ -21,21 +21,23 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.nio.charset.Charset;
-import java.util.stream.Collectors;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
+import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.xml.bind.lan.OtherLocales;
 import org.apache.sis.xml.bind.lan.PT_Locale;
-import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.identification.CharacterSet;
+import java.util.stream.Collectors;
 
 
 /**

@@ -21,11 +21,13 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.maintenance.Scope;
 
 
 /**

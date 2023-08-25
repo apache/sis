@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import org.opengis.test.CalculationType;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -30,6 +29,9 @@ import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static java.lang.StrictMath.toRadians;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.CalculationType;
 
 
 /**

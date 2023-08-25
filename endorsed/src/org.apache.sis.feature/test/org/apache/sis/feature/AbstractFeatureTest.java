@@ -23,7 +23,7 @@ import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Property;

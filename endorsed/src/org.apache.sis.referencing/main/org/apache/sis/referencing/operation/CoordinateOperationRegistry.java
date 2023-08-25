@@ -29,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.function.Predicate;
 import javax.measure.IncommensurableException;
-
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
@@ -46,7 +45,6 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.*;
-
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -63,12 +61,12 @@ import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.ArgumentChecks;
@@ -79,7 +77,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
-
 
 
 /**

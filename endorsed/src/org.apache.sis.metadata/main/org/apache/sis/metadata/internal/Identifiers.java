@@ -20,14 +20,14 @@ import java.util.Locale;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.resources.Errors;
 
 

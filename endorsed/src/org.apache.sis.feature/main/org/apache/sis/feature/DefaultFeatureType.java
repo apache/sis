@@ -40,7 +40,7 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.feature.internal.Resources;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;

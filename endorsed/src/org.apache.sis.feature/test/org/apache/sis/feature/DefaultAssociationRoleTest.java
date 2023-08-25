@@ -19,7 +19,6 @@ package org.apache.sis.feature;
 import java.util.Map;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
-import org.opengis.feature.FeatureAssociationRole;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -31,7 +30,8 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
 
 

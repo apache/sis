@@ -17,13 +17,15 @@
 package org.apache.sis.console;
 
 import java.net.URL;
-import org.opengis.test.dataset.TestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.dataset.TestData;
 
 
 /**

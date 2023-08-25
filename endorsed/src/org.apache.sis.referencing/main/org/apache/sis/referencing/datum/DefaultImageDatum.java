@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.util.WKTKeywords;
@@ -33,6 +32,9 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

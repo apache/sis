@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso;
 
-import java.net.URI;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -25,6 +24,9 @@ import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.xml.Namespaces;
+
+// Specific to the main and geoapi-3.1 branches:
+import java.net.URI;
 
 
 /**

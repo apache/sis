@@ -34,14 +34,14 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.sql.feature.TableReference;
-import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.sql.TestDatabase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;

@@ -20,7 +20,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.storage.ProbeResult.*;
-
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 

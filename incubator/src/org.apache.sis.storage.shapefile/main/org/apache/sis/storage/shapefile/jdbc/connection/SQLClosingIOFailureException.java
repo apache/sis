@@ -19,6 +19,7 @@ package org.apache.sis.storage.shapefile.jdbc.connection;
 import java.io.File;
 import java.sql.SQLException;
 
+
 /**
  * Exception thrown when a connection cannot be closed due to an environement trouble.
  * @author Marc LE BIHAN

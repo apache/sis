@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
-// Branch-dependent import
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.PropertyType;
 
 

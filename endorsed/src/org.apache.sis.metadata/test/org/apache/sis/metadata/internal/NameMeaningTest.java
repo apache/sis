@@ -17,10 +17,10 @@
 package org.apache.sis.metadata.internal;
 
 import javax.measure.Unit;
+import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
-import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.parameter.ParameterDescriptor;

@@ -24,11 +24,11 @@ import javax.measure.UnitConverter;
 import javax.measure.MeasurementException;
 import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Fraction;
 
 

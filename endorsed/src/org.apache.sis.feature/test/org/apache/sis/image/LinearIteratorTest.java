@@ -19,9 +19,11 @@ package org.apache.sis.image;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
-import org.opengis.coverage.grid.SequenceType;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.grid.SequenceType;
 
 
 /**

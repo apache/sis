@@ -38,14 +38,14 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.DirectPosition1D;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.geometry.DirectPosition1D;
-import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -53,14 +53,14 @@ import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.AbstractMap;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Classes;
 
 
 /**

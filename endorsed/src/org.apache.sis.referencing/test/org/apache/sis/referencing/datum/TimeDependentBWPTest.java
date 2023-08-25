@@ -27,9 +27,11 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertMatrixEquals;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

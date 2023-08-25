@@ -31,12 +31,9 @@ import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlElementRefs;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.annotation.UML;
-import org.opengis.annotation.Classifier;
-import org.opengis.annotation.Stereotype;
 import org.opengis.annotation.Obligation;
 import org.opengis.annotation.Specification;
 import org.opengis.util.CodeList;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
@@ -46,6 +43,11 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 import junit.framework.AssertionFailedError;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.annotation.Classifier;
+import org.opengis.annotation.Stereotype;
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

@@ -27,7 +27,6 @@ import org.apache.sis.system.Fallback;
 import org.apache.sis.setup.OptionalInstallations;
 
 
-
 /**
  * A provider for data licensed under different terms of use than the Apache license.
  * This class is in charge of downloading the data if necessary and asking user's agreement

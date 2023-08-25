@@ -24,7 +24,7 @@ import org.apache.sis.filter.internal.Node;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;

@@ -20,9 +20,6 @@ import java.util.Map;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.ContentInformation;
-import org.opengis.metadata.content.FeatureCatalogueDescription;
-import org.opengis.metadata.content.FeatureTypeInfo;
-import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.feature.DefaultFeatureType;
@@ -36,7 +33,10 @@ import static org.apache.sis.metadata.Assertions.assertPartyNameEquals;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.opengis.metadata.content.FeatureTypeInfo;
+import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.feature.FeatureType;
 
 

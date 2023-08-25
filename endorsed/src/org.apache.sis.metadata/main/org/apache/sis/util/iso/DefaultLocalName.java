@@ -31,8 +31,8 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
 
 
 /**

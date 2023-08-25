@@ -25,9 +25,9 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.ClosedDirectoryStreamException;
 import software.amazon.awssdk.services.s3.model.S3Object;
-import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.model.CommonPrefix;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.core.exception.SdkException;
 
 
 /**

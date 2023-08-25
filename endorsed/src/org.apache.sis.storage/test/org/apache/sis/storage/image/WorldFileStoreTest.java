@@ -23,7 +23,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.StandardOpenOption;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.identification.Identification;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -37,6 +36,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.identification.Identification;
 
 
 /**

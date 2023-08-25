@@ -23,11 +23,11 @@ import java.util.AbstractList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.nio.charset.Charset;
 import java.util.Iterator;
+import java.nio.charset.Charset;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Bag;
 import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable.Node;
 

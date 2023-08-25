@@ -17,15 +17,16 @@
 package org.apache.sis.measure;
 
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.math.MathFunctions;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
+
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.TransformException;
 
 
 /**

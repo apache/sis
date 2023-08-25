@@ -29,9 +29,9 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Geometry;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Numbers;
 
 
 /**

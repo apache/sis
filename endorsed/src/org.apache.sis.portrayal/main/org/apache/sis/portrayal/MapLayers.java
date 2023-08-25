@@ -16,6 +16,7 @@
  */
 package org.apache.sis.portrayal;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

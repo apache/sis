@@ -28,14 +28,16 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.xml.Namespaces;
 
-// Branch-dependent imports
-import org.opengis.coverage.Coverage;
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.Coverage;
 import org.opengis.metadata.quality.Description;
 import org.opengis.metadata.quality.ValueStructure;
 

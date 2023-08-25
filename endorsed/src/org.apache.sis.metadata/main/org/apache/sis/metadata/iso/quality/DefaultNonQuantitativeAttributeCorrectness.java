@@ -20,6 +20,8 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.quality.NonQuantitativeAttributeCorrectness;
 
 

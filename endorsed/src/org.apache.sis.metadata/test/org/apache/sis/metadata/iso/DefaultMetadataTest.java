@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.net.URISyntaxException;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -32,14 +31,17 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.MetadataScope;
 
 
 /**

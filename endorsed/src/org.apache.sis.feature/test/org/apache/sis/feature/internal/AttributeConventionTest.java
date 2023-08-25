@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Property;
 import org.opengis.feature.Operation;
 import org.opengis.feature.IdentifiedType;

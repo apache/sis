@@ -23,7 +23,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.SortOrder;
 import org.opengis.filter.SortProperty;
 import org.opengis.filter.ValueReference;

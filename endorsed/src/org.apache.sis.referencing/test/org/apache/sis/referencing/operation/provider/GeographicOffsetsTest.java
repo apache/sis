@@ -22,8 +22,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Units;
-
-// Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.DependsOn;

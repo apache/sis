@@ -18,8 +18,8 @@ package org.apache.sis.storage.netcdf.ucar;
 
 import java.util.List;
 import java.util.Collection;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import ucar.nc2.Dimension;
 
 

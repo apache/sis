@@ -17,11 +17,11 @@
 package org.apache.sis.io.stream;
 
 import java.net.URL;
-import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.io.File;
+import java.io.IOException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;

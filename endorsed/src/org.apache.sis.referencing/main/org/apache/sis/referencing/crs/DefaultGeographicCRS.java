@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -29,8 +28,8 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.resources.Errors;
@@ -40,6 +39,9 @@ import static org.apache.sis.util.internal.Constants.EPSG;
 import static org.apache.sis.util.internal.Constants.CRS27;
 import static org.apache.sis.util.internal.Constants.CRS83;
 import static org.apache.sis.util.internal.Constants.CRS84;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

@@ -23,9 +23,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import org.apache.sis.util.internal.Cloner;
-import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 
 

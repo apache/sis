@@ -17,7 +17,6 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -29,12 +28,16 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Objects;
 
 import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
 
 /**

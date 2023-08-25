@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.GenericName;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;

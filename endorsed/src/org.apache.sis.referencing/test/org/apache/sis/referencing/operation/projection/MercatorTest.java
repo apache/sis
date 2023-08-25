@@ -23,11 +23,9 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.provider.Mercator2SP;
-import org.apache.sis.referencing.operation.provider.MercatorSpherical;
 import org.apache.sis.referencing.operation.provider.MercatorAuxiliarySphere;
 import org.apache.sis.referencing.operation.provider.PseudoMercator;
 import org.apache.sis.referencing.operation.provider.MillerCylindrical;
-import org.apache.sis.referencing.operation.provider.RegionalMercator;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.parameter.Parameters;
@@ -40,6 +38,10 @@ import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertBetween;
 import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.referencing.operation.provider.MercatorSpherical;
+import org.apache.sis.referencing.operation.provider.RegionalMercator;
 
 
 /**

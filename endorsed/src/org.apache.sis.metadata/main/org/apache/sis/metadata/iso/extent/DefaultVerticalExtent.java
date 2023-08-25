@@ -25,16 +25,18 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.xml.NilReason;
+import org.apache.sis.util.resources.Errors;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.geometry.MismatchedReferenceSystemException;
 
 
 /**

@@ -18,13 +18,13 @@ package org.apache.sis.storage.gpx;
 
 import java.util.List;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import com.esri.core.geometry.Point;
-import java.io.InputStream;
-import java.nio.file.StandardCopyOption;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStoreException;
@@ -40,7 +40,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 

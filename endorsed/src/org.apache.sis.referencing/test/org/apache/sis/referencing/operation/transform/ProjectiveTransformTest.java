@@ -32,17 +32,17 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.math.Fraction;
-
-// Test imports
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.junit.After;
 import org.junit.Test;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.Assert;
+
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
 import org.opengis.test.referencing.AffineTransformTest;
 
 

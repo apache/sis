@@ -28,7 +28,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;

@@ -33,14 +33,10 @@ import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Usability;
 import org.opengis.metadata.quality.Completeness;
-import org.opengis.metadata.quality.TemporalQuality;
 import org.opengis.metadata.quality.ThematicAccuracy;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.LogicalConsistency;
 import org.opengis.metadata.quality.EvaluationMethodType;
-import org.opengis.metadata.quality.EvaluationMethod;
-import org.opengis.metadata.quality.MeasureReference;
-import org.opengis.metadata.quality.Metaquality;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
@@ -50,6 +46,12 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.util.LegacyNamespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.quality.TemporalQuality;
+import org.opengis.metadata.quality.EvaluationMethod;
+import org.opengis.metadata.quality.MeasureReference;
+import org.opengis.metadata.quality.Metaquality;
 
 
 /**

@@ -26,7 +26,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.xml.bind.gml.UniversalTimeAdapter;
@@ -36,6 +35,9 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 
 
 /**

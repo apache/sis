@@ -23,9 +23,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Source;
-import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.metadata.content.FeatureTypeInfo;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.util.Static;
 import org.apache.sis.xml.Namespaces;
@@ -35,8 +33,10 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
-// Branch-specific imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.maintenance.Scope;
+import org.opengis.metadata.content.FeatureTypeInfo;
 
 
 /**

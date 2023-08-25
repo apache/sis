@@ -22,14 +22,12 @@ import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.setup.GeometryLibrary;
-
-// Test dependencies
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Operation;

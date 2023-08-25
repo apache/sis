@@ -16,6 +16,7 @@
  */
 package org.apache.sis.style.se1;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 
 

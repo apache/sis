@@ -17,11 +17,6 @@
 package org.apache.sis.feature.internal;
 
 import java.util.Set;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.AttributeType;
-import org.opengis.filter.Literal;
-import org.opengis.filter.Expression;
-import org.opengis.filter.ValueReference;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
@@ -29,6 +24,13 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.filter.internal.Node;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.AttributeType;
+import org.opengis.filter.Literal;
+import org.opengis.filter.Expression;
+import org.opengis.filter.ValueReference;
 
 
 /**

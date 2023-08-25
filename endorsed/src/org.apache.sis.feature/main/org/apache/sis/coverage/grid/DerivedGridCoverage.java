@@ -21,11 +21,11 @@ import java.util.Locale;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 
 
 /**

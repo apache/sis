@@ -18,6 +18,7 @@ package org.apache.sis.image;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
+import java.nio.ByteOrder;
 import java.awt.Rectangle;
 import java.awt.Point;
 import java.awt.Shape;
@@ -31,7 +32,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.lang.ref.SoftReference;
-import java.nio.ByteOrder;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.coverage.grid.j2d.FillValues;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;

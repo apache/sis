@@ -23,13 +23,13 @@ import java.io.IOException;
 import javax.imageio.spi.ImageReaderSpi;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.ArraysExt;
 
 

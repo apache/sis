@@ -16,11 +16,13 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import java.util.Collection;
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Collection;
+import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.util.internal.CollectionsExt;

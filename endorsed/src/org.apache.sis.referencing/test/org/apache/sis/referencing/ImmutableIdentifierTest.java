@@ -36,6 +36,8 @@ import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.metadata.Identifier.*;
 
 

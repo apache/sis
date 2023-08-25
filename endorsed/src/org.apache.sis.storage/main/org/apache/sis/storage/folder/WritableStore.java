@@ -33,11 +33,11 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
-import org.apache.sis.storage.ReadOnlyStorageException;
 
 
 /**

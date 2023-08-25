@@ -23,11 +23,8 @@ import java.io.ObjectStreamException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
-import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.sql.MetadataSource;
@@ -36,6 +33,13 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.logging.Logging;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.OnlineResource;
+import org.opengis.metadata.identification.BrowseGraphic;
 
 
 /**

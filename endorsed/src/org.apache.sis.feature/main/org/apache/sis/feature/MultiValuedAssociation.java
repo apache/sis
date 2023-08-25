@@ -17,11 +17,11 @@
 package org.apache.sis.feature;
 
 import java.util.Collection;
-import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.feature.internal.Resources;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;

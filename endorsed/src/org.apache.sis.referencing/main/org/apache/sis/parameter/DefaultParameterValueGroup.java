@@ -36,13 +36,13 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.metadata.internal.ImplementationHelper;
-import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

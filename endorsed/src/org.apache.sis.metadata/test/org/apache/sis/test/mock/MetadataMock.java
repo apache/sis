@@ -16,19 +16,21 @@
  */
 package org.apache.sis.test.mock;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
-import java.nio.charset.Charset;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.lan.LocaleAdapter;
 import org.apache.sis.metadata.simple.SimpleMetadata;
-import org.apache.sis.xml.Namespaces;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Map;
+import java.util.Collections;
+import java.nio.charset.Charset;
 
 
 /**

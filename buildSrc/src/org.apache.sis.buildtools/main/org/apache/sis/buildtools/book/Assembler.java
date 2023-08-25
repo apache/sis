@@ -38,7 +38,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-// Share a convenience method.
 import static org.apache.sis.buildtools.book.CodeColorizer.toArray;
 
 

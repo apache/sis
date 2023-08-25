@@ -26,6 +26,16 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.storage.CanNotProbeException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoder;
@@ -39,19 +49,9 @@ import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreProvider;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.storage.CanNotProbeException;
-import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.logging.Logging;
 
 
 /**

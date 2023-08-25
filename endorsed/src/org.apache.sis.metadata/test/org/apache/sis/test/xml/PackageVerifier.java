@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test.xml;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
@@ -41,8 +42,8 @@ import org.opengis.geoapi.SchemaException;
 import org.opengis.geoapi.SchemaInformation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.system.Modules;
-import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.util.LegacyNamespaces;
 
 import static org.opengis.geoapi.SchemaInformation.ROOT_NAMESPACE;
 import static org.opengis.geoapi.SchemaInformation.SCHEMA_ROOT_URL;

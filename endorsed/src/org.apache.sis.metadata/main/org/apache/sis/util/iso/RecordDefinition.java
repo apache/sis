@@ -26,12 +26,14 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
-import org.opengis.feature.AttributeType;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.CollectionsExt;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.AttributeType;
 
 
 /**

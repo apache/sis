@@ -34,15 +34,15 @@ import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.iso.DefaultNameFactory;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.iso.DefaultNameFactory;
+import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;

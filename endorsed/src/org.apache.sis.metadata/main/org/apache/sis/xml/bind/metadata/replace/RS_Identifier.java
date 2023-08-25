@@ -16,14 +16,16 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.*;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.xml.util.LegacyNamespaces;
+
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.xml.util.LegacyNamespaces;
 
 
 /**

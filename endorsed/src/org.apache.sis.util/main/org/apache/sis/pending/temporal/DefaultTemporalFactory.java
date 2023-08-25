@@ -17,13 +17,15 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Date;
+import org.opengis.util.InternationalString;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Collection;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.temporal.*;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 
 

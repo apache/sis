@@ -16,22 +16,26 @@
  */
 package org.apache.sis.metadata.simple;
 
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Map;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Map;
+import org.opengis.metadata.MetadataScope;
+import java.nio.charset.Charset;
 
 
 /**

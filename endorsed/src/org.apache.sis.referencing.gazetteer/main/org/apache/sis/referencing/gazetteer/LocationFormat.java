@@ -33,8 +33,8 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -48,11 +48,11 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.CharSequences;
@@ -60,7 +60,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;

@@ -16,9 +16,7 @@
  */
 package org.apache.sis.metadata.iso.distribution;
 
-import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.Iterator;
 import javax.measure.Unit;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -28,22 +26,28 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Medium;
-import org.opengis.metadata.distribution.MediumName;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.internal.CodeLists;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.distribution.MediumName;
+import org.apache.sis.util.internal.CodeLists;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.AbstractSet;
+import java.util.Iterator;
 
 
 /**

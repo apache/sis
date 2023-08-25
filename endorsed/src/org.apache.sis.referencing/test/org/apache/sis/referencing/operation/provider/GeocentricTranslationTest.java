@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -24,11 +23,9 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.test.ToleranceModifier;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
@@ -42,6 +39,11 @@ import org.junit.Test;
 import static java.lang.StrictMath.toRadians;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Arrays;
+import org.opengis.test.ToleranceModifier;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 
 
 /**

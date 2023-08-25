@@ -19,12 +19,14 @@ package org.apache.sis.storage.netcdf.base;
 import java.util.Date;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
-import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.dataset.TestData;
 
 
 /**

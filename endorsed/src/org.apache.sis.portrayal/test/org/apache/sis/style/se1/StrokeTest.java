@@ -18,6 +18,7 @@ package org.apache.sis.style.se1;
 
 import java.awt.Color;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 

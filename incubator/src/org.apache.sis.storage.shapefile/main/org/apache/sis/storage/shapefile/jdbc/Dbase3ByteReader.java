@@ -21,10 +21,12 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.sis.storage.shapefile.jdbc.resultset.SQLIllegalColumnIndexException;
 import org.apache.sis.storage.shapefile.jdbc.resultset.SQLNoSuchFieldException;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
+
 
 /**
  * Database byte reader contract. Used to allow refactoring of core byte management of a DBase file.
@@ -85,7 +87,7 @@ public interface Dbase3ByteReader {
      * @return Date of the last update.
      */
     public Date getDateOfLastUpdate();
-    
+
     /**
      * Returns the first record position, in bytes, in the DBase file.
      * @return First record position.
@@ -93,11 +95,11 @@ public interface Dbase3ByteReader {
     public short getFirstRecordPosition();
 
     /**
-     * Returns the length (in bytes) of one record in this DBase file, including the delete flag. 
+     * Returns the length (in bytes) of one record in this DBase file, including the delete flag.
      * @return Record length.
      */
     public short getRecordLength();
-    
+
     /**
      * Returns the record count.
      * @return Record count.

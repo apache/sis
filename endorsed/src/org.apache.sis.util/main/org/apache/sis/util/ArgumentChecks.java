@@ -28,7 +28,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-specific dependencies
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.grid.GridEnvelope;
 
 

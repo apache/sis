@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter.internal;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
@@ -23,7 +24,6 @@ import org.apache.sis.filter.DefaultFilterFactory;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.FilterFactory;

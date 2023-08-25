@@ -21,9 +21,11 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.xml.stream.RewriteOnUpdate;
 import org.apache.sis.storage.xml.stream.StaxStreamWriter;
-import org.apache.sis.storage.DataStoreException;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 

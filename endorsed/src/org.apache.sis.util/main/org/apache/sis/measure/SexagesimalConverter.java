@@ -17,8 +17,8 @@
 package org.apache.sis.measure;
 
 import javax.measure.Unit;
-import javax.measure.quantity.Angle;
 import javax.measure.UnitConverter;
+import javax.measure.quantity.Angle;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.math.MathFunctions;

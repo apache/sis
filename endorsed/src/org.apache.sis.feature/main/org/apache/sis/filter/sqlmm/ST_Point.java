@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.isNaN;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 import org.opengis.filter.InvalidFilterValueException;
 

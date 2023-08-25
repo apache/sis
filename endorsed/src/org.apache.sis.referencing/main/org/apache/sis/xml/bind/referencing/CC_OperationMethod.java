@@ -31,13 +31,13 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.ArraysExt;
 
 

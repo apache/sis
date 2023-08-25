@@ -16,11 +16,15 @@
  */
 package org.apache.sis.xml.bind.metadata;
 
-import java.net.URISyntaxException;
 import jakarta.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.maintenance.Scope;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.xml.bind.gco.PropertyType;
+
+// Specific to the main and geoapi-3.1 branches:
+import java.net.URISyntaxException;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.maintenance.Scope;
 
 
 /**

@@ -21,6 +21,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -29,7 +30,6 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.measure.Units;
 
 
 /**

@@ -23,14 +23,15 @@ import org.apache.sis.referencing.util.Formulas;
 import static java.lang.StrictMath.*;
 import static java.lang.Double.NaN;
 
-// Test dependencies
-import org.opengis.test.ToleranceModifier;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.ToleranceModifier;
 
 
 /**

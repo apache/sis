@@ -24,9 +24,11 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.acquisition.Platform;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
 
 
 /**

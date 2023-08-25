@@ -30,16 +30,16 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.provider.NorthPoleRotation;
 import org.apache.sis.referencing.operation.provider.SouthPoleRotation;
 import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
 

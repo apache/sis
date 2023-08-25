@@ -38,7 +38,7 @@ import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
 import org.opengis.filter.MatchAction;

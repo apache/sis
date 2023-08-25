@@ -30,7 +30,7 @@ import org.apache.sis.feature.internal.FeatureExpression;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
 import org.opengis.feature.FeatureType;
 

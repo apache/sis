@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.ContentInformation;
-import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.content.ImagingCondition;
 import org.opengis.metadata.content.ImageDescription;
@@ -39,6 +38,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.content.CoverageDescription;
 
 
 /**

@@ -27,16 +27,16 @@ import java.time.format.DateTimeParseException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.xml.stream.StaxStreamReader;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Version;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 

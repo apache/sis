@@ -36,13 +36,13 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.util.internal.Strings;
-import org.apache.sis.storage.DataStoreProvider;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.Resource;
 
 
 /**

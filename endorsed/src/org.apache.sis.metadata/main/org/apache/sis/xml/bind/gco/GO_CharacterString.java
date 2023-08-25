@@ -27,7 +27,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.w3c.dom.Element;
 import org.opengis.util.CodeList;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gcx.Anchor;
@@ -41,6 +40,9 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

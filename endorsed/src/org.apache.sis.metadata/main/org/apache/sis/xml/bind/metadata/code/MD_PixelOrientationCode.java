@@ -18,9 +18,11 @@ package org.apache.sis.xml.bind.metadata.code;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.PixelOrientation;
+import org.apache.sis.xml.Namespaces;
+
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.xml.bind.cat.CodeListAdapter;
 import org.apache.sis.xml.bind.cat.CodeListUID;
-import org.apache.sis.xml.Namespaces;
 
 
 /**

@@ -27,14 +27,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;

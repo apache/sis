@@ -17,10 +17,10 @@
 package org.apache.sis.xml.bind;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
-import java.net.URISyntaxException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.ArgumentChecks;

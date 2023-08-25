@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cql;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Duration;
 import java.time.Period;
 import java.util.List;
@@ -59,11 +60,11 @@ import org.opengis.filter.FilterFactory;
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.ValueReference;
-
-import static org.apache.sis.cql.internal.CQLParser.*;
 import org.opengis.filter.Literal;
 import org.opengis.filter.SortOrder;
 import org.opengis.filter.SortProperty;
+
+import static org.apache.sis.cql.internal.CQLParser.*;
 
 
 /**

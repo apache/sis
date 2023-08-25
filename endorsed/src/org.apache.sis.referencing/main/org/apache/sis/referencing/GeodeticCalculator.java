@@ -25,7 +25,6 @@ import java.text.NumberFormat;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.quantity.Length;
-
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
@@ -33,9 +32,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.geometry.coordinate.Position;
 import org.opengis.geometry.DirectPosition;
-
+import org.opengis.geometry.coordinate.Position;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -46,16 +44,16 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.internal.PositionTransformer;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.j2d.ShapeUtilities;
 import org.apache.sis.referencing.util.j2d.Bezier;
-import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.TableAppender;
 
 import static java.lang.Math.*;

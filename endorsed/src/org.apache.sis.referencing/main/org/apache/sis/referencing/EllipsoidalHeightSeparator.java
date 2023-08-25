@@ -20,14 +20,14 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.util.AxisDirections;
@@ -39,6 +39,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.referencing.util.ReferencingUtilities.getPropertiesForModifiedCRS;
+
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 
 

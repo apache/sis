@@ -20,18 +20,20 @@ import java.util.Set;
 import java.util.Collection;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
-import org.apache.sis.xml.bind.metadata.replace.RS_Identifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.ResponsibleParty;
+import org.apache.sis.xml.bind.metadata.replace.RS_Identifier;
 
 
 /**

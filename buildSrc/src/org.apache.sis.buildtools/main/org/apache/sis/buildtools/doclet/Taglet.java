@@ -25,12 +25,12 @@ import javax.lang.model.element.Element;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
 import jdk.javadoc.doclet.Doclet;
+import jdk.javadoc.doclet.StandardDoclet;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
-import jdk.javadoc.doclet.StandardDoclet;
 
 
 /**

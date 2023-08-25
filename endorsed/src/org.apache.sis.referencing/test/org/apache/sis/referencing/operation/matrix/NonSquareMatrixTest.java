@@ -24,6 +24,8 @@ import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;
 
 

@@ -18,9 +18,9 @@ package org.apache.sis.math;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.io.IOException;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;

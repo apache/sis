@@ -23,13 +23,15 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.system.Configuration;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 
 
 /**

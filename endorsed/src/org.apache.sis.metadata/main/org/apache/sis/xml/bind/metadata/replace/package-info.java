@@ -63,10 +63,12 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.xml.bind.metadata.DQM_Description;
+import org.apache.sis.xml.bind.gco.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.apache.sis.xml.bind.metadata.code.SV_ParameterDirection;
 import org.apache.sis.xml.bind.metadata.code.DQM_ValueStructure;
-import org.apache.sis.xml.bind.gco.*;
-import org.apache.sis.xml.Namespaces;

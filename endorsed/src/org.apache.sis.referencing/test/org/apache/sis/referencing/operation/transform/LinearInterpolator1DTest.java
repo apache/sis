@@ -20,12 +20,14 @@ import java.util.Random;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.referencing.TransformTestCase;
 
 
 /**

@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -39,14 +38,17 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.gco.PropertyType;
+import org.apache.sis.util.resources.Errors;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

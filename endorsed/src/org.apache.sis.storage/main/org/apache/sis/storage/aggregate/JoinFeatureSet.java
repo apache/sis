@@ -35,8 +35,9 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.filter.DefaultFilterFactory;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Operation;
@@ -45,7 +46,6 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Expression;
 import org.opengis.filter.BinaryComparisonOperator;
-import org.apache.sis.filter.DefaultFilterFactory;
 
 
 /**

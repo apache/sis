@@ -19,8 +19,8 @@ package org.apache.sis.io.wkt;
 import java.util.Locale;
 import java.text.ParseException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LocalizedException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

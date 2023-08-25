@@ -22,12 +22,13 @@ import java.util.logging.Logger;
 import java.io.ObjectStreamException;
 import java.util.concurrent.ConcurrentHashMap;
 import org.opengis.annotation.UML;
-import org.opengis.annotation.Classifier;
-import org.opengis.annotation.Stereotype;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.annotation.Classifier;
+import org.opengis.annotation.Stereotype;
 
 
 /**

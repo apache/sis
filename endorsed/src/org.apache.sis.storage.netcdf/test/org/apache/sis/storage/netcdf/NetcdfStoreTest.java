@@ -22,10 +22,12 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.util.Version;
-import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.dataset.TestData;
 
 
 /**

@@ -17,28 +17,28 @@
 package org.apache.sis.metadata.sql;
 
 import java.util.Set;
-import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Telephone;
-import org.apache.sis.test.sql.TestDatabase;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
-import org.apache.sis.metadata.iso.citation.DefaultTelephone;
-import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.util.internal.URLs;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.sql.TestDatabase;
+import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
+import org.apache.sis.util.internal.URLs;
 
 
 /**

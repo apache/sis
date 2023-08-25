@@ -27,7 +27,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Fraction;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Expression;

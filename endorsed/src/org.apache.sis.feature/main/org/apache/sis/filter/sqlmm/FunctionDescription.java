@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter.sqlmm;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.List;
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -23,16 +24,14 @@ import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.metadata.simple.SimpleIdentifiedObject;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Utilities;
-
-// Branch-dependent imports
 import org.opengis.filter.capability.AvailableFunction;
 
 

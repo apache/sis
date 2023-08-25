@@ -57,10 +57,10 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 
-// Branch-dependent imports
-import org.opengis.referencing.cs.ParametricCS;
-import org.opengis.referencing.crs.ParametricCRS;
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.ParametricDatum;
+import org.opengis.referencing.crs.ParametricCRS;
+import org.opengis.referencing.cs.ParametricCS;
 
 
 /**

@@ -24,18 +24,20 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.constraint.Releasability;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.SecurityConstraints;
-import org.opengis.metadata.maintenance.Scope;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.MD_Releasability;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.constraint.Releasability;
+import org.opengis.metadata.maintenance.Scope;
 
 
 /**

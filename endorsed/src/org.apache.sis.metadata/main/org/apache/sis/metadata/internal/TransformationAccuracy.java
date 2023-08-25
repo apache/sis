@@ -24,10 +24,10 @@ import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
+import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.iso.DefaultRecord;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.Static;
 
 
 /**

@@ -29,9 +29,9 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.acquisition.GeometryType;
-import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.IllegalNameException;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAssociationRole;
@@ -44,7 +44,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.storage.base.FeatureCatalogBuilder;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Operation;
 

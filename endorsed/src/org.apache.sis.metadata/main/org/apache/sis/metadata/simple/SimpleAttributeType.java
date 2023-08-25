@@ -18,11 +18,13 @@ package org.apache.sis.metadata.simple;
 
 import java.io.Serializable;
 import org.opengis.util.Type;
-import org.opengis.feature.Attribute;
-import org.opengis.feature.AttributeType;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.util.TypeName;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.Attribute;
+import org.opengis.feature.AttributeType;
 
 
 /**

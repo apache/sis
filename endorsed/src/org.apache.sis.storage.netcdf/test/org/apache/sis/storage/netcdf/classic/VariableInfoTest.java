@@ -17,10 +17,12 @@
 package org.apache.sis.storage.netcdf.classic;
 
 import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.VariableTest;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.TestData;
 
 

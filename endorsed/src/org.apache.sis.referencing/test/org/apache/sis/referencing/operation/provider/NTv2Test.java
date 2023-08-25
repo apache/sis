@@ -40,8 +40,10 @@ import org.junit.Test;
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.opengis.test.Assert.assertMatrixEquals;
 import static org.apache.sis.referencing.operation.provider.DatumShiftGridLoader.DEGREES_TO_SECONDS;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

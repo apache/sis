@@ -21,13 +21,13 @@ import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.Serializable;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Classes;
 import org.apache.sis.feature.internal.Resources;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.io.Serializable;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.Operation;

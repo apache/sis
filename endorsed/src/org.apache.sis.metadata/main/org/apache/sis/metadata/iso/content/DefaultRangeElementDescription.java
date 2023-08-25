@@ -23,8 +23,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.Record;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.content.RangeElementDescription;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cql.internal;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;

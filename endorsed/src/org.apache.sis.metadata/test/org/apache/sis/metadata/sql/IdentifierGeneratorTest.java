@@ -18,10 +18,10 @@ package org.apache.sis.metadata.sql;
 
 import java.sql.Statement;
 import java.sql.SQLException;
-import org.apache.sis.metadata.sql.util.SQLBuilder;
-import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.metadata.sql.util.SQLBuilder;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

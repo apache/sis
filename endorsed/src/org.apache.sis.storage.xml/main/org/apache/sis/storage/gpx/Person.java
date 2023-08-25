@@ -16,10 +16,8 @@
  */
 package org.apache.sis.storage.gpx;
 
-import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -28,15 +26,21 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Role;
-import org.opengis.metadata.citation.Telephone;
 import org.opengis.util.InternationalString;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.citation.Telephone;
+import org.opengis.metadata.citation.ResponsibleParty;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
-// Branch-dependent imports
-import org.opengis.metadata.citation.Party;
-import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.citation.ResponsibleParty;
+// Specific to the geoapi-3.1 branch:
+import java.util.AbstractSet;
+import java.util.Iterator;
 
 
 /**

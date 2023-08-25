@@ -19,6 +19,7 @@ package org.apache.sis.storage.shapefile.jdbc.resultset;
 import java.io.File;
 import java.sql.SQLException;
 
+
 /**
  * Exception thrown when a column name is not found in a request or in the database structure.
  * @author Marc LE BIHAN

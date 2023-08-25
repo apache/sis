@@ -29,7 +29,7 @@ import org.apache.sis.feature.internal.AttributeConvention;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
-// Branch-dependent imports
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;

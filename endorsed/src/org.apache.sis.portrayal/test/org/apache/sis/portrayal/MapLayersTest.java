@@ -16,14 +16,18 @@
  */
 package org.apache.sis.portrayal;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.map.ListChangeEvent;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.TestCase;
+
 import static org.junit.Assert.*;
+
 import org.junit.Test;
+
 
 /**
  *

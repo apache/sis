@@ -36,11 +36,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.util.Callback;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.internal.Strings;
@@ -49,7 +44,15 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.gui.internal.IdentityValueFactory;
 import org.apache.sis.gui.internal.ExceptionReporter;
+
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**

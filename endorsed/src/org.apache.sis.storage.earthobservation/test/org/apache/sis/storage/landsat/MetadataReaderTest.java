@@ -17,6 +17,12 @@
 package org.apache.sis.storage.landsat;
 
 import java.util.regex.Matcher;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,10 +43,7 @@ import org.opengis.test.dataset.ContentVerifier;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 
 

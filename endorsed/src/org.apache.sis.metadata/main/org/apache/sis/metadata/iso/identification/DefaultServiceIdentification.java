@@ -24,14 +24,16 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.opengis.metadata.identification.ServiceIdentification;
+import org.opengis.metadata.distribution.StandardOrderProcess;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.FilterByVersion;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.identification.CoupledResource;
 import org.opengis.metadata.identification.CouplingType;
 import org.opengis.metadata.identification.OperationChainMetadata;
 import org.opengis.metadata.identification.OperationMetadata;
-import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
