@@ -45,41 +45,39 @@ import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.iso.Types;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.base.Axis;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.storage.netcdf.base.VariableRole;
 import org.apache.sis.storage.netcdf.base.Dimension;
 import org.apache.sis.storage.netcdf.base.Grid;
-import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.wkt.StoreFormat;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.system.Configuration;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import ucar.nc2.constants.ACDD;
-import ucar.nc2.constants.CDM;
-import ucar.nc2.constants.CF;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CDM;      // idem
+import ucar.nc2.constants.ACDD;     // idem
 
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.NameFactory;
-
-import static org.apache.sis.util.internal.CollectionsExt.first;
 
 
 /**
@@ -471,12 +469,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         Address        address        = null;
         OnlineResource resource       = null;
         if (responsibility != null) {
-            final Party party = first(responsibility.getParties());
+            final Party party = CollectionsExt.first(responsibility.getParties());
             if (party != null) {
-                contact = first(party.getContactInfo());
+                contact = CollectionsExt.first(party.getContactInfo());
                 if (contact != null) {
-                    address  = first(contact.getAddresses());
-                    resource = first(contact.getOnlineResources());
+                    address  = CollectionsExt.first(contact.getAddresses());
+                    resource = CollectionsExt.first(contact.getOnlineResources());
                 }
                 if (!canShare(resource, url)) {
                     resource       = null;
@@ -492,7 +490,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     if (party instanceof Organisation) {
                         // Individual (if any) is considered an organisation member. See comment in next block.
                         if (!canShare(party.getName(), organisationName) ||
-                            !canShare(first(((Organisation) party).getIndividual()).getName(), individualName))
+                            !canShare(CollectionsExt.first(((Organisation) party).getIndividual()).getName(), individualName))
                         {
                             responsibility = null;
                         }

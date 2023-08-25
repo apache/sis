@@ -23,7 +23,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.measure.Units;
 import javax.measure.Unit;
-import ucar.nc2.constants.CF;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 
 
 /**
