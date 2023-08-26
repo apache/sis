@@ -1,5 +1,4 @@
 [submodule "geoapi/snapshot"]
 	path = geoapi/snapshot
 	url = https://github.com/opengeospatial/geoapi
-	shallow = true
 	branch = 3.1.x
