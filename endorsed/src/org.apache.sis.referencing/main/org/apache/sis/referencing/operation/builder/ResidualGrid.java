@@ -313,12 +313,11 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
         }
 
         @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
-        @Override public Matrix  clone()                            {return this;}
-        @Override public boolean isIdentity()                       {return false;}
-        @Override public int     getNumCol()                        {return getGridSize(0);}
-        @Override public int     getNumRow()                        {return getGridSize(1);}
-        @Override public Number  apply     (int[] p)                {return getElement(p[1], p[0]);}
-        @Override public void    setElement(int y, int x, double v) {throw new UnsupportedOperationException();}
+        @Override public Matrix  clone()        {return this;}
+        @Override public boolean isIdentity()   {return false;}
+        @Override public int     getNumCol()    {return getGridSize(0);}
+        @Override public int     getNumRow()    {return getGridSize(1);}
+        @Override public Number  apply(int[] p) {return getElement(p[1], p[0]);}
 
         /** Computes the matrix element in the given row and column. */
         @Override public double  getElement(final int y, final int x) {
