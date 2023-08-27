@@ -114,8 +114,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
      * Directories to exclude.
      */
     private static final Set<String> EXCLUDES = Set.of(
-        "snapshot",     // geoapi/snapshot
-        "org.apache.sis.test.uncommitted");
+        "snapshot");    // geoapi/snapshot
 
     /**
      * Java keyword to search for, in order and with a trailing space.

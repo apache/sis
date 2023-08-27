@@ -28,9 +28,13 @@
     <target name="-pre-compile">
         <ivy:settings file="ivy-settings.xml"/>
         <ivy:retrieve pattern="build/dependencies/[artifact].[ext]" symlink="true" sync="true"/>
+        <symlink link="${basedir}/build/dependencies/geoapi-pending.jar"
+                 resource="../../../geoapi/snapshot/geoapi-pending/target/geoapi-pending-4.0-SNAPSHOT.jar"/>
+        <symlink link="${basedir}/build/dependencies/geoapi-conformance.jar"
+                 resource="../../../geoapi/snapshot/geoapi-conformance/target/geoapi-conformance-4.0-SNAPSHOT.jar"/>
     </target>
     <!--
-        Called after compilation. Copies the "*.utf" resources files created by GRadle.
+        Called after compilation. Copies the "*.utf" resources files created by Gradle.
         Note that the Apache SIS project must have been build by Gradle at least once
         before it can be built by the NetBeans IDE.
     -->

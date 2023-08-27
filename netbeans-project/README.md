@@ -41,8 +41,7 @@ snapshot. This step is not necessary if developing on the `main` branch.
 
 ## Known limitations
 We did not found yet how to get the tests running.
-For running some tests in NetBeans, create Java files
-in the `src-local/org.apache.sis.test.uncommitted` module
+For running some tests in NetBeans, create a separated NetBeans project
 with a `main` method invoking the actual method to test.
 This is not convenient, but we hope that it will become simpler in the future
 if Gradle and NetBeans support of _Module Source Hierarchy_ is gradually improved.
