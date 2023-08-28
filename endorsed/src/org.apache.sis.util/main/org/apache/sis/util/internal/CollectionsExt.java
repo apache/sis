@@ -181,7 +181,7 @@ public final class CollectionsExt extends Static {
      * Returns the given value as a singleton if non-null, or returns an empty set otherwise.
      *
      * @param  <E>      the element type.
-     * @param  element  the element to returns in a collection if non-null.
+     * @param  element  the element to return in a collection if non-null.
      * @return a collection containing the given element if non-null, or an empty collection otherwise.
      */
     public static <E> Set<E> singletonOrEmpty(final E element) {
@@ -340,7 +340,7 @@ public final class CollectionsExt extends Static {
      * values will be included in the returned set.
      *
      * <p>This method differs from {@link Set#of(Object...)} in that it preserves element order
-     * and optionally accepts null elements.</p>
+     * and accepts null elements.</p>
      *
      * @param  <E>          the type of array elements.
      * @param  excludeNull  {@code true} for excluding the {@code null} element from the returned set.
@@ -380,7 +380,7 @@ public final class CollectionsExt extends Static {
     /**
      * Returns a unmodifiable version of the given set.
      * This method is different than the standard {@link Collections#unmodifiableSet(Set)}
-     * in that it tries to returns a more efficient object when there is zero or one element.
+     * in that it tries to return a more efficient object when there is zero or one element.
      * Such small set occurs frequently in Apache SIS, especially for
      * {@link org.apache.sis.referencing.AbstractIdentifiedObject} names or identifiers.
      *
@@ -390,7 +390,7 @@ public final class CollectionsExt extends Static {
      * standard {@link Collections#unmodifiableSet(Set)} method instead.</p>
      *
      * <p>This method differs from {@link Set#copyOf(Collection)} in that it may avoid copy,
-     * preserves element order and optionally null elements.</p>
+     * preserves element order and accepts null elements.</p>
      *
      * @param  <E>  the type of elements in the set.
      * @param  set  the set to make unmodifiable, or {@code null}.
@@ -410,7 +410,7 @@ public final class CollectionsExt extends Static {
     /**
      * Returns a unmodifiable version of the given map.
      * This method is different than the standard {@link Collections#unmodifiableMap(Map)}
-     * in that it tries to returns a more efficient object when there is zero or one entry.
+     * in that it tries to return a more efficient object when there is zero or one entry.
      * Such small maps occur frequently in Apache SIS.
      *
      * <p><em>The map returned by this method may or may not be a view of the given map</em>.
@@ -419,7 +419,7 @@ public final class CollectionsExt extends Static {
      * standard {@link Collections#unmodifiableMap(Map)} method instead.</p>
      *
      * <p>This method differs from {@link Map#copyOf(Map)} in that it may avoid copy,
-     * preserves element order and optionally null elements.</p>
+     * preserves element order and accepts null elements.</p>
      *
      * @param  <K>  the type of keys in the map.
      * @param  <V>  the type of values in the map.

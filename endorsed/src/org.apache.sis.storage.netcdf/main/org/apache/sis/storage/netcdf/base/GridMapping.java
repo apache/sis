@@ -57,13 +57,13 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
+import org.apache.sis.referencing.operation.provider.PseudoPlateCarree;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.referencing.operation.provider.PseudoPlateCarree;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
@@ -74,7 +74,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.measure.Units;
-import ucar.nc2.constants.CF;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.operation.CoordinateOperationFactory;

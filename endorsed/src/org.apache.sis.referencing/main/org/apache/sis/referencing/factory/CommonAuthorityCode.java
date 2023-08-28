@@ -127,7 +127,7 @@ final class CommonAuthorityCode {
     /**
      * Returns whether the authority is "AUTO", "AUTO1" or "AUTO2".
      *
-     * @param  legacy  whether to returns {@code true} only if the authority is "AUTO" or "AUTO1".
+     * @param  legacy  whether to return {@code true} only if the authority is "AUTO" or "AUTO1".
      * @return whether the authority is some "AUTO" namespace.
      */
     final boolean isAuto(final boolean legacy) {

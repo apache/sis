@@ -96,7 +96,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Method required by most {@link IdentifiedObject} sub-interfaces.
      * Current implementation returns {@code null}.
      *
-     * <p>If a future version allows this method to returns a non-null value,
+     * <p>If a future version allows this method to return a non-null value,
      * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
      *
      * @return the domain of validity, or {@code null} if none.
@@ -109,7 +109,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Method required by most {@link IdentifiedObject} sub-interfaces.
      * Current implementation returns {@code null}.
      *
-     * <p>If a future version allows this method to returns a non-null value,
+     * <p>If a future version allows this method to return a non-null value,
      * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
      *
      * @return the scope, or {@code null} if none.

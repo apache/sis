@@ -153,14 +153,14 @@ public final class LanguageCode extends GO_CharacterString {
              *   <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
              * </gmd:language>
              */
-            code = identifier.toString(); // May still be null.
+            code = identifier.toString();       // May still be null.
         } else {
             /*
              * <gmd:language>
              *   <gco:CharacterString>jpn</gco:CharacterString>
              * </gmd:language>
              */
-            code = toString(); // May still be null.
+            code = toString();                  // May still be null.
         }
         /*
          * Do not trim whitespaces. We leave that decision to ValueConverter.

@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-tasks.register<Exec>("rebuild") {
-    setWorkingDir(file("snapshot"))
-    commandLine("mvn", "clean", "install")
-    /*
-     * The following are used by Gradle for deciding if the GeoAPI project needs to be rebuilt.
-     * We declare only the modules of interest to Apache SIS. Changes in other modules will not
-     * trigger a rebuild.
-     */
-    inputs.dir("snapshot/geoapi/src/main")
-    inputs.dir("snapshot/geoapi-pending/src/main")
-    inputs.dir("snapshot/geoapi-conformance/src/main")
 
-    outputs.file("snapshot/geoapi-pending/target/geoapi-pending-3.1-SNAPSHOT.jar")
-    outputs.file("snapshot/geoapi-conformance/target/geoapi-conformance-3.1-SNAPSHOT.jar")
-}
+/**
+ * Tools that generate or rewrite some Java codes.
+ * Those tools are not executed automatically;
+ * they must be invoked explicitly on the command line.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.4
+ * @since   1.4
+ */
+package org.apache.sis.buildtools.coding;

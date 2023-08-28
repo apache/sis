@@ -94,7 +94,7 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
         private final Iterator<Map.Entry<K,Object>> it;
 
         /**
-         * The next entry to returns, or {@code null} if we reached the end of iteration.
+         * The next entry to return, or {@code null} if we reached the end of iteration.
          */
         private Map.Entry<K,V> next;
 
@@ -130,7 +130,7 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
         }
 
         /**
-         * Returns {@code true} if there is more element to returns.
+         * Returns {@code true} if there is more elements to return.
          */
         @Override
         public boolean hasNext() {

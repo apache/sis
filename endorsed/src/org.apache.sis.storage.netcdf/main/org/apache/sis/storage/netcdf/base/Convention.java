@@ -36,14 +36,14 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
-import org.apache.sis.system.Reflect;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
-import ucar.nc2.constants.CDM;
-import ucar.nc2.constants.CF;
+import org.apache.sis.system.Reflect;
+import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CF;       // idem
 
 
 /**

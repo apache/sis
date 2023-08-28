@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import org.opengis.util.NameSpace;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -44,10 +45,9 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.internal.StandardDateFormat;
-import org.apache.sis.system.Modules;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import ucar.nc2.constants.CF;
+import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.NameFactory;

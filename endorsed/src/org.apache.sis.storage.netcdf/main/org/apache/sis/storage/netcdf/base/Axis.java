@@ -37,17 +37,17 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.content.TransferFunctionType;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.referencing.operation.builder.LocalizationGridException;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.netcdf.internal.Resources;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.iso.Types;
@@ -55,8 +55,8 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import ucar.nc2.constants.CDM;
-import ucar.nc2.constants.CF;
+import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CF;       // idem
 
 
 /**
