@@ -67,6 +67,7 @@ dependencies {
 
     // Test dependencies
     testImplementation(tests.junit4)
+    testImplementation(tests.junit5)
     testImplementation(tests.geoapi)
     testImplementation(tests.jama)
     testImplementation(tests.geographiclib)
@@ -98,7 +99,7 @@ tasks.compileJava {
 }
 tasks.compileTestJava {
     srcDir.list().forEach {
-        addRead(options.compilerArgs, it, "org.apache.sis.test.endorsed,junit")
+        addRead(options.compilerArgs, it, "org.apache.sis.test.endorsed,org.junit.jupiter.api,junit")
     }
     addExportForTests(options.compilerArgs)
 }
