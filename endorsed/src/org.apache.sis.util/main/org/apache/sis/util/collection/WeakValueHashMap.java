@@ -24,7 +24,9 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
 import java.lang.ref.WeakReference;
+import java.util.function.BiPredicate;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
@@ -86,21 +88,25 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  */
 public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
-     * Comparison mode for key objects. The standard mode is {@code EQUALS}, which means that keys are compared
-     * using their {@link Object#equals(Object)} method. But {@code WeakValueHashMap} will automatically select
-     * {@code DEEP_EQUALS} if there is a chance that some keys are arrays. In the latter case, comparisons will
-     * be done by the more costly {@link Objects#deepEquals(Object, Object)} method instead.
+     * The function to invoke for computing hash codes.
+     * This is usually one of the following:
      *
-     * <p>The {@code IDENTITY} mode is rarely used, and is selected only if the user explicitly asks for this mode
-     * at construction time. This mode is provided because reference-equality semantic is sometimes required, and
-     * hard to simulate if not supported natively by the hash map. See {@link java.util.IdentityHashMap} javadoc
-     * for some examples of cases where reference-equality semantic is useful.</p>
+     * <ul>
+     *   <li>{@link Objects#hashCode(Object)} for the {@link java.util.HashMap} behavior.</li>
+     *   <li>{@link System#identityHashCode(Object)} for the {@link java.util.IdentityHashMap} behavior.</li>
+     *   <li>{@link Utilities#deepHashCode(Object)} for a map working with arrays.</li>
+     * </ul>
      *
-     * @see #comparisonMode
-     * @see #keyEquals(Object, Object)
-     * @see #keyHashCode(Object)
+     * The argument given in calls to {@code applyAsInt(Object)} will never be null.
      */
-    private static final byte IDENTITY = 0, EQUALS = 1, DEEP_EQUALS = 2;
+    private final ToIntFunction<Object> hashFunction;
+
+    /**
+     * The function to invoke for comparing two objects.
+     * Shall be consistent with {@link #hashFunction}.
+     * The arguments given in calls to {@code test(Object, Object)} will never be null.
+     */
+    private final BiPredicate<Object,Object> comparator;
 
     /**
      * An entry in the {@link WeakValueHashMap}. This is a weak reference
@@ -108,7 +114,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      */
     private final class Entry extends WeakEntry<V> implements Map.Entry<K,V> {
         /**
-         * The key.
+         * The key. Shall never be null.
          */
         final K key;
 
@@ -168,7 +174,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         public boolean equals(final Object other) {
             if (other instanceof Map.Entry<?,?>) {
                 final Map.Entry<?,?> that = (Map.Entry<?,?>) other;
-                return keyEquals(key, that.getKey()) && Objects.equals(get(), that.getValue());
+                return comparator.test(key, that.getKey()) && Objects.equals(get(), that.getValue());
             }
             return false;
         }
@@ -179,7 +185,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
          */
         @Override
         public int hashCode() {
-            int code = keyHashCode(key);
+            int code = hashFunction.applyAsInt(key);
             final V val = get();
             if (val != null) {
                 code ^= val.hashCode();
@@ -203,17 +209,6 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * The type of the keys in this map.
      */
     private final Class<K> keyType;
-
-    /**
-     * Whether keys shall be compared by reference-equality ({@link #IDENTITY}), by shallow object-equality
-     * ({@link #EQUALS}) or by deep object-equality ({@link #DEEP_EQUALS}). The {@code DEEP_EQUALS} mode is
-     * selected only if the keys in this map may be arrays. If the keys cannot be arrays, then we select the
-     * {@code EQUALS} mode for avoiding calls to the costly {@link Objects#deepEquals(Object, Object)} method.
-     *
-     * @see #keyEquals(Object, Object)
-     * @see #keyHashCode(Object)
-     */
-    private final byte comparisonMode;
 
     /**
      * The set of entries, created only when first needed.
@@ -253,9 +248,64 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})    // Generic array creation.
     public WeakValueHashMap(final Class<K> keyType, final boolean identity) {
-        this.keyType   = keyType;
-        comparisonMode = identity ? IDENTITY :
-                (keyType.isArray() || keyType.equals(Object.class)) ? DEEP_EQUALS : EQUALS;
+        this.keyType = Objects.requireNonNull(keyType);
+        if (identity) {
+            hashFunction = System::identityHashCode;
+            comparator   = WeakEntry::identityEqual;
+        } else if (keyType.isArray()) {
+            hashFunction = Utilities::deepHashCode;
+            comparator   = Objects::deepEquals;
+        } else {
+            hashFunction = Object::hashCode;
+            comparator   = Object::equals;
+        }
+        lastTimeNormalCapacity = System.nanoTime();
+        table = new WeakValueHashMap.Entry[MIN_CAPACITY];
+    }
+
+    /**
+     * Creates a new {@code WeakValueHashMap} using the given functions for computing hash code and equality.
+     * Commonly used functions are:
+     *
+     * <table class="sis">
+     *   <caption>Frequently used hash and comparison functions</caption>
+     *   <tr>
+     *     <th>Desired behavior</th>
+     *     <th>Hash function</th>
+     *     <th>Comparator</th>
+     *   </tr><tr>
+     *     <td>Standard (like {@link java.util.HashMap})</td>
+     *     <td>{@link Object#hashCode()}</td>
+     *     <td>{@link Object#equals(Object)}</td>
+     *   </tr><tr>
+     *     <td>Robust to arrays</td>
+     *     <td>{@link Utilities#deepHashCode(Object)}</td>
+     *     <td>{@link Objects#deepEquals(Object, Object)}</td>
+     *   </tr><tr>
+     *     <td>Identity (like {@link java.util.IdentityHashMap})</td>
+     *     <td>{@link System#identityHashCode()}</td>
+     *     <td>{@code (o1,o2) -> o1 == o2}</td>
+     *   </tr>
+     * </table>
+     *
+     * The functions do not need to be null-safe. {@code WeakValueHashMap} will never invoke
+     * {@link ToIntFunction#applyAsInt(Object)} or {@link BiPredicate#test(Object, Object)}
+     * with null arguments.
+     *
+     * @param keyType       the type of keys in the map.
+     * @param hashFunction  the function to invoke for computing hash codes.
+     * @param comparator    the function to invoke for comparing two objects.
+     *
+     * @since 1.4
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})    // Generic array creation.
+    public WeakValueHashMap(final Class<K> keyType,
+            final ToIntFunction<Object> hashFunction,
+            final BiPredicate<Object,Object> comparator)
+    {
+        this.keyType      = Objects.requireNonNull(keyType);
+        this.hashFunction = Objects.requireNonNull(hashFunction);
+        this.comparator   = Objects.requireNonNull(comparator);
         lastTimeNormalCapacity = System.nanoTime();
         table = new WeakValueHashMap.Entry[MIN_CAPACITY];
     }
@@ -313,35 +363,6 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     }
 
     /**
-     * Returns the hash code value for the given key.
-     *
-     * @param  key  the key (cannot be null).
-     */
-    private int keyHashCode(final Object key) {
-        switch (comparisonMode) {
-            case IDENTITY:    return System.identityHashCode(key);
-            case EQUALS:      return key.hashCode();
-            case DEEP_EQUALS: return Utilities.deepHashCode(key);
-            default: throw new AssertionError(comparisonMode);
-        }
-    }
-
-    /**
-     * Returns {@code true} if the two given keys are equal.
-     *
-     * @param  k1  the first key (cannot be null).
-     * @paral  k2  the second key.
-     */
-    private boolean keyEquals(final Object k1, final Object k2) {
-        switch (comparisonMode) {
-            case IDENTITY:    return k1 == k2;
-            case EQUALS:      return k1.equals(k2);
-            case DEEP_EQUALS: return Objects.deepEquals(k1, k2);
-            default: throw new AssertionError(comparisonMode);
-        }
-    }
-
-    /**
      * Locates the entry for the given key and, if present, invokes the given getter method.
      *
      * @param  <R>           type of value returned by the getter method.
@@ -355,9 +376,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         assert isValid();
         if (key != null) {
             final Entry[] table = this.table;
-            final int index = (keyHashCode(key) & HASH_MASK) % table.length;
+            final int index = (hashFunction.applyAsInt(key) & HASH_MASK) % table.length;
             for (Entry e = table[index]; e != null; e = (Entry) e.next) {
-                if (keyEquals(key, e.key)) {
+                if (comparator.test(key, e.key)) {
                     return getter.apply(e);
                 }
             }
@@ -478,10 +499,10 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
          */
         V oldValue = null;
         Entry[] table = this.table;
-        final int hash = keyHashCode(key) & HASH_MASK;
+        final int hash = hashFunction.applyAsInt(key) & HASH_MASK;
         int index = hash % table.length;
         for (Entry e = table[index]; e != null; e = (Entry) e.next) {
-            if (keyEquals(key, e.key)) {
+            if (comparator.test(key, e.key)) {
                 oldValue = e.get();
                 if (condition != null && !condition.equals(oldValue)) {
                     return oldValue;

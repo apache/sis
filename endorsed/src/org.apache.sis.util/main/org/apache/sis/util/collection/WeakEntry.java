@@ -34,7 +34,7 @@ import org.apache.sis.math.MathFunctions;
  * from the enclosing collection.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @param <E>  the type of elements in the collection.
  *
@@ -203,5 +203,17 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
      */
     static int upperCapacityThreshold(final int capacity) {
         return capacity - (capacity >>> 2);
+    }
+
+    /**
+     * Compares the given objects using the {@code ==} operator.
+     * This is a convenience method for use as lambda function.
+     *
+     * @param  o1  the first object to compare.
+     * @param  o2  the second object to compare.
+     * @return whether the two objects are the same instance.
+     */
+    static boolean identityEqual(final Object o1, final Object o2) {
+        return o1 == o2;
     }
 }
