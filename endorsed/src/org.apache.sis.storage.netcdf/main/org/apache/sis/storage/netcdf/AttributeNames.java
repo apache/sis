@@ -24,10 +24,10 @@ package org.apache.sis.storage.netcdf;
  * have no dependency to the UCAR packages.
  */
 import java.io.Serializable;
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.VariableSimpleIF;
-import ucar.nc2.constants.CF;
-import ucar.nc2.constants.ACDD;
+import ucar.nc2.NetcdfFile;             // For Javadoc only.
+import ucar.nc2.VariableSimpleIF;       // For Javadoc only.
+import ucar.nc2.constants.CF;           // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.ACDD;         // idem
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.*;

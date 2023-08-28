@@ -31,7 +31,7 @@ import org.apache.sis.storage.netcdf.base.Dimension;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-import ucar.nc2.constants.CF;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 
 
 /**

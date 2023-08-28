@@ -107,7 +107,7 @@ final class PropertyView {
      * Returns the given value as a singleton if non-null, or returns an empty list otherwise.
      *
      * @param  <V>      the element type.
-     * @param  element  the element to returns in a collection if non-null.
+     * @param  element  the element to return in a collection if non-null.
      * @return a collection containing the given element if non-null, or an empty collection otherwise.
      */
     static <V> List<V> singletonOrEmpty(final V element) {

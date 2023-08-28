@@ -29,8 +29,8 @@ import java.nio.charset.Charset;
 import java.time.format.DateTimeParseException;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
-import ucar.nc2.constants.CF;
-import ucar.nc2.constants.CDM;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CDM;      // idem
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.storage.DataStoreException;

@@ -55,7 +55,7 @@
  *     <li>Contains the {@code gco:ObjectIdentification} group of attributes ({@code id}, {@code uuid}).</li>
  *     <li>Conceptually could have been subclasses of {@code ObjectIdentification} defined in this package.</li>
  *   </ul></li>
- *   <li><code>org.apache.sis.<b>internal.jaxb</b></code> private packages:
+ *   <li><code>org.apache.sis.<b>xml.bind</b></code> private packages:
  *   <ul>
  *     <li>Implement the ISO 19115-3 {@code Foo_PropertyType} as subclasses of the {@link org.apache.sis.xml.bind.gco.PropertyType} class.</li>
  *     <li>Contains the {@code gco:ObjectReference} group of attributes ({@code xlink}, {@code uuidref}).</li>

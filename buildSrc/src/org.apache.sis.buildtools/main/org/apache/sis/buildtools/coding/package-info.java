@@ -16,15 +16,12 @@
  */
 
 /**
- * Additional dependencies needed for Apache SIS tests.
+ * Tools that generate or rewrite some Java codes.
+ * Those tools are not executed automatically;
+ * they must be invoked explicitly on the command line.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.4
  */
-module org.apache.sis.test.endorsed {
-    requires transitive junit;
-    requires transitive org.opengis.geoapi.conformance;
-    requires transitive org.apache.derby.tools;
-    requires transitive org.hsqldb;
-}
+package org.apache.sis.buildtools.coding;

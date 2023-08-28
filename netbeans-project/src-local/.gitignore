@@ -1,5 +1,0 @@
-# Ignore everything except the specified files.
-*
-!.gitignore
-!org.apache.sis.test.uncommitted/test/module-info.java
-!org.apache.sis.test.uncommitted/test/org/apache/sis/test/uncommitted/package-info.java

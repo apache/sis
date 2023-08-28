@@ -30,7 +30,7 @@
         <ivy:retrieve pattern="build/dependencies/[artifact].[ext]" symlink="true" sync="true"/>
     </target>
     <!--
-        Called after compilation. Copies the "*.utf" resources files created by GRadle.
+        Called after compilation. Copies the "*.utf" resources files created by Gradle.
         Note that the Apache SIS project must have been build by Gradle at least once
         before it can be built by the NetBeans IDE.
     -->

@@ -31,6 +31,8 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
@@ -43,11 +45,9 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-import org.apache.sis.storage.netcdf.AttributeNames;
-import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.resources.Errors;
-import ucar.nc2.constants.CDM;                      // We use only String constants.
-import ucar.nc2.constants.CF;
+import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CF;       // idem
 
 import static org.apache.sis.storage.base.StoreUtilities.ALLOW_LAST_RESORT_STATISTICS;
 
