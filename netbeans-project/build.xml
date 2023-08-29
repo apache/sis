@@ -25,7 +25,12 @@
       configure NetBeans with  `-add-reads` and `-add-exports` javac
       arguments for test compilation only.
     -->
-    <target name="-pre-compile">
+    <target name="dir.check">
+      <condition property="dir.exists">
+        <available file="build/dependencies" type="dir"/>
+      </condition>
+    </target>
+    <target name="-pre-compile" depends="dir.check" unless="dir.exists">
         <ivy:settings file="ivy-settings.xml"/>
         <ivy:retrieve pattern="build/dependencies/[artifact].[ext]" symlink="true" sync="true"/>
         <symlink link="${basedir}/build/dependencies/geoapi-pending.jar"
