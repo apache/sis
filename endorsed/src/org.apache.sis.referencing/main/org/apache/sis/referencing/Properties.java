@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
+import java.util.function.IntFunction;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.ReferenceSystem;
@@ -34,6 +35,7 @@ import org.apache.sis.referencing.util.CoordinateOperations;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
@@ -45,7 +47,7 @@ import org.opengis.metadata.Identifier;
  * underlying {@code IdentifiedObject} instance is itself serializable, immutable or thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
 final class Properties extends AbstractMap<String,Object> implements Serializable {
@@ -62,14 +64,15 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         /*[ 0]*/ IdentifiedObject        .NAME_KEY,
         /*[ 1]*/ IdentifiedObject        .IDENTIFIERS_KEY,
         /*[ 2]*/ IdentifiedObject        .ALIAS_KEY,
-        /*[ 3]*/ IdentifiedObject        .REMARKS_KEY,
-        /*[ 4]*/ CoordinateOperation     .SCOPE_KEY,                    // same in Datum and ReferenceSystem
-        /*[ 5]*/ CoordinateOperation     .DOMAIN_OF_VALIDITY_KEY,       // same in Datum and ReferenceSystem
-        /*[ 6]*/ CoordinateOperation     .OPERATION_VERSION_KEY,
-        /*[ 7]*/ CoordinateOperation     .COORDINATE_OPERATION_ACCURACY_KEY,
-        /*[ 8]*/ OperationMethod         .FORMULA_KEY,
-        /*[ 9]*/ CoordinateOperations    .PARAMETERS_KEY,
-        /*[10]*/ AbstractIdentifiedObject.DEPRECATED_KEY
+        /*[ 3]*/ IdentifiedObject        .DOMAINS_KEY,
+        /*[ 4]*/ IdentifiedObject        .REMARKS_KEY,
+        /*[ 5]*/ CoordinateOperation     .SCOPE_KEY,                    // same in Datum and ReferenceSystem
+        /*[ 6]*/ CoordinateOperation     .DOMAIN_OF_VALIDITY_KEY,       // same in Datum and ReferenceSystem
+        /*[ 7]*/ CoordinateOperation     .OPERATION_VERSION_KEY,
+        /*[ 8]*/ CoordinateOperation     .COORDINATE_OPERATION_ACCURACY_KEY,
+        /*[ 9]*/ OperationMethod         .FORMULA_KEY,
+        /*[10]*/ CoordinateOperations    .PARAMETERS_KEY,
+        /*[11]*/ AbstractIdentifiedObject.DEPRECATED_KEY
 
         /*
          * The current implementation does not look for minimum and maximum values in ParameterDescriptor
@@ -126,33 +129,12 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     final Object getAt(final int key) {
         if ((excludeMask & (1 << key)) == 0) {
             switch (key) {
-                case 0: {   // NAME_KEY
-                    return object.getName();
-                }
-                case 1: {   // IDENTIFIERS_KEY
-                    final Collection<Identifier> c = object.getIdentifiers();
-                    if (c != null) {
-                        final int size = c.size();
-                        if (size != 0) {
-                            return c.toArray(new Identifier[size]);
-                        }
-                    }
-                    break;
-                }
-                case 2: {   // ALIAS_KEY
-                    final Collection<GenericName> c = object.getAlias();
-                    if (c != null) {
-                        final int size = c.size();
-                        if (size != 0) {
-                            return c.toArray(new GenericName[size]);
-                        }
-                    }
-                    break;
-                }
-                case 3: {   // REMARKS_KEY
-                    return object.getRemarks();
-                }
-                case 4: {   // SCOPE_KEY
+                case 0: return         object.getName();                                // NAME_KEY
+                case 1: return toArray(object.getIdentifiers(), Identifier[]::new);     // IDENTIFIERS_KEY
+                case 2: return toArray(object.getAlias(),      GenericName[]::new);     // ALIAS_KEY
+                case 3: return toArray(object.getDomains(),   ObjectDomain[]::new);     // DOMAINS_KEY
+                case 4: return         object.getRemarks();                             // REMARKS_KEY
+                case 5: {   // SCOPE_KEY
                     if (object instanceof ReferenceSystem) {
                         return ((ReferenceSystem) object).getScope();
                     } else if (object instanceof Datum) {
@@ -162,7 +144,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                     }
                     break;
                 }
-                case 5: {   // DOMAIN_OF_VALIDITY_KEY
+                case 6: {   // DOMAIN_OF_VALIDITY_KEY
                     if (object instanceof ReferenceSystem) {
                         return ((ReferenceSystem) object).getDomainOfValidity();
                     } else if (object instanceof Datum) {
@@ -172,37 +154,31 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                     }
                     break;
                 }
-                case 6: {   // OPERATION_VERSION_KEY
+                case 7: {   // OPERATION_VERSION_KEY
                     if (object instanceof CoordinateOperation) {
                         return ((CoordinateOperation) object).getOperationVersion();
                     }
                     break;
                 }
-                case 7: {   // COORDINATE_OPERATION_ACCURACY_KEY
+                case 8: {   // COORDINATE_OPERATION_ACCURACY_KEY
                     if (object instanceof CoordinateOperation) {
-                        final Collection<PositionalAccuracy> c = ((CoordinateOperation) object).getCoordinateOperationAccuracy();
-                        if (c != null) {
-                            final int size = c.size();
-                            if (size != 0) {
-                                return c.toArray(new PositionalAccuracy[size]);
-                            }
-                        }
+                        return toArray(((CoordinateOperation) object).getCoordinateOperationAccuracy(), PositionalAccuracy[]::new);
                     }
                     break;
                 }
-                case 8: {   // FORMULA_KEY
+                case 9: {   // FORMULA_KEY
                     if (object instanceof OperationMethod) {
                         return ((OperationMethod) object).getFormula();
                     }
                     break;
                 }
-                case 9: {   // PARAMETERS_KEY
+                case 10: {   // PARAMETERS_KEY
                     if (object instanceof SingleOperation) {
                         return ((SingleOperation) object).getParameterValues();
                     }
                     break;
                 }
-                case 10: {  // DEPRECATED_KEY
+                case 11: {  // DEPRECATED_KEY
                     if (object instanceof Deprecable) {
                         return ((Deprecable) object).isDeprecated();
                     }
@@ -212,6 +188,19 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the collection content as an array if the collection is non-null and non-empty.
+     * Otherwise returns {@code null}.
+     *
+     * @param  <E>        type of elements in the collection.
+     * @param  c          the collection, or {@code null}.
+     * @param  generator  function to invoke for creating an initially empty array.
+     * @return array of collection elements, or {@code null}.
+     */
+    private static <E> E[] toArray(final Collection<E> c, final IntFunction<E[]> generator) {
+        return (c == null || c.isEmpty()) ? null : c.toArray(generator);
     }
 
     /**

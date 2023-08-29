@@ -185,10 +185,10 @@ public final class ImplementationHelper extends Static {
      *       warning or error messages in future SIS versions.</li>
      * </ul>
      *
-     * @param  classe  the caller class, used only in case of warning message to log.
-     * @param  method  the caller method, used only in case of warning message to log.
-     * @param  name    the property name, used only in case of error message to format.
-     * @throws IllegalStateException if {@code isDefined} is {@code true} and we are not unmarshalling an object.
+     * @param  classe  the caller class, used for logging.
+     * @param  method  the caller method, used for logging.
+     * @param  name    the property name, used for logging and exception message.
+     * @throws IllegalStateException if we are not unmarshalling an object.
      *
      * @since 0.7
      */

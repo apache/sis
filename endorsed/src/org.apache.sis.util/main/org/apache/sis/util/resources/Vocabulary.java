@@ -883,6 +883,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short NorthBound = 142;
 
         /**
+         * Not known
+         */
+        public static final short NotKnown = 207;
+
+        /**
          * Note
          */
         public static final short Note = 143;
@@ -1301,11 +1306,6 @@ public class Vocabulary extends IndexedResourceBundle {
          * Units
          */
         public static final short Units = 206;
-
-        /**
-         * Unknown
-         */
-        public static final short Unknown = 207;
 
         /**
          * Unnamed

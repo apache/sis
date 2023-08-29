@@ -27,6 +27,8 @@ module org.apache.sis.console {
     requires java.rmi;
     requires java.management;
     requires jakarta.xml.bind;
+
+    requires transitive org.apache.sis.util;
     requires org.apache.sis.storage;
     requires org.apache.sis.storage.xml;
 

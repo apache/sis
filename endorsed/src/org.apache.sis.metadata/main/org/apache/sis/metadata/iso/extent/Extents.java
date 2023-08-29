@@ -68,7 +68,10 @@ import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
+import org.opengis.referencing.ObjectDomain;
 import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.referencing.operation.CoordinateOperation;
 
 
 /**
@@ -84,7 +87,7 @@ import org.opengis.geometry.MismatchedReferenceSystemException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.geometry.Envelopes
  *
@@ -206,6 +209,46 @@ public final class Extents extends Static {
     }
 
     /**
+     * Returns a single geographic bounding box for the given domains of validity.
+     * For each domain, the bounding box is fetched with {@link #getGeographicBoundingBox(Extent)}.
+     * If more than one geographic domain of validity is found, this method computes their union.
+     *
+     * <p>This is a convenience method for fetching the domain of validity of {@link Datum},
+     * {@link CoordinateReferenceSystem} or {@link CoordinateOperation} objects.</p>
+     *
+     * @param  domains  the domains of validity for which to get a single geographic bounding box, or {@code null}.
+     * @return the union of all geographic bounding boxes found in all domains of validity.
+     * @throws InvalidMetadataException if an envelope cannot be transformed to a geographic bounding box.
+     *
+     * @see CoordinateReferenceSystem#getDomains()
+     * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
+     *
+     * @since 1.4
+     */
+    public static Optional<GeographicBoundingBox> getGeographicBoundingBox(final Iterable<? extends ObjectDomain> domains) {
+        if (domains != null) {
+            Extents m = null;
+            for (final ObjectDomain domain : domains) {
+                final Extent extent = domain.getDomainOfValidity();
+                if (extent != null) {
+                    if (m == null) {
+                        m = new Extents();
+                    }
+                    try {
+                        m.addHorizontal(extent);
+                    } catch (TransformException e) {
+                        throw new InvalidMetadataException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
+                    }
+                }
+            }
+            if (m != null) {
+                return Optional.ofNullable(m.bounds);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Returns a single geographic bounding box from the specified extent.
      * This method tries to find the bounding box in the cheapest way
      * before to fallback on more expensive computations:
@@ -228,6 +271,7 @@ public final class Extents extends Static {
      *
      * @param  extent  the extent to convert to a geographic bounding box, or {@code null}.
      * @return a geographic bounding box extracted from the given extent, or {@code null} if none.
+     * @throws InvalidMetadataException if an envelope cannot be transformed to a geographic bounding box.
      *
      * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
      */
@@ -250,6 +294,7 @@ public final class Extents extends Static {
      * Defined in as a class member for allowing accumulation of many extents.
      *
      * @param  extent  the extent to add. Must be non-null.
+     * @throws TransformException if an envelope cannot be transformed to a geographic bounding box.
      */
     private void addHorizontal(final Extent extent) throws TransformException {
         boolean useOnlyGeographicEnvelopes = false;

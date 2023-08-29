@@ -26,6 +26,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
@@ -146,7 +147,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
                 // Compare the name because it was ignored by super.equals(…) in "ignore metadata" mode.
                 return Utilities.deepEquals(getName(), that.getName(), mode);
             }
-            return that.getDomainOfValidity() == null && that.getScope() == null;
+            return Containers.isNullOrEmpty(that.getDomains());
         }
         return false;
     }
