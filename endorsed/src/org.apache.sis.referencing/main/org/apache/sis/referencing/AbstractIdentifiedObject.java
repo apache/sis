@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlID;
 import jakarta.xml.bind.annotation.XmlType;
@@ -135,7 +134,7 @@ import org.opengis.referencing.ObjectDomain;
     "identifier",
     "names",
     "remarks",
-    "domain",       // GML defines "domainOfValidity" in Datum, AbstractCRS and AbstractCoordinateOperation.
+    "domainExtent", // GML defines "domainOfValidity" in Datum, AbstractCRS and AbstractCoordinateOperation.
     "domainScope"   // GML defines "scope" in same classes than above.
 })
 @XmlSeeAlso({
@@ -1062,7 +1061,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     private void setIdentifier(final Code identifier) {
         if (identifiers != null) {
-            ImplementationHelper.propertyAlreadySet(AbstractIdentifiedObject.class, "setIdentifier", "identifier");
+            propertyAlreadySet("setIdentifier", "identifier");
         } else if (identifier != null) {
             final Identifier id = identifier.getIdentifier();
             if (id != null) {
@@ -1180,14 +1179,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * Finds the first non-null domain element.
      *
-     * @param  <T>        type of domain element to get.
-     * @param  getter     {@link ObjectDomain} getter method to invoke.
-     * @param  predicate  the non-null and non-undefined check.
+     * @param  <T>     type of domain element to get.
+     * @param  getter  {@link ObjectDomain} getter method to invoke.
      * @return first non-null value, or {@code null} if none.
      */
-    private <T> T findFirst(final Function<ObjectDomain,T> getter, final Predicate<T> isDefined) {
+    private <T> T findFirst(final Function<ObjectDomain,T> getter) {
         if (domains == null) return null;
-        return domains.stream().map(getter).filter(isDefined).findFirst().orElse(null);
+        return domains.stream().map(getter).filter(ImplementationHelper::nonNil).findFirst().orElse(null);
     }
 
     /**
@@ -1200,8 +1198,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     // For an unknown reason, JAXB does not take the adapter declared in package-info for this particular property.
     @Workaround(library = "JDK", version = "1.8")
     @XmlJavaTypeAdapter(EX_Extent.class)
-    private Extent getDomain() {
-        return findFirst(ObjectDomain::getDomainOfValidity, DefaultObjectDomain::isDefined);
+    private Extent getDomainExtent() {
+        return findFirst(ObjectDomain::getDomainOfValidity);
     }
 
     /**
@@ -1214,21 +1212,21 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     @XmlElement(name ="scope")
     private InternationalString getDomainScope() {
-        return findFirst(ObjectDomain::getScope, DefaultObjectDomain::isDefined);
+        return findFirst(ObjectDomain::getScope);
     }
 
     /**
      * Invoked by JAXB only at unmarshalling time.
      */
-    private void setDomain(final Extent value) {
+    private void setDomainExtent(final Extent value) {
         InternationalString scope = null;
-        final ObjectDomain domain = CollectionsExt.first(domains);
+        final DefaultObjectDomain domain = DefaultObjectDomain.castOrCopy(CollectionsExt.first(domains));
         if (domain != null) {
-            if (DefaultObjectDomain.isDefined(domain.getDomainOfValidity())) {
-                ImplementationHelper.propertyAlreadySet(AbstractReferenceSystem.class, "setDomainOfValidity", "domainOfValidity");
+            if (domain.domainOfValidity != null) {
+                propertyAlreadySet("setDomain", "domainOfValidity");
                 return;
             }
-            scope = domain.getScope();
+            scope = domain.scope;
         }
         domains = Collections.singleton(new DefaultObjectDomain(scope, value));
     }
@@ -1238,13 +1236,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     private void setDomainScope(final InternationalString value) {
         Extent area = null;
-        final ObjectDomain domain = CollectionsExt.first(domains);
+        final DefaultObjectDomain domain = DefaultObjectDomain.castOrCopy(CollectionsExt.first(domains));
         if (domain != null) {
-            if (DefaultObjectDomain.isDefined(domain.getScope())) {
-                ImplementationHelper.propertyAlreadySet(AbstractReferenceSystem.class, "setScope", "scope");
+            if (domain.scope != null) {
+                propertyAlreadySet("setDomainScope", "scope");
                 return;
             }
-            area = domain.getDomainOfValidity();
+            area = domain.domainOfValidity;
         }
         domains = Collections.singleton(new DefaultObjectDomain(value, area));
     }
@@ -1258,7 +1256,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if (remarks == null) {
             remarks = value;
         } else {
-            ImplementationHelper.propertyAlreadySet(AbstractIdentifiedObject.class, "setRemarks", "remarks");
+            propertyAlreadySet("setRemarks", "remarks");
         }
+    }
+
+    /**
+     * Logs a warning saying that an unmarshalled property was already set.
+     *
+     * @param  method  the caller method, used for logging.
+     * @param  name    the property name, used for logging and exception message.
+     * @throws IllegalStateException if we are not unmarshalling an object.
+     */
+    private static void propertyAlreadySet(final String method, final String name) {
+        ImplementationHelper.propertyAlreadySet(AbstractIdentifiedObject.class, method, name);
     }
 }

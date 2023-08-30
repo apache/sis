@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
+import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
@@ -37,7 +39,7 @@ import org.apache.sis.util.internal.CollectionsExt;
  * This is not an helper class for <em>usage</em> of metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 public final class ImplementationHelper extends Static {
@@ -72,6 +74,19 @@ public final class ImplementationHelper extends Static {
      */
     public static Date toDate(final long value) {
         return (value != Long.MIN_VALUE) ? new Date(value) : null;
+    }
+
+    /**
+     * Returns {@code true} if the given object is non-null and not an instance of {@link NilObject}.
+     * This is a helper method for use in lambda expressions.
+     *
+     * @param  value  the value to test.
+     * @return whether the given value is non-null and non-nil.
+     *
+     * @see Objects#nonNull(Object)
+     */
+    public static boolean nonNil(final Object value) {
+        return (value != null) && !(value instanceof NilObject);
     }
 
     /**

@@ -70,7 +70,6 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.IntegerList;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Constants;
@@ -78,14 +77,15 @@ import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.metadata.simple.SimpleExtent;
 import org.apache.sis.metadata.internal.Resources;
+import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.geometry.AbstractDirectPosition;
 import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.xml.NilObject;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.ControlledVocabulary;
@@ -918,10 +918,10 @@ public class Formatter implements Localized {
      * @since 1.4
      */
     public void append(final InternationalString scope, final Extent area) {
-        if (DefaultObjectDomain.isDefined(scope)) {
+        if (scope != null && !(scope instanceof NilObject)) {
             appendOnNewLine(WKTKeywords.Scope, scope, ElementKind.SCOPE);
         }
-        if (DefaultObjectDomain.isDefined(area)) {
+        if (area != null && !(area instanceof NilObject)) {
             appendOnNewLine(WKTKeywords.Area, area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
             appendVerticalExtent(Extents.getVerticalRange(area));

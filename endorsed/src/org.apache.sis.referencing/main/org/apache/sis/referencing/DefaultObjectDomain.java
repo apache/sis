@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Objects;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ComparisonMode;
@@ -27,6 +28,8 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.xml.NilObject;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -34,7 +37,16 @@ import org.opengis.referencing.ObjectDomain;
 
 
 /**
- * Default implementation of scope and domain of validity of a CRS-related object.
+ * Scope and domain of validity of a CRS-related object.
+ * Those two properties are mandatory according ISO 19111.
+ * If a property is unspecified (by passing {@code null} to the constructor),
+ * then this class substitutes the null value by a <i>"not known"</i> text in an
+ * object implementing the {@link NilObject} interface with {@link NilReason#UNKNOWN}.
+ * The use of <i>"not known"</i> text is an ISO 19111 recommendation.
+ *
+ * <h2>Immutability and thread safety</h2>
+ * This class is immutable and thus thread-safe if the property values
+ * given to the constructor are also immutable.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -48,40 +60,94 @@ public class DefaultObjectDomain extends FormattableObject implements ObjectDoma
 
     /**
      * The text used by default when the scope was not specified.
-     * The <i>"not known"</i> text is standardized by ISO 19111.
+     * The <i>"not known"</i> text is recommended by the ISO 19111 standard.
      * The text may be localized.
-     *
-     * @see #isDefined(InternationalString)
      */
-    public static final InternationalString UNKNOWN_SCOPE = Vocabulary.formatInternational(Vocabulary.Keys.NotKnown);
+    private static final class UnknownScope extends Vocabulary.International implements NilObject {
+        /** For cross-version interoperability. */
+        private static final long serialVersionUID = 7235301883912422934L;
+
+        /** The singleton instance. */
+        static final UnknownScope INSTANCE = new UnknownScope();
+
+        /** Creates the singleton instance. */
+        private UnknownScope() {
+            super(Vocabulary.Keys.NotKnown);
+        }
+
+        /**
+         * {@return a reason saying that the extent is unknown}.
+         */
+        @Override
+        public NilReason getNilReason() {
+            return NilReason.UNKNOWN;
+        }
+
+        /**
+         * Returns the unique instance on deserialization.
+         *
+         * @return the object to use after deserialization.
+         * @throws ObjectStreamException if the serialized object contains invalid data.
+         */
+        private Object readResolve() throws ObjectStreamException {
+            return INSTANCE;
+        }
+    }
 
     /**
-     * The extent used by default when the domain of validity was not specified.
-     *
-     * @see #isDefined(Extent)
+     * The extent used by default when the scope was not specified.
      */
-    public static final Extent UNKNOWN_EXTENT;
-    static {
-        final var domainOfValidity = new DefaultExtent(UNKNOWN_SCOPE, null, null, null);
-        domainOfValidity.transitionTo(DefaultExtent.State.FINAL);
-        UNKNOWN_EXTENT = domainOfValidity;
+    private static final class UnknownExtent extends DefaultExtent implements NilObject {
+        /** For cross-version interoperability. */
+        private static final long serialVersionUID = 662383891780679068L;
+
+        /** The singleton instance. */
+        static final UnknownExtent INSTANCE = new UnknownExtent();
+
+        /** Creates the singleton instance. */
+        private UnknownExtent() {
+            super(UnknownScope.INSTANCE, null, null, null);
+            transitionTo(DefaultExtent.State.FINAL);
+        }
+
+        /**
+         * {@return a reason saying that the extent is unknown}.
+         */
+        @Override
+        public NilReason getNilReason() {
+            return NilReason.UNKNOWN;
+        }
+
+        /**
+         * Returns the unique instance on deserialization.
+         *
+         * @return the object to use after deserialization.
+         * @throws ObjectStreamException if the serialized object contains invalid data.
+         */
+        private Object readResolve() throws ObjectStreamException {
+            return INSTANCE;
+        }
     }
 
     /**
      * Description of domain of usage, or limitations of usage, for which the object is valid.
+     * This is {@code null} (i.e. is not replaced by the <i>"not known"</i> text) if the value given
+     * to the {@linkplain #DefaultObjectDomain(InternationalString, Extent) constructor} was null.
      *
      * @see #getScope()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private final InternationalString scope;
+    protected final InternationalString scope;
 
     /**
      * Area for which the object is valid.
+     * This is {@code null} (i.e. is not replaced by the <i>"not known"</i> text) if the value given
+     * to the {@linkplain #DefaultObjectDomain(InternationalString, Extent) constructor} was null.
      *
      * @see #getDomainOfValidity()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private final Extent domainOfValidity;
+    protected final Extent domainOfValidity;
 
     /**
      * Creates a new domain with the given scope and extent.
@@ -91,55 +157,64 @@ public class DefaultObjectDomain extends FormattableObject implements ObjectDoma
      * @param scope             description of domain of usage, or limitations of usage.
      * @param domainOfValidity  area for which the object is valid.
      */
-    public DefaultObjectDomain(InternationalString scope, Extent domainOfValidity) {
-        if (scope == null) {
-            scope = UNKNOWN_SCOPE;
-        }
-        if (domainOfValidity == null) {
-            domainOfValidity = UNKNOWN_EXTENT;
-        }
+    public DefaultObjectDomain(final InternationalString scope, final Extent domainOfValidity) {
         this.scope = scope;
         this.domainOfValidity = domainOfValidity;
     }
 
     /**
+     * Creates a new domain with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param  domain  the domain to copy.
+     *
+     * @see #castOrCopy(ObjectDomain)
+     */
+    public DefaultObjectDomain(final ObjectDomain domain) {
+        scope = domain.getScope();
+        domainOfValidity = domain.getDomainOfValidity();
+    }
+
+    /**
+     * Returns a SIS datum implementation with the same values than the given arbitrary implementation.
+     * If the given object is {@code null}, then this method returns {@code null}.
+     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
+     * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
+     *
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultObjectDomain castOrCopy(final ObjectDomain object) {
+        return (object == null) || (object instanceof DefaultObjectDomain)
+                ? (DefaultObjectDomain) object : new DefaultObjectDomain(object);
+    }
+
+    /**
      * Returns a description of usage, or limitations of usage, for which this object is valid.
+     * If no scope was specified to the constructor, then this method returns <i>"not known"</i>
+     * in an instance implementing the {@link NilObject} interface with {@link NilReason#UNKNOWN}.
      *
      * @return the domain of usage.
      */
     @Override
     public InternationalString getScope() {
-        return scope;
+        return (scope != null) ? scope : UnknownScope.INSTANCE;
     }
 
     /**
      * Returns the spatial and temporal extent in which this object is valid.
+     * If no extent was specified to the constructor, then this method returns <i>"not known"</i>
+     * in an instance implementing the {@link NilObject} interface with {@link NilReason#UNKNOWN}.
      *
      * @return the area or time frame of usage.
      */
     @Override
     public Extent getDomainOfValidity() {
-        return domainOfValidity;
-    }
-
-    /**
-     * Returns {@code true} if the given scope is neither null or not known.
-     *
-     * @param  scope  the scope to test.
-     * @return {@code true} if the given scope is not null and not {@link #UNKNOWN_SCOPE}.
-     */
-    public static boolean isDefined(final InternationalString scope) {
-        return (scope != null) && (scope != UNKNOWN_SCOPE);
-    }
-
-    /**
-     * Returns {@code true} if the given extent is neither null or not known.
-     *
-     * @param  domainOfValidity  the extent to test.
-     * @return {@code true} if the given extent is not null and not {@link #UNKNOWN_EXTENT}.
-     */
-    public static boolean isDefined(final Extent domainOfValidity) {
-        return (domainOfValidity != null) && (domainOfValidity != UNKNOWN_EXTENT);
+        return (domainOfValidity != null) ? domainOfValidity : UnknownExtent.INSTANCE;
     }
 
     /**
@@ -204,8 +279,8 @@ public class DefaultObjectDomain extends FormattableObject implements ObjectDoma
      * The default implementation writes the following elements:
      *
      * <ul>
-     *   <li>The object {@linkplain #getScope() scope}.</li>
-     *   <li>The geographic description of the {@linkplain #getDomainOfValidity() domain of validity}.</li>
+     *   <li>The object {@linkplain #scope}.</li>
+     *   <li>The geographic description of the {@linkplain #domainOfValidity domain of validity}.</li>
      *   <li>The geographic bounding box of the domain of validity.</li>
      * </ul>
      *
@@ -215,6 +290,7 @@ public class DefaultObjectDomain extends FormattableObject implements ObjectDoma
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        // Use the fields directly in order to keep null values.
         formatter.append(scope, domainOfValidity);
         return WKTKeywords.Usage;
     }

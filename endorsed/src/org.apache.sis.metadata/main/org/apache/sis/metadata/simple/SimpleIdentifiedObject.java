@@ -97,7 +97,10 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
      *
      * @return the domain of validity, or {@code null} if none.
+     *
+     * @deprecated Removed from ISO 19111:2019 (moved to {@code ObjectDomain}).
      */
+    @Deprecated
     public final Extent getDomainOfValidity() {
         return null;
     }
@@ -123,10 +126,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * The default implementation returns {@link Identifier#getDescription()}.
      *
      * @return a narrative explanation of the role of this object, or {@code null} if none.
-     *
-     * @deprecated Removed from ISO 19111:2019 (moved to {@code ObjectDomain}).
      */
-    @Deprecated
     public InternationalString getDescription() {
         final Identifier name = this.name;
         return (name != null) ? name.getDescription() : null;
