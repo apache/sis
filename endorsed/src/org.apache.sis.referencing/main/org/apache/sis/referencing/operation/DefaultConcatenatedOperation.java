@@ -86,13 +86,11 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>

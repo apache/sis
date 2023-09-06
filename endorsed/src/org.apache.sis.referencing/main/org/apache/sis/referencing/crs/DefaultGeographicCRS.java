@@ -122,8 +122,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>

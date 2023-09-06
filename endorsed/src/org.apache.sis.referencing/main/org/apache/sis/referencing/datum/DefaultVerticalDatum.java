@@ -240,7 +240,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Compare this vertical datum with the specified object for equality.
+     * Compares this vertical datum with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
      * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
