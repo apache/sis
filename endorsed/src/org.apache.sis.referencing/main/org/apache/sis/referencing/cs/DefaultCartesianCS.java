@@ -20,10 +20,7 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.measure.Angle;
 
 
 /**
@@ -174,29 +171,6 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     public static DefaultCartesianCS castOrCopy(final CartesianCS object) {
         return (object == null) || (object instanceof DefaultCartesianCS)
                 ? (DefaultCartesianCS) object : new DefaultCartesianCS(object);
-    }
-
-    /**
-     * Ensures that all axes are perpendicular.
-     */
-    private void ensurePerpendicularAxis(final Map<String,?> properties) throws IllegalArgumentException {
-        final int dimension = getDimension();
-        for (int i=0; i<dimension; i++) {
-            final AxisDirection axis0 = getAxis(i).getDirection();
-            for (int j=i; ++j<dimension;) {
-                final AxisDirection axis1 = getAxis(j).getDirection();
-                final Angle angle = CoordinateSystems.angle(axis0, axis1);
-                /*
-                 * The angle may be null for grid directions (COLUMN_POSITIVE, COLUMN_NEGATIVE,
-                 * ROW_POSITIVE, ROW_NEGATIVE). We conservatively accept those directions even if
-                 * they are not really for Cartesian CS because we do not know the grid geometry.
-                 */
-                if (angle != null && Math.abs(angle.degrees()) != 90) {
-                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
-                            Resources.Keys.NonPerpendicularDirections_2, axis0, axis1));
-                }
-            }
-        }
     }
 
     /**
