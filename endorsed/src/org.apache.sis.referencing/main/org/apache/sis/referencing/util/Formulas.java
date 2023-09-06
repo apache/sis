@@ -199,13 +199,15 @@ public final class Formulas extends Static {
     }
 
     /**
-     * Returns the radius at the given latitude.
+     * Returns the geocentric radius at the given latitude.
      *
      * @param  ellipsoid  the ellipsoid for which to compute the radius.
      * @param  φ          the latitude in radians where to compute the radius.
      * @return radius at latitude φ.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Geocentric_radius">Geocentric radius on Wikipedia</a>
      */
-    public static double getRadius(final Ellipsoid ellipsoid, final double φ) {
+    public static double geocentricRadius(final Ellipsoid ellipsoid, final double φ) {
         final double a  = ellipsoid.getSemiMajorAxis();
         final double b  = ellipsoid.getSemiMinorAxis();
         double at = a * Math.cos(φ); at *= at;

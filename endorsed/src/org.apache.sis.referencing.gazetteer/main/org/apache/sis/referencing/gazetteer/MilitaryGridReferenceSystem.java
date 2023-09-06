@@ -552,7 +552,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                     if (crs != null) try {
                         final double φ  = encoder(crs).getLatitude(this, position);
                         final double φr = Math.toRadians(φ);
-                        radius = Formulas.getRadius(ellipsoid, φr);
+                        radius = Formulas.geocentricRadius(ellipsoid, φr);
                         if (φ >= TransverseMercator.Zoner.SOUTH_BOUNDS &&
                             φ <  TransverseMercator.Zoner.NORTH_BOUNDS)
                         {
@@ -1658,7 +1658,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              */
             if (precision > 0) {
                 final double φr = Math.toRadians(φ);
-                precision *= Formulas.getRadius(owner.getEllipsoid(), φr);      // Convert precision to metres.
+                precision *= Formulas.geocentricRadius(owner.getEllipsoid(), φr);     // Convert precision to metres.
                 if (isUTM) precision *= Math.cos(φr);
                 owner.setPrecision(precision);
                 digits = owner.digits();

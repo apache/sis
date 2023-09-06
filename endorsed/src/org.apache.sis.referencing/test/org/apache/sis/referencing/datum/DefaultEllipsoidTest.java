@@ -113,15 +113,15 @@ public final class DefaultEllipsoidTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultEllipsoid#getRadius(double)}.
+     * Tests {@link DefaultEllipsoid#getGeocentricRadius(double)}.
      */
     @Test
-    public void testRadius() {
+    public void testGeocentricRadius() {
         final DefaultEllipsoid e = DefaultEllipsoid.castOrCopy(GeodeticDatumMock.WGS84.getEllipsoid());
-        assertEquals(6378137, e.getRadius( 0),  0.5);
-        assertEquals(6372824, e.getRadius( 30), 0.5);
-        assertEquals(6356752, e.getRadius(+90), 0.5);
-        assertEquals(6356752, e.getRadius(-90), 0.5);
+        assertEquals(6378137, e.getGeocentricRadius( 0),  0.5);
+        assertEquals(6372824, e.getGeocentricRadius( 30), 0.5);
+        assertEquals(6356752, e.getGeocentricRadius(+90), 0.5);
+        assertEquals(6356752, e.getGeocentricRadius(-90), 0.5);
     }
 
     /**

@@ -379,7 +379,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Returns the radius at the given latitude.
+     * Returns the geocentric radius at the given latitude.
      * Special cases:
      *
      * <ul>
@@ -389,12 +389,25 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * </ul>
      *
      * @param  φ  latitude in degrees, from -90° to +90° inclusive.
-     * @return radius at the given latitude.
+     * @return geocentric radius at latitude φ°.
+     *
+     * @since 1.4
+     */
+    public double getGeocentricRadius(final double φ) {
+        return Formulas.geocentricRadius(this, Math.toRadians(φ));
+    }
+
+    /**
+     * @deprecated Renamed {@link #getGeocentricRadius(double)}.
+     *
+     * @param  φ  latitude in degrees, from -90° to +90° inclusive.
+     * @return geocentric radius at the given latitude.
      *
      * @since 1.3
      */
+    @Deprecated
     public double getRadius(final double φ) {
-        return Formulas.getRadius(this, Math.toRadians(φ));
+        return getGeocentricRadius(φ);
     }
 
     /**
