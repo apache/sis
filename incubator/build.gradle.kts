@@ -73,9 +73,6 @@ dependencies {
  * replace ANTLR generated code by hand-written code in a future version.
  */
 var srcDir = file("src")        // Must be the same as the hard-coded value in `BuildHelper.java`.
-tasks.generateGrammarSource {
-    setOutputDirectory(file("${srcDir}/org.apache.sis.cql/main"))
-}
 tasks.compileJava {
     dependsOn(":endorsed:compileJava")
     options.release.set(11)         // The version of both Java source code and compiled byte code.
@@ -113,15 +110,6 @@ tasks.test {
  */
 publishing {
     publications {
-        create<MavenPublication>("cql") {
-            groupId    = "org.apache.sis.core"
-            artifactId = "sis-cql"
-            artifact(file("${buildDir}/libs/org.apache.sis.cql.jar"))
-            pom {
-                name        = "Apache SIS CQL"
-                description = "CQL parser."
-            }
-        }
         create<MavenPublication>("storage.shapefile") {
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-shapefile"
