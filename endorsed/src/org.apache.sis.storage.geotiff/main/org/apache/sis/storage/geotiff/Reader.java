@@ -74,6 +74,8 @@ final class Reader extends GeoTIFF {
      *
      * Those values are defined that way for making easier (like a boolean flag) to test if
      * the file is a BigTIFF format, with statement like {@code if (intSizeExpansion != 0)}.
+     *
+     * @see #getFormat()
      */
     final byte intSizeExpansion;
 
@@ -185,6 +187,14 @@ final class Reader extends GeoTIFF {
         }
         // Do not invoke this.errors() yet because GeoTiffStore construction may not be finished. Owner.error() is okay.
         throw new DataStoreContentException(store.errors().getString(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+    }
+
+    /**
+     * {@return the options (BigTIFF, COG…) used by this reader}.
+     */
+    @Override
+    final Set<GeoTiffOption> getOptions() {
+        return (intSizeExpansion != 0) ? Set.of(GeoTiffOption.BIG_TIFF) : Set.of();
     }
 
     /**

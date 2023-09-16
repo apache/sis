@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Set;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.io.Closeable;
@@ -75,6 +76,11 @@ abstract class GeoTIFF implements Closeable {
     GeoTIFF(final GeoTiffStore store) {
         this.store = store;
     }
+
+    /**
+     * {@return the options (BigTIFF, COG…) used by this reader or writer}.
+     */
+    abstract Set<GeoTiffOption> getOptions();
 
     /**
      * Returns the resources to use for formatting error messages.

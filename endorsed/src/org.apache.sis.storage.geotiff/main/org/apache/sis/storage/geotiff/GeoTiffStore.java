@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -46,6 +47,7 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
@@ -69,7 +71,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.8
  */
 public class GeoTiffStore extends DataStore implements Aggregate {
@@ -85,6 +87,19 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @see #reader()
      */
     private volatile Reader reader;
+
+    /**
+     * The GeoTIFF writer implementation, or {@code null} if the store has been closed.
+     *
+     * @see #writer()
+     */
+    private volatile Writer writer;
+
+    /**
+     * The locale to use for formatting metadata. This is not necessarily the same as {@link #getLocale()},
+     * which is about formatting error messages. A null value means "unlocalized", which is usually English.
+     */
+    final Locale dataLocale;
 
     /**
      * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
@@ -197,23 +212,44 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         super(parent, provider, connector, hidden);
         this.hidden = hidden;
 
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION);
         this.customizer = (customizer != null) ? customizer : SchemaModifier.DEFAULT;
 
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
 
-        location = connector.getStorageAs(URI.class);
-        path = connector.getStorageAs(Path.class);
-        final ChannelDataInput input = connector.commit(ChannelDataInput.class, Constants.GEOTIFF);
+        dataLocale = connector.getOption(OptionKey.LOCALE);
+        location   = connector.getStorageAs(URI.class);
+        path       = connector.getStorageAs(Path.class);
         try {
-            reader = new Reader(this, input);
+            if (URIDataStore.Provider.isWritable(connector)) {
+                ChannelDataOutput output = connector.commit(ChannelDataOutput.class, Constants.GEOTIFF);
+                writer = new Writer(this, output, connector.getOption(GeoTiffOption.OPTION_KEY));
+            } else {
+                ChannelDataInput input = connector.commit(ChannelDataInput.class, Constants.GEOTIFF);
+                reader = new Reader(this, input);
+                if (getClass() == GeoTiffStore.class) {
+                    listeners.useReadOnlyEvents();
+                }
+            }
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
-        if (getClass() == GeoTiffStore.class) {
-            listeners.useReadOnlyEvents();
-        }
+    }
+
+    /**
+     * Returns the options (BigTIFF, COG…) of this data store.
+     *
+     * @return options of this data store.
+     *
+     * @since 1.5
+     */
+    public Set<GeoTiffOption> getOptions() {
+        if (writer != null) return writer.getOptions();
+        if (reader != null) return reader.getOptions();
+        return Set.of();
     }
 
     /**
@@ -262,7 +298,14 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        return Optional.ofNullable(URIDataStore.parameters(provider, location));
+        final ParameterValueGroup param = URIDataStore.parameters(provider, location);
+        if (param != null && writer != null) {
+            final Set<GeoTiffOption> options = writer.getOptions();
+            if (!options.isEmpty()) {
+                param.parameter(GeoTiffStoreProvider.OPTIONS).setValue(options.toArray(GeoTiffOption[]::new));
+            }
+        }
+        return Optional.ofNullable(param);
     }
 
     /**
@@ -391,6 +434,20 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.READ);
         }
         return r;
+    }
+
+    /**
+     * Returns the writer if it is not closed, or throws an exception otherwise.
+     *
+     * @see #close()
+     */
+    final Writer writer() throws DataStoreException {
+        assert Thread.holdsLock(this);
+        final Writer w = writer;
+        if (w == null) {
+            throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.WRITE);
+        }
+        return w;
     }
 
     /**
@@ -548,6 +605,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         try {
             listeners.close();                  // Should never fail.
             final Reader r = reader;
+            final Writer w = writer;
+            if (w != null) w.close();
             if (r != null) r.close();
         } catch (IOException e) {
             throw new DataStoreException(e);
@@ -558,6 +617,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 metadata       = null;
                 nativeMetadata = null;
                 reader         = null;
+                writer         = null;
             }
         }
     }

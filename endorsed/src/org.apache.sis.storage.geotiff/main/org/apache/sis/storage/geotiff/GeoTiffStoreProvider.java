@@ -32,6 +32,8 @@ import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
@@ -43,7 +45,7 @@ import org.apache.sis.util.internal.Constants;
  * the part of the caller. However, the {@link GeoTiffStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see GeoTiffStore
  *
@@ -51,7 +53,7 @@ import org.apache.sis.util.internal.Constants;
  */
 @StoreMetadata(formatName    = Constants.GEOTIFF,
                fileSuffixes  = {"tiff", "tif"},
-               capabilities  = Capability.READ,
+               capabilities  = {Capability.READ, Capability.WRITE},
                resourceTypes = {Aggregate.class, GridCoverageResource.class})
 public class GeoTiffStoreProvider extends DataStoreProvider {
     /**
@@ -72,9 +74,19 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.geotiff");
 
     /**
+     * Name of the parameter for specifying the options (BigTIFF, COG…).
+     */
+    static final String OPTIONS = "options";
+
+    /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(Constants.GEOTIFF);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR;
+    static {
+        final var builder = new ParameterBuilder();
+        final var options = builder.addName(OPTIONS).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Options)).create(GeoTiffOption[].class, null);
+        OPEN_DESCRIPTOR = builder.addName(Constants.GEOTIFF).createGroup(URIDataStore.Provider.LOCATION_PARAM, options);
+    }
 
     /**
      * Creates a new provider.
