@@ -974,7 +974,7 @@ public class MetadataBuilder {
      *   <li><b>Resource:</b> {@code metadata/identificationInfo/citation/identifier}</li>
      * </ul>
      *
-     * @param  authority  the the person or party responsible for maintenance of the namespace, or {@code null} if none.
+     * @param  authority  the person or party responsible for maintenance of the namespace, or {@code null} if none.
      * @param  code       the identifier code, or {@code null} for no-operation.
      * @param  scope      whether the date applies to data, to metadata or to both.
      *

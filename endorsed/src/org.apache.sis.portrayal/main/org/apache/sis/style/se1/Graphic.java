@@ -258,7 +258,7 @@ public class Graphic<R> extends StyleElement<R> implements Translucent<R> {
     /**
      * Returns the location inside of a graphic to use for anchoring the graphic to the main-geometry point.
      * The coordinates are given as (<var>x</var>,<var>y</var>) floating-point numbers
-     * relative the the graphic bounding box, where (0,0) is the lower-left corner and
+     * relative the graphic bounding box, where (0,0) is the lower-left corner and
      * (1,1) is the upper-right corner.
      *
      * <p>The returned object is <em>live</em>:

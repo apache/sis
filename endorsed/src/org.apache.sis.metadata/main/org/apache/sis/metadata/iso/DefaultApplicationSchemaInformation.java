@@ -122,7 +122,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * Creates a application schema information initialized to the specified values.
      *
      * @param name                the name of the application schema used.
-     * @param schemaLanguage      the the identification of the schema language used.
+     * @param schemaLanguage      the identification of the schema language used.
      * @param constraintLanguage  the formal language used in application schema.
      */
     public DefaultApplicationSchemaInformation(final Citation name,

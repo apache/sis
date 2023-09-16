@@ -311,7 +311,7 @@ public class Formatter implements Localized {
 
     /**
      * Indices where to insert additional margin, or {@code null} if none. The margin to insert will be
-     * the the width of the keyword (e.g. {@code "BOX"}), which is usually unknown to {@code Formatter}
+     * the width of the keyword (e.g. {@code "BOX"}), which is usually unknown to {@code Formatter}
      * until {@link FormattableObject} finished to write the element. This field is usually {@code null},
      * unless formatting geometries.
      */

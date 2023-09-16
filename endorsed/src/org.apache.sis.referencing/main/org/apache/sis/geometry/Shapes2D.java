@@ -329,7 +329,7 @@ public final class Shapes2D extends Static {
                          * At this point we found the extremum of the projected line segment
                          * using a cubic curve t = A + Bs + Cs² + Ds³ approximation.  Before
                          * to add those extremum into the projected bounding box, we need to
-                         * ensure that the source coordinate is inside the the original
+                         * ensure that the source coordinate is inside the original
                          * (unprojected) bounding box.
                          */
                         boolean isP2 = false;

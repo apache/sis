@@ -1752,7 +1752,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Returns the given character as a {@code char} if it is a letter, or throws an exception otherwise.
-         * The exception should never happen, unless the the encoder is used for a planet larger than Earth
+         * The exception should never happen, unless the encoder is used for a planet larger than Earth
          * for which we do not have enough letters.
          */
         private static char letter(final int c) throws GazetteerException {

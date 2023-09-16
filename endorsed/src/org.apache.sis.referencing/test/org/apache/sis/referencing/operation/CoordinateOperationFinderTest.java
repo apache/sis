@@ -494,7 +494,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
 
     /**
      * Tests a datum shift applied as a position vector transformation in geocentric domain.
-     * This test does not use the the EPSG geodetic dataset.
+     * This test does not use the EPSG geodetic dataset.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.

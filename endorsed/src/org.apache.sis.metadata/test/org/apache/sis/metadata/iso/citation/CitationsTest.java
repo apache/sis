@@ -183,7 +183,7 @@ public final class CitationsTest extends TestCase {
 
         assertNull("Shall not be taken as a valid identifier.",
                 Citations.toCodeSpace(new SimpleCitation("Proj.4")));
-        assertEquals("Shall fallback on the the identifier space name.",
+        assertEquals("Shall fallback on the identifier space name.",
                 "TheProj4Space", Citations.toCodeSpace(new Proj4()));
     }
 

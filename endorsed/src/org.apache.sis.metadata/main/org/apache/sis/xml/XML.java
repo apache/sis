@@ -498,7 +498,7 @@ public final class XML extends Static {
      * The destination is specified by the {@code output} argument implementation, for example
      * {@link javax.xml.transform.stream.StreamResult} for writing to a file or output stream.
      * The optional {@code properties} map can contain any key documented in this {@code XML} class,
-     * together with the keys documented in the <cite>supported properties</cite> section of the the
+     * together with the keys documented in the <cite>supported properties</cite> section of the
      * {@link Marshaller} class.
      *
      * @param  object      the root of content tree to be marshalled.
@@ -631,7 +631,7 @@ public final class XML extends Static {
      * The source is specified by the {@code input} argument implementation, for example
      * {@link javax.xml.transform.stream.StreamSource} for reading from a file or input stream.
      * The optional {@code properties} map can contain any key documented in this {@code XML} class,
-     * together with the keys documented in the <cite>supported properties</cite> section of the the
+     * together with the keys documented in the <cite>supported properties</cite> section of the
      * {@link Unmarshaller} class.
      *
      * @param  input       the file from which to read a XML representation.
@@ -673,7 +673,7 @@ public final class XML extends Static {
      * The source is specified by the {@code input} argument implementation, for example
      * {@link javax.xml.transform.stream.StreamSource} for reading from a file or input stream.
      * The optional {@code properties} map can contain any key documented in this {@code XML} class,
-     * together with the keys documented in the <cite>supported properties</cite> section of the the
+     * together with the keys documented in the <cite>supported properties</cite> section of the
      * {@link Unmarshaller} class.
      *
      * @param  <T>           compile-time value of the {@code declaredType} argument.

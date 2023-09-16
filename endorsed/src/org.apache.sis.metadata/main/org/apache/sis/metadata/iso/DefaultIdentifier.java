@@ -194,7 +194,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence) unicode identifier}.</li>
      * </ol>
      *
-     * @param authority  the the person or party responsible for maintenance of the namespace, or {@code null} if none.
+     * @param authority  the person or party responsible for maintenance of the namespace, or {@code null} if none.
      * @param code       the alphanumeric value identifying an instance in the namespace, or {@code null} if none.
      *
      * @see org.apache.sis.metadata.iso.citation.Citations#toCodeSpace(Citation)

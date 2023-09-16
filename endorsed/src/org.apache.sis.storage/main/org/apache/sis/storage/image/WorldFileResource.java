@@ -288,7 +288,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                      *     Image I/O:     xₒ = xᵣ + (x⋅s + Δx′)
                      *     GridGeometry:  xₒ = (truncate(xᵣ/s) + x)⋅s + Δx
                      *
-                     * Where xᵣ is the the lower coordinate of `region`, s is the subsampling and
+                     * Where xᵣ is the lower coordinate of `region`, s is the subsampling and
                      * `truncate(xᵣ/s)` is given by the lower coordinate of subsampled extent.
                      * Rearranging equations:
                      *

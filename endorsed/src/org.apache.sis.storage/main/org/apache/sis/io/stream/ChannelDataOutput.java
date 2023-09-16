@@ -118,7 +118,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
                 } while (after > capacity);
                 /*
                  * We wrote a sufficient amount of bytes - usually all of them, but not necessarily.
-                 * If there is some unwritten bytes, move them the the beginning of the buffer.
+                 * If there is some unwritten bytes, move them the beginning of the buffer.
                  */
                 bufferOffset += buffer.position();
                 buffer.compact();

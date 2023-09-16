@@ -389,7 +389,7 @@ class CoordinateOperationRegistry {
          * Returns the horizontal component to search in the database, or {@code null} if no search should be done.
          * This method returns {@code null} if the horizontal component is not different then the given CRS,
          * in which case searching that CRS in the database would be redundant with previous searches.
-         * It also returns {@code null} if the CRS is a compound CRS, in which case the the separation
+         * It also returns {@code null} if the CRS is a compound CRS, in which case the separation
          * in single CRS should be done by the {@link CoordinateOperationFinder} subclass.
          */
         static SingleCRS horizontal(final CoordinateReferenceSystem crs) {
