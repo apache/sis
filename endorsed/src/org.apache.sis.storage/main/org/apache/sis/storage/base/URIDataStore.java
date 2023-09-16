@@ -17,7 +17,9 @@
 package org.apache.sis.storage.base;
 
 import java.util.Optional;
+import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.File;
 import java.net.URI;
@@ -323,9 +325,8 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
          */
         public static boolean isWritable(final StorageConnector connector) throws DataStoreException {
             final Object storage = connector.getStorage();
-            if (storage instanceof OutputStream || storage instanceof DataOutput) {
-                return true;
-            }
+            if (storage instanceof OutputStream || storage instanceof DataOutput) return true;    // Must be tested first.
+            if (storage instanceof InputStream  || storage instanceof DataInput)  return false;   // Ignore options.
             return ArraysExt.contains(connector.getOption(OptionKey.OPEN_OPTIONS), StandardOpenOption.WRITE);
         }
     }

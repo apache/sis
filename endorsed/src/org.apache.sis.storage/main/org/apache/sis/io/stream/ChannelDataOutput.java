@@ -437,6 +437,12 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      */
     private abstract class ArrayWriter {
         /**
+         * Creates a new writer.
+         */
+        ArrayWriter() {
+        }
+
+        /**
          * Creates a new buffer of the type required by the array to write.
          * This method is guaranteed to be invoked exactly once.
          */
@@ -459,11 +465,11 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
         }
 
         /**
-         * Writes {@code length} characters from the array to the stream.
+         * Writes {@code length} elements from the array to the stream.
          *
          * @param  dataSize  the size of the Java primitive type which is the element of the array.
          * @param  offset    the starting position within {@code src} to write.
-         * @param  length    the number of characters to write.
+         * @param  length    the number of elements to write.
          * @throws IOException if an error occurred while writing the stream.
          */
         final void writeFully(final int dataSize, int offset, int length) throws IOException {
@@ -580,17 +586,51 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     }
 
     /**
-     * Fills the buffer with the zero values from its position up to the limit.
-     * After this method call, the position is undetermined and shall be set to
-     * a new value by the caller.
+     * Repeats the same byte many times.
+     * This method can be used for filling a region of the output stream.
+     *
+     * @param  count  number of bytes to write.
+     * @param  value  the byte to repeat the given amount of times.
      */
-    private void clear() {
-        if (buffer.hasArray()) {
-            final int offset = buffer.arrayOffset();
-            Arrays.fill(buffer.array(), offset + buffer.position(), offset + buffer.limit(), (byte) 0);
-        } else {
-            while (buffer.hasRemaining()) {
-                buffer.put((byte) 0);
+    public final void repeat(long count, final byte value) throws IOException {
+        clearBitOffset();
+        if (count > 0) {
+            /*
+             * Fill the buffer with the specified value. The filling is done only once,
+             * even if the number of bytes to write is greater than the buffer capacity.
+             * We can do that because the same buffer content can be reused during each
+             * `WritableByteChannel.write(ByteBuffer)` call.
+             */
+            long n = Math.min(count, buffer.capacity());
+            ensureBufferAccepts((int) n);
+            if (buffer.hasArray()) {
+                final int offset = buffer.arrayOffset();
+                final int lower  = buffer.position();
+                final int upper  = lower + (int) n;
+                Arrays.fill(buffer.array(), offset + lower, offset + upper, value);
+                buffer.position(upper);
+            } else {
+                for (int i = (int) n; --i >= 0;) {
+                    buffer.put(value);
+                }
+            }
+            /*
+             * If the number of bytes to write is greater than the capacity, we need to flush the buffer.
+             * Not necessarily fully however, because maybe there is not so much extra bytes to write.
+             */
+            if ((count -= n) > 0) {                                 // What remains, not counting what we put in the buffer.
+                assert buffer.position() == buffer.capacity();      // Because of `ensureBufferAccepts(capacity)`.
+                int c;
+                do {
+                    c = channel.write(buffer.rewind());
+                    bufferOffset += c;
+                    if (c == 0) {
+                        onEmptyTransfer();
+                    }
+                    c = buffer.remaining();                         // Remaining data that were not written.
+                    n = Math.min(count, buffer.capacity() - c);     // Number of bytes to append in the buffer.
+                } while ((count -= n) > 0);                         // What remains, not counting what we put in the buffer.
+                buffer.limit(c + (int) n);                          // Set also the position to the limit.
             }
         }
     }
@@ -620,34 +660,17 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             flush();
             ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
             bufferOffset = position;
-        } else if (p >= 0) {
+        } else if ((p -= buffer.position()) >= 0) {
             /*
              * Requested position is after the current buffer limit and
              * we cannot seek, so we have to pad with some zero values.
              */
-            p -= buffer.limit();
-            flush();                      // Also set the position to 0.
-            if (p <= buffer.capacity()) {
-                buffer.limit((int) p);
-                clear();
-                buffer.position((int) p);
-            } else {
-                buffer.clear();
-                clear();
-                do {
-                    if (channel.write(buffer) == 0) {
-                        onEmptyTransfer();
-                    }
-                    bufferOffset += buffer.position();
-                    p -= buffer.position();
-                    buffer.rewind();
-                } while (p > buffer.capacity());
-                buffer.limit((int) p).position((int) p);
-            }
+            repeat(p, (byte) 0);
         } else {
             // We cannot move position beyond the buffered part.
             throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
+        assert super.getStreamPosition() == position;
     }
 
     /**
