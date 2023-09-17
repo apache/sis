@@ -67,7 +67,6 @@ import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.ChannelImageInputStream;
-import org.apache.sis.io.stream.ChannelImageOutputStream;
 import org.apache.sis.io.stream.InputStreamAdapter;
 import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.io.stream.InternalOptionKey;
@@ -1475,18 +1474,13 @@ public class StorageConnector implements Serializable {
         if (reset(c)) {
             out = (ChannelDataOutput) c.view;
         } else {
-            out = createChannelDataOutput();                        // May be null.
+            out = createChannelDataOutput();        // May be null. This method should not have been invoked before.
         }
         final DataOutput asDataOutput;
         if (out != null) {
-            c = getView(ChannelDataOutput.class);                   // May have been added by createChannelDataOutput(…).
-            if (out instanceof DataOutput) {
-                asDataOutput = (DataOutput) out;
-            } else {
-                asDataOutput = new ChannelImageOutputStream(out);   // Upgrade existing instance.
-                c.view = asDataOutput;
-            }
-            views.put(DataOutput.class, c);                         // Share the same Coupled instance.
+            asDataOutput = out;
+            c = getView(ChannelDataOutput.class);   // Refresh because may have been added by createChannelDataInput().
+            views.put(DataOutput.class, c);         // Share the same `Coupled` instance.
         } else {
             reset();
             try {

@@ -17,9 +17,6 @@
 package org.apache.sis.io.stream;
 
 import java.io.IOException;
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-import javax.imageio.stream.ImageOutputStream;
 
 // Test dependencies
 import org.junit.Test;
@@ -47,12 +44,9 @@ public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
      * Initializes all non-final fields before to execute a test.
      */
     @Override
-    void initialize(final String fileName, final int streamLength, final int bufferLength) throws IOException {
-        expectedData             = new ByteArrayOutputStream(streamLength);
-        referenceStream          = new MemoryCacheImageOutputStream(expectedData);
-        testedStreamBackingArray = new byte[streamLength];
-        testedStream             = new ChannelImageOutputStream(fileName,
-                new ByteArrayChannel(testedStreamBackingArray, false), ByteBuffer.allocate(bufferLength));
+    void initialize(final String testName, final int streamLength, final int bufferLength) throws IOException {
+        super.initialize(testName, streamLength, bufferLength);
+        testedStream = new ChannelImageOutputStream(testedStream);
     }
 
     /**
@@ -63,8 +57,7 @@ public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
     @Test
     public void testWriteBits() throws IOException {
         initialize("testWriteBits", STREAM_LENGTH, randomBufferCapacity());
-        final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
-        final int length = testedStreamBackingArray.length - ARRAY_MAX_LENGTH; // Keep a margin against buffer underflow.
+        final int length = testedStreamBackingArray.length - ARRAY_MAX_LENGTH;      // Keep a margin against buffer underflow.
         while (testedStream.getStreamPosition() < length) {
             final long v = random.nextLong();
             final int numBits = random.nextInt(Byte.SIZE);
@@ -92,7 +85,6 @@ public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
     @Test
     public void testMarkAndReset() throws IOException {
         initialize("testMarkAndReset", STREAM_LENGTH, 1000); // We need a larger buffer for this test.
-        final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
         /*
          * Fill both streams with random data.
          * During this process, randomly takes mark.
@@ -117,7 +109,6 @@ public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
      * stream content.
      */
     private void compareMarks(int nbMarks) throws IOException {
-        final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
         while (--nbMarks >= 0) {
             referenceStream.reset();
             testedStream.reset();
@@ -150,7 +141,6 @@ public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
     public void testFlushBefore() throws IOException {
         final int N = 50; // Number of long values to write.
         initialize("testFlushBefore", N*Long.BYTES, 200);
-        final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
         for (int i=0; i<N; i++) {
             switch (i) {
                 case 20:

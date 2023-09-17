@@ -17,10 +17,12 @@
 package org.apache.sis.io.stream;
 
 import java.util.Arrays;
+import java.io.DataOutput;
 import java.io.Flushable;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
@@ -29,6 +31,7 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.storage.internal.Resources;
 
@@ -50,18 +53,15 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * <p>Since this class is only a helper tool, it does not "own" the channel and consequently does not provide
  * {@code close()} method. It is users responsibility to close the channel after usage.</p>
  *
- * <h2>Relationship with {@code DataOutput}</h2>
- * This class API is compatibly with the {@link java.io.DataOutput} interface, so subclasses can implement that
- * interface if they wish. This class does not implement {@code DataOutput} itself because it is not needed for
- * SIS purposes.
- * However, the {@link ChannelImageOutputStream} class implements the {@code DataOutput} interface, together with
- * the {@link javax.imageio.stream.ImageOutputStream} one, mostly for situations when inter-operability with
- * {@link javax.imageio} is needed.
+ * <h2>Relationship with {@code ImageOutputStream}</h2>
+ * This class API is compatibly with the {@link javax.imageio.stream.ImageOutputStream} interface, so subclasses
+ * can implement that interface if they wish. This class does not implement {@code ImageOutputStream} because it
+ * is not needed for SIS purposes.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class ChannelDataOutput extends ChannelData implements Flushable {
+public class ChannelDataOutput extends ChannelData implements DataOutput, Flushable {
     /**
      * The channel where data are written.
      * This is supplied at construction time.
@@ -151,6 +151,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      *
      * @param  bit  the bit to write (rightmost bit).
      * @throws IOException if an error occurred while creating the data output.
+     *
+     * @see #writeBoolean(boolean)
      */
     public final void writeBit(final int bit) throws IOException {
         writeBits(bit, 1);
@@ -208,6 +210,38 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     }
 
     /**
+     * Writes boolean value (8 bits) into the steam. This method delegates to {@linkplain #writeByte(int)}.
+     * If boolean {@code v} is {@code true} the byte value 1 is written whereas if boolean is {@code false}
+     * zero is written.
+     *
+     * <p>For writing a single bit, see {@link #writeBit(int)} instead.
+     *
+     * @param  v  boolean to be written.
+     * @throws IOException if some I/O exception occurs during writing.
+     *
+     * @see #writeBit(int)
+     */
+    @Override
+    public final void writeBoolean(final boolean v) throws IOException {
+        writeByte(v ? 1 : 0);
+    }
+
+    /**
+     * Writes a single byte to the stream at the current position.
+     * The 24 high-order bits of {@code v} are ignored.
+     *
+     * @param  v  an integer whose lower 8 bits are to be written.
+     * @throws IOException if some I/O exception occurs during writing.
+     *
+     * @deprecated Prefer {@link #writeByte(int)} for readability.
+     */
+    @Override
+    @Deprecated
+    public final void write(final int v) throws IOException {
+        writeByte(v);
+    }
+
+    /**
      * Writes the 8 low-order bits of {@code v} to the stream.
      * The 24 high-order bits of {@code v} are ignored.
      * This method ensures that there is space for at least 1 byte in the buffer,
@@ -216,6 +250,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  value  byte to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
+    @Override
     public final void writeByte(final int value) throws IOException {
         ensureBufferAccepts(Byte.BYTES);
         buffer.put((byte) value);
@@ -230,6 +265,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  value  short integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
+    @Override
     public final void writeShort(final int value) throws IOException {
         ensureBufferAccepts(Short.BYTES);
         buffer.putShort((short) value);
@@ -243,6 +279,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  value  character to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
+    @Override
     public final void writeChar(final int value) throws IOException {
         ensureBufferAccepts(Character.BYTES);
         buffer.putChar((char) value);
@@ -256,6 +293,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  value  integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
+    @Override
     public final void writeInt(final int value) throws IOException {
         ensureBufferAccepts(Integer.BYTES);
         buffer.putInt(value);
@@ -269,6 +307,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  value  long integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
+    @Override
     public final void writeLong(final long value) throws IOException {
         ensureBufferAccepts(Long.BYTES);
         buffer.putLong(value);
@@ -282,6 +321,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  value floating point value to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
+    @Override
     public final void writeFloat(final float value) throws IOException {
         ensureBufferAccepts(Float.BYTES);
         buffer.putFloat(value);
@@ -295,6 +335,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  value  double precision floating point value to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
+    @Override
     public final void writeDouble(final double value) throws IOException {
         ensureBufferAccepts(Double.BYTES);
         buffer.putDouble(value);
@@ -311,6 +352,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  src  an array of bytes to be written into stream.
      * @throws IOException if an error occurred while writing the stream.
      */
+    @Override
     public final void write(final byte[] src) throws IOException {
         write(src, 0, src.length);
     }
@@ -413,6 +455,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  length  the number of bytes to write.
      * @throws IOException if an error occurred while writing the stream.
      */
+    @Override
     public final void write(final byte[] src, int offset, int length) throws IOException {
         if (length != 0) {
             do {
@@ -583,6 +626,61 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             @Override Buffer createView() {return view = buffer.asDoubleBuffer();}
             @Override void transfer(int offset, int n) {view.put(src, offset, n);}
         }.writeFully(Double.BYTES, offset, length);
+    }
+
+    /**
+     * Writes the lower-order byte of each character. The high-order eight bits of each character
+     * in the string are ignored - this method does <strong>not</strong> applies any encoding.
+     *
+     * <p>This method is provided because required by the {@link DataOutput} interface,
+     * but its usage should generally be avoided.</p>
+     *
+     * @param  ascii  the string to be written.
+     * @throws IOException if an error occurred while writing the stream.
+     */
+    @Override
+    public void writeBytes(final String ascii) throws IOException {
+        final byte[] data = new byte[ascii.length()];
+        for (int i=0; i<data.length; i++) {
+            data[i] = (byte) ascii.charAt(i);
+        }
+        write(data);
+    }
+
+    /**
+     * Writes all characters from the given text into the stream.
+     *
+     * @param  text  the characters to be written into the stream.
+     * @throws IOException if an error occurred while writing the stream.
+     */
+    @Override
+    public final void writeChars(final String text) throws IOException {
+        writeChars(text.toCharArray());
+    }
+
+    /**
+     * Writes two bytes of length information to the output stream, followed by the modified UTF-8 representation
+     * of every character in the {@code str} string. Each character is converted to a group of one, two, or three
+     * bytes, depending on the character code point value.
+     *
+     * @param  s  the string to be written.
+     * @throws IOException if an error occurred while writing the stream.
+     */
+    @Override
+    public void writeUTF(final String s) throws IOException {
+        byte[] data = s.getBytes(StandardCharsets.UTF_8);
+        if (data.length > Short.MAX_VALUE) {
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.ExcessiveStringSize_3, filename, Short.MAX_VALUE, data.length));
+        }
+        final ByteOrder oldOrder = buffer.order();
+        buffer.order(ByteOrder.BIG_ENDIAN);
+        try {
+            writeShort(data.length);
+            write(data);
+        } finally {
+            buffer.order(oldOrder);
+        }
     }
 
     /**

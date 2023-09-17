@@ -18,9 +18,7 @@ package org.apache.sis.io.stream;
 
 import java.util.Arrays;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
@@ -52,7 +50,7 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
      * A stream to use as a reference implementation. Any data written in {@link #testedStream}
      * will also be written in {@code referenceStream}, for later comparison.
      */
-    DataOutput referenceStream;
+    ImageOutputStream referenceStream;
 
     /**
      * Byte array which is filled by the {@linkplain #testedStream} implementation during write operations.
@@ -65,7 +63,7 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
      * <b>Do not write to this stream</b> - this field is kept only for invocation of
      * {@link ByteArrayOutputStream#toByteArray()}.
      */
-    ByteArrayOutputStream expectedData;
+    private ByteArrayOutputStream expectedData;
 
     /**
      * Creates a new test case.
@@ -83,7 +81,7 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
      */
     void initialize(final String testName, final int streamLength, final int bufferLength) throws IOException {
         expectedData             = new ByteArrayOutputStream(streamLength);
-        referenceStream          = new DataOutputStream(expectedData);
+        referenceStream          = new MemoryCacheImageOutputStream(expectedData);
         testedStreamBackingArray = new byte[streamLength];
         testedStream             = new ChannelDataOutput(testName,
                 new ByteArrayChannel(testedStreamBackingArray, false), ByteBuffer.allocate(bufferLength));
@@ -123,7 +121,7 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
      */
     final void assertStreamContentEquals() throws IOException {
         testedStream.flush();
-        ((Closeable) referenceStream).close();
+        referenceStream.close();
         final byte[] expectedArray = expectedData.toByteArray();
         assertArrayEquals(expectedArray, Arrays.copyOf(testedStreamBackingArray, expectedArray.length));
     }
@@ -138,7 +136,7 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
     public void testWriteAndSeek() throws IOException {
         initialize("testWriteAndSeek", STREAM_LENGTH, randomBufferCapacity());
         writeInStreams();
-        ((Closeable) referenceStream).close();
+        referenceStream.close();
         final byte[] expectedArray = expectedData.toByteArray();
         final int seekRange = expectedArray.length - Long.BYTES;
         final ByteBuffer arrayView = ByteBuffer.wrap(expectedArray);
@@ -238,17 +236,18 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
      * @throws IOException should never happen since we read and write in memory only.
      */
     private void writeInStreams() throws IOException {
-        transferRandomData(testedStream, testedStreamBackingArray.length - ARRAY_MAX_LENGTH,
-                (testedStream instanceof DataOutput) ? 21 : 14);
+        transferRandomData(testedStream, testedStreamBackingArray.length - ARRAY_MAX_LENGTH, 21);
     }
 
     /**
      * Writes a random unit of data using a method selected randomly.
      * This method is invoked (indirectly) by {@link #writeInStreams()}.
+     *
+     * @param  operation  numerical identifier of the operation to test.
      */
     @Override
     final void transferRandomData(final int operation) throws IOException {
-        final DataOutput r = this.referenceStream;
+        final ImageOutputStream r = this.referenceStream;
         final ChannelDataOutput t = this.testedStream;
         switch (operation) {
             case 0: {
@@ -304,13 +303,8 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
                 final char[] tmp = new char[random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
                     tmp[i] = (char) random.nextInt(1 << Character.SIZE);
-                    if (!(r instanceof ImageOutputStream)) {
-                        r.writeChar(tmp[i]);
-                    }
                 }
-                if (r instanceof ImageOutputStream) {
-                    ((ImageOutputStream) r).writeChars(tmp, 0, tmp.length);
-                }
+                r.writeChars(tmp, 0, tmp.length);
                 t.writeChars(tmp);
                 break;
             }
@@ -318,13 +312,8 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
                 final short[] tmp = new short[random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
                     tmp[i] = (short) random.nextInt(1 << Short.SIZE);
-                    if (!(r instanceof ImageOutputStream)) {
-                        r.writeShort(tmp[i]);
-                    }
                 }
-                if (r instanceof ImageOutputStream) {
-                    ((ImageOutputStream) r).writeShorts(tmp, 0, tmp.length);
-                }
+                r.writeShorts(tmp, 0, tmp.length);
                 t.writeShorts(tmp);
                 break;
             }
@@ -332,13 +321,8 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
                 final int[] tmp = new int[random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
                     tmp[i] = random.nextInt();
-                    if (!(r instanceof ImageOutputStream)) {
-                        r.writeInt(tmp[i]);
-                    }
                 }
-                if (r instanceof ImageOutputStream) {
-                    ((ImageOutputStream) r).writeInts(tmp, 0, tmp.length);
-                }
+                r.writeInts(tmp, 0, tmp.length);
                 t.writeInts(tmp);
                 break;
             }
@@ -346,13 +330,8 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
                 final long[] tmp = new long[random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
                     tmp[i] = random.nextLong();
-                    if (!(r instanceof ImageOutputStream)) {
-                        r.writeLong(tmp[i]);
-                    }
                 }
-                if (r instanceof ImageOutputStream) {
-                    ((ImageOutputStream) r).writeLongs(tmp, 0, tmp.length);
-                }
+                r.writeLongs(tmp, 0, tmp.length);
                 t.writeLongs(tmp);
                 break;
             }
@@ -360,13 +339,8 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
                 final float[] tmp = new float[random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
                     tmp[i] = random.nextFloat();
-                    if (!(r instanceof ImageOutputStream)) {
-                        r.writeFloat(tmp[i]);
-                    }
                 }
-                if (r instanceof ImageOutputStream) {
-                    ((ImageOutputStream) r).writeFloats(tmp, 0, tmp.length);
-                }
+                r.writeFloats(tmp, 0, tmp.length);
                 t.writeFloats(tmp);
                 break;
             }
@@ -374,42 +348,34 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
                 final double[] tmp = new double[random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
                     tmp[i] = random.nextDouble();
-                    if (!(r instanceof ImageOutputStream)) {
-                        r.writeDouble(tmp[i]);
-                    }
                 }
-                if (r instanceof ImageOutputStream) {
-                    ((ImageOutputStream) r).writeDoubles(tmp, 0, tmp.length);
-                }
+                r.writeDoubles(tmp, 0, tmp.length);
                 t.writeDoubles(tmp);
                 break;
             }
-            /*
-             * Cases below this point are executed only by ChannelImageOutputStreamTest.
-             */
             case 14: {
                 final long v = random.nextLong();
                 final int numBits = random.nextInt(Byte.SIZE);
-                ((ImageOutputStream) r).writeBits(v, numBits);
+                r.writeBits(v, numBits);
                 t.writeBits(v, numBits);
                 break;
             }
             case 15: {
                 final boolean v = random.nextBoolean();
                 r.writeBoolean(v);
-                ((DataOutput) t).writeBoolean(v);
+                t.writeBoolean(v);
                 break;
             }
             case 16: {
                 final String s = "Byte sequence";
                 r.writeBytes(s);
-                ((DataOutput) t).writeBytes(s);
+                t.writeBytes(s);
                 break;
             }
             case 17: {
                 final String s = "Character sequence";
                 r.writeChars(s);
-                ((DataOutput) t).writeChars(s);
+                t.writeChars(s);
                 break;
             }
             case 18: {
@@ -417,27 +383,24 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
                 final byte[] array = s.getBytes("UTF-8");
                 assertEquals(s.length() * 3, array.length); // Sanity check.
                 r.writeUTF(s);
-                ((DataOutput) t).writeUTF(s);
+                t.writeUTF(s);
                 break;
             }
             case 19: {
-                final ImageOutputStream ir = (ImageOutputStream) r;
-                long flushedPosition = StrictMath.max(ir.getFlushedPosition(), t.getFlushedPosition());
-                flushedPosition += random.nextInt(1 + (int) (ir.getStreamPosition() - flushedPosition));
-                ir.flushBefore(flushedPosition);
-                t .flushBefore(flushedPosition);
+                long flushedPosition = StrictMath.max(r.getFlushedPosition(), t.getFlushedPosition());
+                flushedPosition += random.nextInt(1 + (int) (r.getStreamPosition() - flushedPosition));
+                r.flushBefore(flushedPosition);
+                t.flushBefore(flushedPosition);
                 break;
             }
             case 20: {
-                ((ImageOutputStream) r).flush();
+                r.flush();
                 t.flush();
                 break;
             }
             default: throw new AssertionError(operation);
         }
-        if (r instanceof ImageOutputStream) {
-            assertEquals("getBitOffset()",      ((ImageOutputStream) r).getBitOffset(),      t.getBitOffset());
-            assertEquals("getStreamPosition()", ((ImageOutputStream) r).getStreamPosition(), t.getStreamPosition());
-        }
+        assertEquals("getBitOffset()",      r.getBitOffset(),      t.getBitOffset());
+        assertEquals("getStreamPosition()", r.getStreamPosition(), t.getStreamPosition());
     }
 }
