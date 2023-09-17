@@ -16,7 +16,6 @@
  */
 package org.apache.sis.io.stream;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -111,73 +110,6 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     }
 
     /**
-     * Reads a byte from the stream and returns a {@code true} if it is nonzero, {@code false} otherwise.
-     * The implementation is as below:
-     *
-     * {@snippet lang="java" :
-     *     return readByte() != 0;
-     *     }
-     *
-     * @return the value of the next boolean from the stream.
-     * @throws IOException if an error (including EOF) occurred while reading the stream.
-     */
-    @Override
-    public final boolean readBoolean() throws IOException {
-        return readByte() != 0;
-    }
-
-    /**
-     * Reads in a string that has been encoded using a UTF-8 string.
-     *
-     * @return the string reads from the stream.
-     * @throws IOException if an error (including EOF) occurred while reading the stream.
-     */
-    @Override
-    public final String readUTF() throws IOException {
-        final ByteOrder oldOrder = buffer.order();
-        buffer.order(ByteOrder.BIG_ENDIAN);
-        try {
-            return DataInputStream.readUTF(this);
-        } finally {
-            buffer.order(oldOrder);
-        }
-    }
-
-    /**
-     * Reads the new bytes until the next EOL. This method can read only US-ASCII strings.
-     * This method is provided for compliance with the {@link java.io.DataInput} interface,
-     * but is generally not recommended.
-     *
-     * @return the next line, or {@code null} if the EOF has been reached.
-     * @throws IOException if an error occurred while reading.
-     */
-    @Override
-    public final String readLine() throws IOException {
-        int c = read();
-        if (c < 0) {
-            return null;
-        }
-        StringBuilder line = new StringBuilder();
-        line.append((char) c);
-loop:   while ((c = read()) >= 0) {
-            switch (c) {
-                case '\r': {
-                    c = read();
-                    if (c >= 0 && c != '\n') {
-                        pushBack();
-                    }
-                    break loop;
-                }
-                case '\n': {
-                    break loop;
-                }
-            }
-            line.append((char) c);
-        }
-        return line.toString();
-    }
-
-    /**
      * Returns the next byte from the stream as an unsigned integer between 0 and 255,
      * or -1 if we reached the end of stream.
      *
@@ -259,7 +191,7 @@ loop:   while ((c = read()) >= 0) {
      * But experience shows that various {@code ImageReader} implementations outside Apache SIS
      * expect that we skip exactly the specified amount of bytes and ignore the returned value.
      *
-     * @param  n  maximal number of bytes to skip. Can be negative.
+     * @param  n  number of bytes to skip. Can be negative.
      * @return number of bytes actually skipped.
      * @throws IOException if an error occurred while reading.
      */

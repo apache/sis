@@ -42,8 +42,8 @@ import org.apache.sis.storage.internal.Resources;
 public final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * The underlying data input stream. In principle, public access to this field breaks encapsulation.
-     * But since {@code InputStreamAdapter} does not hold any state and just forwards every method calls
-     * to that {@code ImageInputStream}, using on object or the other does not make a difference.
+     * But since {@code InputStreamAdapter} forwards most method calls to that {@code ImageInputStream},
+     * using an object or the other does not make a difference except for marks and close operations.
      */
     public final ImageInputStream input;
 
@@ -117,6 +117,60 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     @Override
     public int read(final byte[] b, final int off, final int len) throws IOException {
         return input.read(b, off, len);
+    }
+
+    /**
+     * Reads up to a specified number of bytes from the input stream.
+     * This method may read less bytes if the end-of-stream is reached.
+     *
+     * @param  count  number of bytes to read.
+     * @return the bytes read.
+     * @throws IOException if an I/O error occurs.
+     */
+    @Override
+    public byte[] readNBytes(int count) throws IOException {
+        final long length = input.length();
+        if (length < 0) {
+            return super.readNBytes(count);
+        }
+        count = (int) Math.min(count, Math.subtractExact(length, input.getStreamPosition()));
+        final byte[] array = new byte[count];
+        input.readFully(array);
+        return array;
+    }
+
+    /**
+     * Reads up to a specified number of bytes from the input stream.
+     * This method may read less bytes if the end-of-stream is reached.
+     *
+     * @param  array   where to store the bytes.
+     * @param  offset  index if the first element where to store bytes.
+     * @param  count   number of bytes to read.
+     * @return number of bytes actually read.
+     * @throws IOException if an I/O error occurs.
+     */
+    @Override
+    public int readNBytes(final byte[] array, final int offset, int count) throws IOException {
+        final long length = input.length();
+        if (length < 0) {
+            return super.readNBytes(array, offset, count);
+        }
+        count = (int) Math.min(count, Math.subtractExact(length, input.getStreamPosition()));
+        input.readFully(array, offset, count);
+        return count;
+    }
+
+    /**
+     * Skips the specified number of bytes. If the final position is past the end of file,
+     * an {@link java.io.EOFException} will be thrown either by this method or at the next
+     * read operation.
+     *
+     * @param  count  number of bytes to skip.
+     * @throws IOException if an I/O error occurs.
+     */
+//  @Override       // Pending JDK12.
+    public void skipNBytes(final long count) throws IOException {
+        input.seek(Math.addExact(input.getStreamPosition(), count));
     }
 
     /**
