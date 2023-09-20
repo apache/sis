@@ -62,7 +62,7 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
  * The "|" character is converted to a null delimiter at the end in C/C++ libraries.</p>
  *
  * <p>Going further down the list, the key 2051 ({@code GeogLinearUnitSize}) is located in {@code GeoDoubleParams(34736)}
- * at offset 0 and has the value 1.5; the value of key 2049 ({@code GeogCitation}) is "My Geographic".</p>
+ * at offset 0 and has the value 1.5; the value of key 2049 ({@code GeodeticCitation}) is "My Geographic".</p>
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -71,7 +71,7 @@ class GeoKeysLoader {
     /**
      * Number of {@code short} values in each GeoKey entry.
      */
-    private static final int ENTRY_LENGTH = 4;
+    static final int ENTRY_LENGTH = 4;
 
     /**
      * The character used as a separator in {@link String} multi-values.

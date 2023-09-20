@@ -23,11 +23,25 @@ import org.opengis.referencing.operation.MathTransform;
 
 /**
  * GeoTIFF keys associated to values needed for building {@link CoordinateReferenceSystem} instances
- * and {@link MathTransform} "grid to CRS". In this class, field names are close to GeoTIFF key names
- * with the {@code "GeoKey"} suffix omitted. For that reason, many of those field names do not follow
- * usual Java convention for constants.
+ * and {@link MathTransform} "grid to CRS". In this class, field names are GeoTIFF key names, except
+ * for the following departures:
+ *
+ * <ul>
+ *   <li>The {@code "GeoKey"} suffix is omitted for all keys<.</li>
+ *   <li>The {@code "Proj"} prefix is omitted for all map projection parameters.
+ *       The resulting map projection parameter names are the same as published on
+ *       <a href="http://geotiff.maptools.org/proj_list/">Map Tools projection list</a>.</li>
+ *   <li>The ellipsoid axis lengths and inverse flattening factor have the {@code Ellipsoid} prefix omitted.</li>
+ * </ul>
+ *
+ * Because of this convention, the field names do not follow usual Java convention for constants.
+ *
+ * <p>The current version of this class uses GeoTIFF 1.1 names.
+ * When they differ from GeoTIFF 1.0, the old name is written in comment.
+ * Key names may be changed again in any future version if the GeoTIFF specification changes.</p>
  *
  * @author  Rémi Maréchal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  */
 final class GeoKeys {
     /**
@@ -36,90 +50,60 @@ final class GeoKeys {
     private GeoKeys() {
     }
 
-    // 6.2.1 GeoTIFF Configuration Keys
-    /** Section 6.3.1.1 Codes. */ public static final short ModelType            = 1024;
-    /** Section 6.3.1.2 Codes. */ public static final short RasterType           = 1025;
-    /** Documentation.         */ public static final short Citation             = 1026;
+    // GeoTIFF Configuration Keys
+    /** CRS type.              */ public static final short ModelType              = 1024;
+    /** Pixel area or point.   */ public static final short RasterType             = 1025;
+    /** Documentation.         */ public static final short Citation               = 1026;
 
-    // 6.2.2 Geographic CS Parameter Keys
-    /** Section 6.3.2.1 Codes. */ public static final short GeographicType       = 2048;
-    /** Documentation.         */ public static final short GeogCitation         = 2049;
-    /** Section 6.3.2.2 Codes. */ public static final short GeodeticDatum        = 2050;
-    /** Section 6.3.2.4 codes. */ public static final short PrimeMeridian        = 2051;
-    /** Section 6.3.1.3 Codes. */ public static final short GeogLinearUnits      = 2052;
-    /** Relative to meters.    */ public static final short GeogLinearUnitSize   = 2053;
-    /** Section 6.3.1.4 Codes. */ public static final short AngularUnits         = 2054;
-    /** Relative to radians.   */ public static final short AngularUnitSize      = 2055;
-    /** Section 6.3.2.3 Codes. */ public static final short Ellipsoid            = 2056;
-    /** In GeogLinearUnits.    */ public static final short SemiMajorAxis        = 2057;
-    /** In GeogLinearUnits.    */ public static final short SemiMinorAxis        = 2058;
-    /** A ratio.               */ public static final short InvFlattening        = 2059;
-    /** Section 6.3.1.4 Codes. */ public static final short AzimuthUnits         = 2060;
-    /** In AngularUnit.        */ public static final short PrimeMeridianLong    = 2061;
+    // Geographic CRS Parameter Keys
+    /** EPSG code.             */ public static final short GeodeticCRS            = 2048;    // Was `GeographicType`
+    /** Documentation.         */ public static final short GeodeticCitation       = 2049;    // Was `GeogCitation`
+    /** For user-defined CRS.  */ public static final short GeodeticDatum          = 2050;    // Was `GeogGeodeticDatum`
+    /** For user-defined CRS.  */ public static final short PrimeMeridian          = 2051;    // Was `GeogPrimeMeridian`
+    /** For geodetic axes.     */ public static final short GeogLinearUnits        = 2052;    // Actually geodetic, not necessarily geographic.
+    /** Relative to meters.    */ public static final short GeogLinearUnitSize     = 2053;
+    /** For geodetic axes.     */ public static final short GeogAngularUnits       = 2054;
+    /** Relative to radians.   */ public static final short GeogAngularUnitSize    = 2055;
+    /** For user-defined CRS.  */ public static final short Ellipsoid              = 2056;    // Was `GeogEllipsoid`
+    /** In GeogLinearUnits.    */ public static final short SemiMajorAxis          = 2057;    // Was `GeogSemiMajorAxis`
+    /** In GeogLinearUnits.    */ public static final short SemiMinorAxis          = 2058;    // Was `GeogSemiMinorAxis`
+    /** A ratio.               */ public static final short InvFlattening          = 2059;    // Was `GeogInvFlattening`
+    /** For some parameters.   */ public static final short GeogAzimuthUnits       = 2060;
+    /** In GeogAngularUnits.   */ public static final short PrimeMeridianLongitude = 2061;    // Was `GeogPrimeMeridianLong`
 
-    // 6.2.3 Projected CS Parameter Keys
-    /** Section 6.3.3.1 codes. */ public static final short ProjectedCSType      = 3072;
-    /** Documentation.         */ public static final short PCSCitation          = 3073;
-    /** Section 6.3.3.2 codes. */ public static final short Projection           = 3074;
-    /** Section 6.3.3.3 codes. */ public static final short CoordTrans           = 3075;
-    /** Section 6.3.1.3 codes. */ public static final short LinearUnits          = 3076;
-    /** Relative to meters.    */ public static final short LinearUnitSize       = 3077;
-    /** In AngularUnit.        */ public static final short StdParallel1         = 3078;    // First projection parameter
-    /** In AngularUnit.        */ public static final short StdParallel2         = 3079;
-    /** In AngularUnit.        */ public static final short NatOriginLong        = 3080;
-    /** In AngularUnit.        */ public static final short NatOriginLat         = 3081;
-    /** In LinearUnits.        */ public static final short FalseEasting         = 3082;
-    /** In LinearUnits.        */ public static final short FalseNorthing        = 3083;
-    /** In AngularUnit.        */ public static final short FalseOriginLong      = 3084;
-    /** In AngularUnit.        */ public static final short FalseOriginLat       = 3085;
-    /** In LinearUnits.        */ public static final short FalseOriginEasting   = 3086;
-    /** In LinearUnits.        */ public static final short FalseOriginNorthing  = 3087;
-    /** In AngularUnit.        */ public static final short CenterLong           = 3088;
-    /** In AngularUnit.        */ public static final short CenterLat            = 3089;
-    /** In LinearUnits.        */ public static final short CenterEasting        = 3090;
-    /** In LinearUnits.        */ public static final short CenterNorthing       = 3091;
-    /** A ratio.               */ public static final short ScaleAtNatOrigin     = 3092;
-    /** A ratio.               */ public static final short ScaleAtCenter        = 3093;
-    /** In AzimuthUnit.        */ public static final short AzimuthAngle         = 3094;
-    /** In AngularUnit.        */ public static final short StraightVertPoleLong = 3095;
-    /** In AzimuthUnit.        */ public static final short RectifiedGridAngle   = 3096;    // Last projection parameter (for now)
+    // Projected CRS Parameter Keys, omitting "Proj" prefix in map projection parameters
+    /** EPSG code.             */ public static final short ProjectedCRS           = 3072;    // Was `ProjectedCSType`
+    /** Documentation.         */ public static final short ProjectedCitation      = 3073;    // Was `PCSCitation`
+    /** For user-defined CRS.  */ public static final short Projection             = 3074;
+    /** For user-defined CRS.  */ public static final short ProjMethod             = 3075;    // Was `ProjCoordTrans`
+    /** For projected axes.    */ public static final short ProjLinearUnits        = 3076;
+    /** Relative to meters.    */ public static final short ProjLinearUnitSize     = 3077;
+    /** In GeogAngularUnits.   */ public static final short StdParallel1           = 3078;    // First projection parameter
+    /** In GeogAngularUnits.   */ public static final short StdParallel2           = 3079;
+    /** In GeogAngularUnits.   */ public static final short NatOriginLong          = 3080;
+    /** In GeogAngularUnits.   */ public static final short NatOriginLat           = 3081;
+    /** In ProjLinearUnits.    */ public static final short FalseEasting           = 3082;
+    /** In ProjLinearUnits.    */ public static final short FalseNorthing          = 3083;
+    /** In GeogAngularUnits.   */ public static final short FalseOriginLong        = 3084;
+    /** In GeogAngularUnits.   */ public static final short FalseOriginLat         = 3085;
+    /** In ProjLinearUnits.    */ public static final short FalseOriginEasting     = 3086;
+    /** In ProjLinearUnits.    */ public static final short FalseOriginNorthing    = 3087;
+    /** In GeogAngularUnits.   */ public static final short CenterLong             = 3088;
+    /** In GeogAngularUnits.   */ public static final short CenterLat              = 3089;
+    /** In ProjLinearUnits.    */ public static final short CenterEasting          = 3090;
+    /** In ProjLinearUnits.    */ public static final short CenterNorthing         = 3091;
+    /** A ratio.               */ public static final short ScaleAtNatOrigin       = 3092;
+    /** A ratio.               */ public static final short ScaleAtCenter          = 3093;
+    /** In GeogAzimuthUnits.   */ public static final short AzimuthAngle           = 3094;
+    /** In GeogAngularUnits.   */ public static final short StraightVertPoleLong   = 3095;
+    /** In GeogAzimuthUnits.   */ public static final short RectifiedGridAngle     = 3096;
+    /** For unit inference.    */ static final short LAST_MAP_PROJECTION_PARAMETER = RectifiedGridAngle;
 
-    // 6.2.4 Vertical CS Keys
-    /** Section 6.3.4.1 codes. */ public static final short VerticalCSType       = 4096;
-    /** Documentation.         */ public static final short VerticalCitation     = 4097;
-    /** Section 6.3.4.2 codes. */ public static final short VerticalDatum        = 4098;
-    /** Section 6.3.1.3 codes. */ public static final short VerticalUnits        = 4099;
-
-    /**
-     * Enumeration of return values for the {@link #unitOf(short)} method.
-     */
-    static final int RATIO = 0, LINEAR = 1, ANGULAR = 2, AZIMUTH = 3;
-
-    /**
-     * Returns the unit of measurement for the given map projection parameter.
-     *
-     * @param  key  GeoTIFF key for which to get the unit of associated map projection parameter value.
-     * @return one of {@link #RATIO}, {@link #LINEAR}, {@link #ANGULAR}, {@link #AZIMUTH} codes,
-     *         or -1 if the given key is not for a map projection parameter.
-     */
-    static int unitOf(final short key) {
-        if (key < StdParallel1 || key > RectifiedGridAngle) {
-            return -1;
-        }
-        switch (key) {
-            case FalseEasting:
-            case FalseNorthing:
-            case FalseOriginEasting:
-            case FalseOriginNorthing:
-            case CenterEasting:
-            case CenterNorthing:     return LINEAR;
-            case ScaleAtNatOrigin:
-            case ScaleAtCenter:      return RATIO;
-            case RectifiedGridAngle: // Note: GDAL seems to use angular unit here.
-            case AzimuthAngle:       return AZIMUTH;
-            default:                 return ANGULAR;
-        }
-    }
+    // Vertical CRS Keys
+    /** EPSG code.             */ public static final short Vertical               = 4096;    // Was `VerticalCSType`
+    /** Documentation.         */ public static final short VerticalCitation       = 4097;
+    /** For user-defined CRS.  */ public static final short VerticalDatum          = 4098;
+    /** For vertical axis.     */ public static final short VerticalUnits          = 4099;
 
     /**
      * Returns the name of the given key. Implementation of this method is inefficient,

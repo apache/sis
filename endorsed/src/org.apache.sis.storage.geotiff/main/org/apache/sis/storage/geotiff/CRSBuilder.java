@@ -97,9 +97,9 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 final class CRSBuilder extends ReferencingFactoryContainer {
     /**
      * Index where to store the name of the geodetic CRS, the datum, the ellipsoid and the prime meridian.
-     * The GeoTIFF specification has only one key, {@link GeoKeys#GeogCitation}, for the geographic CRS and
-     * its components. But some GeoTIFF files encode the names of all components in the value associated to
-     * that key, as in the following example:
+     * The GeoTIFF specification has only one key, {@link GeoKeys#GeodeticCitation}, for the geographic CRS
+     * and its components. But some GeoTIFF files encode the names of all components in the value associated
+     * to that key, as in the following example:
      *
      * <pre class="text">
      *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|</pre>
@@ -111,7 +111,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     // PRIMEM must be first and GCRS must be last.
 
     /**
-     * Keys that may be used in the value associated to {@link GeoKeys#GeogCitation}.
+     * Keys that may be used in the value associated to {@link GeoKeys#GeodeticCitation}.
      * For each element in this array at index {@code i}, the {@code i/2} value is equal to the
      * {@code DATUM}, {@code ELLIPSOID} or {@code PRIMEM} constant for the corresponding type.
      */
@@ -503,7 +503,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
          * At this point we finished copying all GeoTIFF keys in the `geoKeys` map. Before to create the CRS,
          * store a few metadata. The first one is an ASCII reference to published documentation on the overall
          * configuration of the GeoTIFF file. In practice it seems to be often the projected CRS name, despite
-         * GeoKeys.PCSCitation being already for that purpose.
+         * GeoKeys.ProjectedCitation being already for that purpose.
          */
         description = getAsString(GeoKeys.Citation);
         int code = getAsInteger(GeoKeys.RasterType);
@@ -531,7 +531,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             final VerticalCRS vertical = createVerticalCRS();
             if (vertical != null) {
                 if (crs == null) {
-                    missingValue(GeoKeys.GeographicType);
+                    missingValue(GeoKeys.GeodeticCRS);
                 } else {
                     crs = getCRSFactory().createCompoundCRS(Map.of(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
                 }
@@ -606,25 +606,48 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     }
 
     /**
+     * Shortcut for {@code createUnit(…)} when the unit is angular.
+     * If no unit is specified, the default is degrees.
+     *
+     * @param  key  key of the unit to fetch.
+     * @return the unit of measurement associated to the given key, or the default value.
+     */
+    private Unit<Angle> createAngularUnit(final UnitKey key) throws FactoryException {
+        return createUnit(key, Angle.class, Units.DEGREE);
+    }
+
+    /**
+     * Shortcut for {@code createUnit(…)} when the unit is linear.
+     * If no unit is specified, the default is metre.
+     *
+     * @param  key  key of the unit to fetch.
+     * @return the unit of measurement associated to the given key, or the default value.
+     */
+    private Unit<Length> createLinearUnit(final UnitKey key) throws FactoryException {
+        return createUnit(key, Length.class, Units.METRE);
+    }
+
+    /**
      * Creates units of measurement for projected or geographic coordinate reference systems.
      * The units may either be specified as a standard EPSG recognized unit, or may be user defined.
-     * If the first case (EPSG code), the {@code keyUser} is ignored. In the second case (user-defined),
+     * In the first case (EPSG code), the {@code scaleKey} is ignored. In the second case (user-defined),
      * the unit of measurement is defined by a conversion factor from metre or radian base unit.
      *
-     * @param  codeKey       the {@link GeoKeys} for a unit of measurement defined by an EPSG code.
-     * @param  scaleKey      the {@link GeoKeys} for a unit of measurement defined by a scale applied on a base unit.
+     * @param  <Q>           the compile-time value of {@code quantity}.
+     * @param  key           information about the keys to use for fetching the unit of measurement.
      * @param  quantity      {@link Length} for a linear unit, or {@link Angle} for an angular unit.
      * @param  defaultValue  the unit of measurement to return if no value is found in the GeoTIFF file.
-     * @return the unit of measurement associated to the given {@link GeoKeys}, or the default value.
+     * @return the unit of measurement associated to the given key, or the default value.
      *
-     * @throws NoSuchElementException if {@code keyEPSG} value is {@link GeoCodes#userDefined} and no value is associated to {@code keyUser}.
+     * @throws NoSuchElementException if {@code codeKey} value is {@link GeoCodes#userDefined} and no value is associated to {@code scaleKey}.
      * @throws NumberFormatException  if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException     if the unit of measurement identified by the EPSG code is not of the expected quantity.
      */
-    private <Q extends Quantity<Q>> Unit<Q> createUnit(final short codeKey, final short scaleKey,
+    private <Q extends Quantity<Q>> Unit<Q> createUnit(final UnitKey key,
             final Class<Q> quantity, final Unit<Q> defaultValue) throws FactoryException
     {
-        final int epsg = getAsInteger(codeKey);
+        final short scaleKey = key.scaleKey;
+        final int epsg = getAsInteger(key.codeKey);
         switch (epsg) {
             case GeoCodes.undefined: {
                 return defaultValue;
@@ -671,7 +694,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * <ul>
      *   <li>A code given by {@link GeoKeys#PrimeMeridian}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
-     *     <li>a prime meridian value given by {@link GeoKeys#PrimeMeridianLong}.</li>
+     *     <li>a prime meridian value given by {@link GeoKeys#PrimeMeridianLongitude}.</li>
      *   </ul></li>
      * </ul>
      *
@@ -688,15 +711,15 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         switch (epsg) {
             case GeoCodes.undefined:      // If not specified, should default to Greenwich but we nevertheless verify.
             case GeoCodes.userDefined: {
-                final double longitude = getAsDouble(GeoKeys.PrimeMeridianLong);
+                final double longitude = getAsDouble(GeoKeys.PrimeMeridianLongitude);
                 if (Double.isNaN(longitude)) {
                     if (epsg != GeoCodes.undefined) {
-                        missingValue(GeoKeys.PrimeMeridianLong);
+                        missingValue(GeoKeys.PrimeMeridianLongitude);
                     }
                 } else if (longitude != 0) {
                     /*
                      * If the prime meridian is not Greenwich, create that meridian but do not use the
-                     * GeoKeys.GeogCitation value (unless it had a sub-element for the prime meridian).
+                     * GeoKeys.GeodeticCitation value (unless it had a sub-element for the prime meridian).
                      * This is because the citation value is for the CRS (e.g. "WGS84") while the prime
                      * meridian names are very different (e.g. "Paris", "Madrid", etc).
                      */
@@ -727,7 +750,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  unit  the unit of measurement declared in the GeoTIFF file.
      */
     private void verify(final PrimeMeridian pm, final Unit<Angle> unit) {
-        verify(pm, ReferencingUtilities.getGreenwichLongitude(pm, unit), GeoKeys.PrimeMeridianLong, unit);
+        verify(pm, ReferencingUtilities.getGreenwichLongitude(pm, unit), GeoKeys.PrimeMeridianLongitude, unit);
     }
 
     /**
@@ -737,7 +760,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * <ul>
      *   <li>A code given by {@link GeoKeys#Ellipsoid} tag.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
-     *     <li>a name given by {@link GeoKeys#GeogCitation},</li>
+     *     <li>a name given by {@link GeoKeys#GeodeticCitation},</li>
      *     <li>a semi major axis value given by {@link GeoKeys#SemiMajorAxis},</li>
      *     <li>one of:<ul>
      *       <li>an inverse flattening factor given by {@link GeoKeys#InvFlattening},</li>
@@ -817,7 +840,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * <ul>
      *   <li>A code given by {@link GeoKeys#GeodeticDatum}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
-     *     <li>a name given by {@link GeoKeys#GeogCitation},</li>
+     *     <li>a name given by {@link GeoKeys#GeodeticCitation},</li>
      *     <li>all values required by {@link #createPrimeMeridian(String[], Unit)} (optional),</li>
      *     <li>all values required by {@link #createEllipsoid(String[], Unit)}.</li>
      *   </ul></li>
@@ -856,7 +879,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 String name = getOrDefault(names, DATUM);
                 if (name == null) {
                     // TODO: see https://issues.apache.org/jira/browse/SIS-536
-                    throw new NoSuchElementException(missingValue(GeoKeys.GeogCitation));
+                    throw new NoSuchElementException(missingValue(GeoKeys.GeodeticCitation));
                 }
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
@@ -916,7 +939,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Splits the {@link GeoKeys#GeogCitation} value into its prime meridian, ellipsoid, datum and CRS name components.
+     * Splits the {@link GeoKeys#GeodeticCitation} value into its prime meridian, ellipsoid, datum and CRS name components.
      * This method is intended to parse geographic CRS names written like below:
      *
      * <pre class="text">
@@ -986,7 +1009,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * Creates the main CRS in the case where that CRS is geographic.
      */
     private GeographicCRS createGeographicCRS() throws FactoryException {
-        return createGeographicCRS(true, createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE));
+        return createGeographicCRS(true, createAngularUnit(UnitKey.ANGULAR));
     }
 
     /**
@@ -994,14 +1017,14 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * The GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>A code given by {@link GeoKeys#GeographicType}.</li>
+     *   <li>A code given by {@link GeoKeys#GeodeticCRS}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
-     *     <li>a prime meridian value given by {@link GeoKeys#PrimeMeridianLong},</li>
-     *     <li>a CRS name given by {@link GeoKeys#GeogCitation},</li>
+     *     <li>a prime meridian value given by {@link GeoKeys#PrimeMeridianLongitude},</li>
+     *     <li>a CRS name given by {@link GeoKeys#GeodeticCitation},</li>
      *     <li>a datum definition.</li>
      *   </ul></li>
-     *   <li>A unit code given by {@link GeoKeys#AngularUnits} (optional).</li>
-     *   <li>A unit scale factor given by {@link GeoKeys#AngularUnitSize} (optional).</li>
+     *   <li>A unit code given by {@link GeoKeys#GeogAngularUnits} (optional).</li>
+     *   <li>A unit scale factor given by {@link GeoKeys#GeogAngularUnitSize} (optional).</li>
      * </ul>
      *
      * @param  isImageCRS   whether to force longitude before latitude axis.
@@ -1014,19 +1037,19 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @see #createGeodeticDatum(String[], Unit, Unit)
      */
     private GeographicCRS createGeographicCRS(final boolean isImageCRS, final Unit<Angle> angularUnit) throws FactoryException {
-        final int epsg = getAsInteger(GeoKeys.GeographicType);
+        final int epsg = getAsInteger(GeoKeys.GeodeticCRS);
         switch (epsg) {
             case GeoCodes.undefined: {
                 alreadyReported = true;
-                throw new NoSuchElementException(missingValue(GeoKeys.GeographicType));
+                throw new NoSuchElementException(missingValue(GeoKeys.GeodeticCRS));
             }
             case GeoCodes.userDefined: {
                 /*
                  * Creates the geodetic datum, then a geographic CRS assuming (longitude, latitude) axis order.
                  * We use the coordinate system of CRS:84 as a template and modify its unit of measurement if needed.
                  */
-                final String[] names = splitName(getAsString(GeoKeys.GeogCitation));
-                final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
+                final String[] names = splitName(getAsString(GeoKeys.GeodeticCitation));
+                final Unit<Length> linearUnit = createLinearUnit(UnitKey.LINEAR);
                 final GeodeticDatum datum = createGeodeticDatum(names, angularUnit, linearUnit);
                 EllipsoidalCS cs = CommonCRS.defaultGeographic().getCoordinateSystem();
                 if (!Units.DEGREE.equals(angularUnit)) {
@@ -1065,11 +1088,11 @@ final class CRSBuilder extends ReferencingFactoryContainer {
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units
          * were specified in the GeoTIFF file or if we got the default values. We do not compare units for that reason.
          */
-        final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
+        final Unit<Length> linearUnit = createLinearUnit(UnitKey.LINEAR);
         final GeodeticDatum datum = crs.getDatum();
         verifyIdentifier(crs, datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
-        geoKeys.remove(GeoKeys.GeogCitation);
+        geoKeys.remove(GeoKeys.GeodeticCitation);
     }
 
     /**
@@ -1084,20 +1107,20 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @see #createGeodeticDatum(String[], Unit, Unit)
      */
     private GeocentricCRS createGeocentricCRS() throws FactoryException {
-        final int epsg = getAsInteger(GeoKeys.GeographicType);
+        final int epsg = getAsInteger(GeoKeys.GeodeticCRS);
         switch (epsg) {
             case GeoCodes.undefined: {
                 alreadyReported = true;
-                throw new NoSuchElementException(missingValue(GeoKeys.GeographicType));
+                throw new NoSuchElementException(missingValue(GeoKeys.GeodeticCRS));
             }
             case GeoCodes.userDefined: {
                 /*
                  * Creates the geodetic datum, then a geocentric CRS. We use the coordinate system of
                  * the WGS84 geocentric CRS as a template and modify its unit of measurement if needed.
                  */
-                final String[] names = splitName(getAsString(GeoKeys.GeogCitation));
-                final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
-                final Unit<Angle> angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
+                final String[] names = splitName(getAsString(GeoKeys.GeodeticCitation));
+                final Unit<Length> linearUnit = createLinearUnit(UnitKey.LINEAR);
+                final Unit<Angle> angularUnit = createAngularUnit(UnitKey.ANGULAR);
                 final GeodeticDatum datum = createGeodeticDatum(names, angularUnit, linearUnit);
                 CartesianCS cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
                 if (!Units.METRE.equals(linearUnit)) {
@@ -1132,8 +1155,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units
          * were specified in the GeoTIFF file or if we got the default values. We do not compare units for that reason.
          */
-        final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
-        final Unit<Angle> angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
+        final Unit<Length> linearUnit = createLinearUnit(UnitKey.LINEAR);
+        final Unit<Angle> angularUnit = createAngularUnit(UnitKey.ANGULAR);
         final GeodeticDatum datum = crs.getDatum();
         verifyIdentifier(crs, datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
@@ -1198,14 +1221,14 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * Some GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>A code given by {@link GeoKeys#ProjectedCSType}.</li>
+     *   <li>A code given by {@link GeoKeys#ProjectedCRS}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
-     *     <li>a name given by {@link GeoKeys#PCSCitation},</li>
+     *     <li>a name given by {@link GeoKeys#ProjectedCitation},</li>
      *     <li>a {@link CoordinateOperation} given by {@link GeoKeys#Projection},</li>
-     *     <li>an {@link OperationMethod} given by {@link GeoKeys#CoordTrans}.</li>
+     *     <li>an {@link OperationMethod} given by {@link GeoKeys#ProjMethod}.</li>
      *   </ul></li>
-     *   <li>A unit code given by {@link GeoKeys#LinearUnits} (optional).</li>
-     *   <li>A unit scale factor given by {@link GeoKeys#LinearUnitSize} (optional).</li>
+     *   <li>A unit code given by {@link GeoKeys#ProjLinearUnits} (optional).</li>
+     *   <li>A unit scale factor given by {@link GeoKeys#ProjLinearUnitSize} (optional).</li>
      * </ul>
      *
      * @throws NoSuchElementException if a mandatory value is missing.
@@ -1217,25 +1240,25 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @see #createConversion(String, Unit, Unit)
      */
     private ProjectedCRS createProjectedCRS() throws FactoryException {
-        final int epsg = getAsInteger(GeoKeys.ProjectedCSType);
+        final int epsg = getAsInteger(GeoKeys.ProjectedCRS);
         switch (epsg) {
             case GeoCodes.undefined: {
                 alreadyReported = true;
-                throw new NoSuchElementException(missingValue(GeoKeys.ProjectedCSType));
+                throw new NoSuchElementException(missingValue(GeoKeys.ProjectedCRS));
             }
             case GeoCodes.userDefined: {
                 /*
                  * If the CRS is user-defined, we have to parse many components (base CRS, datum, unit, etc.)
                  * and build the projected CRS from them. Note that some GeoTIFF files put the projection name
-                 * in the Citation key instead of PCSCitation.
+                 * in the Citation key instead of ProjectedCitation.
                  */
-                String name = getAsString(GeoKeys.PCSCitation);
+                String name = getAsString(GeoKeys.ProjectedCitation);
                 if (name == null) {
                     name = getAsString(GeoKeys.Citation);
                     // Note that Citation has been removed from the map, so it will not be used by `complete(MetadataBuilder)`.
                 }
-                final Unit<Length>  linearUnit  = createUnit(GeoKeys.LinearUnits,  GeoKeys.LinearUnitSize, Length.class, Units.METRE);
-                final Unit<Angle>   angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
+                final Unit<Length>  linearUnit  = createLinearUnit(UnitKey.PROJECTED);
+                final Unit<Angle>   angularUnit = createAngularUnit(UnitKey.ANGULAR);
                 final GeographicCRS baseCRS     = createGeographicCRS(false, angularUnit);
                 final Conversion    projection  = createConversion(name, angularUnit, linearUnit);
                 CartesianCS cs = getStandardProjectedCS();
@@ -1268,10 +1291,10 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  crs  the CRS created from the EPSG geodetic dataset.
      */
     private void verify(final ProjectedCRS crs) throws FactoryException {
-        final Unit<Length> linearUnit  = createUnit(GeoKeys.LinearUnits,  GeoKeys.LinearUnitSize, Length.class, Units.METRE);
-        final Unit<Angle>  angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
+        final Unit<Length> linearUnit  = createLinearUnit(UnitKey.PROJECTED);
+        final Unit<Angle>  angularUnit = createAngularUnit(UnitKey.ANGULAR);
         final GeographicCRS baseCRS = crs.getBaseCRS();
-        verifyIdentifier(crs, baseCRS, GeoKeys.GeographicType);
+        verifyIdentifier(crs, baseCRS, GeoKeys.GeodeticCRS);
         verify(baseCRS, angularUnit);
         final Conversion projection = crs.getConversionFromBase();
         verifyIdentifier(crs, projection, GeoKeys.Projection);
@@ -1284,7 +1307,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * For example there is an ambiguity between Polar Stereographic (variant A) and (variant B).
      */
     private String methodCode() {
-        final String code = getMandatoryString(GeoKeys.CoordTrans);
+        final String code = getMandatoryString(GeoKeys.ProjMethod);
         try {
             switch (Integer.parseInt(code)) {
                 case GeoCodes.PolarStereographic: {
@@ -1338,7 +1361,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 throw new NoSuchElementException(missingValue(GeoKeys.Projection));
             }
             case GeoCodes.userDefined: {
-                final Unit<Angle>         azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
+                final Unit<Angle>         azimuthUnit = createAngularUnit(UnitKey.AZIMUTH);
                 final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(methodCode());
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
                 final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
@@ -1349,11 +1372,11 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                     final Unit<?> unit;
                     final Map.Entry<Short,?> entry = it.next();
                     final Short key = entry.getKey();
-                    switch (GeoKeys.unitOf(key)) {
-                        case GeoKeys.RATIO:   unit = Units.UNITY; break;
-                        case GeoKeys.LINEAR:  unit = linearUnit;  break;
-                        case GeoKeys.ANGULAR: unit = angularUnit; break;
-                        case GeoKeys.AZIMUTH: unit = azimuthUnit; break;
+                    switch (UnitKey.ofProjectionParameter(key)) {
+                        case RATIO:     unit = Units.UNITY; break;
+                        case PROJECTED: unit = linearUnit;  break;
+                        case ANGULAR:   unit = angularUnit; break;
+                        case AZIMUTH:   unit = azimuthUnit; break;
                         default: continue;
                     }
                     final Number value = (Number) entry.getValue();
@@ -1420,8 +1443,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private void verify(final Conversion projection, final Unit<Angle> angularUnit, final Unit<Length> linearUnit)
             throws FactoryException
     {
-        final Unit<Angle> azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
-        final String type = getAsString(GeoKeys.CoordTrans);
+        final Unit<Angle> azimuthUnit = createAngularUnit(UnitKey.AZIMUTH);
+        final String type = getAsString(GeoKeys.ProjMethod);
         if (type != null) {
             /*
              * Compare the name of the map projection declared in the GeoTIFF file with the name
@@ -1434,7 +1457,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                     expected = IdentifiedObjects.getIdentifier(method, null);
                 }
                 warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(projection),
-                        expected.getCode(), GeoKeys.name(GeoKeys.CoordTrans), type, "");
+                        expected.getCode(), GeoKeys.name(GeoKeys.ProjMethod), type, "");
             }
             /*
              * Compare the parameter values with the ones declared in the EPSG geodetic dataset.
@@ -1442,11 +1465,11 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             final ParameterValueGroup parameters = projection.getParameterValues();
             for (final short key : remainingKeys()) {
                 final Unit<?> unit;
-                switch (GeoKeys.unitOf(key)) {
-                    case GeoKeys.RATIO:   unit = Units.UNITY; break;
-                    case GeoKeys.LINEAR:  unit = linearUnit;  break;
-                    case GeoKeys.ANGULAR: unit = angularUnit; break;
-                    case GeoKeys.AZIMUTH: unit = azimuthUnit; break;
+                switch (UnitKey.ofProjectionParameter(key)) {
+                    case RATIO:     unit = Units.UNITY; break;
+                    case PROJECTED: unit = linearUnit;  break;
+                    case ANGULAR:   unit = angularUnit; break;
+                    case AZIMUTH:   unit = azimuthUnit; break;
                     default: continue;
                 }
                 try {
@@ -1490,7 +1513,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * may be defined <em>in addition</em> of another CRS. Some GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>A code given by {@link GeoKeys#VerticalCSType}.</li>
+     *   <li>A code given by {@link GeoKeys#Vertical}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
      *     <li>a name given by {@link GeoKeys#VerticalCitation},</li>
      *     <li>a {@link VerticalDatum} given by {@link GeoKeys#VerticalDatum}.</li>
@@ -1504,7 +1527,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
     private VerticalCRS createVerticalCRS() throws FactoryException {
-        final int epsg = getAsInteger(GeoKeys.VerticalCSType);
+        final int epsg = getAsInteger(GeoKeys.Vertical);
         switch (epsg) {
             case GeoCodes.undefined: {
                 return null;
@@ -1512,7 +1535,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             case GeoCodes.userDefined: {
                 final String name = getAsString(GeoKeys.VerticalCitation);
                 final VerticalDatum datum = createVerticalDatum();
-                final Unit<Length> unit = createUnit(GeoKeys.VerticalUnits, (short) 0, Length.class, Units.METRE);
+                final Unit<Length> unit = createLinearUnit(UnitKey.VERTICAL);
                 VerticalCS cs = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs().getCoordinateSystem();
                 if (!Units.METRE.equals(unit)) {
                     cs = (VerticalCS) CoordinateSystems.replaceLinearUnit(cs, unit);

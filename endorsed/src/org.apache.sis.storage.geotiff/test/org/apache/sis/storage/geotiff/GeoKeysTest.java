@@ -123,7 +123,7 @@ public final class GeoKeysTest extends TestCase {
         try {
             return GeoKeys.class.getField(name).getShort(null);
         } catch (ReflectiveOperationException e) {
-            throw new IllegalArgumentException(e);
+            throw new AssertionError(e);
         }
     }
 }
