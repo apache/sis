@@ -31,18 +31,27 @@ import java.nio.ByteOrder;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import javax.imageio.plugins.tiff.TIFFTag;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.io.stream.ByteArrayChannel;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.DataType;
+
+// Test dependencies
+import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -65,6 +74,11 @@ public final class WriterTest extends TestCase {
      * The image to write.
      */
     private TiledImageMock image;
+
+    /**
+     * Mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
+     */
+    private GridGeometry gridGeometry;
 
     /**
      * The channel where the image is written.
@@ -127,12 +141,21 @@ public final class WriterTest extends TestCase {
 
         image.validate();
         image.initializeAllTiles();
-        output = new ByteArrayChannel(new byte[image.getWidth() * image.getHeight() * numBands * type.bytes() + 400], false);
+        output = new ByteArrayChannel(new byte[image.getWidth() * image.getHeight() * numBands * type.bytes() + 800], false);
         var d = new ChannelDataOutput("TIFF", output, ByteBuffer.allocate(random.nextInt(128) + 20).order(order));
         var c = new StorageConnector(d);
         c.setOption(GeoTiffOption.OPTION_KEY, options);
         store = new GeoTiffStore(null, c);
         data  = output.toBuffer().order(order);
+    }
+
+    /**
+     * Creates a grid geometry to associate with the image. This is used for testing GeoTIFF tags.
+     */
+    private void createGridGeometry() {
+        final ProjectedCRS crs = HardCodedConversions.mercator(HardCodedCRS.WGS84);
+        final var env = new Envelope2D(crs, -23, -10, TILE_WIDTH * 2, TILE_HEIGHT * 4);
+        gridGeometry = new GridGeometry(new GridExtent(TILE_WIDTH, TILE_HEIGHT), env, GridOrientation.REFLECTION_Y);
     }
 
     /**
@@ -147,7 +170,7 @@ public final class WriterTest extends TestCase {
     private void writeImage() throws IOException, DataStoreException {
         synchronized (store) {
             final Writer writer = store.writer();
-            writer.append(image, null);
+            writer.append(image, gridGeometry, null);
             writer.flush();
         }
         data.clear().limit(Math.toIntExact(output.size()));
@@ -225,6 +248,24 @@ public final class WriterTest extends TestCase {
     }
 
     /**
+     * Tests writing an image with GeoTIFF data.
+     *
+     * @throws IOException should never happen since the tests are writing in memory.
+     * @throws DataStoreException if the image is incompatible with writer capability.
+     */
+    @Test
+    public void testGeoTIFF() throws IOException, DataStoreException {
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1);
+        createGridGeometry();
+        writeImage();
+        verifyHeader(false, GeoTIFF.LITTLE_ENDIAN);
+        verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS + 3,                     // GeoTIFF adds 3 tags.
+                PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, new short[] {Byte.SIZE});
+        verifySampleValues(1);
+        store.close();
+    }
+
+    /**
      * Verifies the TIFF header, before the first Image File Directory (IFD).
      *
      * @param isBigTIFF   whether the file is BigTIFF.
@@ -297,7 +338,8 @@ public final class WriterTest extends TestCase {
             long    count = isBigTIFF ? data.getLong() : data.getInt();
             long    value = isBigTIFF ? data.getLong() : data.getInt();
             Object  expected;       // The Number class will define the expected type.
-            assertTrue(tag > previousTag, "Tags shall be sorted in increasing order.");
+            assertTrue(Short.toUnsignedInt(tag) > Short.toUnsignedInt(previousTag),
+                       "Tags shall be sorted in increasing order.");
             expectedTags.remove(Integer.valueOf(tag));
             previousTag = tag;
             switch (tag) {

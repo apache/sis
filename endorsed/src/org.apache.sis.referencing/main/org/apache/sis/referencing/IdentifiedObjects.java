@@ -35,6 +35,7 @@ import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.internal.Strings;
@@ -556,6 +557,7 @@ public final class IdentifiedObjects extends Static {
      *
      * @since 0.7
      */
+    @OptionalCandidate
     public static Integer lookupEPSG(final IdentifiedObject object) throws FactoryException {
         Integer code = null;
         if (object != null) {

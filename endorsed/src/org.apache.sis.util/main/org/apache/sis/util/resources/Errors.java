@@ -324,6 +324,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short ForbiddenProperty_1 = 41;
 
         /**
+         * “{0}” uses two or more different units of measurement.
+         */
+        public static final short HeterogynousUnitsIn_1 = 202;
+
+        /**
          * Identifier “{1}” is not in “{0}” namespace.
          */
         public static final short IdentifierNotInNamespace_2 = 199;

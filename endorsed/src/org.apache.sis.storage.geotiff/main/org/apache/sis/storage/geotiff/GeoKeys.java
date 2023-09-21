@@ -106,6 +106,19 @@ final class GeoKeys {
     /** For vertical axis.     */ public static final short VerticalUnits          = 4099;
 
     /**
+     * Number of keys. Because keys cannot be repeated, this is the maximal
+     * number of entries that {@link GeoKeysWriter#keyDirectory} can contain.
+     * This value is verified by the {@code GeoKeysTest.verifyNumKeys()}.
+     */
+    static final int NUM_KEYS = 46;
+
+    /**
+     * Number of parameters that are of type {@code double}.
+     * This is the maximal length of {@link GeoKeysWriter#doubleParams}.
+     */
+    static final int NUM_DOUBLES = 25;
+
+    /**
      * Returns the name of the given key. Implementation of this method is inefficient,
      * but it should rarely be invoked (mostly for formatting error messages).
      */

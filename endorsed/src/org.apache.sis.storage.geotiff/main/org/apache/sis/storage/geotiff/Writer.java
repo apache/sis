@@ -32,10 +32,14 @@ import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.IndexColorModel;
 import javax.imageio.plugins.tiff.TIFFTag;
+import javax.measure.IncommensurableException;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.base.MetadataFetcher;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.UpdatableWrite;
@@ -46,6 +50,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Fraction;
 
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 
 
 /**
@@ -205,17 +210,18 @@ final class Writer extends GeoTIFF implements Flushable {
      * It is caller responsibility to append image overviews if a pyramid is wanted.
      *
      * @param  image     the image to encode.
+     * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata  title, author and other information, or {@code null} if none.
      * @throws IOException if an error occurred while writing to the output.
      * @throws DataStoreException if the given {@code image} has a property
      *         which is not supported by TIFF specification or by this writer.
      */
-    final void append(final RenderedImage image, final Metadata metadata)
+    final void append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws IOException, DataStoreException
     {
         final TileMatrixWriter tiles;
         try {
-            tiles = writeImageFileDirectory(new ReformattedImage(this, image), metadata, false);
+            tiles = writeImageFileDirectory(new ReformattedImage(this, image), grid, metadata, false);
         } finally {
             largeTagData.clear();       // For making sure that there is no memory retention.
         }
@@ -230,6 +236,7 @@ final class Writer extends GeoTIFF implements Flushable {
      * This separation makes possible to write directories in any order compared to pixel data.
      *
      * @param  image       the image for which to write the IFD.
+     * @param  grid        mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata    title, author and other information, or {@code null} if none.
      * @param  oveverview  whether the image is an overview of another image.
      * @return handler for writing offsets and lengths of the tiles to write.
@@ -237,7 +244,7 @@ final class Writer extends GeoTIFF implements Flushable {
      * @throws DataStoreException if the given {@code image} has a property
      *         which is not supported by TIFF specification or by this writer.
      */
-    private TileMatrixWriter writeImageFileDirectory(final ReformattedImage image, final Metadata metadata,
+    private TileMatrixWriter writeImageFileDirectory(final ReformattedImage image, final GridGeometry grid, final Metadata metadata,
             final boolean overview) throws IOException, DataStoreException
     {
         /*
@@ -277,13 +284,20 @@ final class Writer extends GeoTIFF implements Flushable {
          * Metadata (optional) and GeoTIFF. They are managed by separated classes.
          */
         final double[][] statistics = image.statistics(numBands);
-        final    int[][] shortStats = toShorts(statistics, sampleFormat);
+        final  short[][] shortStats = toShorts(statistics, sampleFormat);
         final MetadataFetcher<String> mf = new MetadataFetcher<>(store.dataLocale) {
             @Override protected String parseDate(final Date date) {
                 return getDateFormat().format(date);
             }
         };
         mf.accept(metadata);
+        GeoKeysWriter geoKeys = null;
+        if (grid != null && grid.isDefined(GridGeometry.GRID_TO_CRS)) try {
+            geoKeys = new GeoKeysWriter(store);
+            geoKeys.write(grid, mf);
+        } catch (FactoryException | IncommensurableException | RuntimeException e) {
+            throw new DataStoreReferencingException(e);
+        }
         /*
          * Conversion factor from physical size to pixel size. "Physical size" here should be understood as
          * paper size, as suggested by the units of measurement which are restricted to inch or centimeters.
@@ -311,8 +325,8 @@ final class Writer extends GeoTIFF implements Flushable {
         writeTag((short) TAG_IMAGE_DESCRIPTION,          /* TIFF_ASCII */            mf.title);
         writeTag((short) TAG_MODEL,                      /* TIFF_ASCII */            mf.instrument);
         writeTag((short) TAG_SAMPLES_PER_PIXEL,          (short) TIFFTag.TIFF_SHORT, numBands);
-        writeTag((short) TAG_MIN_SAMPLE_VALUE,           (short) TIFFTag.TIFF_SHORT, shortStats[0]);
-        writeTag((short) TAG_MAX_SAMPLE_VALUE,           (short) TIFFTag.TIFF_SHORT, shortStats[1]);
+        writeTag((short) TAG_MIN_SAMPLE_VALUE,           /* TIFF_SHORT */            shortStats[0]);
+        writeTag((short) TAG_MAX_SAMPLE_VALUE,           /* TIFF_SHORT */            shortStats[1]);
         writeTag((short) TAG_X_RESOLUTION,               /* TIFF_RATIONAL */         xres);
         writeTag((short) TAG_Y_RESOLUTION,               /* TIFF_RATIONAL */         yres);
         writeTag((short) TAG_PLANAR_CONFIGURATION,       (short) TIFFTag.TIFF_SHORT, planarConfiguration);
@@ -332,6 +346,12 @@ final class Writer extends GeoTIFF implements Flushable {
         writeTag((short) TAG_SAMPLE_FORMAT,      (short) TIFFTag.TIFF_SHORT, sampleFormat);
         writeTag((short) TAG_S_MIN_SAMPLE_VALUE, (short) TIFFTag.TIFF_FLOAT, statistics[0]);
         writeTag((short) TAG_S_MAX_SAMPLE_VALUE, (short) TIFFTag.TIFF_FLOAT, statistics[1]);
+        if (geoKeys != null) {
+            writeTag((short) TAG_MODEL_TRANSFORMATION, (short) TIFFTag.TIFF_DOUBLE, geoKeys.modelTransformation());
+            writeTag((short) TAG_GEO_KEY_DIRECTORY,    /* TIFF_SHORT */             geoKeys.keyDirectory());
+            writeTag((short) TAG_GEO_DOUBLE_PARAMS,    (short) TIFFTag.TIFF_DOUBLE, geoKeys.doubleParams());
+            writeTag((short) TAG_GEO_ASCII_PARAMS,     /* TIFF_ASCII */             geoKeys.asciiParams());
+        }
         /*
          * At this point, all tags have been written. Update the number of tags,
          * then write all values that couldn't be written directly in the tags.
@@ -383,8 +403,8 @@ final class Writer extends GeoTIFF implements Flushable {
      * @param  sampleFormat  the sample format.
      * @return statistics for the tags restricted to integer types.
      */
-    private static int[][] toShorts(final double[][] statistics, final int sampleFormat) {
-        final int[][] c = new int[statistics.length][];
+    private static short[][] toShorts(final double[][] statistics, final int sampleFormat) {
+        final short[][] c = new short[statistics.length][];
         final long min, max;
         switch (sampleFormat) {
             case SAMPLE_FORMAT_UNSIGNED_INTEGER: min = 0;               max = 0xFFFF;          break;
@@ -394,9 +414,10 @@ final class Writer extends GeoTIFF implements Flushable {
         for (int j=0; j < c.length; j++) {
             final double[] source = statistics[j];
             if (source != null) {
-                final int[] target = new int[source.length];
+                final short[] target = new short[source.length];
                 for (int i=0; i < source.length; i++) {
-                    target[i] = (int) Math.max(min, Math.min(max, Math.round(source[i])));
+                    target[i] = (short) Math.max(min, Math.min(max, Math.round(source[i])));
+                    // Unsigned values may look signed after the cast, but this is okay.
                 }
                 c[j] = target;
             }
@@ -504,10 +525,14 @@ final class Writer extends GeoTIFF implements Flushable {
             if (StandardCharsets.US_ASCII.equals(store.encoding)) {
                 value = CharSequences.toASCII(value).toString();
             }
-            final byte[] c = value.getBytes(store.encoding);
-            if (c.length != 0) {
-                count += c.length + 1L;             // Count shall include the trailing NUL character.
-                chars[i] = c;
+            final byte[] ascii = value.getBytes(store.encoding);
+            int length = 0;
+            for (final byte c : ascii) {
+                if (c != 0) ascii[length++] = c;        // Remove any NUL character that may appear in the string.
+            }
+            if (length != 0) {
+                count += length + 1L;                   // Count shall include the trailing NUL character.
+                chars[i] = ArraysExt.resize(ascii, length);
             }
         }
         if (count != 0) {

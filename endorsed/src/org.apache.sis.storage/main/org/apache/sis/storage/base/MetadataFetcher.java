@@ -20,9 +20,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.collection.CodeListSet;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -36,6 +39,10 @@ import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.acquisition.Platform;
+import org.opengis.metadata.spatial.CellGeometry;
+import org.opengis.metadata.spatial.Georectified;
+import org.opengis.metadata.spatial.SpatialRepresentation;
+import org.opengis.metadata.spatial.GridSpatialRepresentation;
 
 
 /**
@@ -107,6 +114,18 @@ public abstract class MetadataFetcher<T> {
     public List<String> procedure;
 
     /**
+     * General description of the transformation to a georectified grid, or {@code null} if none.
+     *
+     * <p>Path: {@code metadata/spatialRepresentationInfo/transformationDimensionDescription}</p>
+     */
+    public List<String> transformationDimension;
+
+    /**
+     * Whether grid data are representative of pixel areas or points, or {@code null} if none.
+     */
+    public Set<CellGeometry> cellGeometry;
+
+    /**
      * The locale to use for converting international strings to {@link String} objects.
      * May also be used for date or number formatting.
      */
@@ -151,6 +170,7 @@ public abstract class MetadataFetcher<T> {
             forEach(MetadataFetcher::accept, info.getIdentificationInfo());
             forEach(MetadataFetcher::accept, info.getResourceLineages());
             forEach(MetadataFetcher::accept, info.getAcquisitionInformation());
+            forEach(MetadataFetcher::accept, info.getSpatialRepresentationInfo());
         }
     }
 
@@ -275,6 +295,23 @@ public abstract class MetadataFetcher<T> {
     }
 
     /**
+     * Fetches some properties from the given spatial representation object.
+     * Subclasses can override if they need to fetch more details.
+     *
+     * @param  info  the spatial representation object (not null).
+     * @return whether to stop iteration after the given object.
+     */
+    protected boolean accept(final SpatialRepresentation info) {
+        if (info instanceof GridSpatialRepresentation) {
+            addCode(CellGeometry.class, cellGeometry, ((GridSpatialRepresentation) info).getCellGeometry());
+            if (info instanceof Georectified) {
+                addString(transformationDimension, ((Georectified) info).getTransformationDimensionDescription());
+            }
+        }
+        return false;
+    }
+
+    /**
      * Adds all international strings in the given collection.
      *
      * @param  <E>     type of elements in the collection.
@@ -321,6 +358,25 @@ public abstract class MetadataFetcher<T> {
         if (value != null && !(value = value.trim()).isEmpty()) {
             if (target == null) {
                 target = new ArrayList<>(2);        // We will usually have only one element.
+            }
+            target.add(value);
+        }
+        return target;
+    }
+
+    /**
+     * Adds the given code in the given collection.
+     *
+     * @param  <E>     compile-time value of {@code type} argument.
+     * @param  type    type of code list elements.
+     * @param  target  collection where to add the code.
+     * @param  value   the code to add.
+     * @return the collection where to code was added.
+     */
+    private static <E extends CodeList<E>> Set<E> addCode(final Class<E> type, Set<E> target, final E value) {
+        if (value != null) {
+            if (target == null) {
+                target = new CodeListSet<>(type);
             }
             target.add(value);
         }

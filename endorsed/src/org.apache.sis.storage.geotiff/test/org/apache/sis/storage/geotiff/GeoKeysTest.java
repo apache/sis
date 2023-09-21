@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Set;
+import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -125,5 +126,14 @@ public final class GeoKeysTest extends TestCase {
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * Verifies the value of {@link GeoKeys#NUM_KEYS}.
+     */
+    @Test
+    public void verifyNumKeys() {
+        final Field[] fields = GeoKeys.class.getFields();       // Include only public fields.
+        assertEquals(fields.length, GeoKeys.NUM_KEYS);
     }
 }

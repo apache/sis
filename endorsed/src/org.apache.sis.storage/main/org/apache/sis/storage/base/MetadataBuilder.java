@@ -2257,9 +2257,9 @@ parse:      for (int i = 0; i < length;) {
     public final void setGridToCRS(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
-            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
-            if (gridRepresentation instanceof DefaultGeorectified) {
-                ((DefaultGeorectified) gridRepresentation).setTransformationDimensionDescription(i18n);
+            final DefaultGridSpatialRepresentation r = gridRepresentation();
+            if (r instanceof DefaultGeorectified) {
+                ((DefaultGeorectified) r).setTransformationDimensionDescription(i18n);
             }
         }
     }

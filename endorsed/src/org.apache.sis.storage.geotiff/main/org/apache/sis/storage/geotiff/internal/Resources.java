@@ -59,6 +59,26 @@ public class Resources extends IndexedResourceBundle {
         public static final short CanNotComputeGridGeometry_1 = 26;
 
         /**
+         * Cannot encode {0,choice,0#projection method|1#parameter|2#unit} “{1}” in a GeoTIFF file.
+         */
+        public static final short CanNotEncodeNamedObject_2 = 35;
+
+        /**
+         * Cannot encode non-geographic base CRS in a GeoTIFF file.
+         */
+        public static final short CanNotEncodeNonGeographicBase = 34;
+
+        /**
+         * Cannot encode a non-linear model transformation.
+         */
+        public static final short CanNotEncodeNonLinearModel = 36;
+
+        /**
+         * Cannot encode referencing objects of type ‘{0}’ in a GeoTIFF file.
+         */
+        public static final short CanNotEncodeObjectType_1 = 33;
+
+        /**
          * TIFF file “{0}” has circular references in its chain of images.
          */
         public static final short CircularImageReference_1 = 1;
