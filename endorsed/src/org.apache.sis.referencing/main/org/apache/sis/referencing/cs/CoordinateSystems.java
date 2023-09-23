@@ -40,7 +40,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.util.AxisDirections;
@@ -564,7 +563,7 @@ next:   for (final CoordinateSystem cs : targets) {
      *
      * @param  cs  the coordinate system.
      * @return the axis directions for the specified coordinate system.
-     * @throws NullArgumentException if {@code cs} is null, or one of its axes is null,
+     * @throws NullPointerException if {@code cs} is null, or one of its axes is null,
      *         or a value returned by {@link CoordinateSystemAxis#getDirection()} is null.
      *
      * @since 0.8

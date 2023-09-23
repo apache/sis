@@ -538,7 +538,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  key    key with which the specified value is to be associated.
      * @param  value  value to be associated with the specified key.
      * @return the previous value associated with specified key, or {@code null} if there was no mapping for the key.
-     * @throws NullArgumentException if the key or the value is {@code null}.
+     * @throws NullPointerException if the key or the value is {@code null}.
      */
     @Override
     public V put(final K key, final V value) {
@@ -558,7 +558,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  key    key with which the specified value is to be associated.
      * @param  value  value to be associated with the specified key.
      * @return the current value associated with specified key, or {@code null} if there was no mapping for the key.
-     * @throws NullArgumentException if the key or the value is {@code null}.
+     * @throws NullPointerException if the key or the value is {@code null}.
      *
      * @since 0.7
      */
@@ -577,7 +577,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  key    key with which the specified value is to be associated.
      * @param  value  value to be associated with the specified key.
      * @return the previous value associated with specified key, or {@code null} if there was no mapping for the key.
-     * @throws NullArgumentException if the value is {@code null}.
+     * @throws NullPointerException if the value is {@code null}.
      *
      * @since 1.2
      */
@@ -597,7 +597,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  oldValue  value expected to be associated with the specified key.
      * @param  newValue  value to be associated with the specified key.
      * @return {@code true} if the value was replaced.
-     * @throws NullArgumentException if the new value is {@code null}.
+     * @throws NullPointerException if the new value is {@code null}.
      *
      * @since 1.2
      */
