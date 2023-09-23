@@ -165,14 +165,12 @@ public final class UpdaterTest extends TestCase {
             Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
         }
         assertTrue(containsLat20());
-        final boolean result;
         try (final WritableStore store = create()) {
-            result = store.removeIf((feature) -> {
+            store.removeIf((feature) -> {
                 Object point = feature.getPropertyValue("sis:geometry");
                 return ((Point) point).getY() == 20;
             });
         }
-        assertTrue(result);
         assertFalse(containsLat20());
     }
 
