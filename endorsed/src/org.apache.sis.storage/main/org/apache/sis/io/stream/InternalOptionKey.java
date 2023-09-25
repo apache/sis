@@ -16,9 +16,11 @@
  */
 package org.apache.sis.io.stream;
 
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreProvider;
 
 
 /**
@@ -26,7 +28,7 @@ import org.apache.sis.storage.StorageConnector;
  * Some of those options may move to public API in the future if useful.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <T>  the type of option values.
  *
@@ -37,6 +39,14 @@ public final class InternalOptionKey<T> extends OptionKey<T> {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1786137598411493790L;
+
+    /**
+     * A filter for trying preferred data stores first. A typical usage is for selecting data
+     * store providers based on their {@linkplain DataStoreProvider#getShortName() format name}.
+     */
+    @SuppressWarnings("unchecked")
+    public static final InternalOptionKey<Predicate<DataStoreProvider>> PREFERRED_PROVIDERS =
+            (InternalOptionKey) new InternalOptionKey<>("PREFERRED_PROVIDERS", Predicate.class);
 
     /**
      * Wraps readable or writable channels on creation. Wrappers can be used for example
