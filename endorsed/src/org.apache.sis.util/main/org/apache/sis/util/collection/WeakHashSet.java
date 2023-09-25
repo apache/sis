@@ -25,7 +25,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.NullArgumentException;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
 
@@ -210,10 +209,10 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *
      * @param  element  element to be added to this set.
      * @return {@code true} if this set did not already contain the specified element.
-     * @throws NullArgumentException if the given object is {@code null}.
+     * @throws NullPointerException if the given object is {@code null}.
      */
     @Override
-    public synchronized boolean add(final E element) throws NullArgumentException {
+    public synchronized boolean add(final E element) {
         ArgumentChecks.ensureNonNull("element", element);
         return intern(element, ADD) == null;
     }

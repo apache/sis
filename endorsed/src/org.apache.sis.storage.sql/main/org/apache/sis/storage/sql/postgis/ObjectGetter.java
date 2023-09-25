@@ -62,7 +62,7 @@ final class ObjectGetter extends ValueGetter<Object> {
             /*
              * TODO: we should invoke `getType()` and select a decoding algorithm depending on the type.
              * The driver also has a `PGBinaryObject` that we can check for more efficient data transfer
-             * of points and bounding boxes. For now we just get the the wrapped value, which is always
+             * of points and bounding boxes. For now we just get the wrapped value, which is always
              * a `String`.
              */
             value = po.getValue();

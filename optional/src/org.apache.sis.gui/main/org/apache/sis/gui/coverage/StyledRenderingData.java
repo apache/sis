@@ -79,7 +79,7 @@ final class StyledRenderingData extends RenderingData {
     }
 
     /**
-     * Prepares isolines by computing the the Java2D shapes that were not already computed in a previous rendering.
+     * Prepares isolines by computing the Java2D shapes that were not already computed in a previous rendering.
      * This method shall be invoked in a background thread after image rendering has been completed (because this
      * method uses some image computation results).
      *

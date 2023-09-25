@@ -62,7 +62,7 @@ public final class StringBuilders extends Static {
      * @param  buffer     the string in which to perform the replacements.
      * @param  toSearch   the character to replace.
      * @param  replaceBy  the replacement for the searched character.
-     * @throws NullArgumentException if the {@code buffer} arguments is null.
+     * @throws NullPointerException if the {@code buffer} arguments is null.
      *
      * @see String#replace(char, char)
      */
@@ -85,7 +85,7 @@ public final class StringBuilders extends Static {
      * @param  buffer     the string in which to perform the replacements.
      * @param  toSearch   the string to replace.
      * @param  replaceBy  the replacement for the searched string.
-     * @throws NullArgumentException if any of the arguments is null.
+     * @throws NullPointerException if any of the arguments is null.
      * @throws IllegalArgumentException if the {@code toSearch} argument is empty.
      *
      * @see String#replace(char, char)
@@ -115,7 +115,7 @@ public final class StringBuilders extends Static {
      * @param  start   the beginning index in the {@code buffer}, inclusive.
      * @param  end     the ending index in the {@code buffer}, exclusive.
      * @param  chars   the array that will replace previous contents.
-     * @throws NullArgumentException if the {@code buffer} or {@code chars} argument is null.
+     * @throws NullPointerException if the {@code buffer} or {@code chars} argument is null.
      *
      * @see StringBuilder#replace(int, int, String)
      */
@@ -266,7 +266,7 @@ public final class StringBuilders extends Static {
      * been appended to the buffer}, in order to make it appears like an integer when possible.
      *
      * @param  buffer  the buffer to trim if possible.
-     * @throws NullArgumentException if the given {@code buffer} is null.
+     * @throws NullPointerException if the given {@code buffer} is null.
      *
      * @see CharSequences#trimFractionalPart(CharSequence)
      */
@@ -290,7 +290,7 @@ public final class StringBuilders extends Static {
      * by the corresponding sequences of characters.
      *
      * @param  buffer  the text to scan for Unicode characters to replace by ASCII characters.
-     * @throws NullArgumentException if the given {@code buffer} is null.
+     * @throws NullPointerException if the given {@code buffer} is null.
      *
      * @see CharSequences#toASCII(CharSequence)
      * @see Normalizer#normalize(CharSequence, Normalizer.Form)

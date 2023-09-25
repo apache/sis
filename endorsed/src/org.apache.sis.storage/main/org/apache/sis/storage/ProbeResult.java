@@ -45,7 +45,7 @@ import org.apache.sis.util.internal.Strings;
  * In such cases, SIS will revisit those providers only if no better suited provider is found.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see DataStoreProvider#probeContent(StorageConnector)
  *

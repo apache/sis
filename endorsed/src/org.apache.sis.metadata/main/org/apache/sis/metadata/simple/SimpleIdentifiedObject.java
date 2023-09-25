@@ -100,7 +100,10 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
      *
      * @return the domain of validity, or {@code null} if none.
+     *
+     * @deprecated Removed from ISO 19111:2019 (moved to {@code ObjectDomain}).
      */
+    @Deprecated
     public final Extent getDomainOfValidity() {
         return null;
     }
@@ -113,7 +116,10 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
      *
      * @return the scope, or {@code null} if none.
+     *
+     * @deprecated Removed from ISO 19111:2019 (moved to {@code ObjectDomain}).
      */
+    @Deprecated
     public final InternationalString getScope() {
         return null;
     }

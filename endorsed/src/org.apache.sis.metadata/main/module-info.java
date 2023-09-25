@@ -30,8 +30,8 @@ module org.apache.sis.metadata {
     /*
      * Dependencies. Only the ones that appear in public API should be transitive.
      */
-    requires java.sql;
     requires java.naming;
+    requires transitive java.sql;
     requires transitive jakarta.xml.bind;
     requires transitive org.apache.sis.util;
 

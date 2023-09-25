@@ -344,7 +344,7 @@ public final class WKTFormatTest extends TestCase {
             "  AXIS[“Northing”, NORTH]]",
             format.format(crs));
         /*
-         * Formats using GeoTiff identifiers. We should get different strings in PROJECTION[...]
+         * Formats using GeoTIFF identifiers. We should get different strings in PROJECTION[...]
          * and PARAMETER[...] elements, but the other ones (especially DATUM[...]) are unchanged.
          */
         format.setNameAuthority(Citations.GEOTIFF);

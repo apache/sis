@@ -112,7 +112,7 @@ public abstract class WindowHandler {
         } else try {
             text = DataStoreOpener.findLabel(getResource(), manager.locale, true);
         } catch (DataStoreException | RuntimeException e) {
-            text = Vocabulary.getResources(manager.locale).getString(Vocabulary.Keys.Unknown);
+            text = Vocabulary.getResources(manager.locale).getString(Vocabulary.Keys.NotKnown);
             Logging.recoverableException(LOGGER, WindowHandler.class, "<init>", e);
         }
         title.set(text);

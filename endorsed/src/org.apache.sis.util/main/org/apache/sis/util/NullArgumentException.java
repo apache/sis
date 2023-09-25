@@ -34,7 +34,15 @@ package org.apache.sis.util;
  * @see ArgumentChecks#ensureNonNull(String, Object)
  *
  * @since 0.3
+ *
+ * @deprecated This exception was introduced before Java introduced {@code Objects.requireNonNull(…)}.
+ *             Usages of {@code ArgumentChecks.ensureNonNull(…)} may be progressively replaced in the
+ *             future, which would cause {@code NullArgumentException} to not be thrown anymore.
+ *             Use {@code NullPointerException} instead.
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-562">JIRA issue SIS-562</a>
  */
+@Deprecated(since = "1.4", forRemoval = true)
 public class NullArgumentException extends NullPointerException {
     /**
      * For cross-version compatibility.

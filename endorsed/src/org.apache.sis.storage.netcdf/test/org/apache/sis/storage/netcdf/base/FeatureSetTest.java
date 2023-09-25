@@ -193,7 +193,7 @@ public class FeatureSetTest extends TestCase {
     }
 
     /**
-     * Asserts the the given shape is a line string with the following coordinates.
+     * Asserts the given shape is a line string with the following coordinates.
      *
      * @param  trajectory  the shape to verify.
      * @param  x           expected X coordinates.

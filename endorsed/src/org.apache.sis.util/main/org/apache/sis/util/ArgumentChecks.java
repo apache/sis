@@ -465,7 +465,8 @@ public final class ArgumentChecks extends Static {
     public static void ensurePositive(final String name, final float value)
             throws IllegalArgumentException
     {
-        if (!(value >= 0)) {                                                // Use `!` for catching NaN.
+        // Use `!` for catching NaN.
+        if (!(value >= 0) || Float.floatToRawIntBits(value) == Integer.MIN_VALUE) {
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
                     Errors.format(Errors.Keys.NegativeArgument_2, name, value));
@@ -486,7 +487,8 @@ public final class ArgumentChecks extends Static {
     public static void ensurePositive(final String name, final double value)
             throws IllegalArgumentException
     {
-        if (!(value >= 0)) {                                                // Use `!` for catching NaN.
+        // Use `!` for catching NaN.
+        if (!(value >= 0) || Double.doubleToRawLongBits(value) == Long.MIN_VALUE) {
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.NegativeArgument_2, name, value));

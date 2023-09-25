@@ -1320,7 +1320,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * Note that in WKT 2, this element is wrapped inside a {@code Conversion} or {@code DerivingConversion}
      * element which is itself inside the {@code ProjectedCRS} element. This is different than WKT 1, which
-     * puts this element right into the the {@code ProjectedCRS} element without {@code Conversion} wrapper.
+     * puts this element right into the {@code ProjectedCRS} element without {@code Conversion} wrapper.
      *
      * @param  mode                {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent              the parent element.

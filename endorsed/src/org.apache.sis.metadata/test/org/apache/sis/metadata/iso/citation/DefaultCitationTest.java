@@ -125,7 +125,7 @@ public final class DefaultCitationTest extends TestUsingFile {
         final IdentifierMap identifierMap = citation.getIdentifierMap();
         assertTrue("Expected an initially empty set of identifiers.", identifiers.isEmpty());
         /*
-         * Set the ISBN code, and ensure that the the ISBN is reflected in the identifier map.
+         * Set the ISBN code, and ensure that the ISBN is reflected in the identifier map.
          */
         citation.setISBN("MyISBN");
         assertEquals("MyISBN", citation.getISBN());

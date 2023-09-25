@@ -73,7 +73,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * Values are method names.
      *
      * <p>There is no need to prefix the method names by classnames because a new instance of {@code TestRunner}
-     * will be created for each test class, even if the the test classes are aggregated in a test suite.</p>
+     * will be created for each test class, even if the test classes are aggregated in a test suite.</p>
      *
      * @see #addDependencyFailure(String)
      */

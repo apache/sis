@@ -72,7 +72,7 @@ public enum CodeType {
 
     /**
      * Whether the code may be understood by the {@link org.apache.sis.referencing.CRS#forCode(String)}.
-     * A value of {@code true} does not guaranteed the the code is valid. It only said that there is some
+     * A value of {@code true} does not guaranteed the code is valid. It only said that there is some
      * chances that the code is valid.
      */
     public final boolean isCRS;
@@ -138,7 +138,7 @@ public enum CodeType {
             c = codeOrPath.charAt(separator);
         } while (c == '.');
         /*
-         * If the the ':' if followed by at least one '/' (ignoring spaces and dots), then it is presumed
+         * If the ':' if followed by at least one '/' (ignoring spaces and dots), then it is presumed
          * to be a URL protocol. In the special case where the protocol is "http(s)" and the domain after
          * the '/' characters is "www.opengis.net", return HTTP_OGC instead of URL.
          */

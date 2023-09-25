@@ -113,7 +113,7 @@ class WritableStore extends WorldFileStore {
         if (getCurrentReader() != null) {
             numImages = -1;
         } else {
-            writer = format.getOrCreateWriter();
+            writer = format.getOrCreateWriter(null);
             if (writer == null) {
                 throw new UnsupportedStorageException(super.getLocale(), WorldFileStoreProvider.NAME,
                             format.storage, format.connector.getOption(OptionKey.OPEN_OPTIONS));
@@ -287,6 +287,8 @@ writeCoeffs:    for (int i=0;; i++) {
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource.
      * @throws DataStoreException if the given resource cannot be stored in this {@code Aggregate}.
+     *
+     * @see WritableAggregate#add(Resource)
      */
     public synchronized Resource add(final Resource resource) throws DataStoreException {
         Exception cause = null;
@@ -325,6 +327,8 @@ writeCoeffs:    for (int i=0;; i++) {
      *
      * @param  resource  child resource to remove from this {@code Aggregate}.
      * @throws DataStoreException if the given resource could not be removed.
+     *
+     * @see WritableAggregate#remove(Resource)
      */
     @Override
     public synchronized void remove(final Resource resource) throws DataStoreException {

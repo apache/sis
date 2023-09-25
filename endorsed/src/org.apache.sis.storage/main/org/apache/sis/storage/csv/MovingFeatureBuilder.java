@@ -116,7 +116,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
      * The minimal and maximal values will be used by {@link #storeTimeRange(String, String, Feature)}.
      *
      * @param  startTime  beginning in milliseconds since Java epoch of the period when the property value is valid.
-     * @param  endTime    end in milliseconds since Java epoch of the period when the the property value is valid.
+     * @param  endTime    end in milliseconds since Java epoch of the period when the property value is valid.
      */
     public final void addTimeRange(final long startTime, final long endTime) {
         if (startTime < tmin) tmin = startTime;
@@ -128,7 +128,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
      *
      * @param  index      the property index.
      * @param  startTime  beginning in milliseconds since Java epoch of the period when the property value is valid.
-     * @param  endTime    end in milliseconds since Java epoch of the period when the the property value is valid.
+     * @param  endTime    end in milliseconds since Java epoch of the period when the property value is valid.
      * @param  value      the property value which is valid during the given period.
      */
     public final void addValue(final int index, final long startTime, final long endTime, final Object value) {

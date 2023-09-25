@@ -77,7 +77,7 @@ public enum Compression {
 
     /**
      * Deflate compression, like ZIP format. This is sometimes named {@code "ADOBE_DEFLATE"},
-     * withe the {@code "DEFLATE"} name used for another compression method with code 32946.
+     * with the {@code "DEFLATE"} name used for another compression method with code 32946.
      * <ul>
      *   <li>Name in WCS query:    "Deflate"</li>
      *   <li>Name in WCS response: "Deflate"</li>

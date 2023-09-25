@@ -26,7 +26,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -74,8 +73,6 @@ import org.opengis.metadata.Identifier;
  * @since 0.4
  */
 @XmlType(name = "AbstractDatumType", propOrder = {
-    "domainOfValidity",
-    "scope",
     "anchorPoint",
     "realizationEpoch"
 })
@@ -92,7 +89,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4894180465652474930L;
+    private static final long serialVersionUID = -729506171131910731L;
 
     /**
      * Description, possibly including coordinates, of the point or points used to anchor the datum
@@ -117,28 +114,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     private long realizationEpoch;
 
     /**
-     * Area or region in which this datum object is valid.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
-     *
-     * @see #getDomainOfValidity()
-     */
-    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
-    private Extent domainOfValidity;
-
-    /**
-     * Description of domain of usage, or limitations of usage, for which this datum object is valid.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
-     *
-     * @see #getScope()
-     */
-    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
-    private InternationalString scope;
-
-    /**
      * Creates a datum from the given properties.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
@@ -150,46 +125,33 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getAnchorPoint()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
      *     <td>{@link Date}</td>
      *     <td>{@link #getRealizationEpoch()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
-     *     <td>{@link #getDomainOfValidity()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
-     *     <td>{@link #getScope()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#DOMAINS_KEY}</td>
+     *     <td>{@link org.opengis.referencing.ObjectDomain} (optionally as array)</td>
+     *     <td>{@link #getDomains()}</td>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
@@ -201,9 +163,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     public AbstractDatum(final Map<String,?> properties) {
         super(properties);
         realizationEpoch = ImplementationHelper.toMilliseconds(property(properties, REALIZATION_EPOCH_KEY, Date.class));
-        domainOfValidity = property(properties, DOMAIN_OF_VALIDITY_KEY, Extent.class);
         anchorDefinition = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
-        scope            = Types.toInternationalString(properties, SCOPE_KEY);
     }
 
     /**
@@ -218,8 +178,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     protected AbstractDatum(final Datum datum) {
         super(datum);
         realizationEpoch = ImplementationHelper.toMilliseconds(datum.getRealizationEpoch());
-        domainOfValidity = datum.getDomainOfValidity();
-        scope            = datum.getScope();
         anchorDefinition = datum.getAnchorPoint();
     }
 
@@ -309,30 +267,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Returns the region or timeframe in which this datum is valid, or {@code null} if unspecified.
-     *
-     * @return area or region or timeframe in which this datum is valid, or {@code null}.
-     *
-     * @see org.apache.sis.metadata.iso.extent.DefaultExtent
-     */
-    @Override
-    @XmlElement(name = "domainOfValidity")
-    public Extent getDomainOfValidity() {
-        return domainOfValidity;
-    }
-
-    /**
-     * Returns the domain or limitations of usage, or {@code null} if unspecified.
-     *
-     * @return description of domain of usage, or limitations of usage, for which this datum object is valid.
-     */
-    @Override
-    @XmlElement(name = "scope", required = true)
-    public InternationalString getScope() {
-        return scope;
-    }
-
-    /**
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
      * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
      * This method performs the comparison documented in the
@@ -390,7 +324,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
      * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are compared including the
      * {@linkplain #getAnchorPoint() anchor point}, {@linkplain #getRealizationEpoch() realization epoch},
-     * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}.
+     * and the {@linkplain #getDomains() domains}.
      *
      * @param  object  the object to compare to {@code this}.
      * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
@@ -407,16 +341,12 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
             case STRICT: {
                 final AbstractDatum that = (AbstractDatum) object;
                 return this.realizationEpoch == that.realizationEpoch &&
-                       Objects.equals(this.domainOfValidity, that.domainOfValidity) &&
-                       Objects.equals(this.anchorDefinition, that.anchorDefinition) &&
-                       Objects.equals(this.scope,            that.scope);
+                       Objects.equals(this.anchorDefinition, that.anchorDefinition);
             }
             case BY_CONTRACT: {
                 final Datum that = (Datum) object;
                 return deepEquals(getRealizationEpoch(), that.getRealizationEpoch(), mode) &&
-                       deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
-                       deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode) &&
-                       deepEquals(getScope(),            that.getScope(),            mode);
+                       deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode);
             }
             default: {
                 /*
@@ -445,10 +375,11 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * for more information.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     * @hidden because not useful.
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(anchorDefinition, realizationEpoch, domainOfValidity, scope);
+        return super.computeHashCode() + Objects.hash(anchorDefinition, realizationEpoch);
     }
 
     /**
@@ -523,32 +454,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
             realizationEpoch = value.getTime();
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
-        }
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getDomainOfValidity()
-     */
-    private void setDomainOfValidity(final Extent value) {
-        if (domainOfValidity == null) {
-            domainOfValidity = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
-        }
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getScope()
-     */
-    private void setScope(final InternationalString value) {
-        if (scope == null) {
-            scope = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
         }
     }
 }

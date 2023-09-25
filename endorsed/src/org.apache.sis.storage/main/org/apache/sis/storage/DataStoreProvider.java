@@ -119,8 +119,7 @@ public abstract class DataStoreProvider {
     /**
      * Returns a short name or abbreviation for the data format.
      * This name is used in some warnings or exception messages.
-     * It may contain any characters, including white spaces
-     * (i.e. this short name is <strong>not</strong> a format identifier).
+     * It may contain any characters, including white spaces, and is not guaranteed to be unique.
      * For a more comprehensive format name, see {@link #getFormat()}.
      *
      * <h4>Examples</h4>
@@ -338,7 +337,7 @@ public abstract class DataStoreProvider {
              */
             Prober<?> next = prober;
             while (next instanceof ProberList<?,?>) {
-                final ProberList<?,?> list = (ProberList<?,?>) next;
+                final var list = (ProberList<?,?>) next;
                 result = tryNextProber(connector, list);
                 if (result != null && result != ProbeResult.UNDETERMINED) {
                     return result;
@@ -380,7 +379,15 @@ public abstract class DataStoreProvider {
             final Class<S> type, final Prober<? super S> prober) throws DataStoreException
     {
         final S input = connector.getStorageAs(type);
-        if (input == null) {        // Means that the given type is valid but not applicable for current storage.
+        if (input == null) {
+            /*
+             * Means one of the following:
+             *   - The storage is a file that do not exist yet but can be created by this provider.
+             *   - The given type is valid but not applicable with the `StorageConnector` content.
+             */
+            if (connector.probing != null) {
+                return connector.probing.probe;
+            }
             return null;
         }
         if (input == connector.storage && !StorageConnector.isSupportedType(type)) {

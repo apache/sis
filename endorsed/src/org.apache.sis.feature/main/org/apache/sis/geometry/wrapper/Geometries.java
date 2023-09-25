@@ -277,7 +277,7 @@ public abstract class Geometries<G> implements Serializable {
      *
      * @param  geometry  the geometry instance to wrap (can be {@code null}).
      * @return a wrapper for the given geometry implementation, or {@code null} if the given object was null.
-     * @throws ClassCastException if the the given object is not a wrapper or a geometry object
+     * @throws ClassCastException if the given object is not a wrapper or a geometry object
      *         of the implementation of the library identified by {@link #library}.
      *
      * @see #wrap(Object)

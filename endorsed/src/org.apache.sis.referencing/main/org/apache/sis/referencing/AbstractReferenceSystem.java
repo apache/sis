@@ -17,22 +17,10 @@
 package org.apache.sis.referencing;
 
 import java.util.Map;
-import java.util.Objects;
-import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlTransient;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.metadata.extent.Extent;
-import org.apache.sis.util.Workaround;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.iso.Types;
-import org.apache.sis.xml.bind.metadata.EX_Extent;
-import org.apache.sis.metadata.internal.ImplementationHelper;
-
-import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.util.collection.Containers.property;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -45,13 +33,8 @@ import org.opengis.metadata.Identifier;
  * {@link org.apache.sis.referencing.crs.AbstractCRS} subclass.
  *
  * <p>This class inherits the {@linkplain #getName() name}, {@linkplain #getAlias() aliases},
- * {@linkplain #getIdentifiers() identifiers} and {@linkplain #getRemarks() remarks} from
- * the parent class, and adds the following information:</p>
- *
- * <ul>
- *   <li>a {@linkplain #getDomainOfValidity() domain of validity}, the area for which the reference system is valid,</li>
- *   <li>a {@linkplain #getScope() scope}, which describes the domain of usage or limitation of usage.
- * </ul>
+ * {@linkplain #getIdentifiers() identifiers}, {@linkplain #getDomains() domains}
+ * and {@linkplain #getRemarks() remarks} from the parent class.</p>
  *
  * <h2>Instantiation</h2>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
@@ -73,36 +56,13 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3337659819553899435L;
-
-    /**
-     * Area for which the (coordinate) reference system is valid.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
-     *
-     * @see #getDomainOfValidity()
-     */
-    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private Extent domainOfValidity;
-
-    /**
-     * Description of domain of usage, or limitations of usage,
-     * for which this (coordinate) reference system object is valid.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
-     *
-     * @see #getScope()
-     */
-    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private InternationalString scope;
+    private static final long serialVersionUID = 7207447363999869238L;
 
     /**
      * Constructs a reference system from the given properties.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
-     * Additionally, the following properties are understood by this constructor:
+     * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
      *   <caption>Recognized properties (non exhaustive list)</caption>
@@ -110,36 +70,23 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
-     *     <td>{@link #getDomainOfValidity()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
-     *     <td>{@link String} or {@link InternationalString}</td>
-     *     <td>{@link #getScope()}</td>
-     *   </tr>
-     *   <tr>
-     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#DOMAINS_KEY}</td>
+     *     <td>{@link org.opengis.referencing.ObjectDomain} (optionally as array)</td>
+     *     <td>{@link #getDomains()}</td>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
@@ -150,8 +97,6 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      */
     public AbstractReferenceSystem(final Map<String,?> properties) {
         super(properties);
-        domainOfValidity = property(properties, DOMAIN_OF_VALIDITY_KEY, Extent.class);
-        scope = Types.toInternationalString(properties, SCOPE_KEY);
     }
 
     /**
@@ -165,8 +110,6 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      */
     protected AbstractReferenceSystem(final ReferenceSystem object) {
         super(object);
-        domainOfValidity = object.getDomainOfValidity();
-        scope            = object.getScope();
     }
 
     /**
@@ -179,82 +122,6 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     @Override
     public Class<? extends ReferenceSystem> getInterface() {
         return ReferenceSystem.class;
-    }
-
-    /**
-     * Returns the region or timeframe in which this reference system is valid, or {@code null} if unspecified.
-     *
-     * @return area or region or timeframe in which this (coordinate) reference system is valid, or {@code null}.
-     *
-     * @see org.apache.sis.metadata.iso.extent.DefaultExtent
-     */
-    @Override
-    @XmlElement(name = "domainOfValidity")
-    // For an unknown reason, JAXB does not take the adapter declared in package-info for this particular property.
-    @Workaround(library = "JDK", version = "1.8")
-    @XmlJavaTypeAdapter(EX_Extent.class)
-    public Extent getDomainOfValidity() {
-        return domainOfValidity;
-    }
-
-    /**
-     * Returns the domain or limitations of usage, or {@code null} if unspecified.
-     *
-     * @return description of domain of usage, or limitations of usage, for which this
-     *         (coordinate) reference system object is valid, or {@code null}.
-     */
-    @Override
-    @XmlElement(name ="scope", required = true)
-    public InternationalString getScope() {
-        return scope;
-    }
-
-    /**
-     * Compares this reference system with the specified object for equality.
-     * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
-     * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are
-     * compared including the {@linkplain #getDomainOfValidity() domain of validity} and
-     * the {@linkplain #getScope() scope}.
-     *
-     * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (!super.equals(object, mode)) {
-            return false;
-        }
-        switch (mode) {
-            case STRICT: {
-                final AbstractReferenceSystem that = (AbstractReferenceSystem) object;
-                return Objects.equals(domainOfValidity, that.domainOfValidity) &&
-                       Objects.equals(scope,            that.scope);
-            }
-            case BY_CONTRACT: {
-                final ReferenceSystem that = (ReferenceSystem) object;
-                return deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
-                       deepEquals(getScope(),            that.getScope(), mode);
-            }
-            default: {
-                // Domain of validity and scope are metadata, so they can be ignored.
-                return true;
-            }
-        }
-    }
-
-    /**
-     * Invoked by {@code hashCode()} for computing the hash code when first needed.
-     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
-     * for more information.
-     *
-     * @return the hash code value. This value may change in any future Apache SIS version.
-     */
-    @Override
-    protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(domainOfValidity, scope);
     }
 
 
@@ -277,31 +144,5 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractReferenceSystem() {
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getDomainOfValidity()
-     */
-    private void setDomainOfValidity(final Extent value) {
-        if (domainOfValidity == null) {
-            domainOfValidity = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractReferenceSystem.class, "setDomainOfValidity", "domainOfValidity");
-        }
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getScope()
-     */
-    private void setScope(final InternationalString value) {
-        if (scope == null) {
-            scope = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractReferenceSystem.class, "setScope", "scope");
-        }
     }
 }

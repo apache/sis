@@ -40,7 +40,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class WritableStore extends Store implements WritableFeatureSet {
@@ -95,9 +95,10 @@ public final class WritableStore extends Store implements WritableFeatureSet {
      * @throws DataStoreException if the feature stream cannot be obtained or updated.
      */
     @Override
-    public synchronized boolean removeIf(final Predicate<? super Feature> filter) throws DataStoreException {
+    public synchronized void removeIf(final Predicate<? super Feature> filter) throws DataStoreException {
         try (Updater updater = updater()) {
-            return updater.removeIf(filter);
+            updater.removeIf(filter);
+            updater.flush();
         }
     }
 

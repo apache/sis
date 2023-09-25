@@ -111,8 +111,16 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
              * Returns {@code true} if this factory is capable to create another readable byte channel.
              */
             @Override
-            public boolean canOpen() {
-                return factory.canOpen();
+            public boolean canReopen() {
+                return factory.canReopen();
+            }
+
+            /**
+             * Returns {@code true} if opening the channel will create a new, initially empty, file.
+             */
+            @Override
+            public boolean isCreateNew() {
+                return factory.isCreateNew();
             }
 
             /**

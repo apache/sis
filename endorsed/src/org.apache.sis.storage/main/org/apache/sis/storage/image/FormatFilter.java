@@ -48,7 +48,7 @@ import org.apache.sis.util.ArraysExt;
  * This is used for providing utility methods about image formats.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 enum FormatFilter {
@@ -135,7 +135,7 @@ enum FormatFilter {
     final ImageReaderSpi findProvider(final String identifier, final StorageConnector connector, final Set<ImageReaderSpi> done)
             throws IOException, DataStoreException
     {
-        final Iterator<ImageReaderSpi> it = FormatFilter.SUFFIX.getServiceProviders(ImageReaderSpi.class, identifier);
+        final Iterator<ImageReaderSpi> it = getServiceProviders(ImageReaderSpi.class, identifier);
         while (it.hasNext()) {
             final ImageReaderSpi provider = it.next();
             if (done.add(provider)) {
@@ -156,6 +156,16 @@ enum FormatFilter {
                                 return provider;
                             }
                             break;          // Skip other input types, try the next provider.
+                        } else if (connector.wasProbingAbsentFile()) {
+                            /*
+                             * This method is invoked for probing a file content (not for opening the file),
+                             * the file does not exist, but a `CREATE` or `CREATE_NEW` option has been provided.
+                             * Accept this provider if it as a writer counterpart.
+                             */
+                            if (provider.getImageWriterSpiNames() != null) {
+                                return provider;
+                            }
+                            break;
                         }
                     }
                 }

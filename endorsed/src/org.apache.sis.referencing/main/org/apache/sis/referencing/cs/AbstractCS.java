@@ -47,10 +47,11 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Constants;
-import org.apache.sis.io.wkt.ElementKind;
-import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.measure.Angle;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -144,23 +145,19 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
@@ -213,6 +210,54 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                         throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                                 Resources.Keys.ColinearAxisDirections_2, direction, other));
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns {@link #VALID} if the given argument values are allowed for an axis in this coordinate system,
+     * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time for checking
+     * argument validity. The default implementation returns {@code VALID} in all cases. Subclasses override
+     * this method in order to put more restrictions on allowed axis directions and check for compatibility
+     * with {@linkplain org.apache.sis.measure.Units#METRE metre} or
+     * {@linkplain org.apache.sis.measure.Units#DEGREE degree} units.
+     *
+     * <p><b>Note for implementers:</b> since this method is invoked at construction time, it shall not depend
+     * on this object's state. This method is not in public API for that reason.</p>
+     *
+     * @param  direction  the direction to test for compatibility (never {@code null}).
+     * @param  unit       the unit to test for compatibility (never {@code null}).
+     * @return {@link #VALID} if the given direction and unit are compatible with this coordinate system,
+     *         {@link #INVALID_DIRECTION} if the direction is invalid or {@link #INVALID_UNIT} if the unit
+     *         is invalid.
+     */
+    int validateAxis(final AxisDirection direction, final Unit<?> unit) {
+        return VALID;
+    }
+
+    /**
+     * Ensures that all known axes are perpendicular, ignoring unknown axis directions.
+     * This method can be invoked by the constructors of coordinate systems having this requirement.
+     *
+     * @param  properties  properties given at construction time.
+     * @throws IllegalArgumentException if an illegal angle is found between two axes.
+     */
+    final void ensurePerpendicularAxis(final Map<String,?> properties) throws IllegalArgumentException {
+        final int dimension = getDimension();
+        for (int i=0; i<dimension; i++) {
+            final AxisDirection axis0 = getAxis(i).getDirection();
+            for (int j=i; ++j<dimension;) {
+                final AxisDirection axis1 = getAxis(j).getDirection();
+                final Angle angle = CoordinateSystems.angle(axis0, axis1);
+                /*
+                 * The angle may be null for grid directions (COLUMN_POSITIVE, COLUMN_NEGATIVE,
+                 * ROW_POSITIVE, ROW_NEGATIVE). We conservatively accept those directions even if
+                 * they are not really for Cartesian CS because we do not know the grid geometry.
+                 */
+                if (angle != null && Math.abs(angle.degrees()) != 90) {
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                            Resources.Keys.NonPerpendicularDirections_2, axis0, axis1));
                 }
             }
         }
@@ -279,27 +324,6 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     public static AbstractCS castOrCopy(final CoordinateSystem object) {
         return SubTypes.castOrCopy(object);
-    }
-
-    /**
-     * Returns {@link #VALID} if the given argument values are allowed for an axis in this coordinate system,
-     * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time for checking
-     * argument validity. The default implementation returns {@code VALID} in all cases. Subclasses override
-     * this method in order to put more restrictions on allowed axis directions and check for compatibility
-     * with {@linkplain org.apache.sis.measure.Units#METRE metre} or
-     * {@linkplain org.apache.sis.measure.Units#DEGREE degree} units.
-     *
-     * <p><b>Note for implementers:</b> since this method is invoked at construction time, it shall not depend
-     * on this object's state. This method is not in public API for that reason.</p>
-     *
-     * @param  direction  the direction to test for compatibility (never {@code null}).
-     * @param  unit       the unit to test for compatibility (never {@code null}).
-     * @return {@link #VALID} if the given direction and unit are compatible with this coordinate system,
-     *         {@link #INVALID_DIRECTION} if the direction is invalid or {@link #INVALID_UNIT} if the unit
-     *         is invalid.
-     */
-    int validateAxis(final AxisDirection direction, final Unit<?> unit) {
-        return VALID;
     }
 
     /**

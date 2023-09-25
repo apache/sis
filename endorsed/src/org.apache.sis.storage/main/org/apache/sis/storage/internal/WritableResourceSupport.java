@@ -131,7 +131,7 @@ public final class WritableResourceSupport implements Localized {
      *   <li>If the given channel is empty, then this method always returns {@code true}.</li>
      *   <li>Otherwise this method returns {@code true} if the {@code REPLACE} option was specified,
      *       or returns {@code false} if the {@code UPDATE} option was specified,
-     *       or thrown a {@link ResourceAlreadyExistsException} otherwise.</li>
+     *       or throws a {@link ResourceAlreadyExistsException} otherwise.</li>
      * </ul>
      *
      * @param  input  the channel to test for emptiness, or {@code null} if unknown.

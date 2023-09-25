@@ -16,13 +16,18 @@
  */
 package org.apache.sis.storage;
 
+import java.nio.file.StandardOpenOption;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.base.StoreMetadata;
+
 
 /**
  * A pair of {@link ProbeResult} and {@link DataStoreProvider}, for internal usage by {@link DataStoreRegistry} only.
- * Provides also a {@link DataStore} created by the provider if this class is used for an {@code open} operation.
+ * Provides also a {@link DataStore} created by the provider if this class is used for an {@code open(…)} operation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 final class ProbeProviderPair {
@@ -43,10 +48,32 @@ final class ProbeProviderPair {
     DataStore store;
 
     /**
-     * Creates a new pair.
+     * Creates a new pair with a result not yet known.
      */
-    ProbeProviderPair(final DataStoreProvider provider, final ProbeResult probe) {
+    ProbeProviderPair(final DataStoreProvider provider) {
         this.provider = provider;
-        this.probe    = probe;
+    }
+
+    /**
+     * Sets the {@linkplain #probe} result for a file that does not exist yet.
+     * The result will be {@link ProbeResult#SUPPORTED} or {@code UNSUPPORTED_STORAGE},
+     * depending on whether the {@linkplain #provider} supports the creation of new storage.
+     * In both cases, {@link StorageConnector#wasProbingAbsentFile()} will return {@code true}.
+     *
+     * <p>This method is invoked for example if the storage is a file, the file does not exist
+     * but {@link StandardOpenOption#CREATE} or {@link StandardOpenOption#CREATE_NEW CREATE_NEW}
+     * option was provided and the data store has write capability. Note however that declaring
+     * {@code SUPPORTED} is not a guarantee that the data store will successfully create the resource.
+     * For example we do not verify if the file system grants write permission to the application.</p>
+     *
+     * @see StorageConnector#wasProbingAbsentFile()
+     */
+    final void setProbingAbsentFile() {
+        final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
+        if (md == null || ArraysExt.contains(md.capabilities(), Capability.CREATE)) {
+            probe = ProbeResult.SUPPORTED;
+        } else {
+            probe = ProbeResult.UNSUPPORTED_STORAGE;
+        }
     }
 }

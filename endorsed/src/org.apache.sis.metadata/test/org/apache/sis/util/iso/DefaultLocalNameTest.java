@@ -65,7 +65,7 @@ public final class DefaultLocalNameTest extends TestCase {
     public void testEpsgNamespace() {
         final DefaultNameSpace ns = DefaultNameSpace.forName(new DefaultLocalName(null, EPSG),
                 DEFAULT_SEPARATOR_STRING, DEFAULT_SEPARATOR_STRING);
-        assertSame(EPSG, ns.name().toString());
+        assertEquals(EPSG, ns.name().toString());
         validate(ns); // GeoAPI tests.
 
         final String WGS84 = "4326";

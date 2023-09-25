@@ -720,7 +720,7 @@ public final class UnitFormatTest extends TestCase {
         roundtrip(f, "(m2.s.sr)-1",      "1∕(m²⋅s)");       // Too aggressive simplification bug (SIS-378)
         roundtrip(f, "(kg.m-3).(m.s-1)", "kg∕(m²⋅s)");      // Too aggressive simplification bug (SIS-378)
         roundtrip(f, "cm/day",           "cm∕d");
-        roundtrip(f, "W.m-2.nm-1",       "10⁹⋅kg∕(m⋅s³)");  // Too aggressive simplification bug (SIS-378)
+        roundtrip(f, "W.m-2.nm-1",       "10⁹⋅kg∕(s³⋅m)");  // Too aggressive simplification bug (SIS-378)
     }
 
     /**
@@ -763,7 +763,7 @@ public final class UnitFormatTest extends TestCase {
         roundtrip(f, "W.m-3.sr-1",       "W∕m³");
         roundtrip(f, "m3.s-1.m-1",       "m²∕s");
         roundtrip(f, "(kg.m-3)*(m.s-1)", "kg∕(m²⋅s)");
-        roundtrip(f, "W.m-2.nm-1",       "10⁹⋅kg∕(m⋅s³)");
+        roundtrip(f, "W.m-2.nm-1",       "10⁹⋅kg∕(s³⋅m)");
     }
 
     /**

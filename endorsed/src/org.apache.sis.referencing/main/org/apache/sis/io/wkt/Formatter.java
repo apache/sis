@@ -70,7 +70,6 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.IntegerList;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Constants;
@@ -78,16 +77,19 @@ import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.metadata.simple.SimpleExtent;
 import org.apache.sis.metadata.internal.Resources;
+import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.geometry.AbstractDirectPosition;
 import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.xml.NilObject;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.ControlledVocabulary;
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
@@ -105,7 +107,7 @@ import org.opengis.util.ControlledVocabulary;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -309,7 +311,7 @@ public class Formatter implements Localized {
 
     /**
      * Indices where to insert additional margin, or {@code null} if none. The margin to insert will be
-     * the the width of the keyword (e.g. {@code "BOX"}), which is usually unknown to {@code Formatter}
+     * the width of the keyword (e.g. {@code "BOX"}), which is usually unknown to {@code Formatter}
      * until {@link FormattableObject} finished to write the element. This field is usually {@code null},
      * unless formatting geometries.
      */
@@ -877,30 +879,49 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the anchor, scope and domain of validity of the given object. Those information are available
-     * only for {@link ReferenceSystem}, {@link Datum} and {@link CoordinateOperation} objects.
+     * Appends the anchor, scope and domain of validity of the given object.
+     * In the ISO 19111 model, those information are valid only for {@link Datum},
+     * {@link ReferenceSystem} and {@link CoordinateOperation} objects.
      */
     private void appendForSubtypes(final IdentifiedObject object) {
-        final InternationalString anchor, scope;
-        final Extent area;
-        if (object instanceof ReferenceSystem) {
-            anchor = null;
-            scope  = ((ReferenceSystem) object).getScope();
-            area   = ((ReferenceSystem) object).getDomainOfValidity();
-        } else if (object instanceof Datum) {
+        InternationalString anchor = null, scope = null;
+        Extent area = null;
+        if (object instanceof Datum) {
             anchor = ((Datum) object).getAnchorPoint();
-            scope  = ((Datum) object).getScope();
-            area   = ((Datum) object).getDomainOfValidity();
-        } else if (object instanceof CoordinateOperation) {
-            anchor = null;
-            scope  = ((CoordinateOperation) object).getScope();
-            area   = ((CoordinateOperation) object).getDomainOfValidity();
-        } else {
+        } else if (!(object instanceof ReferenceSystem || object instanceof CoordinateOperation)) {
             return;
         }
+        for (final ObjectDomain domain : object.getDomains()) {
+            scope = domain.getScope();
+            area = domain.getDomainOfValidity();
+            if (area != null) break;
+            // TODO: in 2019 revision we need to format all USAGE[…] elements, not only the first one.
+        }
         appendOnNewLine(WKTKeywords.Anchor, anchor, null);
-        appendOnNewLine(WKTKeywords.Scope, scope, ElementKind.SCOPE);
-        if (area != null) {
+        append(scope, area);
+    }
+
+    /**
+     * Appends the usage (scope and domain of validity) of an object.
+     * The arguments are the components of an {@link ObjectDomain}.
+     * The given extent is decomposed in horizontal, vertical and temporal components.
+     * The horizontal component uses the default number of fraction digits recommended by ISO 19162.
+     *
+     * <h4>Usage element</h4>
+     * In a WKT string, the given elements should be enclosed in an {@code USAGE[…]} element
+     * according the ISO 19162:2019 standard but not according the previous version (2015).
+     * The {@code USAGE[…]} enclosing element shall be provided when needed by the caller.
+     *
+     * @param scope  description of domain of usage, or {@code null} if none.
+     * @param area   area for which the object is valid, or {@code null} if none.
+     *
+     * @since 1.4
+     */
+    public void append(final InternationalString scope, final Extent area) {
+        if (scope != null && !(scope instanceof NilObject)) {
+            appendOnNewLine(WKTKeywords.Scope, scope, ElementKind.SCOPE);
+        }
+        if (area != null && !(area instanceof NilObject)) {
             appendOnNewLine(WKTKeywords.Area, area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
             appendVerticalExtent(Extents.getVerticalRange(area));

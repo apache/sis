@@ -88,6 +88,7 @@ import org.apache.sis.util.logging.Logging;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.geometry.Geometry;
+import org.opengis.referencing.ObjectDomain;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicExtent;
 
@@ -774,12 +775,9 @@ public final class CRS extends Static {
         if (operation == null) {
             return null;
         }
-        GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(operation.getDomainOfValidity());
-        if (bbox == null) {
-            bbox = Extents.intersection(getGeographicBoundingBox(operation.getSourceCRS()),
-                                        getGeographicBoundingBox(operation.getTargetCRS()));
-        }
-        return bbox;
+        return Extents.getGeographicBoundingBox(operation.getDomains()).orElseGet(
+                () -> Extents.intersection(getGeographicBoundingBox(operation.getSourceCRS()),
+                                           getGeographicBoundingBox(operation.getTargetCRS())));
     }
 
     /**
@@ -799,7 +797,7 @@ public final class CRS extends Static {
      */
     @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateReferenceSystem crs) {
-        return (crs != null) ? Extents.getGeographicBoundingBox(crs.getDomainOfValidity()) : null;
+        return (crs != null) ? Extents.getGeographicBoundingBox(crs.getDomains()).orElse(null) : null;
     }
 
     /**
@@ -830,22 +828,24 @@ public final class CRS extends Static {
         Envelope envelope = null;
         GeneralEnvelope merged = null;
         if (crs != null) {
-            final Extent domainOfValidity = crs.getDomainOfValidity();
-            if (domainOfValidity != null) {
-                for (final GeographicExtent extent : domainOfValidity.getGeographicElements()) {
-                    if (extent instanceof BoundingPolygon && !Boolean.FALSE.equals(extent.getInclusion())) {
-                        for (final Geometry geometry : ((BoundingPolygon) extent).getPolygons()) {
-                            final Envelope candidate = geometry.getEnvelope();
-                            if (candidate != null) {
-                                final CoordinateReferenceSystem sourceCRS = candidate.getCoordinateReferenceSystem();
-                                if (sourceCRS == null || Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
-                                    if (envelope == null) {
-                                        envelope = candidate;
-                                    } else {
-                                        if (merged == null) {
-                                            envelope = merged = new GeneralEnvelope(envelope);
+            for (final ObjectDomain domain : crs.getDomains()) {
+                final Extent domainOfValidity = domain.getDomainOfValidity();
+                if (domainOfValidity != null) {
+                    for (final GeographicExtent extent : domainOfValidity.getGeographicElements()) {
+                        if (extent instanceof BoundingPolygon && !Boolean.FALSE.equals(extent.getInclusion())) {
+                            for (final Geometry geometry : ((BoundingPolygon) extent).getPolygons()) {
+                                final Envelope candidate = geometry.getEnvelope();
+                                if (candidate != null) {
+                                    final CoordinateReferenceSystem sourceCRS = candidate.getCoordinateReferenceSystem();
+                                    if (sourceCRS == null || Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+                                        if (envelope == null) {
+                                            envelope = candidate;
+                                        } else {
+                                            if (merged == null) {
+                                                envelope = merged = new GeneralEnvelope(envelope);
+                                            }
+                                            merged.add(envelope);
                                         }
-                                        merged.add(envelope);
                                     }
                                 }
                             }

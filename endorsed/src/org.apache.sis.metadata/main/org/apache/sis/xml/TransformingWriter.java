@@ -187,7 +187,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     private Set<QName> toSkip;
 
     /**
-     * Name of the the root element of a sub-tree to handle in a special way, or {@code null} if none.
+     * Name of the root element of a sub-tree to handle in a special way, or {@code null} if none.
      * At first, this is the name of the {@link StartElement} of a sub-tree to defer (i.e. one of the
      * keys in the {@link #ELEMENTS_TO_REORDER} map). Later, it becomes the names of sub-trees to skip
      * (i.e. the {@link #toSkip} values).

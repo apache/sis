@@ -549,7 +549,7 @@ public final class Units extends Static {
     /**
      * Unit of measurement approximately equals to 365.24219 days (1 a).
      * This is defined by the International Union of Geological Sciences (IUGS) as exactly 31556925.445 seconds,
-     * taken as the length of the tropical year in the the year 2000.
+     * taken as the length of the tropical year in the year 2000.
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND},
      * the unlocalized name is “year” and the identifier is EPSG:1029.
      *

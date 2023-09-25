@@ -418,7 +418,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *   <li>transformed by the inverse of {@linkplain #getSourceToGrid() source to grid} transform.</li>
      * </ol>
      *
-     * @param  fullArea  whether the the envelope shall encompass the full cell surfaces instead of only their centers.
+     * @param  fullArea  whether the envelope shall encompass the full cell surfaces instead of only their centers.
      * @return the envelope of grid points, from lower corner to upper corner.
      * @throws IllegalStateException if the grid points are not yet known.
      * @throws TransformException if the envelope cannot be calculated.
@@ -549,7 +549,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * <h4>Example</h4>
      * for a grid of (<var>longitude</var>, <var>latitude</var>) values in decimal degrees where longitude values
      * vary (increase or decrease) with increasing column indices and latitude values vary (increase or decrease)
-     * with increasing row indices, the the following method should be invoked for protecting the grid against
+     * with increasing row indices, the following method should be invoked for protecting the grid against
      * discontinuities on anti-meridian:
      *
      * {@snippet lang="java" :

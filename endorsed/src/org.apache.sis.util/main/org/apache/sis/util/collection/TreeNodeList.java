@@ -237,7 +237,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     }
 
     /**
-     * Ensures the the given node is not already present in this list. This checks is performed
+     * Ensures the given node is not already present in this list. This checks is performed
      * only if a newly added node declares to have this list {@linkplain #parent}. Such case may
      * occur either because the node is a custom user implementation with pre-set parent, or
      * because the node is already presents in this list.

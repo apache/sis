@@ -310,23 +310,19 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link DefaultOperationMethod#getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link DefaultOperationMethod#getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link DefaultOperationMethod#getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.operation.OperationMethod#FORMULA_KEY}</td>
      *     <td>{@link Formula}, {@link org.opengis.metadata.citation.Citation} or {@link CharSequence}</td>
      *     <td>{@link DefaultOperationMethod#getFormula()}</td>
@@ -385,18 +381,15 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link DefaultConversion#getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link DefaultConversion#getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link DefaultConversion#getDomainOfValidity()}</td>
@@ -478,18 +471,15 @@ next:   for (int i=components.size(); --i >= 0;) {
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link DefaultConversion#getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link DefaultConversion#getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link DefaultConversion#getDomainOfValidity()}</td>
@@ -643,13 +633,11 @@ next:   for (int i=components.size(); --i >= 0;) {
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link AbstractCoordinateOperation#getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link AbstractCoordinateOperation#getIdentifiers()}</td>

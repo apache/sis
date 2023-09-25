@@ -24,7 +24,6 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -90,13 +89,11 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
@@ -138,7 +135,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     {
         final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
         final CoordinateReferenceSystem crs = initialize(properties, operations, flattened, mtFactory,
-                (sourceCRS == null), (coordinateOperationAccuracy == null), (domainOfValidity == null));
+                (sourceCRS == null), (coordinateOperationAccuracy == null));
         if (targetCRS == null) {
             targetCRS = crs;
         }
@@ -186,7 +183,6 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  mtFactory    the math transform factory to use, or {@code null} for not performing concatenation.
      * @param  setSource    {@code true} for setting the {@link #sourceCRS} on the very first CRS (regardless if null or not).
      * @param  setAccuracy  {@code true} for setting the {@link #coordinateOperationAccuracy} field.
-     * @param  setDomain    {@code true} for setting the {@link #domainOfValidity} field.
      * @return the last target CRS, regardless if null or not.
      * @throws FactoryException if the factory cannot concatenate the math transforms.
      */
@@ -195,9 +191,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             final CoordinateOperation[]     operations,
             final List<CoordinateOperation> flattened,
             final MathTransformFactory      mtFactory,
-            boolean                         setSource,
-            boolean                         setAccuracy,
-            boolean                         setDomain) throws FactoryException
+            boolean setSource,
+            boolean setAccuracy) throws FactoryException
     {
         CoordinateReferenceSystem previous = null;
         for (int i=0; i<operations.length; i++) {
@@ -238,7 +233,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             if (op instanceof ConcatenatedOperation) {
                 final List<? extends CoordinateOperation> children = ((ConcatenatedOperation) op).getOperations();
                 final CoordinateOperation[] asArray = children.toArray(CoordinateOperation[]::new);
-                initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, false, setAccuracy, setDomain);
+                initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, false, setAccuracy);
             } else if (!step.isIdentity()) {
                 flattened.add(op);
             }
@@ -261,21 +256,6 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 } else {
                     coordinateOperationAccuracy = null;
                     setAccuracy = false;
-                }
-            }
-            /*
-             * Optionally copy the domain of validity, provided that it is the same for all component.
-             * Current implementation does not try to compute the intersection of all components.
-             */
-            if (setDomain) {
-                final Extent domain = op.getDomainOfValidity();
-                if (domain != null) {
-                    if (domainOfValidity == null) {
-                        domainOfValidity = domain;
-                    } else if (!domain.equals(domainOfValidity)) {
-                        domainOfValidity = null;
-                        setDomain = false;
-                    }
                 }
             }
         }

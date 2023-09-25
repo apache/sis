@@ -17,7 +17,10 @@
 package org.apache.sis.storage;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 import org.apache.sis.util.Static;
+import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.image.DataStoreFilter;
 
 
 /**
@@ -62,7 +65,7 @@ public final class DataStores extends Static {
     }
 
     /**
-     * Creates a {@link DataStore} for the given storage.
+     * Creates a {@link DataStore} capable to read the given storage.
      * The {@code storage} argument can be any of the following types:
      *
      * <ul>
@@ -75,12 +78,48 @@ public final class DataStores extends Static {
      *   <li>An existing {@link StorageConnector} instance.</li>
      * </ul>
      *
-     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param  storage  the input object as a URL, file, image input stream, <i>etc.</i>.
      * @return the object to use for reading geospatial data from the given storage.
-     * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
-     * @throws DataStoreException if an error occurred while opening the storage.
+     * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for the given storage object.
+     * @throws DataStoreException if an error occurred while opening the storage in read mode.
      */
     public static DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
-        return DataStoreRegistry.INSTANCE.open(storage);
+        return DataStoreRegistry.INSTANCE.open(storage, Capability.READ, null);
+    }
+
+    /**
+     * Creates a {@link DataStore} capable to write or update the given storage.
+     * The {@code storage} argument can be any of the types documented in {@link #open(Object)}.
+     * If the storage is a file and that file does not exist, then a new file will be created.
+     * If the storage exists, then it will be opened in read/write mode for updates.
+     * The returned data store should implement the {@link WritableGridCoverageResource},
+     * {@link WritableFeatureSet} or {@link WritableAggregate} interface.
+     *
+     * <h4>Format selection</h4>
+     * The {@code preferredFormat} argument can be a {@linkplain DataStoreProvider#getShortName() data store name}
+     * (examples: {@code "CSV"}, {@code "GPX"}) or an {@linkplain javax.imageio.ImageIO Image I/O} name
+     * (examples: {@code "TIFF"}, {@code "PNG"}). In the latter case, the WorldFile convention is used.
+     *
+     * <p>If the given storage exists (for example, an existing file), then the {@link DataStoreProvider} is determined
+     * by probing the existing content and the {@code preferredFormat} argument may be ignored (it can be {@code null}).
+     * Otherwise the {@link DataStoreProvider} is selected by a combination of {@code preferredFormat} (if non-null) and
+     * file suffix (if the storage is a file path or URI).</p>
+     *
+     * @param  storage         the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param  preferredFormat the format to use if not determined by the existing content, or {@code null}.
+     * @return the object to use for writing geospatial data in the given storage.
+     * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for the given storage object.
+     * @throws DataStoreException if an error occurred while opening the storage in write mode.
+     *
+     * @since 1.4
+     */
+    public static DataStore openWritable(final Object storage, final String preferredFormat)
+            throws UnsupportedStorageException, DataStoreException
+    {
+        Predicate<DataStoreProvider> preferred = null;
+        if (preferredFormat != null) {
+            preferred = new DataStoreFilter(preferredFormat, true);
+        }
+        return DataStoreRegistry.INSTANCE.open(storage, Capability.WRITE, preferred);
     }
 }

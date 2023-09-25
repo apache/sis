@@ -494,7 +494,7 @@ public abstract class TypeBuilder implements Localized {
      *
      * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
      * @param  value  the user argument to check against null value.
-     * @throws NullArgumentException if {@code object} is null.
+     * @throws NullPointerException if {@code object} is null.
      */
     final void ensureNonNull(final String name, final Object value) {
         if (value == null) {
@@ -519,7 +519,7 @@ public abstract class TypeBuilder implements Localized {
      *
      * @param  name  the name of the argument to be checked. Used only if an exception is thrown.
      * @param  text  the user argument to check against null value and empty sequences.
-     * @throws NullArgumentException if {@code text} is null.
+     * @throws NullPointerException if {@code text} is null.
      * @throws IllegalArgumentException if {@code text} is empty.
      */
     final void ensureNonEmpty(final String name, final CharSequence text) {

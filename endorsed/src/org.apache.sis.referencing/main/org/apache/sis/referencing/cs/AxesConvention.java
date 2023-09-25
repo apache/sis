@@ -43,32 +43,28 @@ import org.apache.sis.measure.Units;
  *     <th>{@link #DISPLAY_ORIENTED     Display<br>oriented}</th>
  *     <th>{@linkplain #RIGHT_HANDED    Right<br>handed}</th>
  *     <th>{@linkplain #POSITIVE_RANGE  Positive<br>range}</th>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>Axis order</td>
  *     <td>(<var>longitude</var>, <var>latitude</var>)</td>
  *     <td style="text-align:center">✔</td>
  *     <td style="text-align:center">✔</td>
  *     <td style="text-align:center">✔</td>
  *     <td></td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>Axis direction</td>
  *     <td>({@linkplain AxisDirection#EAST east}, {@linkplain AxisDirection#NORTH north})</td>
  *     <td style="text-align:center">✔</td>
  *     <td style="text-align:center">✔</td>
  *     <td></td>
  *     <td></td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>Unit of measurement</td>
  *     <td>Angular degrees &amp; metres</td>
  *     <td style="text-align:center">✔</td>
  *     <td></td>
  *     <td></td>
  *     <td></td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>Range of values</td>
  *     <td>[0 … 360]° of longitude</td>
  *     <td></td>

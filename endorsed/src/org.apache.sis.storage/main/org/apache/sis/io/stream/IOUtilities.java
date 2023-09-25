@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.LineNumberReader;
 import java.io.Reader;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -638,6 +640,22 @@ public final class IOUtilities extends Static {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the given object is an output stream with no read capability.
+     *
+     * @param  output  the object to test, or {@code null}.
+     * @return whether the given object is write-only.
+     */
+    public static boolean isWriteOnly(final Object output) {
+        if (output instanceof DataInput || output instanceof ReadableByteChannel) {
+            return false;
+        }
+        return (output instanceof OutputStream) ||
+               (output instanceof DataOutput) ||
+               (output instanceof ChannelDataOutput) ||
+               (output instanceof WritableByteChannel);
     }
 
     /**
