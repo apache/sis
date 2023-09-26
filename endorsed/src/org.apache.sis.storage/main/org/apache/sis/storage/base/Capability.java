@@ -98,7 +98,7 @@ public enum Capability {
                 }
             }
             if (capabilities == null) {
-                capabilities = resources.getString(Vocabulary.Keys.Unknown);
+                capabilities = resources.getString(Vocabulary.Keys.NotKnown);
             }
             /*
              * Get a title for the format, followed by the short name between parenthesis

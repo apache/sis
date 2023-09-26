@@ -318,7 +318,7 @@ public class SQLStore extends DataStore implements Aggregate {
      */
     @Override
     public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
-        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        // If an argument is null, we let the parent class throws (indirectly) NullPointerException.
         if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
             super.addListener(eventType, listener);
         }

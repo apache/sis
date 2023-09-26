@@ -318,7 +318,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the width (in pixels) of this image.
-     * This is the the same value than the source image (not necessarily zero).
+     * This is the same value than the source image (not necessarily zero).
      *
      * @return the width (number of columns) of this image.
      */
@@ -329,7 +329,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the height (in pixels) of this image.
-     * This is the the same value than the source image (not necessarily zero).
+     * This is the same value than the source image (not necessarily zero).
      *
      * @return the height (number of rows) of this image.
      */
@@ -340,7 +340,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the minimum <var>x</var> coordinate (inclusive) of this image.
-     * This is the the same value than the source image (not necessarily zero).
+     * This is the same value than the source image (not necessarily zero).
      *
      * @return the minimum <var>x</var> coordinate (column) of this image.
      */
@@ -351,7 +351,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the minimum <var>y</var> coordinate (inclusive) of this image.
-     * This is the the same value than the source image (not necessarily zero).
+     * This is the same value than the source image (not necessarily zero).
      *
      * @return the minimum <var>y</var> coordinate (row) of this image.
      */
@@ -362,7 +362,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the minimum tile index in the <var>x</var> direction.
-     * This is the the same value than the source image (not necessarily zero).
+     * This is the same value than the source image (not necessarily zero).
      *
      * @return the minimum tile index in the <var>x</var> direction.
      */
@@ -373,7 +373,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the minimum tile index in the <var>y</var> direction.
-     * This is the the same value than the source image (not necessarily zero).
+     * This is the same value than the source image (not necessarily zero).
      *
      * @return the minimum tile index in the <var>y</var> direction.
      */

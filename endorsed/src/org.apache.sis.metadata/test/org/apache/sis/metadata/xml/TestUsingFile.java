@@ -24,7 +24,7 @@ import org.apache.sis.util.Version;
 
 /**
  * Base class of tests which contain some XML (un)marshalling of metadata as ISO 19115-3 compliant documents.
- * Tests use the the files provided in the {@code "2007/"} or {@code "2016/"} sub-directories, depending on
+ * Tests use the files provided in the {@code "2007/"} or {@code "2016/"} sub-directories, depending on
  * whether ISO 19139:2007 or ISO 19115-3:2016 schema is used.
  *
  * @author  Martin Desruisseaux (Geomatys)

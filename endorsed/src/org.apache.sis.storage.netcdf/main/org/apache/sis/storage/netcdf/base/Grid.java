@@ -36,7 +36,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.internal.Resources;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArraysExt;
 
@@ -307,7 +306,7 @@ public abstract class Grid extends NamedElement {
             final CoordinateReferenceSystem result = CRSBuilder.assemble(decoder, this, linearizations, reorderGridToCRS);
             if (useCache) crs = result;
             return result;
-        } catch (FactoryException | NullArgumentException ex) {
+        } catch (FactoryException | NullPointerException ex) {
             if (isNewWarning(ex, warnings)) {
                 canNotCreate(decoder, "getCoordinateReferenceSystem", Resources.Keys.CanNotCreateCRS_3, ex);
             }

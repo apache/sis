@@ -161,28 +161,16 @@ public abstract class RewriteOnUpdate implements AutoCloseable {
      * Removes all feature instances from the {@code FeatureSet} which matches the given predicate.
      *
      * @param  filter  a predicate which returns {@code true} for feature instances to be removed.
-     * @return {@code true} if any elements were removed.
      * @throws DataStoreException if the feature stream cannot be obtained or updated.
      */
-    public boolean removeIf(final Predicate<? super AbstractFeature> filter) throws DataStoreException {
+    public void removeIf(final Predicate<? super AbstractFeature> filter) throws DataStoreException {
         ArgumentChecks.ensureNonNull("filter", filter);
-        if (isEmpty()) {
-            return false;
+        if (!isEmpty()) {
+            filtered = filtered().filter((feature) -> {
+                return !filter.test(feature);
+            });
         }
-        filtered = filtered().filter((feature) -> {
-            boolean r = filter.test(feature);
-            if (r) modified = true;
-            return !r;
-        });
-        modified = false;
-        flush();            // Need immediate execution for getting the boolean value.
-        return modified;
     }
-
-    /**
-     * A flag telling whether {@link #removeIf(Predicate)} removed at least one feature.
-     */
-    private boolean modified;
 
     /**
      * Updates all feature instances from the {@code FeatureSet} which match the given predicate.

@@ -303,7 +303,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     }
 
     /**
-     * Compare this version string with the specified object for equality. Two version are
+     * Compares this version string with the specified object for equality. Two version are
      * considered equal if <code>{@linkplain #compareTo(Object) compareTo}(other) == 0</code>.
      *
      * @param other  the object to compare with this version for equality.

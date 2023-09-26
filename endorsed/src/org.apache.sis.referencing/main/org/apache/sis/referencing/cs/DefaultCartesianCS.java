@@ -20,10 +20,7 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.measure.Angle;
 
 
 /**
@@ -91,23 +88,19 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
@@ -178,29 +171,6 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     public static DefaultCartesianCS castOrCopy(final CartesianCS object) {
         return (object == null) || (object instanceof DefaultCartesianCS)
                 ? (DefaultCartesianCS) object : new DefaultCartesianCS(object);
-    }
-
-    /**
-     * Ensures that all axes are perpendicular.
-     */
-    private void ensurePerpendicularAxis(final Map<String,?> properties) throws IllegalArgumentException {
-        final int dimension = getDimension();
-        for (int i=0; i<dimension; i++) {
-            final AxisDirection axis0 = getAxis(i).getDirection();
-            for (int j=i; ++j<dimension;) {
-                final AxisDirection axis1 = getAxis(j).getDirection();
-                final Angle angle = CoordinateSystems.angle(axis0, axis1);
-                /*
-                 * The angle may be null for grid directions (COLUMN_POSITIVE, COLUMN_NEGATIVE,
-                 * ROW_POSITIVE, ROW_NEGATIVE). We conservatively accept those directions even if
-                 * they are not really for Cartesian CS because we do not know the grid geometry.
-                 */
-                if (angle != null && Math.abs(angle.degrees()) != 90) {
-                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
-                            Resources.Keys.NonPerpendicularDirections_2, axis0, axis1));
-                }
-            }
-        }
     }
 
     /**

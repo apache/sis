@@ -56,7 +56,7 @@ abstract class GeoTIFF implements Closeable {
     static final short BIG_ENDIAN = 0x4D4D, LITTLE_ENDIAN = 0x4949;
 
     /**
-     * The magic number for classic (32 bits) or big TIFF files.
+     * The magic number for classic (32 bits) or big TIFF (64 bits) files.
      */
     static final short CLASSIC = 42, BIG_TIFF= 43;
 

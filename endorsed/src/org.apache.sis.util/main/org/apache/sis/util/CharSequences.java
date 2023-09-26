@@ -232,7 +232,7 @@ public final class CharSequences extends Static {
      *                   It shall contain at least one character.
      * @return the number of occurrences of {@code toSearch} in {@code text},
      *         or 0 if {@code text} was null or empty.
-     * @throws NullArgumentException if the {@code toSearch} argument is null.
+     * @throws NullPointerException if the {@code toSearch} argument is null.
      * @throws IllegalArgumentException if the {@code toSearch} argument is empty.
      */
     public static int count(final CharSequence text, final String toSearch) {
@@ -301,7 +301,7 @@ public final class CharSequences extends Static {
      * @param  toIndex    the index after the last character where to perform the search.
      * @return the index within the text of the first occurrence of the specified part, starting at the specified index,
      *         or -1 if no occurrence has been found or if the {@code text} argument is null.
-     * @throws NullArgumentException if the {@code toSearch} argument is null.
+     * @throws NullPointerException if the {@code toSearch} argument is null.
      * @throws IllegalArgumentException if the {@code toSearch} argument is empty.
      *
      * @see String#indexOf(String, int)

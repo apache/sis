@@ -442,7 +442,7 @@ public class GridCoverageBuilder {
      *         {@linkplain GridGeometry#getExtent() grid extent} not matching image size or
      *         {@linkplain #setRanges(SampleDimension...) number of sample dimensions} not matching
      *         the number of bands. This exception often wraps an {@link IllegalGridGeometryException},
-     *         {@link IllegalArgumentException} or {@link org.apache.sis.util.NullArgumentException}.
+     *         {@link IllegalArgumentException} or {@link NullPointerException}.
      */
     public GridCoverage build() throws IllegalStateException {
         GridGeometry grid = domain;                                 // May be replaced by an instance with extent.

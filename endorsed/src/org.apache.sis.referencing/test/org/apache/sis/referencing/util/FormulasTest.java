@@ -131,14 +131,14 @@ public final class FormulasTest extends TestCase {
     }
 
     /**
-     * Tests {@link Formulas#getRadius(Ellipsoid, double)}.
+     * Tests {@link Formulas#geocentricRadius(Ellipsoid, double)}.
      */
     @Test
-    public void testGetRadius() {
+    public void testGeocentricRadius() {
         final Ellipsoid e = HardCodedDatum.WGS84.getEllipsoid();
-        assertEquals(e.getSemiMajorAxis(), Formulas.getRadius(e,  0),         0.01);
-        assertEquals(e.getSemiMinorAxis(), Formulas.getRadius(e, +Math.PI/2), 0.01);
-        assertEquals(e.getSemiMinorAxis(), Formulas.getRadius(e, -Math.PI/2), 0.01);
-        assertEquals(6372824, Formulas.getRadius(e, Math.toRadians(30)), 0.5);
+        assertEquals(e.getSemiMajorAxis(), Formulas.geocentricRadius(e,  0),         0.01);
+        assertEquals(e.getSemiMinorAxis(), Formulas.geocentricRadius(e, +Math.PI/2), 0.01);
+        assertEquals(e.getSemiMinorAxis(), Formulas.geocentricRadius(e, -Math.PI/2), 0.01);
+        assertEquals(6372824, Formulas.geocentricRadius(e, Math.toRadians(30)), 0.5);
     }
 }

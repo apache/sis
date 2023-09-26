@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Formattable;
 import java.util.FormattableFlags;
+import java.util.function.Function;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlID;
 import jakarta.xml.bind.annotation.XmlType;
@@ -38,18 +39,22 @@ import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.UseLegacyMetadata;
 import org.apache.sis.xml.bind.referencing.Code;
+import org.apache.sis.xml.bind.metadata.EX_Extent;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.metadata.internal.NameToIdentifier;
@@ -61,6 +66,7 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -73,6 +79,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**
@@ -130,7 +137,9 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
     "description",
     "identifier",
     "names",
-    "remarks"
+    "remarks",
+    "domainExtent", // GML defines "domainOfValidity" in Datum, AbstractCRS and AbstractCoordinateOperation.
+    "domainScope"   // GML defines "scope" in same classes than above.
 })
 @XmlSeeAlso({
     org.apache.sis.referencing.crs.AbstractCRS.class,
@@ -174,6 +183,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     public static final String DEPRECATED_KEY = "deprecated";
 
     /**
+     * Key for the <code>{@value}</code> property to be given to the
+     * {@code ObjectFactory.createFoo(Map, ...)} methods.
+     * This is used for setting the value to be returned by {@link #getDomains()}.
+     */
+    static final String DOMAINS_KEY = "domains";
+
+    /**
      * The name for this object or code. Shall never be {@code null}.
      *
      * <p><b>Consider this field as final!</b>
@@ -210,6 +226,20 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private Set<ReferenceIdentifier> identifiers;
 
     /**
+     * Scope and area for which this object is valid, or {@code null} if none.
+     * We must be prepared to handle either null or an empty set for "domains"
+     * because we may get both on unmarshalling.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}
+     * and {@link #setDomainOfValidity(Extent)}.</p>
+     *
+     * @see #getDomains()
+     */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
+    private Collection<DefaultObjectDomain> domains;
+
+    /**
      * Comments on or information about this object, or {@code null} if none.
      *
      * <p><b>Consider this field as final!</b>
@@ -241,9 +271,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} or
      * {@value org.opengis.metadata.Identifier#CODE_KEY} key.
      * Other properties listed in the table below are optional.
-     * In particular, {@code "authority"}, {@code "code"}, {@code "codespace"} and {@code "version"}
-     * are convenience properties for building a name, and are ignored if the {@code "name"} property
-     * is already a {@link ReferenceIdentifier} object instead of a {@link String}.
+     * Some properties are shortcuts discussed below the table.
      *
      * <table class="sis">
      *   <caption>Recognized properties (non exhaustive list)</caption>
@@ -251,63 +279,71 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link ReferenceIdentifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
      *     <td>{@link String} or {@link Citation}</td>
      *     <td>{@link NamedIdentifier#getAuthority()} on the {@linkplain #getName() name}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#CODE_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link NamedIdentifier#getCode()} on the {@linkplain #getName() name}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.ReferenceIdentifier#CODESPACE_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link NamedIdentifier#getCodeSpace()} on the {@linkplain #getName() name}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.ReferenceIdentifier#VERSION_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link NamedIdentifier#getVersion()} on the {@linkplain #getName() name}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>"description"</td>
      *     <td>{@link String}</td>
      *     <td>{@link NamedIdentifier#getDescription()} on the {@linkplain #getName() name}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
+     *     <td>"domains"</td>
+     *     <td>{@link DefaultObjectDomain} (optionally as array)</td>
+     *     <td>{@link #getDomains()}</td>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
+     *     <td>{@link String} or {@link InternationalString}</td>
+     *     <td>{@link DefaultObjectDomain#getScope()} on the {@linkplain #getDomains() domain}</td>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@link Extent}</td>
+     *     <td>{@link DefaultObjectDomain#getDomainOfValidity()} on the {@linkplain #getDomains() domain}</td>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #DEPRECATED_KEY}</td>
      *     <td>{@link Boolean}</td>
      *     <td>{@link #isDeprecated()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #LOCALE_KEY}</td>
      *     <td>{@link Locale}</td>
      *     <td>(none)</td>
      *   </tr>
      * </table>
+     *
+     * <h4>Shortcuts</h4>
+     * The {@code "authority"}, {@code "code"}, {@code "codespace"} and {@code "version"} properties
+     * are shortcuts for building a name. Their values are ignored if the {@code "name"} property is
+     * already associated to an {@link Identifier} value instead of a {@link String}.  Likewise, the
+     * {@code "scope"} and {@code "domainOfValidity"} shortcuts are ignored if the {@code "domains"}
+     * property is provided.
      *
      * <h4>Localization</h4>
      * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
@@ -363,14 +399,31 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         // "identifiers": Identifier or Identifier[]
         // -----------------------------------------
         value = properties.get(IDENTIFIERS_KEY);
-        if (value == null) {
-            identifiers = null;
-        } else if (value instanceof ReferenceIdentifier) {
+        if (value instanceof ReferenceIdentifier) {
             identifiers = Collections.singleton((ReferenceIdentifier) value);
         } else if (value instanceof ReferenceIdentifier[]) {
             identifiers = immutableSet(true, (ReferenceIdentifier[]) value);
-        } else {
+        } else if (value != null) {
             throw illegalPropertyType(properties, IDENTIFIERS_KEY, value);
+        }
+
+        // -----------------------------------------
+        // "domains": ObjectDomain or ObjectDomain[]
+        // -----------------------------------------
+        value = properties.get(DOMAINS_KEY);
+        if (value instanceof DefaultObjectDomain) {
+            domains = Collections.singleton((DefaultObjectDomain) value);
+        } else if (value instanceof DefaultObjectDomain[]) {
+            domains = immutableSet(true, (DefaultObjectDomain[]) value);
+        } else if (value != null) {
+            throw illegalPropertyType(properties, DOMAINS_KEY, value);
+        } else {
+            // Compatibility with previous way to specify domain.
+            final InternationalString scope = Types.toInternationalString(properties, ReferenceSystem.SCOPE_KEY);
+            final Extent domainOfValidity = Containers.property(properties, ReferenceSystem.DOMAIN_OF_VALIDITY_KEY, Extent.class);
+            if (scope != null || domainOfValidity != null) {
+                domains = Collections.singleton(new DefaultObjectDomain(scope, domainOfValidity));
+            }
         }
 
         // ----------------------------------------
@@ -415,6 +468,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         name        =          object.getName();
         alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
         identifiers = nonEmpty(object.getIdentifiers());
+        domains     = nonEmpty(Legacy.getDomains(object));
         remarks     =          object.getRemarks();
         deprecated  = (object instanceof Deprecable) ? ((Deprecable) object).isDeprecated() : false;
     }
@@ -513,6 +567,19 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     @Override
     public Set<ReferenceIdentifier> getIdentifiers() {
         return nonNull(identifiers);    // Needs to be null-safe because we may have a null value on unmarshalling.
+    }
+
+    /**
+     * Returns the usage of this CRS-related object.
+     * The domain includes a scope (description of the primary purpose of this object) together
+     * with a domain of validity (spatial and temporal extent in which the object can be used).
+     *
+     * @return scopes and domains of validity of this object.
+     *
+     * @since 1.4
+     */
+    public Collection<DefaultObjectDomain> getDomains() {
+        return nonNull(domains);
     }
 
     /**
@@ -719,9 +786,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                         }
                     }
                 }
-                return Objects.equals(name, that.name) &&
+                return deprecated == that.deprecated &&
+                       Objects.equals(name, that.name) &&
                        nonNull(alias).equals(nonNull(that.alias)) &&
                        nonNull(identifiers).equals(nonNull(that.identifiers)) &&
+                       nonNull(domains).equals(nonNull(that.domains)) &&
                        Objects.equals(remarks, that.remarks);
             }
             case BY_CONTRACT: {
@@ -732,6 +801,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                 return deepEquals(getName(),        that.getName(),        mode) &&
                        deepEquals(getAlias(),       that.getAlias(),       mode) &&
                        deepEquals(getIdentifiers(), that.getIdentifiers(), mode) &&
+                       deepEquals(getDomains(),     Legacy.getDomains(that), mode) &&
                        deepEquals(getRemarks(),     that.getRemarks(),     mode);
             }
             case IGNORE_METADATA:
@@ -838,7 +908,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @return the hash code value. This value may change in any future Apache SIS version.
      */
     protected long computeHashCode() {
-        return Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks) ^ getInterface().hashCode();
+        return Objects.hash(name, nonNull(alias), nonNull(identifiers), nonNull(domains), deprecated, remarks)
+                ^ getInterface().hashCode();
     }
 
     /**
@@ -971,7 +1042,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     final String getID() {
         // Implementation is provided in the NameIterator class for reducing the size of
         // AbstractIdentifiedObject.class file in the common case where XML is not needed.
-        return NameIterator.getID(Context.current(), this, name, alias, identifiers);
+        return NameIterator.getID(this, name, alias, identifiers);
     }
 
     /**
@@ -982,10 +1053,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * from elsewhere in the XML document.
      */
     private void setID(final String id) {
-        final Context context = Context.current();
-        if (!Context.setObjectForID(context, this, id)) {
-            Context.warningOccured(context, getClass(), "setID", Errors.class, Errors.Keys.DuplicatedIdentifier_1, id);
-        }
+        NameIterator.setID(this, id);
     }
 
     /**
@@ -1009,15 +1077,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Invoked by JAXB at unmarshalling time for setting the identifier.
      */
     private void setIdentifier(final Code identifier) {
-        if (identifiers == null) {
-            if (identifier != null) {
-                final ReferenceIdentifier id = identifier.getIdentifier();
-                if (id != null) {
-                    identifiers = Collections.singleton(id);
-                }
+        if (identifiers != null) {
+            propertyAlreadySet("setIdentifier", "identifier");
+        } else if (identifier != null) {
+            final ReferenceIdentifier id = identifier.getIdentifier();
+            if (id != null) {
+                identifiers = Collections.singleton(id);
             }
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractIdentifiedObject.class, "setIdentifier", "identifier");
         }
     }
 
@@ -1128,6 +1194,77 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
+     * Finds the first non-null domain element.
+     *
+     * @param  <T>     type of domain element to get.
+     * @param  getter  {@code ObjectDomain} getter method to invoke.
+     * @return first non-null value, or {@code null} if none.
+     */
+    private <T> T findFirst(final Function<DefaultObjectDomain,T> getter) {
+        if (domains == null) return null;
+        return domains.stream().map(getter).filter(ImplementationHelper::nonNil).findFirst().orElse(null);
+    }
+
+    /**
+     * Returns the region or timeframe in which this object is valid, or {@code null} if unspecified.
+     * This is used for JAXB marshalling only.
+     *
+     * @return area or region or timeframe in which this object is valid, or {@code null}.
+     */
+    @XmlElement(name = "domainOfValidity")
+    // For an unknown reason, JAXB does not take the adapter declared in package-info for this particular property.
+    @Workaround(library = "JDK", version = "1.8")
+    @XmlJavaTypeAdapter(EX_Extent.class)
+    private Extent getDomainExtent() {
+        return findFirst(DefaultObjectDomain::getDomainOfValidity);
+    }
+
+    /**
+     * Returns the domain or limitations of usage, or {@code null} if unspecified.
+     * This is used for JAXB marshalling only. This property is mandatory in datum,
+     * coordinate reference system and coordinate operation but is not expected in
+     * other kind of objects, so we declare it as optional.
+     *
+     * @return description of domain of usage, or {@code null}.
+     */
+    @XmlElement(name ="scope")
+    private InternationalString getDomainScope() {
+        return findFirst(DefaultObjectDomain::getScope);
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     */
+    private void setDomainExtent(final Extent value) {
+        InternationalString scope = null;
+        final DefaultObjectDomain domain = CollectionsExt.first(domains);
+        if (domain != null) {
+            if (domain.domainOfValidity != null) {
+                propertyAlreadySet("setDomain", "domainOfValidity");
+                return;
+            }
+            scope = domain.scope;
+        }
+        domains = Collections.singleton(new DefaultObjectDomain(scope, value));
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     */
+    private void setDomainScope(final InternationalString value) {
+        Extent area = null;
+        final DefaultObjectDomain domain = CollectionsExt.first(domains);
+        if (domain != null) {
+            if (domain.scope != null) {
+                propertyAlreadySet("setDomainScope", "scope");
+                return;
+            }
+            area = domain.domainOfValidity;
+        }
+        domains = Collections.singleton(new DefaultObjectDomain(value, area));
+    }
+
+    /**
      * Invoked by JAXB for setting the remarks.
      *
      * @see #getRemarks()
@@ -1136,7 +1273,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if (remarks == null) {
             remarks = value;
         } else {
-            ImplementationHelper.propertyAlreadySet(AbstractIdentifiedObject.class, "setRemarks", "remarks");
+            propertyAlreadySet("setRemarks", "remarks");
         }
+    }
+
+    /**
+     * Logs a warning saying that an unmarshalled property was already set.
+     *
+     * @param  method  the caller method, used for logging.
+     * @param  name    the property name, used for logging and exception message.
+     * @throws IllegalStateException if we are not unmarshalling an object.
+     */
+    private static void propertyAlreadySet(final String method, final String name) {
+        ImplementationHelper.propertyAlreadySet(AbstractIdentifiedObject.class, method, name);
     }
 }

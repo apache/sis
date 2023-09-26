@@ -160,8 +160,8 @@ final class WritableSingleImageStore extends WritableStore implements WritableGr
     }
 
     /**
-     * Writes a new coverage in the data store for this resource. If a coverage already exists for this resource,
-     * then it will be overwritten only if the {@code TRUNCATE} or {@code UPDATE} option is specified.
+     * Writes a new coverage in the data store containing this resource. If a coverage already exists for this
+     * resource, then it will be overwritten only if the {@code TRUNCATE} or {@code UPDATE} option is specified.
      *
      * @param  coverage  new data to write in the data store for this resource.
      * @param  options   configuration of the write operation.

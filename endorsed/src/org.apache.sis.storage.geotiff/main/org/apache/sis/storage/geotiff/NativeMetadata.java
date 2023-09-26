@@ -234,7 +234,7 @@ final class NativeMetadata extends GeoKeysLoader {
 
     /**
      * Reads the {@code short}, {@code int} or {@code long} value (depending if the
-     * file is standard of big TIFF) at the current {@linkplain Reader#input} position.
+     * file is standard or big TIFF) at the current {@linkplain Reader#input} position.
      */
     private long readInt(final boolean isShort) throws IOException {
         if (isClassic) {

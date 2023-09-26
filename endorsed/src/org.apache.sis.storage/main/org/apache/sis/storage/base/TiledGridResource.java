@@ -253,7 +253,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
 
         /**
          * Sample dimensions for each image band. This is the range of the grid coverage to create.
-         * If {@link #includedBands} is non-null, then the the size of this list should be equal to
+         * If {@link #includedBands} is non-null, then the size of this list should be equal to
          * {@link #includedBands} array length. However, bands are not necessarily in the same order:
          * the order of bands in this {@code ranges} list is the order specified by user, while the
          * order of bands in {@link #includedBands} is always increasing index order for efficiency

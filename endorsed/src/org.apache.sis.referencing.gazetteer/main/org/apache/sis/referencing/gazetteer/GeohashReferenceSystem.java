@@ -318,9 +318,9 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             if (position != null) try {
                 position = toGeographic(position);
                 double φ = Math.toRadians(position.getOrdinate(1));
-                double a = Math.PI/2 * Formulas.getRadius(ellipsoid, φ);   // Arc length of 90° using radius at φ.
-                double b = Math.cos(φ) * (2*a) / (1 << lonNumBits);        // Precision along longitude axis.
-                a /= (1 << latNumBits);                                    // Precision along latitude axis.
+                double a = Math.PI/2 * Formulas.geocentricRadius(ellipsoid, φ);     // Arc length of 90° using radius at φ.
+                double b = Math.cos(φ) * (2*a) / (1 << lonNumBits);                 // Precision along longitude axis.
+                a /= (1 << latNumBits);                                             // Precision along latitude axis.
                 return Quantities.create(Math.max(a, b), unit);
             } catch (FactoryException | TransformException e) {
                 recoverableException(Coder.class, "getPrecision", e);
@@ -355,7 +355,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
                 if (position != null) try {
                     position = toGeographic(position);
                     double φ = Math.toRadians(position.getOrdinate(1));
-                    numLat   = Math.PI/2 * Formulas.getRadius(ellipsoid, φ) / p;
+                    numLat   = Math.PI/2 * Formulas.geocentricRadius(ellipsoid, φ) / p;
                     numLon   = Math.cos(φ) * (2*numLat);
                 } catch (FactoryException | TransformException e) {
                     recoverableException(Coder.class, "setPrecision", e);

@@ -23,7 +23,8 @@
  * @since   0.3
  */
 module org.apache.sis.openoffice {
-    requires static org.libreoffice.uno;
+    requires transitive java.logging;
+    requires transitive static org.libreoffice.uno;
     requires org.apache.sis.referencing;
     requires org.apache.sis.storage;
 

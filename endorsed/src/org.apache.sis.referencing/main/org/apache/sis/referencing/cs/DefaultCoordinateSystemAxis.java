@@ -240,41 +240,33 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #MINIMUM_VALUE_KEY}</td>
      *     <td>{@link Number}</td>
      *     <td>{@link #getMinimumValue()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #MAXIMUM_VALUE_KEY}</td>
      *     <td>{@link Number}</td>
      *     <td>{@link #getMaximumValue()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #RANGE_MEANING_KEY}</td>
      *     <td>{@link RangeMeaning}</td>
      *     <td>{@link #getRangeMeaning()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>

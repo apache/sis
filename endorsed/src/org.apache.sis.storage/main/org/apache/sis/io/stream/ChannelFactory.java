@@ -133,6 +133,8 @@ public abstract class ChannelFactory {
      * @param  options         the options to use for creating a new byte channel. Can be null or empty for read-only.
      * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
      * @throws IOException if an error occurred while processing the given input.
+     *
+     * @see IOUtilities#isWriteOnly(Object)
      */
     public static ChannelFactory prepare(Object storage, final boolean allowWriteOnly,
             final String encoding, final OpenOption[] options) throws IOException
@@ -286,6 +288,11 @@ public abstract class ChannelFactory {
                     @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);
                     }
+                    @Override public boolean isCreateNew() {
+                        if (optionSet.contains(StandardOpenOption.CREATE_NEW)) return true;
+                        if (optionSet.contains(StandardOpenOption.CREATE)) return Files.notExists(path);
+                        return false;
+                    }
                 };
             }
         }
@@ -311,8 +318,19 @@ public abstract class ChannelFactory {
      *
      * @return whether {@link #readable readable(…)} or {@link #writable writable(…)} can be invoked.
      */
-    public boolean canOpen() {
+    public boolean canReopen() {
         return true;
+    }
+
+    /**
+     * Returns {@code true} if opening the channel will create a new, initially empty, file.
+     * This is {@code true} only if the storage is some supported kind of file or URL and
+     * this factory has been created with an option that allows file creation.
+     *
+     * @return whether opening a channel will create a new file.
+     */
+    public boolean isCreateNew() {
+        return false;
     }
 
     /**
@@ -418,7 +436,7 @@ public abstract class ChannelFactory {
          * Returns whether {@link #readable readable(…)} or {@link #writable writable(…)} can be invoked.
          */
         @Override
-        public boolean canOpen() {
+        public boolean canReopen() {
             return storage != null;
         }
 

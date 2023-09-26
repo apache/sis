@@ -159,7 +159,9 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
         try {
             provider = FormatFilter.SUFFIX.findProvider(suffix, connector, deferred);
             if (provider == null) {
-                provider = FormatFilter.SUFFIX.findProvider(null, connector, deferred);
+                if (suffix != null) {
+                    provider = FormatFilter.SUFFIX.findProvider(null, connector, deferred);
+                }
                 if (provider == null) {
                     return ProbeResult.UNSUPPORTED_STORAGE;
                 }

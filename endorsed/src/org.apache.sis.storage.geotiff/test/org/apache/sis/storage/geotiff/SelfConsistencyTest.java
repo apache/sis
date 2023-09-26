@@ -101,7 +101,7 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
         assertFalse(datasets.isEmpty());
         for (GridCoverageResource dataset : datasets) {
             final GenericName name = dataset.getIdentifier()
-                    .orElseThrow(() -> new AssertionError("A component of the GeoTiff datastore is unnamed"));
+                    .orElseThrow(() -> new AssertionError("A component of the GeoTIFF datastore is unnamed"));
             GridCoverageResource foundResource = store.findResource(name.toString());
             assertSame(dataset, foundResource);
             foundResource = store.findResource(name.tip().toString());

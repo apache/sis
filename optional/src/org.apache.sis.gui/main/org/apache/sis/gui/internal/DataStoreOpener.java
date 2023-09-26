@@ -208,7 +208,7 @@ public final class DataStoreOpener extends Task<DataStore> {
         if (name == null) {
             name = Strings.trimOrNull(IOUtilities.toString(source));
             if (name == null) {
-                name = Vocabulary.format(Vocabulary.Keys.Unknown);
+                name = Vocabulary.format(Vocabulary.Keys.NotKnown);
             }
         }
         return name;

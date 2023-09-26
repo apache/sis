@@ -32,7 +32,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * or {@linkplain #replaceIf(Predicate, UnaryOperator) replace} feature instances.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 public interface WritableFeatureSet extends FeatureSet {
@@ -80,21 +80,11 @@ public interface WritableFeatureSet extends FeatureSet {
     /**
      * Removes all feature instances from this {@code FeatureSet} which matches the given predicate.
      *
-     * <div class="warning"><b>Possible API change:</b>
-     * The {@code boolean} return type may be removed in a future version.
-     * It currently exists for compatibility with the {@link java.util.Collection#removeIf(Predicate)} method
-     * if an implementation chooses to implements {@code WritableFeatureSet} and {@link java.util.Collection}
-     * in same time. But this is not recommended, and the current method signature is a blocker for deferred
-     * method execution. Telling if there is any feature to remove requires immediate execution of the filter,
-     * while an implementation may want to wait in case the filtering can be combined with other operations
-     * such as {@code add(…)} or {@code replaceIf(…)}.
-     * See <a href="https://issues.apache.org/jira/browse/SIS-560">SIS-560 on issue tracker</a>.</div>
-     *
      * @param  filter  a predicate which returns {@code true} for feature instances to be removed.
      * @return {@code true} if any elements were removed.
      * @throws DataStoreException if an error occurred while removing features.
      */
-    boolean removeIf(Predicate<? super AbstractFeature> filter) throws DataStoreException;
+    void removeIf(Predicate<? super AbstractFeature> filter) throws DataStoreException;
 
     /**
      * Updates all feature instances from this {@code FeatureSet} which match the given predicate.

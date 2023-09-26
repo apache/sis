@@ -78,7 +78,7 @@ final class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Se
     }
 
     /**
-     * Compare this period with given object. Used by the tests for checking the results of deserialization.
+     * Compares this period with given object. Used by the tests for checking the results of deserialization.
      */
     @Override
     public boolean equals(final Object other) {

@@ -31,7 +31,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.IncommensurableException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -51,7 +50,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.UnsupportedImplementationException;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -75,6 +73,10 @@ import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.Loggers;
 
 import static org.apache.sis.util.Utilities.deepEquals;
+
+// Specific to the main branch:
+import org.opengis.metadata.extent.Extent;
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**
@@ -109,8 +111,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @since   0.6
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {
-    "domainOfValidity",
-    "scope",
     "operationVersion",
     "accuracy",
     "source",
@@ -126,7 +126,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1237358357729193885L;
+    private static final long serialVersionUID = -5441746770453401219L;
 
     /**
      * The logger for coordinate operations.
@@ -193,29 +193,6 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     Collection<PositionalAccuracy> coordinateOperationAccuracy;
 
     /**
-     * Area in which this operation is valid, or {@code null} if not available.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is non-final only for the convenience of constructors and for initialization
-     * at XML unmarshalling time by {@link #setDomainOfValidity(Extent)}.</p>
-     *
-     * @see #getDomainOfValidity()
-     */
-    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    Extent domainOfValidity;
-
-    /**
-     * Description of domain of usage, or limitations of usage, for which this operation is valid.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}.</p>
-     *
-     * @see #getScope()
-     */
-    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private InternationalString scope;
-
-    /**
      * Transform from positions in the {@linkplain #getSourceCRS source coordinate reference system}
      * to positions in the {@linkplain #getTargetCRS target coordinate reference system}.
      *
@@ -251,8 +228,6 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      */
     AbstractCoordinateOperation(final Map<String,?> properties) {
         super(properties);
-        this.scope            = Types.toInternationalString(properties, SCOPE_KEY);
-        this.domainOfValidity = Containers.property(properties, DOMAIN_OF_VALIDITY_KEY, Extent.class);
         this.operationVersion = Containers.property(properties, OPERATION_VERSION_KEY, String.class);
         Object value = properties.get(COORDINATE_OPERATION_ACCURACY_KEY);
         if (value != null) {
@@ -276,46 +251,33 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#OPERATION_VERSION_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getOperationVersion()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#COORDINATE_OPERATION_ACCURACY_KEY}</td>
      *     <td>{@link PositionalAccuracy} (optionally as array)</td>
      *     <td>{@link #getCoordinateOperationAccuracy()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
-     *     <td>{@link #getDomainOfValidity()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#SCOPE_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
-     *     <td>{@link #getScope()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
+     *     <td>"domains"</td>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain} (optionally as array)</td>
+     *     <td>{@link #getDomains()}</td>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
@@ -444,8 +406,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         interpolationCRS            = getInterpolationCRS(operation);
         operationVersion            = operation.getOperationVersion();
         coordinateOperationAccuracy = operation.getCoordinateOperationAccuracy();
-        domainOfValidity            = operation.getDomainOfValidity();
-        scope                       = operation.getScope();
         transform                   = operation.getMathTransform();
         if (operation instanceof AbstractCoordinateOperation) {
             wrapAroundChanges = ((AbstractCoordinateOperation) operation).wrapAroundChanges;
@@ -654,22 +614,26 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Returns the area or region or timeframe in which this coordinate operation is valid.
      *
      * @return the coordinate operation valid domain, or {@code null} if not available.
+     *
+     * @deprecated Replaced by {@link #getDomains()} as of ISO 19111:2019.
      */
     @Override
-    @XmlElement(name = "domainOfValidity")
+    @Deprecated(since = "1.4")
     public Extent getDomainOfValidity() {
-        return domainOfValidity;
+        return Legacy.getDomainOfValidity(getDomains());
     }
 
     /**
      * Returns a description of domain of usage, or limitations of usage, for which this operation is valid.
      *
      * @return a description of domain of usage, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #getDomains()} as of ISO 19111:2019.
      */
     @Override
-    @XmlElement(name = "scope", required = true)
+    @Deprecated(since = "1.4")
     public InternationalString getScope() {
-        return scope;
+        return Legacy.getScope(getDomains());
     }
 
     /**
@@ -826,8 +790,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 if (Objects.equals(sourceCRS,                   that.sourceCRS)        &&
                     Objects.equals(interpolationCRS,            that.interpolationCRS) &&
                     Objects.equals(transform,                   that.transform)        &&
-                    Objects.equals(scope,                       that.scope)            &&
-                    Objects.equals(domainOfValidity,            that.domainOfValidity) &&
                     Objects.equals(coordinateOperationAccuracy, that.coordinateOperationAccuracy))
                 {
                     // Check against never-ending recursivity with DerivedCRS.
@@ -850,9 +812,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                  */
                 final CoordinateOperation that = (CoordinateOperation) object;
                 if ((mode.isIgnoringMetadata() ||
-                    (deepEquals(getScope(),                       that.getScope(), mode) &&
-                     deepEquals(getDomainOfValidity(),            that.getDomainOfValidity(), mode) &&
-                     deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))) &&
+                    (deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))) &&
                      deepEquals(getInterpolationCRS(),            getInterpolationCRS(that), mode))
                 {
                     /*
@@ -1165,32 +1125,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
             operationVersion = value;
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setOperationVersion", "operationVersion");
-        }
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getDomainOfValidity()
-     */
-    private void setDomainOfValidity(final Extent value) {
-        if (domainOfValidity == null) {
-            domainOfValidity = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setDomainOfValidity", "domainOfValidity");
-        }
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getScope()
-     */
-    private void setScope(final InternationalString value) {
-        if (scope == null) {
-            scope = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setScope", "scope");
         }
     }
 

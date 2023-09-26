@@ -20,14 +20,14 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
  * Tests the {@link ArgumentChecks} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)
@@ -43,18 +43,14 @@ public final class ArgumentChecksTest extends TestCase {
      */
     @Test
     public void testEnsureNonNullElement() {
-        try {
+        NullArgumentException e = assertThrows(NullArgumentException.class, () -> {
             ArgumentChecks.ensureNonNullElement("axes", 2, null);
-            fail("Expected a NullArgumentException.");
-        } catch (NullArgumentException e) {
-            assertTrue(e.getMessage().contains("axes[2]"));
-        }
-        try {
+        });
+        assertTrue(e.getMessage().contains("axes[2]"));
+        e = assertThrows(NullArgumentException.class, () -> {
             ArgumentChecks.ensureNonNullElement("axes[#].unit", 2, null);
-            fail("Expected a NullArgumentException.");
-        } catch (NullArgumentException e) {
-            assertTrue(e.getMessage().contains("axes[2].unit"));
-        }
+        });
+        assertTrue(e.getMessage().contains("axes[2].unit"));
     }
 
     /**
@@ -63,11 +59,30 @@ public final class ArgumentChecksTest extends TestCase {
     @Test
     public void testEnsureBetweenAndDistinct() {
         ArgumentChecks.ensureNonEmptyBounded("dimensions", true, 0, 4, new int[] {2, 3, 0, 1});
-        try {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> {
             ArgumentChecks.ensureNonEmptyBounded("dimensions", true, 0, 4, new int[] {2, 3, 3, 1});
-            fail("Expected an IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertNotNull(e.getMessage());
-        }
+        });
+        assertNotNull(e.getMessage());
+    }
+
+    /**
+     * Tests {@link ArgumentChecks#ensurePositive(java.lang.String, double)}.
+     */
+    @Test
+    public void testEnsurePositive() {
+        ArgumentChecks.ensurePositive("length", 4d);
+        ArgumentChecks.ensurePositive("length", 0d);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> {
+            ArgumentChecks.ensurePositive("length", -4d);
+        });
+        assertTrue(e.getMessage().contains("length"));
+        e = assertThrows(IllegalArgumentException.class, () -> {
+            ArgumentChecks.ensurePositive("length", -0d);
+        });
+        assertTrue(e.getMessage().contains("length"));
+        e = assertThrows(IllegalArgumentException.class, () -> {
+            ArgumentChecks.ensurePositive("length", -0f);
+        });
+        assertTrue(e.getMessage().contains("length"));
     }
 }

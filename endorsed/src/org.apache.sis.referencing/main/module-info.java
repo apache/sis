@@ -202,6 +202,10 @@ module org.apache.sis.referencing {
             org.glassfish.jaxb.core,                        // For access to various classes.
             jakarta.xml.bind;                               // Seems ignored.
 
+    exports org.apache.sis.referencing.internal to          // On main branch only, for transition from GeoAPI 3.0.
+            org.apache.sis.console,
+            org.apache.sis.openoffice;
+
     /*
      * Allow JAXB to use reflection for marshalling and
      * unmarshalling Apache SIS objects in XML documents.

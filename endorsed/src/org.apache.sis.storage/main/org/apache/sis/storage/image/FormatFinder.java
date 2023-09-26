@@ -32,8 +32,10 @@ import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.FileImageOutputStream;
+import java.awt.image.RenderedImage;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.util.Workaround;
 
@@ -44,7 +46,7 @@ import org.apache.sis.util.Workaround;
  * It also helps to choose which {@link WorldFileStore} subclass to instantiate.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.2
  */
 final class FormatFinder implements AutoCloseable {
@@ -113,6 +115,11 @@ final class FormatFinder implements AutoCloseable {
     final String suffix;
 
     /**
+     * Name of the preferred format, or {@code null} if none.
+     */
+    private final String preferredFormat;
+
+    /**
      * Creates a new format finder.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
@@ -135,6 +142,8 @@ final class FormatFinder implements AutoCloseable {
         }
         this.storage = storage;
         this.suffix  = IOUtilities.extension(storage);
+        final var filter = connector.getOption(InternalOptionKey.PREFERRED_PROVIDERS);
+        preferredFormat = filter instanceof DataStoreFilter ? ((DataStoreFilter) filter).preferred : null;
         /*
          * Detect if the image can be opened in read/write mode.
          * If not, it will be opened in read-only mode.
@@ -157,8 +166,8 @@ final class FormatFinder implements AutoCloseable {
                     return;
                 }
             }
-            openAsWriter = false;
-            fileIsEmpty  = false;
+            openAsWriter = IOUtilities.isWriteOnly(storage);
+            fileIsEmpty  = openAsWriter;
         }
     }
 
@@ -169,7 +178,7 @@ final class FormatFinder implements AutoCloseable {
      */
     final String[] getFormatName() throws DataStoreException, IOException {
         if (openAsWriter) {
-            final ImageWriter writer = getOrCreateWriter();
+            final ImageWriter writer = getOrCreateWriter(null);
             if (writer != null) {
                 final ImageWriterSpi spi = writer.getOriginatingProvider();
                 if (spi != null) {
@@ -199,7 +208,10 @@ final class FormatFinder implements AutoCloseable {
         if (!readerLookupDone) {
             readerLookupDone = true;
             final Map<ImageReaderSpi,Boolean> deferred = new LinkedHashMap<>();
-            if (suffix != null) {
+            if (preferredFormat != null) {
+                reader = FormatFilter.NAME.createReader(preferredFormat, this, deferred);
+            }
+            if (reader == null && suffix != null) {
                 reader = FormatFilter.SUFFIX.createReader(suffix, this, deferred);
             }
             if (reader == null) {
@@ -243,17 +255,21 @@ final class FormatFinder implements AutoCloseable {
     /**
      * Returns the user-specified writer or searches for a writer for the file suffix.
      *
+     * @param  image  the image to write, or {@code null} if unknown.
      * @return the writer, or {@code null} if none could be found.
      */
-    final ImageWriter getOrCreateWriter() throws DataStoreException, IOException {
+    final ImageWriter getOrCreateWriter(final RenderedImage image) throws DataStoreException, IOException {
         if (!writerLookupDone) {
             writerLookupDone = true;
             final Map<ImageWriterSpi,Boolean> deferred = new LinkedHashMap<>();
-            if (suffix != null) {
-                writer = FormatFilter.SUFFIX.createWriter(suffix, this, null, deferred);
+            if (preferredFormat != null) {
+                writer = FormatFilter.NAME.createWriter(preferredFormat, this, image, deferred);
+            }
+            if (writer == null && suffix != null) {
+                writer = FormatFilter.SUFFIX.createWriter(suffix, this, image, deferred);
             }
             if (writer == null) {
-                writer = FormatFilter.SUFFIX.createWriter(null, this, null, deferred);
+                writer = FormatFilter.SUFFIX.createWriter(null, this, image, deferred);
                 if (writer == null) {
                     ImageOutputStream stream = null;
                     for (final Map.Entry<ImageWriterSpi,Boolean> entry : deferred.entrySet()) {

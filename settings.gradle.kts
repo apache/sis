@@ -68,6 +68,7 @@ dependencyResolutionManagement {
         create("tests") {
             library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}
             library("junit4",        "junit",                  "junit")                  .version {strictly("4.13.2")}
+            library("junit5",        "org.junit.jupiter",      "junit-jupiter-api")      .version {strictly("5.9.3")}
             library("junit",         "org.junit.vintage",      "junit-vintage-engine")   .version {strictly("5.9.3")}
             library("junitLauncher", "org.junit.platform",     "junit-platform-launcher").version {strictly("1.9.3")}
             library("jama",          "gov.nist.math",          "jama")                   .version {strictly("1.0.3")}

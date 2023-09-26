@@ -883,6 +883,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short NorthBound = 142;
 
         /**
+         * Not known
+         */
+        public static final short NotKnown = 207;
+
+        /**
          * Note
          */
         public static final short Note = 143;
@@ -1303,11 +1308,6 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Units = 206;
 
         /**
-         * Unknown
-         */
-        public static final short Unknown = 207;
-
-        /**
          * Unnamed
          */
         public static final short Unnamed = 208;
@@ -1484,15 +1484,23 @@ public class Vocabulary extends IndexedResourceBundle {
     }
 
     /**
-     * The international string to be returned by {@link formatInternational}.
+     * The international string to be returned by {@code formatInternational(…)} methods.
+     * This implementation details is made public for allowing the creation of subclasses
+     * implementing some additional interfaces.
      */
-    private static final class International extends ResourceInternationalString {
+    public static class International extends ResourceInternationalString {
+        /** For cross-version compatibility. */
         private static final long serialVersionUID = -5423999784169092823L;
 
-        International(short key)                           {super(key);}
-        International(short key, Object args)              {super(key, args);}
-        @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
-        @Override protected IndexedResourceBundle getBundle(final Locale locale) {
+        /**
+         * Creates a new instance for the given vocabulary resource key.
+         *
+         * @param  key  one of the {@link Keys} values.
+         */
+        protected International(short key)                       {super(key);}
+        International(short key, Object args)                    {super(key, args);}
+        @Override protected final KeyConstants getKeyConstants() {return Keys.INSTANCE;}
+        @Override protected final IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
         }
     }

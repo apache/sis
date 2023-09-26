@@ -87,12 +87,14 @@ public final class IdentifiedObjects extends Static {
      *       <td>{@link IdentifiedObject#getAlias()}</td></tr>
      *   <tr><td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *       <td>{@link IdentifiedObject#getIdentifiers()}</td></tr>
+     *   <tr><td>"domains"</td>
+     *       <td>{@link AbstractIdentifiedObject#getDomains()}</td></tr>
      *   <tr><td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *       <td>{@link IdentifiedObject#getRemarks()}</td></tr>
-     *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#SCOPE_KEY}</td>
-     *       <td>{@link CoordinateOperation#getScope()} (also in datum and reference systems)</td></tr>
-     *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
-     *       <td>{@link CoordinateOperation#getDomainOfValidity()} (also in datum and reference systems)</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY</td>
+     *       <td>{@link DefaultObjectDomain#getScope()}</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
+     *       <td>{@link DefaultObjectDomain#getDomainOfValidity()}</td></tr>
      *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#OPERATION_VERSION_KEY}</td>
      *       <td>{@link CoordinateOperation#getOperationVersion()}</td></tr>
      *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#COORDINATE_OPERATION_ACCURACY_KEY}</td>

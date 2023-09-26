@@ -180,8 +180,8 @@ public abstract class Bezier {
      * @param  tmax  <var>t</var> value of the end point   (initially 1).
      * @param  x2    <var>x</var> coordinate at <var>t</var>=½ (mid-point).
      * @param  y2    <var>y</var> coordinate at <var>t</var>=½ (mid-point).
-     * @param  dx2   <var>x</var> component of the the derivative (∂y/∂x) at mid-point.
-     * @param  dy2   <var>y</var> component of the the derivative (∂y/∂x) at mid-point.
+     * @param  dx2   <var>x</var> component of the derivative (∂y/∂x) at mid-point.
+     * @param  dy2   <var>y</var> component of the derivative (∂y/∂x) at mid-point.
      * @param  x4    <var>x</var> coordinate at <var>t</var>=1 (end point).
      * @param  y4    <var>y</var> coordinate at <var>t</var>=1 (end point).
      * @param  dx4   <var>x</var> component of the derivative (∂y/∂x) at end point.

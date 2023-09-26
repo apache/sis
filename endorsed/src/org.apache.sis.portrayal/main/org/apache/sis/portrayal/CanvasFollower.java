@@ -32,7 +32,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
@@ -373,7 +372,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
                             }
                             transformObjectiveCoordinates(te, before);
                             return;
-                        } catch (NullArgumentException | TransformException | NoninvertibleTransformException e) {
+                        } catch (NullPointerException | TransformException | NoninvertibleTransformException e) {
                             canNotCompute("propertyChange", e);
                         }
                     }

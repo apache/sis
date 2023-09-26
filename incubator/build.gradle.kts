@@ -48,6 +48,7 @@ dependencies {
 
     // Test dependencies
     testImplementation(tests.geoapi)
+    testImplementation(tests.junit5)
     testImplementation(tests.junit4)
     testRuntimeOnly   (tests.junit)
     testRuntimeOnly   (tests.junitLauncher)
@@ -79,7 +80,7 @@ tasks.compileJava {
 }
 tasks.compileTestJava {
     srcDir.list().forEach {
-        addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,junit")
+        addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,org.junit.jupiter.api,junit")
     }
 }
 

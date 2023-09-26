@@ -264,6 +264,18 @@ public class StorageConnector implements Serializable {
     private Map<OptionKey<?>, Object> options;
 
     /**
+     * If a probing operation is ongoing, the provider doing the operation. Otherwise {@code null}.
+     * This information is needed because if the storage is a file and that file does not exist,
+     * then the {@code StorageConnector} behavior depends on whether the caller is probing or not.
+     * If probing, {@link ProbeResult#SUPPORTED} should be returned without creating the file,
+     * because attempt to probe that file would cause an {@link java.io.EOFException}.
+     * If not probing, then an empty file should be created.
+     *
+     * @see #wasProbingAbsentFile()
+     */
+    transient ProbeProviderPair probing;
+
+    /**
      * Views of {@link #storage} as instances of types different than the type of the object given to the constructor.
      * The {@code null} reference can appear in various places:
      *
@@ -815,6 +827,8 @@ public class StorageConnector implements Serializable {
      *               class or other types supported by {@code StorageConnector} subclasses.
      * @return the storage as a view of the given type, or {@code null} if the given type is one of the supported
      *         types listed in javadoc but no view can be created for the source given at construction time.
+     *         In the latter case, {@link #wasProbingAbsentFile()} can be invoked for determining whether the
+     *         reason is that the file does not exist but could be created.
      * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types
      *         listed in this javadoc or in subclass javadoc.
      * @throws IllegalStateException if this {@code StorageConnector} has been {@linkplain #closeAllExcept closed}.
@@ -961,12 +975,48 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Returns whether returning the storage would have required the creation of a new file.
+     * This method may return {@code true} if all the following conditions are true:
+     *
+     * <ul>
+     *   <li>A previous {@link #getStorageAs(Class)} call requested some kind of input stream
+     *       (e.g. {@link InputStream}, {@link ImageInputStream}, {@link DataInput}, {@link Reader}).</li>
+     *   <li>The {@linkplain #getStorage() storage} is an object convertible to a {@link Path} and the
+     *       file identified by that path {@linkplain java.nio.file.Files#notExists does not exist}.</li>
+     *   <li>The {@linkplain #getOption(OptionKey) optons} given to this {@code StorageConnector} include
+     *       {@link java.nio.file.StandardOpenOption#CREATE} or {@code CREATE_NEW}.</li>
+     *   <li>The {@code getStorageAs(…)} and {@code wasProbingAbsentFile()} calls happened in the context of
+     *       {@link DataStores} probing the storage content in order to choose a {@link DataStoreProvider}.</li>
+     * </ul>
+     *
+     * If all above conditions are true, then {@link #getStorageAs(Class)} returns {@code null} instead of creating
+     * a new empty file. In such case, {@link DataStoreProvider} may use this {@code wasProbingAbsentFile()} method
+     * for deciding whether to report {@link ProbeResult#SUPPORTED} or {@link ProbeResult#UNSUPPORTED_STORAGE}.
+     *
+     * <h4>Rational</h4>
+     * When the file does not exist and the {@code CREATE} or {@code CREATE_NEW} option is provided,
+     * {@code getStorageAs(…)} would normally create a new empty file. However this behavior is modified during probing
+     * (the first condition in above list) because newly created files are empty and probing empty files may result in
+     * {@link java.io.EOFException} to be thrown or in providers declaring that they do not support the storage.
+     *
+     * <p>IF the {@code CREATE} or {@code CREATE_NEW} options were not provided, then probing the storage content of an
+     * absent file will rather throw {@link java.nio.file.NoSuchFileException} or {@link java.io.FileNotFoundException}.
+     * So this method is useful only for {@link DataStore} having write capabilities.</p>
+     *
+     * @since 1.4
+     */
+    public boolean wasProbingAbsentFile() {
+        return probing != null && probing.probe != null;
+    }
+
+    /**
      * Creates a view for the input as a {@link ChannelDataInput} if possible.
      * This is also a starting point for {@link #createDataInput()} and {@link #createByteBuffer()}.
      * This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.
      *
      * @param  asImageInputStream  whether the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
+     * @return input channel, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
      * @throws IOException if an error occurred while opening a channel for the input.
      *
      * @see #createChannelDataOutput()
@@ -996,6 +1046,16 @@ public class StorageConnector implements Serializable {
             return null;
         }
         /*
+         * If the storage is a file, that file does not exist, the open options include `CREATE` or `CREATE_NEW`
+         * and this method is invoked for probing the file content (not yet for creating the data store), then
+         * set the probe result without opening the file. We do that because attempts to probe a newly created
+         * file would probably cause an EOFException to be thrown.
+         */
+        if (probing != null && factory.isCreateNew()) {
+            probing.setProbingAbsentFile();
+            return null;
+        }
+        /*
          * ChannelDataInput depends on ReadableByteChannel, which itself depends on storage
          * (potentially an InputStream). We need to remember this chain in `Coupled` objects.
          */
@@ -1014,7 +1074,7 @@ public class StorageConnector implements Serializable {
          * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore
          * to re-open the same channel or input stream another time, typically for re-reading the same data.
          */
-        if (factory.canOpen()) {
+        if (factory.canReopen()) {
             addView(ChannelFactory.class, factory);
         }
         return asDataInput;
@@ -1029,6 +1089,7 @@ public class StorageConnector implements Serializable {
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
      * @throws IOException if an error occurred while opening a stream for the input.
      *
      * @see #createDataOutput()
@@ -1056,6 +1117,8 @@ public class StorageConnector implements Serializable {
                 c.view = asDataInput;
             }
             views.put(DataInput.class, c);                          // Share the same Coupled instance.
+        } else if (wasProbingAbsentFile()) {
+            return null;                                            // Do not cache, for allowing file creation later.
         } else {
             reset();
             try {
@@ -1110,6 +1173,7 @@ public class StorageConnector implements Serializable {
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
+     * @return buffer containing at least the first bytes of storage content, or {@code null} if none.
      * @throws IOException if an error occurred while opening a stream for the input.
      */
     private ByteBuffer createByteBuffer() throws IOException, DataStoreException {
@@ -1123,6 +1187,8 @@ public class StorageConnector implements Serializable {
         ByteBuffer asByteBuffer = null;
         if (c != null) {
             asByteBuffer = c.buffer.asReadOnlyBuffer();
+        } else if (wasProbingAbsentFile()) {
+            return null;                // Do not cache, for allowing file creation when opening the data store.
         } else {
             /*
              * If no ChannelDataInput has been created by the above code, get the input as an ImageInputStream and
@@ -1209,6 +1275,8 @@ public class StorageConnector implements Serializable {
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
+     *
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
      */
     private ImageInputStream createImageInputStream() throws DataStoreException {
         final Class<DataInput> source = DataInput.class;
@@ -1216,7 +1284,7 @@ public class StorageConnector implements Serializable {
         if (input instanceof ImageInputStream) {
             views.put(ImageInputStream.class, views.get(source));               // Share the same Coupled instance.
             return (ImageInputStream) input;
-        } else {
+        } else if (!wasProbingAbsentFile()) {
             /*
              * We do not invoke `ImageIO.createImageInputStream(Object)` because we do not know
              * how the stream will use the `storage` object. It may read in advance some bytes,
@@ -1224,8 +1292,8 @@ public class StorageConnector implements Serializable {
              * creating image input/output streams is left to caller's responsibility.
              */
             addView(ImageInputStream.class, null);                              // Remember that there is no view.
-            return null;
         }
+        return null;
     }
 
     /**
@@ -1234,6 +1302,8 @@ public class StorageConnector implements Serializable {
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
+     *
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
      *
      * @see #createOutputStream()
      */
@@ -1252,10 +1322,10 @@ public class StorageConnector implements Serializable {
             final InputStream in = new InputStreamAdapter((ImageInputStream) input);
             addView(InputStream.class, in, source, (byte) (getView(source).cascade & CASCADE_ON_RESET));
             return in;
-        } else {
+        } else if (!wasProbingAbsentFile()) {
             addView(InputStream.class, null);                                   // Remember that there is no view.
-            return null;
         }
+        return null;
     }
 
     /**
@@ -1263,11 +1333,15 @@ public class StorageConnector implements Serializable {
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
+     *
+     * @return input characters, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
      */
     private Reader createReader() throws IOException, DataStoreException {
         final InputStream input = getStorageAs(InputStream.class);
         if (input == null) {
-            addView(Reader.class, null);                                        // Remember that there is no view.
+            if (!wasProbingAbsentFile()) {
+                addView(Reader.class, null);                                    // Remember that there is no view.
+            }
             return null;
         }
         input.mark(READ_AHEAD_LIMIT);
@@ -1281,6 +1355,8 @@ public class StorageConnector implements Serializable {
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
+     *
+     * @return input, or {@code null} if none.
      */
     private Connection createConnection() throws SQLException {
         if (storage instanceof DataSource) {
@@ -1296,6 +1372,8 @@ public class StorageConnector implements Serializable {
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
+     *
+     * @return string representation of the storage path, or {@code null} if none.
      */
     private String createString() {
         return IOUtilities.toString(storage);
@@ -1335,6 +1413,7 @@ public class StorageConnector implements Serializable {
      * Creates a view for the storage as a {@link ChannelDataOutput} if possible.
      * This code is a partial copy of {@link #createDataInput()} adapted for output.
      *
+     * @return output channel, or {@code null} if none.
      * @throws IOException if an error occurred while opening a channel for the output.
      *
      * @see #createChannelDataInput(boolean)
@@ -1368,7 +1447,7 @@ public class StorageConnector implements Serializable {
          * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore
          * to re-open the same channel or output stream another time, typically for re-writing the same data.
          */
-        if (factory.canOpen()) {
+        if (factory.canReopen()) {
             addView(ChannelFactory.class, factory);
         }
         return asDataOutput;
@@ -1378,6 +1457,7 @@ public class StorageConnector implements Serializable {
      * Creates a view for the output as a {@link DataOutput} if possible.
      * This code is a copy of {@link #createDataInput()} adapted for output.
      *
+     * @return output stream, or {@code null} if none.
      * @throws IOException if an error occurred while opening a stream for the output.
      *
      * @see #createDataInput()
@@ -1426,6 +1506,8 @@ public class StorageConnector implements Serializable {
      * Creates an output stream from {@link WritableByteChannel} if possible,
      * or from {@link ImageOutputStream} otherwise.
      * This code is a partial copy of {@link #createInputStream()} adapted for output.
+     *
+     * @return output stream, or {@code null} if none.
      *
      * @see #createInputStream()
      */

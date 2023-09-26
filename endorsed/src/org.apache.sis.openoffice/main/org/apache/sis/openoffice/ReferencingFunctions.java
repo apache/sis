@@ -31,7 +31,6 @@ import com.sun.star.uno.XComponentContext;
 import com.sun.star.lang.IllegalArgumentException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.util.Classes;
@@ -42,6 +41,10 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.CodeType;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.DefaultObjectDomain;
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**
@@ -190,12 +193,16 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
         final Object value;
         try {
             final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
-            value = IdentifiedObjects.getProperties(object).get(ReferenceSystem.SCOPE_KEY);
+            for (final DefaultObjectDomain domain : Legacy.getDomains(object)) {
+                InternationalString scope = domain.getScope();
+                if (scope != null) {
+                    return scope.toString(getJavaLocale());
+                }
+            }
         } catch (Exception exception) {
             return getLocalizedMessage(exception);
         }
-        return (value instanceof InternationalString)
-               ? ((InternationalString) value).toString(getJavaLocale()) : noResultString();
+        return noResultString();
     }
 
     /**
@@ -206,18 +213,19 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      */
     @Override
     public String getDomainOfValidity(final String codeOrPath) {
-        final Object domain;
         try {
             final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
-            domain = IdentifiedObjects.getProperties(object).get(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY);
+            for (final DefaultObjectDomain domain : Legacy.getDomains(object)) {
+                final Extent extent = domain.getDomainOfValidity();
+                if (extent != null) {
+                    final InternationalString description = extent.getDescription();
+                    if (description != null) {
+                        return description.toString(getJavaLocale());
+                    }
+                }
+            }
         } catch (Exception exception) {
             return getLocalizedMessage(exception);
-        }
-        if (domain instanceof Extent) {
-            final InternationalString description = ((Extent) domain).getDescription();
-            if (description != null) {
-                return description.toString(getJavaLocale());
-            }
         }
         return noResultString();
     }
@@ -242,9 +250,11 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                 area = handler.peek();
                 if (area == null) try {
                     final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
-                    final Object domain = IdentifiedObjects.getProperties(object).get(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY);
-                    if (domain instanceof Extent) {
-                        area = Extents.getGeographicBoundingBox((Extent) domain);
+                    for (final DefaultObjectDomain domain : Legacy.getDomains(object)) {
+                        area = Extents.getGeographicBoundingBox(domain.getDomainOfValidity());
+                        if (area != null) {
+                            break;
+                        }
                     }
                 } catch (Exception exception) {
                     reportException("getGeographicArea", exception);

@@ -203,7 +203,7 @@ final class Reader extends GeoTIFF {
 
     /**
      * Reads the {@code int} or {@code long} value (depending if the file is
-     * a standard of big TIFF) at the current {@linkplain #input} position.
+     * a standard or big TIFF) at the current {@linkplain #input} position.
      *
      * @return the next pointer value.
      */
@@ -220,7 +220,7 @@ final class Reader extends GeoTIFF {
 
     /**
      * Reads the {@code short} or {@code long} value (depending if the file is
-     * standard of big TIFF) at the current {@linkplain #input} position.
+     * standard or big TIFF) at the current {@linkplain #input} position.
      *
      * @return the next directory entry value.
      */

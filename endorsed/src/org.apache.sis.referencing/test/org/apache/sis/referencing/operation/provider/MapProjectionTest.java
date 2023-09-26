@@ -146,7 +146,7 @@ public final class MapProjectionTest extends TestCase {
     }
 
     /**
-     * Asserts the the given parameter forces its value to zero.
+     * Asserts the given parameter forces its value to zero.
      * This test is mostly for {@link Equirectangular#LATITUDE_OF_ORIGIN}.
      */
     private static void assertIsForcedToZero(final ParameterDescriptor<?> parameter) {

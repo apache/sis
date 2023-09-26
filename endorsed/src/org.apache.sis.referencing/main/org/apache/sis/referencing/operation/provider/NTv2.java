@@ -223,7 +223,7 @@ public final class NTv2 extends AbstractProvider {
         private enum DataType {STRING, INTEGER, DOUBLE};
 
         /**
-         * Some known keywords that may appear in NTv2 header records, associated the the expected type of values.
+         * Some known keywords that may appear in NTv2 header records, associated the expected type of values.
          * The type is not encoded in a NTv2 file; it has to be hard-coded in this table. The first 11 entries in
          * this map (ignoring entries marked by "NTv1") are typically found in overview header, and the remaining
          * entries in the sub-grid headers.
@@ -418,7 +418,7 @@ public final class NTv2 extends AbstractProvider {
                         if (key.equals(numkey) || key.equals("HEADER")) {
                             /*
                              * HEADER (NTv1), NUM_OREC (NTv2) or NUM_SREC specify the number of records expected
-                             * in the header, which may the the header that we are reading right now. If value
+                             * in the header, which may the header that we are reading right now. If value
                              * applies to the reader we are reading, we need to update `numRecords` on the fly.
                              */
                             numRecords = n;
@@ -624,7 +624,7 @@ public final class NTv2 extends AbstractProvider {
         }
 
         /**
-         * Returns the value for the given key, or thrown an exception if the value is not found.
+         * Returns the value for the given key, or throws an exception if the value is not found.
          * Before to fail if the key is not found, this method searches for a value associated to
          * an alternative name. That alternative should be the name used in legacy NTv1.
          *

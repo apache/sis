@@ -160,7 +160,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(Object[], int)
      */
-    public static <E> E[] resize(final E[] array, final int length) throws NegativeArraySizeException {
+    public static <E> E[] resize(final E[] array, final int length) {
         return (array == null || array.length == length) ? array : Arrays.copyOf(array, length);
     }
 
@@ -178,7 +178,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(double[], int)
      */
-    public static double[] resize(final double[] array, final int length) throws NegativeArraySizeException {
+    public static double[] resize(final double[] array, final int length) {
         if (array != null) {
             if (length == 0) {
                 return EMPTY_DOUBLE;
@@ -204,7 +204,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(float[], int)
      */
-    public static float[] resize(final float[] array, final int length) throws NegativeArraySizeException {
+    public static float[] resize(final float[] array, final int length) {
         if (array != null) {
             if (length == 0) {
                 return EMPTY_FLOAT;
@@ -230,7 +230,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(long[], int)
      */
-    public static long[] resize(final long[] array, final int length) throws NegativeArraySizeException {
+    public static long[] resize(final long[] array, final int length) {
         if (array != null) {
             if (length == 0) {
                 return EMPTY_LONG;
@@ -256,7 +256,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(int[], int)
      */
-    public static int[] resize(final int[] array, final int length) throws NegativeArraySizeException {
+    public static int[] resize(final int[] array, final int length) {
         if (array != null) {
             if (length == 0) {
                 return EMPTY_INT;
@@ -282,7 +282,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(short[], int)
      */
-    public static short[] resize(final short[] array, final int length) throws NegativeArraySizeException {
+    public static short[] resize(final short[] array, final int length) {
         if (array != null) {
             if (length == 0) {
                 return EMPTY_SHORT;
@@ -308,7 +308,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(byte[], int)
      */
-    public static byte[] resize(final byte[] array, final int length) throws NegativeArraySizeException {
+    public static byte[] resize(final byte[] array, final int length) {
         if (array != null) {
             if (length == 0) {
                 return EMPTY_BYTE;
@@ -334,7 +334,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(char[], int)
      */
-    public static char[] resize(final char[] array, final int length) throws NegativeArraySizeException {
+    public static char[] resize(final char[] array, final int length) {
         if (array != null) {
             if (length == 0) {
                 return EMPTY_CHAR;
@@ -360,7 +360,7 @@ public final class ArraysExt extends Static {
      *
      * @see Arrays#copyOf(boolean[], int)
      */
-    public static boolean[] resize(final boolean[] array, final int length) throws NegativeArraySizeException {
+    public static boolean[] resize(final boolean[] array, final int length) {
         if (array != null) {
             if (length == 0) {
                 return EMPTY_BOOLEAN;
@@ -383,14 +383,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
-    private static <T> T doRemove(final T array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    private static <T> T doRemove(final T array, final int first, final int length) {
         if (length == 0) {
             return array;               // May be null
         }
@@ -415,15 +413,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(Object[], int, int)
      */
-    public static <E> E[] remove(final E[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static <E> E[] remove(final E[] array, final int first, final int length) {
         return doRemove(array, first, length);
     }
 
@@ -438,15 +434,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(double[], int, int)
      */
-    public static double[] remove(final double[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static double[] remove(final double[] array, final int first, final int length) {
         return (first == 0 && array != null && length == array.length)
                 ? EMPTY_DOUBLE : doRemove(array, first, length);
     }
@@ -462,15 +456,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(float[], int, int)
      */
-    public static float[] remove(final float[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static float[] remove(final float[] array, final int first, final int length) {
         return (first == 0 && array != null && length == array.length)
                 ? EMPTY_FLOAT : doRemove(array, first, length);
     }
@@ -486,15 +478,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(long[], int, int)
      */
-    public static long[] remove(final long[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static long[] remove(final long[] array, final int first, final int length) {
         return (first == 0 && array != null && length == array.length)
                 ? EMPTY_LONG : doRemove(array, first, length);
     }
@@ -510,15 +500,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(int[], int, int)
      */
-    public static int[] remove(final int[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static int[] remove(final int[] array, final int first, final int length) {
         return (first == 0 && array != null && length == array.length)
                 ? EMPTY_INT : doRemove(array, first, length);
     }
@@ -534,15 +522,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(short[], int, int)
      */
-    public static short[] remove(final short[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static short[] remove(final short[] array, final int first, final int length) {
         return (first == 0 && array != null && length == array.length) ?
                 EMPTY_SHORT : doRemove(array, first, length);
     }
@@ -558,15 +544,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(byte[], int, int)
      */
-    public static byte[] remove(final byte[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static byte[] remove(final byte[] array, final int first, final int length) {
         return (first == 0 && array != null && length == array.length)
                 ? EMPTY_BYTE : doRemove(array, first, length);
     }
@@ -582,15 +566,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(char[], int, int)
      */
-    public static char[] remove(final char[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static char[] remove(final char[] array, final int first, final int length) {
         return (first == 0 && array != null && length == array.length)
                 ? EMPTY_CHAR : doRemove(array, first, length);
     }
@@ -606,15 +588,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of elements to remove.
      * @return array with the same elements than the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(boolean[], int, int)
      */
-    public static boolean[] remove(final boolean[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static boolean[] remove(final boolean[] array, final int first, final int length) {
         return (first == 0 && array != null && length == array.length)
                 ? EMPTY_BOOLEAN : doRemove(array, first, length);
     }
@@ -633,14 +613,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
-    private static <T> T doInsert(final T array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    private static <T> T doInsert(final T array, final int first, final int length) {
         if (length == 0) {
             return array;               // May be null
         }
@@ -669,16 +647,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(Object[], int, Object[], int, int)
      * @see #remove(Object[], int, int)
      */
-    public static <E> E[] insert(final E[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static <E> E[] insert(final E[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -695,16 +671,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(double[], int, double[], int, int)
      * @see #remove(double[], int, int)
      */
-    public static double[] insert(final double[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static double[] insert(final double[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -721,16 +695,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(float[], int, float[], int, int)
      * @see #remove(float[], int, int)
      */
-    public static float[] insert(final float[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static float[] insert(final float[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -747,16 +719,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(long[], int, long[], int, int)
      * @see #remove(long[], int, int)
      */
-    public static long[] insert(final long[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static long[] insert(final long[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -773,16 +743,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(int[], int, int[], int, int)
      * @see #remove(int[], int, int)
      */
-    public static int[] insert(final int[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static int[] insert(final int[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -798,16 +766,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(short[], int, short[], int, int)
      * @see #remove(short[], int, int)
      */
-    public static short[] insert(final short[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static short[] insert(final short[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -824,16 +790,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(byte[], int, byte[], int, int)
      * @see #remove(byte[], int, int)
      */
-    public static byte[] insert(final byte[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static byte[] insert(final byte[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -850,16 +814,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(char[], int, char[], int, int)
      * @see #remove(char[], int, int)
      */
-    public static char[] insert(final char[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static char[] insert(final char[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -876,16 +838,14 @@ public final class ArraysExt extends Static {
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
-     * @throws NullArgumentException if {@code array} is null and {@code length} is different than 0.
+     * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(boolean[], int, boolean[], int, int)
      * @see #remove(boolean[], int, int)
      */
-    public static boolean[] insert(final boolean[] array, final int first, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
-    {
+    public static boolean[] insert(final boolean[] array, final int first, final int length) {
         return doInsert(array, first, length);
     }
 
@@ -905,14 +865,13 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     private static <T> T doInsert(final T src, final int srcOff,
                                   final T dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         if (length == 0) {
             return dst;             // May be null
@@ -945,13 +904,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static <E> E[] insert(final E[] src, final int srcOff,
                                  final E[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -971,13 +929,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static double[] insert(final double[] src, final int srcOff,
                                   final double[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -997,13 +954,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static float[] insert(final float[] src, final int srcOff,
                                  final float[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -1023,13 +979,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static long[] insert(final long[] src, final int srcOff,
                                 final long[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -1049,13 +1004,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static int[] insert(final int[] src, final int srcOff,
                                final int[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -1075,13 +1029,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static short[] insert(final short[] src, final int srcOff,
                                  final short[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -1101,13 +1054,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static byte[] insert(final byte[] src, final int srcOff,
                                 final byte[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -1127,13 +1079,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static char[] insert(final char[] src, final int srcOff,
                                 final char[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -1153,13 +1104,12 @@ public final class ArraysExt extends Static {
      * @param  length  number of {@code src} elements to insert.
      * @return array which contains the merge of {@code src} and {@code dst}.
      *         This method returns directly {@code dst} when {@code length} is zero, but never return {@code src}.
-     * @throws NullArgumentException if {@code src} or {@code dst} is null while {@code length} is different than 0.
+     * @throws NullPointerException if {@code src} or {@code dst} is null while {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
      * @throws IndexOutOfBoundsException if {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds.
      */
     public static boolean[] insert(final boolean[] src, final int srcOff,
                                    final boolean[] dst, final int dstOff, final int length)
-            throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
         return doInsert(src, srcOff, dst, dstOff, length);
     }
@@ -1173,11 +1123,11 @@ public final class ArraysExt extends Static {
      * @param  array    the array to copy with a new element. The original array will not be modified.
      * @param  element  the element to add (can be null).
      * @return a copy of the given array with the given element appended at the end.
-     * @throws NullArgumentException if the given array is null.
+     * @throws NullPointerException if the given array is null.
      *
      * @see #concatenate(Object[][])
      */
-    public static <T> T[] append(final T[] array, final T element) throws NullArgumentException{
+    public static <T> T[] append(final T[] array, final T element) {
         ArgumentChecks.ensureNonNull("array", array);
         final T[] copy = Arrays.copyOf(array, array.length + 1);
         copy[array.length] = element;

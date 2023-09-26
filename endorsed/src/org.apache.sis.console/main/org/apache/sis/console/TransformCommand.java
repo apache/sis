@@ -18,6 +18,7 @@ package org.apache.sis.console;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.io.IOException;
@@ -75,13 +76,18 @@ import org.apache.sis.util.logging.Logging;
 
 import static java.util.logging.Logger.getLogger;
 
+import org.apache.sis.referencing.DefaultObjectDomain;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.internal.Legacy;
+
 
 /**
  * The "transform" subcommand.
  * The output is a comma separated values (CSV) file, with {@code '#'} as the first character of comment lines.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
  */
 final class TransformCommand extends FormattedOutputCommand {
@@ -234,7 +240,7 @@ final class TransformCommand extends FormattedOutputCommand {
         printHeader(Vocabulary.Keys.Destination); printNameAndIdentifier(operation.getTargetCRS(), false);
         printHeader(Vocabulary.Keys.Operations);  printOperations (operation, false);
         outHeader.nextLine();
-        printDomainOfValidity(operation.getDomainOfValidity());
+        printDomainOfValidity(Legacy.getDomains(operation));
         printAccuracy(CRS.getLinearAccuracy(operation));
         if (options.containsKey(Option.VERBOSE)) {
             printDetails();
@@ -383,9 +389,10 @@ final class TransformCommand extends FormattedOutputCommand {
      *
      * <blockquote>Canada - onshore and offshore</blockquote>
      */
-    private void printDomainOfValidity(final Extent domain) throws IOException {
-        if (domain != null) {
-            final InternationalString description = domain.getDescription();
+    private void printDomainOfValidity(final Collection<DefaultObjectDomain> domains) throws IOException {
+        for (final DefaultObjectDomain domain : domains) {
+            final Extent extent = domain.getDomainOfValidity();
+            final InternationalString description = extent.getDescription();
             if (description != null) {
                 String text = description.toString(locale);
                 if (text.length() >= 80) {
@@ -401,6 +408,7 @@ final class TransformCommand extends FormattedOutputCommand {
                 printHeader(Vocabulary.Keys.Domain);
                 outHeader.append(text);
                 outHeader.nextLine();
+                return;
             }
         }
     }
@@ -410,7 +418,6 @@ final class TransformCommand extends FormattedOutputCommand {
      * This information is printed only if the {@code --verbose} option was specified.
      */
     private void printDetails() throws IOException {
-        final boolean debug = options.containsKey(Option.DEBUG);
         final WKTFormat f = new WKTFormat(locale, timezone);
         if (colors) f.setColors(Colors.DEFAULT);
         f.setConvention(convention);

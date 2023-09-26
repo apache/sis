@@ -47,7 +47,6 @@ import org.apache.sis.coverage.grid.j2d.ObservableImage;
 import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.coverage.grid.j2d.WritableTiledImage;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
@@ -538,7 +537,7 @@ public class ImageRenderer {
      * getExtent()}.{@linkplain GridExtent#getLow(int) getLow()}</code>, as specified in class javadoc.
      *
      * @param  data  the Java2D buffer containing data for all bands.
-     * @throws NullArgumentException if {@code data} is null.
+     * @throws NullPointerException if {@code data} is null.
      * @throws MismatchedCoverageRangeException if the given data buffer does not have the expected amount of banks.
      */
     public void setData(final DataBuffer data) {
@@ -563,7 +562,7 @@ public class ImageRenderer {
      *
      * @param  dataType  type of data.
      * @param  data  the buffers wrapping arrays of primitive type.
-     * @throws NullArgumentException if {@code data} is null or one of {@code data} element is null.
+     * @throws NullPointerException if {@code data} is null or one of {@code data} element is null.
      * @throws MismatchedCoverageRangeException if the number of specified buffers is not equal to the number of bands.
      * @throws UnsupportedOperationException if a buffer is not backed by an accessible array or is read-only.
      * @throws ArrayStoreException if a buffer type is incompatible with {@code dataType}.
@@ -589,7 +588,7 @@ public class ImageRenderer {
      * which can be overridden by subclasses if desired.</p>
      *
      * @param  data  the vectors wrapping arrays of primitive type.
-     * @throws NullArgumentException if {@code data} is null or one of {@code data} element is null.
+     * @throws NullPointerException if {@code data} is null or one of {@code data} element is null.
      * @throws MismatchedCoverageRangeException if the number of specified vectors is not equal to the number of bands.
      * @throws UnsupportedOperationException if a vector is not backed by an accessible array or is read-only.
      * @throws RasterFormatException if vectors do not have the same size.

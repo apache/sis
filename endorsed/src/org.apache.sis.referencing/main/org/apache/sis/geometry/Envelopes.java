@@ -720,7 +720,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
          *
          *    Example: If the transformed envelope above is (80 … 85°S, 10 … 50°W), and if the
          *             latitude in the target CRS is bounded at 90°S, then project (90°S, 30°W)
-         *             to the source CRS. Note that the longitude is set to the the center of
+         *             to the source CRS. Note that the longitude is set to the center of
          *             the envelope longitude range (more on this below).
          *
          * 2) If the singularity point computed above is inside the source envelope,

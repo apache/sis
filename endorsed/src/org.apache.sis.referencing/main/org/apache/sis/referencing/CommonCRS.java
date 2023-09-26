@@ -2046,7 +2046,7 @@ public enum CommonCRS {
         message = Exceptions.formatChainedMessages(null, message, e);
         final LogRecord record = new LogRecord(Level.WARNING, message);
         if (!(e instanceof UnavailableFactoryException) || AuthorityFactories.failure((UnavailableFactoryException) e)) {
-            // Append the stack trace only if the exception is the the one we expect when the factory is not available.
+            // Append the stack trace only if the exception is the one we expect when the factory is not available.
             record.setThrown(e);
         }
         Logging.completeAndLog(AuthorityFactories.LOGGER, caller.getClass(), method, record);

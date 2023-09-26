@@ -51,6 +51,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
@@ -64,7 +65,7 @@ import org.apache.sis.metadata.iso.identification.AbstractIdentification;
  * Some methods may also move in public API if we feel confident enough.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 public final class StoreUtilities extends Static {
@@ -266,12 +267,7 @@ public final class StoreUtilities extends Static {
         if (provider != null) {
             StoreMetadata md = provider.getAnnotation(StoreMetadata.class);
             if (md != null) {
-                for (Capability c : md.capabilities()) {
-                    if (Capability.WRITE.equals(c)) {
-                        return Boolean.TRUE;
-                    }
-                }
-                return Boolean.FALSE;
+                return ArraysExt.contains(md.capabilities(), Capability.WRITE);
             }
         }
         return null;

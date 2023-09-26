@@ -464,7 +464,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
         assertNotNull("Missing namespace.", namespace);
         assertFalse("Missing namespace.", namespace.trim().isEmpty());
         /*
-         * Get the namespace declared at the package level, and ensure the the
+         * Get the namespace declared at the package level, and ensure the
          * given namespace is not redundant with that package-level namespace.
          */
         final XmlSchema schema = impl.getPackage().getAnnotation(XmlSchema.class);

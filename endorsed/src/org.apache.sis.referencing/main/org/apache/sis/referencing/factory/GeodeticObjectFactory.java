@@ -41,7 +41,6 @@ import org.opengis.referencing.operation.*;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.crs.*;
@@ -97,78 +96,67 @@ import org.apache.sis.xml.XML;
  *     <th>Property name</th>
  *     <th>Value type</th>
  *     <th>Returned by</th>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
  *     <td>{@link Identifier} or {@link String}</td>
  *     <td>{@link AbstractIdentifiedObject#getName()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
  *     <td>{@link String} or {@link org.opengis.metadata.citation.Citation}</td>
  *     <td>{@link NamedIdentifier#getAuthority()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.opengis.metadata.Identifier#CODE_KEY}</td>
  *     <td>{@link String}</td>
  *     <td>{@link NamedIdentifier#getCode()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"codespace"</td>
  *     <td>{@link String}</td>
  *     <td>{@link NamedIdentifier#getCodeSpace()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"version"</td>
  *     <td>{@link String}</td>
  *     <td>{@link NamedIdentifier#getVersion()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"description"</td>
  *     <td>{@link String}</td>
  *     <td>{@link NamedIdentifier#getDescription()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
  *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
  *     <td>{@link AbstractIdentifiedObject#getAlias()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
  *     <td>{@link Identifier} (optionally as array)</td>
  *     <td>{@link AbstractIdentifiedObject#getIdentifiers()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
+ *     <td>"domains"</td>
+ *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain} (optionally as array)</td>
+ *     <td>{@link #getDomains()}</td>
+ *   </tr><tr>
  *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
  *     <td>{@link Extent}</td>
- *     <td>{@link AbstractReferenceSystem#getDomainOfValidity()}</td>
- *   </tr>
- *   <tr>
+ *     <td>{@link DefaultObjectDomain#getDomainOfValidity()}</td>
+ *   </tr><tr>
  *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
  *     <td>{@link String} or {@link InternationalString}</td>
- *     <td>{@link AbstractReferenceSystem#getScope()}</td>
- *   </tr>
- *   <tr>
+ *     <td>{@link DefaultObjectDomain#getScope()}</td>
+ *   </tr><tr>
  *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractDatum#getAnchorPoint()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
  *     <td>{@link Date}</td>
  *     <td>{@link AbstractDatum#getRealizationEpoch()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractIdentifiedObject#getRemarks()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#DEPRECATED_KEY}</td>
  *     <td>{@link Boolean}</td>
  *     <td>{@link AbstractIdentifiedObject#isDeprecated()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
  *     <td>{@link Locale}</td>
  *     <td>(none)</td>

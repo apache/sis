@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.xml.bind.Context;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.referencing.util.NilReferencingObject;
 
@@ -40,7 +41,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * <p>This class also opportunistically provide helper methods for {@link AbstractIdentifiedObject} marshalling.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.4
  */
 final class NameIterator implements Iterator<ReferenceIdentifier> {
@@ -120,8 +121,9 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
     }
 
     /**
-     * Implementation of {@link AbstractIdentifiedObject#getID()}, provided here for reducing the amount of code
-     * to load in the common case where XML support is not needed.
+     * Implementation of XML marshalling of GML object identifier.
+     * This is provided here for reducing the amount of code to load
+     * in the common case where XML support is not needed.
      *
      * <p>The current implementation searches for the first identifier, regardless its authority.
      * If no identifier is found, then the name and aliases are used.
@@ -138,16 +140,18 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
      * Consecutive invocations of this method do not need to return the same value,
      * since it may depends on the marshalling context.</p>
      *
-     * @param  context      the (un)marshalling context.
      * @param  object       the object for which to get a {@code gml:id}.
      * @param  name         the identified object name, or {@code null} if none.
      * @param  alias        the identified object aliases, or {@code null} if none.
      * @param  identifiers  the identifiers, or {@code null} if none.
      * @return proposed value for {@code gml:id} attribute, or {@code null} if none.
+     *
+     * @see AbstractIdentifiedObject#getID()
      */
-    static String getID(final Context context, final IdentifiedObject object, final ReferenceIdentifier name,
+    static String getID(final IdentifiedObject object, final ReferenceIdentifier name,
             final Collection<? extends GenericName> alias, final Collection<? extends ReferenceIdentifier> identifiers)
     {
+        final Context context = Context.current();
         String candidate = Context.getObjectID(context, object);
         if (candidate == null) {
             final StringBuilder id = new StringBuilder();
@@ -200,5 +204,23 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
             }
         }
         return candidate;
+    }
+
+    /**
+     * Implementation of XML unmarshalling of GML object identifier.
+     * This is provided here for reducing the amount of code to load
+     * in the common case where XML support is not needed.
+     *
+     * @param  object  the object for which to set a {@code gml:id}.
+     * @param  id      the identifier to set.
+     *
+     * @see AbstractIdentifiedObject#setID(String)
+     */
+    static void setID(final IdentifiedObject object, final String id) {
+        final Context context = Context.current();
+        if (!Context.setObjectForID(context, object, id)) {
+            Context.warningOccured(context, AbstractIdentifiedObject.class, "setID",
+                                   Errors.class, Errors.Keys.DuplicatedIdentifier_1, id);
+        }
     }
 }

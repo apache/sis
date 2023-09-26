@@ -773,7 +773,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
 
     /**
      * Clears the error status of all tiles in the given range of indices.
-     * Those tiles will be marked as dirty and recomputed next time the the
+     * Those tiles will be marked as dirty and recomputed next time the
      * {@link #getTile(int, int)} method is invoked.
      * The status of valid tiles is unchanged by this method call.
      *

@@ -364,7 +364,7 @@ fill:   for (int i=0; ; i++) {
                         final Level level = getLogger("").getLevel();   // Root logger level.
                         if (level == null) {
                             // May happen when some code outside Apache SIS define their own loggers.
-                            value = resources.getString(Vocabulary.Keys.Unknown);
+                            value = resources.getString(Vocabulary.Keys.NotKnown);
                         } else {
                             value = level.getLocalizedName();
                             final Map<String,Level> levels = Loggers.getEffectiveLevels();

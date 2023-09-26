@@ -103,7 +103,7 @@ public class PointPlacement<R> extends LabelPlacement<R> {
     /**
      * Returns the location inside of a label to use for anchoring the label to the point.
      * The coordinates are given as (<var>x</var>,<var>y</var>) floating-point numbers
-     * relative the the label bounding box, where (0,0) is the lower-left corner and
+     * relative the label bounding box, where (0,0) is the lower-left corner and
      * (1,1) is the upper-right corner.
      *
      * <p>The returned object is <em>live</em>:

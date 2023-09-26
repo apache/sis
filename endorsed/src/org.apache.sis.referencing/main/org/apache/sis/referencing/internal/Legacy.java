@@ -29,11 +29,23 @@ import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 
+// Specific to the main branch:
+import java.util.List;
+import java.util.Objects;
+import java.util.Collection;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.apache.sis.referencing.DefaultObjectDomain;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 
 
 /**
- * Utilities related to version 1 of Well Known Text format.
+ * Utilities related to version 1 of Well Known Text format, or to ISO 19111:2007.
  * Defined in a separated classes for reducing classes loading when not necessary.
  *
  * <p>This class implements the {@link AxisFilter} interface for opportunistic reasons.
@@ -117,5 +129,58 @@ public final class Legacy {
             cs = (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit.asType(Length.class));
         }
         return cs;
+    }
+
+    /**
+     * Temporary getter method used as a workaround for the lack of this method in GeoAPI 3.0 interface.
+     *
+     * @param  object  the object from which to get the domain.
+     * @return domain of the given object.
+     */
+    public static Collection<DefaultObjectDomain> getDomains(final IdentifiedObject object) {
+        if (object instanceof AbstractIdentifiedObject) {
+            return ((AbstractIdentifiedObject) object).getDomains();
+        }
+        final Extent domainOfValidity;
+        final InternationalString scope;
+        if (object instanceof ReferenceSystem) {
+            final var c = (ReferenceSystem) object;
+            scope = c.getScope();
+            domainOfValidity = c.getDomainOfValidity();
+        } else if (object instanceof Datum) {
+            final var c = (Datum) object;
+            scope = c.getScope();
+            domainOfValidity = c.getDomainOfValidity();
+        } else if (object instanceof CoordinateOperation) {
+            final var c = (CoordinateOperation) object;
+            scope = c.getScope();
+            domainOfValidity = c.getDomainOfValidity();
+        } else {
+            return null;
+        }
+        if (scope == null && domainOfValidity == null) {
+            return null;
+        }
+        return List.of(new DefaultObjectDomain(scope, domainOfValidity));
+    }
+
+    /**
+     * Returns the first non-null scope found in the given collection.
+     *
+     * @param  domains  the value of {@link AbstractIdentifiedObject#getDomains()}.
+     * @return a description of domain of usage, or {@code null} if none.
+     */
+    public static InternationalString getScope(final Collection<DefaultObjectDomain> domains) {
+        return domains.stream().map(DefaultObjectDomain::getScope).filter(Objects::nonNull).findFirst().orElse(null);
+    }
+
+    /**
+     * Returns the first non-null domain of validity found in the given collection.
+     *
+     * @param  domains  the value of {@link AbstractIdentifiedObject#getDomains()}.
+     * @return the valid domain, or {@code null} if not available.
+     */
+    public static Extent getDomainOfValidity(final Collection<DefaultObjectDomain> domains) {
+        return domains.stream().map(DefaultObjectDomain::getDomainOfValidity).filter(Objects::nonNull).findFirst().orElse(null);
     }
 }
