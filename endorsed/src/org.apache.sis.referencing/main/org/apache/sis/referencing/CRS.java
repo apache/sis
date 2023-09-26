@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -775,7 +776,7 @@ public final class CRS extends Static {
         if (operation == null) {
             return null;
         }
-        return Extents.getGeographicBoundingBox(operation.getDomains()).orElseGet(
+        return getDomains(operation).orElseGet(
                 () -> Extents.intersection(getGeographicBoundingBox(operation.getSourceCRS()),
                                            getGeographicBoundingBox(operation.getTargetCRS())));
     }
@@ -797,7 +798,15 @@ public final class CRS extends Static {
      */
     @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateReferenceSystem crs) {
-        return (crs != null) ? Extents.getGeographicBoundingBox(crs.getDomains()).orElse(null) : null;
+        return (crs != null) ? getDomains(crs).orElse(null) : null;
+    }
+
+    /**
+     * Returns the geographic bounding box computed from the domain of the given object. This method may be renamed and
+     * refactored as a replacement of {@link #getGeographicBoundingBox(CoordinateReferenceSystem)} in a future version.
+     */
+    private static Optional<GeographicBoundingBox> getDomains(final IdentifiedObject object) {
+        return Extents.getGeographicBoundingBox(object.getDomains().stream().map(ObjectDomain::getDomainOfValidity));
     }
 
     /**
