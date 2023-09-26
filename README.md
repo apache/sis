@@ -24,19 +24,37 @@ Apache SIS, SIS, Apache, the Apache feather logo, and the Apache SIS
 project logo are trademarks of The Apache Software Foundation.
 
 
-## Getting Started
+## Build from sources
 
 Running the library part of Apache SIS requires Java 11 or higher.
 Running the JavaFX application part requires Java 16 or higher.
 Building SIS requires Java 18 or higher
-together with [Gradle](https://gradle.org/) build system.
+together with [Gradle](https://gradle.org/) 8 build system.
 To build SIS, use the following command in this directory:
 
     gradle assemble
 
+The JAR files will be located in the following directories,
+together with their dependencies:
+
+* `endorsed/build/libs/`  (core library)
+* `optional/build/libs/`  (requires JavaFX)
+* `incubator/build/libs/` (not yet released)
+
+If JAR files seem missing, try `gradle jar`.
+For publishing to the local `~/.m2` repository
+(for example, for use with Maven projects):
+
+    gradle publishToMavenLocal
+
+
+## Getting Started
+
 Information for running a [command-line tool](https://sis.apache.org/command-line.html)
 or an [optional JavaFX application](https://sis.apache.org/javafx.html)
-can be found on the web site.
+can be found on the web site. Java code examples for some common tasks
+are given in the [How to…](https://sis.apache.org/howto.html) pages.
+Complete API can be browsed in [online Javadoc](https://sis.apache.org/apidocs/index.html).
 
 
 ## License (see also LICENSE)

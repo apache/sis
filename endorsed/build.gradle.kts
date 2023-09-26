@@ -236,7 +236,7 @@ publishing {
         create<MavenPublication>("util") {
             groupId    = "org.apache.sis.core"
             artifactId = "sis-utility"
-            artifact(file("${buildDir}/libs/org.apache.sis.util.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.util.jar"))
             pom {
                 name        = "Apache SIS utilities"
                 description = "Units of measurement and miscellaneous utility methods required by Apache SIS."
@@ -245,7 +245,7 @@ publishing {
         create<MavenPublication>("metadata") {
             groupId    = "org.apache.sis.core"
             artifactId = "sis-metadata"
-            artifact(file("${buildDir}/libs/org.apache.sis.metadata.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.metadata.jar"))
             pom {
                 name        = "Apache SIS metadata"
                 description = "Implementations of metadata derived from ISO 19115. " +
@@ -256,7 +256,7 @@ publishing {
         create<MavenPublication>("referencing") {
             groupId    = "org.apache.sis.core"
             artifactId = "sis-referencing"
-            artifact(file("${buildDir}/libs/org.apache.sis.referencing.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.referencing.jar"))
             pom {
                 name        = "Apache SIS referencing"
                 description = "Implementations of Coordinate Reference Systems (CRS), " +
@@ -266,7 +266,7 @@ publishing {
         create<MavenPublication>("referencing.gazetteer") {
             groupId    = "org.apache.sis.core"
             artifactId = "sis-referencing-by-identifiers"
-            artifact(file("${buildDir}/libs/org.apache.sis.referencing.gazetteer.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.referencing.gazetteer.jar"))
             pom {
                 name        = "Apache SIS referencing by geographic identifiers"
                 description = "Implementations of Spatial Reference Systems using Geographic Identifiers " +
@@ -276,7 +276,7 @@ publishing {
         create<MavenPublication>("feature") {
             groupId    = "org.apache.sis.core"
             artifactId = "sis-feature"
-            artifact(file("${buildDir}/libs/org.apache.sis.feature.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.feature.jar"))
             pom {
                 name        = "Apache SIS features"
                 description = "Representations of geographic features. " +
@@ -286,7 +286,7 @@ publishing {
         create<MavenPublication>("portrayal") {
             groupId    = "org.apache.sis.core"
             artifactId = "sis-portrayal"
-            artifact(file("${buildDir}/libs/org.apache.sis.portrayal.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.portrayal.jar"))
             pom {
                 name        = "Apache SIS portrayal"
                 description = "Symbology and map representations, together with a rendering engine for display."
@@ -295,7 +295,7 @@ publishing {
         create<MavenPublication>("storage") {
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-storage"
-            artifact(file("${buildDir}/libs/org.apache.sis.storage.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.storage.jar"))
             pom {
                 name        = "Apache SIS common storage"
                 description = "Provides the interfaces and base classes to be implemented by various storage formats."
@@ -304,7 +304,7 @@ publishing {
         create<MavenPublication>("storage.xml") {
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-xmlstore"
-            artifact(file("${buildDir}/libs/org.apache.sis.storage.xml.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.storage.xml.jar"))
             pom {
                 name        = "Apache SIS XML storage"
                 description = "Read and write files in the GPX format."
@@ -313,7 +313,7 @@ publishing {
         create<MavenPublication>("storage.netcdf") {
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-netcdf"
-            artifact(file("${buildDir}/libs/org.apache.sis.storage.netcdf.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.storage.netcdf.jar"))
             pom {
                 name        = "Apache SIS netCDF storage"
                 description = "Bridge between netCDF Climate and Forecast (CF) convention and ISO 19115 metadata."
@@ -322,7 +322,7 @@ publishing {
         create<MavenPublication>("storage.geotiff") {
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-geotiff"
-            artifact(file("${buildDir}/libs/org.apache.sis.storage.geotiff.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.storage.geotiff.jar"))
             pom {
                 name        = "Apache SIS GeoTIFF storage"
                 description = "Cloud Optimized GeoTIFF reader and bridge to ISO 19115 metadata."
@@ -331,7 +331,7 @@ publishing {
         create<MavenPublication>("storage.earthobservation") {
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-earth-observation"
-            artifact(file("${buildDir}/libs/org.apache.sis.storage.earthobservation.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.storage.earthobservation.jar"))
             pom {
                 name        = "Apache SIS Earth Observation storage"
                 description = "Read a directory of Landsat files as a single resource."
@@ -340,7 +340,7 @@ publishing {
         create<MavenPublication>("storage.sql") {
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-sqlstore"
-            artifact(file("${buildDir}/libs/org.apache.sis.storage.sql.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.storage.sql.jar"))
             pom {
                 name        = "Apache SIS SQL storage"
                 description = "Read and write features from SQL databases."
@@ -349,7 +349,7 @@ publishing {
         create<MavenPublication>("cloud.aws") {
             groupId    = "org.apache.sis.cloud"
             artifactId = "sis-cloud-aws"
-            artifact(file("${buildDir}/libs/org.apache.sis.cloud.aws.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.cloud.aws.jar"))
             pom {
                 name        = "Apache SIS storage from Amazon AWS S3"
                 description = "Provides access to Amazon AWS S3 storage from Apache SIS data stores."
@@ -358,7 +358,7 @@ publishing {
         create<MavenPublication>("profile.france") {
             groupId    = "org.apache.sis.profiles"
             artifactId = "sis-french-profile"
-            artifact(file("${buildDir}/libs/org.apache.sis.profile.france.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.profile.france.jar"))
             pom {
                 name        = "Apache SIS French profiles"
                 description = "Extensions to ISO-19115 metadata mandated by the French government."
@@ -367,7 +367,7 @@ publishing {
         create<MavenPublication>("profile.japan") {
             groupId    = "org.apache.sis.profiles"
             artifactId = "sis-japan-profile"
-            artifact(file("${buildDir}/libs/org.apache.sis.profile.japan.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.profile.japan.jar"))
             pom {
                 name        = "Apache SIS Japanese profiles"
                 description = "Extensions to netCDF reader for file formats published by Japanese Aerospace Exploration Agency (JAXA)."
@@ -376,7 +376,7 @@ publishing {
         create<MavenPublication>("console") {
             groupId    = "org.apache.sis.application"
             artifactId = "sis-console"
-            artifact(file("${buildDir}/libs/org.apache.sis.console.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.console.jar"))
             pom {
                 name        = "Apache SIS console"
                 description = "Console application."
@@ -385,7 +385,7 @@ publishing {
         create<MavenPublication>("openoffice") {
             groupId    = "org.apache.sis.application"
             artifactId = "sis-openoffice"
-            artifact(file("${buildDir}/libs/org.apache.sis.openoffice.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.openoffice.jar"))
             pom {
                 name        = "Bridges to Apache OpenOffice or LibreOffice"
                 description = "Provides some Apache SIS functionalities as Apache OpenOffice addins. " +
