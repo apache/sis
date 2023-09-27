@@ -1012,6 +1012,31 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
+     * Returns a 1-dimensional coordinate reference system which uses parameter values or functions.
+     * The default implementation performs the following steps:
+     * <ul>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createParametricCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
+     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createParametricCRS(String)}
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
+     * </ul>
+     *
+     * @return the coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @since 1.4
+     */
+    @Override
+    public ParametricCRS createParametricCRS(final String code) throws FactoryException {
+        if (isDefault(ParametricCRS.class)) {
+            return super.createParametricCRS(code);
+        }
+        return create(AuthorityFactoryProxy.PARAMETRIC_CRS, code);
+    }
+
+    /**
      * Returns a CRS describing the position of points through two or more independent coordinate reference systems.
      * The default implementation performs the following steps:
      * <ul>
@@ -1193,6 +1218,31 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             return super.createTemporalDatum(code);
         }
         return create(AuthorityFactoryProxy.TEMPORAL_DATUM, code);
+    }
+
+    /**
+     * Returns an identification of a reference surface used as the origin of a parametric coordinate system.
+     * The default implementation performs the following steps:
+     * <ul>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createParametricDatum(String)}
+     *       method, invoke that method and cache the result for future use.</li>
+     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createParametricDatum(String)}
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createDatum(String)} method cached a value before to try that method.</li>
+     * </ul>
+     *
+     * @return the datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @since 1.4
+     */
+    @Override
+    public ParametricDatum createParametricDatum(final String code) throws FactoryException {
+        if (isDefault(ParametricDatum.class)) {
+            return super.createParametricDatum(code);
+        }
+        return create(AuthorityFactoryProxy.PARAMETRIC_DATUM, code);
     }
 
     /**
@@ -1399,6 +1449,31 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             return super.createTimeCS(code);
         }
         return create(AuthorityFactoryProxy.TIME_CS, code);
+    }
+
+    /**
+     * Returns a 1-dimensional coordinate system containing a single axis.
+     * The default implementation performs the following steps:
+     * <ul>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createParametricCS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
+     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createParametricCS(String)}
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
+     * </ul>
+     *
+     * @return the coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @since 1.4
+     */
+    @Override
+    public ParametricCS createParametricCS(final String code) throws FactoryException {
+        if (isDefault(ParametricCS.class)) {
+            return super.createParametricCS(code);
+        }
+        return create(AuthorityFactoryProxy.PARAMETRIC_CS, code);
     }
 
     /**

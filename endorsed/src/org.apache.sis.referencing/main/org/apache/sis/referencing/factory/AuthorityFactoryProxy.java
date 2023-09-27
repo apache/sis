@@ -57,7 +57,7 @@ import org.apache.sis.util.internal.Strings;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 abstract class AuthorityFactoryProxy<T> {
@@ -226,6 +226,16 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
+    static final AuthorityFactoryProxy<ParametricDatum> PARAMETRIC_DATUM =
+        new AuthorityFactoryProxy<ParametricDatum>(ParametricDatum.class, AuthorityFactoryIdentifier.DATUM) {
+            @Override ParametricDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
+                return factory.createParametricDatum(code);
+            }
+            @Override ParametricDatum createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                return datumFactory(factory).createParametricDatum(code);
+            }
+    };
+
     static final AuthorityFactoryProxy<VerticalDatum> VERTICAL_DATUM =
         new AuthorityFactoryProxy<VerticalDatum>(VerticalDatum.class, AuthorityFactoryIdentifier.DATUM) {
             @Override VerticalDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
@@ -366,6 +376,16 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
+    static final AuthorityFactoryProxy<ParametricCS> PARAMETRIC_CS =
+        new AuthorityFactoryProxy<ParametricCS>(ParametricCS.class, AuthorityFactoryIdentifier.CS) {
+            @Override ParametricCS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
+                return factory.createParametricCS(code);
+            }
+            @Override ParametricCS createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                return csFactory(factory).createParametricCS(code);
+            }
+    };
+
     static final AuthorityFactoryProxy<CoordinateSystemAxis> AXIS =
         new AuthorityFactoryProxy<CoordinateSystemAxis>(CoordinateSystemAxis.class, AuthorityFactoryIdentifier.CS) {
             @Override CoordinateSystemAxis create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
@@ -484,6 +504,16 @@ abstract class AuthorityFactoryProxy<T> {
             }
             @Override VerticalCRS createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                 return crsFactory(factory).createVerticalCRS(code);
+            }
+    };
+
+    static final AuthorityFactoryProxy<ParametricCRS> PARAMETRIC_CRS =
+        new AuthorityFactoryProxy<ParametricCRS>(ParametricCRS.class, AuthorityFactoryIdentifier.CRS) {
+            @Override ParametricCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
+                return factory.createParametricCRS(code);
+            }
+            @Override ParametricCRS createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                return crsFactory(factory).createParametricCRS(code);
             }
     };
 
