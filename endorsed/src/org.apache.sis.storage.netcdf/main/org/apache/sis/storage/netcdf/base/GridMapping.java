@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -74,7 +75,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.measure.Units;
-import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.operation.CoordinateOperationFactory;

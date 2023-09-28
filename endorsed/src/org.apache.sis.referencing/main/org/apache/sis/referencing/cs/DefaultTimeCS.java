@@ -17,9 +17,9 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.Unit;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;

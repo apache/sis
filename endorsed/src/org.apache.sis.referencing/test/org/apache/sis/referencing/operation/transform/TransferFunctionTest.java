@@ -22,10 +22,12 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

@@ -24,10 +24,12 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assume.assumeNotNull;
 import static org.junit.Assert.*;

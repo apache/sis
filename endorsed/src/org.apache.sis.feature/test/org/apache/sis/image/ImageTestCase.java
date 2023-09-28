@@ -25,9 +25,11 @@ import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.ImagingOpException;
+
+// Test dependencies
+import org.junit.AfterClass;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestConfiguration;
-import org.junit.AfterClass;
 
 import static java.lang.StrictMath.round;
 import static org.junit.Assert.assertNotNull;

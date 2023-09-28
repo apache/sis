@@ -23,9 +23,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;

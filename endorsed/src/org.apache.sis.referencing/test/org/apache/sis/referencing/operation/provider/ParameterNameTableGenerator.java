@@ -32,13 +32,13 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
-import org.apache.sis.test.ProjectDirectories;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
+import org.apache.sis.test.ProjectDirectories;
 
 import static org.junit.Assert.*;
 

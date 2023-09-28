@@ -21,10 +21,12 @@ import java.util.HashMap;
 import javax.measure.Unit;
 import javax.measure.Dimension;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.util.UnconvertibleObjectException;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.util.UnconvertibleObjectException;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMapEquals;

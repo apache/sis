@@ -23,8 +23,10 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.HardCodedDatum;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

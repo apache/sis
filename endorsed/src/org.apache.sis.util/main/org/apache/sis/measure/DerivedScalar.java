@@ -16,12 +16,12 @@
  */
 package org.apache.sis.measure;
 
-import javax.measure.Unit;
-import javax.measure.Quantity;
-import javax.measure.UnitConverter;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
+import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
 
 

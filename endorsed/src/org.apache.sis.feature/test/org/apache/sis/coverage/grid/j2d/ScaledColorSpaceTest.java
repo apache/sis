@@ -23,12 +23,14 @@ import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.image.ImageTestCase;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static java.lang.StrictMath.*;
+import static org.junit.Assert.*;
 
 
 /**

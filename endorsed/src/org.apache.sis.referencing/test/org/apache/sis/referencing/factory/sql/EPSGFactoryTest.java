@@ -55,6 +55,8 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.TestFactorySource;
+
+// Test dependencies
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Ignore;

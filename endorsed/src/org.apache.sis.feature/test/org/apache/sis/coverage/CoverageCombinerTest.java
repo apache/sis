@@ -24,8 +24,10 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

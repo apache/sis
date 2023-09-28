@@ -17,10 +17,10 @@
 package org.apache.sis.cql;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.filter.FilterFactory;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.apache.sis.filter.DefaultFilterFactory;
+import org.opengis.filter.FilterFactory;
 import org.opengis.feature.Feature;
+import org.apache.sis.filter.DefaultFilterFactory;
 
 
 /**

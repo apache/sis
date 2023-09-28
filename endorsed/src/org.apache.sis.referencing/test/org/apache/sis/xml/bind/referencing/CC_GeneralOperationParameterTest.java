@@ -27,13 +27,15 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.Namespaces;
+
+// Test dependencies
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

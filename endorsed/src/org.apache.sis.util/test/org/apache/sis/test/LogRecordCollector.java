@@ -25,6 +25,8 @@ import java.util.logging.LogRecord;
 import java.io.IOException;
 import org.apache.sis.system.Modules;
 import org.apache.sis.io.TableAppender;
+
+// Test dependencies
 import org.junit.runner.Description;
 
 

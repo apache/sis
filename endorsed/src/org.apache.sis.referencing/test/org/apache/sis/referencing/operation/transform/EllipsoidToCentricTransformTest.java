@@ -29,13 +29,13 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.measure.Units;
 
-import static java.lang.StrictMath.toRadians;
-
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
+import static java.lang.StrictMath.toRadians;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;

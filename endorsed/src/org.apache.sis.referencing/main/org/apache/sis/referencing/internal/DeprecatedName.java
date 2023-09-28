@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.internal;
 
-import org.apache.sis.referencing.NamedIdentifier;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.Deprecable;
 
 

@@ -28,12 +28,14 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.measure.Units;
-import org.opengis.test.referencing.TransformTestCase;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.util.ArraysExt;
+
+// Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 

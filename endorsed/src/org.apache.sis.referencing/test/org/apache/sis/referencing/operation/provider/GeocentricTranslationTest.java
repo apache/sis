@@ -30,11 +30,13 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
 import static java.lang.StrictMath.toRadians;
 import static org.junit.Assert.*;
@@ -42,8 +44,8 @@ import static org.opengis.test.Assert.assertInstanceOf;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Arrays;
-import org.opengis.test.ToleranceModifier;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.opengis.test.ToleranceModifier;
 
 
 /**

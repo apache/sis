@@ -21,8 +21,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

@@ -46,8 +46,8 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.internal.X364;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
+import static org.junit.Assert.*;
 
 
 /**

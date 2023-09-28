@@ -27,10 +27,12 @@ import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.io.wkt.Convention;
+
+// Test dependencies
+import org.junit.Test;
+import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
-import org.opengis.test.Validators;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;

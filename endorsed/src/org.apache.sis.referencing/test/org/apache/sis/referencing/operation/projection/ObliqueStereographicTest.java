@@ -26,9 +26,11 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;

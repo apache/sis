@@ -34,8 +34,8 @@ import org.opengis.metadata.citation.ResponsibleParty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
-import org.opengis.metadata.MetadataScope;
 import java.nio.charset.Charset;
+import org.opengis.metadata.MetadataScope;
 
 
 /**

@@ -27,6 +27,8 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.iso.Names;
+
+// Test dependencies
 import org.junit.Test;
 
 import static org.apache.sis.feature.Assertions.assertValuesEqual;

@@ -31,8 +31,10 @@ import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.sis.metadata.sql.util.Dialect;
 import org.apache.sis.metadata.sql.util.LocalDataSource;
 import org.apache.sis.metadata.sql.util.ScriptRunner;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Debug;
+
+// Test dependencies
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;

@@ -18,6 +18,9 @@ package org.apache.sis.geometry.wrapper.jts;
 
 import java.util.Map;
 import java.awt.Shape;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -34,9 +37,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.internal.Constants;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 
 import static org.apache.sis.geometry.wrapper.Geometries.LOGGER;
 

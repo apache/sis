@@ -37,11 +37,13 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;

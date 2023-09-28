@@ -34,10 +34,12 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelImageInputStream;
 import org.apache.sis.io.stream.InputStreamAdapter;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;

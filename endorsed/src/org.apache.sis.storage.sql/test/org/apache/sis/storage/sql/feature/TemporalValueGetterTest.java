@@ -28,6 +28,8 @@ import java.time.ZoneOffset;
 import java.util.function.BiPredicate;
 import org.apache.sis.metadata.sql.util.Dialect;
 import org.apache.sis.storage.sql.TestOnAllDatabases;
+
+// Test dependencies
 import org.apache.sis.test.sql.TestDatabase;
 
 import static org.junit.Assert.*;

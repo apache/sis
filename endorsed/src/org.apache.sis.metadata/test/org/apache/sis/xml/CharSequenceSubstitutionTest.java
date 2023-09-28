@@ -25,14 +25,16 @@ import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.xml.bind.metadata.replace.SensorType;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.iso.Types;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
-import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

@@ -20,8 +20,10 @@ import java.util.Date;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

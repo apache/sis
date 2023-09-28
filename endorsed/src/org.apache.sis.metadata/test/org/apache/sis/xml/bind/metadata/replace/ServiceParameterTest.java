@@ -20,8 +20,10 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.util.MemberName;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.test.xml.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

@@ -31,9 +31,11 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.AbstractCRS;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

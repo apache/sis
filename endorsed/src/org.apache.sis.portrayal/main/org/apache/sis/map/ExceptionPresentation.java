@@ -17,10 +17,10 @@
 package org.apache.sis.map;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.Feature;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.feature.Feature;
 
 
 /**

@@ -16,13 +16,13 @@
  */
 package org.apache.sis.metadata.iso.content;
 
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.BandDefinition;
 import org.opengis.metadata.content.TransferFunctionType;

@@ -24,16 +24,15 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
-import java.util.Optional;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Geometry;
 import org.opengis.temporal.TemporalPrimitive;
-import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -70,6 +69,9 @@ import static java.lang.Math.*;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.geometry.MismatchedReferenceSystemException;
 
 
 /**

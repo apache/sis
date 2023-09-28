@@ -18,12 +18,12 @@ package org.apache.sis.cloud.aws.s3;
 
 import java.util.List;
 import java.io.IOException;
-import org.apache.sis.io.stream.FileCacheByteChannel;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.http.Abortable;
+import org.apache.sis.io.stream.FileCacheByteChannel;
 
 
 /**

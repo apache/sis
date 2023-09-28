@@ -40,13 +40,15 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

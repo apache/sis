@@ -22,12 +22,14 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroupTest;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroupTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static java.lang.StrictMath.PI;
 import static java.lang.StrictMath.toRadians;

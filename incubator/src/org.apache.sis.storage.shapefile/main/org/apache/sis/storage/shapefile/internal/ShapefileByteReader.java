@@ -24,12 +24,12 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.esri.core.geometry.*;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.storage.shapefile.InvalidShapefileFormatException;
 import org.apache.sis.storage.shapefile.ShapeTypeEnum;
 import org.apache.sis.storage.shapefile.jdbc.*;
-import com.esri.core.geometry.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;

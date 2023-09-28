@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.map.ListChangeEvent;
@@ -28,9 +31,6 @@ import org.apache.sis.map.NotifiedList;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.storage.DataSet;
 import org.apache.sis.storage.DataStoreException;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
 
 
 /**

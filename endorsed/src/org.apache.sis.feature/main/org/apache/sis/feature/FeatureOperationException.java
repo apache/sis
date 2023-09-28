@@ -16,8 +16,8 @@
  */
 package org.apache.sis.feature;
 
-import org.apache.sis.util.LocalizedException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.LocalizedException;
 
 
 /**

@@ -17,11 +17,11 @@
 package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Collection;
-import javax.measure.Unit;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.measure.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;

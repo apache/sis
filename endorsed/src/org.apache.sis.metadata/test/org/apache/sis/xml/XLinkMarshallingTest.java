@@ -25,9 +25,11 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

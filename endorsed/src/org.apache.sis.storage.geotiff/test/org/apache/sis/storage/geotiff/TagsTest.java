@@ -16,8 +16,9 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import org.apache.sis.test.TestCase;
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;

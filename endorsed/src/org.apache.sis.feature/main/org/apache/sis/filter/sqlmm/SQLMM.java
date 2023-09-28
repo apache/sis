@@ -26,9 +26,9 @@ import static org.apache.sis.geometry.wrapper.GeometryType.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.EnumMap;
-import org.apache.sis.setup.GeometryLibrary;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.capability.AvailableFunction;
+import org.apache.sis.setup.GeometryLibrary;
 
 
 /**

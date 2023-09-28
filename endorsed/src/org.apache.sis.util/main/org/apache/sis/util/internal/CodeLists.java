@@ -24,8 +24,8 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.util.ControlledVocabulary;
 import java.util.function.Predicate;
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

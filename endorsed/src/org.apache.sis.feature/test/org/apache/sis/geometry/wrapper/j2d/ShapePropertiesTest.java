@@ -19,8 +19,10 @@ package org.apache.sis.geometry.wrapper.j2d;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

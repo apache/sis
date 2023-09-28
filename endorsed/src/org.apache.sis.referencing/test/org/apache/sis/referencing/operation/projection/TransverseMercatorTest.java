@@ -26,16 +26,18 @@ import org.apache.sis.referencing.operation.provider.TransverseMercatorSouth;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.CharSequences;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static java.lang.StrictMath.abs;
 import static java.lang.StrictMath.toRadians;
-import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.operation.provider.TransverseMercator.LATITUDE_OF_ORIGIN;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.CalculationType;

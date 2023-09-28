@@ -41,10 +41,10 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
-import org.opengis.test.referencing.ObjectFactoryTest;
-import org.apache.sis.test.DependsOn;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.opengis.test.referencing.ObjectFactoryTest;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;

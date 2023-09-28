@@ -21,14 +21,14 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.resources.Errors;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Point;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

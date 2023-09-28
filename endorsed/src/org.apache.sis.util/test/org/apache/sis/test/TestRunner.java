@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.io.PrintWriter;
+import org.apache.sis.util.ArraysExt;
+
+// Test dependencies
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
@@ -35,7 +38,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.apache.sis.util.ArraysExt;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;

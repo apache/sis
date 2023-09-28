@@ -21,12 +21,12 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.FactoryException;
-import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 import org.junit.Ignore;
+import org.opengis.test.wkt.CRSParserTest;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 

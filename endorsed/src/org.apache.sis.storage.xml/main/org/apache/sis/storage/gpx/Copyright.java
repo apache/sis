@@ -40,8 +40,8 @@ import org.apache.sis.util.iso.Types;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
-import org.apache.sis.util.SimpleInternationalString;
 import org.opengis.metadata.identification.BrowseGraphic;
+import org.apache.sis.util.SimpleInternationalString;
 
 
 /**

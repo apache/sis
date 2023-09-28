@@ -16,10 +16,10 @@
  */
 package org.apache.sis.storage;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.feature.FoliationRepresentation;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

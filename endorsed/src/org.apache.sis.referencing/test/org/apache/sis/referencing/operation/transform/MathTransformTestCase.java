@@ -34,21 +34,21 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 
-import static java.lang.StrictMath.*;
-
+// Test dependencies
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.Assertions;
 import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 
+import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.test.CalculationType;
 import org.opengis.util.Factory;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Longitude;
+import org.opengis.test.CalculationType;
 import org.opengis.test.referencing.TransformTestCase;
 
 

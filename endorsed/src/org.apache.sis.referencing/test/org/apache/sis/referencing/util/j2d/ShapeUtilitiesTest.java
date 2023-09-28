@@ -22,8 +22,10 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.CubicCurve2D;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
@@ -24,7 +25,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.apache.sis.filter.internal.FunctionNames;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
@@ -32,6 +32,7 @@ import org.opengis.filter.ComparisonOperator;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.BetweenComparisonOperator;
+import org.apache.sis.filter.internal.FunctionNames;
 
 
 /**

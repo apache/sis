@@ -19,8 +19,10 @@ package org.apache.sis.xml;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

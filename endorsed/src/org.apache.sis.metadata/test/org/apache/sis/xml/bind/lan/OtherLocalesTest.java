@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.nio.charset.Charset;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 

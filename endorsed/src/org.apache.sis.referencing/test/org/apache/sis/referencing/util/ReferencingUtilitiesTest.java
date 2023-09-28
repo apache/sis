@@ -27,11 +27,13 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+
 import static org.apache.sis.referencing.util.ReferencingUtilities.*;
+import static org.junit.Assert.*;
 
 
 /**

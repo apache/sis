@@ -21,8 +21,10 @@ import jakarta.xml.bind.JAXBException;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.bind.gmi.LE_ProcessStep;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.xml.TestUsingFile;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

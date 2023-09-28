@@ -22,8 +22,10 @@ import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

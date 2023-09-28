@@ -17,6 +17,8 @@
 package org.apache.sis.filter;
 
 import java.awt.Shape;
+
+// Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
 

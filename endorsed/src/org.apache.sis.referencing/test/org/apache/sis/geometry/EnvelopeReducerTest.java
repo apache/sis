@@ -18,9 +18,11 @@ package org.apache.sis.geometry;
 
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 

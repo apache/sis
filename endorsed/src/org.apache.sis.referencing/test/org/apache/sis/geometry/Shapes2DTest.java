@@ -22,6 +22,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
+
+// Test dependencies
 import org.apache.sis.test.DependsOn;
 
 import static org.apache.sis.referencing.Assertions.assertRectangleEquals;

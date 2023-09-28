@@ -25,10 +25,12 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.PlatformDependent;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;

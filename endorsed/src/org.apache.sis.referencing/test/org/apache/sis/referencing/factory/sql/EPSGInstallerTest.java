@@ -36,13 +36,15 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.sql.util.Reflection;
+
+// Test dependencies
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.sql.TestDatabase;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;

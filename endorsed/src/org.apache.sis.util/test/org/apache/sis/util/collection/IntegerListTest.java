@@ -26,9 +26,11 @@ import java.util.ConcurrentModificationException;
 import java.util.PrimitiveIterator;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;

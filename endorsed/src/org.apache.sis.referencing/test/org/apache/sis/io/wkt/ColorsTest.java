@@ -16,9 +16,10 @@
  */
 package org.apache.sis.io.wkt;
 
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;

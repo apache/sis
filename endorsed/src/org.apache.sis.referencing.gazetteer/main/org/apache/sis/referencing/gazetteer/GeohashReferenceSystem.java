@@ -16,11 +16,11 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
 import javax.measure.quantity.Length;
-import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.GeographicCRS;

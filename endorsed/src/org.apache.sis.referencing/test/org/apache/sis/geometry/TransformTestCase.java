@@ -32,14 +32,16 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
+import static org.junit.Assert.*;
 
 
 /**

@@ -33,8 +33,10 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

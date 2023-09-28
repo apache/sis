@@ -50,18 +50,20 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.metadata.PropertyAccessor.APPEND;
+import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
+import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.PropertyAccessor.APPEND;
-import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
-import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;

@@ -25,6 +25,8 @@ import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.DecoderTest;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.setup.GeometryLibrary;
+
+// Test dependencies
 import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

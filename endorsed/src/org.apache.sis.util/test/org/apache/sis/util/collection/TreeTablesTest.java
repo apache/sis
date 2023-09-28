@@ -21,16 +21,18 @@ import java.io.File;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.text.ParseException;
+import org.apache.sis.util.SimpleInternationalString;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.util.SimpleInternationalString;
 
+import static org.apache.sis.util.collection.TreeTables.*;
+import static org.apache.sis.util.collection.TableColumn.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-import static org.apache.sis.util.collection.TreeTables.*;
-import static org.apache.sis.util.collection.TableColumn.*;
 
 
 /**

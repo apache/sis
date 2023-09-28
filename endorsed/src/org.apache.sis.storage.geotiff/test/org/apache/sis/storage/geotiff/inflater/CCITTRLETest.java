@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.lang.reflect.Field;
 import org.apache.sis.io.stream.ChannelDataInput;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

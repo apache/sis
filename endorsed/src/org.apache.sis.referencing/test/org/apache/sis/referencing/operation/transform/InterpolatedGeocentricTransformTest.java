@@ -26,9 +26,11 @@ import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolati
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
 
 /**

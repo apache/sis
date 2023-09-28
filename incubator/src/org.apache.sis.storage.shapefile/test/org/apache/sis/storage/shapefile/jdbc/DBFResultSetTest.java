@@ -16,15 +16,17 @@
  */
 package org.apache.sis.storage.shapefile.jdbc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import org.apache.sis.storage.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
+
+// Test dependencies
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**

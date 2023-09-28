@@ -23,8 +23,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.ObliqueStereographic;
 import org.apache.sis.parameter.Parameters;
-import org.opengis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.opengis.test.TestCase;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;

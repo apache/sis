@@ -22,11 +22,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Locale;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+
 import static java.util.Locale.*;
+import static org.junit.Assert.*;
 
 
 /**

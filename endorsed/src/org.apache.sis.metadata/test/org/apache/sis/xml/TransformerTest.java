@@ -20,8 +20,10 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

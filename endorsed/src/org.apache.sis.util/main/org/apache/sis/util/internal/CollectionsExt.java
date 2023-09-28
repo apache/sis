@@ -19,12 +19,12 @@ package org.apache.sis.util.internal;
 import java.util.*;
 import java.lang.reflect.Array;
 import org.opengis.util.CodeList;
+import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
-import org.opengis.parameter.InvalidParameterCardinalityException;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 

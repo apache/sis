@@ -17,12 +17,14 @@
 package org.apache.sis.io;
 
 import java.io.IOException;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.util.internal.X364;
-import org.junit.Before;
 
-import static org.junit.Assert.*;
+// Test dependencies
+import org.junit.Before;
+import org.apache.sis.test.DependsOn;
+
 import static org.apache.sis.util.Characters.SOFT_HYPHEN;
+import static org.junit.Assert.*;
 
 
 /**

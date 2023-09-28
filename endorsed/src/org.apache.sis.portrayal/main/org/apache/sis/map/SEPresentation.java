@@ -18,10 +18,10 @@ package org.apache.sis.map;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Objects;
+import org.opengis.feature.Feature;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.style.se1.Symbolizer;
-import org.opengis.feature.Feature;
 
 
 /**

@@ -17,8 +17,10 @@
 package org.apache.sis.coverage.grid.j2d;
 
 import java.awt.Dimension;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

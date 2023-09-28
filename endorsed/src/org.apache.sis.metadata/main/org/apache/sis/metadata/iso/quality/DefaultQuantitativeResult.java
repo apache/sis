@@ -17,10 +17,10 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.List;
-import javax.measure.Unit;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import javax.measure.Unit;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.util.InternationalString;
 import org.opengis.util.Record;

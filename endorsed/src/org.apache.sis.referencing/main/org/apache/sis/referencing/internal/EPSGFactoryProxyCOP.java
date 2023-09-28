@@ -18,10 +18,10 @@ package org.apache.sis.referencing.internal;
 
 import java.util.Set;
 import org.opengis.util.FactoryException;
-import org.apache.sis.referencing.CRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.CRS;
 
 
 /**

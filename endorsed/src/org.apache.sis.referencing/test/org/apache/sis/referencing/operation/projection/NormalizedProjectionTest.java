@@ -16,8 +16,9 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.apache.sis.test.DependsOn;
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
 
 import static java.lang.StrictMath.*;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;

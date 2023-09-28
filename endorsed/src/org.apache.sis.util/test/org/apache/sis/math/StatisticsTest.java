@@ -18,6 +18,8 @@ package org.apache.sis.math;
 
 import java.util.Random;
 import java.io.IOException;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 

@@ -18,9 +18,11 @@ package org.apache.sis.console;
 
 import org.apache.sis.util.Version;
 import org.apache.sis.util.CharSequences;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;

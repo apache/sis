@@ -37,11 +37,11 @@ import org.apache.sis.util.resources.Errors;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Iterator;
 import java.time.Instant;
-import org.apache.sis.util.internal.AbstractMap;
 import org.opengis.filter.*;
 import org.opengis.feature.Feature;
 import org.opengis.filter.capability.AvailableFunction;
 import org.opengis.filter.capability.FilterCapabilities;
+import org.apache.sis.util.internal.AbstractMap;
 
 
 /**

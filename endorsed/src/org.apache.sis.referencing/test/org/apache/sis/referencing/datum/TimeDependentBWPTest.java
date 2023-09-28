@@ -21,14 +21,16 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;

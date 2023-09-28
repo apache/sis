@@ -16,16 +16,18 @@
  */
 package org.apache.sis.storage.shapefile;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.logging.Logger;
 import org.apache.sis.storage.DataStoreException;
+
+// Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;

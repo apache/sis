@@ -41,11 +41,13 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.parameter.DefaultParameterDescriptorTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;

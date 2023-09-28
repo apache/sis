@@ -19,11 +19,13 @@ package org.apache.sis.openoffice;
 import com.sun.star.lang.IllegalArgumentException;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;

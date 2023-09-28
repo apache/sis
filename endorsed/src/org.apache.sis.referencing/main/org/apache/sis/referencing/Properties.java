@@ -36,7 +36,7 @@ import org.apache.sis.referencing.util.CoordinateOperations;
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
 
-// Specific to the geoapi-4.0 branch:
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
 
 

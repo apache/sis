@@ -18,15 +18,16 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.AbstractMap.SimpleEntry;
+import org.apache.sis.util.iso.Names;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
-
-import org.apache.sis.util.iso.Names;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;

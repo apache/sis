@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test.self;
 
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 

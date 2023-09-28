@@ -25,6 +25,8 @@ import java.util.Locale;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.awt.Color;
+import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CF;       // idem
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -42,8 +44,6 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Reflect;
-import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
-import ucar.nc2.constants.CF;       // idem
 
 
 /**

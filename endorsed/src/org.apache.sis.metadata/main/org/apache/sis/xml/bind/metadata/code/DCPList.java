@@ -21,8 +21,8 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.apache.sis.xml.bind.cat.CodeListAdapter;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
+import org.apache.sis.xml.bind.cat.CodeListAdapter;
 
 
 /**

@@ -20,9 +20,11 @@ import java.util.Locale;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.xml.bind.Context;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

@@ -28,14 +28,16 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+
+import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 
 
 /**

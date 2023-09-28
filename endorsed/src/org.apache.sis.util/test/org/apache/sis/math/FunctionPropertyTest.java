@@ -18,8 +18,10 @@ package org.apache.sis.math;
 
 import java.util.Set;
 import java.util.EnumSet;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.*;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

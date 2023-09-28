@@ -22,8 +22,10 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

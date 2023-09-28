@@ -22,19 +22,21 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Range;
 import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.junit.Test;
 
 import static java.lang.Double.NaN;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
-import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
-import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 
 
 /**

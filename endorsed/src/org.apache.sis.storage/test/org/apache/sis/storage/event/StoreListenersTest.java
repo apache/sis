@@ -20,9 +20,11 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreMock;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

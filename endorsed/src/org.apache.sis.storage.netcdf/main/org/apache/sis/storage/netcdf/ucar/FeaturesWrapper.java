@@ -17,11 +17,11 @@
 package org.apache.sis.storage.netcdf.ucar;
 
 import java.util.stream.Stream;
+import ucar.nc2.ft.DsgFeatureCollection;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.netcdf.base.DiscreteSampling;
 import org.apache.sis.storage.event.StoreListeners;
-import ucar.nc2.ft.DsgFeatureCollection;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;

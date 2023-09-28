@@ -36,8 +36,8 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.opengis.metadata.identification.CharacterSet;
 import java.util.stream.Collectors;
+import org.opengis.metadata.identification.CharacterSet;
 
 
 /**

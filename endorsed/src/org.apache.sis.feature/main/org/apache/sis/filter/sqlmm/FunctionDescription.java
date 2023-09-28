@@ -24,6 +24,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.filter.capability.AvailableFunction;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Names;
@@ -32,7 +33,6 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.metadata.simple.SimpleIdentifiedObject;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.opengis.filter.capability.AvailableFunction;
 
 
 /**

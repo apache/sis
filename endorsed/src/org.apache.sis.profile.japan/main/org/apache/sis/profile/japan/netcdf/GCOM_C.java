@@ -24,6 +24,7 @@ import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
 import java.util.function.Function;
 import java.awt.Color;
+import ucar.nc2.constants.CF;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -47,7 +48,6 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
-import ucar.nc2.constants.CF;
 
 
 /**

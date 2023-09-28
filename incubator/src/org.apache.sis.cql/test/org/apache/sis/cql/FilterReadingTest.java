@@ -24,10 +24,15 @@ import java.util.Iterator;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 import java.text.ParseException;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LinearRing;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.CodeList;
+import org.opengis.feature.Feature;
+import org.opengis.filter.*;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -39,12 +44,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LinearRing;
-import org.opengis.feature.Feature;
-import org.opengis.filter.*;
 
 
 /**

@@ -22,8 +22,10 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

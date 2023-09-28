@@ -22,8 +22,6 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.Optional;
 import org.opengis.util.LocalName;
-import org.apache.sis.util.collection.CodeListSet;
-import org.apache.sis.feature.internal.AttributeConvention;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.capability.Conformance;
 import org.opengis.filter.capability.IdCapabilities;
@@ -32,6 +30,8 @@ import org.opengis.filter.capability.FilterCapabilities;
 import org.opengis.filter.capability.ScalarCapabilities;
 import org.opengis.filter.capability.SpatialCapabilities;
 import org.opengis.filter.capability.TemporalCapabilities;
+import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.feature.internal.AttributeConvention;
 
 
 /**

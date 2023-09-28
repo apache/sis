@@ -18,9 +18,11 @@ package org.apache.sis.io.stream;
 
 import java.util.Random;
 import java.io.IOException;
+import org.apache.sis.util.Debug;
+
+// Test dependencies
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.util.Debug;
 
 
 /**

@@ -18,8 +18,8 @@ package org.apache.sis.storage.xml.stream;
 
 import java.io.Closeable;
 import java.io.IOException;
-import jakarta.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;

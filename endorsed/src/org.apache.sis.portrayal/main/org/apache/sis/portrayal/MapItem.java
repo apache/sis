@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import org.apache.sis.storage.DataStoreException;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.InternationalString;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**

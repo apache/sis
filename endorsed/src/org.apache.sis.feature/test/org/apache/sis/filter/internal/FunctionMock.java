@@ -20,8 +20,8 @@ package org.apache.sis.filter.internal;
 import java.util.Map;
 import java.util.List;
 import org.opengis.util.ScopedName;
-import org.apache.sis.util.iso.Names;
 import org.opengis.filter.Expression;
+import org.apache.sis.util.iso.Names;
 
 
 /**

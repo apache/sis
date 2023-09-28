@@ -26,8 +26,10 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 

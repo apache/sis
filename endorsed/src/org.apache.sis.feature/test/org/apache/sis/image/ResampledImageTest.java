@@ -34,9 +34,11 @@ import java.awt.geom.NoninvertibleTransformException;
 import org.apache.sis.coverage.grid.j2d.ImageLayout;
 import org.apache.sis.coverage.grid.j2d.RasterFactory;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 
