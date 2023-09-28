@@ -57,7 +57,7 @@ import org.apache.sis.util.internal.Strings;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 abstract class AuthorityFactoryProxy<T> {

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import javax.imageio.plugins.tiff.TIFFTag;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Numerics;
@@ -48,7 +49,7 @@ enum Type {
      *   <li>TIFF code: 7</li>
      * </ul>
      */
-    UNDEFINED(7, Byte.BYTES, false) {
+    UNDEFINED(TIFFTag.TIFF_UNDEFINED, Byte.BYTES, false) {
         @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             throw new UnsupportedOperationException(name());
         }
@@ -66,7 +67,7 @@ enum Type {
      *   <li>TIFF code: 6</li>
      * </ul>
      */
-    BYTE(6, Byte.BYTES, false) {
+    BYTE(TIFFTag.TIFF_SBYTE, Byte.BYTES, false) {
         @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readByte();
             for (long i=1; i<count; i++) {
@@ -87,7 +88,7 @@ enum Type {
      *   <li>TIFF code: 1</li>
      * </ul>
      */
-    UBYTE(1, Byte.BYTES, true) {
+    UBYTE(TIFFTag.TIFF_BYTE, Byte.BYTES, true) {
         @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readUnsignedByte();
             for (long i=1; i<count; i++) {
@@ -108,7 +109,7 @@ enum Type {
      *   <li>TIFF code: 8</li>
      * </ul>
      */
-    SHORT(8, Short.BYTES, false) {
+    SHORT(TIFFTag.TIFF_SSHORT, Short.BYTES, false) {
         @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readShort();
             for (long i=1; i<count; i++) {
@@ -129,7 +130,7 @@ enum Type {
      *   <li>TIFF code: 3</li>
      * </ul>
      */
-    USHORT(3, Short.BYTES, true) {
+    USHORT(TIFFTag.TIFF_SHORT, Short.BYTES, true) {
         @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readUnsignedShort();
             for (long i=1; i<count; i++) {
@@ -150,7 +151,7 @@ enum Type {
      *   <li>TIFF code: 9</li>
      * </ul>
      */
-    INT(9, Integer.BYTES, false) {
+    INT(TIFFTag.TIFF_SLONG, Integer.BYTES, false) {
         @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readInt();
             for (long i=1; i<count; i++) {
@@ -171,7 +172,7 @@ enum Type {
      *   <li>TIFF code: 4</li>
      * </ul>
      */
-    UINT(4, Integer.BYTES, true) {
+    UINT(TIFFTag.TIFF_LONG, Integer.BYTES, true) {
         @Override public long readAsLong(final ChannelDataInput input, final long count) throws IOException {
             final long value = input.readUnsignedInt();
             for (long i=1; i<count; i++) {
@@ -239,7 +240,7 @@ enum Type {
      *   <li>TIFF code: 11</li>
      * </ul>
      */
-    FLOAT(11, Float.BYTES, false) {
+    FLOAT(TIFFTag.TIFF_FLOAT, Float.BYTES, false) {
         private float readAsFloat(final ChannelDataInput input, final long count) throws IOException {
             final float value = input.readFloat();
             for (long i=1; i<count; i++) {
@@ -273,7 +274,7 @@ enum Type {
      *   <li>TIFF code: 12</li>
      * </ul>
      */
-    DOUBLE(12, Double.BYTES, false) {
+    DOUBLE(TIFFTag.TIFF_DOUBLE, Double.BYTES, false) {
         @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
             final double value = input.readDouble();
             for (long i=1; i<count; i++) {
@@ -294,7 +295,7 @@ enum Type {
      *   <li>TIFF code: 10</li>
      * </ul>
      */
-    RATIONAL(10, (2*Integer.BYTES), false) {
+    RATIONAL(TIFFTag.TIFF_SRATIONAL, (2*Integer.BYTES), false) {
         @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
             return readFraction(input, count).doubleValue();
         }
@@ -315,7 +316,7 @@ enum Type {
      *   <li>TIFF code: 5</li>
      * </ul>
      */
-    URATIONAL(5, (2*Integer.BYTES), true) {
+    URATIONAL(TIFFTag.TIFF_RATIONAL, (2*Integer.BYTES), true) {
         @Override public double readAsDouble(final ChannelDataInput input, final long count) throws IOException {
             return readFraction(input, count).doubleValue();
         }
@@ -338,7 +339,7 @@ enum Type {
      *   <li>TIFF code: 2</li>
      * </ul>
      */
-    ASCII(2, Byte.BYTES, false) {
+    ASCII(TIFFTag.TIFF_ASCII, Byte.BYTES, false) {
         @Override public String[] readAsStrings(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
             final byte[] chars = input.readBytes(Math.toIntExact(length));
             String[] lines = new String[1];                     // We will usually have exactly one string.

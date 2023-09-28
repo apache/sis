@@ -17,14 +17,11 @@
 
 /**
  * Map projection implementations.
- * This package is mostly for documentation purpose (each projection documents its name and parameters)
- * and for implementers who want to extend a map projection. This package should usually not be used directly.
- *
- * <p>The best way to get a projection is to use the
+ * This package should usually not be used directly. The best way to get a projection is to use the
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory coordinate operation factory}
  * with the source and target CRS. That factory can bundle the projections defined in this package, together with any
  * affine transform required for handling unit conversions and axis swapping, in a single (potentially concatenated)
- * operation.</p>
+ * operation.
  *
  * <p>Users wanting to build their transforms directly should also avoid instantiating objects directly from this
  * package and use a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory math

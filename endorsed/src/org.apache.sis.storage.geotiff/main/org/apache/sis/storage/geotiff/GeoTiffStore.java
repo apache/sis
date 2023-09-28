@@ -380,7 +380,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the reader if it is not closed, or thrown an exception otherwise.
+     * Returns the reader if it is not closed, or throws an exception otherwise.
      *
      * @see #close()
      */

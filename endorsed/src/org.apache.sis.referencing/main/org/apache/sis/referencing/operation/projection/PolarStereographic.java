@@ -296,7 +296,7 @@ public class PolarStereographic extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         PolarStereographic kernel = this;
-        if (eccentricity == 0 && getClass() == PolarStereographic.class) {
+        if (eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

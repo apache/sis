@@ -237,7 +237,7 @@ public class ObliqueStereographic extends NormalizedProjection {
                 return delegate(factory, PolarStereographicA.NAME);
             }
         }
-        if (eccentricity == 0 && getClass() == ObliqueStereographic.class) {
+        if (eccentricity == 0) {
             return context.completeTransform(factory, new Spherical(this));
         }
         return completeWithWraparound(factory);

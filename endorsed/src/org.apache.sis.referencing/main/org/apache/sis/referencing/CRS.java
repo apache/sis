@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -85,6 +86,9 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**
@@ -769,12 +773,9 @@ public final class CRS extends Static {
         if (operation == null) {
             return null;
         }
-        GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(operation.getDomainOfValidity());
-        if (bbox == null) {
-            bbox = Extents.intersection(getGeographicBoundingBox(operation.getSourceCRS()),
-                                        getGeographicBoundingBox(operation.getTargetCRS()));
-        }
-        return bbox;
+        return getDomains(operation).orElseGet(
+                () -> Extents.intersection(getGeographicBoundingBox(operation.getSourceCRS()),
+                                           getGeographicBoundingBox(operation.getTargetCRS())));
     }
 
     /**
@@ -794,7 +795,15 @@ public final class CRS extends Static {
      */
     @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateReferenceSystem crs) {
-        return (crs != null) ? Extents.getGeographicBoundingBox(crs.getDomainOfValidity()) : null;
+        return (crs != null) ? getDomains(crs).orElse(null) : null;
+    }
+
+    /**
+     * Returns the geographic bounding box computed from the domain of the given object. This method may be renamed and
+     * refactored as a replacement of {@link #getGeographicBoundingBox(CoordinateReferenceSystem)} in a future version.
+     */
+    private static Optional<GeographicBoundingBox> getDomains(final IdentifiedObject object) {
+        return Extents.getGeographicBoundingBox(Legacy.getDomains(object).stream().map(DefaultObjectDomain::getDomainOfValidity));
     }
 
     /**

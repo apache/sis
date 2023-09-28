@@ -204,8 +204,12 @@ final class DataStoreRegistry extends LazySet<DataStoreProvider> {
         StorageConnector connector;                 // Will be reset to `null` if it shall not be closed.
         if (storage instanceof StorageConnector) {
             connector = (StorageConnector) storage;
+            final var p = connector.getOption(InternalOptionKey.PREFERRED_PROVIDERS);
             if (preferred == null) {
-                preferred = connector.getOption(InternalOptionKey.PREFERRED_PROVIDERS);
+                preferred = p;
+            } else {
+                preferred = preferred.and(p);
+                connector.setOption(InternalOptionKey.PREFERRED_PROVIDERS, preferred);
             }
         } else {
             connector = new StorageConnector(storage);

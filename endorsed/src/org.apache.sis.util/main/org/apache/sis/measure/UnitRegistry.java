@@ -199,8 +199,9 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      * This method is invoked for assertions only.
      */
     private static int filter(int existed, final SystemUnit<?> unit, final String s) {
+        if ("cd".equals(s) ||
+            "Hz".equals(s) || "Bq".equals(s)) existed &= ~(1    );      // Accepts dimension collisions only;
         if (unit.dimension.isDimensionless()) existed &= ~(1 | 2);      // Accepts dimension and quantity collisions.
-        if ("cd".equals(s) || "Hz".equals(s)) existed &= ~(1    );      // Accepts dimension collisions only;
         return (s == null) || s.isEmpty() ? 0 : existed;
     }
 

@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
@@ -47,9 +46,6 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 /**
  * Utilities related to version 1 of Well Known Text format, or to ISO 19111:2007.
  * Defined in a separated classes for reducing classes loading when not necessary.
- *
- * <p>This class implements the {@link AxisFilter} interface for opportunistic reasons.
- * Callers should ignore this implementation detail.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

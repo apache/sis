@@ -165,7 +165,6 @@ module org.apache.sis.referencing {
     exports org.apache.sis.referencing.operation;
     exports org.apache.sis.referencing.operation.builder;
     exports org.apache.sis.referencing.operation.matrix;
-    exports org.apache.sis.referencing.operation.projection;
     exports org.apache.sis.referencing.operation.transform;
 
     exports org.apache.sis.referencing.util to

@@ -114,7 +114,7 @@ publishing {
         create<MavenPublication>("storage.shapefile") {
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-shapefile"
-            artifact(file("${buildDir}/libs/org.apache.sis.storage.shapefile.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.storage.shapefile.jar"))
             pom {
                 name        = "Apache SIS Shapefile storage"
                 description = "Read and write files in the Shapefile format."
@@ -123,7 +123,7 @@ publishing {
         create<MavenPublication>("webapp") {
             groupId    = "org.apache.sis.application"
             artifactId = "sis-webapp"
-            artifact(file("${buildDir}/libs/org.apache.sis.webapp.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.webapp.jar"))
             pom {
                 name        = "Apache SIS web services layer"
                 description = "Placeholder for future developments."

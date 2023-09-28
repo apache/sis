@@ -404,8 +404,8 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
 
     /*
      * Following inner classes are straightforward implementations for some commonly used quantity types.
-     * We do not need to provide an implementation for every types; we will fallback on a proxy mechanism
-     * as a fallback for less frequently used types.
+     * We do not need to provide an implementation for every types, because we have a proxy mechanism as
+     * a fallback for less frequently used types.
      */
 
 

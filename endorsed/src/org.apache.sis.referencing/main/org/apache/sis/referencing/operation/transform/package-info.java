@@ -35,7 +35,7 @@
  * class when possible.
  *
  * <p>This package does not include map projections, which are a special kind of transforms defined
- * in their own {@linkplain org.apache.sis.referencing.operation.projection projection} package.</p>
+ * in their own internal package.</p>
  *
  *
  * <h2>Creating math transforms</h2>

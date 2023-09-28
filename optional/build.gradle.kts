@@ -157,7 +157,7 @@ publishing {
         create<MavenPublication>("gui") {
             groupId    = "org.apache.sis.application"
             artifactId = "sis-javafx"
-            artifact(file("${buildDir}/libs/org.apache.sis.gui.jar"))
+            artifact(layout.buildDirectory.file("libs/org.apache.sis.gui.jar"))
             pom {
                 name        = "Apache SIS application for JavaFX (optional)"
                 description = "Client application for JavaFX. " +

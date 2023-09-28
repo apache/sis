@@ -360,7 +360,7 @@ public class TransverseMercator extends NormalizedProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         TransverseMercator kernel = this;
-        if (eccentricity == 0 && getClass() == TransverseMercator.class) {
+        if (eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

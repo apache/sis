@@ -50,6 +50,13 @@ public final class DataStoreFilter implements Predicate<DataStoreProvider> {
     private final boolean writer;
 
     /**
+     * If there is another condition to apply, the other condition. Otherwise {@code null}.
+     * This is used for allowing {@code (foo instanceof DataStoreFilter)} to continue to work
+     * on the result of an {@code and} operation.
+     */
+    private final Predicate<? super DataStoreProvider> other;
+
+    /**
      * Creates a new filter for the given data store name.
      *
      * @param  preferred  name of the data store to search, or Image I/O format name.
@@ -57,7 +64,17 @@ public final class DataStoreFilter implements Predicate<DataStoreProvider> {
      */
     public DataStoreFilter(final String preferred, final boolean writer) {
         this.preferred = preferred;
-        this.writer = writer;
+        this.writer    = writer;
+        this.other     = null;
+    }
+
+    /**
+     * Creates a new filter which is the result of a {@code AND} operation between the specified filters.
+     */
+    private DataStoreFilter(final DataStoreFilter first, final Predicate<? super DataStoreProvider> other) {
+        this.preferred = first.preferred;
+        this.writer    = first.writer;
+        this.other     = other;
     }
 
     /**
@@ -79,5 +96,15 @@ public final class DataStoreFilter implements Predicate<DataStoreProvider> {
             return ArraysExt.containsIgnoreCase(formats, preferred);
         }
         return false;
+    }
+
+    /**
+     * Returns a filter which is the result of a AND operation between this filter and the other filter.
+     * The combined filter is still an instance of {@code DataStoreFilter}, so {@code instanceof} checks
+     * are still possible.
+     */
+    @Override
+    public Predicate<DataStoreProvider> and(Predicate<? super DataStoreProvider> other) {
+        return new DataStoreFilter(this, other);
     }
 }
