@@ -448,9 +448,8 @@ next:   for (final CoordinateSystem cs : targets) {
      * <h4>Coordinate system normalization</h4>
      * This method is often used together with {@link #swapAndScaleAxes swapAndScaleAxes(…)} for normalizing the
      * coordinate values given to a {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform
-     * math transform}.
+     * math transform}. For example:
      *
-     * <h4>Example</h4>
      * {@snippet lang="java" :
      *     CoordinateSystem sourceCS = ...;
      *     CoordinateSystem targetCS = ...;
@@ -458,9 +457,6 @@ next:   for (final CoordinateSystem cs : targets) {
      *     Matrix step2 = ...; // some transform working on coordinates with standard axis order and unit.
      *     Matrix step3 = swapAndScaleAxes(replaceAxes(targetCS, AxisConvention.NORMALIZED), targetCS);
      *     }
-     *
-     * A rational for normalized axis order and units is explained in the <cite>Axis units and direction</cite> section
-     * in the description of the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
      *
      * @param  cs      the coordinate system, or {@code null}.
      * @param  filter  the modifications to apply on coordinate system axes.
