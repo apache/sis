@@ -156,7 +156,7 @@ public class Sinusoidal extends MeridianArcBased {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         Sinusoidal kernel = this;
-        if ((eccentricity == 0 && getClass() == Sinusoidal.class) || variant == Variant.PSEUDO) {
+        if (eccentricity == 0 || variant == Variant.PSEUDO) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
