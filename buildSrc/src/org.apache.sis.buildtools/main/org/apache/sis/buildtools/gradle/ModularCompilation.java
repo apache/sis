@@ -170,6 +170,7 @@ final class ModularCompilation extends Conventions {
 
     /**
      * File extensions of resources to not copy.
+     * In addition, everything in {@code doc-files} sub-directories will be excluded.
      *
      * @todo Reduce this list to IDL and Markdown by converting HTML and text files.
      */
@@ -177,8 +178,7 @@ final class ModularCompilation extends Conventions {
             "tmp", "bak", "log",    // Same extensions than in `.gitignore`.
             "idl",                  // Source code for OpenOffice add-in.
             "md",                   // Notes in Markdown format.
-            "html",                 // Richer alternative to Markdown.
-            "txt");                 // Simpler alternative to Markdown.
+            "html");                // Richer alternative to Markdown.
 
     /**
      * Compiles the international resources that are found in all modules.
@@ -262,22 +262,12 @@ final class ModularCompilation extends Conventions {
      * @return {@code true} for copying or {@code false} for ignoring.
      */
     private static boolean include(File resource) {
-        String ext = resource.getName();
-        ext = ext.substring(ext.lastIndexOf('.') + 1);
-        if (EXCLUDE_RESOURCES.contains(ext)) {
-            if (ext.equals("txt")) {
-                /*
-                 * Special case: include text file for tests.
-                 * TODO: remove that special case. See EXCLUDE_RESOURCES comment.
-                 */
-                while ((resource = resource.getParentFile()) != null) {
-                    if (resource.getName().equals(TEST_DIRECTORY)) {
-                        return true;
-                    }
-                }
-            }
+        final File parent = resource.getParentFile();
+        if (parent != null && parent.getName().equals("doc-files")) {
             return false;
         }
-        return true;
+        String ext = resource.getName();
+        ext = ext.substring(ext.lastIndexOf('.') + 1);
+        return !EXCLUDE_RESOURCES.contains(ext);
     }
 }
