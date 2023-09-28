@@ -59,13 +59,13 @@ dependencyResolutionManagement {
         create("libs") {
             library("geoapi",        "org.opengis",            "geoapi-pending")      .version {strictly(geoapiVersion)}
             library("units",         "javax.measure",          "unit-api")            .version {strictly("[2.1, 3.0[");  prefer("2.1.3")}
-            library("jaxb.api",      "jakarta.xml.bind",       "jakarta.xml.bind-api").version {strictly("[4.0, 5.0[");  prefer("4.0.0")}
-            library("jaxb.impl",     "org.glassfish.jaxb",     "jaxb-runtime")        .version {strictly("[4.0, 5.0[");  prefer("4.0.2")}
+            library("jaxb.api",      "jakarta.xml.bind",       "jakarta.xml.bind-api").version {strictly("[4.0, 5.0[");  prefer("4.0.1")}
+            library("jaxb.impl",     "org.glassfish.jaxb",     "jaxb-runtime")        .version {strictly("[4.0, 5.0[");  prefer("4.0.3")}
             library("jts.core",      "org.locationtech.jts",   "jts-core")            .version {strictly("[1.15, 2.0["); prefer("1.19.0")}
             library("esri.geometry", "com.esri.geometry",      "esri-geometry-api")   .version {strictly("[2.0, 3.0[");  prefer("2.2.4")}
-            library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("7.3.6")}
+            library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("7.6.1")}
             library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.5.3")}
-            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.18.40")}
+            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.20.155")}
         }
         create("tests") {
             library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}
@@ -88,7 +88,7 @@ dependencyResolutionManagement {
             library("derby.tools",   "org.apache.derby",       "derbytools") .versionRef("derby")
             library("postgres",      "org.postgresql",         "postgresql") .version {prefer("42.6.0")}
             library("hsql",          "org.hsqldb",             "hsqldb")     .version {strictly("[2.0, 3.0["); prefer("2.7.2")}
-            library("h2",            "com.h2database",         "h2")         .version {strictly("[2.0, 3.0["); prefer("2.2.220")}
+            library("h2",            "com.h2database",         "h2")         .version {strictly("[2.0, 3.0["); prefer("2.2.224")}
         }
     }
 }

@@ -62,20 +62,18 @@ import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
  * The parameters that describe a sequence of
  * <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite> transforms as a whole.
  * The normalize and denormalize steps must be affine transforms, while the non-linear kernel is arbitrary.
+ * This separation is useful for doing in the linear steps any unit conversions and axis swapping necessary
+ * for allowing the non-linear step to work in some predefined (implementation specific) coordinate system.
  *
- * <div class="note"><b>Note:</b> actually there is nothing in this class which force the kernel to be non-linear.
- * But this class is useless if the kernel is linear, because 3 linear steps can be efficiently
- * {@linkplain java.awt.geom.AffineTransform#concatenate concatenated} in a single affine transform.</div>
- *
- * <p>Contextual parameters can be {@linkplain AbstractMathTransform#getContextualParameters() associated}
- * to the <cite>non-linear kernel</cite> step of the above-cited sequence.
+ * <p>Contextual parameters are {@linkplain AbstractMathTransform#getContextualParameters() associated}
+ * to the <em>non-linear kernel</em> step of the above-cited sequence.
  * Since the {@linkplain AbstractMathTransform#getParameterValues() parameter values} of the non-linear kernel contains
  * only normalized parameters (e.g. a map projection on an ellipsoid having a <cite>semi-major</cite> axis length of 1),
  * Apache SIS needs contextual information for reconstructing the parameters of the complete transforms chain.</p>
  *
  * <h2>Usage in map projections</h2>
- * This object is used mostly for Apache SIS implementation of map projections, where the non-linear kernel is a
- * {@linkplain org.apache.sis.referencing.operation.projection.NormalizedProjection normalized projection}.
+ * This object is used mostly for Apache SIS implementation of map projections, where the non-linear kernel
+ * is a normalized projection working on (<var>longitude</var>, <var>latitude</var>) coordinates in radians.
  * The {@linkplain #completeTransform(MathTransformFactory, MathTransform) complete map projection}
  * (ignoring {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes changes of axis order})
  * is a chain of 3 transforms as shown below:
@@ -91,12 +89,10 @@ import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
  * {@code ContextualParameters} is typically created and used as below:
  *
  * <ol class="verbose">
- *   <li>A {@link MathTransformProvider} instantiates a class from the
- *     {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
- *     Note that different providers may instantiate the same map projection class.
- *     For example, both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> methods
- *     instantiate the same {@link org.apache.sis.referencing.operation.projection.Mercator} class,
- *     but with different ways to represent the parameters.</li>
+ *   <li>A {@link MathTransformProvider} instantiates a non-linear transform working in a predefined coordinate system.
+ *     Note that different providers may instantiate the same transform class but with different parameters.
+ *     For example, both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> operation methods
+ *     instantiate the same Mercator projection class, but with different ways to represent the parameters.</li>
  *
  *   <li>The map projection constructor fetches all parameters that it needs from the user supplied
  *     {@link org.apache.sis.parameter.Parameters}, initializes the projection, then saves the parameter values that
@@ -125,7 +121,6 @@ import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  *
- * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
  *
  * @since 0.6
@@ -337,14 +332,9 @@ public class ContextualParameters extends Parameters implements Serializable {
      * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation method}
      * given to the constructor.
      *
-     * <p>The values for those parameters is given by the {@link #values()} method. Those values may be used in
-     * the {@linkplain #getMatrix(MatrixRole) normalization / denormalization} transforms, in the kernel, or both.</p>
-     *
-     * <div class="note"><b>Note:</b>
-     * The definition of "kernel" is left to implementers.
-     * In the particular case of Apache SIS implementation of map projections,
-     * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
-     * Other "kernels" in SIS are {@link EllipsoidToCentricTransform} and {@link MolodenskyTransform}.</div>
+     * <p>The values for those parameters are given by the {@link #values()} method.
+     * Those values may be used by the {@linkplain #getMatrix(MatrixRole) normalization / denormalization}
+     * linear steps, by the non-linear kernel, or both.</p>
      *
      * @return the description of the parameters.
      */
@@ -391,9 +381,9 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      *
      * <h4>Application to map projections</h4>
-     * After {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
-     * returned by {@code projection.getContextualParameters().getMatrix(…)} are initialized to the values shown below.
-     * Note that some {@code NormalizedProjection} subclasses apply further modifications to those matrices.
+     * After the construction of a non-linear kernel working on (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in radians, the matrices returned by {@code projection.getContextualParameters().getMatrix(…)}
+     * are initialized to the values shown below.
      *
      * <table class="sis">
      *   <caption>Initial matrix coefficients after {@code NormalizedProjection} construction</caption>
@@ -511,13 +501,10 @@ public class ContextualParameters extends Parameters implements Serializable {
      * the hood".</p>
      *
      * @param  factory  the factory to use for creating math transform instances.
-     * @param  kernel   the (usually non-linear) kernel.
-     *                  This is often a {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
+     * @param  kernel   the non-linear kernel which expects "normalized" coordinates in a predefined coordinate system.
      * @return the concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
      *         transforms.
      * @throws FactoryException if an error occurred while creating a math transform instance.
-     *
-     * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
      */
     public MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException

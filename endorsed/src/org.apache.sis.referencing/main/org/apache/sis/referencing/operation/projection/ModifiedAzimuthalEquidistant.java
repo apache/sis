@@ -145,7 +145,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         AzimuthalEquidistant kernel = this;
-        if (eccentricity == 0 && getClass() == ModifiedAzimuthalEquidistant.class) {
+        if (eccentricity == 0) {
             kernel = new AzimuthalEquidistant(this);
         }
         return context.completeTransform(factory, kernel);

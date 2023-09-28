@@ -401,7 +401,7 @@ public class LambertConicConformal extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         LambertConicConformal kernel = this;
-        if (eccentricity == 0 && getClass() == LambertConicConformal.class) {
+        if (eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return kernel.completeWithWraparound(factory);

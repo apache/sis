@@ -76,7 +76,7 @@ import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 public final class Units extends Static {
@@ -88,9 +88,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI units:</td>         <td style="word-spacing:1em"><u>{@code NANOMETRE}</u>, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em"><u>{@code NANOMETRE}</u>, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @see org.apache.sis.metadata.iso.content.DefaultBand#getBoundUnits()
@@ -106,9 +106,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, <u>{@code MILLIMETRE}</u>, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, <u>{@code MILLIMETRE}</u>, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -122,9 +122,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, <u>{@code CENTIMETRE}</u>, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, <u>{@code CENTIMETRE}</u>, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -138,9 +138,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <u><b>{@code METRE}</b></u>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <u><b>{@code METRE}</b></u>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -154,9 +154,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, <u>{@code KILOMETRE}</u>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, <u>{@code KILOMETRE}</u>.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -176,9 +176,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, <u>{@code NAUTICAL_MILE}</u>.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, <u>{@code NAUTICAL_MILE}</u>.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -196,9 +196,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, <u>{@code STATUTE_MILE}</u>, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, <u>{@code STATUTE_MILE}</u>, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -213,9 +213,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, <u>{@code US_SURVEY_FOOT}</u>, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, <u>{@code US_SURVEY_FOOT}</u>, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -229,9 +229,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, <u>{@code CLARKE_FOOT}</u>, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, <u>{@code CLARKE_FOOT}</u>, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -245,9 +245,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, <u>{@code FOOT}</u>, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, <u>{@code FOOT}</u>, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -261,9 +261,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, <u>{@code INCH}</u>, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em">{@link #POINT}, <u>{@code INCH}</u>, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -278,9 +278,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em"><u>{@code POINT}</u>, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     *   <tr><td>SI length units:</td> <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>    <td style="word-spacing:1em"><u>{@code POINT}</u>, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>   <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -349,9 +349,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI angle units:</td>   <td style="word-spacing:1em"><u>{@code MICRORADIAN}</u>, <b>{@link #RADIAN}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
+     *   <tr><td>SI angle units:</td> <td style="word-spacing:1em"><u>{@code MICRORADIAN}</u>, <b>{@link #RADIAN}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
+     *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -366,9 +366,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI angle units:</td>   <td style="word-spacing:1em">{@link #MICRORADIAN}, <u><b>{@code RADIAN}</b></u>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}, {@link #RADIANS_PER_SECOND}.</td></tr>
+     *   <tr><td>SI angle units:</td> <td style="word-spacing:1em">{@link #MICRORADIAN}, <u><b>{@code RADIAN}</b></u>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
+     *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}, {@link #RADIANS_PER_SECOND}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -383,9 +383,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI angle units:</td>   <td style="word-spacing:1em">{@link #MICRORADIAN}, <b>{@link #RADIAN}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em"><u>{@code DEGREE}</u>, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
+     *   <tr><td>SI angle units:</td> <td style="word-spacing:1em">{@link #MICRORADIAN}, <b>{@link #RADIAN}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em"><u>{@code DEGREE}</u>, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
+     *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -401,9 +401,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI angle units:</td>   <td style="word-spacing:1em">{@link #MICRORADIAN}, <b>{@link #RADIAN}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #DEGREE}, <u>{@code ARC_MINUTE}</u>, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
+     *   <tr><td>SI angle units:</td> <td style="word-spacing:1em">{@link #MICRORADIAN}, <b>{@link #RADIAN}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #DEGREE}, <u>{@code ARC_MINUTE}</u>, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
+     *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -420,9 +420,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI angle units:</td>   <td style="word-spacing:1em">{@link #MICRORADIAN}, <b>{@link #RADIAN}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, <u>{@code ARC_SECOND}</u>, {@link #GRAD}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
+     *   <tr><td>SI angle units:</td> <td style="word-spacing:1em">{@link #MICRORADIAN}, <b>{@link #RADIAN}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, <u>{@code ARC_SECOND}</u>, {@link #GRAD}.</td></tr>
+     *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -438,9 +438,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI angle units:</td>   <td style="word-spacing:1em">{@link #MICRORADIAN}, <b>{@link #RADIAN}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, <u>{@code GRAD}</u>.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
+     *   <tr><td>SI angle units:</td> <td style="word-spacing:1em">{@link #MICRORADIAN}, <b>{@link #RADIAN}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, <u>{@code GRAD}</u>.</td></tr>
+     *   <tr><td>Derived units:</td>  <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -455,9 +455,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td>    <td style="word-spacing:1em"><u>{@code MILLISECOND}</u>, <b>{@link #SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em"><u>{@code MILLISECOND}</u>, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
      * @see java.util.concurrent.TimeUnit#MILLISECONDS
@@ -473,9 +473,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td>    <td style="word-spacing:1em">{@link #MILLISECOND}, <u><b>{@link #SECOND}</b></u>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <u><b>{@link #SECOND}</b></u>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -489,9 +489,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td>    <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em"><u>{@code MINUTE}</u>, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em"><u>{@code MINUTE}</u>, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -505,9 +505,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td>    <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, <u>{@code HOUR}</u>, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, <u>{@code HOUR}</u>, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -521,9 +521,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td>    <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, <u>{@code DAY}</u>, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, <u>{@code DAY}</u>, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -537,9 +537,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td>    <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, <u>{@link #WEEK}</u>, {@link #TROPICAL_YEAR}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, <u>{@link #WEEK}</u>, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -555,9 +555,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td>    <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, <u>{@code TROPICAL_YEAR}</u>.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, <u>{@code TROPICAL_YEAR}</u>.</td></tr>
+     *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -597,9 +597,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI speed units:</td>   <td style="word-spacing:1em"><u><b>{@code METRES_PER_SECOND}</b></u>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}.</td></tr>
-     *   <tr><td>Components:</td>       <td style="word-spacing:0.5em">{@link #METRE} ∕ {@link #SECOND}</td></tr>
+     *   <tr><td>SI speed units:</td> <td style="word-spacing:1em"><u><b>{@code METRES_PER_SECOND}</b></u>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}.</td></tr>
+     *   <tr><td>Components:</td>     <td style="word-spacing:0.5em">{@link #METRE} ∕ {@link #SECOND}</td></tr>
      * </table>
      *
      * @since 0.8
@@ -613,9 +613,9 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI speed units:</td>   <td style="word-spacing:1em"><b>{@link #METRES_PER_SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em"><u>{@code KILOMETRES_PER_HOUR}</u>.</td></tr>
-     *   <tr><td>Components:</td>       <td style="word-spacing:0.5em">{@link #KILOMETRE} ∕ {@link #HOUR}</td></tr>
+     *   <tr><td>SI speed units:</td> <td style="word-spacing:1em"><b>{@link #METRES_PER_SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em"><u>{@code KILOMETRES_PER_HOUR}</u>.</td></tr>
+     *   <tr><td>Components:</td>     <td style="word-spacing:0.5em">{@link #KILOMETRE} ∕ {@link #HOUR}</td></tr>
      * </table>
      *
      * @since 0.8
@@ -629,7 +629,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI acceleration units:</td> <td style="word-spacing:1em"><u><b>{@code METRES_PER_SECOND_SQUARED}</b></u>.</td></tr>
-     *   <tr><td>In other systems:</td>      <td style="word-spacing:1em">{@link #GAL}.</td></tr>
+     *   <tr><td>Non-SI units:</td>          <td style="word-spacing:1em">{@link #GAL}.</td></tr>
      *   <tr><td>Components:</td>            <td style="word-spacing:0.5em">{@link #METRES_PER_SECOND} ∕ {@link #SECOND}</td></tr>
      * </table>
      *
@@ -646,7 +646,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI acceleration units:</td> <td style="word-spacing:1em"><u><b>{@link #METRES_PER_SECOND_SQUARED}</b></u>.</td></tr>
-     *   <tr><td>In other systems:</td>      <td style="word-spacing:1em">{@code GAL}.</td></tr>
+     *   <tr><td>Non-SI units:</td>          <td style="word-spacing:1em">{@code GAL}.</td></tr>
      *   <tr><td>Components:</td>            <td style="word-spacing:0.5em">{@link #CENTIMETRE} ∕ {@link #SECOND}²</td></tr>
      * </table>
      *
@@ -664,7 +664,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI pressure units:</td> <td style="word-spacing:1em"><u><b>{@code PASCAL}</b></u>, {@link #HECTOPASCAL}.</td></tr>
-     *   <tr><td>In other systems:</td>  <td style="word-spacing:1em">{@link #DECIBAR}, {@link #BAR}, {@link #ATMOSPHERE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>      <td style="word-spacing:1em">{@link #DECIBAR}, {@link #BAR}, {@link #ATMOSPHERE}.</td></tr>
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
@@ -682,7 +682,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI pressure units:</td> <td style="word-spacing:1em"><b>{@link #PASCAL}</b>, <u>{@code HECTOPASCAL}</u>.</td></tr>
-     *   <tr><td>In other systems:</td>  <td style="word-spacing:1em">{@link #DECIBAR}, {@link #BAR}, {@link #ATMOSPHERE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>      <td style="word-spacing:1em">{@link #DECIBAR}, {@link #BAR}, {@link #ATMOSPHERE}.</td></tr>
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
@@ -700,7 +700,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI pressure units:</td> <td style="word-spacing:1em"><b>{@link #PASCAL}</b>, {@link #HECTOPASCAL}.</td></tr>
-     *   <tr><td>In other systems:</td>  <td style="word-spacing:1em"><u>{@code DECIBAR}</u>, {@link #BAR}, {@link #ATMOSPHERE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>      <td style="word-spacing:1em"><u>{@code DECIBAR}</u>, {@link #BAR}, {@link #ATMOSPHERE}.</td></tr>
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
@@ -718,7 +718,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI pressure units:</td> <td style="word-spacing:1em"><b>{@link #PASCAL}</b>, {@link #HECTOPASCAL}.</td></tr>
-     *   <tr><td>In other systems:</td>  <td style="word-spacing:1em">{@link #DECIBAR}, <u>{@code BAR}</u>, {@link #ATMOSPHERE}.</td></tr>
+     *   <tr><td>Non-SI units:</td>      <td style="word-spacing:1em">{@link #DECIBAR}, <u>{@code BAR}</u>, {@link #ATMOSPHERE}.</td></tr>
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
@@ -735,7 +735,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI pressure units:</td> <td style="word-spacing:1em"><b>{@link #PASCAL}</b>, {@link #HECTOPASCAL}.</td></tr>
-     *   <tr><td>In other systems:</td>  <td style="word-spacing:1em">{@link #DECIBAR}, {@link #BAR}, <u>{@code ATMOSPHERE}</u>.</td></tr>
+     *   <tr><td>Non-SI units:</td>      <td style="word-spacing:1em">{@link #DECIBAR}, {@link #BAR}, <u>{@code ATMOSPHERE}</u>.</td></tr>
      *   <tr><td>Components:</td>        <td style="word-spacing:0.5em">{@link #NEWTON} ∕ {@link #SQUARE_METRE}</td></tr>
      * </table>
      *
@@ -919,7 +919,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI temperature units:</td> <td style="word-spacing:1em"><u><b>{@code KELVIN}</b></u>.</td></tr>
-     *   <tr><td>In other systems:</td>     <td style="word-spacing:1em">{@link #CELSIUS}, {@link #FAHRENHEIT}.</td></tr>
+     *   <tr><td>Non-SI units:</td>         <td style="word-spacing:1em">{@link #CELSIUS}, {@link #FAHRENHEIT}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -934,7 +934,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI temperature units:</td> <td style="word-spacing:1em"><b>{@link #KELVIN}</b>.</td></tr>
-     *   <tr><td>In other systems:</td>     <td style="word-spacing:1em"><u>{@code CELSIUS}</u>, {@link #FAHRENHEIT}.</td></tr>
+     *   <tr><td>Non-SI units:</td>         <td style="word-spacing:1em"><u>{@code CELSIUS}</u>, {@link #FAHRENHEIT}.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -949,7 +949,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI temperature units:</td> <td style="word-spacing:1em"><b>{@link #KELVIN}</b>.</td></tr>
-     *   <tr><td>In other systems:</td>     <td style="word-spacing:1em">{@link #CELSIUS}, <u>{@code FAHRENHEIT}</u>.</td></tr>
+     *   <tr><td>Non-SI units:</td>         <td style="word-spacing:1em">{@link #CELSIUS}, <u>{@code FAHRENHEIT}</u>.</td></tr>
      * </table>
      *
      * @since 0.8
@@ -1019,6 +1019,34 @@ public final class Units extends Static {
      * @since 0.8
      */
     public static final Unit<AmountOfSubstance> MOLE;
+
+    /**
+     * The SI derived unit for radioactivity (Bq).
+     * The unlocalized name is “becquerel”.
+     *
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>Components:</td><td style="word-spacing:0.5em">{@link #SECOND}<sup>-1</sup></td></tr>
+     *   <tr><td>Non-SI units:</td> <td style="word-spacing:1em">{@link #CURIE}.</td></tr>
+     * </table>
+     *
+     * @since 1.4
+     */
+    public static final Unit<Radioactivity> BECQUEREL;
+
+    /**
+     * Unit of measurement defined as 3.7 × 10¹⁰ becquerel
+     * The symbol is Ci and the unlocalized name is “curie”.
+     *
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>Components:</td><td style="word-spacing:0.5em">{@link #SECOND}<sup>-1</sup></td></tr>
+     *   <tr><td>SI radioactivity units:</td> <td style="word-spacing:1em"><b>{@link #BECQUEREL}</b>.</td></tr>
+     * </table>
+     *
+     * @since 1.4
+     */
+    public static final Unit<Radioactivity> CURIE;
 
     /**
      * The base dimensionless unit for scale measurements.
@@ -1237,6 +1265,15 @@ public final class Units extends Static {
         HECTARE      = add(m2, ten4,  "ha",        ACCEPTED,               (short) 0);
         LITRE        = add(m3, milli, "L", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
         GRAM         = add(kg, milli, "g", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
+        /*
+         * Radioactivity must be defined after angular velocities, because it has the same dimensions.
+         * The dimensions are also the same as frequency.
+         */
+        final SystemUnit<Radioactivity> Bq;
+        Bq = add(Radioactivity.class, null, frequency, "Bq",  (byte) (SI | PREFIXABLE), (short) 0);
+        Bq.related(1);
+        BECQUEREL = Bq;
+        CURIE     = add(Bq, LinearConverter.scale(3.7E10, 1), "Ci", OTHER, (short) 0);
         /*
          * Force, energy, electricity, magnetism and other units.
          * Frequency must be defined after angular velocities.

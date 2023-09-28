@@ -1168,7 +1168,6 @@ public class GeodeticCalculator {
      * @throws GeodeticException if the projection cannot be computed.
      *
      * @see #moveToEndPoint()
-     * @see org.apache.sis.referencing.operation.projection.AzimuthalEquidistant
      *
      * @since 1.1
      */

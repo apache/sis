@@ -21,13 +21,8 @@
  * The remaining discussion on this page is specific to the Apache SIS implementation.
  *
  * <p>This package provides an ISO 19111 {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation
- * Coordinate Operation implementation} and support classes. The actual transform work is performed by the following
- * sub-packages, but most users will not need to deal with them directly:</p>
- *
- * <ul>
- *   <li>{@link org.apache.sis.referencing.operation.projection} — map projections,</li>
- *   <li>{@link org.apache.sis.referencing.operation.transform} — any transform other than map projections.</li>
- * </ul>
+ * Coordinate Operation implementation} and support classes. The actual transform work is performed by the sub-packages,
+ * but most users will not need to deal with them directly.</p>
  *
  * <h2>Apache SIS extensions</h2>
  * Some SIS implementations provide additional methods that are not part of OGC/ISO specifications:

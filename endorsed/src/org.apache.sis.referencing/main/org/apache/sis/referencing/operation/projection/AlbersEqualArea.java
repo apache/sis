@@ -203,7 +203,7 @@ public class AlbersEqualArea extends AuthalicConversion {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         AlbersEqualArea kernel = this;
-        if (eccentricity == 0 && getClass() == AlbersEqualArea.class) {
+        if (eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return kernel.completeWithWraparound(factory);

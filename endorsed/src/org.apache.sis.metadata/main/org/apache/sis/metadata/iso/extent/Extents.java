@@ -24,13 +24,16 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Stream;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
+import java.util.Optional;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Geometry;
 import org.opengis.temporal.TemporalPrimitive;
+import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -48,6 +51,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -66,12 +70,6 @@ import static java.lang.Math.*;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.util.Optional;
-import org.opengis.referencing.ObjectDomain;
-import org.opengis.geometry.MismatchedReferenceSystemException;
-import org.opengis.referencing.operation.CoordinateOperation;
 
 
 /**
@@ -209,43 +207,34 @@ public final class Extents extends Static {
     }
 
     /**
-     * Returns a single geographic bounding box for the given domains of validity.
-     * For each domain, the bounding box is fetched with {@link #getGeographicBoundingBox(Extent)}.
-     * If more than one geographic domain of validity is found, this method computes their union.
+     * Returns a single geographic bounding box for the given extents.
+     * For each extent, the bounding box is fetched with {@link #getGeographicBoundingBox(Extent)}.
+     * If more than one geographic bound is found, this method computes their union.
      *
-     * <p>This is a convenience method for fetching the domain of validity of {@link Datum},
-     * {@link CoordinateReferenceSystem} or {@link CoordinateOperation} objects.</p>
+     * <p>This is a convenience method for fetching the domain of validity of
+     * {@link org.opengis.referencing.datum.Datum},
+     * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} or
+     * {@link org.opengis.referencing.operation.CoordinateOperation} objects.</p>
      *
-     * @param  domains  the domains of validity for which to get a single geographic bounding box, or {@code null}.
-     * @return the union of all geographic bounding boxes found in all domains of validity.
+     * @param  extents  the extents for which to get a single geographic bounding box.
+     * @return the union of all geographic bounding boxes found in all extents.
      * @throws InvalidMetadataException if an envelope cannot be transformed to a geographic bounding box.
      *
-     * @see CoordinateReferenceSystem#getDomains()
+     * @see org.opengis.referencing.crs.CoordinateReferenceSystem#getDomains()
      * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
      *
      * @since 1.4
      */
-    public static Optional<GeographicBoundingBox> getGeographicBoundingBox(final Iterable<? extends ObjectDomain> domains) {
-        if (domains != null) {
-            Extents m = null;
-            for (final ObjectDomain domain : domains) {
-                final Extent extent = domain.getDomainOfValidity();
-                if (extent != null) {
-                    if (m == null) {
-                        m = new Extents();
-                    }
-                    try {
-                        m.addHorizontal(extent);
-                    } catch (TransformException e) {
-                        throw new InvalidMetadataException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
-                    }
-                }
+    public static Optional<GeographicBoundingBox> getGeographicBoundingBox(final Stream<? extends Extent> extents) {
+        final Extents m = new Extents();
+        extents.forEach((extent) -> {
+            if (extent != null) try {
+                m.addHorizontal(extent);
+            } catch (TransformException e) {
+                throw new InvalidMetadataException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
             }
-            if (m != null) {
-                return Optional.ofNullable(m.bounds);
-            }
-        }
-        return Optional.empty();
+        });
+        return Optional.ofNullable(m.bounds);
     }
 
     /**

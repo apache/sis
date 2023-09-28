@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn({
@@ -183,6 +183,7 @@ public final class UnitsTest extends TestCase {
         assertEquals(1000.0,               toStandardUnit(KILOMETRE), 1E-15);
         assertEquals(0.017453292519943295, toStandardUnit(DEGREE),    1E-15);
         assertEquals(0.01,                 toStandardUnit(GAL),       1E-15);
+        assertEquals(3.7E10,               toStandardUnit(CURIE),     1E-3);
     }
 
     /**
@@ -190,8 +191,9 @@ public final class UnitsTest extends TestCase {
      */
     @Test
     public void testConversionFactors() {
-        assertEquals(1000, KILOMETRE        .getConverterTo(METRE)              .convert(1), STRICT);
-        assertEquals( 3.6, METRES_PER_SECOND.getConverterTo(KILOMETRES_PER_HOUR).convert(1), STRICT);
+        assertEquals(1000, KILOMETRE        .getConverterTo(METRE)              .convert(    1), STRICT);
+        assertEquals( 3.6, METRES_PER_SECOND.getConverterTo(KILOMETRES_PER_HOUR).convert(    1), STRICT);
+        assertEquals(1E-6, BECQUEREL        .getConverterTo(CURIE)              .convert(37000),  1E-20);
     }
 
     /**

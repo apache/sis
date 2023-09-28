@@ -103,9 +103,8 @@ public enum ComparisonMode {
      * <h4>Application to coordinate operations</h4>
      * If the objects being compared are {@link org.opengis.referencing.operation.MathTransform} instances,
      * then two transforms defined in a different way may be considered equivalent. For example, it is possible
-     * to define a {@linkplain org.apache.sis.referencing.operation.projection.Mercator Mercator} projection in
-     * two different ways, as a <cite>"Mercator (1SP)"</cite> or as a <cite>"Mercator (2SP)"</cite> projection,
-     * each having their own set of parameters.
+     * to define a Mercator projection in different ways, named "variant A", "variant B" and "variant C"
+     * in EPSG dataset, each having their own set of parameters.
      * The {@link #STRICT} or {@link #BY_CONTRACT} modes shall consider two projections as equal only if their
      * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()
      * parameter values} are strictly identical, while the {@code IGNORE_METADATA} mode can consider
@@ -113,8 +112,8 @@ public enum ComparisonMode {
      * transformations still produce the same results.
      *
      * <h4>Example</h4>
-     * A <cite>"Mercator (2SP)"</cite> projection with a <cite>standard parallel</cite> value of 60° produces the
-     * same results than a <cite>"Mercator (1SP)"</cite> projection with a <cite>scale factor</cite> value of 0.5.
+     * A <cite>"Mercator (variant B)"</cite> projection with a <cite>standard parallel</cite> value of 60° produces the
+     * same results than a <cite>"Mercator (variant A)"</cite> projection with a <cite>scale factor</cite> value of 0.5.
      *
      * @see org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)
      */

@@ -211,7 +211,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         CylindricalEqualArea kernel = this;
-        if ((variant == Variant.SPHERICAL || eccentricity == 0) && getClass() == CylindricalEqualArea.class) {
+        if (variant == Variant.SPHERICAL || eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);

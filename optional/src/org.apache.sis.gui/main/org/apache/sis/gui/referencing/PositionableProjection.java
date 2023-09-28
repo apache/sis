@@ -60,8 +60,6 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
 
     /**
      * Provides <cite>Orthographic</cite> projection centered on a point of interest.
-     *
-     * @see org.apache.sis.referencing.operation.projection.Orthographic
      */
     public static final PositionableProjection ORTHOGRAPHIC =
             new PositionableProjection("ORTHOGRAPHIC", Resources.Keys.Orthographic)
@@ -80,8 +78,6 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
     /**
      * Provides <cite>Azimuthal Equidistant</cite> projection centered on a point of interest.
      * For projection on the ellipsoid, this is valid only under 800 km of the point of interest.
-     *
-     * @see org.apache.sis.referencing.operation.projection.AzimuthalEquidistant
      */
     public static final PositionableProjection AZIMUTHAL_EQUIDISTANT =
             new PositionableProjection("AZIMUTHAL_EQUIDISTANT", Resources.Keys.AzimuthalEquidistant)
@@ -99,8 +95,6 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
 
     /**
      * Provides <cite>Universal Transverse Mercator</cite> projection for the zone in the point of interest.
-     *
-     * @see org.apache.sis.referencing.operation.projection.Mercator
      */
     public static final PositionableProjection UTM =
             new PositionableProjection("UTM", Resources.Keys.UTM)
@@ -121,8 +115,6 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
 
     /**
      * Provides <cite>Mercator (variant C)</cite> projection centered on a point of interest.
-     *
-     * @see org.apache.sis.referencing.operation.projection.Mercator
      */
     public static final PositionableProjection MERCATOR =
             new PositionableProjection("MERCATOR", Resources.Keys.Mercator)

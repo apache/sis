@@ -97,6 +97,8 @@ public final class UnitFormatTest extends TestCase {
         verify(declared, "DAY",                 "T",            "d",     "day",                     Units.DAY);
         verify(declared, "WEEK",                "T",            "wk",    "week",                    Units.WEEK);
         verify(declared, "TROPICAL_YEAR",       "T",            "a",     "year",                    Units.TROPICAL_YEAR);
+        verify(declared, "CURIE",               "∕T",           "Ci",    "curie",                   Units.CURIE);
+        verify(declared, "BECQUEREL",           "∕T",           "Bq",    "becquerel",               Units.BECQUEREL);
         verify(declared, "HERTZ",               "∕T",           "Hz",    "hertz",                   Units.HERTZ);
         verify(declared, "RADIANS_PER_SECOND",  "∕T",           "rad∕s", "radians per second",      Units.RADIANS_PER_SECOND);
         verify(declared, "METRES_PER_SECOND",   "L∕T",          "m∕s",   "metres per second",       Units.METRES_PER_SECOND);

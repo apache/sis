@@ -225,7 +225,7 @@ public class CassiniSoldner extends MeridianArcBased {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         CassiniSoldner kernel = this;
-        if ((eccentricity == 0 && variant == null) && getClass() == CassiniSoldner.class) {
+        if (eccentricity == 0 && variant == null) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
