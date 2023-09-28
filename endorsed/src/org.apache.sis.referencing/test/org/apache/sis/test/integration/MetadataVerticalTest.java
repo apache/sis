@@ -39,12 +39,14 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.xml.TestCase;
+
+// Test dependencies
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

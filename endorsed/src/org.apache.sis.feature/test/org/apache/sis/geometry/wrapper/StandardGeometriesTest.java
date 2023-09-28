@@ -16,9 +16,11 @@
  */
 package org.apache.sis.geometry.wrapper;
 
-import org.junit.Test;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.setup.GeometryLibrary;
+
+// Test dependencies
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

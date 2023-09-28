@@ -25,8 +25,10 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 

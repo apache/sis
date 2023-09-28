@@ -18,11 +18,11 @@ package org.apache.sis.pending.geoapi.evolution;
 
 // Specific to the main branch:
 import java.lang.reflect.Method;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.Geometry;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
-import org.opengis.geometry.Envelope;
-import org.opengis.geometry.Geometry;
 
 import static java.util.logging.Logger.getLogger;
 

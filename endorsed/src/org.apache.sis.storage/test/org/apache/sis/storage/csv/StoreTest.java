@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Iterator;
 import java.time.Instant;
 import java.io.StringReader;
+import com.esri.core.geometry.Point2D;
+import com.esri.core.geometry.Polyline;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -29,10 +31,10 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
-import com.esri.core.geometry.Point2D;
-import com.esri.core.geometry.Polyline;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;

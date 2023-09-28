@@ -17,11 +17,13 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.awt.geom.AffineTransform;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+
 import static java.lang.StrictMath.*;
+import static org.junit.Assert.*;
 
 
 /**

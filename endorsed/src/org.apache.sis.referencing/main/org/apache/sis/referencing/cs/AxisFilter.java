@@ -16,10 +16,10 @@
  */
 package org.apache.sis.referencing.cs;
 
+import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import javax.measure.Unit;
 
 
 /**

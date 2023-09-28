@@ -18,9 +18,11 @@ package org.apache.sis.coverage.internal;
 
 import java.util.Locale;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Localized;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

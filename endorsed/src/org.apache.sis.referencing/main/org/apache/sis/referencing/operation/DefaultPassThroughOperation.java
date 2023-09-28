@@ -44,9 +44,9 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**

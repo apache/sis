@@ -17,12 +17,14 @@
 package org.apache.sis.util.iso;
 
 import org.opengis.util.GenericName;
-import org.opengis.test.util.NameTest;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.opengis.test.util.NameTest;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 

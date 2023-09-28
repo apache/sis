@@ -32,24 +32,26 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.test.Validators;
 import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
-import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+
+// Test dependencies
+import org.junit.Test;
+import org.opengis.test.Validators;
+import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the main branch:

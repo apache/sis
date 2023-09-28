@@ -40,8 +40,8 @@ import org.apache.sis.util.internal.CollectionsExt;
 
 // Specific to the main branch:
 import org.opengis.util.CodeList;
-import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 import org.opengis.annotation.UML;
+import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;

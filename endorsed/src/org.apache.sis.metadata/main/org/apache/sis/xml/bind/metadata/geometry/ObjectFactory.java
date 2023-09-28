@@ -16,10 +16,10 @@
  */
 package org.apache.sis.xml.bind.metadata.geometry;
 
+import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlElementDecl;
 import jakarta.xml.bind.annotation.XmlRegistry;
-import javax.xml.namespace.QName;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Workaround;
 

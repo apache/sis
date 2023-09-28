@@ -27,6 +27,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Method;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -46,13 +48,13 @@ import org.apache.sis.storage.sql.feature.GeometryGetterTest;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.util.Version;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.sql.TestDatabase;
-import org.apache.sis.util.Version;
-import org.junit.Test;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Geometry;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

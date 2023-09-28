@@ -21,8 +21,10 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
 
 
 /**

@@ -76,21 +76,21 @@ import java.util.Map;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.TypeName;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.DatumFactory;
 import org.apache.sis.metadata.internal.NameToIdentifier;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.util.Deprecable;
 
 
 /**

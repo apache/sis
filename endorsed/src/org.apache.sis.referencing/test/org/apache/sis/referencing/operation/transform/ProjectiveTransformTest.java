@@ -32,18 +32,19 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.math.Fraction;
-import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.After;
 import org.junit.Test;
+import org.opengis.test.Validators;
+import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.junit.Ignore;
-
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
-import static org.opengis.test.Assert.*;
-
 import org.opengis.test.referencing.TransformTestCase;
+
+import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**

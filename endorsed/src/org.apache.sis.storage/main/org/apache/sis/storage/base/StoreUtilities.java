@@ -37,6 +37,7 @@ import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
@@ -51,7 +52,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:

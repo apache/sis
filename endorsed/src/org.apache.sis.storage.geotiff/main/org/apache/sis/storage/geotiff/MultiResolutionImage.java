@@ -18,8 +18,8 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.List;
 import java.util.Arrays;
-import java.nio.file.Path;
 import java.io.IOException;
+import java.nio.file.Path;
 import org.opengis.util.NameSpace;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;

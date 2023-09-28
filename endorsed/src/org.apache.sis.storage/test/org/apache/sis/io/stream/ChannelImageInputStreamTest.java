@@ -19,13 +19,15 @@ package org.apache.sis.io.stream;
 import java.util.Arrays;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.channels.Channels;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 

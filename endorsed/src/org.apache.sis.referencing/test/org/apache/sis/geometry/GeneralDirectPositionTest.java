@@ -18,14 +18,16 @@ package org.apache.sis.geometry;
 
 import java.util.Arrays;
 import org.apache.sis.io.wkt.Formatter;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
 /**

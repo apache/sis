@@ -26,17 +26,19 @@ import java.util.SortedSet;
 import java.io.PrintWriter;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.Performance;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

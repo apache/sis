@@ -25,9 +25,11 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.Namespaces;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

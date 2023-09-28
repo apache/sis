@@ -18,8 +18,8 @@ package org.apache.sis.xml;
 
 import java.util.Locale;
 import java.util.TimeZone;
-import org.apache.sis.util.Version;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.Version;
 
 
 /**

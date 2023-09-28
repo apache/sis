@@ -19,9 +19,9 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.HashMap;
 import javax.measure.Unit;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
-import org.opengis.referencing.cs.AxisDirection;
 
 import static org.apache.sis.util.internal.Constants.EPSG_METRE;
 import static org.apache.sis.util.internal.Constants.EPSG_AXIS_DEGREES;

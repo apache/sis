@@ -31,8 +31,8 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.opengis.metadata.quality.Scope;
 
 // Specific to the main branch:
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.opengis.annotation.UML;
+import org.apache.sis.metadata.iso.ISOMetadata;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.UNSPECIFIED;

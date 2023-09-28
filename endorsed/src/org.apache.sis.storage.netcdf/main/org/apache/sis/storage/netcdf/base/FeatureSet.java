@@ -30,6 +30,7 @@ import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
@@ -49,7 +50,6 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.math.Vector;
-import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;

@@ -17,9 +17,11 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Locale;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.util.StringBuilders;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;

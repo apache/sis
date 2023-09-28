@@ -16,9 +16,10 @@
  */
 package org.apache.sis.xml.util;
 
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.xml.DocumentComparator;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

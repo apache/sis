@@ -17,9 +17,9 @@
 package org.apache.sis.test;
 
 // Specific to the main branch:
-import static org.junit.Assume.assumeTrue;
-
 import org.opengis.metadata.Metadata;
+
+import static org.junit.Assume.assumeTrue;
 
 
 /**

@@ -23,12 +23,14 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.IdentifiedObjects.*;
+import static org.junit.Assert.*;
 
 
 /**

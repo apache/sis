@@ -18,12 +18,12 @@ package org.apache.sis.referencing.internal;
 
 import java.util.Collection;
 import java.util.function.UnaryOperator;
+import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.xml.bind.TypeRegistration;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.opengis.referencing.ReferenceSystem;
 
 
 /**

@@ -16,11 +16,12 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
-import org.apache.sis.test.DependsOn;
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix3.SIZE;
+import static org.junit.Assert.*;
 
 
 /**

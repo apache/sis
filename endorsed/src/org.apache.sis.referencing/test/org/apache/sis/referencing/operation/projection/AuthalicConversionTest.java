@@ -21,9 +21,11 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea;
 import org.apache.sis.util.internal.Constants;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.apache.sis.math.MathFunctions.atanh;

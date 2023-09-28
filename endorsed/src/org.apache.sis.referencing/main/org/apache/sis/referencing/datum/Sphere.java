@@ -17,9 +17,9 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.datum.Ellipsoid;
 
 

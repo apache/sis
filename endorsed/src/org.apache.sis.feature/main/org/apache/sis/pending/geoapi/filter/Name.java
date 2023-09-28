@@ -17,10 +17,10 @@
 package org.apache.sis.pending.geoapi.filter;
 
 // Specific to the main branch:
-import org.apache.sis.filter.internal.FunctionNames;
-import org.apache.sis.util.iso.Names;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
+import org.apache.sis.filter.internal.FunctionNames;
+import org.apache.sis.util.iso.Names;
 
 
 /**

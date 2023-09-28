@@ -16,6 +16,9 @@
  */
 package org.apache.sis.openoffice;
 
+import com.sun.star.uno.AnyConverter;
+import com.sun.star.uno.XComponentContext;
+import com.sun.star.lang.IllegalArgumentException;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -26,9 +29,6 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import com.sun.star.uno.AnyConverter;
-import com.sun.star.uno.XComponentContext;
-import com.sun.star.lang.IllegalArgumentException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;

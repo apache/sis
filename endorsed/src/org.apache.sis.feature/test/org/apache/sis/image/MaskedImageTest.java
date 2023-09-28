@@ -31,9 +31,11 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import org.apache.sis.coverage.grid.j2d.TiledImage;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Debug;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;

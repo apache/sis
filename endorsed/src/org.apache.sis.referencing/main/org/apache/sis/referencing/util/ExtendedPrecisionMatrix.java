@@ -16,8 +16,8 @@
  */
 package org.apache.sis.referencing.util;
 
-import org.apache.sis.util.resources.Errors;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

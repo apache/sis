@@ -24,10 +24,12 @@ import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.util.iso.Names;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.iso.Names;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

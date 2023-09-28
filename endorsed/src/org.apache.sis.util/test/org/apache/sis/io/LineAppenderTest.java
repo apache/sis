@@ -17,9 +17,11 @@
 package org.apache.sis.io;
 
 import java.io.IOException;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.Before;
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 

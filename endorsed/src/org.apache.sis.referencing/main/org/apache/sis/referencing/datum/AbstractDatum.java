@@ -44,8 +44,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
 
 // Specific to the main branch:
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.extent.Extent;
 import org.apache.sis.referencing.internal.Legacy;
 
 

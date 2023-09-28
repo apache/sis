@@ -25,6 +25,8 @@ import org.apache.sis.referencing.operation.provider.Equirectangular;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
+
+// Test dependencies
 import org.junit.Test;
 
 import static java.lang.Double.NaN;

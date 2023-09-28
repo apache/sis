@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
 import java.nio.file.Path;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 import org.opengis.util.NameSpace;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -47,7 +48,6 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
-import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 
 
 /**

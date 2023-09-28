@@ -19,6 +19,8 @@ package org.apache.sis.math;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.util.Locale;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;

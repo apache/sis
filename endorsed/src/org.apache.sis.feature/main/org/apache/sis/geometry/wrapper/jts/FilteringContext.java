@@ -20,10 +20,10 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.sis.system.DelayedExecutor;
-import org.apache.sis.system.DelayedRunnable;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
+import org.apache.sis.system.DelayedExecutor;
+import org.apache.sis.system.DelayedRunnable;
 
 
 /**

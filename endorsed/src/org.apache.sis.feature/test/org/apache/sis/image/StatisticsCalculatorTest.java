@@ -25,11 +25,13 @@ import java.awt.image.ImagingOpException;
 import java.util.function.DoubleUnaryOperator;
 import org.apache.sis.system.Modules;
 import org.apache.sis.math.Statistics;
+
+// Test dependencies
+import org.junit.Rule;
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
-import org.junit.Rule;
-import org.junit.Test;
 
 import static java.util.logging.Logger.getLogger;
 import static org.junit.Assert.*;

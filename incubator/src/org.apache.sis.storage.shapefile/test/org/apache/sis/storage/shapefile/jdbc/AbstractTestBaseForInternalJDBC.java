@@ -16,9 +16,6 @@
  */
 package org.apache.sis.storage.shapefile.jdbc;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -26,8 +23,13 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.logging.Logger;
-import org.apache.sis.storage.shapefile.ShapeFileTest;
+
+// Test dependencies
 import org.junit.Before;
+import org.apache.sis.storage.shapefile.ShapeFileTest;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**

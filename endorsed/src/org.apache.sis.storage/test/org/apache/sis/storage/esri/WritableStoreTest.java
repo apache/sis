@@ -16,12 +16,12 @@
  */
 package org.apache.sis.storage.esri;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.StandardCharsets;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -34,8 +34,10 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

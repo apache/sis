@@ -24,17 +24,19 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static java.lang.StrictMath.abs;
 import static org.opengis.referencing.cs.AxisDirection.*;
 import static org.apache.sis.referencing.util.AxisDirections.AWAY_FROM;
 import static org.apache.sis.referencing.util.AxisDirections.CLOCKWISE;
 import static org.apache.sis.referencing.util.AxisDirections.COUNTER_CLOCKWISE;
+import static org.junit.Assert.*;
 
 
 /**

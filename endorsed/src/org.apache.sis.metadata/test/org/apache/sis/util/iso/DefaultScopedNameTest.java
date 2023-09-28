@@ -20,9 +20,11 @@ import java.util.List;
 import java.util.Arrays;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.SimpleInternationalString;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;

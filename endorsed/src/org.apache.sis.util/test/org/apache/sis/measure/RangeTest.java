@@ -18,8 +18,10 @@ package org.apache.sis.measure;
 
 import java.util.Locale;
 import java.time.Instant;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;

@@ -36,10 +36,12 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSetEquals;

@@ -19,6 +19,8 @@ package org.apache.sis.storage.shapefile.jdbc;
 import java.sql.*;
 import java.util.Properties;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
+
+// Test dependencies
 import org.junit.*;
 
 import static org.junit.Assert.*;

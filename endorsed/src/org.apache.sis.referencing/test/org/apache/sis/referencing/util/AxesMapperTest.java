@@ -18,8 +18,10 @@ package org.apache.sis.referencing.util;
 
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

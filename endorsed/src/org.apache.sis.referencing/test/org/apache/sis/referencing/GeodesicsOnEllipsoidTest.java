@@ -26,13 +26,15 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
+import static org.junit.Assert.*;
 
 
 /**

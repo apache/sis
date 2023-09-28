@@ -18,8 +18,10 @@ package org.apache.sis.profile.japan;
 
 import org.apache.sis.profile.japan.netcdf.GCOM_C;
 import org.apache.sis.storage.netcdf.base.Convention;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

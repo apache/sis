@@ -18,6 +18,9 @@ package org.apache.sis.storage.base;
 
 import java.util.List;
 import java.util.Optional;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -27,9 +30,6 @@ import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.util.GenericName;
 
 
 /**

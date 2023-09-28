@@ -23,14 +23,14 @@ import java.util.Locale;
 import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
-import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;

@@ -17,8 +17,8 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
-import org.apache.sis.storage.internal.Resources;
 import org.opengis.util.GenericName;
+import org.apache.sis.storage.internal.Resources;
 
 
 /**

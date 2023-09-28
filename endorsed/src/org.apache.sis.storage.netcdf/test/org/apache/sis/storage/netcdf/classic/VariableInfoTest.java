@@ -20,6 +20,8 @@ import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.VariableTest;
+
+// Test dependencies
 import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:

@@ -16,13 +16,14 @@
  */
 package org.apache.sis.util.internal;
 
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 import static java.lang.String.valueOf;
-import static org.junit.Assert.*;
 import static org.apache.sis.util.internal.X364.*;
+import static org.junit.Assert.*;
 
 
 /**

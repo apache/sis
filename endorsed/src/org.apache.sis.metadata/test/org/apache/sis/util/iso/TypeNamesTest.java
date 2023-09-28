@@ -25,12 +25,14 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.util.internal.Constants.OGC;
+import static org.junit.Assert.*;
 
 
 /**

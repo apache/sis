@@ -24,9 +24,11 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.NoSuchElementException;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

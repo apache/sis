@@ -18,13 +18,13 @@ package org.apache.sis.style.se1;
 
 import java.util.Objects;
 import java.util.Optional;
-import javax.measure.Unit;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
+import javax.measure.Unit;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
 

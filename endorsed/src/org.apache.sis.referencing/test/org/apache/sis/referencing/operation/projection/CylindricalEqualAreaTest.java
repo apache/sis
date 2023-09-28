@@ -22,8 +22,10 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualAreaSpherical;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.test.DependsOnMethod;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOnMethod;
 
 import static java.lang.StrictMath.*;
 import static java.lang.Double.NaN;

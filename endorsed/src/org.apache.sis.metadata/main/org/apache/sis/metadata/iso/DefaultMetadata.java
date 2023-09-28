@@ -89,13 +89,12 @@ import org.opengis.metadata.citation.ResponsibleParty;
 // Specific to the main branch:
 import java.util.LinkedHashMap;
 import org.opengis.annotation.UML;
+import org.apache.sis.xml.bind.metadata.code.MD_CharacterSetCode;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-
-import org.apache.sis.xml.bind.metadata.code.MD_CharacterSetCode;
 
 
 /**

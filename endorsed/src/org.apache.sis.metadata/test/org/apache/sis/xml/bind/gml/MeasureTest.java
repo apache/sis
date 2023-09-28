@@ -19,9 +19,11 @@ package org.apache.sis.xml.bind.gml;
 import java.net.URISyntaxException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.bind.cat.CodeListUID;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

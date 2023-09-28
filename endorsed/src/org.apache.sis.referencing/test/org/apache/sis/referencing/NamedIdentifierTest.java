@@ -21,13 +21,15 @@ import org.opengis.util.InternationalString;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
-import org.opengis.test.Validators;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
+
+// Test dependencies
+import org.junit.Test;
+import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;

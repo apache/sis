@@ -28,10 +28,12 @@ import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.metadata.simple.SimpleIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.iso.DefaultNameFactory;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

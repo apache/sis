@@ -19,8 +19,10 @@ package org.apache.sis.io.stream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import javax.imageio.stream.ImageInputStreamImpl;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

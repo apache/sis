@@ -37,9 +37,9 @@
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.xml.bind.referencing;
 
-import org.apache.sis.xml.Namespaces;
 import jakarta.xml.bind.annotation.XmlNs;
 import jakarta.xml.bind.annotation.XmlNsForm;
 import jakarta.xml.bind.annotation.XmlSchema;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
+import org.apache.sis.xml.Namespaces;

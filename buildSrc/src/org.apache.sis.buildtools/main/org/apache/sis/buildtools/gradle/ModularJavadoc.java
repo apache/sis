@@ -18,11 +18,11 @@ package org.apache.sis.buildtools.gradle;
 
 import java.util.List;
 import java.util.Arrays;
-import java.nio.file.Path;
-import java.nio.file.Files;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.StandardJavadocDocletOptions;
 

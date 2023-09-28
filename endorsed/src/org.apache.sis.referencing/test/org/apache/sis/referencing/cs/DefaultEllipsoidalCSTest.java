@@ -18,16 +18,18 @@ package org.apache.sis.referencing.cs;
 
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.GeodeticObjectVerifier;
+
+// Test dependencies
+import org.junit.Test;
+import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
-import org.apache.sis.referencing.GeodeticObjectVerifier;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;

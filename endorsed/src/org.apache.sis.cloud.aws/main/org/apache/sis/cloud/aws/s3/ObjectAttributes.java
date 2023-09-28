@@ -23,12 +23,12 @@ import java.io.IOException;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.BasicFileAttributeView;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.cloud.aws.internal.Resources;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.core.exception.SdkException;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.cloud.aws.internal.Resources;
 
 
 /**

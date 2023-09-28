@@ -24,14 +24,6 @@ import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.nio.ByteBuffer;
 import java.io.ObjectStreamException;
-import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.wrapper.GeometryType;
-import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.math.Vector;
-import org.apache.sis.util.resources.Errors;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.CoordinateSequence;
@@ -44,6 +36,14 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryType;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.math.Vector;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

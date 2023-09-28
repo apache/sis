@@ -76,9 +76,8 @@ import org.apache.sis.util.logging.Logging;
 
 import static java.util.logging.Logger.getLogger;
 
-import org.apache.sis.referencing.DefaultObjectDomain;
-
 // Specific to the main branch:
+import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.internal.Legacy;
 
 

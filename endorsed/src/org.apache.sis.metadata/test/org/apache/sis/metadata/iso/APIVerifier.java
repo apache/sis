@@ -29,10 +29,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

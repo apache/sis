@@ -19,8 +19,10 @@ package org.apache.sis.referencing.datum;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.apache.sis.test.mock.IdentifiedObjectMock;
 
 
 /**

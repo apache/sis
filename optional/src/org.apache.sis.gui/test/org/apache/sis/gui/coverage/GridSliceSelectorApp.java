@@ -21,9 +21,9 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.Region;
 import javafx.application.Application;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.opengis.metadata.spatial.DimensionNameType;
 
 
 /**

@@ -20,9 +20,11 @@ import java.util.Map;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.AxesConvention;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
 import static org.junit.Assert.*;

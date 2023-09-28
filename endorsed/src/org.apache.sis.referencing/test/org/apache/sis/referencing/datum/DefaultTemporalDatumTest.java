@@ -24,13 +24,15 @@ import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
-import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
+
+import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;

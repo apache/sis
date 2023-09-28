@@ -23,13 +23,15 @@ import java.util.Map;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.apache.sis.referencing.Assertions.assertWktEquals;
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;
+import static org.junit.Assert.*;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 
 /**

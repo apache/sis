@@ -19,6 +19,8 @@ package org.apache.sis.buildtools.resources;
 import java.io.File;
 import java.util.Map;
 import java.util.TreeMap;
+
+// Test dependencies
 import org.junit.Test;
 
 import static org.junit.Assert.assertNull;

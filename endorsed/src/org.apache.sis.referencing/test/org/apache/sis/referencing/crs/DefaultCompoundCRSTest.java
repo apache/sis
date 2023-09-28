@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -31,10 +30,13 @@ import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.io.wkt.Convention;
+
+// Test dependencies
+import org.junit.Test;
+import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
 import static org.opengis.referencing.crs.CompoundCRS.NAME_KEY;
 import static org.junit.Assert.*;

@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Resources;
@@ -31,7 +32,6 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
-import org.opengis.util.FactoryException;
 
 
 /**

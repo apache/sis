@@ -30,12 +30,12 @@ import java.nio.file.InvalidPathException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.NoSuchElementException;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.cloud.aws.internal.Resources;
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.cloud.aws.internal.Resources;
 
 
 /**

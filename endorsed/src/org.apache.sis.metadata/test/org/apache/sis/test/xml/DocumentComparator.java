@@ -21,15 +21,15 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.ArrayList;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.net.URI;
-import java.net.URL;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.net.URI;
+import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -48,9 +48,9 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.util.LegacyNamespaces;
 
 import static java.lang.StrictMath.*;
+import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 
 /**

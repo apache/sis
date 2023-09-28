@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry;
 
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 

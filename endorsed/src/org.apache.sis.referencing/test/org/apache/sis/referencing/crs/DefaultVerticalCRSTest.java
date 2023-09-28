@@ -17,9 +17,11 @@
 package org.apache.sis.referencing.crs;
 
 import org.apache.sis.io.wkt.Convention;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 

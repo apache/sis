@@ -17,8 +17,10 @@
 package org.apache.sis.storage.geotiff;
 
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

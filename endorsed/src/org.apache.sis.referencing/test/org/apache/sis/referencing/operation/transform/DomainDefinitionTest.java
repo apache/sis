@@ -16,12 +16,14 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import org.apache.sis.geometry.Envelope2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 

@@ -17,8 +17,10 @@
 package org.apache.sis.xml.bind.fra;
 
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.test.xml.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

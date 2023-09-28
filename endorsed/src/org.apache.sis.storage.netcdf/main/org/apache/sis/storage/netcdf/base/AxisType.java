@@ -19,11 +19,11 @@ package org.apache.sis.storage.netcdf.base;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
+import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.measure.Units;
-import javax.measure.Unit;
-import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 
 
 /**

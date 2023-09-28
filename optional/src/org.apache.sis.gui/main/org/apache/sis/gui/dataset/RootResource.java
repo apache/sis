@@ -21,12 +21,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import javafx.scene.control.TreeItem;
+import org.opengis.metadata.Metadata;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
-import org.opengis.metadata.Metadata;
-import org.opengis.util.GenericName;
 
 
 /**

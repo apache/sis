@@ -22,10 +22,12 @@ import Jama.Matrix;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;

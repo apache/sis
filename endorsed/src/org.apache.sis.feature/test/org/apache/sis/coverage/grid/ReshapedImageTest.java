@@ -20,10 +20,12 @@ import java.util.Random;
 import java.awt.image.DataBuffer;
 import java.awt.image.BufferedImage;
 import org.apache.sis.image.TiledImageMock;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;

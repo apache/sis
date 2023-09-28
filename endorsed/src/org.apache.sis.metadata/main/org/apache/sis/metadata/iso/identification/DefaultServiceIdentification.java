@@ -32,8 +32,8 @@ import org.apache.sis.xml.bind.FilterByVersion;
 // Specific to the main branch:
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.CodeList;
-import org.apache.sis.xml.bind.metadata.code.SV_CouplingType;
 import org.opengis.annotation.UML;
+import org.apache.sis.xml.bind.metadata.code.SV_CouplingType;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;

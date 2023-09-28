@@ -16,10 +16,12 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 

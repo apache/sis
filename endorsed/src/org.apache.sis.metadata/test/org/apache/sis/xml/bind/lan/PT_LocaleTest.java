@@ -22,8 +22,10 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.xml.TestUsingFile;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 import static org.junit.Assert.*;
 

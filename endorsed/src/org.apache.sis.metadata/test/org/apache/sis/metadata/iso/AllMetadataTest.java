@@ -21,10 +21,12 @@ import org.opengis.annotation.UML;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.PropertyConsistencyCheck;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.Rule;
 import org.junit.Test;
+import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.opengis.util.CodeList;

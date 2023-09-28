@@ -57,6 +57,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTUtilities;
@@ -66,7 +67,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.CollectionsExt;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;

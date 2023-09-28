@@ -22,8 +22,10 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

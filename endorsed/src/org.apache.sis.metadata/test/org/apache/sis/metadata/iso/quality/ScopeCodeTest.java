@@ -18,8 +18,10 @@ package org.apache.sis.metadata.iso.quality;
 
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.test.xml.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

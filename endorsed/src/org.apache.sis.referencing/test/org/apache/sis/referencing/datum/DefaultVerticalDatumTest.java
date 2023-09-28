@@ -29,13 +29,15 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Version;
-import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
+
+import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
-import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 
 /**

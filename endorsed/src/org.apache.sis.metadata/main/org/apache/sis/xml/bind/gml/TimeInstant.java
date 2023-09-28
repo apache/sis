@@ -17,11 +17,11 @@
 package org.apache.sis.xml.bind.gml;
 
 import java.util.Date;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.util.XmlUtilities;

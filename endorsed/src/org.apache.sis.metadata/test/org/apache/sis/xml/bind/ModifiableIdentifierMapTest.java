@@ -26,14 +26,16 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.XLink;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static java.util.UUID.fromString;
+import static org.apache.sis.xml.IdentifierSpace.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.xml.IdentifierSpace.*;
 
 
 /**

@@ -21,10 +21,12 @@ import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.quality.Result;
 import org.opengis.util.InternationalString;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

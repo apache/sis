@@ -17,11 +17,11 @@
 package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Collection;
-import javax.measure.Unit;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.measure.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -42,16 +42,15 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositi
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.distribution.MediumName;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.internal.CodeLists;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 // Specific to the main branch:
-import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
-
 import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 
 /**

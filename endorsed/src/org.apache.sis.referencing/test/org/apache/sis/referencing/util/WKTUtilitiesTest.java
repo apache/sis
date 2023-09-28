@@ -19,13 +19,15 @@ package org.apache.sis.referencing.util;
 import java.util.function.Function;
 import org.opengis.referencing.cs.*;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.math.Vector;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.math.Vector;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.util.WKTUtilities.*;
+import static org.junit.Assert.*;
 
 
 /**

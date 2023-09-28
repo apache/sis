@@ -19,12 +19,12 @@ package org.apache.sis.storage.xml;
 import java.util.Collection;
 import java.util.Collections;
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.apache.sis.geometry.AbstractEnvelope;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
-import org.apache.sis.referencing.CommonCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.referencing.CommonCRS;
 
 // Specific to the main branch:
 import org.opengis.metadata.extent.TemporalExtent;

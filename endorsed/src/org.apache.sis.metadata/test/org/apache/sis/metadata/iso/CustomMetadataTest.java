@@ -33,9 +33,11 @@ import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.XML;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 

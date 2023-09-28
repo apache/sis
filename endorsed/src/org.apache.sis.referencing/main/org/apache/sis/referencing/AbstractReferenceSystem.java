@@ -23,9 +23,9 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.internal.Legacy;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**

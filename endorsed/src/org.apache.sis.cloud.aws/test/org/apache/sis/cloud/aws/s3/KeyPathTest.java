@@ -18,9 +18,11 @@ package org.apache.sis.cloud.aws.s3;
 
 import java.nio.file.Path;
 import java.util.Iterator;
+import software.amazon.awssdk.services.s3.model.Bucket;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
-import software.amazon.awssdk.services.s3.model.Bucket;
 
 import static org.junit.Assert.*;
 

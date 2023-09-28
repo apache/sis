@@ -28,10 +28,10 @@ import org.apache.sis.xml.Namespaces;
 
 // Specific to the main branch:
 import org.opengis.metadata.quality.Scope;
+import org.opengis.annotation.UML;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.util.internal.CollectionsExt;
-import org.opengis.annotation.UML;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;

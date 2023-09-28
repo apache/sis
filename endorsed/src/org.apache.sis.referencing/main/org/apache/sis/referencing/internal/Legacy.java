@@ -28,19 +28,20 @@ import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+
 // Specific to the main branch:
 import java.util.List;
 import java.util.Objects;
 import java.util.Collection;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 
 
 /**
