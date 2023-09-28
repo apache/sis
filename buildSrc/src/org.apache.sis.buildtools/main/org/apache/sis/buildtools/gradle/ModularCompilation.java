@@ -198,7 +198,7 @@ final class ModularCompilation extends Conventions {
         int errors = 0;
         @SuppressWarnings("LocalVariableHidesMemberVariable")       // Should be the same value.
         final Project project = task.getProject();
-        final File outputDir = new File(project.getBuildDir(),
+        final File outputDir = fileRelativeToBuild(project,
                 isCompileTest ? TEST_CLASSES_DIRECTORY
                               : MAIN_CLASSES_DIRECTORY);
         final var results = new HashMap<File,Object>();

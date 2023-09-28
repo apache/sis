@@ -75,7 +75,7 @@ final class Assembler extends ZipWriter.Apache implements FilenameFilter {
         final Project project = task.getProject();
         final File sourceDirectory = getBundleSourceDirectory(project, MODULE);
         if (sourceDirectory.isDirectory()) try {
-            File target = new File(project.getBuildDir(), BUNDLE_DIRECTORY);
+            File target = fileRelativeToBuild(project, BUNDLE_DIRECTORY);
             mkdir(target);
             String filename = FINALNAME_PREFIX + project.getVersion();
             target = new File(target, filename + ".zip");
