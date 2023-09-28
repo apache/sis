@@ -23,8 +23,10 @@ import java.util.Iterator;
 import java.util.Collection;
 import javax.xml.namespace.NamespaceContext;
 import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSetEquals;

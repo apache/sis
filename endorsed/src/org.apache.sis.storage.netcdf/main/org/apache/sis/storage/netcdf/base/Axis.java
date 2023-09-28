@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.OptionalLong;
 import java.io.IOException;
+import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CF;       // idem
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -55,8 +57,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
-import ucar.nc2.constants.CF;       // idem
 
 
 /**

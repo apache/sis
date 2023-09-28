@@ -23,10 +23,12 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assume.assumeNotNull;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;

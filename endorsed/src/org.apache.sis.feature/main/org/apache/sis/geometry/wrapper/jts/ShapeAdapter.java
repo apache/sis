@@ -23,9 +23,6 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
-import org.apache.sis.geometry.wrapper.j2d.EmptyShape;
-import org.apache.sis.referencing.util.j2d.AbstractShape;
-import org.apache.sis.referencing.util.j2d.IntervalRectangle;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
@@ -34,6 +31,9 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
+import org.apache.sis.geometry.wrapper.j2d.EmptyShape;
+import org.apache.sis.referencing.util.j2d.AbstractShape;
+import org.apache.sis.referencing.util.j2d.IntervalRectangle;
 
 
 /**

@@ -24,6 +24,8 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.time.Instant;
+import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CF;       // idem
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
 import org.opengis.referencing.operation.Matrix;
@@ -46,8 +48,6 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
-import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
-import ucar.nc2.constants.CF;       // idem
 
 import static org.apache.sis.storage.base.StoreUtilities.ALLOW_LAST_RESORT_STATISTICS;
 

@@ -22,9 +22,11 @@ import java.util.HashMap;
 import java.util.EnumSet;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

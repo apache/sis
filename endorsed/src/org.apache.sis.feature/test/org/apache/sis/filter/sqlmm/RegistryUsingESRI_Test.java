@@ -17,6 +17,8 @@
 package org.apache.sis.filter.sqlmm;
 
 import com.esri.core.geometry.Geometry;
+
+// Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
 

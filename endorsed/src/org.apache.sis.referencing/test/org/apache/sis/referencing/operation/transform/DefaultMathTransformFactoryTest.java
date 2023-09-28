@@ -42,10 +42,12 @@ import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.cs.HardCodedCS;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

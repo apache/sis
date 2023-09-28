@@ -25,8 +25,10 @@ import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;

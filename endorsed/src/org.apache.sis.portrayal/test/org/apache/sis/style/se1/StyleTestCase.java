@@ -19,6 +19,8 @@ package org.apache.sis.style.se1;
 import java.awt.Color;
 import java.util.Optional;
 import org.apache.sis.util.SimpleInternationalString;
+
+// Test dependencies
 import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;

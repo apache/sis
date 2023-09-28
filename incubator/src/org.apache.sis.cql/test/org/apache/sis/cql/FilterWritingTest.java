@@ -19,6 +19,9 @@ package org.apache.sis.cql;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Instant;
 import java.text.ParseException;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LinearRing;
 import org.opengis.filter.Filter;
 import org.opengis.feature.Feature;
 import org.apache.sis.geometry.Envelope2D;
@@ -29,10 +32,6 @@ import org.junit.Test;
 import org.junit.Ignore;
 
 import static org.junit.Assert.*;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LinearRing;
 
 
 /**

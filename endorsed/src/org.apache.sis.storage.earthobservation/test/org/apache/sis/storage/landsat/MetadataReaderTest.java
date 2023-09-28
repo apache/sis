@@ -17,8 +17,10 @@
 package org.apache.sis.storage.landsat;
 
 import java.util.regex.Matcher;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 
@@ -39,10 +41,10 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
-import org.opengis.test.dataset.ContentVerifier;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
+import org.opengis.test.dataset.ContentVerifier;
 
 import static org.apache.sis.test.TestUtilities.date;
 

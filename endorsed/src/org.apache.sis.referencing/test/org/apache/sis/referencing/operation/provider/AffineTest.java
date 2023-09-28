@@ -20,10 +20,12 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;

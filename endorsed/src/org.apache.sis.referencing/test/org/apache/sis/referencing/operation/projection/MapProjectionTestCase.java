@@ -26,10 +26,12 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
+
+// Test dependencies
 import org.apache.sis.test.TestUtilities;
 
 import static java.lang.Double.isNaN;

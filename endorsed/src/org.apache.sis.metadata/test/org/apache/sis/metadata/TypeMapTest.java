@@ -32,12 +32,14 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.extent.AbstractGeographicExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static java.util.AbstractMap.SimpleEntry;
+import static org.junit.Assert.*;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;

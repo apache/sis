@@ -26,15 +26,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.test.DependsOn;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
-
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
@@ -42,7 +33,15 @@ import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
+import org.junit.Test;
 import org.opengis.test.dataset.TestData;
+import org.apache.sis.test.DependsOn;
+
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

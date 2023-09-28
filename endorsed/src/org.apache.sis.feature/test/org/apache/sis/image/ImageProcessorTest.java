@@ -23,11 +23,13 @@ import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import org.opengis.referencing.operation.MathTransform;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.image.processing.isoline.IsolinesTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.opengis.referencing.operation.MathTransform;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;

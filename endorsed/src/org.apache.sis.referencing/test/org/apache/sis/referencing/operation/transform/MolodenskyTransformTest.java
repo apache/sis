@@ -28,15 +28,15 @@ import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.referencing.util.Formulas;
-
-import static java.lang.StrictMath.*;
-
 import org.apache.sis.referencing.datum.HardCodedDatum;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
+import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
@@ -46,14 +46,13 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.provider.AbridgedMolodensky;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Statistics;
-
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
-
-import org.apache.sis.test.TestCase;
 import org.opengis.test.CalculationType;
 import org.opengis.test.ToleranceModifier;
 import org.opengis.test.ToleranceModifiers;
 import org.opengis.test.referencing.ParameterizedTransformTest;
+import org.apache.sis.test.TestCase;
+
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 
 
 /**

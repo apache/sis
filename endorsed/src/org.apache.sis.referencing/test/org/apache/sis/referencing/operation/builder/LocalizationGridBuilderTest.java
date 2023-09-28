@@ -20,10 +20,12 @@ import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.Test;
+import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;

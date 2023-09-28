@@ -19,9 +19,9 @@ package org.apache.sis.test.mock;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.LocalName;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.Multiplicity;
-import org.opengis.util.LocalName;
 
 
 /**

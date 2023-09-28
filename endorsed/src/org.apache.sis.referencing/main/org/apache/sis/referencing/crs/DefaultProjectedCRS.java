@@ -17,11 +17,11 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.Unit;
-import javax.measure.quantity.Angle;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import javax.measure.Unit;
+import javax.measure.quantity.Angle;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.CartesianCS;

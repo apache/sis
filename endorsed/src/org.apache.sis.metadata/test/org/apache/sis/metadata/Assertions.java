@@ -18,8 +18,8 @@ package org.apache.sis.metadata;
 
 import java.util.Locale;
 import java.io.IOException;
-import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Source;
@@ -27,8 +27,10 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.util.Static;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.test.xml.DocumentComparator;
 import org.apache.sis.xml.util.LegacyNamespaces;
+
+// Test dependencies
+import org.apache.sis.test.xml.DocumentComparator;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;

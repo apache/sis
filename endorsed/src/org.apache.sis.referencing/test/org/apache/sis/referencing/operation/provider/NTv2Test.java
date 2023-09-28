@@ -34,13 +34,15 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.system.DataDirectory;
-import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.DependsOn;
+
+import static org.apache.sis.referencing.operation.provider.DatumShiftGridLoader.DEGREES_TO_SECONDS;
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.referencing.operation.provider.DatumShiftGridLoader.DEGREES_TO_SECONDS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;

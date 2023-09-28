@@ -22,15 +22,17 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.ObliqueMercatorCenter;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.test.DependsOn;
+
+// Test dependencies
 import org.junit.*;
+import org.apache.sis.test.DependsOn;
 
 import static java.lang.StrictMath.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.test.ToleranceModifier;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.opengis.test.ToleranceModifier;
 
 
 /**

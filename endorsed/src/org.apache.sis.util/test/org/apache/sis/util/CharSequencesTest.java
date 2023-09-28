@@ -18,13 +18,15 @@ package org.apache.sis.util;
 
 import java.util.Arrays;
 import java.nio.CharBuffer;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.util.CharSequences.*;
+import static org.junit.Assert.*;
 
 
 /**

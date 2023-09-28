@@ -20,15 +20,15 @@ import java.util.Arrays;
 import java.util.Random;
 import org.opengis.referencing.operation.TransformException;
 
-import static java.lang.StrictMath.*;
-import static org.apache.sis.referencing.operation.transform.AbstractMathTransform.MAXIMUM_FAILURES;
-import static org.apache.sis.referencing.operation.transform.AbstractMathTransform.MAXIMUM_BUFFER_SIZE;
-
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 
+import static java.lang.StrictMath.*;
+import static org.apache.sis.referencing.operation.transform.AbstractMathTransform.MAXIMUM_FAILURES;
+import static org.apache.sis.referencing.operation.transform.AbstractMathTransform.MAXIMUM_BUFFER_SIZE;
 import static org.junit.Assert.*;
 
 

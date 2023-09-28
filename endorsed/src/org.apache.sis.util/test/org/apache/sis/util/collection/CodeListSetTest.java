@@ -24,12 +24,14 @@ import java.util.Iterator;
 import java.util.Random;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.metadata.citation.OnLineFunction;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.opengis.referencing.cs.AxisDirection.*;
+import static org.junit.Assert.*;
 
 
 /**

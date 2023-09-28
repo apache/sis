@@ -22,14 +22,16 @@ import java.math.MathContext;
 import java.lang.reflect.Field;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.ArraysExt;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static java.lang.StrictMath.*;
+import static org.junit.Assert.*;
 
 
 /**

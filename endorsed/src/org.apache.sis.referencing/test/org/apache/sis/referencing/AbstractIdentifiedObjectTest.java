@@ -21,19 +21,21 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
-import org.opengis.test.Validators;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.referencing.Code;
+
+// Test dependencies
+import org.junit.Test;
+import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;

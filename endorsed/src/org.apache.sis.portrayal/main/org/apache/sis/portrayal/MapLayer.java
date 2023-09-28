@@ -19,6 +19,9 @@ package org.apache.sis.portrayal;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Objects;
 import java.util.Optional;
+import org.opengis.coverage.Coverage;
+import org.opengis.feature.Feature;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataSet;
 import org.apache.sis.storage.DataStoreException;
@@ -26,9 +29,6 @@ import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.style.Style;
-import org.opengis.coverage.Coverage;
-import org.opengis.feature.Feature;
-import org.opengis.geometry.Envelope;
 
 
 /**

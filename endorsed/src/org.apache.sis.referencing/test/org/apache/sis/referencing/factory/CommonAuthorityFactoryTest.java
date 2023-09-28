@@ -41,11 +41,13 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.junit.Ignore;
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

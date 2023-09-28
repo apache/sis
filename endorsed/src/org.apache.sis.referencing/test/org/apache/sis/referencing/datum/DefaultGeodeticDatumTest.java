@@ -24,7 +24,6 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
-import org.opengis.test.Validators;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.io.wkt.Convention;
@@ -33,18 +32,21 @@ import org.apache.sis.referencing.internal.AnnotatedMatrix;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+
+// Test dependencies
+import org.junit.Test;
+import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
-import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;

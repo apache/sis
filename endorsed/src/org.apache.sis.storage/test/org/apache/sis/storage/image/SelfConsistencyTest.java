@@ -20,9 +20,11 @@ import java.net.URL;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.test.storage.CoverageReadConsistency;
+
+// Test dependencies
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.apache.sis.test.storage.CoverageReadConsistency;
 
 import static org.junit.Assert.assertNotNull;
 

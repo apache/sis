@@ -18,10 +18,12 @@ package org.apache.sis.storage;
 
 import org.opengis.util.GenericName;
 import org.opengis.util.LocalName;
+import org.apache.sis.util.iso.Names;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.iso.Names;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

@@ -23,9 +23,11 @@ import java.util.function.IntFunction;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

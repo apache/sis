@@ -23,9 +23,11 @@ import java.net.URISyntaxException;
 import java.io.File;
 import java.io.IOException;
 import org.apache.sis.util.CharSequences;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

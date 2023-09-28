@@ -22,13 +22,13 @@ import java.util.Iterator;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.bundling.Jar;
 

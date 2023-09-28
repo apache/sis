@@ -19,11 +19,13 @@ package org.apache.sis.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.GenericDeclaration;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
-import static org.junit.Assert.*;
 import static org.apache.sis.util.Classes.*;
+import static org.junit.Assert.*;
 
 
 /*

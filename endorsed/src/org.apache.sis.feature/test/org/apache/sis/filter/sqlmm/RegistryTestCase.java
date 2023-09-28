@@ -32,11 +32,13 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.math.Vector;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.After;
+import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

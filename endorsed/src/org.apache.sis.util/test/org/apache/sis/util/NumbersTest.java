@@ -19,11 +19,13 @@ package org.apache.sis.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+
 import static org.apache.sis.util.Numbers.*;
+import static org.junit.Assert.*;
 
 
 /**

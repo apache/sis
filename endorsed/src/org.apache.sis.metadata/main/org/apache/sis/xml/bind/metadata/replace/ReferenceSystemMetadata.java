@@ -26,6 +26,8 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-4.0 branch:

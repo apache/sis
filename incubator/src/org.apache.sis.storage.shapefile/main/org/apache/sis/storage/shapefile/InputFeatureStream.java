@@ -16,12 +16,6 @@
  */
 package org.apache.sis.storage.shapefile;
 
-import org.apache.sis.storage.DataStoreClosedException;
-import org.apache.sis.storage.shapefile.internal.ShapefileDescriptor;
-import org.apache.sis.storage.shapefile.internal.SQLShapefileNotFoundException;
-import org.apache.sis.storage.shapefile.internal.SQLInvalidRecordNumberForDirectAccessException;
-import org.apache.sis.storage.shapefile.internal.ShapefileByteReader;
-import org.apache.sis.storage.shapefile.internal.SQLNoDirectAccessAvailableException;
 import java.io.File;
 import java.io.InputStream;
 import java.sql.SQLFeatureNotSupportedException;
@@ -31,6 +25,12 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.shapefile.internal.ShapefileDescriptor;
+import org.apache.sis.storage.shapefile.internal.SQLShapefileNotFoundException;
+import org.apache.sis.storage.shapefile.internal.SQLInvalidRecordNumberForDirectAccessException;
+import org.apache.sis.storage.shapefile.internal.ShapefileByteReader;
+import org.apache.sis.storage.shapefile.internal.SQLNoDirectAccessAvailableException;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.storage.shapefile.jdbc.*;
 import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;

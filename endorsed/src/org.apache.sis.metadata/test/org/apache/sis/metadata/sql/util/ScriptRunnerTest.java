@@ -18,10 +18,12 @@ package org.apache.sis.metadata.sql.util;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.test.sql.TestDatabase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

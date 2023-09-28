@@ -22,11 +22,13 @@ import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.parameter.Parameters;
+
+// Test dependencies
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static java.lang.Double.NaN;
 import static java.lang.StrictMath.*;
+import static org.junit.Assert.*;
 
 
 /**

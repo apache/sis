@@ -19,9 +19,11 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.util.AxisDirections;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

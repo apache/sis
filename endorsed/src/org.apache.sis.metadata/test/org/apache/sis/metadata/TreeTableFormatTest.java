@@ -31,9 +31,11 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 

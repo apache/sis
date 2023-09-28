@@ -19,20 +19,22 @@ package org.apache.sis.xml.bind.gml;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.util.XmlUtilities;
 import org.apache.sis.pending.temporal.DefaultTemporalFactory;
-import org.apache.sis.test.xml.TestCase;
+
+// Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

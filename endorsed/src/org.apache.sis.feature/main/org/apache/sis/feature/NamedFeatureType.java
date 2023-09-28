@@ -24,12 +24,12 @@ import org.apache.sis.util.internal.Strings;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Set;
+import org.opengis.util.InternationalString;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.FeatureInstantiationException;
-import org.opengis.util.InternationalString;
 import org.apache.sis.feature.internal.Resources;
 
 

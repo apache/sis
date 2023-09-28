@@ -30,8 +30,8 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.nio.charset.Charset;
 import java.util.Map;
+import java.nio.charset.Charset;
 import org.opengis.metadata.MetadataScope;
 
 // Specific to the geoapi-4.0 branch:

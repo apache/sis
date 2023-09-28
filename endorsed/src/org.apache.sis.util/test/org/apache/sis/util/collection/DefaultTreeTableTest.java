@@ -18,16 +18,18 @@ package org.apache.sis.util.collection;
 
 import java.util.List;
 import java.util.Collection;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.test.DependsOn;
 
+import static org.apache.sis.util.collection.TableColumn.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.util.collection.TableColumn.*;
 
 
 /**

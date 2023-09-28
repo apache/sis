@@ -34,14 +34,16 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.referencing.datum.HardCodedDatum;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-import org.opengis.test.Validators;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
+
+// Test dependencies
 import org.junit.Test;
+import org.opengis.test.Validators;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

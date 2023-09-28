@@ -27,11 +27,11 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.awt.geom.Rectangle2D;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
 import javax.measure.quantity.Length;
-import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -77,12 +77,12 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.apache.sis.metadata.sql.MetadataSource;
-import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.util.logging.Logging;
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
+import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.util.logging.Logging;
 
 
 /**

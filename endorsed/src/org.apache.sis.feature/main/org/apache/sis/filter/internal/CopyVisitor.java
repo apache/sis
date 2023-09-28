@@ -24,11 +24,11 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.util.CodeList;
 import org.opengis.geometry.Envelope;
+import org.opengis.filter.*;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.internal.CollectionsExt;
-import org.opengis.filter.*;
 
 
 /**

@@ -34,6 +34,8 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.sql.feature.TableReference;
+
+// Test dependencies
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.sql.TestDatabase;
 

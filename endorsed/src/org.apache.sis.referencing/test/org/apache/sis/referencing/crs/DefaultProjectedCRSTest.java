@@ -35,14 +35,16 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.junit.After;
+import org.junit.Test;
+import org.junit.Rule;
 import org.opengis.test.Validators;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.Rule;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;

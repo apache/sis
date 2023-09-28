@@ -22,8 +22,10 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.test.xml.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

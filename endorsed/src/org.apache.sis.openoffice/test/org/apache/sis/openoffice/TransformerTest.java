@@ -20,11 +20,13 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;

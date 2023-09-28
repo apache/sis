@@ -19,16 +19,15 @@ package org.apache.sis.filter;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Set;
 import org.opengis.util.LocalName;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.capability.IdCapabilities;
 import org.opengis.filter.capability.ScalarCapabilities;
 import org.opengis.filter.capability.AvailableFunction;
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+
+import static org.junit.Assert.*;
 
 
 /**

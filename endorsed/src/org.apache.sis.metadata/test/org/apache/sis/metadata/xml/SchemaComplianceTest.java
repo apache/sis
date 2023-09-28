@@ -21,10 +21,10 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.system.DataDirectory;
+import org.junit.Test;
 import org.apache.sis.test.ProjectDirectories;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.xml.SchemaCompliance;
-import org.junit.Test;
 
 import static org.junit.Assume.*;
 

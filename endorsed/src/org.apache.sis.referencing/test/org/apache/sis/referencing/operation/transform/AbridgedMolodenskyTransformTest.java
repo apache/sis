@@ -21,14 +21,16 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.util.Formulas;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
+import static java.lang.StrictMath.toRadians;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static java.lang.StrictMath.toRadians;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.CalculationType;

@@ -19,6 +19,8 @@ package org.apache.sis.referencing.operation.provider;
 import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
+
+// Test dependencies
 import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;

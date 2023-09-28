@@ -16,8 +16,9 @@
  */
 package org.apache.sis.parameter;
 
-import org.apache.sis.test.DependsOn;
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;

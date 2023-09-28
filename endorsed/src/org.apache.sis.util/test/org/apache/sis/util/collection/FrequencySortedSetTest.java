@@ -18,9 +18,11 @@ package org.apache.sis.util.collection;
 
 import java.util.Set;
 import java.util.Collections;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

@@ -22,9 +22,11 @@ import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

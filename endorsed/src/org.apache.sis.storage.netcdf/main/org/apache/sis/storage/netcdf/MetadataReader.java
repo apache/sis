@@ -28,6 +28,9 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
+import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CDM;      // idem
+import ucar.nc2.constants.ACDD;     // idem
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -70,9 +73,6 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
-import ucar.nc2.constants.CDM;      // idem
-import ucar.nc2.constants.ACDD;     // idem
 
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 

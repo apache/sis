@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+// Test dependencies
 import org.apache.sis.test.DependsOn;
 
 

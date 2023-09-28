@@ -20,11 +20,12 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 
-import static java.lang.StrictMath.*;
-
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
+
+import static java.lang.StrictMath.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.referencing.TransformTestCase;

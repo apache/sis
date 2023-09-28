@@ -22,10 +22,12 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
 import org.apache.sis.referencing.internal.Resources;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.assertEquals;

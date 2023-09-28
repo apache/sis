@@ -28,13 +28,15 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.gps.Fix;
+
+// Test dependencies
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

@@ -24,6 +24,8 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.lineage.Source;
+import org.opengis.metadata.spatial.Georectified;
+import org.opengis.metadata.spatial.Georeferenceable;
 import org.apache.sis.xml.bind.TypeRegistration;
 import org.apache.sis.xml.bind.gco.Multiplicity;
 import org.apache.sis.xml.bind.gmi.LE_ProcessStep;
@@ -35,8 +37,6 @@ import org.apache.sis.xml.bind.gmi.MI_Georeferenceable;
 import org.apache.sis.xml.bind.gmi.MI_ImageDescription;
 import org.apache.sis.xml.bind.gmi.MI_Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.opengis.metadata.spatial.Georectified;
-import org.opengis.metadata.spatial.Georeferenceable;
 
 
 /**

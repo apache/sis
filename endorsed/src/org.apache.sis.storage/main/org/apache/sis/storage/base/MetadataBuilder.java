@@ -95,9 +95,9 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.apache.sis.metadata.simple.SimpleDuration;
 import org.opengis.temporal.Duration;
 import org.opengis.feature.FeatureType;
+import org.apache.sis.metadata.simple.SimpleDuration;
 
 
 /**

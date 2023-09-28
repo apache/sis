@@ -16,9 +16,9 @@
  */
 package org.apache.sis.image.processing.isoline;
 
-import org.apache.sis.geometry.wrapper.j2d.PathBuilder;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.wrapper.j2d.PathBuilder;
 
 
 /**

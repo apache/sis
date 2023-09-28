@@ -16,8 +16,8 @@
  */
 package org.apache.sis.storage.landsat;
 
-import org.apache.sis.util.resources.Vocabulary;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**

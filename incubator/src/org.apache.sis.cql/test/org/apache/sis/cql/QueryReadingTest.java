@@ -18,11 +18,10 @@ package org.apache.sis.cql;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Arrays;
+import org.opengis.filter.SortOrder;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-import org.opengis.filter.SortOrder;
 
 
 /**

@@ -23,6 +23,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
+import ucar.nc2.constants.ACDD;     // String constants are copied by the compiler with no UCAR reference left.
+import ucar.nc2.constants.CDM;      // idem
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
@@ -49,8 +51,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
-import ucar.nc2.constants.ACDD;     // String constants are copied by the compiler with no UCAR reference left.
-import ucar.nc2.constants.CDM;      // idem
 
 
 /**

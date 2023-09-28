@@ -18,15 +18,14 @@ package org.apache.sis.filter.internal;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
-import org.junit.Test;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.filter.DefaultFilterFactory;
-
-import static org.junit.Assert.*;
-
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.FilterFactory;
+import org.apache.sis.filter.DefaultFilterFactory;
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+
+import static org.junit.Assert.*;
 
 
 /**

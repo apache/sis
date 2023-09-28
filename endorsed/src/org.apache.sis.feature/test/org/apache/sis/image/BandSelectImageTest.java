@@ -28,9 +28,11 @@ import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

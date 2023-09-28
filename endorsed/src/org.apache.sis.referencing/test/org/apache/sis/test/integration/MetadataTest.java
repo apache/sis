@@ -63,14 +63,16 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Constants;
+
+// Test dependencies
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.DocumentComparator;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

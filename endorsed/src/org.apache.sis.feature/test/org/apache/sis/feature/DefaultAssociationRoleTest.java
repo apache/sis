@@ -20,14 +20,16 @@ import java.util.Map;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.apache.sis.util.iso.DefaultNameFactory;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

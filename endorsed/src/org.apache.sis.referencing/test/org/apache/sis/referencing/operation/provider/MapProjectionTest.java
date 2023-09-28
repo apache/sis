@@ -21,14 +21,16 @@ import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.Citations;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.util.internal.Constants.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertOgcIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
-import static org.apache.sis.util.internal.Constants.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

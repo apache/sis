@@ -21,12 +21,14 @@ import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.xml.TestCase;
+
+// Test dependencies
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

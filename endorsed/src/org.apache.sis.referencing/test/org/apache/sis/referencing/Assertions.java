@@ -45,6 +45,8 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.internal.Constants;
+
+// Test dependencies
 import org.apache.sis.test.TestUtilities;
 
 import static java.lang.StrictMath.*;

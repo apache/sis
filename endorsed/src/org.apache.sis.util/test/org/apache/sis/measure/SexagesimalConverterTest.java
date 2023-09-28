@@ -19,8 +19,10 @@ package org.apache.sis.measure;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.UnitConverter;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.apache.sis.measure.SexagesimalConverter.*;
 import static org.junit.Assert.*;

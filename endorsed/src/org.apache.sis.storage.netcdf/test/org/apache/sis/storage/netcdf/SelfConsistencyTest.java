@@ -21,10 +21,12 @@ import java.nio.file.Path;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.test.OptionalTestData;
-import org.apache.sis.test.storage.CoverageReadConsistency;
+
+// Test dependencies
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.apache.sis.test.OptionalTestData;
+import org.apache.sis.test.storage.CoverageReadConsistency;
 
 import static org.junit.Assume.assumeNotNull;
 

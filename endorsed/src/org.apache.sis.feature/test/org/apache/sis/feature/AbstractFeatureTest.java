@@ -19,6 +19,8 @@ package org.apache.sis.feature;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
+
+// Test dependencies
 import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;

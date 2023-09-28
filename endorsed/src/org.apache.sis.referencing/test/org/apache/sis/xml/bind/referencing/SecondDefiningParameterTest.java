@@ -20,8 +20,10 @@ import java.util.Map;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
-import org.apache.sis.test.xml.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.xml.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

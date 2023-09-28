@@ -24,11 +24,13 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

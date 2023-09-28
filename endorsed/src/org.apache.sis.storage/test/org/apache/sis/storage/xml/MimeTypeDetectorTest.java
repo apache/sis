@@ -21,11 +21,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.xml.util.LegacyNamespaces;
+
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

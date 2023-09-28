@@ -35,6 +35,8 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.URLs;
 import org.apache.sis.metadata.sql.util.ScriptRunner;
+
+// Test dependencies
 import org.apache.sis.test.sql.TestDatabase;
 
 

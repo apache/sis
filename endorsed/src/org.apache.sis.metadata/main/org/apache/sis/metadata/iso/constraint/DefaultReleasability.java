@@ -25,8 +25,8 @@ import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Releasability;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

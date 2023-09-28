@@ -29,9 +29,11 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.measure.Range;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

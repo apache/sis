@@ -44,11 +44,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
 import java.nio.channels.SeekableByteChannel;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.Containers;
-import org.apache.sis.cloud.aws.internal.Resources;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkException;
@@ -58,6 +53,11 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.cloud.aws.internal.Resources;
 
 
 /**

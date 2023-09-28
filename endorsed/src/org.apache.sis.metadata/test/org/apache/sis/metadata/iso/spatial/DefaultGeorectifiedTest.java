@@ -19,11 +19,13 @@ package org.apache.sis.metadata.iso.spatial;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

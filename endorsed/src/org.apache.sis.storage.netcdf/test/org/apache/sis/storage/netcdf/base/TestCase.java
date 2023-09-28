@@ -22,16 +22,18 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
+import ucar.nc2.NetcdfFiles;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.dataset.NetcdfDatasets;
+import ucar.nc2.dataset.NetcdfDataset;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.event.StoreListeners;
-import ucar.nc2.NetcdfFiles;
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.dataset.NetcdfDatasets;
-import ucar.nc2.dataset.NetcdfDataset;
+
+// Test dependencies
 import org.junit.AfterClass;
 
 import static org.junit.Assert.*;

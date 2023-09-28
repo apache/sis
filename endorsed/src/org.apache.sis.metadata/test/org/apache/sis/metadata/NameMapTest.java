@@ -20,13 +20,15 @@ import java.util.Map;
 import java.util.HashMap;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static java.util.AbstractMap.SimpleEntry;
 import static org.apache.sis.metadata.KeyNamePolicy.*;
+import static org.junit.Assert.*;
 
 
 /**

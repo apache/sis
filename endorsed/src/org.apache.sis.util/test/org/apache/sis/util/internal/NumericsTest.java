@@ -19,10 +19,12 @@ package org.apache.sis.util.internal;
 import java.util.Random;
 import java.math.BigInteger;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.ComparisonMode;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.ComparisonMode;
-import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static java.lang.Double.POSITIVE_INFINITY;

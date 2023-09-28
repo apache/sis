@@ -39,9 +39,11 @@ import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.UnformattableObjectException;
 import org.apache.sis.util.iso.DefaultNameSpace;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;

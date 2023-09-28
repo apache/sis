@@ -33,9 +33,11 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.internal.AbstractMap;
 import org.apache.sis.referencing.util.CoordinateOperations;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
-import org.opengis.referencing.ObjectDomain;
 
 
 /**

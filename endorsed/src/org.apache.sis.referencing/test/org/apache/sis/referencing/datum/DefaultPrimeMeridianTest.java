@@ -18,10 +18,10 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.io.InputStream;
-import javax.measure.quantity.Angle;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.JAXBException;
+import javax.measure.quantity.Angle;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
@@ -29,15 +29,17 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
-import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 
 /**

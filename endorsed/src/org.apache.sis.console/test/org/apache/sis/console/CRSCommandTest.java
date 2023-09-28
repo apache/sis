@@ -17,10 +17,12 @@
 package org.apache.sis.console;
 
 import org.apache.sis.util.CharSequences;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

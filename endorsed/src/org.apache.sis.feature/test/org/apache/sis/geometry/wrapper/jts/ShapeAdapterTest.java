@@ -18,15 +18,17 @@ package org.apache.sis.geometry.wrapper.jts;
 
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
-import org.apache.sis.geometry.wrapper.j2d.DecimatedShape;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.geometry.wrapper.j2d.DecimatedShape;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

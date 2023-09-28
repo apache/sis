@@ -17,8 +17,10 @@
 package org.apache.sis.referencing.operation;
 
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 

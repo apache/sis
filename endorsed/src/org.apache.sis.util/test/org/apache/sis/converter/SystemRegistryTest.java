@@ -25,14 +25,16 @@ import java.lang.annotation.ElementType;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.util.ObjectConverter;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
+import static org.apache.sis.converter.SystemRegistry.INSTANCE;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.converter.SystemRegistry.INSTANCE;
 
 
 /**

@@ -18,9 +18,9 @@ package org.apache.sis.storage.sql.postgis;
 
 import java.sql.Array;
 import java.sql.ResultSet;
+import org.postgresql.util.PGobject;
 import org.apache.sis.storage.sql.feature.InfoStatements;
 import org.apache.sis.storage.sql.feature.ValueGetter;
-import org.postgresql.util.PGobject;
 
 
 /**

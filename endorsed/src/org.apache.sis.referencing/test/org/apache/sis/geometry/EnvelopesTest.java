@@ -19,7 +19,6 @@ package org.apache.sis.geometry;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import org.apache.sis.measure.Range;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
@@ -31,6 +30,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.measure.Range;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -40,14 +40,16 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 import static org.opengis.test.Validators.validate;
+import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 
 /**

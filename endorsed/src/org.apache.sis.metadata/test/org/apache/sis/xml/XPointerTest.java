@@ -17,8 +17,10 @@
 package org.apache.sis.xml;
 
 import org.apache.sis.util.Characters;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

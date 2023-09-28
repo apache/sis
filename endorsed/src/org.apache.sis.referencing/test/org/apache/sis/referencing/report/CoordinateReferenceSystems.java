@@ -43,7 +43,6 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.test.report.AuthorityCodesReport;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -59,6 +58,7 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
+import org.opengis.test.report.AuthorityCodesReport;
 
 import static org.junit.Assert.*;
 

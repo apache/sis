@@ -28,10 +28,12 @@ import org.apache.sis.referencing.operation.provider.LambertConformalWest;
 import org.apache.sis.referencing.operation.provider.LambertConformalBelgium;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static java.lang.Double.*;

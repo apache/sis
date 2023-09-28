@@ -20,8 +20,10 @@ import java.util.Random;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.test.DependsOnMethod;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOnMethod;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

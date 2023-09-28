@@ -18,8 +18,10 @@ package org.apache.sis.geometry.wrapper.j2d;
 
 import java.awt.geom.Path2D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.apache.sis.feature.Assertions.assertPathEquals;
 

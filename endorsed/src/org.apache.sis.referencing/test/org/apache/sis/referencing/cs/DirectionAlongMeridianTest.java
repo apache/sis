@@ -18,9 +18,11 @@ package org.apache.sis.referencing.cs;
 
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.io.wkt.Convention;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;

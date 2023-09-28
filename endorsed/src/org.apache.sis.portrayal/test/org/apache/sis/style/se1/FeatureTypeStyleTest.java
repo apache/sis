@@ -19,6 +19,8 @@ package org.apache.sis.style.se1;
 import java.util.Set;
 import java.util.List;
 import org.apache.sis.util.iso.Names;
+
+// Test dependencies
 import org.junit.Test;
 
 import static org.junit.Assert.*;

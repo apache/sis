@@ -16,13 +16,15 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import org.junit.Test;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.parameter.Parameterized;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 
 

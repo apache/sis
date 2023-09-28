@@ -16,14 +16,15 @@
  */
 package org.apache.sis.util.iso;
 
-import org.apache.sis.test.TestCase;
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
+import static org.apache.sis.util.internal.Constants.EPSG;
+import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.util.internal.Constants.EPSG;
-import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 
 /**

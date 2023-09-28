@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io;
 
+// Test dependencies
 import org.junit.Before;
 import org.apache.sis.test.DependsOn;
 

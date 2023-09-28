@@ -19,9 +19,11 @@ package org.apache.sis.metadata.iso;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.xml.Namespaces;
+
+// Test dependencies
+import org.junit.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.*;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;

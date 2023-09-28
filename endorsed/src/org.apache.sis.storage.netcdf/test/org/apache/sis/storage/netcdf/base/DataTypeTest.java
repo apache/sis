@@ -16,9 +16,11 @@
  */
 package org.apache.sis.storage.netcdf.base;
 
+import org.apache.sis.util.Numbers;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.Numbers;
 
 import static org.junit.Assert.*;
 

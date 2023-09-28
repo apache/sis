@@ -25,9 +25,11 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.ComparisonMode;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

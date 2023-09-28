@@ -31,10 +31,12 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.ElevationAngle;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;

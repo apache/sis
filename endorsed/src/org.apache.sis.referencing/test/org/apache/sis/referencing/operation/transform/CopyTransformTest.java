@@ -19,6 +19,8 @@ package org.apache.sis.referencing.operation.transform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+
+// Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;

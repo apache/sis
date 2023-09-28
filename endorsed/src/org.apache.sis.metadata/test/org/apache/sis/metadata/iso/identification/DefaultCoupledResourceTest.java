@@ -22,11 +22,13 @@ import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.xml.bind.metadata.replace.ServiceParameterTest;
 import org.apache.sis.util.iso.DefaultNameFactory;
+
+// Test dependencies
+import org.junit.Test;
+import org.apache.sis.xml.bind.metadata.replace.ServiceParameterTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 

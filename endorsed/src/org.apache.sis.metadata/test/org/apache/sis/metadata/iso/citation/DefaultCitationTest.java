@@ -42,14 +42,16 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.UnmodifiableMetadataException;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
+import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
-import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;

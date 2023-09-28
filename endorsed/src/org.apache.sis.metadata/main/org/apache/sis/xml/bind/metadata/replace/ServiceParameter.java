@@ -36,8 +36,8 @@ import org.apache.sis.util.iso.Names;
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDirection;
+import org.opengis.metadata.Identifier;
 
 
 /**

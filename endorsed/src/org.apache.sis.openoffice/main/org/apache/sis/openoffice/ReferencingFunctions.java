@@ -16,20 +16,19 @@
  */
 package org.apache.sis.openoffice;
 
+import com.sun.star.uno.AnyConverter;
+import com.sun.star.uno.XComponentContext;
+import com.sun.star.lang.IllegalArgumentException;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import com.sun.star.uno.AnyConverter;
-import com.sun.star.uno.XComponentContext;
-import com.sun.star.lang.IllegalArgumentException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -42,6 +41,9 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.CodeType;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
 
 
 /**

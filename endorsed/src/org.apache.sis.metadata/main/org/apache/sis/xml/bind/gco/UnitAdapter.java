@@ -16,8 +16,8 @@
  */
 package org.apache.sis.xml.bind.gco;
 
-import javax.measure.Unit;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+import javax.measure.Unit;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gml.Measure;

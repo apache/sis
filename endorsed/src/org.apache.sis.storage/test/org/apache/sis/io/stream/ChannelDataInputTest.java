@@ -22,6 +22,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+
+// Test dependencies
 import org.junit.Test;
 
 import static org.junit.Assert.*;

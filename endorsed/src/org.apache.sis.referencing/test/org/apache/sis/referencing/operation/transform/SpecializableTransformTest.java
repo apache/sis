@@ -23,8 +23,10 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.test.DependsOnMethod;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.DependsOnMethod;
 
 import static org.junit.Assert.*;
 

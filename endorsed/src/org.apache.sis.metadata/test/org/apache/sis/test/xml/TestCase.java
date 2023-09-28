@@ -39,6 +39,8 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
+
+// Test dependencies
 import org.junit.After;
 
 import static org.junit.Assert.*;

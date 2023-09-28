@@ -21,10 +21,12 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Vocabulary;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
 import static org.junit.Assert.*;

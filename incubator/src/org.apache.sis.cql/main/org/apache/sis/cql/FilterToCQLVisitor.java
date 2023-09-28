@@ -24,16 +24,11 @@ import java.util.regex.Pattern;
 import java.time.temporal.TemporalAccessor;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKTWriter;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.opengis.util.CodeList;
-import org.apache.sis.measure.UnitFormat;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.filter.internal.FunctionNames;
-import org.apache.sis.filter.internal.Visitor;
-import org.apache.sis.util.internal.StandardDateFormat;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
@@ -48,8 +43,13 @@ import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BetweenComparisonOperator;
 import org.opengis.filter.LikeOperator;
 import org.opengis.filter.Expression;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.WKTWriter;
+import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.filter.internal.FunctionNames;
+import org.apache.sis.filter.internal.Visitor;
+import org.apache.sis.util.internal.StandardDateFormat;
 
 
 /**

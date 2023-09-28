@@ -19,9 +19,11 @@ package org.apache.sis.referencing.datum;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

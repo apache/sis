@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.operation.provider;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.nio.channels.ReadableByteChannel;
 import jakarta.xml.bind.annotation.XmlTransient;

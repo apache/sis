@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -30,9 +31,10 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
-import org.locationtech.jts.geom.Geometry;
+import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
 

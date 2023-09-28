@@ -16,13 +16,13 @@
  */
 package org.apache.sis.storage.folder;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.FileVisitResult;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.io.IOException;
 import org.opengis.util.GenericName;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;

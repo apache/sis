@@ -22,10 +22,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
+
+// Test dependencies
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.junit.Test;
 
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
