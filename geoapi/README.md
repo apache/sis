@@ -19,14 +19,10 @@ Following command should be executed once after a fresh checkout of SIS `geoapi-
 git submodule update --init
 ```
 
-Following command should be used for pulling changes from Apache SIS Git repository.
-The `--recurse-submodules` option pulls changes in the GeoAPI submodule as well,
-which is necessary for keeping the Apache SIS code in sync with the GeoAPI snapshot that it implements:
-
-```bash
-git pull --recurse-submodules
-```
+After above initialization, the usual `git pull` command should upgrade GeoAPI snapshot as well when needed.
+If a Git error message said that the SHA1 is unknown, running `git fetch --recurse-submodules` first may help.
 
 ## Prerequisites
 Maven must be available on the classpath.
 The GeoAPI snapshot is built by a call to `mvn clean install`.
+This call is done automatically by the Gradle build.
