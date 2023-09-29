@@ -738,7 +738,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             final NamedExpression item = projection[column];
             /*
              * For each property, get the expected type (mandatory) and its name (optional).
-             * A default name will be computed if no alias were explicitly given by user.
+             * A default name will be computed if no alias was explicitly given by the user.
              */
             final Expression<? super Feature,?> expression = item.expression;
             final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(expression);
@@ -748,14 +748,6 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                             expression.getFunctionName().toInternationalString(), column));
             }
             GenericName name = item.alias;
-            if (name == null && expression instanceof ValueReference<?,?>) {
-                /*
-                 * If we do not have an alias, use the original property name.
-                 * This name may be different from the resultType name because of links or functions.
-                 */
-                name = valueType.getProperty(((ValueReference<?, ?>) expression).getXPath()).getName();
-            }
-
             if (name == null) {
                 /*
                  * Build a list of aliases declared by the user, for making sure that we do not collide with them.
@@ -777,14 +769,20 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                  */
                 CharSequence text = null;
                 if (expression instanceof ValueReference<?,?>) {
-                    final GenericName current = resultType.getName();
-                    if (current != null && names.add(current.toString())) {
-                        continue;
-                    }
                     String xpath = ((ValueReference<?,?>) expression).getXPath().trim();
-                    xpath = xpath.substring(xpath.lastIndexOf(XPath.SEPARATOR) + 1);  // Works also if '/' is not found.
-                    if (!(xpath.isEmpty() || names.contains(xpath))) {
-                        text = xpath;
+                    /*
+                     * Before to take the tip, take the existing `GenericName` instance from the property.
+                     * It should be equivalent, except that it may be a `ScopedName` instead of `LocalName`.
+                     * We do not take `resultType.getName()` because the latter is different if the property
+                     * is itself a link to another property (in which case `resultType` is the final target).
+                     */
+                    name = valueType.getProperty(xpath).getName();
+                    if (name == null || !names.add(name.toString())) {
+                        name = null;
+                        xpath = xpath.substring(xpath.lastIndexOf(XPath.SEPARATOR) + 1);  // Works also if '/' is not found.
+                        if (!(xpath.isEmpty() || names.contains(xpath))) {
+                            text = xpath;
+                        }
                     }
                 }
                 /*
@@ -793,15 +791,15 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                  * (for easier programmatic use) because `GenericName` implementation is designed for
                  * providing localized names only if explicitly requested.
                  */
-                if (text == null) do {
-                    text = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed_1, ++unnamedNumber);
-                } while (!names.add(text.toString()));
-                name = Names.createLocalName(null, null, text);
+                if (name == null) {
+                    if (text == null) do {
+                        text = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed_1, ++unnamedNumber);
+                    } while (!names.add(text.toString()));
+                    name = Names.createLocalName(null, null, text);
+                }
             }
             /*
              * If the attribute that we just added should be virtual, replace the attribute by an operation.
-             * We need to keep the property name computed by `fex.expectedType(…)` for the operation result,
-             * because that name is the name of the link to create if the operation is `ValueReference`.
              */
             if (item.type == ProjectionType.COMPUTING && resultType instanceof AttributeTypeBuilder<?>) {
                 final var ab = (AttributeTypeBuilder<?>) resultType;

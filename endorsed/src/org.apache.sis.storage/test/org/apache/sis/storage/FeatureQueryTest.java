@@ -63,12 +63,12 @@ public final class FeatureQueryTest extends TestCase {
     /**
      * An arbitrary number of features, all of the same type.
      */
-    private final Feature[] features;
+    private Feature[] features;
 
     /**
      * The {@link #features} array wrapped in a in-memory feature set.
      */
-    private final FeatureSet featureSet;
+    private FeatureSet featureSet;
 
     /**
      * The query to be executed.
@@ -76,9 +76,31 @@ public final class FeatureQueryTest extends TestCase {
     private final FeatureQuery query;
 
     /**
-     * Creates a new test with a feature type composed of two attributes and one association.
+     * Creates a new test case.
      */
     public FeatureQueryTest() {
+        query = new FeatureQuery();
+    }
+
+    /**
+     * Creates a simple feature with a property flagged as an identifier.
+     */
+    private void createFeatureWithIdentifier() {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName("Test");
+        ftb.addAttribute(String.class).setName("id").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final FeatureType type = ftb.build();
+        features = new Feature[] {
+            type.newInstance()
+        };
+        features[0].setPropertyValue("id", "id-0");
+        featureSet = new MemoryFeatureSet(null, type, Arrays.asList(features));
+    }
+
+    /**
+     * Creates a set of features common to most tests.
+     * The feature type is composed of two attributes and one association.
+     */
+    private void createFeaturesWithAssociation() {
         FeatureTypeBuilder ftb;
 
         // A dependency of the test feature type.
@@ -100,7 +122,6 @@ public final class FeatureQueryTest extends TestCase {
             feature(type, null,       4, 1,  0)
         };
         featureSet = new MemoryFeatureSet(null, type, Arrays.asList(features));
-        query      = new FeatureQuery();
     }
 
     /**
@@ -158,6 +179,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testLimit() throws DataStoreException {
+        createFeaturesWithAssociation();
         query.setLimit(2);
         verifyQueryResult(0, 1);
     }
@@ -169,6 +191,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testOffset() throws DataStoreException {
+        createFeaturesWithAssociation();
         query.setOffset(2);
         verifyQueryResult(2, 3, 4);
     }
@@ -180,6 +203,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testSortBy() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setSortBy(ff.sort(ff.property("value1", Integer.class), SortOrder.ASCENDING),
                         ff.sort(ff.property("value2", Integer.class), SortOrder.DESCENDING));
@@ -193,6 +217,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testSelection() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setSelection(ff.equal(ff.property("value1", Integer.class),
                                     ff.literal(2), true, MatchAction.ALL));
@@ -207,6 +232,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testSelectionThroughAssociation() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setSelection(ff.equal(ff.property("dependency/value3"), ff.literal(18)));
         verifyQueryResult(3);
@@ -219,6 +245,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testProjection() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
                             new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), "renamed1"),
@@ -252,6 +279,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testProjectionByNames() throws DataStoreException {
+        createFeaturesWithAssociation();
         query.setProjection("value2");
         final Feature instance = executeAndGetFirst();
         final PropertyType p = TestUtilities.getSingleton(instance.getType().getProperties(true));
@@ -266,6 +294,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testDefaultColumnName() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setLimit(1);
         query.setProjection(
@@ -291,6 +320,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testProjectionOfAbstractType() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1"),  (String) null),
                             new FeatureQuery.NamedExpression(ff.property("/*/unknown"), "unexpected"));
@@ -320,6 +350,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testProjectionThroughAssociation() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1"),  (String) null),
                             new FeatureQuery.NamedExpression(ff.property("dependency/value3"), "value3"));
@@ -331,27 +362,16 @@ public final class FeatureQueryTest extends TestCase {
 
     /**
      * Tests {@link FeatureQuery#setProjection(FeatureQuery.NamedExpression...)} on a field
-     * which is a link, ensure the link name is preserved.
+     * which is a link, ensuring that the link name is preserved.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testProjectionOfLink() throws DataStoreException {
-
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("test");
-        ftb.addAttribute(String.class).setName("id").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        FeatureType ft = ftb.build();
-
-        Feature feature = ft.newInstance();
-        feature.setPropertyValue("id", "id-0");
-
-        final FeatureQuery query = new FeatureQuery();
+        createFeatureWithIdentifier();
         query.setProjection(AttributeConvention.IDENTIFIER);
-
-        final FeatureSet fs = new MemoryFeatureSet(null, ft, List.of(feature));
-        Feature r = fs.subset(query).features(true).iterator().next();
-        assertEquals("id-0", r.getPropertyValue(AttributeConvention.IDENTIFIER));
+        final Feature instance = executeAndGetFirst();
+        assertEquals("id-0", instance.getPropertyValue(AttributeConvention.IDENTIFIER));
     }
 
     /**
@@ -368,6 +388,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testVirtualProjection() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setProjection(
                 new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
@@ -411,6 +432,7 @@ public final class FeatureQueryTest extends TestCase {
      */
     @Test
     public void testIncorrectVirtualProjection() throws DataStoreException {
+        createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
                             virtualProjection(ff.property("valueMissing", Integer.class), "renamed1"));
