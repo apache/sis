@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.AttributeRole;
+import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.util.iso.Names;
@@ -325,6 +327,31 @@ public final class FeatureQueryTest extends TestCase {
         final Feature instance = executeAndGetFirst();
         assertEquals("value1",  2, instance.getPropertyValue("value1"));
         assertEquals("value3", 25, instance.getPropertyValue("value3"));
+    }
+
+    /**
+     * Tests {@link FeatureQuery#setProjection(FeatureQuery.NamedExpression...)} on a field
+     * which is a link, ensure the link name is preserved.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Test
+    public void testProjectionOfLink() throws DataStoreException {
+
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.setName("test");
+        ftb.addAttribute(String.class).setName("id").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        FeatureType ft = ftb.build();
+
+        Feature feature = ft.newInstance();
+        feature.setPropertyValue("id", "id-0");
+
+        final FeatureQuery query = new FeatureQuery();
+        query.setProjection(AttributeConvention.IDENTIFIER);
+
+        final FeatureSet fs = new MemoryFeatureSet(null, ft, List.of(feature));
+        Feature r = fs.subset(query).features(true).iterator().next();
+        assertEquals("id-0", r.getPropertyValue(AttributeConvention.IDENTIFIER));
     }
 
     /**

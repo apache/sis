@@ -748,6 +748,14 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                             expression.getFunctionName().toInternationalString(), column));
             }
             GenericName name = item.alias;
+            if (name == null && expression instanceof ValueReference<?,?>) {
+                /*
+                 * If we do not have an alias, use the original property name.
+                 * This name may be different from the resultType name because of links or functions.
+                 */
+                name = valueType.getProperty(((ValueReference<?, ?>) expression).getXPath()).getName();
+            }
+
             if (name == null) {
                 /*
                  * Build a list of aliases declared by the user, for making sure that we do not collide with them.
