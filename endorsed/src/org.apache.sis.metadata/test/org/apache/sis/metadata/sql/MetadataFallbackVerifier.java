@@ -26,7 +26,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.sql.TestDatabase;
 
 import static org.apache.sis.util.internal.CollectionsExt.first;
 import static org.junit.Assert.*;

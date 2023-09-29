@@ -16,16 +16,13 @@
  */
 
 /**
- * Utility methods for testing XML files or JAXB annotations.
- * {@link org.apache.sis.test.xml.AnnotationConsistencyCheck} and
- * {@link org.apache.sis.test.xml.SchemaCompliance} verifies JAXB annotations.
- * {@link org.apache.sis.test.xml.DocumentComparator} compares an actual XML document with the expected one.
- *
- * <p>Objects defined in this package are only for SIS testing purpose any many change
- * in any future version without notice.</p>
+ * A package for test classes defined outside the package of the Apache SIS class to test.
+ * We use this foreigner package for testing if subclasses can work without access to the
+ * package-privated members of the SIS class. This precaution is recommended for testing
+ * functionalities that make use of Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
+ * @version 0.3
+ * @since   0.3
  */
-package org.apache.sis.test.xml;
+package org.apache.sis.util.test;

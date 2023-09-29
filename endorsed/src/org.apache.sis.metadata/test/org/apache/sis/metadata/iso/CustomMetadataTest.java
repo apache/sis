@@ -37,7 +37,7 @@ import org.apache.sis.xml.XML;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.xml.TestCase;
+import org.apache.sis.xml.test.TestCase;
 
 import static org.junit.Assert.*;
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.xml;
+package org.apache.sis.xml.test;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;

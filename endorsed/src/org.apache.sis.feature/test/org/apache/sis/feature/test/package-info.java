@@ -26,4 +26,4 @@
  * @version 1.1
  * @since   1.1
  */
-package org.apache.sis.test.feature;
+package org.apache.sis.feature.test;

@@ -16,13 +16,18 @@
  */
 
 /**
- * A package for test classes defined outside the package of the Apache SIS class to test.
- * We use this foreigner package for testing if subclasses can work without access to the
- * package-privated members of the SIS class. This precaution is recommended for testing
- * functionalities that make use of Java reflection.
+ * Helper classes for testing {@link org.apache.sis.storage.DataStore} implementations.
+ * The {@link org.apache.sis.storage.test.CoverageReadConsistency} class reads a coverage fully,
+ * then requests various sub-regions. Sub-regions are than compared to the corresponding regions
+ * in the full image. It is not a proof that data values are correct, but it shows at least that
+ * read operations are consistent for the test data set.
+ *
+ * <p>The classes in this package can be used by other modules (netCDF, GeoTIFF, <i>etc.</i>).
+ * Each module will need to provide a test data file in the format to be tested.
+ * That test data shall be small enough for fitting in memory.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @version 1.1
+ * @since   1.1
  */
-package org.apache.sis.test.foreigner;
+package org.apache.sis.storage.test;

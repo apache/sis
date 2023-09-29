@@ -16,18 +16,16 @@
  */
 
 /**
- * Helper classes for testing {@link org.apache.sis.storage.DataStore} implementations.
- * The {@link org.apache.sis.test.storage.CoverageReadConsistency} class reads a coverage fully,
- * then requests various sub-regions. Sub-regions are than compared to the corresponding regions
- * in the full image. It is not a proof that data values are correct, but it shows at least that
- * read operations are consistent for the test data set.
+ * Utility methods for testing XML files or JAXB annotations.
+ * {@link org.apache.sis.xml.test.AnnotationConsistencyCheck} and
+ * {@link org.apache.sis.xml.test.SchemaCompliance} verifies JAXB annotations.
+ * {@link org.apache.sis.xml.test.DocumentComparator} compares an actual XML document with the expected one.
  *
- * <p>The classes in this package can be used by other modules (netCDF, GeoTIFF, <i>etc.</i>).
- * Each module will need to provide a test data file in the format to be tested.
- * That test data shall be small enough for fitting in memory.</p>
+ * <p>Objects defined in this package are only for SIS testing purpose any many change
+ * in any future version without notice.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
+ * @version 1.4
+ * @since   1.0
  */
-package org.apache.sis.test.storage;
+package org.apache.sis.xml.test;

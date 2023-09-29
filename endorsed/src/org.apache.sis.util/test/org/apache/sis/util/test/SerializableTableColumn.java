@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.foreigner;
+package org.apache.sis.util.test;
 
 import java.io.Serializable;
 import java.io.ObjectStreamException;

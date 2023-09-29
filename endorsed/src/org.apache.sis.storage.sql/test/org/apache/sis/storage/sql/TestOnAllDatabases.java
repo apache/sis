@@ -19,7 +19,7 @@ package org.apache.sis.storage.sql;
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.sql.TestDatabase;
+import org.apache.sis.metadata.sql.TestDatabase;
 
 
 /**
