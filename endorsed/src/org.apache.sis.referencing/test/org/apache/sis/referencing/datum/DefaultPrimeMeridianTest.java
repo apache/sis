@@ -34,7 +34,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.xml.TestCase;
+import org.apache.sis.xml.test.TestCase;
 
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import static org.junit.Assert.*;

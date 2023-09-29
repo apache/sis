@@ -23,7 +23,7 @@ import org.apache.sis.xml.Namespaces;
 // Test dependencies
 import org.junit.*;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.xml.TestCase;
+import org.apache.sis.xml.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;

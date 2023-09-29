@@ -32,7 +32,7 @@ import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.xml.TestCase;
+import org.apache.sis.xml.test.TestCase;
 
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import static org.junit.Assert.*;

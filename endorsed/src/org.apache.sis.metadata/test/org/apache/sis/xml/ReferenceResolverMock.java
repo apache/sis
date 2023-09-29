@@ -50,7 +50,7 @@ public final class ReferenceResolverMock extends ReferenceResolver {
      *     }
      *
      * Alternatively, the {@code finally} block can be replaced by a call to {@code context.finish()} in a method
-     * annotated by {@link org.junit.After}. This is done automatically by {@link org.apache.sis.test.xml.TestCase}.
+     * annotated by {@link org.junit.After}. This is done automatically by {@link org.apache.sis.xml.test.TestCase}.
      *
      * @param  marshalling {@code true} for marshalling, or {@code false} for unmarshalling.
      * @return the (un)marshalling context.

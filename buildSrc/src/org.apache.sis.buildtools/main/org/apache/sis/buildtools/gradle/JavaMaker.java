@@ -78,8 +78,7 @@ final class JavaMaker extends SimpleFileVisitor<Path> {
         final File moduleDirectory = Conventions.getBundleSourceDirectory(project, UnoPkg.MODULE);
         if (moduleDirectory.isDirectory()) try {
             File outputDirectory;                       // Path to "./build/classes/java/main/org.apache.sis.openoffice/"
-            outputDirectory = project.getBuildDir();
-            outputDirectory = new File(outputDirectory, Conventions.MAIN_CLASSES_DIRECTORY);
+            outputDirectory = Conventions.fileRelativeToBuild(project, Conventions.MAIN_CLASSES_DIRECTORY);
             outputDirectory = new File(outputDirectory, UnoPkg.MODULE);
             final var c = new JavaMaker(moduleDirectory, outputDirectory);
             Files.walkFileTree(c.source, c);

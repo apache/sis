@@ -44,7 +44,7 @@ import org.junit.Test;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.sql.TestDatabase;
+import org.apache.sis.metadata.sql.TestDatabase;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;

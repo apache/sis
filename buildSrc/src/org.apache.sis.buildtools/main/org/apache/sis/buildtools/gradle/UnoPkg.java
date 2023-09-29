@@ -107,9 +107,9 @@ final class UnoPkg extends ZipWriter.JDK {
     static void create(final Task task) {
         final Project project = task.getProject();
         final File sourceDirectory = getBundleSourceDirectory(project, MODULE);
-        final File libsDirectory = new File(project.getBuildDir(), LIBS_DIRECTORY);
+        final File libsDirectory = fileRelativeToBuild(project, LIBS_DIRECTORY);
         if (sourceDirectory.isDirectory() && libsDirectory.isDirectory()) try {
-            File target = new File(project.getBuildDir(), BUNDLE_DIRECTORY);
+            File target = fileRelativeToBuild(project, BUNDLE_DIRECTORY);
             mkdir(target);
             target = new File(target, FINALNAME_PREFIX + project.getVersion() + ".oxt");
             try (ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(target)))) {

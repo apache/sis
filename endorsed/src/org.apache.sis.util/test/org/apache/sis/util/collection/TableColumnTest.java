@@ -22,10 +22,10 @@ import org.opengis.util.InternationalString;
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.foreigner.SerializableTableColumn;
+import org.apache.sis.util.test.SerializableTableColumn;
 
-import static org.apache.sis.util.collection.TableColumn.*;
 import static org.junit.Assert.*;
+import static org.apache.sis.util.collection.TableColumn.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

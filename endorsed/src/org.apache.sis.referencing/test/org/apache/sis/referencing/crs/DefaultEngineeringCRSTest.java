@@ -29,7 +29,7 @@ import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.xml.TestCase;
+import org.apache.sis.xml.test.TestCase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

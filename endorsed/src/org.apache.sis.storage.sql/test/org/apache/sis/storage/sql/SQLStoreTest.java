@@ -37,7 +37,7 @@ import org.apache.sis.storage.sql.feature.TableReference;
 
 // Test dependencies
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.sql.TestDatabase;
+import org.apache.sis.metadata.sql.TestDatabase;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

@@ -30,7 +30,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.apache.sis.test.OptionalTestData;
-import org.apache.sis.test.storage.CoverageReadConsistency;
+import org.apache.sis.storage.test.CoverageReadConsistency;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeNotNull;
