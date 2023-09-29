@@ -21,7 +21,7 @@ import java.io.InputStream;
 import org.apache.sis.util.Version;
 
 // Test dependencies
-import org.apache.sis.test.xml.TestCase;
+import org.apache.sis.xml.test.TestCase;
 
 
 /**

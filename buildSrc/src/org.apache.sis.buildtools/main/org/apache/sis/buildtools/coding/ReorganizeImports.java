@@ -122,11 +122,40 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
     private static final String PACKAGE = "package ", IMPORT = "import ", STATIC = "static ";
 
     /**
+     * Order of import statements.
+     *
+     * @see Source#order(String)
+     */
+    private static final String[] IMPORT_ORDER = {
+        "java",                     // Include also "javax"
+        "jakarta",
+        "org.locationtech.jts",     // Optional dependency
+        "com.esri",                 // Optional dependency
+        null,                       // All other packages.
+        "javax.measure",
+        "org.opengis",
+        "org.apache.sis",
+        "org.junit",
+        "org.opengis.test",
+        "org.apache.sis.test"
+    };
+
+    /**
+     * Packages of test dependencies. The first time that one of those packages is found,
+     * a "// Test dependencies" header comment will be added.
+     */
+    private static final String[] TEST_PACKAGES = {
+        "org.junit",
+        "org.opengis.test",
+        "org.apache.sis.test"
+    };
+
+    /**
      * Whether to sort classes inside a group of classes (a package).
      * Packages are not sorted because the order used in source code
      * is usually intentional (Java classes first, then GeoAPI, <i>etc.</i>).
      */
-    private static final boolean SORT = false;
+    private static final boolean SORT_LEXICOGRAPHY = false;
 
     /**
      * Root directory of the project for which to reorganize imports.
@@ -254,6 +283,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                     break;
                 }
             }
+            elements.sort(Source::compareImports);
             for (final String element : sort(elements)) {
                 imports.put(element, bitmask);
             }
@@ -269,7 +299,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
          * so we do not bother to optimize it.
          */
         private static String[] sort(final List<String> elements) {
-            final String[] ordered  = new String[elements.size()];
+            final String[] ordered = new String[elements.size()];
             int count = 0;
             for (;;) {
                 /*
@@ -305,7 +335,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                         it.remove();
                     }
                 }
-                if (SORT) {
+                if (SORT_LEXICOGRAPHY) {
                     Arrays.sort(ordered, start, count);
                 }
             }
@@ -338,6 +368,47 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         }
 
         /**
+         * Returns the order in which to sort the given statement.
+         * We only apply a gross sorting here, and otherwise preserve existing order.
+         *
+         * @param  element  name of the package to order.
+         * @return a rank to give to the specified package.
+         */
+        private static int order(String element) {
+            int base = 0;
+            if (element.startsWith(STATIC)) {
+                element = element.substring(STATIC.length()).trim();
+                base = 1000;                    // Arbitrary offset for sorting static imports last.
+            }
+            if (element.startsWith("org.apache.sis")) {
+                if (element.contains("Assert") || element.contains("Test") || element.contains("mock")) {
+                    element = "org.apache.sis.test";
+                }
+                // TODO: we should move above classes in a test package instead.
+            }
+            int fallback = IMPORT_ORDER.length;
+            for (int i=fallback; --i >= 0;) {
+                final String c = IMPORT_ORDER[i];
+                if (c == null) fallback = i;
+                else if (element.startsWith(c)) {
+                    return i + base;
+                }
+            }
+            return fallback + base;
+        }
+
+        /**
+         * Compares to package for imports order.
+         *
+         * @param  s1  first import to compare.
+         * @param  s2  second import to compare.
+         * @return negative if {@code s1} should be first, positive if {@code s2} should be first, or zero if equal.
+         */
+        private static int compareImports(final String s1, final String s2) {
+            return order(s1) - order(s2);
+        }
+
+        /**
          * Returns {@code true} if this object contains no information.
          * It happens with {@code module-info.java} files because they
          * contain to {@code "package"} keyword.
@@ -346,6 +417,21 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
          */
         final boolean isEmpty() {
             return header == null;
+        }
+
+        /**
+         * Returns whether the given imported package is a test package.
+         *
+         * @param  element  name of the package to test.
+         * @return whether the specified package is a test package.
+         */
+        private static boolean isTestPackage(final String element) {
+            for (final String c : TEST_PACKAGES) {
+                if (element.startsWith(c)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**
@@ -369,6 +455,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
              */
             boolean needSeparator = true;       // Whether to write a line separator before next line.
             boolean needHeader    = false;      // Whether to write a comment like "// Specific to main branch:".
+            boolean isTestImports = false;      // Whether at least one import of a test class was found.
             boolean staticImports = false;      // Whether we are writing static imports or ordinary imports.
             boolean isStaticValid = false;      // Whether the `staticImports` flag is valid.
             final var buffer = new StringBuilder(80);
@@ -398,6 +485,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                             sb.append(" branch");
                             if (Integer.bitCount(bitmask) > 1) sb.append("es");     // Make plural.
                             dest.add(sb.append(':').toString());
+                            isTestImports = true;       // For preventing another separator for tests.
                             needSeparator = false;
                             needHeader    = false;
                             isStaticValid = false;
@@ -407,10 +495,17 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                          * imports to a group of static imports, then add the import statement.
                          */
                         final String element = entry.getKey();
-                        needSeparator |= (staticImports != (staticImports = element.startsWith(STATIC)) && isStaticValid);
-                        if (needSeparator) {
+                        if (!isTestImports && isTestPackage(element)) {
                             needSeparator = false;
+                            isTestImports = true;
                             dest.add("");
+                            dest.add("// Test dependencies");
+                        } else {
+                            needSeparator |= (staticImports != (staticImports = element.startsWith(STATIC)) && isStaticValid);
+                            if (needSeparator) {
+                                needSeparator = false;
+                                dest.add("");
+                            }
                         }
                         isStaticValid = true;
                         buffer.append(IMPORT).append(element).append(';');

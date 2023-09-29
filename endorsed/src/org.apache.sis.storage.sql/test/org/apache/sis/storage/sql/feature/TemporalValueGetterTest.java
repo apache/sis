@@ -30,7 +30,7 @@ import org.apache.sis.metadata.sql.util.Dialect;
 import org.apache.sis.storage.sql.TestOnAllDatabases;
 
 // Test dependencies
-import org.apache.sis.test.sql.TestDatabase;
+import org.apache.sis.metadata.sql.TestDatabase;
 
 import static org.junit.Assert.*;
 

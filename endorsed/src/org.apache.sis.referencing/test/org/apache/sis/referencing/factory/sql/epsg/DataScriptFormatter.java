@@ -37,7 +37,7 @@ import org.apache.sis.util.internal.URLs;
 import org.apache.sis.metadata.sql.util.ScriptRunner;
 
 // Test dependencies
-import org.apache.sis.test.sql.TestDatabase;
+import org.apache.sis.metadata.sql.TestDatabase;
 
 
 /**

@@ -130,15 +130,26 @@ abstract class Conventions {
     }
 
     /**
+     * Returns the path of a file in the build directory.
+     *
+     * @param  project   the sub-project being compiled.
+     * @param  filename  name of the file in the build directory.
+     * @return path to the file in the build directory.
+     */
+    static File fileRelativeToBuild(final Project project, final String filename) {
+        return project.getLayout().getBuildDirectory().file(filename).get().getAsFile();
+    }
+
+    /**
      * Returns a sub-directory of the directory where the compilation result is saved.
      *
      * @param  path  name of sub-directories, in order.
      * @return path of the given name relative to build directory.
      */
     final File fileRelativeToBuild(final String... path) {
-        File file = project.getBuildDir();
-        for (final String p : path) {
-            file = new File(file, p);
+        File file = fileRelativeToBuild(project, path[0]);
+        for (int i=1; i<path.length; i++) {
+            file = new File(file, path[i]);
         }
         return file;
     }

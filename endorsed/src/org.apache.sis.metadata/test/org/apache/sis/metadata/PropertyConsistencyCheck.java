@@ -33,7 +33,7 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.xml.AnnotationConsistencyCheck;
+import org.apache.sis.xml.test.AnnotationConsistencyCheck;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.ControlledVocabulary;

@@ -76,7 +76,7 @@ final class ModularJAR extends ZipWriter.JDK {
      * @return all modules in current Gradle sub-project.
      */
     private static File[] listModules(final Project project) {
-        return new File(project.getBuildDir(), MAIN_CLASSES_DIRECTORY).listFiles(File::isDirectory);
+        return fileRelativeToBuild(project, MAIN_CLASSES_DIRECTORY).listFiles(File::isDirectory);
     }
 
     /**
@@ -97,7 +97,7 @@ final class ModularJAR extends ZipWriter.JDK {
                 classnameAttributes.put(classname, path);
             }
         }
-        final File target = new File(project.getBuildDir(), LIBS_DIRECTORY);
+        final File target = fileRelativeToBuild(project, LIBS_DIRECTORY);
         for (final File module : listModules(project)) {
             for (final Iterator<Map.Entry<String,String>> it = classnameAttributes.entrySet().iterator(); it.hasNext();) {
                 final Map.Entry<String,String> entry = it.next();
