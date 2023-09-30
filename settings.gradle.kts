@@ -22,7 +22,6 @@ val geoapiVersion = "3.0.2"
  * They are directory names relative to this file.
  */
 include("endorsed")
-include("incubator")
 if (System.getenv("PATH_TO_FX") != null) {
     include("optional")
 }
