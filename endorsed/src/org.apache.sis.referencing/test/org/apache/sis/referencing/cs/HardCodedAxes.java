@@ -32,8 +32,6 @@ import org.apache.sis.measure.Units;
  * Consequently, EPSG codes are not provided.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.4
  */
 public final class HardCodedAxes {
     /**
@@ -120,8 +118,6 @@ public final class HardCodedAxes {
      * Axis for height values above the ellipsoid in a
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#CENTIMETRE centimetres}.
-     *
-     * @since 0.7
      */
     public static final DefaultCoordinateSystemAxis ELLIPSOIDAL_HEIGHT_cm = create(AxisNames.ELLIPSOIDAL_HEIGHT, "h",
             AxisDirection.UP, Units.CENTIMETRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);

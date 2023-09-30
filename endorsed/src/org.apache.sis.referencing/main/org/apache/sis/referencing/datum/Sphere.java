@@ -32,8 +32,6 @@ import org.opengis.referencing.datum.Ellipsoid;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @XmlTransient
 final class Sphere extends DefaultEllipsoid {

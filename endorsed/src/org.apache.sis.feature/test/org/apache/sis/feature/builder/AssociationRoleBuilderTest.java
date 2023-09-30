@@ -33,8 +33,6 @@ import org.apache.sis.feature.DefaultAssociationRole;
  * Unit tests for class {@link AssociationRoleBuilder}.
  *
  * @author  Michael Hausegger
- * @version 0.8
- * @since   0.8
  */
 public final class AssociationRoleBuilderTest extends TestCase {
     /**

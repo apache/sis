@@ -32,8 +32,6 @@ import org.apache.sis.system.Configuration;
  * Stores recent user choices, for example the last directory opened.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public final class RecentChoices {
     /**

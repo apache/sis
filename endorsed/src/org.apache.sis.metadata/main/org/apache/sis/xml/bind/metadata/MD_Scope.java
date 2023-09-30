@@ -33,8 +33,6 @@ import org.opengis.metadata.quality.Scope;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class MD_Scope extends PropertyType<MD_Scope, Scope> {
     /**

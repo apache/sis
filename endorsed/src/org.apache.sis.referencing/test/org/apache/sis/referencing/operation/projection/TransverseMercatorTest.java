@@ -44,8 +44,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link TransverseMercator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.6
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final class TransverseMercatorTest extends MapProjectionTestCase {

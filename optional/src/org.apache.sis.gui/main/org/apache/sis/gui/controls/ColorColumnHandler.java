@@ -35,11 +35,8 @@ import javafx.beans.value.ObservableValue;
  * that may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <S>  the type of row data as declared in the {@link TableView} generic type.
- *
- * @since 1.1
  */
 public abstract class ColorColumnHandler<S> implements Callback<TableColumn.CellDataFeatures<S,ColorRamp>, ObservableValue<ColorRamp>> {
     /**

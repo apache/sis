@@ -70,8 +70,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * The operations are tested with various axis order and dimension in source and target CRS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 @DependsOn({
     DefaultConversionTest.class,

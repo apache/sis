@@ -27,8 +27,6 @@ import org.junit.Test;
  * Tests {@link BinarySpatialFilter} implementations using ESRI library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilterTestCase<Shape> {
     /**

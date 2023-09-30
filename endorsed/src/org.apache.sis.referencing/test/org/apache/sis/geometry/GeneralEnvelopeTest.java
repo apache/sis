@@ -50,8 +50,6 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   0.3
  */
 @DependsOn(ArrayEnvelopeTest.class)
 public class GeneralEnvelopeTest extends TestCase {
@@ -648,8 +646,6 @@ public class GeneralEnvelopeTest extends TestCase {
 
     /**
      * Tests {@link GeneralEnvelope#translate(double...)}.
-     *
-     * @since 0.5
      */
     @Test
     public void testTranslate() {
@@ -660,8 +656,6 @@ public class GeneralEnvelopeTest extends TestCase {
 
     /**
      * Tests {@link GeneralEnvelope#horizontal()}.
-     *
-     * @since 1.1
      */
     @Test
     public void testHorizontal() {

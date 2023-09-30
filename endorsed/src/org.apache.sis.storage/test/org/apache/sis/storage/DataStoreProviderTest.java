@@ -39,8 +39,6 @@ import static org.junit.Assert.*;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 @DependsOn(StorageConnectorTest.class)
 public final class DataStoreProviderTest extends TestCase {

@@ -35,8 +35,6 @@ import org.opengis.referencing.datum.ImageDatum;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 final class SubTypes {
     /**

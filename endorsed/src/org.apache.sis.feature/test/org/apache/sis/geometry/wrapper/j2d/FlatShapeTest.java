@@ -30,8 +30,6 @@ import static org.apache.sis.feature.Assertions.assertPathEquals;
  * Tests {@link FlatShape} subclasses and builder.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class FlatShapeTest extends TestCase {
     /**

@@ -22,8 +22,6 @@ package org.apache.sis.gui.setup;
  * Pages are shown in enumeration order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 enum WizardPage {
     /**

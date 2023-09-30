@@ -48,8 +48,6 @@ import static org.junit.Assert.*;
  * {@link DefaultExtentTest#testWorldConstant()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.4
  */
 @DependsOn({DefaultGeographicBoundingBoxTest.class, DefaultExtentTest.class})
 public final class ExtentsTest extends TestCase {
@@ -198,8 +196,6 @@ public final class ExtentsTest extends TestCase {
      * in {@code org.apache.sis.referencing} module.
      * This method cannot be executed in the {@code org.apache.sis.metadata} module
      * because it has a dependency to a referencing implementation class.
-     *
-     * @since 0.8
      */
     public static void testCentroid() {
         final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(140, 160, 30, 50);

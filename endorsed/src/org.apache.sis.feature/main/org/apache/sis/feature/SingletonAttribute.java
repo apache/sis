@@ -36,13 +36,10 @@ import org.apache.sis.util.internal.CloneAccess;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <V>  the type of the attribute value.
  *
  * @see DefaultAttributeType
- *
- * @since 0.5
  */
 @SuppressWarnings("CloneableImplementsClone")       // Nothing to add compared to subclass.
 final class SingletonAttribute<V> extends AbstractAttribute<V> implements CloneAccess {

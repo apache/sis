@@ -42,8 +42,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
 public final class DefaultParameterDescriptorGroupTest extends TestCase {
@@ -206,8 +204,6 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
      * Tests WKT formatting of a group with a parameter having an identifier.
      *
      * @see DefaultParameterDescriptorTest#testIdentifiedParameterWKT()
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod("testWKT")

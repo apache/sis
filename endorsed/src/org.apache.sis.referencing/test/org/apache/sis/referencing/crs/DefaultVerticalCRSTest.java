@@ -30,8 +30,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests {@link DefaultVerticalCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 public final class DefaultVerticalCRSTest extends TestCase {
     /**

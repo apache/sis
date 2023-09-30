@@ -37,8 +37,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * Shows the "System monitor" window.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class SystemMonitor implements EventHandler<WindowEvent> {
     /**

@@ -24,8 +24,6 @@ import java.util.regex.Pattern;
  * in {@link NormalizedProjection} sub-classes that support many variants.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 interface ProjectionVariant {
     /**

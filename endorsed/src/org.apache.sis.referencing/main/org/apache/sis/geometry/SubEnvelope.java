@@ -34,8 +34,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndexRange;
  * only the internal array is shared.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 final class SubEnvelope extends GeneralEnvelope {
     /**

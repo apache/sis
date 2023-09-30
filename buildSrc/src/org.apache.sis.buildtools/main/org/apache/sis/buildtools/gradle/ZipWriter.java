@@ -37,8 +37,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
  * The method to invoke is {@link #writeDirectory(File, FileFilter, String)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 abstract class ZipWriter extends Conventions {
     /**

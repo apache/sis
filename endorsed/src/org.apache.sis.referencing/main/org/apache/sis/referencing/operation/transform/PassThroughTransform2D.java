@@ -31,8 +31,6 @@ import org.apache.sis.geometry.DirectPosition2D;
  * A pass-through transform in the two-dimensional case.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 final class PassThroughTransform2D extends PassThroughTransform implements MathTransform2D {
     /**

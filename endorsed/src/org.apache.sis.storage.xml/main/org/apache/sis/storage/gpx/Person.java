@@ -53,8 +53,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public final class Person implements ResponsibleParty, Contact, Address {
     /**

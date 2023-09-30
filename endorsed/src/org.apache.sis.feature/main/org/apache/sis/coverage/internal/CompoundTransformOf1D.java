@@ -31,8 +31,6 @@ import org.apache.sis.referencing.operation.transform.IterationStrategy;
  * in grid coverages.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class CompoundTransformOf1D extends CompoundTransform {
     /**

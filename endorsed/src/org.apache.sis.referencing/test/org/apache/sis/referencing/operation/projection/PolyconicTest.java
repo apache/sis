@@ -32,8 +32,6 @@ import org.apache.sis.test.DependsOn;
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @DependsOn(MeridianArcTest.class)
 public final class PolyconicTest extends MapProjectionTestCase {

@@ -36,8 +36,6 @@ import org.junit.Ignore;
  * in GeoAPI conformance module. The transforms are created by {@link MathTransforms#linear(Matrix)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn(ProjectiveTransformTest.class)
 public final class LinearTransformTest extends ProjectiveTransformTest {

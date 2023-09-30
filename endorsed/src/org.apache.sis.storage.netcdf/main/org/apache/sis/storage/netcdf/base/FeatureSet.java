@@ -67,8 +67,6 @@ import org.apache.sis.feature.AbstractAttribute;
  * It may be inefficient unless the {@link Decoder} uses a {@code ChannelDataInput} backed by a direct buffer.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.8
  */
 final class FeatureSet extends DiscreteSampling {
     /**

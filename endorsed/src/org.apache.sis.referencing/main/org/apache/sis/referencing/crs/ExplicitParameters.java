@@ -38,8 +38,6 @@ import org.apache.sis.util.logging.Logging;
  * This object formats only the explicit parameters. Implicit parameters derived from source ellipsoid are omitted.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 final class ExplicitParameters extends FormattableObject {
     /**

@@ -27,8 +27,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {
     /**

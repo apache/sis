@@ -33,8 +33,6 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  * Tests {@link PlanarImage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class PlanarImageTest extends TestCase {
     /**

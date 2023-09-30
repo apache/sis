@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Tests {@link DataScriptFormatter}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.7
  */
 public final class DataScriptFormatterTest extends TestCase {
     /**

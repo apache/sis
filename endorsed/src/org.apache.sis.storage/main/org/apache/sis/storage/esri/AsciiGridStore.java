@@ -140,8 +140,6 @@ import org.apache.sis.util.resources.Errors;
  * which is usually the case given how inefficient this format is.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 class AsciiGridStore extends RasterStore {
     /**

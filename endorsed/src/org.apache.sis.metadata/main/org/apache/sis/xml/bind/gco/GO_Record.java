@@ -27,8 +27,6 @@ import org.apache.sis.util.iso.DefaultRecord;
  *
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public class GO_Record extends PropertyType<GO_Record, Record> {
     /**

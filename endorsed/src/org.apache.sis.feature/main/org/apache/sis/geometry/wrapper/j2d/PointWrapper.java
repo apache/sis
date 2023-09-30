@@ -41,8 +41,6 @@ import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
  * {@link Point2D} are not {@link Shape} in Java2D API.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class PointWrapper extends GeometryWithCRS {
     /**

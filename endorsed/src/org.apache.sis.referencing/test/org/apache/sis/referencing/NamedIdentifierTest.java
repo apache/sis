@@ -42,8 +42,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests the {@link NamedIdentifier} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class NamedIdentifierTest extends TestCase {
     /**

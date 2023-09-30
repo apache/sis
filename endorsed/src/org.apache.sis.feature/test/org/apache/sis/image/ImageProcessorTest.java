@@ -39,8 +39,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link ImageProcessor}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 @DependsOn(org.apache.sis.image.processing.isoline.IsolinesTest.class)
 public final class ImageProcessorTest extends TestCase {

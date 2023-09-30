@@ -48,8 +48,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * The {@link ValuesFormatter#buffer} is used as a synchronization lock.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class ValuesFromCoverage extends ValuesUnderCursor implements ChangeListener<GridCoverage> {
     /**

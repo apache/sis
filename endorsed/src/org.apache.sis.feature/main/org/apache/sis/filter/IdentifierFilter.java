@@ -32,8 +32,6 @@ import org.apache.sis.feature.AbstractFeature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class IdentifierFilter extends Node implements Optimization.OnFilter<AbstractFeature> {
     /**

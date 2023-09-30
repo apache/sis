@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class CassiniSoldnerTest extends MapProjectionTestCase {
     /**

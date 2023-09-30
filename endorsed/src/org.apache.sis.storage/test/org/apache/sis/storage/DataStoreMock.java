@@ -26,8 +26,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * A dummy data store
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.8
  */
 public final class DataStoreMock extends DataStore {
     /**

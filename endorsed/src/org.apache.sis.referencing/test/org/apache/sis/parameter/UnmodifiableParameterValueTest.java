@@ -34,8 +34,6 @@ import static org.apache.sis.test.TestUtilities.date;
  * Tests the {@link UnmodifiableParameterValue} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @DependsOn(DefaultParameterValueTest.class)
 public final class UnmodifiableParameterValueTest extends TestCase {

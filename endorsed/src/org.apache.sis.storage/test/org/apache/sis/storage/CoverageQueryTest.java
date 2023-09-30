@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Tests {@link CoverageQuery} and (indirectly) {@link CoverageSubset}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class CoverageQueryTest extends TestCase {
     /**

@@ -60,13 +60,10 @@ import org.apache.sis.util.internal.CollectionsExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @see LanguageCode
  * @see Country
  * @see LocaleAdapter
- *
- * @since 0.3
  */
 public final class PT_Locale {
     /**

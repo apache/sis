@@ -31,8 +31,6 @@ import org.opengis.metadata.distribution.MediumName;
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, MediumName> {
     /**

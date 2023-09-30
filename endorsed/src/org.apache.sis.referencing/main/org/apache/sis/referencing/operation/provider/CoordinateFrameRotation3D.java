@@ -27,8 +27,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * except that the rotation angles have the opposite sign.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class CoordinateFrameRotation3D extends GeocentricAffineBetweenGeographic {

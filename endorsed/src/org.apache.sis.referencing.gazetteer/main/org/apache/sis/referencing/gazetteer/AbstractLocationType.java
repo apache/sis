@@ -42,8 +42,6 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * for {@code LocationType} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 abstract class AbstractLocationType implements LenientComparable {
     /**

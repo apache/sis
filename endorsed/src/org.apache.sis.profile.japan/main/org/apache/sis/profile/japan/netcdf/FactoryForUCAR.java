@@ -30,8 +30,6 @@ import org.apache.sis.util.CharSequences;
  * Factories to be registered as service providers to the UCAR netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class FactoryForUCAR implements CoordSystemBuilderFactory {
     /**

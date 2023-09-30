@@ -40,8 +40,6 @@ import org.apache.sis.util.resources.Errors;
  * An operation could also be a clipping for example.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public abstract class GeometryTransform {
     /**

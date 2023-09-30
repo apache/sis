@@ -32,11 +32,8 @@ import org.apache.sis.system.CommonExecutor;
  * Helper class for closing concurrently a collection of data stores.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  type of resource to close.
- *
- * @since 1.4
  */
 public abstract class ConcurrentCloser<R> {
     /**

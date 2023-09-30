@@ -78,8 +78,6 @@ import org.opengis.referencing.ReferenceSystem;
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**

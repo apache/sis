@@ -29,8 +29,6 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class OperationWrapper extends PropertyTypeBuilder {
     /**

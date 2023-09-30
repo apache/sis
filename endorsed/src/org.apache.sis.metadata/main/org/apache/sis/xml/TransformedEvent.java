@@ -38,8 +38,6 @@ import javax.xml.namespace.QName;
  * Those wrappers are used for changing the namespace and sometimes the name of XML elements or attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
     /**

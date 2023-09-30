@@ -32,8 +32,6 @@ import static java.lang.Long.numberOfTrailingZeros;
  * The useful method is {@link #indices(CoordinateSystem, CoordinateSystem)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 enum AxesMapper {
     /**

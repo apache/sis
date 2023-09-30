@@ -30,8 +30,6 @@ import org.apache.sis.referencing.NamedIdentifier;
  * This implementation adds its own criterion to the attribute quality evaluation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @SuppressWarnings("serial")
 final class CustomAttribute<V> extends AbstractAttribute<V> {

@@ -29,14 +29,11 @@ import org.apache.sis.math.FunctionProperty;
  * This class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @param <S>  the base type of source objects.
  * @param <T>  the base type of converted objects.
  *
  * @see org.apache.sis.util.ObjectConverters#identity(Class)
- *
- * @since 0.3
  */
 public final class IdentityConverter<S extends T, T> extends SystemConverter<S,T> {
     /**

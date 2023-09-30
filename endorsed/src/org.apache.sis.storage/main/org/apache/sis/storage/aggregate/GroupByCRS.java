@@ -32,11 +32,8 @@ import org.apache.sis.util.Utilities;
  * which in turn contain an arbitrary number of {@link GridSlice} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @param  <E>  type of objects in this group.
- *
- * @since 1.3
  */
 final class GroupByCRS<E> extends Group<E> {
     /**

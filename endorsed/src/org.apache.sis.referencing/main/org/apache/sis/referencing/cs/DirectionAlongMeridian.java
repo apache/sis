@@ -43,8 +43,6 @@ import org.apache.sis.util.resources.Errors;
  * ISO 19162:2015 §7.5.4(iv) - WKT 2 formatting.
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 1.4
- * @since   0.4
  */
 final class DirectionAlongMeridian extends FormattableObject implements Comparable<DirectionAlongMeridian> {
     /**

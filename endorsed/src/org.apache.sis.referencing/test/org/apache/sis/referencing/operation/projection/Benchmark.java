@@ -45,8 +45,6 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
  * (for example by changing a {@code ALLOW_TRIGONOMETRIC_IDENTITIES} flag value) and run again.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
 public final class Benchmark {

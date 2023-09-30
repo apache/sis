@@ -45,11 +45,8 @@ import org.opengis.util.GenericName;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.referencing.AbstractIdentifiedObject
- *
- * @since 0.5
  */
 public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparable, Serializable {
     /**

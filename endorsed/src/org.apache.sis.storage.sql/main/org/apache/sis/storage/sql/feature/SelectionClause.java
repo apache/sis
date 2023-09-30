@@ -36,8 +36,6 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class SelectionClause extends SQLBuilder {
     /**

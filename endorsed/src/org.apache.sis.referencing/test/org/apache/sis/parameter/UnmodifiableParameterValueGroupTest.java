@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * Tests the {@link UnmodifiableParameterValueGroup} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn(UnmodifiableParameterValueTest.class)
 public final class UnmodifiableParameterValueGroupTest extends TestCase {

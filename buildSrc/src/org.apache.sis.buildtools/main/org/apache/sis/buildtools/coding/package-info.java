@@ -21,7 +21,5 @@
  * they must be invoked explicitly on the command line.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 package org.apache.sis.buildtools.coding;

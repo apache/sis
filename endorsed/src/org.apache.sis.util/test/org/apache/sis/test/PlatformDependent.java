@@ -29,8 +29,6 @@ import java.lang.annotation.Target;
  * (or its test suite) need to be revisited for better portability.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @Documented
 @Target(ElementType.METHOD)

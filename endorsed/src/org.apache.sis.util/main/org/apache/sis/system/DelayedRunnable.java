@@ -30,8 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * See <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a> for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 public abstract class DelayedRunnable implements Delayed, Runnable {
     /**
@@ -99,8 +97,6 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * ordered in a "first created, first executed" basis.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
      */
     public abstract static class Immediate extends DelayedRunnable {
         /**

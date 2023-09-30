@@ -34,8 +34,6 @@ import jakarta.xml.bind.annotation.XmlType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "Real_PropertyType")
 public class GO_Real extends PropertyType<GO_Real, Double> {

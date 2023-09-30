@@ -35,8 +35,6 @@ import static java.lang.Double.NaN;
  * Tests the {@link CylindricalEqualArea} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class CylindricalEqualAreaTest extends MapProjectionTestCase {
     /**

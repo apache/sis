@@ -53,8 +53,6 @@ import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "LanguageCode_PropertyType")
 public final class LanguageCode extends GO_CharacterString {

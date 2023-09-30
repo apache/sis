@@ -40,8 +40,6 @@ import static org.junit.Assert.*;
  * {@code org.apache.sis.referencing.operation.provider} package than a verification of {@code GeoKeys}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public final class GeoKeysTest extends TestCase {
     /**

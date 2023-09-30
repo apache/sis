@@ -31,8 +31,6 @@ import org.apache.sis.util.resources.Errors;
  * The operation acts like a reference to another property.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   0.6
  */
 final class LinkOperation extends AbstractOperation {
     /**

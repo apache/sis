@@ -61,12 +61,9 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @param <K>  the type of keys maintained by the map.
  * @param <V>  the type of mapped values.
- *
- * @since 0.5
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {
     /**
@@ -139,8 +136,6 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * All keys associated to a null value will be skipped.
      *
      * @see AbstractMap#entryIterator()
-     *
-     * @since 0.8
      */
     protected final class KeyIterator extends EntryIterator<K,V> {
         /** The key candidates.              */ private final K[] keys;

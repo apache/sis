@@ -46,8 +46,6 @@ import org.apache.sis.util.ArgumentChecks;
  * the part of the caller. However, the {@link Store} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
                fileSuffixes  = "csv",

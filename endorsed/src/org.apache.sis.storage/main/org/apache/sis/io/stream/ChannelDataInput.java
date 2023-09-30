@@ -60,8 +60,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class ChannelDataInput extends ChannelData {
     /**
@@ -155,8 +153,6 @@ public class ChannelDataInput extends ChannelData {
      *
      * @return the number of bytes read, or -2 if the buffer is full, or -1 on <cite>end of stream</cite>.
      * @throws IOException if an error occurred while reading the bytes.
-     *
-     * @since 0.4
      */
     public final int prefetch() throws IOException {
         final int limit    = buffer.limit();

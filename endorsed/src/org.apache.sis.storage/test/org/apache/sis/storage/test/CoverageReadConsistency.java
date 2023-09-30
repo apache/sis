@@ -63,8 +63,6 @@ import static org.junit.Assert.*;
  * (because of the use of static fields).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public class CoverageReadConsistency extends TestCase {
     /**

@@ -40,8 +40,6 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  * Tests {@link DefaultCoupledResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn(ServiceParameterTest.class)
 public final class DefaultCoupledResourceTest extends TestCase {

@@ -50,8 +50,6 @@ import org.apache.sis.geometry.MismatchedReferenceSystemException;
  * advantage of handling envelopes crossing the anti-meridian.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @SuppressWarnings("CloneableImplementsClone")
 public class RTreeNode extends GeneralEnvelope {

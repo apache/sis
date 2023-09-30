@@ -65,9 +65,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  *
  * This base class tests calculator using spherical formulas.
  * Subclass executes the same test but using ellipsoidal formulas.
- *
- * @version 1.1
- * @since   1.0
  */
 public class GeodeticCalculatorTest extends TestCase {
     /**

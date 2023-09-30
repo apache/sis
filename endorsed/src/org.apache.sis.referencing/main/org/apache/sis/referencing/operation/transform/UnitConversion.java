@@ -32,8 +32,6 @@ import org.apache.sis.measure.Units;
  * This is used only when the converter is non-linear or is not a recognized implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class UnitConversion extends AbstractMathTransform1D implements Serializable {
     /**

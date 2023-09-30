@@ -84,8 +84,6 @@ import org.opengis.metadata.identification.DataIdentification;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class IdentificationInfo extends Section<Identification> {
     /**

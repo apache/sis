@@ -34,8 +34,6 @@ import static org.junit.Assert.assertEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Quentin Bialota (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public class IndexedResourceCompilerTest {
     /**

@@ -29,11 +29,8 @@ import org.apache.sis.math.Vector;
  * This implementation relies on the fact that all {@link GeometryWrapper} implement {@link Geometry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param   <G>  the base class of geometry objects in the backing implementation.
- *
- * @since   1.4
  */
 final class StandardGeometries<G> extends Geometries<Geometry> {
     /**

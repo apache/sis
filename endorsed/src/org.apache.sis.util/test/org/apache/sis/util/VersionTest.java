@@ -29,8 +29,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link Version} class, especially the {@code compareTo} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
- * @since   0.3
  */
 public final class VersionTest extends TestCase {
     /**

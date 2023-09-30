@@ -30,8 +30,6 @@ import org.apache.sis.math.FunctionProperty;
  * The same {@link #INSTANCE} can be passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class AngleConverter extends SystemConverter<Angle,Double> {
     /**

@@ -30,11 +30,8 @@ import org.apache.sis.util.AbstractInternationalString;
  * <p>This approach may change in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
  *
  * @see org.apache.sis.referencing.operation.provider.AbstractProvider#inverse()
- *
- * @since 0.7
  */
 public final class SignReversalComment extends AbstractInternationalString implements Serializable {
     /**

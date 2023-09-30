@@ -27,8 +27,6 @@ import org.opengis.util.InternationalString;
  * Locale-dependent resources for single words or short sentences.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class Vocabulary extends IndexedResourceBundle {
     /**
@@ -38,7 +36,6 @@ public class Vocabulary extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3
      */
     public static final class Keys extends KeyConstants {
         /**
@@ -1465,8 +1462,6 @@ public class Vocabulary extends IndexedResourceBundle {
      * @param  properties  the map of properties, or {@code null} if none.
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
-     *
-     * @since 0.7
      */
     public static Vocabulary getResources(final Map<?,?> properties) throws MissingResourceException {
         return getResources(getLocale(properties));

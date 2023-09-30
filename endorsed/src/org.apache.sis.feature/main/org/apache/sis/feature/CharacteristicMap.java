@@ -31,8 +31,6 @@ import org.apache.sis.feature.internal.Resources;
  * This map holds only the attribute characteristics which have been explicitly set or requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> implements CloneAccess {
     /**

@@ -46,8 +46,6 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  * Utilities methods related to {@link AxisDirection}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 public final class AxisDirections extends Static {
     /**
@@ -80,8 +78,6 @@ public final class AxisDirections extends Static {
      * Forward direction.
      * For an observer at the centre of the object this is will be towards its front, bow or nose.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     *
-     * @since 1.3
      */
     @UML(identifier="forward", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public static final AxisDirection FORWARD = AxisDirection.valueOf("FORWARD");
@@ -90,8 +86,6 @@ public final class AxisDirections extends Static {
      * Starboard direction.
      * For an observer at the centre of the object this will be towards its right.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     *
-     * @since 1.3
      */
     @UML(identifier="starboard", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public static final AxisDirection STARBOARD = AxisDirection.valueOf("STARBOARD");
@@ -99,8 +93,6 @@ public final class AxisDirections extends Static {
     /**
      * Direction of geographic angles (bearing).
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     *
-     * @since 0.7
      */
     @UML(identifier="clockwise", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public static final AxisDirection CLOCKWISE = AxisDirection.valueOf("CLOCKWISE");
@@ -108,8 +100,6 @@ public final class AxisDirections extends Static {
     /**
      * Direction of arithmetic angles. Used in polar coordinate systems.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     *
-     * @since 0.7
      */
     @UML(identifier="counterClockwise", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public static final AxisDirection COUNTER_CLOCKWISE = AxisDirection.valueOf("COUNTER_CLOCKWISE");
@@ -117,8 +107,6 @@ public final class AxisDirections extends Static {
     /**
      * Distance from the origin in a polar coordinate system.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     *
-     * @since 0.7
      */
     @UML(identifier="awayFrom", obligation=CONDITIONAL, specification=UNSPECIFIED)
     public static final AxisDirection AWAY_FROM = AxisDirection.valueOf("AWAY_FROM");
@@ -261,8 +249,6 @@ public final class AxisDirections extends Static {
      *
      * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the given direction is a cardinal direction.
-     *
-     * @since 0.8
      */
     public static boolean isCardinal(final AxisDirection dir) {
         if (dir == null) return false;
@@ -468,8 +454,6 @@ public final class AxisDirections extends Static {
      * @return the angular unit, of {@code unit} if no angular unit was found.
      *
      * @see org.apache.sis.referencing.util.ReferencingUtilities#getUnit(CoordinateSystem)
-     *
-     * @since 0.6
      */
     public static Unit<Angle> getAngularUnit(final CoordinateSystem cs, Unit<Angle> fallback) {
         if (cs != null) {
@@ -536,8 +520,6 @@ public final class AxisDirections extends Static {
      * @param  cs     the coordinate system which contains all axes, or {@code null}.
      * @param  subCS  the coordinate system to search into {@code cs}.
      * @return the first dimension of a sequence of axes colinear with {@code subCS} axes, or {@code -1} if none.
-     *
-     * @since 0.5
      */
     public static int indexOfColinear(final CoordinateSystem cs, final CoordinateSystem subCS) {
         int fallback = -1;
@@ -600,8 +582,6 @@ next:       for (int i=0; i <= limit; i++) {
      *         or {@code null} if at least one {@code subCS} axis cannot be mapped to a {@code cs} axis.
      *
      * @see #indexOfColinear(CoordinateSystem, CoordinateSystem)
-     *
-     * @since 1.2
      */
     public static int[] indicesOfLenientMapping(final CoordinateSystem cs, final CoordinateSystem subCS) {
         final int index = indexOfColinear(cs, subCS);           // More robust than fallback below.
@@ -734,8 +714,6 @@ next:       for (int i=0; i <= limit; i++) {
      * @param  direction  the axis direction for which to suggest an abbreviation.
      * @param  unit       the axis unit of measurement, for disambiguation.
      * @return a suggested abbreviation.
-     *
-     * @since 0.6
      */
     public static String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
         if (name.length() == 1) {
@@ -831,8 +809,6 @@ next:       for (int i=0; i <= limit; i++) {
      * @param  buffer  a buffer pre-filled with the name header.
      * @param  axes    the axes to append in the given buffer.
      * @return a name for the given coordinate system type and axes.
-     *
-     * @since 0.6
      */
     public static String appendTo(final StringBuilder buffer, final CoordinateSystemAxis[] axes) {
         String separator = ": ";

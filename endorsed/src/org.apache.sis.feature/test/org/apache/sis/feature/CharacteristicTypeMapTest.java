@@ -34,8 +34,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link CharacteristicTypeMap} indirectly, through {@link DefaultAttributeType} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.5
  */
 @DependsOn(DefaultAttributeTypeTest.class)
 public final class CharacteristicTypeMapTest extends TestCase {

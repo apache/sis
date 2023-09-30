@@ -87,8 +87,6 @@ import org.apache.sis.metadata.iso.identification.DefaultAssociatedResource;
  * to be updated.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 @SuppressWarnings("OverlyStrongTypeCast")
 @DependsOn(PropertyInformationTest.class)

@@ -36,8 +36,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * Formats the range of a category. This is used for {@link SampleDimension#toString()} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
- * @since   1.0
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})           // Not intended to serialized.
 final class SampleRangeFormat extends RangeFormat {

@@ -40,8 +40,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Quentin Bialota (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 final class Assembler extends ZipWriter.Apache implements FilenameFilter {
     /**

@@ -38,8 +38,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * {@code "gmi"} namespace that GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class DefaultLineageTest extends TestCase {
     /**

@@ -28,8 +28,6 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
  * This placeholder does nothing. See Apache SIS JDK6 branch for a real test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.6
  */
 final class ParameterizedTransformTestMock {
     ParameterizedTransformTestMock(MathTransformFactory factory) {

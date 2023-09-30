@@ -38,8 +38,6 @@ import org.apache.sis.feature.AbstractAttribute;
  * Tests the {@link ShapeFile} class.
  *
  * @author  Travis L. Pinney
- * @version 0.5
- * @since   0.5
  */
 public final class ShapeFileTest {
     /**

@@ -27,8 +27,6 @@ import org.apache.sis.util.internal.PropertyFormat;
  * Tabulations are replaced by spaces and line feeds are replaced by the Pilcrow character.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public class PropertyValueFormatter extends PropertyFormat {
     /**

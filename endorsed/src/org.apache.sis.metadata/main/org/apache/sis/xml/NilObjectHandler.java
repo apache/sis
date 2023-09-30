@@ -48,8 +48,6 @@ import org.apache.sis.xml.bind.ModifiableIdentifierMap;
  * For now, it doesn't seem worth to cache the handlers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 final class NilObjectHandler implements InvocationHandler {
     /**

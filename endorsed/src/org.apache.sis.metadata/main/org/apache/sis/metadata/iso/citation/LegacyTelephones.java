@@ -31,8 +31,6 @@ import org.opengis.util.CodeList;
  * {@link DefaultTelephone#getFacsimiles()} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
     /**

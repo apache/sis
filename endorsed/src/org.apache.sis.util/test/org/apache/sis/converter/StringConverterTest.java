@@ -51,8 +51,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the various {@link StringConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 @SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(org.apache.sis.measure.AngleTest.class)
@@ -323,8 +321,6 @@ public final class StringConverterTest extends TestCase {
 
     /**
      * Tests conversions to {@link java.lang.Enum}.
-     *
-     * @since 0.5
      */
     @Test
     public void testEnum() {

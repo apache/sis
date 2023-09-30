@@ -28,11 +28,8 @@ import org.apache.sis.storage.DataStoreProvider;
  * Some of those options may move to public API in the future if useful.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <T>  the type of option values.
- *
- * @since 1.2
  */
 public final class InternalOptionKey<T> extends OptionKey<T> {
     /**

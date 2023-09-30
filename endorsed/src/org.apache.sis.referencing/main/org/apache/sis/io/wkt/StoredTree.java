@@ -47,8 +47,6 @@ import org.apache.sis.referencing.util.WKTKeywords;
  * are repeated in many trees.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class StoredTree implements Serializable {
     /**

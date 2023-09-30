@@ -48,8 +48,6 @@ import org.opengis.util.InternationalString;
  * (<var>latitude</var>, <var>longitude</var>) axis order, as defined by EPSG:4326.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @XmlTransient
 public abstract class GeographicEnvelope extends AbstractEnvelope implements GeographicBoundingBox, Extent {

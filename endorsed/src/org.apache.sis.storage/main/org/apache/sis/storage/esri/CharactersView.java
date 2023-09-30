@@ -36,8 +36,6 @@ import org.apache.sis.util.resources.Errors;
  * The intent is to allow the use of {@link Integer#parseInt(CharSequence, int, int, int)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class CharactersView implements CharSequence {
     /**

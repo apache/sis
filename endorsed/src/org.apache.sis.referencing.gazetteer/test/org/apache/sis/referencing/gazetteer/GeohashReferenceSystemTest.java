@@ -42,8 +42,6 @@ import static org.junit.Assert.*;
  *
  * @author  Ross Laidlaw
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.1
  */
 @DependsOn(ReferencingByIdentifiersTest.class)
 public final class GeohashReferenceSystemTest extends TestCase {

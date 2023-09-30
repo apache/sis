@@ -25,8 +25,6 @@ import javafx.scene.control.skin.CellSkinBase;
  * A single cell in a {@link GridRow}. This cell contains one sample value of one pixel in an image.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class GridCell extends IndexedCell<String> {
     /**

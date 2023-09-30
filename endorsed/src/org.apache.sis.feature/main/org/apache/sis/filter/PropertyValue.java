@@ -47,13 +47,10 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <V>  the type of value computed by the expression.
  *
  * @see AssociationValue
- *
- * @since 1.1
  */
 abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
         implements ValueReference<AbstractFeature,V>, Optimization.OnExpression<AbstractFeature,V>

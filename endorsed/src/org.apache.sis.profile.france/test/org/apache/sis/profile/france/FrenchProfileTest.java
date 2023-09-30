@@ -43,8 +43,6 @@ import org.apache.sis.xml.bind.metadata.replace.RS_Identifier;
  * Tests {@link FrenchProfile}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 public final class FrenchProfileTest extends TestCase {
     /**

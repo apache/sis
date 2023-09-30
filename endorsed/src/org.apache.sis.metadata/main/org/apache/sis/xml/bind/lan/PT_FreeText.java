@@ -55,8 +55,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "PT_FreeText_PropertyType")
 public final class PT_FreeText extends GO_CharacterString {

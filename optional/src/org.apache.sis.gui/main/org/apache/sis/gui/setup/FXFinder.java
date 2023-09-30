@@ -33,8 +33,6 @@ import java.util.zip.ZipFile;
  * This is used when JavaFX cannot be found on the module path.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public final class FXFinder {
     /**

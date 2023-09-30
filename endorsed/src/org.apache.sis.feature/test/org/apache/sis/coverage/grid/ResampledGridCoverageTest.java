@@ -76,8 +76,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 @DependsOn(org.apache.sis.image.ResampledImageTest.class)
 public final class ResampledGridCoverageTest extends TestCase {

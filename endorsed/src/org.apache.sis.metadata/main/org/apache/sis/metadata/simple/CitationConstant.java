@@ -45,12 +45,9 @@ import org.opengis.metadata.citation.ResponsibleParty;
  * is available, then that simple primary key will be used as the citation title.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see IdentifierSpace
  * @see Citations
- *
- * @since 0.6
  */
 public class CitationConstant extends SimpleCitation {
     /**

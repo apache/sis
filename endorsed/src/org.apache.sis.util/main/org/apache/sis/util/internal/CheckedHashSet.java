@@ -38,13 +38,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
  *
  * @param <E>  the type of elements in the set.
  *
  * @see Collections#checkedSet(Set, Class)
- *
- * @since 0.3
  */
 @SuppressWarnings("CloneableImplementsClone")
 public final class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContainer<E> {

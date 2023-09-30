@@ -32,8 +32,6 @@ import static java.lang.StrictMath.*;
  * Tests {@link SphericalToCartesian}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 public final class SphericalToCartesianTest extends TransformTestCase {
     /**

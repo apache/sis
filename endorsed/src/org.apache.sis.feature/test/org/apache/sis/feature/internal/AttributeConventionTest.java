@@ -40,8 +40,6 @@ import org.apache.sis.feature.AbstractOperation;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 public final class AttributeConventionTest extends TestCase {
     /**

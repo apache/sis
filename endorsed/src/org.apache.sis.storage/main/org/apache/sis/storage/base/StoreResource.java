@@ -49,8 +49,6 @@ import org.apache.sis.storage.Resource;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public interface StoreResource extends Resource {
     /**

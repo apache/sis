@@ -44,8 +44,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * Tests {@link DefaultEngineeringCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public final class DefaultEngineeringCRSTest extends TestCase {
     /**

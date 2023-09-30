@@ -41,8 +41,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  * Tests {@link PointTree}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @DependsOn(PointTreeNodeTest.class)
 public final class PointTreeTest extends TestCase {

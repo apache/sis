@@ -39,8 +39,6 @@ import static java.util.Collections.singleton;
  * above-cited public constants.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 public final class HardCodedCitations extends Static {
     /**

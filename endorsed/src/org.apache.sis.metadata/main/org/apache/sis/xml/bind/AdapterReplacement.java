@@ -37,12 +37,9 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
  * only in SIS. However, we will need to revisit this issue if we move this interface to public API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see Marshaller#setAdapter(XmlAdapter)
  * @see Unmarshaller#setAdapter(XmlAdapter)
- *
- * @since 0.3
  */
 public interface AdapterReplacement {
     /**

@@ -31,8 +31,6 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
  * optimizations.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
- * @since   0.5
  */
 final class IdentityTransform extends AbstractLinearTransform {
     /**

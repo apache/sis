@@ -36,8 +36,6 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * it will be translated into ANSI SQL later by {@link SQLTranslator#apply(String)} if needed.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   0.7
  */
 final class TableInfo {
     /**

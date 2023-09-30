@@ -24,8 +24,6 @@ import org.apache.sis.storage.Resource;
  * The result of an aggregation computed by {@link CoverageAggregator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 interface AggregatedResource {
     /**

@@ -74,8 +74,6 @@ import org.apache.sis.measure.Units;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   1.0
  */
 final class GridExtentCRS {
     /**

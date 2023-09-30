@@ -29,8 +29,6 @@ import static org.apache.sis.util.CharSequences.*;
  * This is intended to be only a lightweight support, not a replacement for {@link javax.xml.xpath} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 public final class XPath extends Static {
     /**

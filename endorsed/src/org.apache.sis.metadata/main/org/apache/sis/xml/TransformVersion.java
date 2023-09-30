@@ -29,11 +29,8 @@ import org.apache.sis.xml.util.LegacyNamespaces;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
  *
  * @see Transformer
- *
- * @since 0.4
  */
 final class TransformVersion {
     /**

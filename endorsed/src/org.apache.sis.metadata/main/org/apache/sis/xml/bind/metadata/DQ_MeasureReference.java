@@ -30,8 +30,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class DQ_MeasureReference extends PropertyType<DQ_MeasureReference, DefaultMeasureReference> {
     /**

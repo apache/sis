@@ -54,8 +54,6 @@ import org.apache.sis.xml.bind.UseLegacyMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 final class PooledMarshaller extends Pooled implements Marshaller {
     /**

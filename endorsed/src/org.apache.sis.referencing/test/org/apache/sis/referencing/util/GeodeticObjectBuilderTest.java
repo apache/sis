@@ -37,8 +37,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * Tests {@link GeodeticObjectBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public final class GeodeticObjectBuilderTest extends TestCase {
     /**

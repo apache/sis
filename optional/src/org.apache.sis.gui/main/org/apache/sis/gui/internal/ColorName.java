@@ -27,8 +27,6 @@ import javafx.scene.paint.Color;
  * Provides a name for a given {@link Color} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ColorName {
     /**

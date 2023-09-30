@@ -60,8 +60,6 @@ import static org.junit.Assume.assumeTrue;
  * This test is executed only if {@link #RUN_EXTENSIVE_TESTS} is {@code true}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,

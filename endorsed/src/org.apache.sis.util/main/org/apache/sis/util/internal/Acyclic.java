@@ -32,8 +32,6 @@ import java.lang.annotation.Target;
  * introduce cyclic graphs does not mean that subclasses will hold the same promise.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

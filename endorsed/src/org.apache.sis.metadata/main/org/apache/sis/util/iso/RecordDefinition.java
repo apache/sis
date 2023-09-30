@@ -49,8 +49,6 @@ import org.apache.sis.metadata.simple.SimpleAttributeType;
  * {@link #computeTransientFields(Map)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @XmlTransient
 abstract class RecordDefinition {                                       // Intentionally not Serializable.

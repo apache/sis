@@ -39,8 +39,6 @@ import org.apache.sis.util.internal.CollectionsExt;
  * This is not an helper class for <em>usage</em> of metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class ImplementationHelper extends Static {
     /**
@@ -204,8 +202,6 @@ public final class ImplementationHelper extends Static {
      * @param  method  the caller method, used for logging.
      * @param  name    the property name, used for logging and exception message.
      * @throws IllegalStateException if we are not unmarshalling an object.
-     *
-     * @since 0.7
      */
     public static void propertyAlreadySet(final Class<?> classe, final String method, final String name)
             throws IllegalStateException
@@ -262,8 +258,6 @@ public final class ImplementationHelper extends Static {
      *
      * @param  object  the object for which to get the unique identifier.
      * @return the unique XML identifier, or {@code null} if none.
-     *
-     * @since 0.7
      */
     public static String getObjectID(final IdentifiedObject object) {
         final Context context = Context.current();
@@ -296,8 +290,6 @@ public final class ImplementationHelper extends Static {
      *
      * @param object  the object for which to assign an identifier.
      * @param id      the {@code gco:id} or {@code gml:id} value.
-     *
-     * @since 0.7
      */
     public static void setObjectID(final IdentifiedObject object, String id) {
         id = Strings.trimOrNull(id);

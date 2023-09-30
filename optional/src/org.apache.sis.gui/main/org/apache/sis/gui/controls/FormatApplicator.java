@@ -43,11 +43,8 @@ import org.apache.sis.util.CharSequences;
  * Registrations should be done by calls to {@link #setListenersOn(TextField)} only.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param  <T>  the type of objects expected and returned by {@link #format}.
- *
- * @since 1.1
  */
 final class FormatApplicator<T> extends StringConverter<T>
         implements EventHandler<ActionEvent>, ChangeListener<Boolean>

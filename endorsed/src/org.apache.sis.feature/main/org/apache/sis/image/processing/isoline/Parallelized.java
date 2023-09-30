@@ -28,8 +28,6 @@ import org.apache.sis.image.processing.TiledProcess;
  * be computed in a different thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class Parallelized extends TiledProcess<Isolines[]> {
     /**

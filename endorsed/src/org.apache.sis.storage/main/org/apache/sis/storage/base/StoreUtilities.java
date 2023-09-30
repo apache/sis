@@ -65,8 +65,6 @@ import org.apache.sis.metadata.iso.identification.AbstractIdentification;
  * Some methods may also move in public API if we feel confident enough.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class StoreUtilities extends Static {
     /**

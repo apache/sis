@@ -55,8 +55,6 @@ import static org.opengis.test.Assert.assertBetween;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public final class TestFactorySource {
     /**

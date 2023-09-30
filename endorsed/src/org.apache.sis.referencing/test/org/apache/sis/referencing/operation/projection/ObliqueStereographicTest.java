@@ -45,8 +45,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Emmanuel Giasson (Thales)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     InitializerTest.class,

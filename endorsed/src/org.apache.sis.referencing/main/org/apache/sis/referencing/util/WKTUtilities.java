@@ -75,8 +75,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * We need to be specific in order to select the right "aspect" of the given object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class WKTUtilities extends Static {
     /**
@@ -259,8 +257,6 @@ public final class WKTUtilities extends Static {
      * @param  <Q>   the unit dimension.
      * @param  unit  the unit to test.
      * @return the replacement to format, or {@code unit} if not needed.
-     *
-     * @since 0.8
      */
     @SuppressWarnings("unchecked")
     public static <Q extends Quantity<Q>> Unit<Q> toFormattable(Unit<Q> unit) {
@@ -453,8 +449,6 @@ public final class WKTUtilities extends Static {
      * @param  size        size of the tensor. The length of this array is the tensor dimension.
      * @param  cornerSize  number of values to keep in each corner.
      * @return <var>n</var>-dimensional array of {@link Number} containing corners and center of the given tensor.
-     *
-     * @since 1.0
      */
     public static Object[] cornersAndCenter(final Function<int[],Number> tensor, final int[] size, final int cornerSize) {
         /*

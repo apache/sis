@@ -58,11 +58,8 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @see org.apache.sis.xml.bind.lan.PT_FreeText
- *
- * @since 0.3
  */
 @XmlType(name = "CharacterString_PropertyType")
 @XmlSeeAlso({
@@ -253,8 +250,6 @@ public class GO_CharacterString {
      * we could replace this mechanism by a simple property annotated with {@code XmlElementRef}.
      *
      * @return the code list value.
-     *
-     * @since 0.7
      */
     @XmlAnyElement
     @Workaround(library = "GeoAPI", version = "3.0")

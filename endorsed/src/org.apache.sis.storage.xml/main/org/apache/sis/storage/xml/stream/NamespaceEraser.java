@@ -27,8 +27,6 @@ import org.apache.sis.xml.util.StreamWriterDelegate;
  * This is used for removing unnecessary namespace declarations introduced by JAXB marshaller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class NamespaceEraser extends StreamWriterDelegate {
     /**

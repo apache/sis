@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Verifies {@link DataType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public final class DataTypeTest extends TestCase {
     /**

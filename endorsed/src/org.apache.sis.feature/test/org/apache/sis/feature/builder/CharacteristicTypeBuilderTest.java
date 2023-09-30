@@ -35,8 +35,6 @@ import org.apache.sis.feature.DefaultAttributeType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class CharacteristicTypeBuilderTest extends TestCase {
     /**

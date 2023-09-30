@@ -28,8 +28,6 @@ import org.apache.sis.storage.xml.AbstractProvider;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public abstract class StaxDataStoreProvider extends AbstractProvider {
     /**

@@ -61,8 +61,6 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   0.3
  */
 final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable {
     /**

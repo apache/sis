@@ -32,8 +32,6 @@ import org.apache.sis.filter.Expression;
  * Information technology — Database languages — SQL multimedia and application packages — Part 3: Spatial</a>.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class Registry implements FunctionRegister {
     /**

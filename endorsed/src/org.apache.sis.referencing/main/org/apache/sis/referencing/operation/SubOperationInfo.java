@@ -36,11 +36,8 @@ import org.apache.sis.referencing.crs.DefaultParametricCRS;
  * is useful for applying reordering.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see CoordinateOperationFinder#createOperationStep(CoordinateReferenceSystem, List, CoordinateReferenceSystem, List)
- *
- * @since 0.7
  */
 final class SubOperationInfo {
     /**

@@ -53,11 +53,8 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * It will also indirectly tests {@link DatumShiftGridGroup} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
- *
- * @since 0.7
  */
 @DependsOn(DatumShiftGridFileTest.class)
 public final class NTv2Test extends DatumShiftTestCase {

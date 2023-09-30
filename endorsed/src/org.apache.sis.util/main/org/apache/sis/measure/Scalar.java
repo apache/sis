@@ -35,11 +35,8 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
  *
  * @param <Q>  the type of quantity implemented by this scalar.
- *
- * @since 0.8
  */
 class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Comparable<Q> {
     /**

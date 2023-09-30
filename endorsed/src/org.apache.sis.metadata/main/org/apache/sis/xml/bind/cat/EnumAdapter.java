@@ -30,12 +30,9 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <ValueType>  the subclass implementing this adapter.
  * @param <BoundType>  the enum being adapted.
- *
- * @since 0.5
  */
 public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundType>,
         BoundType extends Enum<BoundType>> extends XmlAdapter<ValueType,BoundType>

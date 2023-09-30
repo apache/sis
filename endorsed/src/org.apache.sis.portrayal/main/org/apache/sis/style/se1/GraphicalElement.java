@@ -21,11 +21,8 @@ package org.apache.sis.style.se1;
  * Object having a graphical representation as small picture.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
- *
- * @since 1.5
  */
 public interface GraphicalElement<R> {
     /**

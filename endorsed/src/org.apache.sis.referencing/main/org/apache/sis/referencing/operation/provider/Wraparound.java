@@ -35,8 +35,6 @@ import org.apache.sis.referencing.operation.transform.WraparoundTransform;
  * Provider for {@link WraparoundTransform} (SIS-specific operation).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 @XmlTransient
 public final class Wraparound extends AbstractProvider {

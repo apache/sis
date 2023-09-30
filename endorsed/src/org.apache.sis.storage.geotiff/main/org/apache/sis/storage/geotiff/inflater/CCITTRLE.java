@@ -42,8 +42,6 @@ import org.apache.sis.io.stream.ChannelDataInput;
  * which is not equivalent to "0011" neither. Consequently, we cannot parse directly the bits as integer values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class CCITTRLE extends CompressionChannel {
     /**

@@ -29,8 +29,6 @@ import static org.apache.sis.test.TestUtilities.toTreeStructure;
  * Tests the {@link AbstractMetadata} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 @DependsOn(MetadataStandardTest.class)
 public final class AbstractMetadataTest extends TestCase {

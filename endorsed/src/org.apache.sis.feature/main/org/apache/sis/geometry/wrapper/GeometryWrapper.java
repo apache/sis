@@ -52,11 +52,8 @@ import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
  * change without warning in future Apache SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see Geometries#wrap(Object)
- *
- * @since 0.8
  */
 public abstract class GeometryWrapper extends AbstractGeometry implements Geometry {
     /**

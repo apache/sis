@@ -39,8 +39,6 @@ import org.apache.sis.util.logging.Logging;
  * rather uses the static methods directly since we define all units in terms of SI.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class UnitRegistry implements SystemOfUnits, Serializable {
     /**
@@ -69,8 +67,6 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
 
     /**
      * Identifies units defined by the centimeter–gram–second (CGS) system.
-     *
-     * @since 1.2
      */
     static final byte CGS = 8;
 

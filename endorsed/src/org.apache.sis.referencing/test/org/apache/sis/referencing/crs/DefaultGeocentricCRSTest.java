@@ -40,8 +40,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link DefaultGeocentricCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.4
  */
 @DependsOn({
     DefaultGeodeticCRSTest.class
@@ -56,8 +54,6 @@ public final class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests the {@link DefaultGeocentricCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#RIGHT_HANDED}.
-     *
-     * @since 0.7
      */
     @Test
     public void testRightHanded() {
@@ -74,8 +70,6 @@ public final class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests the {@link DefaultGeocentricCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#POSITIVE_RANGE}.
-     *
-     * @since 0.7
      */
     @Test
     public void testShiftLongitudeRange() {
@@ -117,8 +111,6 @@ public final class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests WKT 1 formatting using axes in kilometres. The intent of this test is to verify that
      * the coordinate system replacement documented in {@link #testWKT1()} preserves the axis units.
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod("testWKT1")

@@ -32,8 +32,6 @@ import org.apache.sis.feature.internal.Resources;
  * This {@code Future} is considered completed when all components are completed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class CompoundFuture<R> implements Future<R> {
     /**

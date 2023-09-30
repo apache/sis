@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Tests {@link DefaultGeorectified}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class DefaultGeorectifiedTest extends TestCase {
     /**

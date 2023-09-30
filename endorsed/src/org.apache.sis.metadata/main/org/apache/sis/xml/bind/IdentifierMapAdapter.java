@@ -81,11 +81,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * This class is thread safe if the underlying identifier collection is thread safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see org.apache.sis.xml.IdentifiedObject
- *
- * @since 0.3
  */
 public class IdentifierMapAdapter extends AbstractMap<Citation,String> implements IdentifierMap, Serializable {
     /**
@@ -417,8 +414,6 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * if the identifier has been removed, of {@code Boolean#FALSE} otherwise.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
-     * @since   0.3
      */
     @SuppressWarnings("serial")                 // Not intended to be serialized.
     private static final class Iter extends HashMap<Citation,Boolean> implements Iterator<Entry<Citation,String>> {

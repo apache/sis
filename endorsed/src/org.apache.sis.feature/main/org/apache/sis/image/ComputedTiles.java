@@ -39,8 +39,6 @@ import org.apache.sis.util.Disposable;
  * Consequently, this class "contains" the tiles only indirectly.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class ComputedTiles extends WeakReference<ComputedImage> implements Disposable, TileObserver {
     /**

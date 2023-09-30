@@ -33,8 +33,6 @@ import static org.junit.Assert.*;
  * Creates an empty database and insert automatically-generated keys.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 public final class IdentifierGeneratorTest extends TestCase {
     /**

@@ -47,8 +47,6 @@ import org.opengis.metadata.identification.DataIdentification;
  * Tests {@link WorldFileStore} and {@link WorldFileStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.2
  */
 public final class WorldFileStoreTest extends TestCase {
     /**

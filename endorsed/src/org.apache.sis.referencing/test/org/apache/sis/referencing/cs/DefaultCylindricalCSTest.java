@@ -37,8 +37,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * Tests {@link DefaultCylindricalCS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.7
  */
 @DependsOn(DefaultPolarCSTest.class)
 public final class DefaultCylindricalCSTest extends TestCase {

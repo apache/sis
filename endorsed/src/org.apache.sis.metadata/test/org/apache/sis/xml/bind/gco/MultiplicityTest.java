@@ -38,8 +38,6 @@ import static org.junit.Assert.*;
  * Tests {@link MultiplicityRange}
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class MultiplicityTest extends TestUsingFile {
     /**

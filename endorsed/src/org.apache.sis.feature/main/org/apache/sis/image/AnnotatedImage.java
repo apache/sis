@@ -57,8 +57,6 @@ import org.apache.sis.util.internal.Strings;
  * on the fact that it can unwrap this image and still get the same pixel values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 abstract class AnnotatedImage extends ImageAdapter {
     /**

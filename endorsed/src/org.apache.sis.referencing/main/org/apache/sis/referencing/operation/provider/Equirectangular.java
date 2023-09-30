@@ -63,12 +63,9 @@ import static java.lang.Math.*;
  *
  * @author  John Grange
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see PseudoPlateCarree
  * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
- *
- * @since 0.6
  */
 @XmlTransient
 public final class Equirectangular extends AbstractProvider {

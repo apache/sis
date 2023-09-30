@@ -30,8 +30,6 @@ import javax.swing.JPanel;
  * with <var>y</var> axis oriented toward up. The bounding box is drawn in gray color behind.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @SuppressWarnings("serial")
 final class ShapeViewer extends JPanel {

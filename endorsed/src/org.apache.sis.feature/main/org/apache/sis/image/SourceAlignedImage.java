@@ -46,8 +46,6 @@ import org.apache.sis.util.Workaround;
  * The {@link #equals(Object)} and {@link #hashCode()} methods should also be overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 abstract class SourceAlignedImage extends ComputedImage {
     /**

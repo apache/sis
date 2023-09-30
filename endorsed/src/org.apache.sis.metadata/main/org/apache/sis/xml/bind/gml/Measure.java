@@ -64,12 +64,9 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.xml.bind.gml.MeasureList
  * @see org.apache.sis.xml.bind.gco.UnitAdapter
- *
- * @since 0.3
  */
 @XmlType(name = "MeasureType")
 public final class Measure {

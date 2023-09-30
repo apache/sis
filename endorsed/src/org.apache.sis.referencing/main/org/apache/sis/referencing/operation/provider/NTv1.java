@@ -33,8 +33,6 @@ import org.apache.sis.parameter.ParameterBuilder;
  * This transform requires data that are not bundled by default with Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 @XmlTransient
 public final class NTv1 extends AbstractProvider {

@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link StandardGeometries} implementation for geometries exposed as GeoAPI objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class StandardGeometriesTest extends GeometriesTestCase {
     /**

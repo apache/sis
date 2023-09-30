@@ -44,8 +44,6 @@ import org.apache.sis.storage.netcdf.base.TestData;
  * Tests {@link NetcdfStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn({
     ChannelDecoderTest.class

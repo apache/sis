@@ -24,8 +24,6 @@ import org.opengis.referencing.crs.SingleCRS;
  * Place-holder for an interface not yet present in GeoAPI 3.0.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
- * @version 0.7
  */
 interface ParametricCRS extends SingleCRS {
 }

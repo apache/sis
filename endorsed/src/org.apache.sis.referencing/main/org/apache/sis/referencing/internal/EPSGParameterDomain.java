@@ -28,8 +28,6 @@ import org.apache.sis.util.internal.CollectionsExt;
  * which may be used in the EPSG database with either metres or degrees units.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 public final class EPSGParameterDomain extends NumberRange<Double> {
     /**

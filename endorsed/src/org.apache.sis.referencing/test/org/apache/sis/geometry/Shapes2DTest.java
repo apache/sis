@@ -34,8 +34,6 @@ import static org.apache.sis.referencing.Assertions.assertRectangleEquals;
  * This class inherits the test methods defined in {@link TransformTestCase}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.8
  */
 @DependsOn(CurveExtremumTest.class)
 public final class Shapes2DTest extends TransformTestCase<Rectangle2D> {

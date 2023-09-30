@@ -53,8 +53,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * because the former accept null values while the latter throws {@link NullPointerException}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class CollectionsExt extends Static {
     /**
@@ -83,8 +81,6 @@ public final class CollectionsExt extends Static {
      *
      * @param  type  the desired collection type.
      * @return an empty collection of the given type, or {@code null} if the type is unknown.
-     *
-     * @since 0.8
      */
     public static Collection<?> empty(final Class<?> type) {
         if (type.isAssignableFrom(List.class)) {                    // Most common case first.
@@ -110,8 +106,6 @@ public final class CollectionsExt extends Static {
      *
      * @param  c  the collection or map for which to get the size, or {@code null}.
      * @return the size or pseudo-size of the given object.
-     *
-     * @since 1.0
      */
     public static int size(final Object c) {
         if (c == null) {
@@ -154,8 +148,6 @@ public final class CollectionsExt extends Static {
      * @param  collection  the iterable from which to get the singleton element, or {@code null}.
      * @return the singleton element, or {@code null} if the given iterable is null or does not
      *         contain exactly one non-null element.
-     *
-     * @since 0.8
      */
     public static <T> T singletonOrNull(final Iterable<T> collection) {
         if (collection != null) {
@@ -195,8 +187,6 @@ public final class CollectionsExt extends Static {
      * @param  <T>       the type of elements.
      * @param  elements  the elements to copy in a set.
      * @return an unmodifiable set which contains all the given elements, or {@code null}.
-     *
-     * @since 0.6
      */
     @SafeVarargs
     public static <T> Set<T> nonEmptySet(final T... elements) {
@@ -283,8 +273,6 @@ public final class CollectionsExt extends Static {
      * @return the given value as an array of {@code <E>}. Never null.
      * throws  IllegalArgumentException if the given value is not null, an instance of {@code <E>}
      *         or an array of {@code <E>}.
-     *
-     * @since 0.4
      */
     @SuppressWarnings("unchecked")
     public static <E> E[] nonNullArraySet(final String name, final Object value, final E[] emptyArray)
@@ -748,8 +736,6 @@ public final class CollectionsExt extends Static {
      * @param  collection  the collection from which to get the elements.
      * @param  valueClass  the runtime type of collection elements.
      * @return the collection elements as an array, or {@code null} if {@code collection} is null.
-     *
-     * @since 0.6
      */
     @SuppressWarnings("unchecked")
     public static <T> T[] toArray(final Collection<? extends T> collection, final Class<T> valueClass) {

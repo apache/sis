@@ -31,8 +31,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     /**

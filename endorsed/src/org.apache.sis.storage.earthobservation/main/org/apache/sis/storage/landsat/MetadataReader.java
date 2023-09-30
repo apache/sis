@@ -95,8 +95,6 @@ import static org.apache.sis.util.internal.CollectionsExt.singletonOrNull;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class MetadataReader extends MetadataBuilder {
     /**

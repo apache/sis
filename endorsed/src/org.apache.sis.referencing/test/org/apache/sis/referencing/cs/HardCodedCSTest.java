@@ -31,8 +31,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Validates the {@link HardCodedCS} definitions.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
- * @since   0.4
  */
 @DependsOn({
     DefaultCartesianCSTest.class,

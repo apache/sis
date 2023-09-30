@@ -30,8 +30,6 @@ import org.apache.sis.test.TestUtilities;
  * Tests {@link CartesianToSpherical}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn(SphericalToCartesianTest.class)
 public final class CartesianToSphericalTest extends TransformTestCase {

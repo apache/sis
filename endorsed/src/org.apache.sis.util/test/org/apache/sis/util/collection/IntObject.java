@@ -22,8 +22,6 @@ package org.apache.sis.util.collection;
  * This is used for tests that use {@link java.lang.ref.WeakReference}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class IntObject {
     /**

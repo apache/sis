@@ -31,8 +31,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * Note that the formatting may change in any future version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class SampleRangeFormatTest extends TestCase {
     /**

@@ -43,8 +43,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * amount of attribute instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.5
  */
 final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeType<?>> {
     /**

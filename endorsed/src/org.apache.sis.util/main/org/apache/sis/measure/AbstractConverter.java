@@ -27,8 +27,6 @@ import org.apache.sis.math.DecimalFunctions;
  * Base class of unit converters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 abstract class AbstractConverter implements UnitConverter, Serializable {
     /**

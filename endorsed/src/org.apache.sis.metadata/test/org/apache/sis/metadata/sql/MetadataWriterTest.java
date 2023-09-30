@@ -43,8 +43,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
  * Creates a metadata database, stores a few elements and read them back.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 @DependsOn({
     MetadataSourceTest.class,

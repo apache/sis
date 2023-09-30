@@ -46,8 +46,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 public final class CharSequenceSubstitutionTest extends TestCase {
     /**
@@ -167,8 +165,6 @@ public final class CharSequenceSubstitutionTest extends TestCase {
      * Tests substitution by a code list.
      *
      * @throws JAXBException if the (un)marshalling failed.
-     *
-     * @since 0.7
      */
     @Test
     public void testCodeList() throws JAXBException {
@@ -193,8 +189,6 @@ public final class CharSequenceSubstitutionTest extends TestCase {
      * Tests the code list in a sensor element.
      *
      * @throws JAXBException if the (un)marshalling failed.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testCodeList")

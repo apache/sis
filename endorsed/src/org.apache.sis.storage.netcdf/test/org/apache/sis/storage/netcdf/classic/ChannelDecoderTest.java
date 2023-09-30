@@ -38,8 +38,6 @@ import org.apache.sis.storage.netcdf.base.TestData;
  * {@link DecoderTest}, which use the UCAR library has a reference implementation, passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 @DependsOn(DecoderTest.class)
 public final class ChannelDecoderTest extends DecoderTest {

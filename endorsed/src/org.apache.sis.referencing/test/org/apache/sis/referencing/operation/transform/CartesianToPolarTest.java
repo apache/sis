@@ -30,8 +30,6 @@ import org.apache.sis.test.TestUtilities;
  * Tests {@link CartesianToPolar}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn(PolarToCartesianTest.class)
 public final class CartesianToPolarTest extends TransformTestCase {

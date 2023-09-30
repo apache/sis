@@ -43,8 +43,6 @@ import org.opengis.metadata.citation.Citation;
  * {@code "test"} {@linkplain #getCodeSpace() codespace}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @SuppressWarnings("serial")
 @XmlRootElement(name = "IO_IdentifiedObject")

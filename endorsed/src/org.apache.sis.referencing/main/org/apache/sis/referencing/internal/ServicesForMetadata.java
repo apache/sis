@@ -97,8 +97,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
  * Implements the referencing services needed by the {@code org.apache.sis.metadata} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class ServicesForMetadata extends ReferencingServices {
     /**
@@ -434,8 +432,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  λ  the longitude value.
      * @param  φ  the latitude value.
      * @return the direct position for the given geographic coordinate.
-     *
-     * @since 0.8
      */
     @Override
     public DirectPosition geographic(final double λ, final double φ) {
@@ -449,8 +445,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  object  the object for which to get an identifier.
      * @return an identifier for the given object, with preference given to EPSG codes.
      * @throws FactoryException if an error occurred while searching for the EPSG code.
-     *
-     * @since 1.0
      */
     @Override
     public String getPreferredIdentifier(final IdentifiedObject object) throws FactoryException {
@@ -513,8 +507,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  factory     the factory to use for creating the coordinate system.
      * @return a parametric coordinate system using the given axes.
      * @throws FactoryException if the parametric object creation failed.
-     *
-     * @since 0.7
      */
     public static CoordinateSystem createParametricCS(final Map<String,?> properties, final CoordinateSystemAxis axis,
             CSFactory factory) throws FactoryException
@@ -537,8 +529,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  factory     the factory to use for creating the datum.
      * @return a parametric datum using the given name.
      * @throws FactoryException if the parametric object creation failed.
-     *
-     * @since 0.7
      */
     public static Datum createParametricDatum(final Map<String,?> properties, DatumFactory factory)
             throws FactoryException
@@ -563,8 +553,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  factory     the factory to use for creating the coordinate reference system.
      * @return a parametric coordinate system using the given axes.
      * @throws FactoryException if the parametric object creation failed.
-     *
-     * @since 0.7
      */
     public static SingleCRS createParametricCRS(final Map<String,?> properties, final Datum datum,
             final CoordinateSystem cs, CRSFactory factory) throws FactoryException
@@ -586,8 +574,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param  timezone  the timezone, or {@code null} for UTC.
      * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
-     *
-     * @since 0.8
      */
     @Override
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
@@ -618,8 +604,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  identifier The name or identifier of the operation method to search.
      * @return The coordinate operation method for the given name or identifier.
      * @throws FactoryException if an error occurred which searching for the given method.
-     *
-     * @since 0.6
      */
     public static OperationMethod getOperationMethod(final CoordinateOperationFactory opFactory,
             final MathTransformFactory mtFactory, final String identifier) throws FactoryException
@@ -644,8 +628,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      *
      * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
-     *
-     * @since 0.6
      */
     private static OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
         OperationMethod fallback = null;

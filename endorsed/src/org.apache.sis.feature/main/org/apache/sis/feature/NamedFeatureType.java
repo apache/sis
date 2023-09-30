@@ -29,8 +29,6 @@ import org.apache.sis.util.internal.Strings;
  * by instances of the actual feature type when the latter become known.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.5
  */
 final class NamedFeatureType implements FeatureType, Serializable {
     /**

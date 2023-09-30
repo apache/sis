@@ -48,8 +48,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests {@link DefaultOperationMethod}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     DefaultFormulaTest.class,

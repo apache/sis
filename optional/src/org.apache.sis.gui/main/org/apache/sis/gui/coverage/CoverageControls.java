@@ -49,8 +49,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * The controls are updated when the coverage shown in {@link CoverageCanvas} is changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class CoverageControls extends ViewAndControls {
     /**

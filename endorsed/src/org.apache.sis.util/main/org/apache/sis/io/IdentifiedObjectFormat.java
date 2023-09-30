@@ -34,8 +34,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Used by {@link CompoundFormat} for formatting the name of objects of type {@link IdentifiedObject}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 @SuppressWarnings("CloneableImplementsClone")   // Because this class does not contain field that need to be cloned.
 final class IdentifiedObjectFormat extends Format {

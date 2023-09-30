@@ -54,8 +54,6 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * as "chunk" in a <var>n</var>-dimensional generalization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public abstract class TiledGridResource extends AbstractGridCoverageResource {
     /**

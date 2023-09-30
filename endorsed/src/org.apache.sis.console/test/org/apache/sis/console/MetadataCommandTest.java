@@ -34,8 +34,6 @@ import org.junit.Ignore;
  * Tests the {@link MetadataCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 @DependsOn(CommandRunnerTest.class)
 public final class MetadataCommandTest extends TestCase {

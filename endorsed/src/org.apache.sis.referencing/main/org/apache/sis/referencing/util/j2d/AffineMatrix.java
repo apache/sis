@@ -34,8 +34,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * between {@link AffineTransform#clone()} and {@link Matrix#clone()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 class AffineMatrix extends MatrixSIS implements Serializable, CloneAccess {
     /**

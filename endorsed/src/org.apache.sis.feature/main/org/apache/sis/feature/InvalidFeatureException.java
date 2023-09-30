@@ -24,11 +24,8 @@ import org.apache.sis.util.LocalizedException;
  * Thrown when a feature fails at least one conformance test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @see Features#validate(AbstractFeature)
- *
- * @since 0.7
  */
 final class InvalidFeatureException extends IllegalArgumentException implements LocalizedException {
     /**

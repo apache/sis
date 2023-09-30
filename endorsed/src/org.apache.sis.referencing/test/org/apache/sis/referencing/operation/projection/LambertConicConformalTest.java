@@ -53,8 +53,6 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn(ConformalProjectionTest.class)
 public final class LambertConicConformalTest extends MapProjectionTestCase {

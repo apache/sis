@@ -47,8 +47,6 @@ import org.apache.sis.util.ArgumentChecks;
  * Note 2: it has not been tested since we do not have writable feature sets yet.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class WritableStore extends Store implements WritableAggregate {
     /**

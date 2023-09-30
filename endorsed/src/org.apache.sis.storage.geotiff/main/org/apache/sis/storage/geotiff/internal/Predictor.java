@@ -25,8 +25,6 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  * before an encoding scheme is applied.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public enum Predictor {
     /**

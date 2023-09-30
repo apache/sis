@@ -33,12 +33,9 @@ import org.apache.sis.util.Utilities;
  * for performing the reduce operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
  *
  * @see Envelopes#union(Envelope...)
  * @see Envelopes#intersect(Envelope...)
- *
- * @since 1.0
  */
 class EnvelopeReducer {
     /**

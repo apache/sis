@@ -35,8 +35,6 @@ import org.apache.sis.storage.event.StoreListeners;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class LZW extends CompressionChannel {
     /**

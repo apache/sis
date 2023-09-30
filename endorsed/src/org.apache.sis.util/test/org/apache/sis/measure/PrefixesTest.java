@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Prefixes} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @DependsOn(LinearConverterTest.class)
 public final class PrefixesTest extends TestCase {

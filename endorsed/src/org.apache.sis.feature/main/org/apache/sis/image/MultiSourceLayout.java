@@ -48,12 +48,9 @@ import org.apache.sis.coverage.internal.CommonDomainFinder;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see ImageCombiner
  * @see BandAggregateImage
- *
- * @since 1.4
  */
 final class MultiSourceLayout extends ImageLayout {
     /**

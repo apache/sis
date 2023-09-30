@@ -32,8 +32,6 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.0
  */
 public abstract class Dimension extends NamedElement {
     /**

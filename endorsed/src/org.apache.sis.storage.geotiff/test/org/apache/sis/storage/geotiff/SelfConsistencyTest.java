@@ -45,8 +45,6 @@ import static org.junit.Assume.assumeNotNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public final class SelfConsistencyTest extends CoverageReadConsistency {
     /**

@@ -40,8 +40,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Verifies some parameters of {@link MapProjection} and a few subclasses.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 public final class MapProjectionTest extends TestCase {
     /**

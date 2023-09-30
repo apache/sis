@@ -50,8 +50,6 @@ import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
  * Tests the {@link DefaultConcatenatedOperation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     DefaultTransformationTest.class,

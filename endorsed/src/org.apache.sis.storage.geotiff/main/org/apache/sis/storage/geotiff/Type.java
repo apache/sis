@@ -38,8 +38,6 @@ import org.apache.sis.util.resources.Errors;
  * This enumeration rather match the Java primitive type names.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 enum Type {
     /**

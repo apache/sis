@@ -28,8 +28,6 @@ import static org.junit.Assert.*;
  * Tests the {@link DocumentComparator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.3
  */
 public final class DocumentComparatorTest extends TestCase {
     /**

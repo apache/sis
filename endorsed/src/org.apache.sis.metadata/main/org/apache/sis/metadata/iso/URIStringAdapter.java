@@ -31,8 +31,6 @@ import org.apache.sis.xml.bind.gco.GO_CharacterString;
  * to {@code CharacterSequence} in the upgrade from ISO 19115:2003 to ISO 19115-1:2014.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class URIStringAdapter extends XmlAdapter<GO_CharacterString, URI> {
     /**

@@ -36,8 +36,6 @@ import static org.apache.sis.test.TestUtilities.date;
  * Tests the {@link StandardDateFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.6
  */
 public final class StandardDateFormatTest extends TestCase {
     /**
@@ -105,8 +103,6 @@ public final class StandardDateFormatTest extends TestCase {
 
     /**
      * Tests parsing a temporal object.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testParse")
@@ -123,8 +119,6 @@ public final class StandardDateFormatTest extends TestCase {
 
     /**
      * Tests parsing a date as an instant, assuming UTC timezone if unspecified.
-     *
-     * @since 1.0
      */
     @Test
     @DependsOnMethod("testParse")

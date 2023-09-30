@@ -35,7 +35,5 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 package org.apache.sis.xml.bind;

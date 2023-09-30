@@ -59,8 +59,6 @@ import org.apache.sis.metadata.internal.ReferencingServices;
  * declare {@code ParameterDescriptor<?>} as their return type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 @SuppressWarnings("rawtypes")   // For the omission of <T> in Parameter<T> - see javadoc.
 @XmlType(name = "DQM_Parameter_Type", namespace = Namespaces.DQM, propOrder = {

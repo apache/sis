@@ -33,12 +33,9 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * This projection method has no associated EPSG code.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/Sinusoidal_projection">Sinusoidal projection on Wikipedia</a>
  * @see <a href="http://geotiff.maptools.org/proj_list/sinusoidal.html">GeoTIFF parameters for Sinusoidal</a>
- *
- * @since 1.0
  */
 @XmlTransient
 public class Sinusoidal extends MapProjection {

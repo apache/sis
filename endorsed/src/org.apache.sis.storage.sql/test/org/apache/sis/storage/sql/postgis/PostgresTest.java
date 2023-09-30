@@ -68,8 +68,6 @@ import org.apache.sis.feature.AbstractFeature;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 @DependsOn({RasterReaderTest.class, RasterWriterTest.class})
 public final class PostgresTest extends TestCase {

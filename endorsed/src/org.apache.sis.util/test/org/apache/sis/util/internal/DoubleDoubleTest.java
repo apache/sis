@@ -39,8 +39,6 @@ import static org.junit.Assert.*;
  * Those tests need {@link DoubleDouble#DISABLED} to be set to {@code false}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(org.apache.sis.math.DecimalFunctionsTest.class)
 public final class DoubleDoubleTest extends TestCase {

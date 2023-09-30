@@ -31,11 +31,8 @@ import static org.junit.Assert.*;
  * Tests {@link LineAppender} implementation when used for wrapping lines to 80 characters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @see LineAppender#setMaximalLineLength(int)
- *
- * @since 0.3
  */
 @DependsOn(LineAppenderTest.class)
 public class WordWrapTest extends LineAppenderTest {

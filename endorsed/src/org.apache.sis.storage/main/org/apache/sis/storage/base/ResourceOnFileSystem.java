@@ -37,8 +37,6 @@ import org.apache.sis.storage.Resource;
  * {@link org.apache.sis.storage.WritableAggregate#remove(Resource)} instead.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public interface ResourceOnFileSystem extends Resource {
     /**

@@ -38,8 +38,6 @@ import org.apache.sis.xml.XLink;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "Anchor_Type")
 @XmlRootElement(name = "Anchor")

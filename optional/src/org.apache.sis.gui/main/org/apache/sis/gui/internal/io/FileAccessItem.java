@@ -48,8 +48,6 @@ import org.apache.sis.io.stream.ByteRangeChannel;
  * This is a row in the table shown by {@link FileAccessView} table.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
     /**

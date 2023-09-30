@@ -29,8 +29,6 @@ import java.util.Iterator;
  * This adapter may be deleted after deprecated metadata methods have been removed from Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class DateToTemporal extends AbstractCollection<Temporal> {
     /**

@@ -38,8 +38,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.3
  */
 @DependsOn(VariableTest.class)
 public class GridTest extends TestCase {

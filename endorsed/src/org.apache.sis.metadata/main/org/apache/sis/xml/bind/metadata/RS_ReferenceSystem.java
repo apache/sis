@@ -42,11 +42,8 @@ import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
  * where such tuple is expected.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
- *
- * @since 0.3
  */
 public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, ReferenceSystem> {
     /**

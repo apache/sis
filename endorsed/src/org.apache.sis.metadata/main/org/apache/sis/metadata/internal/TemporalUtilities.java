@@ -36,8 +36,6 @@ import org.apache.sis.pending.geoapi.temporal.TemporalFactory;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class TemporalUtilities extends SystemListener {
     /**
@@ -118,8 +116,6 @@ public final class TemporalUtilities extends SystemListener {
      *
      * @param  time  the instant or period for which to get a date, or {@code null}.
      * @return the requested time as a Java date, or {@code null} if none.
-     *
-     * @since 1.0
      */
     public static Date getDate(final TemporalPrimitive time) {
         Instant instant;

@@ -47,11 +47,8 @@ import static org.apache.sis.referencing.util.ReferencingUtilities.getProperties
  * This is the converse of {@link org.apache.sis.referencing.util.EllipsoidalHeightCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see org.apache.sis.referencing.util.EllipsoidalHeightCombiner
- *
- * @since 1.0
  */
 final class EllipsoidalHeightSeparator implements AxisFilter {
     /**

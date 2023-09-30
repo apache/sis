@@ -29,8 +29,6 @@ import org.apache.sis.coverage.grid.j2d.BatchComputedImage;
  * Other loading strategies should not instantiate this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class TiledDeferredImage extends BatchComputedImage {
     /**

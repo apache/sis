@@ -58,8 +58,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 @DependsOn({
     GeneralEnvelopeTest.class,
@@ -167,8 +165,6 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      * where the coordinates in one dimension are NaN.
      *
      * @throws TransformException if an error occurred while transforming the envelope.
-     *
-     * @since 0.8
      */
     @Test
     public void testTransform4to2D() throws TransformException {
@@ -205,8 +201,6 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      *
      * @throws FactoryException if an error occurred while creating the operation.
      * @throws TransformException if an error occurred while transforming the envelope.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testAxisRangeChange")
@@ -221,8 +215,6 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      *
      * @throws FactoryException if an error occurred while creating the operation.
      * @throws TransformException if an error occurred while transforming the envelope.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testAxisRangeChange3D")
@@ -253,8 +245,6 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      * Tests {@link Envelopes#findOperation(Envelope, Envelope)}.
      *
      * @throws FactoryException if an error occurred while searching the operation.
-     *
-     * @since 1.0
      */
     @Test
     public void testFindOperation() throws FactoryException {
@@ -274,8 +264,6 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      * Test {@link Envelopes#compound(Envelope...)} method.
      *
      * @throws FactoryException if an error occurred while creating the compound CRS.
-     *
-     * @since 1.0
      */
     @Test
     public void testCompound() throws FactoryException {

@@ -84,11 +84,8 @@ import org.apache.sis.xml.bind.TypeRegistration;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @see javax.xml.transform.Transformer
- *
- * @since 1.0
  */
 abstract class Transformer {
     /**

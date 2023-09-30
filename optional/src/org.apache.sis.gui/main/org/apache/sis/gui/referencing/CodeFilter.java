@@ -29,8 +29,6 @@ import org.apache.sis.util.internal.Strings;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class CodeFilter implements Predicate<Code> {
     /**

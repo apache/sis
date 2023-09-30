@@ -36,8 +36,6 @@ import static org.junit.Assume.assumeTrue;
  * Tests {@link Transformer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class TransformerTest extends TestCase {
     /**

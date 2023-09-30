@@ -47,8 +47,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * Tests the {@link TreeTableFormat} applied to the formatting of metadata tree.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 @DependsOn(TreeTableViewTest.class)
 public final class TreeTableFormatTest extends TestCase {

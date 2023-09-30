@@ -39,8 +39,6 @@ import static org.junit.Assert.*;
  * Tests {@link ColorModelBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class ColorModelBuilderTest extends TestCase {
     /**

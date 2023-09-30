@@ -29,12 +29,9 @@ import org.apache.sis.util.internal.Numerics;
  * It should be used only when no standard color space can be used.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see ScaledColorModel
  * @see ColorModelFactory#createGrayScale(int, int, int, double, double)
- *
- * @since 1.0
  */
 final class ScaledColorSpace extends ColorSpace {
     /**

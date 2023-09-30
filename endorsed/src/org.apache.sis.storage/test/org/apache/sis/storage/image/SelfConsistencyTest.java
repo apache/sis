@@ -37,8 +37,6 @@ import static org.junit.Assert.assertNotNull;
  * a subset of data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class SelfConsistencyTest extends CoverageReadConsistency {
     /**

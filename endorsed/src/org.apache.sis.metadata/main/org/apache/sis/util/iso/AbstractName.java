@@ -340,8 +340,6 @@ public abstract class AbstractName implements GenericName, Serializable {
      * This class is immutable if the list given to the constructor is immutable.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 1.4
-     * @since   0.3
      */
     private static final class International extends SimpleInternationalString {
         /**

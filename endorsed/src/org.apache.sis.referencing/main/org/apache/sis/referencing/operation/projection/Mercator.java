@@ -80,12 +80,9 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @author  Rueben Schulz (UBC)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
  *
  * @see TransverseMercator
  * @see ObliqueMercator
- *
- * @since 0.6
  */
 public class Mercator extends ConformalProjection {
     /**
@@ -374,8 +371,6 @@ subst:  if (variant.spherical || eccentricity == 0) {
      * because the Mercator projection is mathematically capable to handle coordinates beyond that range
      * even if those coordinates have no real world meaning. This expansion can facilitate the projection
      * of envelopes, geometries or rasters.</p>
-     *
-     * @since 1.3
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
@@ -510,8 +505,6 @@ subst:  if (variant.spherical || eccentricity == 0) {
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  Rueben Schulz (UBC)
-     * @version 0.6
-     * @since   0.6
      */
     static final class Spherical extends Mercator {
         /**

@@ -33,8 +33,6 @@ import org.apache.sis.storage.shapefile.jdbc.sql.SQLInvalidStatementException;
 /**
  * DBF Statement.
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class DBFStatement extends AbstractStatement {
     /** Connection this statement is relying on. */

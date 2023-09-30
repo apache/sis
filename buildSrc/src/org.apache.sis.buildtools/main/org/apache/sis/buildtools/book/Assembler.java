@@ -59,8 +59,6 @@ import static org.apache.sis.buildtools.book.CodeColorizer.toArray;
  * See package javadoc for usage example.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class Assembler {
     /**
@@ -534,8 +532,6 @@ public final class Assembler {
      *
      * @param  args  command-line arguments. Should contain exactly on value, which is the site root directory.
      * @throws Exception if an I/O error, a XML parsing error or other kinds of error occurred.
-     *
-     * @since 0.8
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void main(final String[] args) throws Exception {

@@ -37,7 +37,5 @@
  * on module-path changes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 package org.apache.sis.converter;

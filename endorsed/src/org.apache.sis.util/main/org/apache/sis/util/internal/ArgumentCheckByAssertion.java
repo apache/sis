@@ -28,8 +28,6 @@ import java.lang.annotation.Target;
  * argument checks may be too expensive. This annotation is used for tracking those methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 @Target({
     ElementType.METHOD,

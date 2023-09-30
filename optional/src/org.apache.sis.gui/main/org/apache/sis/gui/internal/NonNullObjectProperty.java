@@ -24,11 +24,8 @@ import javafx.beans.property.SimpleObjectProperty;
  * A simple property implementation which does not accept null values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param <T> the type of the wrapped object.
- *
- * @since 1.1
  */
 public final class NonNullObjectProperty<T> extends SimpleObjectProperty<T> {
     /**

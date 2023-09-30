@@ -48,8 +48,6 @@ import org.apache.sis.xml.bind.FilterByVersion;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName> {
     /**

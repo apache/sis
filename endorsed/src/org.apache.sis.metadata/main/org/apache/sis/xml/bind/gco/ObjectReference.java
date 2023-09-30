@@ -39,13 +39,10 @@ import org.apache.sis.xml.bind.SpecializedIdentifier;
  * implementations in the public {@link org.apache.sis.metadata.iso} package and sub-packages.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @see PropertyType
  * @see <a href="ObjectIdentification.html">ObjectIdentification</a>
  * @see <a href="https://www.isotc211.org/2005/gco/gcoBase.xsd">OGC/ISO schema</a>
- *
- * @since 0.3
  */
 final class ObjectReference {
     /**

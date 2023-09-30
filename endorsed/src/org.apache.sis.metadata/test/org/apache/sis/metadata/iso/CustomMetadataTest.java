@@ -56,8 +56,6 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
  *
  * @author  Damiano Albani (for code snippet on the mailing list)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class CustomMetadataTest extends TestCase {
     /**

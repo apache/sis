@@ -45,8 +45,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public final class SQLMMTest extends TestCase {
     /**

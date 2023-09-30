@@ -26,8 +26,6 @@ import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Cullen Rombach (Image Matters)
- * @since   1.0
- * @version 1.4
  */
 public final class MD_FeatureTypeInfo extends PropertyType<MD_FeatureTypeInfo, DefaultFeatureTypeInfo> {
     /**

@@ -32,11 +32,8 @@ import org.apache.sis.filter.Expression;
  * Instead, one of the subclasses can be extended.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
- *
- * @since 1.5
  */
 @XmlTransient
 public abstract class StyleElement<R> implements Cloneable {

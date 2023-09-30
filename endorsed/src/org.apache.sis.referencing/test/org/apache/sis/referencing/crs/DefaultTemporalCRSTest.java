@@ -38,8 +38,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests {@link DefaultTemporalCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.5
  */
 public final class DefaultTemporalCRSTest extends TestCase {
     /**

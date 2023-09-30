@@ -31,8 +31,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * call on a larger array segment.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class RepeatedTransform extends CompoundTransform {
     /**

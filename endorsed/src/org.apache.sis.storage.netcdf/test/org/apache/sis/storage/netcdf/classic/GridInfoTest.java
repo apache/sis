@@ -36,8 +36,6 @@ import org.apache.sis.storage.netcdf.base.TestData;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 @DependsOn({VariableInfoTest.class, GridTest.class})
 public final class GridInfoTest extends GridTest {

@@ -27,8 +27,6 @@ import org.apache.sis.util.internal.Strings;
  * This temporary place holder is used when the operation name is unmarshalled before the actual operation definition.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 final class OperationName extends DefaultOperationMetadata {
     /**

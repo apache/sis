@@ -37,8 +37,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * {@code ConverterRegistry}, so those tests shall be avoided.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn({StringConverterTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class})

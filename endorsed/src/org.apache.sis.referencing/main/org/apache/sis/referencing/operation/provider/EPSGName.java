@@ -37,8 +37,6 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
  * Future implementation may also be able to read the remarks from the database if requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 public final class EPSGName {  // TODO: consider extending NamedIdentifier if we implement deferred reading of remarks.
     /**

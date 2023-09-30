@@ -29,11 +29,8 @@ import static org.junit.Assert.*;
  * Tests {@link LineAppender} implementation when used for inserting a margin before every line.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @see LineAppender#onLineBegin(boolean)
- *
- * @since 0.3
  */
 @DependsOn(LineAppenderTest.class)
 public final class LeftMarginTest extends LineAppenderTest {

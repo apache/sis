@@ -37,8 +37,6 @@ import org.apache.sis.util.ArraysExt;
  * The provider of {@link WorldFileStore} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 @StoreMetadata(formatName    = WorldFileStoreProvider.NAME,
                fileSuffixes  = {"jpeg", "jpg", "png", "gif", "bmp"},    // Non-exhaustive list, intentionally excluding TIFF.

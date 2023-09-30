@@ -51,8 +51,6 @@ import org.apache.sis.storage.base.StoreResource;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public final class ExceptionReporter extends Widget {
     /**

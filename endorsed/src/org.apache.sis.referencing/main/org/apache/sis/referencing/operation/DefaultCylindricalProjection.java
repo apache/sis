@@ -33,12 +33,9 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * Cylindrical map projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
  * @see <a href="https://mathworld.wolfram.com/CylindricalProjection.html">Cylindrical projection on MathWorld</a>
- *
- * @since 0.6
  */
 @XmlTransient
 final class DefaultCylindricalProjection extends DefaultProjection implements CylindricalProjection {

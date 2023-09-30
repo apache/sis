@@ -38,8 +38,6 @@ import org.apache.sis.storage.Query;
  * <p>See {@link WritableSingleImageStore} for the writable variant of this class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 final class SingleImageStore extends WorldFileStore implements GridCoverageResource {
     /**

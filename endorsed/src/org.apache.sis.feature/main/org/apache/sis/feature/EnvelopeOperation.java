@@ -63,8 +63,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 final class EnvelopeOperation extends AbstractOperation {
     /**

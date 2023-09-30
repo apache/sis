@@ -26,11 +26,8 @@ import org.apache.sis.util.resources.Errors;
  * @todo A future version may provide caching services, methods for taking a snapshot, <i>etc.</i>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <V> the type of attribute values.
- *
- * @since 1.4
  */
 abstract class OperationResult<V> extends AbstractAttribute<V> {
     /**

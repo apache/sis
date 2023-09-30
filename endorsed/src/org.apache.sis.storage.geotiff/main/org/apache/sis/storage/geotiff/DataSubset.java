@@ -70,8 +70,6 @@ import static org.apache.sis.util.internal.Numerics.ceilDiv;
  * the same tile indices than {@link DataCube} in order to avoid integer overflow.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 class DataSubset extends TiledGridCoverage implements Localized {
     /**

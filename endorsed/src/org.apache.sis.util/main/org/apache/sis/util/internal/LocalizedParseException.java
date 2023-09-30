@@ -40,8 +40,6 @@ import org.apache.sis.util.resources.Errors;
  * which is presumed to be the end-user locale.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 public final class LocalizedParseException extends ParseException implements LocalizedException {
     /**

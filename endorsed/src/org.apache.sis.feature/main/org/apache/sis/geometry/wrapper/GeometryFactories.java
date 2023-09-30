@@ -33,8 +33,6 @@ import org.apache.sis.feature.internal.Resources;
  * <p>Note: we can bring this code back into {@link Geometries} if JEP 8209964 is implemented.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class GeometryFactories {
     /**

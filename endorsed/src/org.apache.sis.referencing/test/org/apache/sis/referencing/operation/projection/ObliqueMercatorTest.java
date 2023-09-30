@@ -35,8 +35,6 @@ import static java.lang.StrictMath.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @DependsOn(MercatorTest.class)
 public final class ObliqueMercatorTest extends MapProjectionTestCase {

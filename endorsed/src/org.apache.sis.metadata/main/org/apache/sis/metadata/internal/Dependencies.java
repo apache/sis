@@ -35,8 +35,6 @@ import java.lang.annotation.RetentionPolicy;
  * the parent class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

@@ -29,12 +29,9 @@ import org.apache.sis.storage.internal.Resources;
  * The {@link #close()} method closes this stream but not the wrapped stream, which is only reset.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see ProbeReader
  * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
- *
- * @since 1.2
  */
 final class ProbeInputStream extends FilterInputStream {
     /**

@@ -62,8 +62,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 abstract class FeatureAnalyzer {
     /**

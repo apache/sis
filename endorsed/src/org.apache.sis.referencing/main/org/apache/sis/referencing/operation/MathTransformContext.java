@@ -41,8 +41,6 @@ import org.apache.sis.measure.Units;
  * factory know nothing about datum (on design, for separation of concerns).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.7
  */
 final class MathTransformContext extends Context {
     /**

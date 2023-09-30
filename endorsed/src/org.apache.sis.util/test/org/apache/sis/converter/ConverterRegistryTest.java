@@ -45,8 +45,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * isolated.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 @DependsOn({
     StringConverterTest.class, FallbackConverterTest.class,

@@ -29,8 +29,6 @@ import org.apache.sis.gui.dataset.WindowHandler;
  * not be modified after initialization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public final class PrivateAccess {
     /**

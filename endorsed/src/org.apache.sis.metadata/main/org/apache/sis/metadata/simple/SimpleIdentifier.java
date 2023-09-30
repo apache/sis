@@ -33,8 +33,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * An implementation of {@link ReferenceIdentifier} as a wrapper around a {@link Citation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
     /**
@@ -143,8 +141,6 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * Returns a natural language description of the meaning of the code value.
      *
      * @return natural language description, or {@code null} if none.
-     *
-     * @since 0.5
      */
     public InternationalString getDescription() {
         return null;
@@ -152,8 +148,6 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
 
     /**
      * An optional free text.
-     *
-     * @since 0.6
      */
     @Override
     public InternationalString getRemarks() {
@@ -162,8 +156,6 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
 
     /**
      * {@code true} if this identifier is deprecated.
-     *
-     * @since 0.6
      */
     @Override
     public boolean isDeprecated() {

@@ -32,8 +32,6 @@ import org.apache.sis.metadata.iso.content.AbstractContentInformation;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class MD_ContentInformation extends
         PropertyType<MD_ContentInformation, ContentInformation>

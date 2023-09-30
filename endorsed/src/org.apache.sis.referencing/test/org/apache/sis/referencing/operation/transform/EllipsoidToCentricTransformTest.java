@@ -45,8 +45,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link EllipsoidToCentricTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     CoordinateDomainTest.class,

@@ -44,8 +44,6 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn({
     DefaultCoupledResourceTest.class,

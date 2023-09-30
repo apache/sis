@@ -35,8 +35,6 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  * Tests {@link LeafExpression}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class LeafExpressionTest extends TestCase {
     /**

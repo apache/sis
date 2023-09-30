@@ -30,8 +30,6 @@ import org.opengis.metadata.identification.CharacterSet;
  * Provided in a separated class for loading only when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 final class LegacyCodes {
     /**

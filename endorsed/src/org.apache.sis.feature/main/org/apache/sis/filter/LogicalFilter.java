@@ -35,11 +35,8 @@ import org.apache.sis.pending.geoapi.filter.LogicalOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
- *
- * @since 1.1
  */
 abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Optimization.OnFilter<R> {
     /**

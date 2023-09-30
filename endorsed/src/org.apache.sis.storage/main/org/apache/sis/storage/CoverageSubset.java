@@ -46,8 +46,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
  * arguments of {@link GridCoverageResource#read(GridGeometry, int...)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class CoverageSubset extends AbstractGridCoverageResource {
     /**

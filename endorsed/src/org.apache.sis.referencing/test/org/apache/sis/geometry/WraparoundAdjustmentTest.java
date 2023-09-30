@@ -37,8 +37,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  * Tests {@link WraparoundAdjustment}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.0
  */
 public final class WraparoundAdjustmentTest extends TestCase {
     /**

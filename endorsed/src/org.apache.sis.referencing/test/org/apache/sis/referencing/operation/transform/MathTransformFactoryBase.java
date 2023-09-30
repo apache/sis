@@ -36,8 +36,6 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  * Subclasses need to override at least one method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 class MathTransformFactoryBase implements MathTransformFactory {
     /**

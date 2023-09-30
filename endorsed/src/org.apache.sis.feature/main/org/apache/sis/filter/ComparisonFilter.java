@@ -66,11 +66,8 @@ import org.apache.sis.pending.geoapi.filter.BetweenComparisonOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
- *
- * @since 1.1
  */
 abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         implements BinaryComparisonOperator<R>, Optimization.OnFilter<R>

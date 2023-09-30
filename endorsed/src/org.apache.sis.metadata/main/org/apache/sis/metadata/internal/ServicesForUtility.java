@@ -41,8 +41,6 @@ import org.opengis.util.CodeList;
  * Implements the metadata services needed by the {@code org.apache.sis.util} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public final class ServicesForUtility extends MetadataServices {
     /**
@@ -137,8 +135,6 @@ public final class ServicesForUtility extends MetadataServices {
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param  timezone  the timezone, or {@code null} for UTC.
      * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
-     *
-     * @since 0.8
      */
     @Override
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {

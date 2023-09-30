@@ -36,8 +36,6 @@ import org.opengis.util.CodeList;
  * Tests all known {@link ISOMetadata} subclasses for JAXB annotations and getter/setter methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
 public final class AllMetadataTest extends PropertyConsistencyCheck {

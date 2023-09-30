@@ -49,8 +49,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 public final class EnvelopeOperationTest extends TestCase {
     /**

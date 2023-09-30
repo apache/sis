@@ -33,8 +33,6 @@ import org.apache.sis.feature.AbstractFeature;
  * Updates the content of a GPX file by rewriting it.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class Updater extends RewriteOnUpdate {
     /**

@@ -56,8 +56,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests the {@link DefaultGeodeticDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn({
     DefaultPrimeMeridianTest.class,

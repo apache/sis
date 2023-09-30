@@ -36,11 +36,8 @@ import org.apache.sis.storage.internal.Resources;
  * explicit synchronization lock (contrarily to {@link java.io.Reader}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
  *
  * @see OutputStreamAdapter
- *
- * @since 0.4
  */
 public final class InputStreamAdapter extends InputStream implements Markable {
     /**

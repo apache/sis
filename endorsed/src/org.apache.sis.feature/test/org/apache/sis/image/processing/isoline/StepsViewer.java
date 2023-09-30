@@ -59,8 +59,6 @@ import static org.junit.Assert.*;
  * {@link Isolines#LISTENER}, then uncomment the {@link #setListener(StepsViewer)} constructor body.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 @SuppressWarnings("serial")
 public final class StepsViewer extends JComponent implements BiConsumer<String,Isolines>, ChangeListener, ActionListener {

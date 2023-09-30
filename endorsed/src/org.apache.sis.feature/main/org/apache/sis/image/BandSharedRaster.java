@@ -38,8 +38,6 @@ import java.awt.image.RasterFormatException;
  * {@link BandedSampleModel}. Consequently we do not expect a big difference in this case.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class BandSharedRaster extends WritableRaster {
     /**

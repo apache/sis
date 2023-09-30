@@ -19,7 +19,5 @@
  * {@link org.apache.sis.storage.DataStore} implementation for Well Known Text.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 package org.apache.sis.storage.wkt;

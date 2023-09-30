@@ -51,12 +51,9 @@ import static java.lang.Double.doubleToRawLongBits;
  * is faster. This kind of transform is extensively used by {@code org.apache.sis.coverage.grid.GridCoverage2D}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see LogarithmicTransform1D
  * @see ExponentialTransform1D
- *
- * @since 0.5
  */
 @SuppressWarnings("CloneInNonCloneableClass")
 class LinearTransform1D extends AbstractMathTransform1D implements LinearTransform, ExtendedPrecisionMatrix, Serializable {
@@ -141,8 +138,6 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
 
     /**
      * Creates a constant function having value <var>y</var>, and for which the inverse is <var>x</var>.
-     *
-     * @since 0.7
      */
     static LinearTransform1D constant(final double x, final double y) {
         final LinearTransform1D tr = create(null, y);
@@ -410,8 +405,6 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     /**
      * Transforms many distance vectors in a list of coordinate values.
      * The default implementation computes the values from the {@link #scale} coefficient only.
-     *
-     * @since 0.7
      */
     @Override
     public void deltaTransform(final double[] srcPts, int srcOff,

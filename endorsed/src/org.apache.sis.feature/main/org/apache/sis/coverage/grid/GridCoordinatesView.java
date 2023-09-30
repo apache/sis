@@ -29,8 +29,6 @@ import org.apache.sis.util.ArgumentChecks;
  * This is pending GeoAPI update.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 final class GridCoordinatesView {
     /**

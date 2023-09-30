@@ -32,8 +32,6 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeListAdapter;
  *
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public class CI_TelephoneTypeCode extends UnsupportedCodeListAdapter<CI_TelephoneTypeCode> {
     /**

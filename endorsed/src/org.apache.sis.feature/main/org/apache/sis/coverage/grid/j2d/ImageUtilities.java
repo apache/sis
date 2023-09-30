@@ -52,8 +52,6 @@ import static org.apache.sis.util.internal.Numerics.COMPARISON_THRESHOLD;
  * (see {@code *Factory} classes for creating those objects).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class ImageUtilities extends Static {
     /**

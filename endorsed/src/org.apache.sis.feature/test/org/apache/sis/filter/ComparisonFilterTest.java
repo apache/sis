@@ -35,8 +35,6 @@ import org.apache.sis.pending.geoapi.filter.BetweenComparisonOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ComparisonFilterTest extends TestCase {
     /**

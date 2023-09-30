@@ -32,8 +32,6 @@ import org.apache.sis.gui.internal.BackgroundThreads;
  * provide some tiles in order to test error controls.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class GridViewApp extends Application {
     /**

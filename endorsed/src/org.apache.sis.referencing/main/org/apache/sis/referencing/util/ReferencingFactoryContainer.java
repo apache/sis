@@ -51,11 +51,8 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * <p>This class is not thread safe. Synchronization, if needed, is caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
- *
- * @since 1.0
  */
 public class ReferencingFactoryContainer {
     /**

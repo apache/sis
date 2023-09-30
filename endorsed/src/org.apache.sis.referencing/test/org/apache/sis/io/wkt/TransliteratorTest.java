@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Transliterator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.6
  */
 public final class TransliteratorTest extends TestCase {
     /**

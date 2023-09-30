@@ -38,8 +38,6 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  * Compares the result of some WKT parsing with the expected result from EPSG database.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public final class ComparisonWithEPSG extends TestCase {
     /**
@@ -173,8 +171,6 @@ public final class ComparisonWithEPSG extends TestCase {
      * @throws ParseException if the WKT cannot be parsed.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-512">SIS-512 on issues tracker</a>
-     *
-     * @since 1.1
      */
     @Test
     public void testCoordinateOperation() throws FactoryException, ParseException {

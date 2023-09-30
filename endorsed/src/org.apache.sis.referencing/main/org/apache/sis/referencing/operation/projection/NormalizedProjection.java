@@ -132,12 +132,9 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
  *
  * @see ContextualParameters
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
- *
- * @since 0.6
  */
 public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
     /**
@@ -252,11 +249,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * {@link #CENTRAL_MERIDIAN}, {@link #SCALE_FACTOR}, {@link #FALSE_EASTING} and {@link #FALSE_NORTHING}.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.6
      *
      * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
-     *
-     * @since 0.6
      */
     protected enum ParameterRole {
         /**
@@ -591,8 +585,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param  name     the name of the alternative map projection to use.
      * @return the alternative projection.
      * @throws FactoryException if an error occurred while creating the alternative projection.
-     *
-     * @since 0.7
      */
     final MathTransform delegate(final MathTransformFactory factory, final String name) throws FactoryException {
         final OperationMethod method;
@@ -831,8 +823,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * If this is class is modified, consider updating {@code LongitudeWraparound.Inverse} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
-     * @since   0.6
      */
     private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**
@@ -930,8 +920,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * @return the simplified (usually affine) transform, or {@code null} if no such optimization is available.
      * @throws FactoryException if an error occurred while combining the transforms.
-     *
-     * @since 0.8
      */
     @Override
     protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,

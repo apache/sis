@@ -31,8 +31,6 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
  * An interpolated Molodensky transform for two-dimensional input and output coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-500">Deprecate (for removal) InterpolatedMolodenskyTransform</a>
  */
@@ -87,8 +85,6 @@ final class InterpolatedMolodenskyTransform2D extends InterpolatedMolodenskyTran
      * The inverse of the enclosing {@link InterpolatedMolodenskyTransform2D}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
-     * @since   0.7
      */
     @SuppressWarnings("removal")
     static final class Inverse extends InterpolatedMolodenskyTransform.Inverse implements MathTransform2D {

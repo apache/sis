@@ -41,12 +41,9 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <V>  the type of values computed by the expression.
- *
- * @since 1.0
  */
 public interface FeatureExpression<R,V> extends Expression<R,V> {
     /**

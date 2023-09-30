@@ -30,8 +30,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "MI_Metadata_Type", namespace = LegacyNamespaces.GMI)
 @XmlRootElement(name = "MI_Metadata", namespace = LegacyNamespaces.GMI)

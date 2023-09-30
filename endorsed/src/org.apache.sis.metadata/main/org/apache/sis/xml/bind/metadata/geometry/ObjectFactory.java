@@ -29,8 +29,6 @@ import org.apache.sis.util.Workaround;
  * GML module in the module path. This factory is extended with more complete methods in the GML module.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlRegistry
 public class ObjectFactory {

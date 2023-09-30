@@ -34,8 +34,6 @@ import org.apache.sis.storage.event.StoreListener;
  * This root node should be hidden in the {@link ResourceTree}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class RootResource implements Aggregate {
     /**

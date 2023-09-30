@@ -40,8 +40,6 @@ import static org.junit.Assert.*;
  * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.3
  */
 @DependsOn(DecoderTest.class)
 public class VariableTest extends TestCase {

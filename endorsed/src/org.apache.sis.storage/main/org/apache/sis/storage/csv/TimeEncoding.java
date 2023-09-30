@@ -32,8 +32,6 @@ import org.apache.sis.measure.Units;
  * except in the special case of {@link #ABSOLUTE} encoding.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.7
  */
 class TimeEncoding extends SurjectiveConverter<String,Instant> {
     /**

@@ -34,8 +34,6 @@ import org.apache.sis.filter.Expression;
  * in any future Apache SIS version.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public interface FunctionRegister {
     /**

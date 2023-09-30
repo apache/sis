@@ -26,8 +26,6 @@ import org.junit.Test;
  * Tests for {@link Description}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class DescriptionTest extends StyleTestCase {
     /**

@@ -45,8 +45,6 @@ import org.apache.sis.util.internal.Strings;
  * which is kept ready-to-use until the file system is {@linkplain #close closed}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class ClientFileSystem extends FileSystem {
     /**

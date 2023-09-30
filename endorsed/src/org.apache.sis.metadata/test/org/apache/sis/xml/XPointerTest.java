@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link XPointer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.2
  */
 public final class XPointerTest extends TestCase {
     /**

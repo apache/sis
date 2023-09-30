@@ -19,7 +19,5 @@
  * Self tests of the {@link org.apache.sis.test} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 package org.apache.sis.test.self;

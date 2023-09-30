@@ -59,8 +59,6 @@ import static org.apache.sis.referencing.operation.provider.LambertCylindricalEq
  * However, this projection may be useful for computing areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public class CylindricalEqualArea extends AuthalicConversion {
     /**
@@ -298,8 +296,6 @@ public class CylindricalEqualArea extends AuthalicConversion {
      * Provides the transform equations for the spherical case of the Cylindrical Equal Area projection.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
-     * @since   0.8
      */
     private static final class Spherical extends CylindricalEqualArea {
         /**

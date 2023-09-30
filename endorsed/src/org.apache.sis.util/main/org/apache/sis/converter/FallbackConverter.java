@@ -51,12 +51,9 @@ import org.apache.sis.util.collection.TreeTable;
  * if the converters given to the static factory method are also immutable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @param <S>  the base type of source objects.
  * @param <T>  the base type of converted objects.
- *
- * @since 0.3
  */
 final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**

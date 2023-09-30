@@ -90,12 +90,9 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see GeoKeys
  * @see GeoKeysLoader
- *
- * @since 0.8
  */
 final class CRSBuilder extends ReferencingFactoryContainer {
     /**

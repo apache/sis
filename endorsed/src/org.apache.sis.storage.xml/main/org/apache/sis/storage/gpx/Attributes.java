@@ -26,8 +26,6 @@ import org.apache.sis.util.Static;
  * attributes in this class apply to all supported GPX versions.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class Attributes extends Static {
     /** A main GPX attribute.           */ static final String VERSION   = "version";

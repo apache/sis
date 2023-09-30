@@ -55,8 +55,6 @@ import org.opengis.referencing.operation.SingleOperation;
  * reference system associated with the concatenated operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlType(name = "ConcatenatedOperationType")
 @XmlRootElement(name = "ConcatenatedOperation")

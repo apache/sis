@@ -37,8 +37,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link Formatter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.4
  */
 @DependsOn({ConventionTest.class, SymbolsTest.class, ColorsTest.class})
 public final class FormatterTest extends TestCase {

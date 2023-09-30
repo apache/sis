@@ -26,8 +26,6 @@ import org.apache.sis.metadata.sql.TestDatabase;
  * Base class of tests to be executed on all supported databases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public abstract class TestOnAllDatabases extends TestCase {
     /**

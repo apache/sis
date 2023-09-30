@@ -50,8 +50,6 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  * <p>This class is thread-safe if the user does not try to write in the tree.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 final class NativeMetadata extends GeoKeysLoader {
     /**

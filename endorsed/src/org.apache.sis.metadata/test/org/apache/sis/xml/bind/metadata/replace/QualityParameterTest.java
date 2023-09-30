@@ -37,8 +37,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests {@link QualityParameter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class QualityParameterTest extends TestCase {
     /**

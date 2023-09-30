@@ -62,11 +62,8 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @see DocumentComparator
- *
- * @since 0.3
  */
 public abstract class TestCase extends org.apache.sis.test.TestCase {
     /**

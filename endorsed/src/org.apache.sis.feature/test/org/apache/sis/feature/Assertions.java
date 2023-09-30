@@ -35,8 +35,6 @@ import org.apache.sis.image.SequenceType;
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class Assertions extends Static {
     /**

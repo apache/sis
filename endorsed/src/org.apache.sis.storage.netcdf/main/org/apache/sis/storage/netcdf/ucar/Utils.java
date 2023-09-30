@@ -22,8 +22,6 @@ package org.apache.sis.storage.netcdf.ucar;
  * Some methods are workarounds for UCAR library methods having a different behavior than what we would expect.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 final class Utils {
     /**

@@ -48,8 +48,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link ShapeConverter}.
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class ShapeConverterTest extends TestCase {
     /**

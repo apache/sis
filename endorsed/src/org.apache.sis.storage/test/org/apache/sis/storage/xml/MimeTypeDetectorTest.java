@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Tests {@link MimeTypeDetector}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class MimeTypeDetectorTest extends TestUsingFile {
     /**

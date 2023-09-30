@@ -47,8 +47,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link GeocentricTranslation} and {@link GeocentricTranslation3D}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     AffineTest.class,

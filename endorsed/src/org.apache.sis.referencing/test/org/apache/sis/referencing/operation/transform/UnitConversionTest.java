@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests {@link UnitConversion}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class UnitConversionTest extends TestCase {
     /**

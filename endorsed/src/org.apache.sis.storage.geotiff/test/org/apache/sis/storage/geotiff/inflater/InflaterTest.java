@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Inflater} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class InflaterTest extends TestCase {
     /**

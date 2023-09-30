@@ -55,11 +55,8 @@ import org.apache.sis.util.collection.CheckedContainer;
  * returns {@code List<? extends E>}, which is okay.</p>
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.3
  *
  * @param <E>  the type of elements in the list.
- *
- * @since 0.3
  */
 public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, CheckedContainer<E>, Serializable {
     /**

@@ -29,8 +29,6 @@ import org.opengis.util.CodeList;
  * For now GeoAPI does not yet provides it, but this choice may be revisited in a future GeoAPI version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @UML(identifier = "MI_SensorTypeCode", specification = Specification.ISO_19115_2)   // Actually only in XML schema.
 public final class SensorType extends CodeList<SensorType> {

@@ -52,11 +52,8 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * Tests {@link EllipsoidalHeightCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-303">SIS-303</a>
- *
- * @since 0.8
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,

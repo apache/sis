@@ -30,8 +30,6 @@ import org.apache.sis.util.internal.DefinitionURI;
  * or a code defined in the URN namespace, or a simple code.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public enum CodeType {
     /**

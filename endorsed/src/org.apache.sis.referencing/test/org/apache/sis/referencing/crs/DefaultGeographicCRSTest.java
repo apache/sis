@@ -43,8 +43,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests the {@link DefaultGeographicCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.4
  */
 @DependsOn({
     DefaultGeodeticCRSTest.class,
@@ -184,8 +182,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * since EPSG puts latitude before longitude.</p>
      *
      * @see #testWKT1_For3D()
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testWKT2")
@@ -313,8 +309,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      *
      * @see #testWKT2_For3D()
      * @see <a href="https://issues.apache.org/jira/browse/SIS-317">SIS-317</a>
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testWKT1")

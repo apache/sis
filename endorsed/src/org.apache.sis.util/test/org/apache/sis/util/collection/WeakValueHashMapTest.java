@@ -38,8 +38,6 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * A standard {@link HashMap} object is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
- * @since   0.3
  */
 @DependsOn(org.apache.sis.util.ArraysExtTest.class)
 public final class WeakValueHashMapTest extends TestCase {
@@ -202,8 +200,6 @@ public final class WeakValueHashMapTest extends TestCase {
     /**
      * Tests using identity comparisons. This test uses two {@link Integer} keys having the same value
      * but being different instances.
-     *
-     * @since 0.4
      */
     @Test
     @DependsOnMethod("testStrongReferences")

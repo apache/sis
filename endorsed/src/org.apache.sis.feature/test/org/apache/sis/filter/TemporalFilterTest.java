@@ -38,8 +38,6 @@ import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class TemporalFilterTest extends TestCase {
     /**

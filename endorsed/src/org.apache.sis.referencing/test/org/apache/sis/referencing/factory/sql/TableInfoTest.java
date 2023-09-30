@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Tests {@link TableInfo}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class TableInfoTest extends TestCase {
     /**

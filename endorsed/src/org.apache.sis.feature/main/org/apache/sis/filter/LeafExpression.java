@@ -43,12 +43,9 @@ import org.apache.sis.feature.DefaultAttributeType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <V>  the type of value computed by the expression.
- *
- * @since 1.1
  */
 abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V> {
     /**

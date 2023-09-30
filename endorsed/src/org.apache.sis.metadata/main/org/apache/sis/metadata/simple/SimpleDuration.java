@@ -27,8 +27,6 @@ import org.apache.sis.pending.geoapi.temporal.Duration;
  * Will probably be deleted in some future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public class SimpleDuration implements Duration {
     /**

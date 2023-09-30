@@ -34,8 +34,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link Quantities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @DependsOn(ScalarTest.class)
 public final class QuantitiesTest extends TestCase {
@@ -89,8 +87,6 @@ public final class QuantitiesTest extends TestCase {
      * Tests operations on temperature. The values shall be converted to Kelvin before any operation.
      * This produces counter-intuitive result, but is the only way to get results that are consistent
      * with arithmetic rules like commutativity and associativity.
-     *
-     * @since 1.0
      */
     @Test
     public void testTemperature() {
@@ -124,8 +120,6 @@ public final class QuantitiesTest extends TestCase {
 
     /**
      * Tests a multiply operation that result in a quantity for which we have no specialized sub-interface.
-     *
-     * @since 1.1
      */
     @Test
     public void testUnspecialized() {
@@ -153,8 +147,6 @@ public final class QuantitiesTest extends TestCase {
 
     /**
      * Tests {@link Quantities#min(Quantity, Quantity)} and {@link Quantities#max(Quantity, Quantity)}.
-     *
-     * @since 1.1
      */
     @Test
     public void testMinAndMax() {

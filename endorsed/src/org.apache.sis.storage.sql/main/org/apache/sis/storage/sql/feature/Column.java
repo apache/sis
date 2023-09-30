@@ -47,12 +47,9 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see ResultSet#getMetaData()
  * @see DatabaseMetaData#getColumns(String, String, String, String)
- *
- * @since 1.1
  */
 public final class Column {
     /**

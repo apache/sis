@@ -27,11 +27,8 @@ import javax.measure.Unit;
  * Fallback used when no {@link Scalar} implementation is available for a given quantity type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @param <Q>  the type of quantity implemented by this scalar.
- *
- * @since 0.8
  */
 @SuppressWarnings("serial")
 final class ScalarFallback<Q extends Quantity<Q>> extends Scalar<Q> implements InvocationHandler {

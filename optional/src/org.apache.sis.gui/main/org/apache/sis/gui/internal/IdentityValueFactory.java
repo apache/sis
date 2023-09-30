@@ -27,12 +27,9 @@ import javafx.util.Callback;
  * given values as-is (ignoring the observable wrapper).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param <S>  the type of objects that represent rows in the table.
  * @param <T>  the type of values in table cells.
- *
- * @since 1.1
  */
 public final class IdentityValueFactory<S extends T, T>
         implements Callback<TableColumn.CellDataFeatures<S,T>, ObservableValue<T>>

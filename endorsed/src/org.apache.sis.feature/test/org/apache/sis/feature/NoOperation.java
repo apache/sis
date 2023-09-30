@@ -26,8 +26,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * This is used for testing purpose only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @SuppressWarnings("serial")
 final class NoOperation extends AbstractOperation {

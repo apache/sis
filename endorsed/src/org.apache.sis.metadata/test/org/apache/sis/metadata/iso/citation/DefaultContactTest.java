@@ -40,8 +40,6 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  * See {@link DefaultTelephone} class javadoc for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public final class DefaultContactTest extends TestCase implements Filter {
     /**

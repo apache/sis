@@ -25,8 +25,6 @@ import org.apache.sis.util.ResourceInternationalString;
  * A localized description.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class Description extends ResourceInternationalString {
     /**

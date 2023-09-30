@@ -47,8 +47,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link DefaultParameterValueGroup} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
- * @since   0.4
  */
 @DependsOn({
     DefaultParameterDescriptorGroupTest.class,
@@ -241,8 +239,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
 
     /**
      * Tests {@code DefaultParameterValueGroup.values().addAll(…)} with subgroups.
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod({"testValuesAddAll", "testAddGroup", "testEqualsAndHashCode"})
@@ -425,8 +421,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
 
     /**
      * Tests {@link DefaultParameterValueGroup#equals(Object, ComparisonMode)}.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testEqualsAndHashCode")

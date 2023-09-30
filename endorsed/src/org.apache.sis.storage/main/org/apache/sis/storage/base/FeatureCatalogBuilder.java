@@ -32,11 +32,8 @@ import org.apache.sis.feature.DefaultFeatureType;
  * method calls with {@link FeatureNaming#add(DataStore, GenericName, Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @see org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription
- *
- * @since 0.8
  */
 public final class FeatureCatalogBuilder extends MetadataBuilder {
     /**

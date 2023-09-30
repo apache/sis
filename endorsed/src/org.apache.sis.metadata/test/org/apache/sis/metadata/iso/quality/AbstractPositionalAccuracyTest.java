@@ -39,8 +39,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(FreeTextMarshallingTest.class)
 public final class AbstractPositionalAccuracyTest extends TestUsingFile {

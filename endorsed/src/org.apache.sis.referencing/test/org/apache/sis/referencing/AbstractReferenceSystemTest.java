@@ -44,8 +44,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link AbstractReferenceSystem} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
- * @since   0.4
  */
 @DependsOn(AbstractIdentifiedObjectTest.class)
 public final class AbstractReferenceSystemTest extends TestCase {

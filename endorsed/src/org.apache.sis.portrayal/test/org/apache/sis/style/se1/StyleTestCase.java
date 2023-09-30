@@ -36,8 +36,6 @@ import org.apache.sis.pending.geoapi.filter.Literal;
  * Base class of all tests of style elements.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 abstract class StyleTestCase extends TestCase {
     /**

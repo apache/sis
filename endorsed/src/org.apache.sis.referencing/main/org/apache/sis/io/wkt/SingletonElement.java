@@ -29,8 +29,6 @@ import java.util.Iterator;
  * in the common case where we expect exactly one element.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class SingletonElement extends AbstractSet<Element> {
     /**

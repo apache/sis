@@ -24,8 +24,6 @@ import java.util.Objects;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class CacheKey {
     /**

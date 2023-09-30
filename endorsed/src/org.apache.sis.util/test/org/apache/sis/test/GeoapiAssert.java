@@ -38,8 +38,6 @@ import static org.junit.Assert.fail;
  * But this class can be removed on Apache SIS branches which are linked to a GeoAPI development branch.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.4
- * @version 0.3
  */
 public final class GeoapiAssert extends Static {
     /**

@@ -25,11 +25,8 @@ import javax.measure.UnitConverter;
  * Creates quantities for the given value and unit of measurement.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param <Q>  the type of quantities created by this factory.
- *
- * @since 0.8
  */
 interface ScalarFactory<Q extends Quantity<Q>> {
     /**

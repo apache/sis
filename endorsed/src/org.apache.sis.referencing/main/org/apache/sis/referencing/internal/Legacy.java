@@ -49,8 +49,6 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
  * Defined in a separated classes for reducing classes loading when not necessary.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.4
  */
 public final class Legacy {
     /**
@@ -118,8 +116,6 @@ public final class Legacy {
      * @param  cs    the coordinate system for which to perform the unit replacement.
      * @param  unit  the unit of measurement for the geocentric CRS axes.
      * @return the coordinate system for a geocentric CRS with axes using the given unit of measurement.
-     *
-     * @since 0.6
      */
     public static CartesianCS replaceUnit(CartesianCS cs, final Unit<?> unit) {
         if (unit != null && !unit.equals(Units.METRE)) {

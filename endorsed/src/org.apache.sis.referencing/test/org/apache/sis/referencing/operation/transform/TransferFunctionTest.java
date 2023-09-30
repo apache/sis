@@ -40,8 +40,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests {@link TransferFunction}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn(ExponentialTransform1DTest.class)
 public final class TransferFunctionTest extends TestCase {

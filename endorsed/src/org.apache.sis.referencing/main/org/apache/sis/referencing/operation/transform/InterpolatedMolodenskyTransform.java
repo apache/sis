@@ -341,8 +341,6 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      * </ol>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
-     * @since   0.7
      */
     static class Inverse extends InterpolatedMolodenskyTransform {
         /**

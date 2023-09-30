@@ -46,8 +46,6 @@ import static org.apache.sis.util.internal.Numerics.ceilDiv;
  * and band subset.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public abstract class Inflater implements Closeable {
     /**

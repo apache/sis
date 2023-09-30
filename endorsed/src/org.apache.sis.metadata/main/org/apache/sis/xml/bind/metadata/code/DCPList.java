@@ -30,8 +30,6 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeListAdapter;
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class DCPList extends UnsupportedCodeListAdapter<DCPList> {
     /**

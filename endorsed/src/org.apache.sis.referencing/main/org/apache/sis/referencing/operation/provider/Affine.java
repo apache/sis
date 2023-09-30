@@ -56,8 +56,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @XmlTransient
 public final class Affine extends AbstractProvider {
@@ -323,8 +321,6 @@ public final class Affine extends AbstractProvider {
      *
      * @param  dimension  the number of source and target dimensions.
      * @return parameters for an identity transform of the given dimensions.
-     *
-     * @since 0.8
      */
     public static ParameterValueGroup identity(int dimension) {
         final var values = TensorParameters.WKT1.createValueGroup(Map.of(NAME_KEY, Constants.AFFINE));

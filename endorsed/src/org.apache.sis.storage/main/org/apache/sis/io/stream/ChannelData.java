@@ -32,8 +32,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * querying or modifying the stream position. This class does not define any read or write operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 public abstract class ChannelData implements Markable {
     /**

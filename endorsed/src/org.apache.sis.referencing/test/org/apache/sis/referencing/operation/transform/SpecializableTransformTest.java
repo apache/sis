@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * coordinate values by 10, except in specialized sub-areas in which case a small translation is added.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class SpecializableTransformTest extends MathTransformTestCase {
     /**

@@ -47,11 +47,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * The same call may be recycled many times for different {@link ResourceItem} data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see ResourceItem
- *
- * @since 1.3
  */
 final class ResourceCell extends TreeCell<Resource> {
     /**

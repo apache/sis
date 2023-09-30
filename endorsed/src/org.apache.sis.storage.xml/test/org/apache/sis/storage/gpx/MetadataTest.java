@@ -38,8 +38,6 @@ import org.junit.Ignore;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 @DependsOn(TypesTest.class)
 public final class MetadataTest extends TestCase {

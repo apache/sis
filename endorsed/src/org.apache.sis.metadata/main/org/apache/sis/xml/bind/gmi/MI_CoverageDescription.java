@@ -30,8 +30,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "MI_CoverageDescription_Type", namespace = Namespaces.MRC)
 @XmlRootElement(name = "MI_CoverageDescription", namespace = Namespaces.MRC)

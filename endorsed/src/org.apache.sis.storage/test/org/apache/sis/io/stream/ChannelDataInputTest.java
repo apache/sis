@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * of that buffer is used for the tests, while the original full buffer is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.3
  */
 public final class ChannelDataInputTest extends ChannelDataTestCase {
     /**

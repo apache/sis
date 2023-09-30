@@ -35,12 +35,9 @@ import java.util.Objects;
  * implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @param <V> the type of attribute values. If the attribute supports multi-occurrences,
  *            then this is the type of elements (not the collection type).
- *
- * @since 0.8
  */
 class AttributeView<V> extends AbstractAttribute<V> {
     /**

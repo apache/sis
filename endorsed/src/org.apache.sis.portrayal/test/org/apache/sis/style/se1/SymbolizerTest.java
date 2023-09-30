@@ -32,8 +32,6 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  * Tests for {@link Symbolizer}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class SymbolizerTest extends StyleTestCase {
     /**

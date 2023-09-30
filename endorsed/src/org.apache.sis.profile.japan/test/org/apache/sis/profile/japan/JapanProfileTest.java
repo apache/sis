@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests the Japanese profile.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class JapanProfileTest extends TestCase {
     /**

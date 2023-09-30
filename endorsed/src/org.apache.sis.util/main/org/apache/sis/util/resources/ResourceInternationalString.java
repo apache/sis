@@ -39,8 +39,6 @@ import org.apache.sis.util.AbstractInternationalString;
  * This base class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 public abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**
@@ -113,8 +111,6 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      *
      * @param  level  the logging level.
      * @return a log record with the message of this international string.
-     *
-     * @since 1.0
      */
     public final LogRecord toLogRecord(final Level level) {
         final LogRecord record = new LogRecord(level, getKeyConstants().getKeyName(key));

@@ -47,8 +47,6 @@ import org.apache.sis.metadata.sql.TestDatabase;
  * The steps to follow are documented in the {@code package.html} file.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   0.7
  */
 public final class DataScriptFormatter extends ScriptRunner {
     /**

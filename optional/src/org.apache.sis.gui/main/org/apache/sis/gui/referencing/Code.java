@@ -28,8 +28,6 @@ import org.apache.sis.gui.internal.Styles;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class Code {
     /**

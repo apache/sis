@@ -31,11 +31,8 @@ import org.apache.sis.pending.geoapi.filter.ComparisonOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
- *
- * @since 1.1
  */
 final class LikeFilter<R> extends Node implements Optimization.OnFilter<R> {
     /**

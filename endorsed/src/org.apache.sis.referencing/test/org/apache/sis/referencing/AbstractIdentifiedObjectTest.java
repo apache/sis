@@ -45,8 +45,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests the {@link AbstractIdentifiedObject} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
- * @since   0.4
  */
 @DependsOn({
     IdentifiedObjectsTest.class, NamedIdentifierTest.class,
@@ -208,8 +206,6 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
     /**
      * Tests two {@code AbstractIdentifiedObject} declaring the same identifier in the same XML document.
      * The {@code getID()} method should detect the collision and select different identifier.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testWithManyIdentifiers")

@@ -33,8 +33,6 @@ import static org.apache.sis.test.TestUtilities.date;
  * usage of {@code java.util.Date} is replaced by usage of ISO 19108 (temporal schema) types.
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn(RangeTest.class)
 public final class DateRangeTest extends TestCase {

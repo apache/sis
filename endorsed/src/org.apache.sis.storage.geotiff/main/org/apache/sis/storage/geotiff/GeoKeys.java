@@ -28,8 +28,6 @@ import org.opengis.referencing.operation.MathTransform;
  * usual Java convention for constants.
  *
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class GeoKeys {
     /**

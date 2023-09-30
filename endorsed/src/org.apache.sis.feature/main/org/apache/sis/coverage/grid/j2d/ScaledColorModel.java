@@ -31,8 +31,6 @@ import org.apache.sis.feature.internal.Resources;
  * In addition, this class renders the {@link Float#NaN} values as transparent.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class ScaledColorModel extends ComponentColorModel {
     /**

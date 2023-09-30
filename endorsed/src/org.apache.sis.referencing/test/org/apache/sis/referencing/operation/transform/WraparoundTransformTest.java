@@ -42,8 +42,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests {@link WraparoundTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class WraparoundTransformTest extends TestCase {
     /**

@@ -26,8 +26,6 @@ import org.apache.sis.util.ArgumentChecks;
  * to wrap does not store CRS information by itself. See {@link GeometryWrapper} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public abstract class GeometryWithCRS extends GeometryWrapper {
     /**

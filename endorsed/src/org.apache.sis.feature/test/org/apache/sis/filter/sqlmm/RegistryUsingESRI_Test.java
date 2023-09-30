@@ -28,8 +28,6 @@ import org.junit.Test;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class RegistryUsingESRI_Test extends RegistryTestCase<Geometry> {
     /**

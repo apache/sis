@@ -26,8 +26,6 @@ import java.awt.geom.PathIterator;
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class DecimatedPathIterator implements PathIterator {
     /**

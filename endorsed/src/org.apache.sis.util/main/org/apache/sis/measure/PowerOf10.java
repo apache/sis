@@ -25,8 +25,6 @@ import org.apache.sis.math.MathFunctions;
  * Conversions from units represented by a logarithm in base 10.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class PowerOf10 extends AbstractConverter {
     /**

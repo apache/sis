@@ -33,11 +33,8 @@ import java.io.IOException;
  * to invalidate the marks if needed (for example when {@link ChannelData#setStreamPosition(long)} is invoked).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see Readable
- *
- * @since 0.8
  */
 public interface Markable {
     /**

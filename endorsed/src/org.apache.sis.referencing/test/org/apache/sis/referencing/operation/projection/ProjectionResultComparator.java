@@ -43,8 +43,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @SuppressWarnings("serial")
 final class ProjectionResultComparator extends NormalizedProjection {

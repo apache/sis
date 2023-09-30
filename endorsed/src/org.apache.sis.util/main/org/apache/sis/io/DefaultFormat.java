@@ -38,8 +38,6 @@ import org.apache.sis.util.internal.LocalizedParseException;
  * for arbitrary {@code Format} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 final class DefaultFormat extends Format {
     /**

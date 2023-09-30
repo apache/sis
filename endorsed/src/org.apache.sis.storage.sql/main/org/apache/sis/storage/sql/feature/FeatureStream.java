@@ -55,8 +55,6 @@ import org.apache.sis.pending.geoapi.filter.SortBy;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class FeatureStream extends DeferredStream<AbstractFeature> {
     /**

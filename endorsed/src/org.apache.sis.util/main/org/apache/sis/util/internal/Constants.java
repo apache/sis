@@ -31,8 +31,6 @@ import org.apache.sis.util.Static;
  * creates itself the instance to be tested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class Constants extends Static {
     /**

@@ -28,8 +28,6 @@ import org.apache.sis.system.Modules;
  * This class provides the implementations of {@link ErrorHandler} static constants.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 enum ErrorAction implements ErrorHandler {
     /**

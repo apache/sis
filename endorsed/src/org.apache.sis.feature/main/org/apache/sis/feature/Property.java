@@ -28,8 +28,6 @@ import org.opengis.util.GenericName;
  * this type in order to reduce compatibility breaks when we will upgrade the GeoAPI version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
  */
 abstract class Property {
     public abstract GenericName getName();

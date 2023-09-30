@@ -29,11 +29,8 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <BoundType>  the code list being wrapped.
- *
- * @since 0.3
  */
 public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> extends XmlAdapter<CodeListAdapter.Value, BoundType> {
     /**

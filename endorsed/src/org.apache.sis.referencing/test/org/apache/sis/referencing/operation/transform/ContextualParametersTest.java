@@ -43,8 +43,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests {@link ContextualParameters}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.6
  */
 @DependsOn(DefaultParameterDescriptorGroupTest.class)
 public final class ContextualParametersTest extends TestCase {

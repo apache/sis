@@ -29,8 +29,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
  * Place holder for some functionalities defined in a JDK more recent than Java 11.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.4
- * @version 0.8
  */
 public final class JDK17 {
     /**

@@ -23,8 +23,6 @@ import java.sql.SQLNonTransientException;
  * Thrown when a shapefile has not been found.
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class SQLShapefileNotFoundException extends SQLNonTransientException {
     /** Serial UID. */

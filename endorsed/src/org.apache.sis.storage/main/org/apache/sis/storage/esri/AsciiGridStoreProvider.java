@@ -39,8 +39,6 @@ import org.apache.sis.storage.base.PRJDataStore;
  * the part of the caller. However, the {@link AsciiGridStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 @StoreMetadata(formatName    = AsciiGridStoreProvider.NAME,
                fileSuffixes  = {"asc", "grd", "agr", "aig"},

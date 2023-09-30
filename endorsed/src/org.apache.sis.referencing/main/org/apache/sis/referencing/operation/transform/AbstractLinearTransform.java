@@ -45,8 +45,6 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 abstract class AbstractLinearTransform extends AbstractMathTransform implements LinearTransform, Matrix, Serializable {
     /**
@@ -219,8 +217,6 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * Transforms an array of relative distance vectors. Distance vectors are transformed without applying
      * the translation components. The default implementation is not very efficient, but it should not be
      * an issue since this method is not invoked often.
-     *
-     * @since 0.7
      */
     @Override
     public void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {

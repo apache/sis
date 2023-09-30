@@ -37,11 +37,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * The same instance may be shared by many cells.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see ColorCell#getItem()
- *
- * @since 1.1
  */
 public final class ColorRamp {
     /**

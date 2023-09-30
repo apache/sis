@@ -32,8 +32,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  * Tests the {@link DomainDefinition} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public final class DomainDefinitionTest extends TestCase {
     /**

@@ -29,8 +29,6 @@ import org.apache.sis.feature.AbstractFeature;
  * Tests for {@link PointPlacement}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class PointPlacementTest extends StyleTestCase {
     /**

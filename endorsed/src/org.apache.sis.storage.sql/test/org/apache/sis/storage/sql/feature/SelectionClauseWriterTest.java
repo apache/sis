@@ -45,8 +45,6 @@ import org.apache.sis.filter.Filter;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class SelectionClauseWriterTest extends TestCase implements SchemaModifier {
     /**

@@ -46,8 +46,6 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * Each subclass should have a singleton instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 abstract class CoordinateSystemTransform extends AbstractMathTransform {
     /**

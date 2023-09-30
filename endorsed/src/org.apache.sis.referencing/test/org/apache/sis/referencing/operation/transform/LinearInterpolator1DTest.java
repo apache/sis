@@ -34,8 +34,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys).
- * @version 1.0
- * @since   0.7
  */
 public final class LinearInterpolator1DTest extends MathTransformTestCase {
     /**

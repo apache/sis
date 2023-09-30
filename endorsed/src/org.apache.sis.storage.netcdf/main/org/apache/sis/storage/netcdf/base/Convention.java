@@ -66,11 +66,8 @@ import org.apache.sis.system.Reflect;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
- *
- * @since 1.0
  */
 public class Convention {
     /**

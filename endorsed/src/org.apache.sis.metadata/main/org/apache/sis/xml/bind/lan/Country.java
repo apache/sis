@@ -48,8 +48,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "Country_PropertyType")
 public final class Country extends GO_CharacterString {

@@ -45,8 +45,6 @@ import org.apache.sis.parameter.Parameters;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class AbridgedMolodensky extends GeocentricAffineBetweenGeographic {

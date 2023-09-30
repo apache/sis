@@ -79,8 +79,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * {@link ModifiableMetadata} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 class PropertyAccessor {
     /**

@@ -39,8 +39,6 @@ import org.apache.sis.feature.AbstractFeature;
  * Builder of feature where the geometry is a trajectory and some property values may change with time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 final class MovingFeatureBuilder extends MovingFeatures {
     /**

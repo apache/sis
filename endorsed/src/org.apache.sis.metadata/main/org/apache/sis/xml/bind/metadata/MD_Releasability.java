@@ -27,8 +27,6 @@ import org.apache.sis.metadata.iso.constraint.DefaultReleasability;
  *
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.0
- * @version 1.4
  */
 public class MD_Releasability extends PropertyType<MD_Releasability, DefaultReleasability> {
     /**

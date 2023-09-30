@@ -28,8 +28,6 @@ import org.opengis.referencing.operation.TransformException;
  * Extensions to {@link ShapeUtilities} not yet needed in main API.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class ShapeUtilitiesExt {
     /**

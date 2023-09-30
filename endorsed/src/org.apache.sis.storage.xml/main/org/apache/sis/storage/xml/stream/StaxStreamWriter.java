@@ -86,8 +86,6 @@ import org.apache.sis.feature.AbstractFeature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<AbstractFeature> {
     /**

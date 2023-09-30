@@ -35,8 +35,6 @@ import org.apache.sis.util.iso.Types;
  * @todo Bilinear search needs to be replaced by an R-Tree.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class GridSliceLocator {
     /**

@@ -48,8 +48,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class CodeListMarshallingTest extends TestCase {
     /**
@@ -158,8 +156,6 @@ public final class CodeListMarshallingTest extends TestCase {
      * Tests a code list localization in ISO 19139:2007.
      *
      * @throws JAXBException if an error occurred while marshalling the XML.
-     *
-     * @since 1.0
      */
     @Test
     @DependsOnMethod("testLocalization")

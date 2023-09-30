@@ -44,8 +44,6 @@ import static org.apache.sis.test.Assertions.assertSequentialStreamEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 public final class IntegerListTest extends TestCase {
     /**

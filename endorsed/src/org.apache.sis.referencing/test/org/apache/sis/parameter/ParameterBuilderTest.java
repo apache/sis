@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Tests {@link ParameterBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.4
  */
 @DependsOn({
     org.apache.sis.referencing.BuilderTest.class,

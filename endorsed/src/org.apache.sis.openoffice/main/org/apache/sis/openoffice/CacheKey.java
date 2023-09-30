@@ -25,11 +25,8 @@ import org.apache.sis.util.collection.Cache;
  * Key of cached results.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @param <T>  the type of cached values.
- *
- * @since 0.8
  */
 final class CacheKey<T> {
     /**

@@ -36,8 +36,6 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public class TiledImage extends PlanarImage {
     /**

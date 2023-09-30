@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * for debugging {@link InterpolatedTransform} because of its predictable behavior (easier to see with rotation of 0°).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @SuppressWarnings("serial")                       // Not intended to be serialized.
 final class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {

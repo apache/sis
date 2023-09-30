@@ -27,8 +27,6 @@ import org.apache.sis.util.Workaround;
  * is performed.
  *
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 @Workaround(library = "JDK", version = "1.8")
 final class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCacheImageOutputStream {

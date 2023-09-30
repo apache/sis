@@ -48,11 +48,9 @@ import java.util.stream.Collector;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param  <T>  the type of objects contained in the stream, as specified in {@link Stream} interface.
  *
- * @since 1.1
  *
  * @todo Add the methods that are new in JDK16.
  */

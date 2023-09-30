@@ -23,8 +23,6 @@ import java.sql.SQLNonTransientException;
  * Thrown when a shapefile or a DBase III file cannot allow a direct acces (because it has no index).
  *
  * @author  Marc Le Bihan
- * @version 0.7
- * @since   0.7
  */
 public class SQLNoDirectAccessAvailableException extends SQLNonTransientException {
     /** Serial UID. */

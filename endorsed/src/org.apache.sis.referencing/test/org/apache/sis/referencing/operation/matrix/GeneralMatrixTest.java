@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class GeneralMatrixTest extends MatrixTestCase {
     /**
@@ -112,8 +110,6 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Tests {@link MatrixSIS#convertBefore(int, Number, Number)}
      * using {@link java.awt.geom.AffineTransform} as a reference implementation.
-     *
-     * @since 0.6
      */
     @Test
     public void testConvertBefore() {
@@ -124,8 +120,6 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Tests {@link MatrixSIS#convertAfter(int, Number, Number)}
      * using {@link java.awt.geom.AffineTransform} as a reference implementation.
-     *
-     * @since 0.6
      */
     @Test
     public void testConvertAfter() {
@@ -136,8 +130,6 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Tests {@link MatrixSIS#multiply(double[])}
      * using {@link java.awt.geom.AffineTransform} as a reference implementation.
-     *
-     * @since 0.8
      */
     @Test
     public void testMultiplyVector() {
@@ -148,8 +140,6 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Tests {@link MatrixSIS#translate(double[])}
      * using {@link java.awt.geom.AffineTransform} as a reference implementation.
-     *
-     * @since 1.0
      */
     @Test
     public void testTranslateVector() {

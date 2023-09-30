@@ -78,8 +78,6 @@ import static java.lang.Math.floorDiv;
  * method. Those methods are inspired from {@link java.util.stream.Stream#collect(Collector)} API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public class TileOpExecutor {
     /**
@@ -143,8 +141,6 @@ public class TileOpExecutor {
      *
      * @param  image  the image for which to set an AOI, or {@code null} if unknown.
      * @param  aoi    the non-rectangular AOI, or {@code null} if none.
-     *
-     * @since 1.2
      */
     public final void setAreaOfInterest(final RenderedImage image, Shape aoi) {
         if (aoi != null && image != null) {

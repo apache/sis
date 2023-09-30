@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class GroupAsPolylineOperationTest extends TestCase {
     /**

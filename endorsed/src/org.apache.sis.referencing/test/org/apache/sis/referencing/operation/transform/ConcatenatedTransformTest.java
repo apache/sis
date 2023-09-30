@@ -42,8 +42,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   0.5
  */
 @DependsOn(ProjectiveTransformTest.class)
 public final class ConcatenatedTransformTest extends MathTransformTestCase {

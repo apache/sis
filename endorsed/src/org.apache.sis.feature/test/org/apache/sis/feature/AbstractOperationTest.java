@@ -33,8 +33,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link AbstractOperation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.6
  */
 @DependsOn(SingletonAttributeTest.class)
 public final class AbstractOperationTest extends TestCase {

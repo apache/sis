@@ -30,8 +30,6 @@ import org.apache.sis.gui.internal.PropertyValueFormats;
  * This format uses verbose patterns, for example full dates with day of weeks.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 @SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
 final class VerboseFormats extends PropertyValueFormats {

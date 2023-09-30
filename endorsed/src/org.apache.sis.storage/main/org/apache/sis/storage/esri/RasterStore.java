@@ -69,8 +69,6 @@ import org.apache.sis.math.Statistics;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 abstract class RasterStore extends PRJDataStore implements GridCoverageResource {
     /**

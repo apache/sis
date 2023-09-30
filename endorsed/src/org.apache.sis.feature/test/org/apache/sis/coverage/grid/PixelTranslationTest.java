@@ -38,8 +38,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests {@link PixelTranslation}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class PixelTranslationTest extends TestCase {
     /**

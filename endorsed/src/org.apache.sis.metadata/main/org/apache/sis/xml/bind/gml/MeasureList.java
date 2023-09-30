@@ -34,11 +34,8 @@ import org.apache.sis.util.ObjectConverters;
  * This is used only at XML marshalling time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see Measure
- *
- * @since 0.6
  */
 @XmlType(name = "MeasureListType")
 public final class MeasureList {

@@ -50,8 +50,6 @@ import org.apache.sis.xml.test.AnnotationConsistencyCheck;
  * package-private classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 @DependsOn(PropertyAccessorTest.class)
 public abstract class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
@@ -319,8 +317,6 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
      * Verifies the {@link TitleProperty} annotations. This method verifies that the property exist,
      * is a singleton, and is not another metadata object. The property should also be mandatory,
      * but this method does not verify that restriction since there is some exceptions.
-     *
-     * @since 0.8
      */
     @Test
     public void testTitlePropertyAnnotation() {
@@ -354,8 +350,6 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
      * properties are not deprecated.
      *
      * @throws NoSuchMethodException if {@link PropertyAccessor} references a non-existent method (would be a bug).
-     *
-     * @since 0.8
      */
     @Test
     public void testDependenciesAnnotation() throws NoSuchMethodException {

@@ -39,8 +39,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link DefaultFeatureType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn(DefaultAttributeTypeTest.class)
 public final class DefaultFeatureTypeTest extends TestCase {
@@ -321,8 +319,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
     /**
      * Same than {@link #testNameCollision()}, but resolving collisions with usage of names
      * of the form {@code "head:tip"}.
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod("testNameCollision")
@@ -371,8 +367,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
 
     /**
      * Tests two names having the same tip, but where only one of the two names have a namespace.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testQualifiedNames")

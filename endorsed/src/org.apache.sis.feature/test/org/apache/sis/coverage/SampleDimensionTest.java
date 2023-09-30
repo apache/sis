@@ -38,8 +38,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link SampleDimension}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public final class SampleDimensionTest extends TestCase {
     /**

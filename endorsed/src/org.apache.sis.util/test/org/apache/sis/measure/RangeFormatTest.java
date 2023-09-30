@@ -44,8 +44,6 @@ import static org.junit.Assert.*;
  * Tests parsing and formatting done by the {@link RangeFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(MeasurementRangeTest.class)
 public final class RangeFormatTest extends TestCase {

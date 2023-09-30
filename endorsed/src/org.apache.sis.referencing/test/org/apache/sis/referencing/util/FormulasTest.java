@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  * Tests {@link Formulas}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 public final class FormulasTest extends TestCase {
     /**

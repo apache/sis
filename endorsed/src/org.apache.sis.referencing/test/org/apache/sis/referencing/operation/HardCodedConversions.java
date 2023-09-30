@@ -37,8 +37,6 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  * Collection of defining conversions for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 public final class HardCodedConversions {
     /**

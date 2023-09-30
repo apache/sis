@@ -37,7 +37,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests {@link Identifiers}.
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since  1.0
  * @versio 1.0
  */
 public final class IdentifiersTest extends TestCase {

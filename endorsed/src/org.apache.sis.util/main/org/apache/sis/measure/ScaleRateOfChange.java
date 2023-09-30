@@ -24,8 +24,6 @@ import javax.measure.Quantity;
  * It has the same units than frequency, but it still not the same thing.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 interface ScaleRateOfChange extends Quantity<ScaleRateOfChange> {
 }

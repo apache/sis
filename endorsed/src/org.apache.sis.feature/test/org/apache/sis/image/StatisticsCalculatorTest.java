@@ -42,8 +42,6 @@ import static org.junit.Assert.*;
  * {@link org.apache.sis.coverage.grid.j2d.TileOpExecutor} with multi-threading.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public final class StatisticsCalculatorTest extends TestCase {
     /**

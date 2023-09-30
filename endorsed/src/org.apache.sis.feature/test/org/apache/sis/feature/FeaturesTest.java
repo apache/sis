@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
- * @since   0.5
  */
 @DependsOn(SingletonAttributeTest.class)
 public final class FeaturesTest extends TestCase {

@@ -45,8 +45,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests {@link Builder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(AbstractIdentifiedObjectTest.class)
 public final class BuilderTest extends TestCase {
@@ -218,8 +216,6 @@ public final class BuilderTest extends TestCase {
 
     /**
      * Tests {@link Builder#addNamesAndIdentifiers(IdentifiedObject)}.
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod({"testAddNameWithScope", "testAddIdentifiers"})
@@ -253,8 +249,6 @@ public final class BuilderTest extends TestCase {
 
     /**
      * Tests {@link Builder#rename(Citation, CharSequence[])}.
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod("testAddNamesAndIdentifiers")
@@ -296,8 +290,6 @@ public final class BuilderTest extends TestCase {
 
     /**
      * Tests the {@link Builder#Builder(IdentifiedObject)} constructor.
-     *
-     * @since 0.6
      */
     @Test
     public void testCreationFromObject() {

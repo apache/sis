@@ -25,8 +25,6 @@ import org.apache.sis.coverage.BandedCoverage;
  * Defines the styling that is to be applied to a coverage.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 @XmlType(name = "CoverageStyleType")
 @XmlRootElement(name = "CoverageStyle")

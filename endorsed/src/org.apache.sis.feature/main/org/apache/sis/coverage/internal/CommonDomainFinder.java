@@ -55,8 +55,6 @@ import org.apache.sis.util.internal.Numerics;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class CommonDomainFinder {
     /**

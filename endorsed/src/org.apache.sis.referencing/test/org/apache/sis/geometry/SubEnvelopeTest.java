@@ -32,8 +32,6 @@ import static org.opengis.test.Validators.validate;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn(GeneralEnvelopeTest.class)
 public final class SubEnvelopeTest extends GeneralEnvelopeTest {

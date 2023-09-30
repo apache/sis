@@ -47,8 +47,6 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  * Tests {@link ImmutableIdentifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class ImmutableIdentifierTest extends TestCase {
     /**

@@ -28,8 +28,6 @@ import org.apache.sis.util.resources.Errors;
  * Handles conversions from {@link Fraction} to other kind of numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class FractionConverter extends SystemConverter<Fraction,Integer> {
     /**

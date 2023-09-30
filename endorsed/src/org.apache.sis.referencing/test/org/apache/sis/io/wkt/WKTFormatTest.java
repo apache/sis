@@ -40,8 +40,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * Tests {@link WKTFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.5
  */
 @DependsOn(GeodeticObjectParserTest.class)
 public final class WKTFormatTest extends TestCase {
@@ -239,7 +237,6 @@ public final class WKTFormatTest extends TestCase {
      * @throws ParseException if a parsing failed.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-538">SIS-538</a>
-     * @since 1.2
      */
     @Test
     @DependsOnMethod("testConsistencyOfWKT1")

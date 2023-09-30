@@ -37,8 +37,6 @@ import org.apache.sis.util.Classes;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class MultiPolylines extends FlatShape {
     /**

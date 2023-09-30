@@ -42,8 +42,6 @@ import java.util.stream.Stream;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  *
  * @todo Add the methods that are new in JDK16.
  */

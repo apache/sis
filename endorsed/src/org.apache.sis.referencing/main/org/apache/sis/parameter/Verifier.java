@@ -46,8 +46,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * In such case, the error message is given by {@link #message(Map, String, Object)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.4
  */
 final class Verifier {
     /**

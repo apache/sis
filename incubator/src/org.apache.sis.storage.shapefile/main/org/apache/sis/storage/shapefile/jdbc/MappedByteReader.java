@@ -34,8 +34,6 @@ import org.apache.sis.feature.AbstractFeature;
  * Reader of a Database Binary content by the way of a {@link java.nio.MappedByteBuffer}
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCloseable {
     /** List of field descriptors. */

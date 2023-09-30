@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Characters} utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.3
  */
 public final class CharactersTest extends TestCase {
     /**
@@ -80,8 +78,6 @@ public final class CharactersTest extends TestCase {
 
     /**
      * Tests the {@link Characters#isHexadecimal(int)} method.
-     *
-     * @since 0.5
      */
     @Test
     public void testIsHexadecimal() {

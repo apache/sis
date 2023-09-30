@@ -46,8 +46,6 @@ import static org.apache.sis.util.internal.CollectionsExt.first;
  * like "Alphanumeric matrix parameters"
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 final class MatrixParametersAlphaNum extends MatrixParameters {
     /**

@@ -27,12 +27,9 @@ import jakarta.xml.bind.annotation.XmlType;
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see GO_Integer
  * @see GO_Integer64
- *
- * @since 1.0
  */
 @XmlType(name = "UnlimitedInteger_PropertyType")
 public final class GO_UnlimitedInteger extends PropertyType<GO_UnlimitedInteger, UnlimitedInteger> {

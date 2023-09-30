@@ -31,8 +31,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * The system-wide schema in the "SIS" namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.7
  */
 @SuppressWarnings("serial")  // serialVersionUID not needed because of writeReplace().
 public final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable {

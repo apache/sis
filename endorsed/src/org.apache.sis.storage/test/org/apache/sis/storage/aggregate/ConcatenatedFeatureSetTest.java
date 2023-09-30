@@ -46,8 +46,6 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  * Tests {@link ConcatenatedFeatureSet}.
  *
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class ConcatenatedFeatureSetTest extends TestCase {
     /**

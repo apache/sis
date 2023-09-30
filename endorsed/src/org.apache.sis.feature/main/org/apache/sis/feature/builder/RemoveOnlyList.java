@@ -25,8 +25,6 @@ import java.util.List;
  * Addition of new values are not allowed through this {@code RemoveOnlyList}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class RemoveOnlyList<E extends TypeBuilder> extends AbstractList<E> {
     /**

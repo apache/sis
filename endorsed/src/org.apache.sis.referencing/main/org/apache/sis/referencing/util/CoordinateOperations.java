@@ -50,8 +50,6 @@ import org.apache.sis.util.collection.Containers;
  * Utility methods related to coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class CoordinateOperations extends Static {
     /**

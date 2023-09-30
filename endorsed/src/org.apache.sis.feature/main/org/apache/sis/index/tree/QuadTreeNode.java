@@ -25,8 +25,6 @@ package org.apache.sis.index.tree;
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.1
  */
 final class QuadTreeNode extends PointTreeNode {
     /**

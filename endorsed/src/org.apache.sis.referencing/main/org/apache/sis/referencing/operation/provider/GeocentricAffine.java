@@ -57,8 +57,6 @@ import org.apache.sis.util.logging.Logging;
  * "Geocentric translations" is an operation name defined by EPSG.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public abstract class GeocentricAffine extends GeodeticOperation {

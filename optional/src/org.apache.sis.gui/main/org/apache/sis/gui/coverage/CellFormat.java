@@ -41,8 +41,6 @@ import org.apache.sis.gui.internal.RecentChoices;
  * This property is usually available but not always; see {@link #hasPattern()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class CellFormat extends SimpleStringProperty {
     /**

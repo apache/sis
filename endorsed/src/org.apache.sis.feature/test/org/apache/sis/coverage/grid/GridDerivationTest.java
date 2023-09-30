@@ -63,8 +63,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
- * @since   1.0
  */
 @DependsOn(GridGeometryTest.class)
 public final class GridDerivationTest extends TestCase {

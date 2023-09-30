@@ -37,8 +37,6 @@ import org.apache.sis.measure.Units;
  * there is no need for a class specifically for this transform.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class GeographicToTopocentric extends AbstractProvider {
     /**

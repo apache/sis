@@ -26,8 +26,6 @@ import org.opengis.util.GenericName;
  * only for testing the content of {@link Builder#properties} map.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 final class BuilderMock extends Builder<BuilderMock> {
     /**

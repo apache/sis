@@ -56,11 +56,8 @@ import org.apache.sis.pending.geoapi.filter.Literal;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <G> root class of geometry implementation.
- *
- * @since 1.1
  */
 public abstract class RegistryTestCase<G> extends TestCase {
     /**

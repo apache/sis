@@ -33,8 +33,6 @@ import static org.junit.Assert.fail;
  * Tests {@link DBFRecordBasedResultSet}.
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
     /**

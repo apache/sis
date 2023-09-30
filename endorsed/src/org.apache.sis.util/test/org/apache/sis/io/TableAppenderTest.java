@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link TableAppender} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn({
   org.apache.sis.util.CharSequencesTest.class,

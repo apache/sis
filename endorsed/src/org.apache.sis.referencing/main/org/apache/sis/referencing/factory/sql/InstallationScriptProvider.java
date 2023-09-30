@@ -279,8 +279,6 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
-     * @since   0.7
      */
     @Fallback
     static final class Default extends InstallationScriptProvider {

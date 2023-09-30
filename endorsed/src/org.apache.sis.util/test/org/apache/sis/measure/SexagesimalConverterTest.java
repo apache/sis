@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * Test the {@link SexagesimalConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 public final class SexagesimalConverterTest extends TestCase {
     /**

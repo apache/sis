@@ -35,8 +35,6 @@ import javax.xml.datatype.Duration;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   1.0
  */
 public final class TM_Duration extends PropertyType<TM_Duration, Duration> {
     /**

@@ -32,12 +32,9 @@ import org.apache.sis.storage.internal.Resources;
  * {@link org.apache.sis.io.stream.RewindableLineReader}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see ProbeInputStream
  * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
- *
- * @since 1.2
  */
 final class ProbeReader extends FilterReader {
     /**

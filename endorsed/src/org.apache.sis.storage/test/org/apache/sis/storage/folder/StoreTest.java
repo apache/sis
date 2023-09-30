@@ -44,8 +44,6 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 public final class StoreTest extends TestCase {
     /**

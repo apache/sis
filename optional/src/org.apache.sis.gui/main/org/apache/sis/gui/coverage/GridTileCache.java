@@ -26,8 +26,6 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
  * This is a trivial implementation on top of {@link LinkedHashMap} used only for very simple caching.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})               // Not intended to be serialized.
 final class GridTileCache extends LinkedHashMap<GridTile,GridTile> {

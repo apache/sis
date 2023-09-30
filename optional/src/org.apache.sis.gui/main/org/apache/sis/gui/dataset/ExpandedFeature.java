@@ -34,8 +34,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  * If a property is requested for which {@link #index} is too large, {@code null} is returned.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class ExpandedFeature extends AbstractFeature {
     /**

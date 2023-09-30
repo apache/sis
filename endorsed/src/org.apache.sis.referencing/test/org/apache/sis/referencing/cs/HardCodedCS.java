@@ -28,8 +28,6 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * Collection of coordinate systems for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.4
  */
 public final class HardCodedCS {
     /**
@@ -127,8 +125,6 @@ public final class HardCodedCS {
      * <var>{@link HardCodedAxes#BEARING bearing}</var>,
      * <var>{@linkplain HardCodedAxes#Z z}</var> axes.
      * Note that this is not a right-handed system.
-     *
-     * @since 0.7
      */
     public static final DefaultCylindricalCS CYLINDRICAL = new DefaultCylindricalCS(
             Map.of(NAME_KEY, "Cylindrical"),
@@ -141,8 +137,6 @@ public final class HardCodedCS {
      * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
      * <var>{@link HardCodedAxes#BEARING bearing}</var> axes.
      * Note that this is not a right-handed system.
-     *
-     * @since 0.7
      */
     public static final DefaultPolarCS POLAR = new DefaultPolarCS(
             Map.of(NAME_KEY, "Polar"),
@@ -231,8 +225,6 @@ public final class HardCodedCS {
      * A one-dimensional vertical CS with
      * <var>{@linkplain HardCodedAxes#ELLIPSOIDAL_HEIGHT ellipsoidal height}</var>
      * axis in centimetres.
-     *
-     * @since 0.7
      */
     public static final DefaultVerticalCS ELLIPSOIDAL_HEIGHT_cm = new DefaultVerticalCS(
             getProperties(HardCodedAxes.ELLIPSOIDAL_HEIGHT_cm), HardCodedAxes.ELLIPSOIDAL_HEIGHT_cm);

@@ -33,8 +33,6 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
  * Invokes {@link ModifiableMetadata#transitionTo(ModifiableMetadata.State)} recursively on metadata elements.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 final class StateChanger extends MetadataVisitor<Boolean> {
     /**

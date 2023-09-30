@@ -27,8 +27,6 @@ import javafx.scene.control.SelectionModel;
  * the selection is forwarded to the {@link GridView#bandProperty}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 final class BandSelectionListener implements ChangeListener<Number> {
     /**

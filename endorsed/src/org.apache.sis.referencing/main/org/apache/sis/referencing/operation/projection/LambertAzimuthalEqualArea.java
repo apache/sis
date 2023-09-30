@@ -42,8 +42,6 @@ import static org.apache.sis.referencing.operation.provider.LambertAzimuthalEqua
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public class LambertAzimuthalEqualArea extends AuthalicConversion {
     /**

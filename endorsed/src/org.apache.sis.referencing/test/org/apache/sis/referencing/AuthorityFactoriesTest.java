@@ -49,8 +49,6 @@ import static org.apache.sis.test.Assertions.assertNotDeepEquals;
  * Tests {@link AuthorityFactories}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.7
  */
 public final class AuthorityFactoriesTest extends TestCase {
     /**
@@ -100,8 +98,6 @@ public final class AuthorityFactoriesTest extends TestCase {
      * Tests {@link CRSAuthorityFactory#getDescriptionText(String)}.
      *
      * @throws FactoryException if the EPSG:4326 name cannot be obtained.
-     *
-     * @since 0.8
      */
     @Test
     public void testGetDescriptionText() throws FactoryException {

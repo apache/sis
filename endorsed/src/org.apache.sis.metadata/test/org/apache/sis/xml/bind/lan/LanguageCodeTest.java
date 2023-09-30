@@ -51,8 +51,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * {@code "http://www.isotc211.org/2005/gmd"} namespace to {@code "http://standards.iso.org/…"}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class LanguageCodeTest extends TestCase {
     /**

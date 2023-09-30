@@ -27,8 +27,6 @@ import java.text.MessageFormat;
  * Callers need to invoke {@link #configure(Object[])} before to invoke any {@code format(…)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})               // Not intended to be serialized.
 public final class AutoMessageFormat extends MessageFormat {

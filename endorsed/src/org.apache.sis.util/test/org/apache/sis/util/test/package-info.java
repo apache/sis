@@ -22,7 +22,5 @@
  * functionalities that make use of Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 package org.apache.sis.util.test;

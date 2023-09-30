@@ -42,8 +42,6 @@ import org.opengis.metadata.identification.CharacterSet;
  * Tests {@link Store}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.4
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final class StoreTest extends TestCase {

@@ -41,11 +41,8 @@ import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
- *
- * @since 1.1
  */
 final class DistanceFilter<R> extends BinaryGeometryFilter<R> {
     /**

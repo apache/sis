@@ -51,8 +51,6 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
  * {@link org.apache.sis.metadata.iso.extent.Extents#getVerticalRange}</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 final class VerticalInfo {
     /**

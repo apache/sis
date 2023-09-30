@@ -32,8 +32,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link DirectPosition1D} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn(GeneralDirectPositionTest.class)
 public final class DirectPosition1DTest extends TestCase {

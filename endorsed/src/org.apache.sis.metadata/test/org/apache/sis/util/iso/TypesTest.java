@@ -49,8 +49,6 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
  * Tests the {@link Types} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class TypesTest extends TestCase {
     /**
@@ -123,8 +121,6 @@ public final class TypesTest extends TestCase {
     /**
      * Tests the {@link Types#forEnumName(Class, String)} method with an enumeration from the JDK.
      * Such enumerations do not implement the {@code org.opengis.util.ControlledVocabulary} interface.
-     *
-     * @since 0.5
      */
     @Test
     public void testForStandardEnumName() {

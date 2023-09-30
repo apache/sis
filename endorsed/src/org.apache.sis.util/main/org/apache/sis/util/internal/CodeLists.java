@@ -30,8 +30,6 @@ import org.apache.sis.util.Characters.Filter;
  * an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class CodeLists implements CodeList.Filter {
     /**

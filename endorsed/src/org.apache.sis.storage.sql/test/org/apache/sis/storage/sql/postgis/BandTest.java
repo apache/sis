@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class BandTest extends TestCase {
     /**

@@ -34,11 +34,8 @@ import org.apache.sis.parameter.Parameters;
  * This provider creates transforms from geocentric to geographic coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see GeographicToGeocentric
- *
- * @since 0.7
  */
 public final class GeocentricToGeographic extends GeodeticOperation {
     /**

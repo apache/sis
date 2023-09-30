@@ -39,8 +39,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * Tests the {@link TreeTables} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn({
     DefaultTreeTableTest.class

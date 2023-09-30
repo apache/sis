@@ -28,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests the {@link ArgumentChecks} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)
 public final class ArgumentChecksTest extends TestCase {

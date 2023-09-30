@@ -19,7 +19,5 @@
  * Allows access to the DBase3 part of a shapefile through JDBC driver.
  * Many exceptions are declared inside this package, to help trouble descriptions and permit precise unit tests.
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 package org.apache.sis.storage.shapefile.jdbc;

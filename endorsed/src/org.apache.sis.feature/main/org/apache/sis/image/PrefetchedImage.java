@@ -39,11 +39,8 @@ import org.apache.sis.util.resources.Errors;
  * This image has the same coordinate systems than the source image.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see ImageProcessor#prefetch(RenderedImage, Rectangle)
- *
- * @since 1.1
  */
 final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Executor {
     /**

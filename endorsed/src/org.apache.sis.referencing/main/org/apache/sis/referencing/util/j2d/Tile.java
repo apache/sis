@@ -100,11 +100,8 @@ import org.apache.sis.io.TableAppender;
  * or only after {@link #fetchSize()} has been invoked.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see org.apache.sis.storage.tiling.Tile
- *
- * @since 1.1
  */
 public class Tile implements Serializable {
     /**

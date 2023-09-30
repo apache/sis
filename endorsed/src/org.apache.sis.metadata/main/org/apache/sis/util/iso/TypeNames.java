@@ -38,8 +38,6 @@ import org.apache.sis.util.resources.Errors;
  * Implements the mapping between {@link Class} and {@link TypeName} documented in {@link DefaultTypeName}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 final class TypeNames {
     /**

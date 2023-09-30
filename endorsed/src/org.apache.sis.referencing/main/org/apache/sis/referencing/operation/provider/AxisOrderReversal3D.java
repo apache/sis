@@ -26,8 +26,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * The inverse operation is this operation itself.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @XmlTransient
 public final class AxisOrderReversal3D extends AxisOrderReversal {

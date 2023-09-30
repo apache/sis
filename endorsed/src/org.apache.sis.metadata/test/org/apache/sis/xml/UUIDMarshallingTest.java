@@ -37,8 +37,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * Tests the XML marshalling of object having {@code uuid} or {@code uuidref} attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(NilReasonMarshallingTest.class)
 public final class UUIDMarshallingTest extends TestCase {

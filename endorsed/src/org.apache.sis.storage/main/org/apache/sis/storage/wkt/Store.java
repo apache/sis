@@ -47,8 +47,6 @@ import org.apache.sis.util.CharSequences;
  * the file containing WKT definition is the main file, not an auxiliary file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 final class Store extends URIDataStore {
     /**

@@ -42,8 +42,6 @@ import static org.junit.Assert.*;
  * Tests the {@link MapProjectionParameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @DependsOn(ParametersTest.class)
 public final class MapProjectionParametersTest extends TestCase {

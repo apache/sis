@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link Tags}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class TagsTest extends TestCase {
     /**

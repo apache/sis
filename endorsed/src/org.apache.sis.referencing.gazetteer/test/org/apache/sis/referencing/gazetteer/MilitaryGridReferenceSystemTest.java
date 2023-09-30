@@ -54,8 +54,6 @@ import static org.junit.Assert.*;
  * Tests {@link MilitaryGridReferenceSystem}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.8
  */
 @DependsOn(ReferencingByIdentifiersTest.class)
 public final class MilitaryGridReferenceSystemTest extends TestCase {

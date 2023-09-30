@@ -34,8 +34,6 @@ import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE
  * do not want to expose publicly those arbitrary values (or at least not in a too direct way).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class Formulas extends Static {
     /**

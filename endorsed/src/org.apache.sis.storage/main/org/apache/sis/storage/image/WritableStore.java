@@ -74,8 +74,6 @@ import org.apache.sis.setup.OptionKey;
  * known to support only one image per file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.2
  */
 class WritableStore extends WorldFileStore {
     /**

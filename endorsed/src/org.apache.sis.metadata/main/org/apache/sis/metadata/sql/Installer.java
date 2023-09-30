@@ -34,8 +34,6 @@ import org.apache.sis.util.StringBuilders;
  *       dependencies.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class Installer extends ScriptRunner {
     /**

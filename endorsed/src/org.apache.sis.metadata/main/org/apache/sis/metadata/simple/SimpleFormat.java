@@ -30,8 +30,6 @@ import org.opengis.metadata.distribution.Distributor;
  * A trivial implementation of {@link Format} containing only the format name.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public class SimpleFormat extends SimpleCitation implements Format {
     /**

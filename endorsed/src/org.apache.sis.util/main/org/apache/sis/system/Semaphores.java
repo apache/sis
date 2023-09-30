@@ -25,8 +25,6 @@ import org.apache.sis.util.Workaround;
  * a {@code try ... finally} block.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.5
  */
 public final class Semaphores {
     /**

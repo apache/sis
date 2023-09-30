@@ -30,8 +30,6 @@ import org.apache.sis.referencing.operation.projection.PolarStereographic;
  * Base class of providers for all Stereographic projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 abstract class AbstractStereographic extends MapProjection {

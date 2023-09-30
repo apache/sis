@@ -38,8 +38,6 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
  * Tests the {@link ConformalProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final class ConformalProjectionTest extends TransformTestCase {

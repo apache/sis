@@ -21,8 +21,6 @@ package org.apache.sis.geometry.wrapper.j2d;
  * A polygons as a Java2D {@link java.awt.Shape}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class Polygon extends Polyline {
     /**

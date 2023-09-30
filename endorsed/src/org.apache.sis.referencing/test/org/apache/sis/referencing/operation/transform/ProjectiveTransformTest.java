@@ -54,8 +54,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * this time with NaN values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @SuppressWarnings("doclint:missing")
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
@@ -202,8 +200,6 @@ public class ProjectiveTransformTest extends TransformTestCase {
      *
      * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate conversion failed.
-     *
-     * @since 0.7
      */
     @Test
     public void testOptimize() throws FactoryException, TransformException {
@@ -231,8 +227,6 @@ public class ProjectiveTransformTest extends TransformTestCase {
      *
      * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate conversion failed.
-     *
-     * @since 1.1
      */
     @Test
     public void testOptimizeConstant() throws FactoryException, TransformException {
@@ -255,8 +249,6 @@ public class ProjectiveTransformTest extends TransformTestCase {
      *
      * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate conversion failed.
-     *
-     * @since 1.4
      */
     @Test
     public void testRoundingErrors() throws FactoryException, TransformException {

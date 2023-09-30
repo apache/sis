@@ -71,12 +71,9 @@ import static org.apache.sis.referencing.operation.provider.TransverseMercator.*
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
  *
  * @see Mercator
  * @see ObliqueMercator
- *
- * @since 0.6
  */
 public class TransverseMercator extends NormalizedProjection {
     /**
@@ -372,8 +369,6 @@ public class TransverseMercator extends NormalizedProjection {
      * Current implementation sets a limit at 40° of longitude on each side of the central meridian
      * (this limit is mentioned in EPSG guidance notes)
      * and a limit at 84° of latitude (same as {@link Mercator} projection).
-     *
-     * @since 1.3
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
@@ -738,8 +733,6 @@ public class TransverseMercator extends NormalizedProjection {
      * @author  André Gosselin (MPO)
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @author  Rueben Schulz (UBC)
-     * @version 0.6
-     * @since   0.6
      */
     private static final class Spherical extends TransverseMercator {
         /**

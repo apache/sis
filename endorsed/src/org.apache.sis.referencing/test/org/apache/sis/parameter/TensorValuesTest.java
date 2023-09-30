@@ -48,8 +48,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link TensorValues} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 @DependsOn(MatrixParametersTest.class)
 public final class TensorValuesTest extends TestCase {

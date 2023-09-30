@@ -28,8 +28,6 @@ import org.apache.sis.pending.geoapi.temporal.*;
  * GeoAPI temporal interfaces are expected to change a lot in a future revision.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public final class DefaultTemporalFactory implements TemporalFactory {
     /** The unique instance of this factory. */

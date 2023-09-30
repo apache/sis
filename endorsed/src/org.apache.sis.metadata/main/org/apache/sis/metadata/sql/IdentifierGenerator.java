@@ -49,8 +49,6 @@ import org.apache.sis.metadata.sql.util.SQLBuilder;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class IdentifierGenerator implements AutoCloseable {
     /**

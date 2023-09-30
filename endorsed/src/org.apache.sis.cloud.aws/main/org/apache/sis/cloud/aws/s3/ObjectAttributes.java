@@ -36,8 +36,6 @@ import org.apache.sis.cloud.aws.internal.Resources;
  * The basic attributes are mandatory according NIO specification.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class ObjectAttributes implements BasicFileAttributeView {
     /**

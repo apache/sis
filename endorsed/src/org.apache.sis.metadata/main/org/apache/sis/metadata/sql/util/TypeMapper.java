@@ -24,8 +24,6 @@ import java.sql.Types;
  * Maps a few basic Java types to JDBC types.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class TypeMapper {
     /**

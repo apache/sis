@@ -45,8 +45,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link DefaultParameterDescriptor} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
- * @since   0.4
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
 public final class DefaultParameterDescriptorTest extends TestCase {
@@ -336,8 +334,6 @@ public final class DefaultParameterDescriptorTest extends TestCase {
      * Tests WKT formatting of a parameter having an identifier.
      *
      * @see DefaultParameterDescriptorGroupTest#testIdentifiedParameterWKT()
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod("testWKT")

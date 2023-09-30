@@ -73,12 +73,9 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
  *
  * @see TestCase
  * @see org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])
- *
- * @since 0.3
  */
 public class DocumentComparator {
     /**

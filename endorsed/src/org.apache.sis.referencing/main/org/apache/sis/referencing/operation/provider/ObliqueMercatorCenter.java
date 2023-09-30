@@ -33,11 +33,8 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/oblique_mercator.html">GeoTIFF parameters for Oblique Mercator</a>
- *
- * @since 1.0
  */
 @XmlTransient
 public final class ObliqueMercatorCenter extends ObliqueMercator {

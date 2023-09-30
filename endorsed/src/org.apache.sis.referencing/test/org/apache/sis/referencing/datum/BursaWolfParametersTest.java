@@ -42,8 +42,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests the {@link BursaWolfParameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.4
  */
 public final class BursaWolfParametersTest extends TestCase {
     /**

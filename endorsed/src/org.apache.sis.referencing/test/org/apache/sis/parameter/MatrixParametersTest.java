@@ -30,8 +30,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * different instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @DependsOn(TensorParametersTest.class)
 public class MatrixParametersTest extends TensorParametersTest {

@@ -40,8 +40,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * not overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @DependsOn(MolodenskyTransformTest.class)
 public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase {

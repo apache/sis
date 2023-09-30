@@ -40,8 +40,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * some tiles in order to test error controls.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public class CoverageCanvasApp extends Application {
     /**

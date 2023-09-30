@@ -32,11 +32,8 @@ import org.apache.sis.geometry.DirectPosition2D;
  * implement the expected interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see MathTransforms#bidimensional(MathTransform)
- *
- * @since 1.1
  */
 final class TransformAdapter2D extends AbstractMathTransform2D implements Serializable {
     /**

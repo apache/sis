@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 @DependsOn(PropertyAccessorTest.class)
 public final class NameMapTest extends TestCase {

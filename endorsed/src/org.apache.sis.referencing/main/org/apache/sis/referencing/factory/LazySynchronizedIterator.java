@@ -30,11 +30,8 @@ import org.apache.sis.util.internal.AbstractIterator;
  * were not thread-safe, because of the synchronization on {@code Iterable<E>} instances.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
  *
  * @param <E>  the type of elements to be returned by the iterator.
- *
- * @since 0.7
  */
 final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
     /**

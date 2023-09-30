@@ -36,8 +36,6 @@ import java.util.Date;
  * A dummy implementation of {@link VerticalCRS}, which is also its own datum, coordinate system and axis.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.4
  */
 @SuppressWarnings("serial")
 public final class VerticalCRSMock extends IdentifiedObjectMock

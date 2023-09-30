@@ -32,8 +32,6 @@ import org.apache.sis.referencing.operation.transform.TransformTestCase;
  * Tests the {@link NormalizedProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @DependsOn({
     // Following dependency is where the basic parameters (e.g. SEMI_MAJOR) are tested.

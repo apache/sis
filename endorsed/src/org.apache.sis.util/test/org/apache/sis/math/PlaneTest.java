@@ -32,8 +32,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link Plane} class.
  *
  * @author  Martin Desruisseaux (MPO, IRD)
- * @version 0.8
- * @since   0.5
  */
 @DependsOn(org.apache.sis.util.internal.DoubleDoubleTest.class)
 public final class PlaneTest extends TestCase {
@@ -128,8 +126,6 @@ public final class PlaneTest extends TestCase {
     /**
      * Verifies that {@link Plane#fit(int, int, Vector)} produces the same result than
      * {@link Plane#fit(double[], double[], double[])}.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testFitManyPoints")

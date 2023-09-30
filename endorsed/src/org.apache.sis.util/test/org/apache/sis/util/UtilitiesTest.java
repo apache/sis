@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Utilities} static methods.
  *
  * @author Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class UtilitiesTest extends TestCase {
     /**

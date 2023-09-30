@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Compares the {@link Codes} elements with the EPSG geodetic database.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 public final class CodesTest extends TestCase {
     /**

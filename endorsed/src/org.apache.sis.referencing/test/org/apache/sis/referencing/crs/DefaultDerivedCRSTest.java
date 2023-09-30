@@ -53,8 +53,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests the {@link DefaultDerivedCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     DefaultProjectedCRSTest.class,          // Has many similarities with DerivedCRS, but is simpler.
@@ -235,8 +233,6 @@ public final class DefaultDerivedCRSTest extends TestCase {
      * Tests (un)marshalling of a derived coordinate reference system.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
-     *
-     * @since 0.7
      */
     @Test
     public void testXML() throws JAXBException {

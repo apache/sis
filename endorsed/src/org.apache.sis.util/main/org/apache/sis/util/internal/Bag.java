@@ -32,11 +32,8 @@ import org.apache.sis.util.ArraysExt;
  * Subclasses need to override at least {@link #size()} and {@link #iterator()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param  <E>  type of elements in this bag.
- *
- * @since 1.0
  */
 public abstract class Bag<E> extends AbstractCollection<E> {
     /**

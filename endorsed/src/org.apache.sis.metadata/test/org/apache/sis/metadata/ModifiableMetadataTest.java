@@ -39,8 +39,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  * This class uses {@link DefaultMedium} as an arbitrary metadata implementation for running the tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 @DependsOn(AbstractMetadataTest.class)
 public final class ModifiableMetadataTest extends TestCase {

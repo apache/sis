@@ -41,8 +41,6 @@ import org.opengis.metadata.identification.DataIdentification;
  * This is an experimental class which may be revisited in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class ResourceLineage {
     /**

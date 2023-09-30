@@ -44,8 +44,6 @@ import static org.junit.Assert.*;
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 @DependsOn(GeodeticCalculatorTest.class)
 public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {

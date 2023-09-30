@@ -87,11 +87,8 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * which creates Coordinate Reference Systems by inspecting coordinate system axes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
- *
- * @since 1.0
  */
 final class GridMapping {
     /**

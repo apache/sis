@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link DefaultKeywords}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class DefaultKeywordsTest extends TestCase {
     /**

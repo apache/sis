@@ -42,8 +42,6 @@ import static org.junit.Assert.*;
  * Tests the {@link GridCoverageBuilder} helper class.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class GridCoverageBuilderTest extends TestCase {
     /**

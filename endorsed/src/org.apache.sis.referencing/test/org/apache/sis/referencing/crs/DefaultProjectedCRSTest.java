@@ -58,8 +58,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * Tests the {@link DefaultProjectedCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     DefaultGeographicCRSTest.class,
@@ -511,8 +509,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * In particular, we want to test the ability to ignore axis order of the base CRS in "ignore metadata" mode.
      *
      * @throws FactoryException if the CRS creation failed.
-     *
-     * @since 0.7
      */
     @Test
     public void testEquals() throws FactoryException {

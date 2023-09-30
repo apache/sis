@@ -39,8 +39,6 @@ import static org.junit.Assert.*;
  * Tests {@link CategoryList}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
- * @since   1.0
  */
 @DependsOn(CategoryTest.class)
 public final class CategoryListTest extends TestCase {

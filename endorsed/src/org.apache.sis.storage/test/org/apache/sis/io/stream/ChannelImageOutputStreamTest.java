@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.5
  */
 @DependsOn(ChannelDataOutputTest.class)
 public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {

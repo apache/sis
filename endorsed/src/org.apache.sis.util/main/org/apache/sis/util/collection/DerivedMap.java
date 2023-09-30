@@ -56,14 +56,11 @@ import org.apache.sis.math.FunctionProperty;
  * especially the result of the {@link #size()} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
  *
  * @param <SK>  the type of keys in the storage map.
  * @param <SV>  the type of values in the storage map.
  * @param <K>   the type of keys in this map.
  * @param <V>   the type of values in this map.
- *
- * @since 0.3
  */
 class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         ObjectConverter<Map.Entry<SK,SV>, Map.Entry<K,V>>, Serializable

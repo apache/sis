@@ -34,11 +34,8 @@ import org.apache.sis.math.MathFunctions;
  * from the enclosing collection.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.4
  *
  * @param <E>  the type of elements in the collection.
- *
- * @since 0.3
  */
 abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
     /**

@@ -69,8 +69,6 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * in order to avoid integer overflow.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public abstract class TiledGridCoverage extends GridCoverage {
     /**

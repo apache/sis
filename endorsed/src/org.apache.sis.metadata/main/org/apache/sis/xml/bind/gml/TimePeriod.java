@@ -37,8 +37,6 @@ import org.apache.sis.pending.geoapi.temporal.Period;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlRootElement(name="TimePeriod")
 @XmlType(/*name = "TimePeriodType",*/ propOrder = { // TODO: Omitted for now for allowing external modules to define their own type.

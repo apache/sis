@@ -38,15 +38,12 @@ import org.apache.sis.feature.DefaultFeatureType;
  * Expression whose results are converted to a different type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <S>  the type of value computed by the wrapped exception. This is the type to convert.
  * @param  <V>  the type of value computed by this expression. This is the type after conversion.
  *
  * @see org.apache.sis.filter.internal.GeometryConverter
- *
- * @since 1.1
  */
 final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
         implements FeatureExpression<R,V>, Optimization.OnExpression<R,V>

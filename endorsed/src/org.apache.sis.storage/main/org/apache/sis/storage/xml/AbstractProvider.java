@@ -34,8 +34,6 @@ import org.apache.sis.storage.base.DocumentedStoreProvider;
  * (JAXB, StAX, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public abstract class AbstractProvider extends DocumentedStoreProvider {
     /**

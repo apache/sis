@@ -108,8 +108,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public class MetadataBuilder {
     /**

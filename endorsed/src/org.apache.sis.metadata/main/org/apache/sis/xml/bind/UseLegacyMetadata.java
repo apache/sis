@@ -29,11 +29,8 @@ import java.lang.annotation.RetentionPolicy;
  * May be deleted if we implement SIS-401.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-401">SIS-401</a>
- *
- * @since 1.0
  */
 @Inherited
 @Target(ElementType.TYPE)

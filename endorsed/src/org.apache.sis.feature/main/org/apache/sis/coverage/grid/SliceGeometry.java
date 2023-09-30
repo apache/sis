@@ -48,8 +48,6 @@ import org.apache.sis.util.resources.Errors;
  * That function is invoked (indirectly) by {@link org.apache.sis.coverage.grid.j2d.TiledImage#getProperty(String)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
     /**

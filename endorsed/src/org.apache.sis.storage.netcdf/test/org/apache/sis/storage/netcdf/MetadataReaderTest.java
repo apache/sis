@@ -50,8 +50,6 @@ import org.apache.sis.test.ContentVerifier;
  * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn({
     ChannelDecoderTest.class,

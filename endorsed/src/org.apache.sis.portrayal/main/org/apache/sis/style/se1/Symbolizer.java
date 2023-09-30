@@ -49,11 +49,8 @@ import org.apache.sis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
- *
- * @since 1.5
  */
 @XmlType(name = "SymbolizerType", propOrder = {
     "name",

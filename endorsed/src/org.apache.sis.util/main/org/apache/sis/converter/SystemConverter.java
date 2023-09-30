@@ -33,12 +33,9 @@ import org.apache.sis.util.resources.Errors;
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param <S>  the base type of source objects.
  * @param <T>  the base type of converted objects.
- *
- * @since 0.3
  */
 abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConverter<S,T> {
     /**

@@ -47,8 +47,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * in the vast majority of cases when user has no interest in those information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public final class FileAccessView extends Widget implements UnaryOperator<ChannelFactory> {
     /**

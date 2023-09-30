@@ -43,13 +43,10 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  * (the tip) is evaluated by a {@link PropertyValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <V>  the type of value computed by the expression.
  *
  * @see PropertyValue
- *
- * @since 1.2
  */
 final class AssociationValue<V> extends LeafExpression<AbstractFeature, V>
         implements ValueReference<AbstractFeature, V>, Optimization.OnExpression<AbstractFeature, V>

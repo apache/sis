@@ -41,8 +41,6 @@ import static org.junit.Assert.assertNotNull;
  * the {@link #showCurrentImage(String)} method will show the {@linkplain #image}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public abstract class ImageTestCase extends TestCase {
     /**

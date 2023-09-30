@@ -1779,8 +1779,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * go to the {@link #create(AuthorityFactoryProxy, String)} method from a non-overridden public method.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 1.2
-     * @since   0.7
      */
     private static final class Finder extends IdentifiedObjectFinder {
         /**

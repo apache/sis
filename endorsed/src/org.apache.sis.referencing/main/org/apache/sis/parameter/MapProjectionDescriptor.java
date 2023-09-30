@@ -46,8 +46,6 @@ import org.apache.sis.util.internal.Constants;
  * The main purpose of this class is to support transparently the netCDF ways to express some parameter values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {

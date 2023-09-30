@@ -64,11 +64,8 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see GridCoverage#evaluator()
- *
- * @since 1.1
  */
 class DefaultEvaluator implements GridCoverage.Evaluator {
     /**
@@ -187,8 +184,6 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * values provided in the map.</p>
      *
      * @return the default slice where to perform evaluation, or an empty map if unspecified.
-     *
-     * @since 1.3
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the map is unmodifiable.
@@ -209,8 +204,6 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * @throws IllegalArgumentException if the map contains an illegal dimension or grid coordinate value.
      *
      * @see GridExtent#getSliceCoordinates()
-     *
-     * @since 1.3
      */
     @Override
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
@@ -239,8 +232,6 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * to {@code setWraparoundEnabled(true)} if no wraparound axis has been found in the coverage CRS.
      *
      * @return {@code true} if this evaluator may wraparound coordinates that are outside the grid.
-     *
-     * @since 1.2
      */
     @Override
     public boolean isWraparoundEnabled() {
@@ -255,8 +246,6 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * multiple of 360°.
      *
      * @param  allow  whether to allow wraparound of coordinates that are outside the grid.
-     *
-     * @since 1.2
      */
     @Override
     public void setWraparoundEnabled(final boolean allow) {

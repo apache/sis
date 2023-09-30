@@ -43,8 +43,6 @@ import javax.measure.Unit;
  * @param  <T>  the type of parameter values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 abstract class Parameter<T> extends SimpleIdentifiedObject implements ParameterDescriptor<T> {
     /**

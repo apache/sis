@@ -34,8 +34,6 @@ import static org.apache.sis.util.internal.Constants.EPSG_AXIS_DEGREES;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 final class Codes {
     /**

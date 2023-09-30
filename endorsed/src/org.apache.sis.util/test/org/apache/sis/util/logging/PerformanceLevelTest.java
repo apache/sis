@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests the {@link PerformanceLevel} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 public final class PerformanceLevelTest extends TestCase {
     /**

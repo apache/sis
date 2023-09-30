@@ -29,8 +29,6 @@ import org.opengis.referencing.operation.SingleOperation;
  * in the EPSG database and are implemented in this package as separated operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 abstract class GeodeticOperation extends AbstractProvider {

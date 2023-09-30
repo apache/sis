@@ -37,8 +37,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.5
  */
 public final class ServiceParameterTest extends TestCase {
     /**

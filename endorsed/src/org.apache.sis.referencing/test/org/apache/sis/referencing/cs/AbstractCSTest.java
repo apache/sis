@@ -37,8 +37,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link AbstractCS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.4
  */
 @DependsOn({
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,

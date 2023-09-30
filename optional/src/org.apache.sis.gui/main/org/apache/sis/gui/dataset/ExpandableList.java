@@ -45,8 +45,6 @@ import org.apache.sis.feature.AbstractFeature;
  * maximum number of occurrence greater than 1.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class ExpandableList extends TransformationList<AbstractFeature,AbstractFeature>
         implements Callback<TableColumn<AbstractFeature,AbstractFeature>, TableCell<AbstractFeature,AbstractFeature>>,

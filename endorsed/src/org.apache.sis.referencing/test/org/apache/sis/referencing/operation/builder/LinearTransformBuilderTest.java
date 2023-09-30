@@ -47,8 +47,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests {@link LinearTransformBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.5
  */
 public final class LinearTransformBuilderTest extends TestCase {
     /**
@@ -121,8 +119,6 @@ public final class LinearTransformBuilderTest extends TestCase {
      * Tests a two-dimensional case where sources coordinates are explicitly given.
      *
      * @throws FactoryException if the transform cannot be created.
-     *
-     * @since 0.8
      */
     @Test
     public void testExplicitSource2D() throws FactoryException {
@@ -135,8 +131,6 @@ public final class LinearTransformBuilderTest extends TestCase {
      * {@link LinearTransformBuilder#LinearTransformBuilder(int...)} constructor.
      *
      * @throws FactoryException if the transform cannot be created.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testExplicitSource2D")

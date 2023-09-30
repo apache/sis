@@ -36,8 +36,6 @@ import com.sun.source.doctree.DocTree;
  * just before the parts to copy in the javadoc.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class Include extends Taglet {
     /**

@@ -28,8 +28,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class CS_TimeCS extends PropertyType<CS_TimeCS, TimeCS> {
     /**

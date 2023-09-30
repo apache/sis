@@ -44,8 +44,6 @@ import org.apache.sis.feature.AbstractFeature;
  *    }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class MovingFeatureIterator extends FeatureIterator implements Consumer<LogRecord> {
     /**

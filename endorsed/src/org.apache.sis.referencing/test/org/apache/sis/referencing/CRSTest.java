@@ -59,8 +59,6 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 @DependsOn({
     CommonCRSTest.class,
@@ -246,8 +244,6 @@ public final class CRSTest extends TestCase {
 
     /**
      * Tests {@link CRS#suggestCommonTarget(GeographicBoundingBox, CoordinateReferenceSystem...)}.
-     *
-     * @since 0.8
      */
     @Test
     public void testSuggestCommonTarget() {
@@ -387,8 +383,6 @@ public final class CRSTest extends TestCase {
 
     /**
      * Tests getting the horizontal and vertical components of a three-dimensional projected CRS.
-     *
-     * @since 0.8
      */
     @Test
     public void testComponentsOfProjectedCRS() {
@@ -405,8 +399,6 @@ public final class CRSTest extends TestCase {
 
     /**
      * Tests {@link CRS#getComponentAt(CoordinateReferenceSystem, int, int)}.
-     *
-     * @since 0.5
      */
     @Test
     public void testGetComponentAt() {
@@ -437,8 +429,6 @@ public final class CRSTest extends TestCase {
      * where there is no three-dimensional geographic CRS to separate.
      *
      * @throws FactoryException if an error occurred while creating a compound CRS.
-     *
-     * @since 1.0
      */
     @Test
     public void testSelectDimensions() throws FactoryException {
@@ -456,8 +446,6 @@ public final class CRSTest extends TestCase {
      * a three-dimensional geographic CRS to be reduced to a two-dimensional CRS.
      *
      * @throws FactoryException if an error occurred while creating a CRS.
-     *
-     * @since 1.0
      */
     @Test
     public void testReduceGeographic3D() throws FactoryException {
@@ -471,8 +459,6 @@ public final class CRSTest extends TestCase {
      * a three-dimensional projected CRS to be reduced to a two-dimensional CRS.
      *
      * @throws FactoryException if an error occurred while creating a CRS.
-     *
-     * @since 1.1
      */
     @Test
     public void testReduceProjected3D() throws FactoryException {
@@ -485,8 +471,6 @@ public final class CRSTest extends TestCase {
      * Tests {@link CRS#compound(CoordinateReferenceSystem...)}.
      *
      * @throws FactoryException if an error occurred while creating a compound CRS.
-     *
-     * @since 0.8
      */
     @Test
     public void testCompound() throws FactoryException {

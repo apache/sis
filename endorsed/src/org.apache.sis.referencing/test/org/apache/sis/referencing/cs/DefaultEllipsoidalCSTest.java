@@ -41,8 +41,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultEllipsoidalCS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(AbstractCSTest.class)
 public final class DefaultEllipsoidalCSTest extends TestCase {

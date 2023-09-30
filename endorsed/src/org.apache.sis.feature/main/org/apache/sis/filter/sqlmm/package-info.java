@@ -31,7 +31,5 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 package org.apache.sis.filter.sqlmm;

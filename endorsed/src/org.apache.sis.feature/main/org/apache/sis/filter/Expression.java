@@ -47,8 +47,6 @@ public interface Expression<R,V> extends Function<R,V> {
      * Returns the class of resources expected by this expression.
      *
      * @return type of resources accepted by this expression.
-     *
-     * @since 1.4
      */
     Class<? super R> getResourceClass();
 

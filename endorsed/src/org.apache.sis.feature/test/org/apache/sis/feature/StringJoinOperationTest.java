@@ -33,8 +33,6 @@ import static org.junit.Assert.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 @DependsOn(LinkOperationTest.class)
 public final class StringJoinOperationTest extends TestCase {

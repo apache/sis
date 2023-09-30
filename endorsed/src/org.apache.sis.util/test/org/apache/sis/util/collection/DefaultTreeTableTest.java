@@ -37,8 +37,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * This will also test indirectly the {@link TreeNodeList} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn(TableColumnTest.class)
 public final class DefaultTreeTableTest extends TestCase {

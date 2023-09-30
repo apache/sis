@@ -23,8 +23,6 @@ import java.util.Objects;
  * A (name, description) pair for a coordinate system axis.
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.7
- * @since   0.7
  */
 final class AxisName {
     /**

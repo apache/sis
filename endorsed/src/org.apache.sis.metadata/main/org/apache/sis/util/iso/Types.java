@@ -343,8 +343,6 @@ public final class Types extends Static {
      * The {@link InternationalString} returned by the {@code Types.getDescription(…)} methods.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.4
-     * @since   0.3
      */
     private static class Description extends ResourceInternationalString {
         /**
@@ -415,8 +413,6 @@ public final class Types extends Static {
      * If this class is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
      */
     private static final class CodeTitle extends Description {
         /**

@@ -39,8 +39,6 @@ import org.apache.sis.util.resources.Errors;
  * The caching mechanism inherited from {@link ComputedImage} is less useful here.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public abstract class BatchComputedImage extends ComputedImage {
     /**

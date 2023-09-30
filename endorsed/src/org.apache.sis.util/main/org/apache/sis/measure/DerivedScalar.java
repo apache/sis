@@ -35,11 +35,8 @@ import org.apache.sis.util.ArgumentChecks;
  * It is a design similar to {@link org.opengis.referencing.crs.DerivedCRS}</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param <Q>  the type of quantity implemented by this scalar.
- *
- * @since 1.0
  */
 class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
     /**

@@ -31,8 +31,6 @@ import org.apache.sis.referencing.operation.transform.PassThroughTransform;
  * all methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public class MathTransformsOrFactory {
     /**

@@ -26,8 +26,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class CI_Party extends PropertyType<CI_Party, AbstractParty> {
     /**

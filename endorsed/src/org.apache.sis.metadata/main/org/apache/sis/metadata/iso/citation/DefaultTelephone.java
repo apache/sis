@@ -116,8 +116,6 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @param number      the telephone number, or {@code null}.
      * @param numberType  the type of telephone number, or {@code null}.
-     *
-     * @since 0.5
      */
     DefaultTelephone(final String number, final CodeList<?> numberType) {
         this.number     = number;

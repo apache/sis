@@ -26,12 +26,9 @@ import org.apache.sis.util.ObjectConverter;
  * Consequently, this iterator cannot return null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
  *
  * @param <S>  the type of elements in the storage collection.
  * @param <E>  the type of elements in this set.
- *
- * @since 0.3
  */
 final class DerivedIterator<S,E> implements Iterator<E> {
     /**

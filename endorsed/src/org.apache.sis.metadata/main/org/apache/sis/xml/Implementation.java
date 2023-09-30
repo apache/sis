@@ -24,8 +24,6 @@ import jakarta.xml.bind.JAXBContext;
  * This enumeration allows to set vendor-specific marshaller properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 enum Implementation {
     /**

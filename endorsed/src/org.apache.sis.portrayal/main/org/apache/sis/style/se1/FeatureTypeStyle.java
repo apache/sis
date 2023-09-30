@@ -31,8 +31,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Johann Sorel (Geomatys)
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 @XmlType(name = "FeatureTypeStyleType")
 @XmlRootElement(name = "FeatureTypeStyle")

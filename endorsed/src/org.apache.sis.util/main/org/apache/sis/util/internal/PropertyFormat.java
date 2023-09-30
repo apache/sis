@@ -47,8 +47,6 @@ import org.opengis.util.CodeList;
  * Subclasses need to override {@link #getLocale()}, and should also override {@link #toString(Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public abstract class PropertyFormat extends LineAppender implements Localized {
     /**

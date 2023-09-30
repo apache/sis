@@ -67,8 +67,6 @@ import org.apache.sis.util.CharSequences;
  * All usages in Apache SIS should be either in transient fields or in non-serializable classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @SuppressWarnings("serial")     // Not intended to be serialized.
 public final class StandardDateFormat extends DateFormat {
@@ -127,8 +125,6 @@ public final class StandardDateFormat extends DateFormat {
      * @param  text  the character string to parse, or {@code null}.
      * @return a temporal object for the given text, or {@code null} if the given text was null.
      * @throws DateTimeParseException if the text cannot be parsed as a date.
-     *
-     * @since 0.8
      */
     public static Temporal parseBest(final CharSequence text) {
         // Cast is safe if all QUERIES elements return a Temporal subtype.

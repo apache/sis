@@ -435,8 +435,6 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *
      * @author  Rueben Schulz (UBC)
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 1.0
-     * @since   0.7
      */
     static class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**

@@ -44,12 +44,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see org.apache.sis.gui.internal.BackgroundThreads
  * @see java.util.concurrent.ForkJoinPool#commonPool()
- *
- * @since 1.1
  */
 @SuppressWarnings("serial")                     // Not intended to be serialized.
 public final class CommonExecutor extends AtomicInteger implements ThreadFactory {

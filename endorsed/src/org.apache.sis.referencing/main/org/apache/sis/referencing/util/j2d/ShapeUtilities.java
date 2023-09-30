@@ -35,8 +35,6 @@ import static java.lang.Double.isInfinite;
  * Static methods operating on shapes from the {@link java.awt.geom} package.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.2
- * @since   0.5
  */
 public final class ShapeUtilities extends Static {
     /**

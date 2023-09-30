@@ -47,8 +47,6 @@ import org.apache.sis.util.Debug;
  * This is used for debugging purpose only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 @Debug
 @SuppressWarnings("serial")

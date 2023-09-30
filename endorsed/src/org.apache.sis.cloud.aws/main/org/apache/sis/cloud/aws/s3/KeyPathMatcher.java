@@ -27,8 +27,6 @@ import org.apache.sis.util.resources.Errors;
  * Matches the string representation of {@link KeyPath} against a pattern.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class KeyPathMatcher implements PathMatcher {
     /**

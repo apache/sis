@@ -62,11 +62,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.xml.bind.AdapterReplacement
- *
- * @since 0.3
  */
 public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
     /**

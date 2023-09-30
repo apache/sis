@@ -42,8 +42,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
     /**

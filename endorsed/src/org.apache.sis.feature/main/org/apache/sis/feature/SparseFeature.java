@@ -36,12 +36,9 @@ import org.apache.sis.util.internal.Cloner;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see DenseFeature
  * @see DefaultFeatureType
- *
- * @since 0.5
  */
 final class SparseFeature extends AbstractFeature implements CloneAccess {
     /**
@@ -235,8 +232,6 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
      * @param  name  the property name.
      * @param  missingPropertyFallback  the value to return if no attribute or association of the given name exists.
      * @return the value for the given property, or {@code null} if none.
-     *
-     * @since 1.1
      */
     @Override
     public final Object getValueOrFallback(final String name, final Object missingPropertyFallback) {

@@ -44,11 +44,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Michael Hausegger
  *
- * @version 1.3
  *
  * @see org.apache.sis.measure.AngleFormatTest
- *
- * @since 0.8
  */
 public final class CoordinateFormatTest extends TestCase {
     /**

@@ -55,8 +55,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * A row in the table to be formatted by {@link ParameterFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 final class ParameterTableRow {
     /**

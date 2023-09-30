@@ -52,8 +52,6 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * Helper classes for the management of {@link WritableGridCoverageResource.CommonOption}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public final class WritableResourceSupport implements Localized {
     /**

@@ -50,8 +50,6 @@ import org.apache.sis.pending.geoapi.temporal.Instant;
  * <a href="http://toyoda-eizi.blogspot.fr/2011/02/examples-of-gml-fragment-in-iso.html">here</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class TimePeriodTest extends TestCase {
     /**

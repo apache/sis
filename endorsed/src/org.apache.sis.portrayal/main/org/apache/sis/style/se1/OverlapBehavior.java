@@ -22,8 +22,6 @@ package org.apache.sis.style.se1;
  * Overlaps happen for example with satellite-image scenes.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public enum OverlapBehavior {
     /**

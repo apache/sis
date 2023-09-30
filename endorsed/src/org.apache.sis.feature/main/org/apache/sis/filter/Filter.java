@@ -31,6 +31,8 @@ import java.util.function.Predicate;
  * by an interface of the same name but in the {@code org.opengis.filter} package
  * instead of {@code org.apache.sis.filter}.
  * </div>
+ *
+ * @since 1.1
  */
 public interface Filter<R> extends Predicate<R> {
     /**

@@ -51,8 +51,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests {@link Citations}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.6
  */
 @DependsOn(org.apache.sis.metadata.sql.MetadataSourceTest.class)
 public final class CitationsTest extends TestCase {

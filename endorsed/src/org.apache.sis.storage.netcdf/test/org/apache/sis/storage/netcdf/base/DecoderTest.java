@@ -35,8 +35,6 @@ import static org.apache.sis.test.TestUtilities.date;
  * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 public class DecoderTest extends TestCase {
     /**

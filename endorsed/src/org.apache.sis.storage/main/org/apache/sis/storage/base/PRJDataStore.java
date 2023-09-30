@@ -69,8 +69,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * be null and the CRS defined by the {@code DataOptionKey} will be used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public abstract class PRJDataStore extends URIDataStore {
     /**
@@ -462,8 +460,6 @@ public abstract class PRJDataStore extends URIDataStore {
      * Provider for {@link PRJDataStore} instances.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.2
-     * @since   1.2
      */
     public abstract static class Provider extends URIDataStore.Provider {
         /**

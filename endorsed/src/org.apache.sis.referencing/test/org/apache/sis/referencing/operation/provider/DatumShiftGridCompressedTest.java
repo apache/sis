@@ -27,8 +27,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * and compare values computed by the grid using the affine transform as a reference.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class DatumShiftGridCompressedTest extends DatumShiftGridFileTest {
     /**

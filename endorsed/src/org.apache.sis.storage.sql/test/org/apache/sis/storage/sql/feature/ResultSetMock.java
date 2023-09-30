@@ -28,8 +28,6 @@ import java.lang.reflect.InvocationHandler;
  * this class implements that interface using reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class ResultSetMock implements InvocationHandler {
     /**

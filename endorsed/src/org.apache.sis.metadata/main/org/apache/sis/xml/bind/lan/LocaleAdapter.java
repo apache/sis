@@ -36,12 +36,9 @@ import org.apache.sis.xml.bind.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see LanguageCode
  * @see PT_Locale
- *
- * @since 0.3
  */
 public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     /**
@@ -96,8 +93,6 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      * For locales in the newer {@code lan} namespace, see {@link PT_Locale}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.4
-     * @since   1.0
      */
     public static final class Wrapped extends XmlAdapter<PT_Locale, Locale> {
         /**

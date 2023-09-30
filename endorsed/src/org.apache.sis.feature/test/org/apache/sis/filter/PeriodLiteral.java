@@ -33,8 +33,6 @@ import org.apache.sis.pending.geoapi.temporal.Period;
  * This is used for testing purpose only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @SuppressWarnings("serial")
 final class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Serializable {

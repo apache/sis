@@ -29,8 +29,6 @@ import org.apache.sis.util.Utilities;
  * The concatenation of two unit converters where at least one of them is not linear.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class ConcatenatedConverter extends AbstractConverter implements LenientComparable {
     /**

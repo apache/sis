@@ -34,11 +34,8 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (typically {@code Feature}) to sort.
- *
- * @since 1.1
  */
 final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
     /**

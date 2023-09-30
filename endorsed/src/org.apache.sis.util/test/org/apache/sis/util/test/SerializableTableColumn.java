@@ -26,11 +26,8 @@ import org.apache.sis.util.collection.TableColumn;
  * For testing {@link TableColumn} deserialization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @param <V>  base type of all values in the column identified by this instance.
- *
- * @since 0.3
  */
 @SuppressWarnings("serial")
 public final class SerializableTableColumn<V> extends TableColumn<V> implements Serializable {

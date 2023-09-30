@@ -30,8 +30,6 @@ import org.apache.sis.util.internal.Strings;
  * actual parameter when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 final class UninitializedParameter implements GeneralParameterValue, Serializable {     // Intentionally non-Cloneable.
     /**

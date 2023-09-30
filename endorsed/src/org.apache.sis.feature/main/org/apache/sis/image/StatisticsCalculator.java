@@ -36,8 +36,6 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
  * The statistics can be computed in parallel or sequentially for non thread-safe images.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 final class StatisticsCalculator extends AnnotatedImage {
     /**

@@ -32,8 +32,6 @@ import static java.lang.StrictMath.*;
  * Tests {@link PolarToCartesian}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class PolarToCartesianTest extends TransformTestCase {
     /**

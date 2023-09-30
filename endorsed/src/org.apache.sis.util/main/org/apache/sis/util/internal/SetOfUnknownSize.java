@@ -31,11 +31,8 @@ import org.apache.sis.util.ArraysExt;
  * This class overrides some methods in a way that avoid or reduce calls to {@link #size()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param <E>  the type of elements in the set.
- *
- * @since 0.7
  */
 public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
     /**

@@ -41,8 +41,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
  * Tests some consistency rules of all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,

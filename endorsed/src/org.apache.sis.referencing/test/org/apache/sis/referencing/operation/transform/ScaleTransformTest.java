@@ -38,8 +38,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * Tests the {@link ScaleTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn(AbstractMathTransformTest.class)
 public final class ScaleTransformTest extends MathTransformTestCase {

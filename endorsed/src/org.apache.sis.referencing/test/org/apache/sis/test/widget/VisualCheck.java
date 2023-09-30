@@ -31,8 +31,6 @@ import org.apache.sis.test.TestConfiguration;
  * Methods in this class block until user closes the window.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class VisualCheck {
     /**

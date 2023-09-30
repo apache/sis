@@ -59,8 +59,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  * Tests {@link MultiAuthoritiesFactory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.7
  */
 @DependsOn(AuthorityFactoryProxyTest.class)
 public final class MultiAuthoritiesFactoryTest extends TestCase {
@@ -288,8 +286,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * {@code "urn:ogc:def:type, type₁:authority₁:version₁:code₁, type₂:authority₂:version₂:code₂"} form.
      *
      * @throws FactoryException if an authority or a code is not recognized.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testCreateFromURNs")
@@ -327,8 +323,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * {@code "http://www.opengis.net/def/crs-compound?1=(…)/code₁&2=(…)/code₂"} form.
      *
      * @throws FactoryException if an authority or a code is not recognized.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testCreateFromHTTPs")

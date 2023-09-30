@@ -40,8 +40,6 @@ import java.awt.image.SinglePixelPackedSampleModel;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Andrea Aime (TOPP)
- * @version 1.4
- * @since   1.0
  */
 final class MultiBandsIndexColorModel extends IndexColorModel {
     /**

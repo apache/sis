@@ -39,8 +39,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Tests {@link Code}, which is used by {@link RS_Identifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 public final class CodeTest extends TestCase {
     /**

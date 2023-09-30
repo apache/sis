@@ -41,8 +41,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public abstract class GeometriesTestCase extends TestCase {
     /**

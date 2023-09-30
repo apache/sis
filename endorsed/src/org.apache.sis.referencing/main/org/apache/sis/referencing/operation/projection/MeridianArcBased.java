@@ -27,11 +27,8 @@ import static java.lang.Math.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/Meridian_arc">Meridian arc on Wikipedia</a>
- *
- * @since 1.0
  */
 abstract class MeridianArcBased extends NormalizedProjection {
     /**

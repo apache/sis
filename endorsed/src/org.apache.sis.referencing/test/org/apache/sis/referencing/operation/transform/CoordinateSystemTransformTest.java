@@ -44,8 +44,6 @@ import static org.junit.Assert.*;
  * Tests the {@link CoordinateSystemTransform} static factory method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 @DependsOn({
     SphericalToCartesianTest.class,

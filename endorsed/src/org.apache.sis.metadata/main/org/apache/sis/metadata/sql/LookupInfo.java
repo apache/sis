@@ -32,8 +32,6 @@ import org.apache.sis.metadata.MetadataStandard;
  * Consequently, there is no need for synchronization in this class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class LookupInfo {
     /**

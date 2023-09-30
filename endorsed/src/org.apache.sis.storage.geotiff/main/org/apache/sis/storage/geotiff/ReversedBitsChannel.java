@@ -31,8 +31,6 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class ReversedBitsChannel implements ReadableByteChannel, SeekableByteChannel {
     /**

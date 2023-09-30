@@ -33,8 +33,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * Tests {@link SecondDefiningParameter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class SecondDefiningParameterTest extends TestCase {
     /**

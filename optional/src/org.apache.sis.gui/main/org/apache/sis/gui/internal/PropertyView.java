@@ -51,8 +51,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public final class PropertyView implements Localized, ChangeListener<Number> {
     /**

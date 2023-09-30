@@ -38,8 +38,6 @@ import org.apache.sis.measure.Units;
  * This implementation convenience may change in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
- * @since   0.4
  */
 public final class VerticalDatumTypes implements CodeList.Filter {
     /**

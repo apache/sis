@@ -43,8 +43,6 @@ import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
  * Tests the {@link TensorParameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 @DependsOn({
     DefaultParameterDescriptorTest.class,

@@ -59,8 +59,6 @@ import org.junit.runners.model.FrameworkMethod;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.6
  */
 public final class LoggingWatcher extends TestWatchman implements Filter {
     /**

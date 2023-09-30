@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Tests the {@link NumberRange} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
- * @since   0.3
  */
 @DependsOn({
     RangeTest.class,

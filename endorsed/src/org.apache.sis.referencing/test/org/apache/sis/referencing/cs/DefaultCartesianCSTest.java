@@ -43,8 +43,6 @@ import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
  * Tests the {@link DefaultCartesianCS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,
