@@ -71,7 +71,7 @@ public abstract class Initializer {
      * the {@code derby.system.home} property.
      *
      * <h4>Dependency note</h4>
-     * This field is public for the needs of {@code non-free:sis-embedded-data} module.
+     * This field is public for the needs of {@code org.apache.sis.referencing.database} module.
      */
     public static final String DATABASE = "SpatialMetadata";
 
@@ -249,7 +249,7 @@ public abstract class Initializer {
      *       use the data source for {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"}.
      *       That database will be created if it does not exist. Note that this is the only case where
      *       Apache SIS may create the database since it is located in the directory managed by Apache SIS.</li>
-     *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the module path,
+     *   <li>Otherwise if the {@code org.apache.sis.referencing.database} module is present on the module path,
      *       use the embedded database.</li>
      *   <li>Otherwise if the {@code "derby.system.home"} property is defined,
      *       use the data source for {@code "jdbc:derby:SpatialMetadata"}.
@@ -368,7 +368,7 @@ public abstract class Initializer {
     }
 
     /**
-     * If the {@code non-free:sis-embedded-data} module is present on the module path,
+     * If the {@code org.apache.sis.referencing.database} module is present on the module path,
      * returns the data source for embedded Derby database. Otherwise returns {@code null}.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-337">SIS-337</a>

@@ -1,6 +1,6 @@
 # EPSG dataset update procedure
 
-The `org.apache.sis.referencing.factory.sql.epsg` package in the `non-free:sis-epsg` module
+The `org.apache.sis.referencing.factory.sql.epsg` package in the `non-free:sis-epsg` Maven artifact
 provides SQL scripts for installing a local copy of the [EPSG geodetic dataset](https://epsg.org/).
 This dataset provides definitions for thousands of Coordinate Reference Systems (CRS),
 together with parameter values for thousands of Coordinate Operations between various pairs of CRS.

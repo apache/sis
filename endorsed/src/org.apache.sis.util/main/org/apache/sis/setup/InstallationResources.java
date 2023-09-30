@@ -51,7 +51,7 @@ import org.apache.sis.system.Reflect;
  *
  * <table class="sis">
  *   <caption>Authorities supported by Apache SIS</caption>
- *   <tr><th>Authority</th>          <th>Provided by Maven module</th>                          <th>Used by class</th></tr>
+ *   <tr><th>Authority</th>          <th>Provided by Maven artifact</th>                        <th>Used by class</th></tr>
  *   <tr><td>{@code "EPSG"}</td>     <td>{@code org.apache.sis.non-free:sis-epsg}</td>          <td>{@link org.apache.sis.referencing.factory.sql.EPSGFactory}</td></tr>
  *   <tr><td>{@code "Embedded"}</td> <td>{@code org.apache.sis.non-free:sis-embedded-data}</td> <td>All the above</td></tr>
  * </table>
@@ -100,7 +100,7 @@ public abstract class InstallationResources {
      *
      * <div class="note"><b>Note:</b>
      * {@code "Embedded"} is a pseudo-authority for an embedded database containing EPSG and other data.
-     * This embedded database is provided by the {@code org.apache.sis.non-free:sis-embedded-data} module
+     * This embedded database is provided by the {@code org.apache.sis.referencing.database} module
      * as a convenience for avoiding the need to define a {@code SIS_DATA} directory on the local machine.
      * In this particular case, the resource is more for execution than for installation.
      * </div>
