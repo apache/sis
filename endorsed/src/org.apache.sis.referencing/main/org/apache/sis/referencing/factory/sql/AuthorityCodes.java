@@ -48,12 +48,9 @@ import org.apache.sis.util.internal.AbstractMap;
  * have the risk to return to user an already closed {@code AuthorityCodes} instance).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
  *
  * @see EPSGDataAccess#canClose()
  * @see CloseableReference#close()
- *
- * @since 0.7
  */
 @SuppressWarnings("serial")   // serialVersionUID not needed because of writeReplace().
 final class AuthorityCodes extends AbstractMap<String,String> implements Serializable {

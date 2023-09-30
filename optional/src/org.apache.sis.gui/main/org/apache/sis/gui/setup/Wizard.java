@@ -74,8 +74,6 @@ import javax.swing.filechooser.FileFilter;
  * The class doing actual work for managing SIS configuration is {@link FXFinder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class Wizard extends FileFilter implements ActionListener, PropertyChangeListener, DropTargetListener {
     /**

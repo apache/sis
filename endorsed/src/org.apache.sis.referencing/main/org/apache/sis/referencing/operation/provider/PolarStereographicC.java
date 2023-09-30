@@ -26,8 +26,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * This is very similar to variant B except in the way to use the false northing.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 public final class PolarStereographicC extends AbstractStereographic {

@@ -51,11 +51,8 @@ import org.apache.sis.util.Debug;
  * {@code DoubleDouble} is a <em>value object</em>, immutable and thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
- *
- * @since 0.4
  */
 public final class DoubleDouble extends Number implements Comparable<DoubleDouble> {
     /**

@@ -27,8 +27,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * except that the rotation angles have the opposite sign.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeographic {

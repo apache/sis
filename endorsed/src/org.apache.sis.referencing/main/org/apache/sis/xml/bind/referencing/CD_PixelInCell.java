@@ -24,8 +24,6 @@ import org.apache.sis.xml.bind.gml.CodeListAdapter;
  * JAXB adapter for (un)marshalling of GeoAPI code list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 public final class CD_PixelInCell extends CodeListAdapter<PixelInCell> {
     /**

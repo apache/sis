@@ -58,8 +58,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * Tests the {@link CommonCRS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
- * @since   0.4
  */
 @DependsOn({
   org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,
@@ -347,8 +345,6 @@ public final class CommonCRSTest extends TestCase {
 
     /**
      * Tests {@link CommonCRS#universal(double, double)} with Universal Transverse Mercator (UTM) projections.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testGeographic")
@@ -367,8 +363,6 @@ public final class CommonCRSTest extends TestCase {
 
     /**
      * Tests {@link CommonCRS#universal(double, double)} with Universal Polar Stereographic (UPS) projections.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testGeographic")
@@ -407,8 +401,6 @@ public final class CommonCRSTest extends TestCase {
 
     /**
      * Tests formatting in a {@link java.util.Formatter}.
-     *
-     * @since 1.1
      */
     @Test
     public void testFormat() {

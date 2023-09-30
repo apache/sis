@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Verifies some constants declared in {@link Loggers} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 public final class LoggersTest extends TestCase {
     /**

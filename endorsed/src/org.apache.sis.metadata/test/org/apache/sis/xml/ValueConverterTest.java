@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Tests the {@link ValueConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 @DependsOn(LegacyCodesTest.class)
 public final class ValueConverterTest extends TestCase {

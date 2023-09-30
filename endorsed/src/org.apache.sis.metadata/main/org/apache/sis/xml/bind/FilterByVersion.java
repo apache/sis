@@ -26,8 +26,6 @@ package org.apache.sis.xml.bind;
  *
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public enum FilterByVersion {
     /**

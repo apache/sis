@@ -36,8 +36,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * Tests the XML marshalling of object having {@code nilReason} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class NilReasonMarshallingTest extends TestCase {
     /**

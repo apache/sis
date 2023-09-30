@@ -21,8 +21,6 @@ package org.apache.sis.storage.netcdf.base;
  * Specifies whether a variable is used as a coordinate system axis, a coverage or other purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.0
  */
 public enum VariableRole {
     /**

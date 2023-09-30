@@ -43,8 +43,6 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * <p>This class also opportunistically provides a few utility methods related to appearance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class Styles extends Static {
     /**

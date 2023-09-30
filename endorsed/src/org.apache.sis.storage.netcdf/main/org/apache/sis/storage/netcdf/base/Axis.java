@@ -66,11 +66,8 @@ import org.apache.sis.math.Vector;
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see Grid#getAxes(Decoder)
- *
- * @since 0.3
  */
 public final class Axis extends NamedElement {
     /**

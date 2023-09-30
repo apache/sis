@@ -38,8 +38,6 @@ import org.apache.sis.system.DelayedRunnable;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class FilteringContext {
     /**

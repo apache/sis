@@ -49,8 +49,6 @@ import org.opengis.feature.AttributeType;
  * However, many {@code FeatureIterator} instances can be used concurrently for the same {@link Store} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.7
  */
 class FeatureIterator implements Spliterator<Feature> {
     /**

@@ -39,8 +39,6 @@ import org.apache.sis.gui.internal.Styles;
  * the interfaces implemented by this class are implementation convenience that may change in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 final class BandRangeTable implements Callback<TableColumn<SampleDimension,Number>, TableCell<SampleDimension,Number>> {
     /**

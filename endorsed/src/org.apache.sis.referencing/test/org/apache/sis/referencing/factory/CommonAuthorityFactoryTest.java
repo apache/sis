@@ -64,8 +64,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * Tests {@link CommonAuthorityFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
- * @since   0.7
  */
 @DependsOn(org.apache.sis.referencing.CommonCRSTest.class)
 public final class CommonAuthorityFactoryTest extends TestCase {

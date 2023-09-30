@@ -41,8 +41,6 @@ import org.opengis.test.ToleranceModifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 @DependsOn(CylindricalEqualAreaTest.class)
 public final class AlbersEqualAreaTest extends MapProjectionTestCase {

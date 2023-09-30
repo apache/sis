@@ -33,11 +33,8 @@ import org.opengis.feature.AttributeType;
  * in addition to ISO 19109 {@link org.opengis.feature.FeatureType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
  *
  * @param <V>  the type of attribute value.
- *
- * @since 0.5
  */
 public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Serializable {
     /**

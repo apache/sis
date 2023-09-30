@@ -27,8 +27,6 @@ import org.apache.sis.util.resources.Errors;
  * Thrown when a {@link MetadataVisitor#visit(Class, Object)} method failed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class MetadataVisitorException extends BackingStoreException implements LocalizedException {
     /**

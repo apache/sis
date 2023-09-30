@@ -35,8 +35,6 @@ import org.apache.sis.measure.Units;
  * Shows category table built by {@link CoverageStyling} with arbitrary data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class CoverageStylingApp extends Application {
     /**

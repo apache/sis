@@ -29,8 +29,6 @@ import jakarta.xml.bind.annotation.XmlType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "Boolean_PropertyType")
 public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {

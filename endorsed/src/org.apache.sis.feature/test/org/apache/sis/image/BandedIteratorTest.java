@@ -32,8 +32,6 @@ import org.opengis.coverage.grid.SequenceType;
  * Tests {@link BandedIterator} on floating point values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class BandedIteratorTest extends PixelIteratorTest {
     /**

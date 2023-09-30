@@ -48,8 +48,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * <cite>"Vertical Offset"</cite> parameter value needs to be reversed if the target coordinate system axis is down.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class VerticalOffset extends GeodeticOperation {

@@ -35,8 +35,6 @@ import static org.junit.Assume.assumeFalse;
  * Tests {@link ReferencingFunctions}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
- * @since   0.8
  */
 @DependsOn(TransformerTest.class)
 public final class ReferencingFunctionsTest extends TestCase {

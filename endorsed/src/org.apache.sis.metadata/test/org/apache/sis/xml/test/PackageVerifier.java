@@ -55,8 +55,6 @@ import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
  * {@link SchemaCompliance#verify(java.nio.file.Path)} for each Java package to be verified.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 final class PackageVerifier {
     /**

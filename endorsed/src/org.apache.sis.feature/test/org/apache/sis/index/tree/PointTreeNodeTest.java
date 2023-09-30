@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.1
  */
 public final class PointTreeNodeTest extends TestCase {
     /**

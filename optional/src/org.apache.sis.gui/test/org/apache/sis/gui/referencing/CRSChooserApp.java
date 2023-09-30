@@ -33,8 +33,6 @@ import org.apache.sis.referencing.CommonCRS;
  * for allowing to test the CRS domain of validity checks.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class CRSChooserApp extends Application {
     /**

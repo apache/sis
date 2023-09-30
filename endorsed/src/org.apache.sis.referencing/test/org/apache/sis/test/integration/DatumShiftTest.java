@@ -36,8 +36,6 @@ import static org.apache.sis.test.Assume.assumeDataExists;
  * directory.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     NTv2Test.class,

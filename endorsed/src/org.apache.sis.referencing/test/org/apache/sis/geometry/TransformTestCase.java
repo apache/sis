@@ -50,11 +50,8 @@ import static org.junit.Assert.*;
  * All tests performed by this class are two-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
  *
  * @param <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
- *
- * @since 0.8
  */
 @DependsOn(CurveExtremumTest.class)
 public abstract class TransformTestCase<G> extends TestCase {
@@ -218,8 +215,6 @@ public abstract class TransformTestCase<G> extends TestCase {
      * However, when the target CRS is known, then "wrap around" should be applied.
      *
      * @throws TransformException if an error occurred while transforming the envelope.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testTransform")
@@ -242,8 +237,6 @@ public abstract class TransformTestCase<G> extends TestCase {
      *
      * @throws FactoryException if an error occurred while creating the operation.
      * @throws TransformException if an error occurred while transforming the envelope.
-     *
-     * @since 1.1
      */
     @Test
     @DependsOnMethod("testTransformOverAntiMeridian")
@@ -282,8 +275,6 @@ public abstract class TransformTestCase<G> extends TestCase {
      *
      * @throws FactoryException if an error occurred while creating the operation.
      * @throws TransformException if an error occurred while transforming the envelope.
-     *
-     * @since 0.8
      */
     @Test
     public final void testAxisRangeChange() throws FactoryException, TransformException {

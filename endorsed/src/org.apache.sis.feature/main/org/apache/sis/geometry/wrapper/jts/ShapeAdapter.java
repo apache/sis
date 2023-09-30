@@ -44,8 +44,6 @@ import org.apache.sis.referencing.util.j2d.IntervalRectangle;
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class ShapeAdapter extends AbstractShape implements Serializable {
     /**

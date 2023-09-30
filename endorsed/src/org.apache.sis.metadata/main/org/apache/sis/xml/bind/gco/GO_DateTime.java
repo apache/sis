@@ -49,12 +49,10 @@ import org.apache.sis.xml.util.XmlUtilities;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.xml.bind.gml.DateAdapter
  * @see org.apache.sis.xml.bind.gml.UniversalTimeAdapter
  *
- * @since 0.3
  *
  * @todo This adapter may be deleted in favor of {@link GO_Temporal} after all usages
  *       of {@link Date} have been replaced by {@link java.time.temporal.Temporal}.

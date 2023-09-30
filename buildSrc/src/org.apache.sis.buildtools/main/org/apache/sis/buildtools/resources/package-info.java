@@ -20,7 +20,5 @@
  * Build resources for internationalization in Apache SIS.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   1.4
  */
 package org.apache.sis.buildtools.resources;

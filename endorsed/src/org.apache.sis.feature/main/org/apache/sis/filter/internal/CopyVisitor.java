@@ -40,14 +40,11 @@ import org.apache.sis.util.internal.CollectionsExt;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <SR>  the type of resources expected by the filters to copy (source resource).
  * @param  <TR>  the type of resources expected by the copied filters (target resource).
  * @param  <G>   base class of geometry objects.
  * @param  <T>   base class of temporal objects.
- *
- * @since 1.4
  */
 public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
     /**

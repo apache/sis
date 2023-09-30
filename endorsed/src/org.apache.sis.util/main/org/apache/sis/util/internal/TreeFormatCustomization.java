@@ -38,8 +38,6 @@ import org.apache.sis.util.collection.TreeTableFormat;
  * committed API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public interface TreeFormatCustomization {
     /**

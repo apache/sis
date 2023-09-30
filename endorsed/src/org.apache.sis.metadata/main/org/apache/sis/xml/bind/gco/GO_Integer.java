@@ -29,12 +29,9 @@ import jakarta.xml.bind.annotation.XmlType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see GO_Integer64
  * @see GO_UnlimitedInteger
- *
- * @since 0.3
  */
 @XmlType(name = "Integer_PropertyType")
 public class GO_Integer extends PropertyType<GO_Integer, Integer> {

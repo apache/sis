@@ -36,8 +36,6 @@ import org.apache.sis.storage.base.MemoryGridResource;
  * The writable variant of {@link SingleImageStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class WritableSingleImageStore extends WritableStore implements WritableGridCoverageResource {
     /**

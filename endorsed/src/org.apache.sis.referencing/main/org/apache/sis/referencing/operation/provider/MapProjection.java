@@ -60,8 +60,6 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  * {@linkplain ParameterDescriptorGroup descriptor group} named {@code PARAMETERS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 public abstract class MapProjection extends AbstractProvider {
@@ -213,8 +211,6 @@ public abstract class MapProjection extends AbstractProvider {
      * The number of dimensions can be only 2 or 3, and must be the same for source and target CRS.
      *
      * @return the redimensioned projection method, or {@code this} if no change is needed.
-     *
-     * @since 0.8
      */
     @Override
     public final AbstractProvider redimension(final int sourceDimensions, final int targetDimensions) {
@@ -331,8 +327,6 @@ public abstract class MapProjection extends AbstractProvider {
      * @param  toRename     authority of the alias to rename.
      * @param  replacement  the parameter from which to get the new name for the alias to rename.
      * @return the given {@code builder}, for method call chaining.
-     *
-     * @since 0.8
      */
     static ParameterBuilder renameAlias(final ParameterBuilder builder, final ParameterDescriptor<Double> template,
                                         final Citation toRename, final ParameterDescriptor<Double> replacement)
@@ -352,8 +346,6 @@ public abstract class MapProjection extends AbstractProvider {
      * @param  s2           authority of the second alias to rename.
      * @param  r2           the parameter from which to get the new name for the second alias to rename.
      * @return the given {@code builder}, for method call chaining.
-     *
-     * @since 1.1
      */
     static ParameterBuilder renameAlias(final ParameterBuilder builder, final ParameterDescriptor<Double> template,
                                         final Citation s1, final ParameterDescriptor<Double> r1,

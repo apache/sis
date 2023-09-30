@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Tests {@link TranslatedGridCoverage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public final class TranslatedGridCoverageTest extends TestCase {
     /**

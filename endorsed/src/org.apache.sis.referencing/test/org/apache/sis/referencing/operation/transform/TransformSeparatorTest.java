@@ -50,8 +50,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests {@link TransformSeparator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     PassThroughTransformTest.class,

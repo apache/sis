@@ -68,11 +68,8 @@ import jakarta.xml.bind.annotation.XmlElement;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @see LocalisedCharacterString
- *
- * @since 0.3
  */
 public final class TextGroup {
     /**

@@ -31,8 +31,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link Line} class.
  *
  * @author  Martin Desruisseaux (MPO, IRD)
- * @version 0.5
- * @since   0.5
  */
 @DependsOn(org.apache.sis.util.internal.DoubleDoubleTest.class)
 public final class LineTest extends TestCase {

@@ -776,8 +776,6 @@ next:   while (--numPts >= 0) {
      * to ellipsoidal coordinates (λ,φ) or (λ,φ,<var>h</var>).
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 1.0
-     * @since   0.7
      */
     private static final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**

@@ -67,12 +67,9 @@ import org.apache.sis.util.CharSequences;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_w/">SHIZUKU (GCOM-W) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
- *
- * @since 1.0
  */
 public final class GCOM_W extends Convention {
     /**

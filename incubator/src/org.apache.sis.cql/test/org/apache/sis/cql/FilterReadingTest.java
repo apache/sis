@@ -50,8 +50,6 @@ import static org.opengis.test.Assert.*;
  * Test reading CQL filters.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class FilterReadingTest extends CQLTestCase {
 

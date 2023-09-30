@@ -49,12 +49,9 @@ import org.opengis.filter.ComparisonOperatorName;
  * {@code Visitor} instances are thread-safe if protected methods are invoked at construction time only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <A>  type of the accumulator object where actions will write their results.
- *
- * @since 1.1
  */
 public abstract class Visitor<R,A> {
     /**

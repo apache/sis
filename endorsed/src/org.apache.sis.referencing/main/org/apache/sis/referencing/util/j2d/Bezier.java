@@ -39,11 +39,8 @@ import static java.lang.Math.abs;
  * and {@linkplain #εy}, then {@link CubicCurve2D} are replaced by {@link QuadCurve2D} or {@link Line2D}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @see <a href="https://pomax.github.io/bezierinfo/">A Primer on Bézier Curves</a>
- *
- * @since 1.0
  */
 public abstract class Bezier {
     /**

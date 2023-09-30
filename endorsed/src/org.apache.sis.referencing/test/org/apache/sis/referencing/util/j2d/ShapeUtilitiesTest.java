@@ -36,8 +36,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Values in this test were determined empirically by running {@link ShapeUtilitiesViewer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.5
  */
 public final class ShapeUtilitiesTest extends TestCase {
     /**

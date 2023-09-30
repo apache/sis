@@ -37,8 +37,6 @@ import org.opengis.feature.PropertyType;
  * Tests the {@link Types} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class TypesTest extends TestCase {
     /**

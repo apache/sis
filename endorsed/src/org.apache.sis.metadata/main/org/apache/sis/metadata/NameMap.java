@@ -25,11 +25,8 @@ import java.util.NoSuchElementException;
  * Map of property names for a given implementation class. This map is read-only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @see MetadataStandard#asNameMap(Class, KeyNamePolicy, KeyNamePolicy)
- *
- * @since 0.3
  */
 final class NameMap extends PropertyMap<String> {
     /**

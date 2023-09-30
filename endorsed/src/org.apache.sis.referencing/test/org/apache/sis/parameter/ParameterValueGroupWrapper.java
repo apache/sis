@@ -29,8 +29,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * {@code if (x instanceof DefaultParameterValueGroup)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 final class ParameterValueGroupWrapper implements ParameterValueGroup {
     /**

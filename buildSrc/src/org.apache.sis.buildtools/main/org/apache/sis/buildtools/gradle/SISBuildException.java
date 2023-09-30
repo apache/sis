@@ -21,8 +21,6 @@ package org.apache.sis.buildtools.gradle;
  * Thrown when an error occurred with the Apache SIS build helper
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 @SuppressWarnings("serial")
 public class SISBuildException extends RuntimeException {

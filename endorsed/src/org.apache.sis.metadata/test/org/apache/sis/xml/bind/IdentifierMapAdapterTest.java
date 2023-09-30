@@ -35,8 +35,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link IdentifierMapAdapter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.3
  */
 public class IdentifierMapAdapterTest extends TestCase {
     /**

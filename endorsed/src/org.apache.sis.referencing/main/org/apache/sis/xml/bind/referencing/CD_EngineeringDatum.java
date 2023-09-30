@@ -28,8 +28,6 @@ import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class CD_EngineeringDatum extends PropertyType<CD_EngineeringDatum, EngineeringDatum> {
     /**

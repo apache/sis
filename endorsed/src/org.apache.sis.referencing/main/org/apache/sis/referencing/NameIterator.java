@@ -41,8 +41,6 @@ import org.opengis.metadata.Identifier;
  * <p>This class also opportunistically provide helper methods for {@link AbstractIdentifiedObject} marshalling.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 final class NameIterator implements Iterator<Identifier> {
     /**

@@ -29,8 +29,6 @@ import org.opengis.feature.Feature;
  * Tests for {@link PointSymbolizer}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class PointSymbolizerTest extends StyleTestCase {
     /**

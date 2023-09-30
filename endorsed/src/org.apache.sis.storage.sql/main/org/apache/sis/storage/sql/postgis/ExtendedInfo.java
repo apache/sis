@@ -31,8 +31,6 @@ import org.apache.sis.storage.sql.feature.InfoStatements;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.2
- * @version 1.1
  */
 final class ExtendedInfo extends InfoStatements {
     /**

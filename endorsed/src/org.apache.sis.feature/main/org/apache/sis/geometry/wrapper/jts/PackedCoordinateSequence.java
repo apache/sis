@@ -34,8 +34,6 @@ import org.apache.sis.util.ArgumentChecks;
  * but without caching the {@code Coordinate[]} array.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 abstract class PackedCoordinateSequence implements CoordinateSequence, Serializable {
     /**

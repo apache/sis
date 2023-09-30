@@ -59,8 +59,6 @@ import org.apache.sis.util.collection.BackingStoreException;
  * {@link WritableRaster#setPixel(int, int, int[])} has more efficient implementations for integers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class Visualization extends ResampledImage {
     /**

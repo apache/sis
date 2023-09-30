@@ -49,8 +49,6 @@ import org.opengis.filter.SpatialOperatorName;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class Wrapper extends GeometryWithCRS {
     /**

@@ -63,8 +63,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests XML (un)marshalling of single operations (conversions and transformations).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     DefaultOperationMethodTest.class,

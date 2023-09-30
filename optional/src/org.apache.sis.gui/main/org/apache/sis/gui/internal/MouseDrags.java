@@ -27,8 +27,6 @@ import javafx.scene.layout.Region;
  * But this class provides a place where future versions may implement "smooth dragging".
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class MouseDrags {
     /**

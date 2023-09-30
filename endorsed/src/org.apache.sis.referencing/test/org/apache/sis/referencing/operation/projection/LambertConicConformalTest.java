@@ -52,8 +52,6 @@ import org.apache.sis.referencing.operation.provider.LambertConformalMichigan;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn(ConformalProjectionTest.class)
 public final class LambertConicConformalTest extends MapProjectionTestCase {

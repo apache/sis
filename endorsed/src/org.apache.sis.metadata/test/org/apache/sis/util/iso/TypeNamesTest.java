@@ -40,8 +40,6 @@ import static org.junit.Assert.*;
  * Tests are performed through the {@link DefaultNameFactory#toTypeName(Class)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn({
     TypesTest.class,

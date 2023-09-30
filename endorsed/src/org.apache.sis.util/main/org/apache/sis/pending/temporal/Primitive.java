@@ -31,8 +31,6 @@ import org.opengis.metadata.Identifier;
  * GeoAPI temporal interfaces are expected to change a lot in a future revision.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 class Primitive implements TemporalGeometricPrimitive, Identifier {
     /**

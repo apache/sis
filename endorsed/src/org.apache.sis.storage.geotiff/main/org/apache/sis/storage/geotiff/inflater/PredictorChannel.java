@@ -27,8 +27,6 @@ import org.apache.sis.pending.jdk.JDK17;
  * Implementation of a {@link Predictor} to be executed after decompression.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 abstract class PredictorChannel extends PixelChannel {
     /**

@@ -47,11 +47,8 @@ import org.apache.sis.util.ArgumentChecks;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
- *
- * @since 0.6
  */
 @XmlTransient
 class DefaultProjection extends DefaultConversion implements Projection {

@@ -29,8 +29,6 @@ import java.util.stream.Stream;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class PaginedDoubleStream extends DoubleStreamWrapper {
     /**

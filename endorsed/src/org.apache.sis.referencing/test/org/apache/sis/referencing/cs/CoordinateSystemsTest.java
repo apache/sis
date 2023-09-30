@@ -53,8 +53,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests the {@link CoordinateSystems} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
- * @since   0.4
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,

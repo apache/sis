@@ -28,8 +28,6 @@ import software.amazon.awssdk.services.s3.model.Bucket;
  * Instances of this class are not cached because this in only a thin wrapper.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class BucketStore extends FileStore {
     /**

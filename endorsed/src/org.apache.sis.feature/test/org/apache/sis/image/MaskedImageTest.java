@@ -45,8 +45,6 @@ import static org.apache.sis.feature.Assertions.assertPixelsEqual;
  * Tests {@link MaskedImage}.
  *
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class MaskedImageTest extends TestCase {
     /**

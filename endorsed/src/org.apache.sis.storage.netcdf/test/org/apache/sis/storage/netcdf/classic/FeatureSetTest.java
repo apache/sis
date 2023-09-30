@@ -28,8 +28,6 @@ import org.opengis.test.dataset.TestData;
  * using the Apache SIS implementation of netCDF reader.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class FeatureSetTest extends org.apache.sis.storage.netcdf.base.FeatureSetTest {
     /**

@@ -35,8 +35,6 @@ import org.apache.sis.util.SimpleInternationalString;
  * Tests {@link DefaultScopeDescription}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.3
  */
 public final class DefaultScopeDescriptionTest extends TestCase {
     /**

@@ -53,8 +53,6 @@ import org.apache.sis.util.collection.WeakHashSet;
  * creating {@link BufferedImage} since that kind of images wraps a single raster.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class RasterFactory extends Static {
     /**

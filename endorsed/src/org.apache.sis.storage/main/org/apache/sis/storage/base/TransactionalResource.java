@@ -30,8 +30,6 @@ import org.apache.sis.storage.Resource;
  * transactional Web Feature Services (WFS-T).</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public interface TransactionalResource extends Resource {
     /**

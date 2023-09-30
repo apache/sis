@@ -30,8 +30,6 @@ import org.apache.sis.io.stream.FileCacheByteChannel;
  * A seekable byte channel which copies S3 data to a temporary file for caching purposes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 final class CachedByteChannel extends FileCacheByteChannel {
     /**

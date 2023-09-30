@@ -45,11 +45,8 @@ import org.opengis.filter.ValueReference;
  * there is no parameters.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
  *
  * @param  <V>  class of values computed by the operation.
- *
- * @since 1.4
  */
 final class ExpressionOperation<V> extends AbstractOperation {
     /**

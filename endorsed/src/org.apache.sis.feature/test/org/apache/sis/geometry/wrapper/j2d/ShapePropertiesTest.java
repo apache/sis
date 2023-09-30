@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests {@link ShapeProperties}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class ShapePropertiesTest extends TestCase {
     /**

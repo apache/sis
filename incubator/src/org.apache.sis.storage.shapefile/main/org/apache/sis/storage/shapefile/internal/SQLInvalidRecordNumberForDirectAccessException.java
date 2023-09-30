@@ -23,8 +23,6 @@ import java.sql.SQLNonTransientException;
  * Thrown when a record number is invalid to do a direct access in a Shapefile or a DBase III file.
  *
  * @author  Marc Le Bihan
- * @version 0.7
- * @since   0.7
  */
 public class SQLInvalidRecordNumberForDirectAccessException extends SQLNonTransientException {
     /** Serial UID. */

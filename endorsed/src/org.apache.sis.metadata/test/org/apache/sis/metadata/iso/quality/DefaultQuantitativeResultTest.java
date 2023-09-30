@@ -45,8 +45,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class DefaultQuantitativeResultTest extends TestCase {
     /**

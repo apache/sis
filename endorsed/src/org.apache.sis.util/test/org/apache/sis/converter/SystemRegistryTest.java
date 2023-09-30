@@ -43,8 +43,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Conversion tests are the purpose of other test classes in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.3
  */
 @DependsOn(ConverterRegistryTest.class)
 public final class SystemRegistryTest extends TestCase {
@@ -101,8 +99,6 @@ public final class SystemRegistryTest extends TestCase {
 
     /**
      * Tests the creation of an enum converter.
-     *
-     * @since 0.5
      */
     @Test
     public void testStringAndEnum() {

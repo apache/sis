@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests {@link LinkOperation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @DependsOn({
     AbstractOperationTest.class,

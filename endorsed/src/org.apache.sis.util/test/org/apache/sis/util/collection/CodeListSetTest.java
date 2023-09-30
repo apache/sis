@@ -38,8 +38,6 @@ import static org.junit.Assert.*;
  * Tests the {@link CodeListSet} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class CodeListSetTest extends TestCase {
     /**

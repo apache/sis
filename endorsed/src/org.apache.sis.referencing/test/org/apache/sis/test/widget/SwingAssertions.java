@@ -26,8 +26,6 @@ import static org.junit.Assert.*;
  * Assertions on Swing objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class SwingAssertions {
     /**

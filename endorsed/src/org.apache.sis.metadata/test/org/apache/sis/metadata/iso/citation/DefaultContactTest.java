@@ -40,8 +40,6 @@ import org.opengis.metadata.citation.TelephoneType;
  * See {@link DefaultTelephone} class javadoc for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public final class DefaultContactTest extends TestCase implements Filter {
     /**

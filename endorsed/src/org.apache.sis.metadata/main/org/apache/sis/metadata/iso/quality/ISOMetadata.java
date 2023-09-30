@@ -23,8 +23,6 @@ import org.apache.sis.metadata.MetadataStandard;
  * The base class of ISO 19157 implementation classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 abstract class ISOMetadata extends org.apache.sis.metadata.iso.ISOMetadata {
     /**

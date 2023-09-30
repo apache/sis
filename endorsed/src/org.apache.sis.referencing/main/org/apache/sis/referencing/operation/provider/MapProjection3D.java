@@ -28,8 +28,6 @@ import org.opengis.util.FactoryException;
  * This is the same than two-dimensional map projections with only the ellipsoidal height which pass through.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @XmlTransient
 final class MapProjection3D extends AbstractProvider {

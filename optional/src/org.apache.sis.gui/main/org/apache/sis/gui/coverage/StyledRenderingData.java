@@ -37,8 +37,6 @@ import org.apache.sis.map.coverage.RenderingData;
  * renderer in this future. So this class is maybe temporary.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 final class StyledRenderingData extends RenderingData {
     /**

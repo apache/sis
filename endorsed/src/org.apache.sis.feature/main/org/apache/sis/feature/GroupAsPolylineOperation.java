@@ -44,8 +44,6 @@ import org.opengis.feature.Operation;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class GroupAsPolylineOperation extends AbstractOperation {
     /**

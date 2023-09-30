@@ -73,8 +73,6 @@ import org.apache.sis.math.Vector;
  * So compared to the {@code CELL_CORNER} case, the {@code CELL_CENTER} case has a translation of +0.5 × scale.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 final class GridGeometryBuilder extends GeoKeysLoader {
 

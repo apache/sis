@@ -27,8 +27,6 @@ import org.apache.sis.gui.internal.BackgroundThreads;
  * potentially fetched (loaded or computed) in a background thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class GridTile {
     /**

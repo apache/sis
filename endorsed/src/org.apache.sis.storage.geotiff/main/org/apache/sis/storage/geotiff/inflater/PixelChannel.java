@@ -33,8 +33,6 @@ import java.nio.channels.ReadableByteChannel;
  * The {@link #close()} method shall be invoked when this channel is no longer used.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 abstract class PixelChannel implements ReadableByteChannel {
     /**

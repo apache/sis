@@ -23,8 +23,6 @@ import java.nio.channels.SeekableByteChannel;
  * A byte channel where the range of bytes to read can be specified as a hint.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public abstract class ByteRangeChannel implements SeekableByteChannel {
     /**

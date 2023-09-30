@@ -34,8 +34,6 @@ import org.opengis.test.dataset.TestData;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.3
  */
 @DependsOn({ChannelDecoderTest.class, VariableTest.class})
 public final class VariableInfoTest extends VariableTest {

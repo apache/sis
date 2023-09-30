@@ -29,8 +29,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link ProbeResult}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.3
  */
 public final class ProbeResultTest extends TestCase {
     /**

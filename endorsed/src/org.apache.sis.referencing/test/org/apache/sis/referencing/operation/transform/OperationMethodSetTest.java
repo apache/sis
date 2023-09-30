@@ -43,8 +43,6 @@ import static org.junit.Assert.*;
  * Tests {@link OperationMethodSet}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,

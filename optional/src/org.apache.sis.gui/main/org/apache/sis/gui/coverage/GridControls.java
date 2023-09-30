@@ -36,8 +36,6 @@ import org.apache.sis.gui.internal.Styles;
  * The controls are updated when the image shown in {@link GridView} is changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class GridControls extends ViewAndControls {
     /**

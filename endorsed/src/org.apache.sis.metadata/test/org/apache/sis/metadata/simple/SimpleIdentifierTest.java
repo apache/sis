@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Tests {@link SimpleIdentifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class SimpleIdentifierTest extends TestCase {
     /**

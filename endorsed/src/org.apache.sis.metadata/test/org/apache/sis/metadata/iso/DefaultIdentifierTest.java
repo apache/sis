@@ -35,8 +35,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(org.apache.sis.metadata.iso.citation.DefaultCitationTest.class)
 public final class DefaultIdentifierTest extends TestCase {

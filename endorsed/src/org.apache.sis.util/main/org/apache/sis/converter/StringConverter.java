@@ -65,11 +65,8 @@ import org.apache.sis.measure.Units;
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <T>  the base type of converted objects.
- *
- * @since 0.3
  */
 abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**

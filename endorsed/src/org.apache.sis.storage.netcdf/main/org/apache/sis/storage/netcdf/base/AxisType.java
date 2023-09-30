@@ -32,8 +32,6 @@ import org.apache.sis.measure.Units;
  * Enumeration order is the desired order of coordinate values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public enum AxisType {
     /**

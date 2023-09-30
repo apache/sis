@@ -31,8 +31,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests (un)marshalling of French profile of data identification.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class DataIdentificationTest extends TestCase {
     /**

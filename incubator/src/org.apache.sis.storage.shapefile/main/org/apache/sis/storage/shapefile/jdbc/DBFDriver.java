@@ -31,8 +31,6 @@ import org.apache.sis.system.Modules;
  * Database driver for DBF 3.
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class DBFDriver extends AbstractJDBC implements Driver {
     /**

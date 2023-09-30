@@ -28,8 +28,6 @@ import org.apache.sis.referencing.CRS;
  * Used for sorting coordinate operation in preference order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class CoordinateOperationSorter implements Comparable<CoordinateOperationSorter> {
     /**

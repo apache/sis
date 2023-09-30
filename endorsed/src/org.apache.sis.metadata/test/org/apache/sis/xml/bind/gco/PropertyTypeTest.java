@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Test {@link PropertyType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn(org.apache.sis.xml.bind.IdentifierMapAdapterTest.class)
 public final class PropertyTypeTest extends TestCase {

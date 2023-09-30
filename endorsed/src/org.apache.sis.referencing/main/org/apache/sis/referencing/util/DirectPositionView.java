@@ -25,8 +25,6 @@ import org.apache.sis.geometry.AbstractDirectPosition;
  * This class shall be used for temporary objects only (it is not serializable for this reason).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.5
  */
 public abstract class DirectPositionView extends AbstractDirectPosition {
     /**

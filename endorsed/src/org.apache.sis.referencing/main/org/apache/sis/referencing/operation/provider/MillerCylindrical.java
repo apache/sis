@@ -46,11 +46,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/miller_cylindrical.html">GeoTIFF parameters for Miller Cylindrical</a>
- *
- * @since 0.6
  */
 @XmlTransient
 public final class MillerCylindrical extends AbstractMercator {

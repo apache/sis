@@ -75,11 +75,8 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  * @author  Johann Sorel (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
- *
- * @since 0.8
  */
 final class ImageFileDirectory extends DataCube {
     /**

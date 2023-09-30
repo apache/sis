@@ -101,8 +101,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * then {@link CoordinateOperationFinder} will use its own fallback.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 class CoordinateOperationRegistry {
     /**

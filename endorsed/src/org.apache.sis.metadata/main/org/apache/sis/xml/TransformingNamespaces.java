@@ -29,11 +29,8 @@ import javax.xml.namespace.NamespaceContext;
  * {@link TransformingWriter} and {@link TransformedEvent} only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-152">SIS-152</a>
- *
- * @since 0.4
  */
 class TransformingNamespaces implements NamespaceContext {
     /**

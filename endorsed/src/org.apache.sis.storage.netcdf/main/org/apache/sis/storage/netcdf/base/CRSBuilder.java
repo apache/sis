@@ -87,8 +87,6 @@ import org.opengis.referencing.operation.CoordinateOperationFactory;
  * while {@link DataStoreException} is handled as a fatal error. Warnings are stored in {@link #warnings} field.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     /**

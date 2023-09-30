@@ -26,11 +26,8 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPAC
  *
  * @author  Guilhem Legal  (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
  *
  * @see org.apache.sis.xml.Namespaces
- *
- * @since 0.4
  */
 public final class LegacyNamespaces {
     /**

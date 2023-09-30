@@ -49,11 +49,8 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see MetadataStandardTest#testValueMap()
- *
- * @since 0.3
  */
 @DependsOn(PropertyAccessorTest.class)
 public final class ValueMapTest extends TestCase {

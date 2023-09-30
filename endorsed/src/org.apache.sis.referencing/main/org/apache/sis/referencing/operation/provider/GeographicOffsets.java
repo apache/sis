@@ -38,8 +38,6 @@ import org.apache.sis.measure.Units;
  * but subclasses will provide different operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public class GeographicOffsets extends GeodeticOperation {

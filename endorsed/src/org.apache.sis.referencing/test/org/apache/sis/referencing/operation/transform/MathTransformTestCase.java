@@ -74,8 +74,6 @@ import org.opengis.test.referencing.TransformTestCase;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.5
  */
 public abstract class MathTransformTestCase extends TransformTestCase {
     /**
@@ -286,8 +284,6 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * @param  domain      the domain of the numbers to be generated.
      * @param  randomSeed  the seed for the random number generator, or 0 for choosing a random seed.
      * @throws TransformException if a conversion, transformation or derivative failed.
-     *
-     * @since 0.6
      */
     @SuppressWarnings("fallthrough")
     protected final void verifyInDomain(final CoordinateDomain domain, final long randomSeed) throws TransformException {
@@ -375,8 +371,6 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * @param  expected  a regular expression for the expected WKT.
      *
      * @see #printInternalWKT()
-     *
-     * @since 0.6
      */
     protected final void assertWktEqualsRegex(final String expected) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
@@ -387,8 +381,6 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * Asserts that the current {@linkplain #transform transform} produces the given internal WKT.
      *
      * @param  expected  the expected internal WKT.
-     *
-     * @since 0.7
      */
     protected final void assertInternalWktEquals(final String expected) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
@@ -400,8 +392,6 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * matching the given regular expression.
      *
      * @param  expected  a regular expression for the expected internal WKT.
-     *
-     * @since 0.7
      */
     protected final void assertInternalWktEqualsRegex(final String expected) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);

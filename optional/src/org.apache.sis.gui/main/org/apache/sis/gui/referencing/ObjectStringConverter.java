@@ -27,8 +27,6 @@ import org.apache.sis.gui.internal.Resources;
  * Converts an {@link IdentifiedObject} to {@link String} representation to show in JavaFX control.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class ObjectStringConverter<T extends IdentifiedObject> extends StringConverter<T> {
     /**

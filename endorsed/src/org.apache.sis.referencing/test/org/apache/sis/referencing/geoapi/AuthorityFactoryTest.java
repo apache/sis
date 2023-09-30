@@ -30,8 +30,6 @@ import org.junit.Ignore;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class AuthorityFactoryTest extends org.opengis.test.referencing.AuthorityFactoryTest {
     /**

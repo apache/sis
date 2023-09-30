@@ -37,8 +37,6 @@ import org.opengis.test.referencing.TransformTestCase;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys).
- * @version 1.0
- * @since   0.7
  */
 public final class LinearInterpolator1DTest extends TransformTestCase {
     /**

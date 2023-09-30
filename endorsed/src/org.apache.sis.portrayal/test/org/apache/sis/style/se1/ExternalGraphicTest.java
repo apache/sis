@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests for {@link ExternalGraphic}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class ExternalGraphicTest extends StyleTestCase {
     /**

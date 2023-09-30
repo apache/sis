@@ -32,11 +32,8 @@ import org.opengis.feature.InvalidPropertyValueException;
  * can be invalid only if a property is invalid.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @see Features#validate(Feature)
- *
- * @since 0.7
  */
 final class InvalidFeatureException extends InvalidPropertyValueException implements LocalizedException {
     /**

@@ -28,8 +28,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * This is often equivalent to {@link PseudoMercator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 @XmlTransient
 public final class MercatorAuxiliarySphere extends AbstractMercator {

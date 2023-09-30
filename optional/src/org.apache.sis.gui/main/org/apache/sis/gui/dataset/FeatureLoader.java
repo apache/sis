@@ -40,8 +40,6 @@ import org.opengis.feature.FeatureType;
  * The boolean value returned by this task tells whether there is more features to load.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
     /**

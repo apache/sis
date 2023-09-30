@@ -43,8 +43,6 @@ import org.apache.sis.measure.Units;
  * The residuals after an affine approximation has been created for a set of matching control point pairs.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
@@ -298,8 +296,6 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * Geocentric interpolations add the translation to coordinates converted to geocentric coordinates.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.1
-     * @since   1.0
      */
     private final class Data extends FormattableObject implements Matrix, Function<int[],Number> {
         /** Coefficients from the denormalization matrix for the row corresponding to this dimension. */

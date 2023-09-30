@@ -28,8 +28,6 @@ import org.apache.sis.util.SimpleInternationalString;
  *       It would make easier to enrich the metadata with more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 enum BandName {
     COASTAL_AEROSOL(BandGroupName.REFLECTIVE,   "Coastal Aerosol",                    (short)   433),

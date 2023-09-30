@@ -64,11 +64,8 @@ import static org.apache.sis.metadata.internal.TemporalUtilities.toDate;
  * in the <cite>GeoTIFF Profile for Georeferenced Imagery</cite> standard.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://www.dgiwg.org/dgiwg-standards">DGIWG Standards</a>
- *
- * @since 1.2
  */
 final class XMLMetadata implements Filter {
     /**

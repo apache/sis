@@ -32,8 +32,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Runs a suite of tests provided in the GeoAPI project.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class ParameterizedTransformTest extends org.opengis.test.referencing.ParameterizedTransformTest {
     /**

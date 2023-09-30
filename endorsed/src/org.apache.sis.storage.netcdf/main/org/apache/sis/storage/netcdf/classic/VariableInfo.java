@@ -66,8 +66,6 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.3
  */
 final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**

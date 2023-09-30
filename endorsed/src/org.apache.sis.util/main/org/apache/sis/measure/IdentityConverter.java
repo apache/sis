@@ -34,8 +34,6 @@ import org.apache.sis.util.LenientComparable;
  * depending on the parameter sign.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class IdentityConverter extends AbstractConverter implements LenientComparable {
     /**

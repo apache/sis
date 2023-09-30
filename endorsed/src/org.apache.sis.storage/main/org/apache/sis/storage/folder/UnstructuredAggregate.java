@@ -28,8 +28,6 @@ import org.apache.sis.storage.aggregate.CoverageAggregator;
  * Structure is inferred by {@link CoverageAggregator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public interface UnstructuredAggregate extends Aggregate {
     /**

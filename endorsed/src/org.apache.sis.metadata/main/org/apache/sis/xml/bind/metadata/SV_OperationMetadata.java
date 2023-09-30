@@ -29,8 +29,6 @@ import org.opengis.metadata.identification.OperationMetadata;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, OperationMetadata> {
     /**

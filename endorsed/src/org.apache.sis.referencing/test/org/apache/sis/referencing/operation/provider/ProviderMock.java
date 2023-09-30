@@ -35,8 +35,6 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * <p>Subclasses may be promoted to a real operation if we implement their formulas in a future Apache SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @SuppressWarnings("serial")
 abstract class ProviderMock extends AbstractProvider {

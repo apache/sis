@@ -50,8 +50,6 @@ import org.opengis.metadata.Identifier;
  * Tests the static methods in the {@link Parameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 @DependsOn({
     DefaultParameterDescriptorTest.class,
@@ -201,8 +199,6 @@ public final class ParametersTest extends TestCase {
 
     /**
      * Tests {@link Parameters#getValue(ParameterDescriptor)} and {@link Parameters#intValue(ParameterDescriptor)}.
-     *
-     * @since 0.6
      */
     @Test
     public void testGetIntValue() {

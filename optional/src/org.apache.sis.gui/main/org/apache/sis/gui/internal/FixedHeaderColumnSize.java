@@ -27,8 +27,6 @@ import javafx.scene.control.TableColumn;
  * But the column size can still be changed by moving the column separator.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class FixedHeaderColumnSize<E> implements Callback<TableView.ResizeFeatures<E>, Boolean> {
     /**

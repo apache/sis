@@ -61,8 +61,6 @@ import static org.apache.sis.metadata.internal.NameToIdentifier.Simplifier.ESRI_
  * This is used for finding the EPSG code of a given Coordinate Reference System or other geodetic object.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 final class EPSGCodeFinder extends IdentifiedObjectFinder {
     /**

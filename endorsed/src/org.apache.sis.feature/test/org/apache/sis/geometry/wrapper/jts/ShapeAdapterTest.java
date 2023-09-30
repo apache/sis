@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
  * Tests {@link ShapeAdapter}.
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class ShapeAdapterTest extends TestCase {
     /**

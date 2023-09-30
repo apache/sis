@@ -30,8 +30,6 @@ import org.apache.sis.util.collection.BackingStoreException;
  * which are returned as {@link Longitude} or {@link Latitude} instances instead of {@link Double}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 final class SpecialCases extends PropertyAccessor {
     /**

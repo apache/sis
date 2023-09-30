@@ -54,8 +54,6 @@ import org.apache.sis.util.ArraysExt;
  * rendering.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class IsolineRenderer {
     /**

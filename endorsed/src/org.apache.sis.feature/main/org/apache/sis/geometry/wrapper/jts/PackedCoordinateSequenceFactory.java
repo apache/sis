@@ -29,8 +29,6 @@ import org.locationtech.jts.geom.CoordinateSequenceFactory;
  * but without caching the {@code Coordinate[]} array.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class PackedCoordinateSequenceFactory implements CoordinateSequenceFactory, Serializable {
     /**

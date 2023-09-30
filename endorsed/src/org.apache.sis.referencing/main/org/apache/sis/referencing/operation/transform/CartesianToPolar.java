@@ -41,8 +41,6 @@ import static java.lang.Math.*;
  * is dropping the <var>z</var> axis.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 final class CartesianToPolar extends CoordinateSystemTransform implements Serializable {
     /**

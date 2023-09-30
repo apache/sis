@@ -32,8 +32,6 @@ import org.apache.sis.feature.internal.Resources;
  * A writable version of {@link TiledImage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public class WritableTiledImage extends TiledImage implements WritableRenderedImage {
     /**

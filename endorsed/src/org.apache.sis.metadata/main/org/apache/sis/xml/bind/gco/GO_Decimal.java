@@ -35,11 +35,8 @@ import jakarta.xml.bind.annotation.XmlType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see GO_Real
- *
- * @since 0.3
  */
 @XmlType(name = "Decimal_PropertyType")
 public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {

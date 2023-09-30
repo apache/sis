@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * Tests copies using {@link CopyVisitor}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class CopyVisitorTest extends TestCase {
     /**

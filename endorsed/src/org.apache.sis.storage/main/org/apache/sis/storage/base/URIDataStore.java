@@ -52,8 +52,6 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.8
  */
 public abstract class URIDataStore extends DataStore implements StoreResource, ResourceOnFileSystem {
     /**
@@ -205,8 +203,6 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      *
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.2
-     * @since   0.8
      */
     public abstract static class Provider extends DataStoreProvider {
         /**
@@ -342,8 +338,6 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @param  resource  the resource for which to get the location, or {@code null}.
      * @return location of the given resource, or {@code null} if none.
      * @throws DataStoreException if an error on the file system prevent the creation of the path.
-     *
-     * @since 1.1
      */
     public static Object location(final Resource resource) throws DataStoreException {
         if (resource instanceof DataStore) {

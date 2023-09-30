@@ -36,8 +36,6 @@ import org.apache.sis.util.ArraysExt;
  * Manages a list of recently opened files. The list of files is initialized from user preferences.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class RecentFiles implements EventHandler<ActionEvent> {
     /**

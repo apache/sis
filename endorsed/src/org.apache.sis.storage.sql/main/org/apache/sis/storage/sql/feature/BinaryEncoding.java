@@ -28,8 +28,6 @@ import org.apache.sis.pending.jdk.HexFormat;
  * The way binary data are encoded in a table column.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public enum BinaryEncoding {
     /**

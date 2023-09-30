@@ -38,8 +38,6 @@ import com.sun.source.doctree.UnknownInlineTagTree;
  * Taglets are assumed inline by default.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 abstract class Taglet implements jdk.javadoc.doclet.Taglet {
     /**

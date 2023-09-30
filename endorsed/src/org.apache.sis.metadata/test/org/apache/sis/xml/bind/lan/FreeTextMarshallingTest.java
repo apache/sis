@@ -35,8 +35,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * Tests the XML marshalling of {@code FreeText}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class FreeTextMarshallingTest extends TestCase {
     /**

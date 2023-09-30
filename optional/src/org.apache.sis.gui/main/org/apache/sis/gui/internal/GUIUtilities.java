@@ -48,8 +48,6 @@ import org.apache.sis.util.Workaround;
  * Miscellaneous utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public final class GUIUtilities extends Static {
     /**

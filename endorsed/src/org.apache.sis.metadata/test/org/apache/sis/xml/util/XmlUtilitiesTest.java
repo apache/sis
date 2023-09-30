@@ -42,8 +42,6 @@ import static org.junit.Assert.*;
  * Test {@link XmlUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 public final class XmlUtilitiesTest extends TestCase {
     /**

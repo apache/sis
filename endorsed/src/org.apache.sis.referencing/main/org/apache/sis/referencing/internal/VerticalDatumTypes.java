@@ -41,8 +41,6 @@ import java.util.function.Predicate;
  * This implementation convenience may change in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   0.4
  */
 public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
     /**

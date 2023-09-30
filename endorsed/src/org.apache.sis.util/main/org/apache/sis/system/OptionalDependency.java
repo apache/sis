@@ -30,8 +30,6 @@ import org.apache.sis.util.resources.Messages;
  * services of the {@code org.apache.sis.referencing} module if the latter is present on the module path.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public abstract class OptionalDependency extends SystemListener {
     /**

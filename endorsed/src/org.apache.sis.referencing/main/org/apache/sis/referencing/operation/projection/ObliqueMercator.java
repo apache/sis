@@ -58,12 +58,9 @@ import static org.apache.sis.referencing.operation.provider.ObliqueMercatorCente
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Emmanuel Giasson (Thales)
- * @version 1.2
  *
  * @see Mercator
  * @see TransverseMercator
- *
- * @since 1.0
  */
 public class ObliqueMercator extends ConformalProjection {
     /**

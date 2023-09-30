@@ -28,8 +28,6 @@ import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
  * The provider for <cite>"Lambert Cylindrical Equal Area (Spherical)"</cite> projection (EPSG:9834).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @XmlTransient
 public final class LambertCylindricalEqualAreaSpherical extends MapProjection {

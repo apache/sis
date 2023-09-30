@@ -25,11 +25,8 @@ import java.util.NoSuchElementException;
  * Map of property indices for a given implementation class. This map is read-only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @see MetadataStandard#asIndexMap(Class, KeyNamePolicy)
- *
- * @since 0.8
  */
 final class IndexMap extends PropertyMap<Integer> {
     /**

@@ -385,8 +385,6 @@ public abstract class Builder<B extends Builder<B>> {
      * or {@code null} if none. The default value is {@code null}.
      *
      * @return the citation specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
-     *
-     * @since 0.6
      */
     private Citation getAuthority() {
         return (Citation) properties.get(Identifier.AUTHORITY_KEY);
@@ -397,8 +395,6 @@ public abstract class Builder<B extends Builder<B>> {
      * or {@code null} if none. The default value is {@code null}.
      *
      * @return the string specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
-     *
-     * @since 0.6
      */
     private String getCodeSpace() {
         return (String) properties.get(Identifier.CODESPACE_KEY);
@@ -445,8 +441,6 @@ public abstract class Builder<B extends Builder<B>> {
      * The default value is {@code null}.
      *
      * @return the value specified by the last call to {@code setVersion(…)}, or {@code null} if none.
-     *
-     * @since 0.6
      */
     private String getVersion() {
         return (String) properties.get(Identifier.VERSION_KEY);

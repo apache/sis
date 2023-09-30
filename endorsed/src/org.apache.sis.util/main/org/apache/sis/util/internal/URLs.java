@@ -29,8 +29,6 @@ import org.apache.sis.util.Static;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.2
  */
 public final class URLs extends Static {
     /**

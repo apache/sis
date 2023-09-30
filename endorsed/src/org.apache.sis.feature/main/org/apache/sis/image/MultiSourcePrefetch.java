@@ -32,8 +32,6 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
  * However the tile matrix does not need to be the same.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class MultiSourcePrefetch implements Disposable {
     /**

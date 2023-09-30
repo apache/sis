@@ -54,8 +54,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  * Tests the {@link EPSGFactoryFallback} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 @DependsOn({
   StandardDefinitionsTest.class,

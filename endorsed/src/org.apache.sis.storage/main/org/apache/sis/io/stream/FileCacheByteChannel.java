@@ -56,8 +56,6 @@ import static org.apache.sis.storage.base.StoreUtilities.LOGGER;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public abstract class FileCacheByteChannel extends ByteRangeChannel {
     /**

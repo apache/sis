@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Verifies some {@link GeoCodes} values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class GeoCodesTest extends TestCase {
     /**

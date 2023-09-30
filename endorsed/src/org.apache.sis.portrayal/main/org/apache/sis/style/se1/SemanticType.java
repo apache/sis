@@ -31,8 +31,6 @@ package org.apache.sis.style.se1;
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public enum SemanticType {
     /**

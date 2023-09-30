@@ -31,8 +31,6 @@ import org.apache.sis.util.Classes;
  * Note that this is specific to {@code ClassFormat} and generally not true for arbitrary {@code Format} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @SuppressWarnings("CloneableImplementsClone")   // Because this class does not contain field that need to be cloned.
 final class ClassFormat extends Format {

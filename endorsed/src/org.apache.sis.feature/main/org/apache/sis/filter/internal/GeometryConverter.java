@@ -43,14 +43,11 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <G>  the geometry implementation type.
  *
  * @see org.apache.sis.filter.ConvertFunction
- *
- * @since 1.1
  */
 final class GeometryConverter<R,G> extends Node implements Optimization.OnExpression<R, GeometryWrapper> {
     /**

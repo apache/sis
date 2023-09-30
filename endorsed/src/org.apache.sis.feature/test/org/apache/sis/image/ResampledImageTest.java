@@ -48,8 +48,6 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ResampledImageTest extends TestCase {
     /**

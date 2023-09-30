@@ -33,8 +33,6 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @since   1.0
- * @since   0.5
  */
 public final class CI_Responsibility extends PropertyType<CI_Responsibility, Responsibility> {
     /**

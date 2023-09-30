@@ -30,11 +30,8 @@ import java.util.Iterator;
  * but this is not needed for the purpose of this internal class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param <E>  ignored.
- *
- * @since 1.0
  */
 final class InfiniteSet<E> extends AbstractSet<E> {
     /**

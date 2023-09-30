@@ -42,8 +42,6 @@ import static org.opengis.test.Assert.assertIdentifierEquals;
  * Tests the {@link DefaultPassThroughOperation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     DefaultTransformationTest.class,

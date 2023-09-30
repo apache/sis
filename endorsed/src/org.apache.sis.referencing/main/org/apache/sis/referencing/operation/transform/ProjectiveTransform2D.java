@@ -32,8 +32,6 @@ import org.apache.sis.referencing.util.j2d.LinearTransform2D;
  *
  * @author  Jan Jezek (UWB)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.5
  */
 final class ProjectiveTransform2D extends ProjectiveTransform implements LinearTransform2D {
     /**

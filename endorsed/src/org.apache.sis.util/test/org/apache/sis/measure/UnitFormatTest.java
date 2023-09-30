@@ -41,8 +41,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
- * @since   0.8
  */
 @DependsOn({SystemUnitTest.class, ConventionalUnitTest.class})
 public final class UnitFormatTest extends TestCase {

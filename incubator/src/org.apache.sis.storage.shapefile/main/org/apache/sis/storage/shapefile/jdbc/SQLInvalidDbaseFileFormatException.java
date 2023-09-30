@@ -23,8 +23,6 @@ import java.sql.SQLNonTransientException;
  * Thrown when the DBF file format seems to be invalid.
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class SQLInvalidDbaseFileFormatException extends SQLNonTransientException {
     /** Serial UID. */

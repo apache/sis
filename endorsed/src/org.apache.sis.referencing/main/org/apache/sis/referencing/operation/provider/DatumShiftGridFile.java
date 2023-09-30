@@ -64,15 +64,12 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
  * sharing data and for {@link #equals(Object)} and {@link #hashCode()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <C>  dimension of the coordinate unit (usually {@link Angle}).
  * @param <T>  dimension of the translation unit. Usually {@link Angle},
  *             but can also be {@link javax.measure.quantity.Length}.
  *
  * @see org.apache.sis.referencing.operation.transform.InterpolatedTransform
- *
- * @since 0.7
  */
 abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
     /**
@@ -512,12 +509,9 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
      *
      * @param <C>  dimension of the coordinate unit (usually angular).
      * @param <T>  dimension of the translation unit (usually angular or linear).
-     *
-     * @since 0.7
      */
     static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**
@@ -632,12 +626,9 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * See {@link DatumShiftGridFile.Float} for more information (most comments apply to this class as well).
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.1
      *
      * @param <C>  dimension of the coordinate unit (usually angular).
      * @param <T>  dimension of the translation unit (usually angular or linear).
-     *
-     * @since 1.1
      */
     static final class Double<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**

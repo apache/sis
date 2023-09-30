@@ -31,8 +31,6 @@ import org.apache.sis.measure.Units;
  * <p>This class may be promoted to a real operation if we implement the formulas in a future Apache SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @SuppressWarnings("serial")
 public final class SeismicBinGridMock extends ProviderMock {

@@ -31,8 +31,6 @@ import org.gradle.external.javadoc.StandardJavadocDocletOptions;
  * Extension to Gradle {@link Javadoc} task.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class ModularJavadoc extends Conventions {
     /**

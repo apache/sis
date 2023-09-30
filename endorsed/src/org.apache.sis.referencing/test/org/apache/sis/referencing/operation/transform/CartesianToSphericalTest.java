@@ -33,8 +33,6 @@ import org.opengis.test.referencing.TransformTestCase;
  * Tests {@link CartesianToSpherical}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn(SphericalToCartesianTest.class)
 public final class CartesianToSphericalTest extends TransformTestCase {

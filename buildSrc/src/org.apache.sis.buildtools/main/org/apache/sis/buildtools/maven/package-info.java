@@ -24,7 +24,5 @@
  * neither how to control the list of dependencies.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 package org.apache.sis.buildtools.maven;

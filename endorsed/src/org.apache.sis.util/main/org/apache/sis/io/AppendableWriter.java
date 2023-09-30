@@ -26,8 +26,6 @@ import java.nio.CharBuffer;
  * Wraps a {@link Appendable} as a {@link Writer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 final class AppendableWriter extends Writer {
     /**

@@ -37,8 +37,6 @@ import org.apache.sis.storage.DataStoreException;
  * @todo May move to public API (in revised form) in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public interface SchemaModifier {
     /**

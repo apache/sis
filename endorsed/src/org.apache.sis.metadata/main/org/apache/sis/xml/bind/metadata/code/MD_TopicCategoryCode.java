@@ -32,8 +32,6 @@ import org.apache.sis.xml.bind.cat.EnumAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guihem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class MD_TopicCategoryCode extends EnumAdapter<MD_TopicCategoryCode, TopicCategory> {
     /**

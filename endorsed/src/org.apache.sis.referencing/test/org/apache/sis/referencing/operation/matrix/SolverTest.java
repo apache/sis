@@ -49,8 +49,6 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
  * the above-cited simple operations anyway.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(GeneralMatrixTest.class)                 // See class javadoc
 public final class SolverTest extends TestCase {

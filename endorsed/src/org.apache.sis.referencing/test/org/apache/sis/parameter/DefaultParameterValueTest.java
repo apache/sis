@@ -43,8 +43,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link DefaultParameterValue} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.4
  */
 @SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(DefaultParameterDescriptorTest.class)
@@ -606,8 +604,6 @@ public final class DefaultParameterValueTest extends TestCase {
      * Tests WKT formatting of a parameter with sexagesimal units.
      * Since those units cannot be formatted in a {@code UNIT["name", scale]} element,
      * the formatter should convert them to a formattable unit like degrees.
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod("testWKT")
@@ -626,8 +622,6 @@ public final class DefaultParameterValueTest extends TestCase {
 
     /**
      * Tests WKT formatting of a parameter having an identifier.
-     *
-     * @since 0.6
      */
     @Test
     @DependsOnMethod("testWKT")

@@ -40,8 +40,6 @@ import static org.junit.Assert.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn(ChannelDataInputTest.class)
 public final class HyperRectangleReaderTest extends TestCase {

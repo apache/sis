@@ -39,8 +39,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests the {@link LongitudeRotation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.6
  */
 @DependsOn(AffineTest.class)
 public final class LongitudeRotationTest extends TestCase {

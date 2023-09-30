@@ -31,8 +31,6 @@ import org.apache.sis.util.CharSequences;
  * Most of those methods are for {@link Object#toString()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.3
  */
 public final class Strings extends Static {
     /**
@@ -95,8 +93,6 @@ public final class Strings extends Static {
      *
      * @param  text  the text to trim, or {@code null}.
      * @return the trimmed text, or {@code null} if the given text was null or blank.
-     *
-     * @since 1.1
      */
     public static String trimOrNull(String text) {
         if (text != null) {

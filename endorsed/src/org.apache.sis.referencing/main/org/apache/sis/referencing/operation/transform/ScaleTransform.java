@@ -37,11 +37,8 @@ import org.apache.sis.util.ArgumentChecks;
  * {@link org.apache.sis.referencing.util.j2d.AffineTransform2D} should be used in such case.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
- *
- * @since 0.7
  */
 final class ScaleTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**

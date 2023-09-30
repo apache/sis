@@ -30,12 +30,9 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/polar_stereographic.html">GeoTIFF parameters for Polar Stereographic</a>
  * @see <a href="https://issues.apache.org/jira/browse/SIS-572">SIS-512</a>
- *
- * @since 0.6
  */
 @XmlTransient
 public final class PolarStereographicB extends AbstractStereographic {

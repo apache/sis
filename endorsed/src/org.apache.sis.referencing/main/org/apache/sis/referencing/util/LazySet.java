@@ -34,11 +34,8 @@ import org.apache.sis.util.internal.SetOfUnknownSize;
  * This class is thread safe. The synchronization lock is {@code this}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @param <E>  the type of elements in the set.
- *
- * @since 0.6
  */
 public abstract class LazySet<E> extends SetOfUnknownSize<E> {
     /**
@@ -84,8 +81,6 @@ public abstract class LazySet<E> extends SetOfUnknownSize<E> {
      * it needs to add more values).
      *
      * @return values to prepend before the source {@code Iterable}, or {@code null} if none.
-     *
-     * @since 0.7
      */
     protected E[] initialValues() {
         return null;

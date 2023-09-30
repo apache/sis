@@ -49,8 +49,6 @@ import org.opengis.parameter.ParameterDirection;
  * Tests the {@link Types} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class TypesTest extends TestCase {
     /**
@@ -123,8 +121,6 @@ public final class TypesTest extends TestCase {
     /**
      * Tests the {@link Types#forEnumName(Class, String)} method with an enumeration from the JDK.
      * Such enumerations do not implement the {@link org.opengis.util.ControlledVocabulary} interface.
-     *
-     * @since 0.5
      */
     @Test
     public void testForStandardEnumName() {
@@ -138,8 +134,6 @@ public final class TypesTest extends TestCase {
     /**
      * Tests the {@link Types#forEnumName(Class, String)} method with an enumeration from GeoAPI.
      * Such enumerations implement the {@link org.opengis.util.ControlledVocabulary} interface.
-     *
-     * @since 0.5
      */
     @Test
     public void testForGeoapiEnumName() {

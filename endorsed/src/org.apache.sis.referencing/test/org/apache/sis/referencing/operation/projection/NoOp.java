@@ -33,8 +33,6 @@ import org.apache.sis.util.internal.Constants;
  * This is used for testing methods other than {@code transform(…)} and {@code inverseTransform(…)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @SuppressWarnings("serial")
 final class NoOp extends ConformalProjection {

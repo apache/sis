@@ -29,8 +29,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class LE_Algorithm extends PropertyType<LE_Algorithm, Algorithm> {
     /**

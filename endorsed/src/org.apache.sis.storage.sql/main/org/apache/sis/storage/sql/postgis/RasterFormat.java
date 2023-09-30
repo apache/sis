@@ -33,12 +33,9 @@ import org.apache.sis.storage.sql.feature.InfoStatements;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see <a href="https://trac.osgeo.org/postgis/browser/trunk/raster/doc/RFC2-WellKnownBinaryFormat">RFC2-WellKnownBinaryFormat</a>
  * @see <a href="https://postgis.net/docs/RT_reference.html">PostGIS Raster reference</a>
- *
- * @since 1.2
  */
 abstract class RasterFormat {
     /**

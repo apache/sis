@@ -37,11 +37,8 @@ import org.opengis.feature.InvalidPropertyValueException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
  *
  * @see DefaultAssociationRole
- *
- * @since 0.5
  */
 @SuppressWarnings("CloneableImplementsClone")     // AbstractAssociation.clone() contract is to return a shallow copy.
 final class SingletonAssociation extends AbstractAssociation {

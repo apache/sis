@@ -37,8 +37,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
  * infer it from the actual value.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public final class CC_OperationParameter extends PropertyType<CC_OperationParameter, ParameterDescriptor<?>> {
     /**

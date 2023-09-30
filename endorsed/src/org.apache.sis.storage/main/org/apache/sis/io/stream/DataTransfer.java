@@ -25,8 +25,6 @@ import java.nio.Buffer;
  * The kind of buffer and the primitive type in the array depend on the implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 interface DataTransfer {
     /**

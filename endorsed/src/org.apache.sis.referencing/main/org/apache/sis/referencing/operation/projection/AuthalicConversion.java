@@ -42,8 +42,6 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * <p>Lee, L. P. "The Nomenclature and Classification of Map Projections." Empire Survey Review 7, 190-200, 1944.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 abstract class AuthalicConversion extends NormalizedProjection {
     /**

@@ -29,8 +29,6 @@ import org.opengis.referencing.operation.TransformException;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
- * @since   0.7
  */
 class MolodenskyTransform2D extends MolodenskyTransform implements MathTransform2D {
     /**

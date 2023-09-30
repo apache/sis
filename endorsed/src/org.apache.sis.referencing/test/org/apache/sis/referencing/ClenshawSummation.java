@@ -56,8 +56,6 @@ import org.apache.sis.util.StringBuilders;
  * This class is used for more complex formulas where the use of spreadsheet become too difficult.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class ClenshawSummation {
     /**

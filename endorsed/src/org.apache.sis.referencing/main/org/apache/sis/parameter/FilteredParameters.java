@@ -32,8 +32,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
  * This filtered list is unmodifiable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 @SuppressWarnings("CloneableImplementsClone")
 final class FilteredParameters extends UnmodifiableParameterValueGroup {

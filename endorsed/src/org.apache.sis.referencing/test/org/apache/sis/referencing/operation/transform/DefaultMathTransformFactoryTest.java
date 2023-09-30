@@ -61,8 +61,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * providers registered as an {@code org.opengis.referencing.operation.OperationMethod} in all available modules.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     org.apache.sis.referencing.operation.provider.ProvidersTest.class,
@@ -220,8 +218,6 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
      * For remaining parameters, we rely on default values.
      *
      * @throws FactoryException if the construction of a map projection failed.
-     *
-     * @since 0.7
      */
     @Test
     @SuppressWarnings("fallthrough")

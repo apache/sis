@@ -38,8 +38,6 @@ import org.opengis.metadata.citation.Responsibility;
  * Tests the {@link NilReason}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class NilReasonTest extends TestCase {
     /**
@@ -119,8 +117,6 @@ public final class NilReasonTest extends TestCase {
     /**
      * Tests {@link NilReason#createNilObject(Class)} for a float type.
      * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
-     *
-     * @since 0.4
      */
     @Test
     public void testCreateNilFloat() {
@@ -137,8 +133,6 @@ public final class NilReasonTest extends TestCase {
     /**
      * Tests {@link NilReason#createNilObject(Class)} for a double type.
      * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
-     *
-     * @since 0.4
      */
     @Test
     public void testCreateNilDouble() {
@@ -155,8 +149,6 @@ public final class NilReasonTest extends TestCase {
     /**
      * Tests {@link NilReason#createNilObject(Class)} for a string type.
      * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
-     *
-     * @since 0.4
      */
     @Test
     public void testCreateNilString() {
@@ -172,8 +164,6 @@ public final class NilReasonTest extends TestCase {
     /**
      * Tests {@link NilReason#createNilObject(Class)} for an international string type.
      * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
-     *
-     * @since 0.4
      */
     @Test
     public void testCreateNilInternationalString() {

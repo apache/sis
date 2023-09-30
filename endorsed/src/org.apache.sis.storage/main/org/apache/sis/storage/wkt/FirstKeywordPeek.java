@@ -36,8 +36,6 @@ import org.apache.sis.util.Characters;
  * This base class is immutable and thread-safe (but subclasses may not be).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.8
  */
 public abstract class FirstKeywordPeek {
     /**
@@ -78,8 +76,6 @@ public abstract class FirstKeywordPeek {
      * @param  connector  the connector from which to derive the path to auxiliary file to test.
      * @return path to the auxiliary file to test, or {@code null} if it does not exist.
      * @throws DataStoreException if an error occurred while determining the auxiliary file.
-     *
-     * @since 1.1
      */
     protected Path getAuxiliaryPath(final StorageConnector connector) throws DataStoreException {
         return null;
@@ -187,8 +183,6 @@ public abstract class FirstKeywordPeek {
      * @throws DataStoreException if an I/O error occurred.
      *
      * @see #getAuxiliaryPath(StorageConnector)
-     *
-     * @since 1.1
      */
     public final ProbeResult probeContent(final Path file) throws DataStoreException {
         final ByteBuffer buffer = ByteBuffer.allocate(maxLength + 100);

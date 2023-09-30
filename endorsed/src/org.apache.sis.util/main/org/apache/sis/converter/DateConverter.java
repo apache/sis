@@ -38,11 +38,8 @@ import org.apache.sis.math.FunctionProperty;
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @param <T>  the base type of converted objects.
- *
- * @since 0.3
  */
 abstract class DateConverter<T> extends SystemConverter<Date,T> {
     /**

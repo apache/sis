@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Strings} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 public final class StringsTest extends TestCase {
     /**

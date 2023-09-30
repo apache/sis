@@ -37,8 +37,6 @@ import org.opengis.test.ToleranceModifier;
  * {@link ExponentialTransform1DTest}, since one transform is the inverse of the other.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.5
  */
 @DependsOn(ExponentialTransform1DTest.class)
 public final class LogarithmicTransform1DTest extends MathTransformTestCase {

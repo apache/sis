@@ -42,8 +42,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link ModifiableIdentifierMap}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn(IdentifierMapAdapterTest.class)
 public final class ModifiableIdentifierMapTest extends TestCase {

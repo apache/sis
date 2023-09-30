@@ -27,11 +27,8 @@ import org.opengis.filter.Expression;
  * This is a place-holder for future work.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
- *
- * @since 1.5
  */
 final class ExpressionAdapter<R> extends XmlAdapter<String, Expression<R,?>> {
     /**

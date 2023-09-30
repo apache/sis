@@ -54,8 +54,6 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Olivier Lhemann (OSDU)
  * @author  Michael Arneson (OSDU)
- * @version 1.4
- * @since   0.8
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,

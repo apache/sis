@@ -28,11 +28,8 @@ import org.apache.sis.storage.event.StoreListeners;
  * Base class for containers for a list of elements grouped by some attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @param  <E>  type of objects in this group.
- *
- * @since 1.3
  */
 abstract class Group<E> {
     /**

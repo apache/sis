@@ -35,8 +35,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * Tests the {@link XMLMetadata} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class XMLMetadataTest extends TestCase {
     /**

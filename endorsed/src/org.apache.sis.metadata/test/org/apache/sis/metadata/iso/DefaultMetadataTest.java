@@ -56,8 +56,6 @@ import org.opengis.metadata.MetadataScope;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(org.apache.sis.xml.bind.lan.OtherLocalesTest.class)
 public final class DefaultMetadataTest extends TestCase {
@@ -90,8 +88,6 @@ public final class DefaultMetadataTest extends TestCase {
     /**
      * Tests {@link DefaultMetadata#getFileIdentifier()} and {@link DefaultMetadata#setFileIdentifier(String)}
      * legacy methods. Those methods should delegate to newer methods.
-     *
-     * @since 0.5
      */
     @Test
     @SuppressWarnings("deprecation")
@@ -107,8 +103,6 @@ public final class DefaultMetadataTest extends TestCase {
      * Tests {@link DefaultMetadata#getLanguage()}, {@link DefaultMetadata#setLanguage(Locale)}
      * and {@link DefaultMetadata#getLocales()} legacy methods.
      * Those methods should delegate to newer methods.
-     *
-     * @since 0.5
      */
     @Test
     @SuppressWarnings("deprecation")

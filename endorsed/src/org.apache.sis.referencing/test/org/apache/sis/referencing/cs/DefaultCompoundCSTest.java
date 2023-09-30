@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests the {@link DefaultCompoundCS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 @DependsOn(org.apache.sis.referencing.util.AxisDirectionsTest.class)
 public final class DefaultCompoundCSTest extends TestCase {

@@ -34,11 +34,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-119">SIS-119</a>
- *
- * @since 0.4
  */
 @XmlType(name = "MimeFileType_PropertyType")
 @XmlRootElement(name = "MimeFileType")

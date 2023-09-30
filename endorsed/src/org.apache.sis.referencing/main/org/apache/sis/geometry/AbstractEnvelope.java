@@ -1307,8 +1307,6 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * <p>Instance of this class are serializable if the enclosing envelope is serializable.</p>
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 1.4
-     * @since   0.3
      */
     private abstract class Point extends AbstractDirectPosition implements Serializable {
         private static final long serialVersionUID = -4868610696294317932L;

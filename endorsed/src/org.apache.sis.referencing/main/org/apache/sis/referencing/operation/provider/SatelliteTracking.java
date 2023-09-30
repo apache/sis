@@ -37,8 +37,6 @@ import org.apache.sis.measure.Units;
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 @XmlTransient
 public class SatelliteTracking extends MapProjection {

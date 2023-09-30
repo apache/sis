@@ -60,13 +60,10 @@ import org.apache.sis.xml.IdentifierSpace;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param <T>  the type of object used as identifier values.
  *
  * @see IdentifierSpace
- *
- * @since 0.3
  */
 public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<T> {
     /**

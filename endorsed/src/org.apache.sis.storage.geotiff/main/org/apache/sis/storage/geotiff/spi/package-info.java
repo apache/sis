@@ -19,7 +19,5 @@
  * Extensions to GeoTIFF reader.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 package org.apache.sis.storage.geotiff.spi;

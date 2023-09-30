@@ -39,8 +39,6 @@ import org.apache.sis.storage.DataStoreException;
  * Applies a coordinate transformation between two CRS.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class Transformer {
     /**

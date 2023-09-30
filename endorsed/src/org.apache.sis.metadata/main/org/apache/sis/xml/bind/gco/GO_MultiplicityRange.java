@@ -26,8 +26,6 @@ import org.apache.sis.measure.NumberRange;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class GO_MultiplicityRange extends PropertyType<GO_MultiplicityRange, NumberRange<Integer>> {
     /**

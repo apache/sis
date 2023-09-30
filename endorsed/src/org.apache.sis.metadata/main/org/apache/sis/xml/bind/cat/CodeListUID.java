@@ -77,11 +77,8 @@ import org.opengis.annotation.ResourceBundles;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @see CodeListAdapter
- *
- * @since 0.3
  */
 @XmlType(name = "CodeList", propOrder = {"codeList", "codeListValue", "codeSpace"})
 public final class CodeListUID {

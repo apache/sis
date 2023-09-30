@@ -39,8 +39,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Names} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn(DefaultNameFactoryTest.class)
 public final class NamesTest extends TestCase {

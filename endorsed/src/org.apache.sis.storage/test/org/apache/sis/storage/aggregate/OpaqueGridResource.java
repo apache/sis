@@ -25,8 +25,6 @@ import org.apache.sis.storage.base.GridResourceWrapper;
  * in order to test different code paths that what would be used with {@code MemoryGridResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class OpaqueGridResource extends GridResourceWrapper {
     /**

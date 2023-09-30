@@ -31,8 +31,6 @@ import org.apache.sis.coverage.SampleDimension;
  * which in turn contain an arbitrary number of {@link GridSlice} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     /**

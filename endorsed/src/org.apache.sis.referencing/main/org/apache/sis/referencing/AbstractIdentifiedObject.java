@@ -241,8 +241,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * {@code true} if this object is deprecated.
-     *
-     * @since 0.6
      */
     private final boolean deprecated;
 

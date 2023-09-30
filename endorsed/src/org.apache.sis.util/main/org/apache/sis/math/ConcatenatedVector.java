@@ -26,8 +26,6 @@ import org.apache.sis.measure.NumberRange;
  * A vector which is the concatenation of two other vectors.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.1
- * @since   0.8
  */
 final class ConcatenatedVector extends Vector implements Serializable {
     /**

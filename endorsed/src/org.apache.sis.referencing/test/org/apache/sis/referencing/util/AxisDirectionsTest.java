@@ -43,8 +43,6 @@ import static org.junit.Assert.*;
  * Tests the {@link AxisDirections} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.4
  */
 @DependsOn(AxesMapperTest.class)
 public final class AxisDirectionsTest extends TestCase {
@@ -125,8 +123,6 @@ public final class AxisDirectionsTest extends TestCase {
 
     /**
      * Tests {@link AxisDirections#isCardinal(AxisDirection)}.
-     *
-     * @since 0.8
      */
     @Test
     public void testIsCardinal() {
@@ -404,8 +400,6 @@ public final class AxisDirectionsTest extends TestCase {
 
     /**
      * Tests {@link AxisDirections#indexOfColinear(CoordinateSystem, CoordinateSystem)}.
-     *
-     * @since 0.5
      */
     @Test
     public void testIndexOfColinearCS() {
@@ -464,8 +458,6 @@ public final class AxisDirectionsTest extends TestCase {
 
     /**
      * Tests {@link AxisDirections#suggestAbbreviation(String, AxisDirection, Unit)}.
-     *
-     * @since 0.6
      */
     @Test
     public void testSuggestAbbreviation() {
@@ -506,8 +498,6 @@ public final class AxisDirectionsTest extends TestCase {
      * Tests {@link AxisDirections#fromAbbreviation(char)}.
      * This tests reuse some of the case tested by {@link #testSuggestAbbreviation()}.
      * The intent is to ensure that those two methods are consistent with each other.
-     *
-     * @since 1.0
      */
     @Test
     public void testFromAbbreviation() {
@@ -534,8 +524,6 @@ public final class AxisDirectionsTest extends TestCase {
      * and should not be compared.
      *
      * @throws IllegalAccessException should never happen since we inspect only for public fields.
-     *
-     * @since 0.6
      */
     @Test
     public void verifyAbbreviationConsistency() throws IllegalAccessException {
@@ -550,8 +538,6 @@ public final class AxisDirectionsTest extends TestCase {
 
     /**
      * Tests {@link AxisDirections#appendTo(StringBuilder, CoordinateSystemAxis[])}.
-     *
-     * @since 0.6
      */
     @Test
     public void testAppendTo() {

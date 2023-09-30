@@ -30,8 +30,6 @@ import org.opengis.feature.FeatureType;
  * isAssignableFrom}(type)</code> returns {@code true} for all elements <var>type</var> in the given array.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class CommonParentFinder {
     /**

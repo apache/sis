@@ -42,8 +42,6 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  * path in a JUnit test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 public class MathTransformWrapper extends FormattableObject implements MathTransform, Serializable {
     /**

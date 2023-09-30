@@ -31,11 +31,8 @@ import org.apache.sis.util.logging.Logging;
  * be closed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see EPSGFactory#canClose(EPSGDataAccess)
- *
- * @since 0.7
  */
 final class CloseableReference extends WeakReference<AuthorityCodes> implements Disposable {
     /**

@@ -64,8 +64,6 @@ import static org.apache.sis.referencing.operation.provider.ZonedTransverseMerca
  * EPSG:32600 (northern hemisphere) and EPSG:32700 (southern hemisphere).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.8
  */
 public class ZonedGridSystem extends AbstractMathTransform2D implements Serializable {
     /**
@@ -156,8 +154,6 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      * The limits defined by this method are arbitrary and may change in any future implementation.
      * Current implementation sets a longitude range of ±180° (i.e. the world) and a latitude range
      * from 84°S to 84°N.
-     *
-     * @since 1.3
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
@@ -205,8 +201,6 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      * Inverse of a zoned grid system.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
-     * @since   0.8
      */
     private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**

@@ -26,8 +26,6 @@ import java.nio.channels.ClosedChannelException;
  * A channel which read no values. This class behaves as if the channel already reached the end of file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class NullChannel implements ReadableByteChannel {
     /**

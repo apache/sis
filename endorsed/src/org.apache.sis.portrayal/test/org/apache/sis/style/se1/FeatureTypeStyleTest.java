@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests for {@link FeatureTypeStyle}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class FeatureTypeStyleTest extends StyleTestCase {
     /**

@@ -60,8 +60,6 @@ import org.opengis.filter.DistanceOperatorName;
  * <p>The serialization form is not a committed API and may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class SpatialOperationContext implements Serializable {
     /**

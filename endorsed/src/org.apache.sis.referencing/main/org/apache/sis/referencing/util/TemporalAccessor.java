@@ -31,8 +31,6 @@ import org.apache.sis.measure.Range;
  * Convenience methods for accessing the temporal component of an object (envelope, grid geometry…).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public final class TemporalAccessor {
     /**

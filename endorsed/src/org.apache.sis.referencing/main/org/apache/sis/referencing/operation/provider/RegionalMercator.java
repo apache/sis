@@ -32,8 +32,6 @@ import org.apache.sis.parameter.ParameterBuilder;
  * fitting a Mercator projection to a particular area of interest.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 public class RegionalMercator extends AbstractMercator {

@@ -26,8 +26,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  * The intent of this interface is to resolve type conflict in the {@link #inverse()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 public interface LinearTransform2D extends MathTransform2D, LinearTransform {
     /**

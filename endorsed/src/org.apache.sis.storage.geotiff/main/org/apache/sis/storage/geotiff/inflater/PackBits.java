@@ -27,8 +27,6 @@ import org.apache.sis.io.stream.ChannelDataInput;
  * This compression is described in section 9 of TIFF 6 specification.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class PackBits extends CompressionChannel {
     /**

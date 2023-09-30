@@ -34,8 +34,6 @@ package org.apache.sis.util.internal;
  * way to workaround the lack of public {@code clone()} method in {@link Cloneable}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public interface CloneAccess extends java.lang.Cloneable {
     /**

@@ -30,8 +30,6 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.5
  */
 abstract class ChannelDataTestCase extends TestCase {
     /**

@@ -31,11 +31,8 @@ import java.nio.DoubleBuffer;
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see <a href="https://en.wikipedia.org/wiki/Lanczos_resampling">Lanczos resampling on Wikipedia</a>
- *
- * @since 1.1
  */
 final class LanczosInterpolation extends Interpolation {
     /**

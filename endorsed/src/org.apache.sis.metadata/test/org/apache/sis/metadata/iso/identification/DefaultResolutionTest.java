@@ -40,8 +40,6 @@ import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)
 public final class DefaultResolutionTest extends TestCase {
@@ -70,8 +68,6 @@ public final class DefaultResolutionTest extends TestCase {
      * Tests the {@link DefaultResolution#DefaultResolution(RepresentativeFraction)} constructor.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-195">SIS-195</a>
-     *
-     * @since 0.6
      */
     @Test
     public void testConstructor() {

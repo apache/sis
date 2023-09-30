@@ -35,8 +35,6 @@ import org.apache.sis.util.internal.Constants;
  * to {@link Geographic3Dto2D#redimension(int, int)} when the given number of dimensions are equal.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @XmlTransient
 class GeographicRedimension extends GeodeticOperation {

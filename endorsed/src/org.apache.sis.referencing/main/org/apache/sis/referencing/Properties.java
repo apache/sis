@@ -49,8 +49,6 @@ import org.opengis.metadata.Identifier;
  * underlying {@code IdentifiedObject} instance is itself serializable, immutable or thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.4
  */
 final class Properties extends AbstractMap<String,Object> implements Serializable {
     /**

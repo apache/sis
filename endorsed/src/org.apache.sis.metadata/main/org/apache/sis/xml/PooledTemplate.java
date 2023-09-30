@@ -31,8 +31,6 @@ import org.apache.sis.util.resources.Errors;
  * redoing the conversion every time a new (un)marshaller is requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 final class PooledTemplate extends Pooled {
     /**

@@ -64,8 +64,6 @@ import org.apache.sis.util.ArraysExt;
  * Temporary instances should be created by the thread doing transformations and discarded immediately after.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class WraparoundInEnvelope extends WraparoundTransform {
     /**

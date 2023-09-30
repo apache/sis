@@ -48,8 +48,6 @@ import org.apache.sis.geometry.ImmutableEnvelope;
  * it would not be a persistent identifier.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 final class GroupAggregate extends AbstractResource implements Aggregate, AggregatedResource {
     /**

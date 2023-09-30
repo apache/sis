@@ -46,8 +46,6 @@ import org.apache.sis.util.internal.SimpleCharacterIterator;
  * will still been seen as 3 separated fields by this implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @SuppressWarnings("CloneableImplementsClone")     // Not needed - see comment about clone() at the end of this file.
 final class FormattedCharacterIterator extends SimpleCharacterIterator implements AttributedCharacterIterator {

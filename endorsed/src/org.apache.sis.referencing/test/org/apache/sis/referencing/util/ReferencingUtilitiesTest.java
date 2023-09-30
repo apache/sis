@@ -40,8 +40,6 @@ import static org.junit.Assert.*;
  * Tests {@link ReferencingUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.4
  */
 public final class ReferencingUtilitiesTest extends TestCase {
     /**
@@ -101,8 +99,6 @@ public final class ReferencingUtilitiesTest extends TestCase {
 
     /**
      * Tests {@link ReferencingUtilities#getPropertiesForModifiedCRS(IdentifiedObject)}.
-     *
-     * @since 0.7
      */
     @Test
     public void testGetPropertiesForModifiedCRS() {
@@ -115,8 +111,6 @@ public final class ReferencingUtilitiesTest extends TestCase {
      * Tests {@link ReferencingUtilities#toPropertyName(Class, Class)}.
      *
      * @see WKTUtilitiesTest#testToType()
-     *
-     * @since 0.6
      */
     @Test
     public void testToPropertyName() {

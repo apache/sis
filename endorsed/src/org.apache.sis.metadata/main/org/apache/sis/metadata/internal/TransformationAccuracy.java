@@ -34,8 +34,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * Creates a record reporting coordinate transformation accuracy.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 public final class TransformationAccuracy extends Static {
     /**

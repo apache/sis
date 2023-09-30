@@ -71,8 +71,6 @@ import static org.apache.sis.storage.sql.postgis.Band.OPPOSITE_SIGN;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public final class RasterReader extends RasterFormat {
     /**

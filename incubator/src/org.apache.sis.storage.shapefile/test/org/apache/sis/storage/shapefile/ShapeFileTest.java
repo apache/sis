@@ -37,8 +37,6 @@ import org.opengis.feature.Feature;
  * Tests the {@link ShapeFile} class.
  *
  * @author  Travis L. Pinney
- * @version 0.5
- * @since   0.5
  */
 public final class ShapeFileTest {
     /**

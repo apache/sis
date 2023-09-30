@@ -34,8 +34,6 @@ import org.apache.sis.util.resources.Errors;
  * same time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.5
  */
 final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPosition>, Iterator<DirectPosition> {
     /**

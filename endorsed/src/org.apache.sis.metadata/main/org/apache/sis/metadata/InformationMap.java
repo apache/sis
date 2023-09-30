@@ -28,12 +28,9 @@ import org.opengis.metadata.citation.Citation;
  * All values in this map are instances of {@link PropertyInformation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @see PropertyInformation
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
- *
- * @since 0.3
  */
 final class InformationMap extends PropertyMap<ExtendedElementInformation> {
     /**

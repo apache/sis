@@ -37,8 +37,6 @@ import org.opengis.feature.Attribute;
  * Tests {@link CharacteristicMap} indirectly, through {@link AbstractAttribute} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 @DependsOn(CharacteristicTypeMapTest.class)
 public final class CharacteristicMapTest extends TestCase {

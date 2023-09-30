@@ -51,8 +51,6 @@ import static org.junit.Assert.*;
  * release used by the main branch is behind the snapshot developments.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public final class APIVerifier extends TestCase {
     /**

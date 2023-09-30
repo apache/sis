@@ -33,8 +33,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * Shows isoline table built by {@link ValueColorMapper} with arbitrary data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ValueColorMapperApp extends Application {
     /**

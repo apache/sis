@@ -31,8 +31,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests the {@link Vector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.8
  */
 public final class VectorTest extends TestCase {
     /**

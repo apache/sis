@@ -35,8 +35,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link Affine} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @DependsOn(org.apache.sis.parameter.TensorValuesTest.class)
 public final class AffineTest extends TestCase {

@@ -71,8 +71,6 @@ import org.apache.sis.parameter.Parameters;
  * However, this class may move in a public package later if we feel confident that its API is mature enough.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.6
  */
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**

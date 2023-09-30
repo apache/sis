@@ -31,8 +31,6 @@ import org.apache.sis.util.logging.Logging;
  * dependencies the other way around.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class Threads extends Static {
     /**

@@ -41,11 +41,8 @@ import org.apache.sis.util.internal.Constants;
  * This provider creates transforms from geographic to geocentric coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see GeocentricToGeographic
- *
- * @since 0.7
  */
 public final class GeographicToGeocentric extends GeodeticOperation {
     /**

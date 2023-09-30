@@ -41,8 +41,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the various {@link PathConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn(StringConverterTest.class)
 public final class PathConverterTest extends TestCase {

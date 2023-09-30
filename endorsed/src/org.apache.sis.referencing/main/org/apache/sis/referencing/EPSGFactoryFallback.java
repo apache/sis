@@ -63,8 +63,6 @@ import org.apache.sis.measure.Units;
  * The EPSG identifiers are provided as references where to find the complete definitions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @Fallback
 final class EPSGFactoryFallback extends GeodeticAuthorityFactory

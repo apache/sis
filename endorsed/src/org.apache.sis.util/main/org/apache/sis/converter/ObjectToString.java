@@ -38,11 +38,8 @@ import org.apache.sis.math.FunctionProperty;
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param <S>  the source type.
- *
- * @since 0.3
  */
 class ObjectToString<S> extends SystemConverter<S,String> {
     /**

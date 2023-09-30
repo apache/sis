@@ -54,8 +54,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * It can be used as a table of isolines or as a {@link ColorRamp} editor.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public final class ValueColorMapper extends TabularWidget {
     /**

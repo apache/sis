@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
  * Tests {@link NameMeaning}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.5 (derived from 0.4)
  */
 public final class NameMeaningTest extends TestCase {
     /**
@@ -73,8 +71,6 @@ public final class NameMeaningTest extends TestCase {
 
     /**
      * Tests {@link NameMeaning#toURN(Class, String, String, String)}.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testToObjectType")

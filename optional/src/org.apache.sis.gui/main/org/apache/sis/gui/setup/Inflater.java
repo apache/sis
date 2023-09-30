@@ -36,8 +36,6 @@ import javax.swing.JProgressBar;
  * than what we need. For example, it creates a pool of 10 threads while we need only one.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class Inflater implements Runnable {
     /**

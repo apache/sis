@@ -24,10 +24,7 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.gui.internal.DataStoreOpener
- *
- * @since   1.2
  */
 package org.apache.sis.gui.internal.io;

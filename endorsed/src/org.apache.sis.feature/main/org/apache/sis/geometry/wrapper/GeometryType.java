@@ -31,11 +31,8 @@ import org.apache.sis.util.internal.Constants;
  * The name of each enumeration value is the name in WKT format.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see Geometries#getGeometryClass(GeometryType)
- *
- * @since 1.1
  */
 public enum GeometryType {
     /**

@@ -34,8 +34,6 @@ import java.lang.annotation.Target;
  * The way Apache SIS selects its preferred service provider may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

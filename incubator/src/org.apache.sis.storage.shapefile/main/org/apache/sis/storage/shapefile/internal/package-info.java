@@ -18,7 +18,5 @@
 /**
  * Function to describe and access to {@link org.apache.sis.storage.shapefile}.
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 package org.apache.sis.storage.shapefile.internal;

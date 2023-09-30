@@ -30,8 +30,6 @@ import org.apache.sis.util.Static;
  * which are close to ESRI ones.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 final class ESRI extends Static {
     /**

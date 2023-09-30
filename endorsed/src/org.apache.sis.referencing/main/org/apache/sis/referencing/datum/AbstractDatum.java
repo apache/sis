@@ -299,8 +299,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * <p>Note: if heuristic rules are modified, consider updating {@code EPSGDataAccess} accordingly.</p>
      *
      * @see org.apache.sis.referencing.factory.sql.EPSGCodeFinder#toDatumPattern(String, StringBuilder)
-     *
-     * @since 0.7
      */
     static class Simplifier extends NameToIdentifier.Simplifier {
         /** The singleton simplifier for non-geodetic datum. */

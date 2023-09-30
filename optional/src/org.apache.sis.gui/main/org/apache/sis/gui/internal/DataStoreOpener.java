@@ -74,11 +74,8 @@ import org.apache.sis.gui.DataViewer;
  * @todo Set title. Add progress listener and cancellation capability.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see BackgroundThreads#execute(Runnable)
- *
- * @since 1.1
  */
 public final class DataStoreOpener extends Task<DataStore> {
     /**

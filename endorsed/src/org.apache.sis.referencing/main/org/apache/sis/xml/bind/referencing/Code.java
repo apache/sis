@@ -37,8 +37,6 @@ import static org.apache.sis.metadata.iso.citation.Citations.toCodeSpace;
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @XmlType(name = "CodeType")
 public final class Code {

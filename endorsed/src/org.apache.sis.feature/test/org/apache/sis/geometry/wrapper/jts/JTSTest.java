@@ -43,8 +43,6 @@ import static org.junit.Assert.*;
  * Tests {@link JTS} implementation.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class JTSTest extends TestCase {
     /**

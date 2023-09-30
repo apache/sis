@@ -30,11 +30,8 @@ import org.apache.sis.parameter.Parameters;
  * This projection is similar to {@link TransverseMercator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/cassini_soldner.html">GeoTIFF parameters for Cassini-Soldner</a>
- *
- * @since 1.1
  */
 @XmlTransient
 public class CassiniSoldner extends MapProjection {

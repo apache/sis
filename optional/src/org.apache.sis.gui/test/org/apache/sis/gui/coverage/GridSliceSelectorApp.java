@@ -30,8 +30,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
  * Shows selectors built by {@link GridSliceSelector} with arbitrary data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public final class GridSliceSelectorApp extends Application {
     /**

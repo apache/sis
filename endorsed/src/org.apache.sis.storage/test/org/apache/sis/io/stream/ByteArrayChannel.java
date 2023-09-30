@@ -29,12 +29,9 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
  *
  * @see ChannelDataOutputTest
  * @see ChannelImageOutputStream
- *
- * @since 0.5
  */
 final class ByteArrayChannel implements SeekableByteChannel {
     /**

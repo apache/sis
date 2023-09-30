@@ -34,12 +34,9 @@ import org.apache.sis.util.ObjectConverter;
  * as for {@code ClassPair} (because subclasses are not used as keys in hash map).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @param <S>  the base type of source objects.
  * @param <T>  the base type of converted objects.
- *
- * @since 0.3
  */
 class ClassPair<S,T> implements Serializable {
     /**

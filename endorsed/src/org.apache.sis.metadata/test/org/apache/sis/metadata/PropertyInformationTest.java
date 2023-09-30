@@ -49,8 +49,6 @@ import org.opengis.annotation.Obligation;
  * Tests the {@link PropertyInformation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class PropertyInformationTest extends TestCase {
     /**

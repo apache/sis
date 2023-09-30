@@ -27,8 +27,6 @@ import javafx.scene.control.TitledPane;
  * developers than users.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 final class PropertyPaneCreator implements ChangeListener<Boolean> {
     /**

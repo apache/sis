@@ -35,8 +35,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  * Tests {@link LocalizationGridBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 @DependsOn({LinearTransformBuilderTest.class, ResidualGridTest.class})
 public final class LocalizationGridBuilderTest extends TransformTestCase {

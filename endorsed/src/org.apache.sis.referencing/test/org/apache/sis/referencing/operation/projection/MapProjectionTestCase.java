@@ -46,8 +46,6 @@ import org.opengis.test.referencing.ParameterizedTransformTest;
  * Base class of map projection tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.6
  */
 abstract class MapProjectionTestCase extends MathTransformTestCase {
     /**

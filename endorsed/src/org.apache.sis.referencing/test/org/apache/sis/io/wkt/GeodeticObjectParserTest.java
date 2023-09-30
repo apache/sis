@@ -63,8 +63,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link GeodeticObjectParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
- * @since   0.6
  */
 @DependsOn({
     MathTransformParserTest.class,
@@ -1121,8 +1119,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-317">SIS-317</a>
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testCompoundCRS")
@@ -1155,7 +1151,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-538">SIS-538</a>
-     * @since 1.2
      */
     @Test
     @DependsOnMethod("testGeographicWithImplicitAxes")

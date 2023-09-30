@@ -30,8 +30,6 @@ import org.apache.sis.test.DependsOn;
  * Tests the {@link Sinusoidal} projection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 @DependsOn(MeridianArcTest.class)
 public final class SinusoidalTest extends MapProjectionTestCase {

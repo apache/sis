@@ -44,8 +44,6 @@ import static java.lang.StrictMath.*;
  * This inverse transform is not effective and this transform cannot compute {@linkplain #derivative derivative}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.5
  */
 class PseudoTransform extends AbstractMathTransform {
     /**

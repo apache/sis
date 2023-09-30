@@ -35,8 +35,6 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.6
  */
 final class SubTypes {
     /**

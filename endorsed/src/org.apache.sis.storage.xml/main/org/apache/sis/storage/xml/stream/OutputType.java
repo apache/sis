@@ -42,8 +42,6 @@ import org.w3c.dom.Node;
  * {@link XMLStreamWriter} interface before to test for {@link OutputStream}, {@link Writer}, <i>etc.</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 enum OutputType {
     /**

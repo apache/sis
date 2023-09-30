@@ -42,8 +42,6 @@ import static org.junit.Assert.*;
  * Those tests will be executed by {@link CRSTest} instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class IdentifiedObjectsTest extends TestCase {
     /**

@@ -30,8 +30,6 @@ import org.apache.sis.util.resources.Errors;
  * The {@link Future} result is requested the first time that {@link #get(int)} is invoked.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class Result extends AbstractList<NavigableMap<Double,Shape>> {
     /**

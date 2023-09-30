@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn(GeodeticObjectParserTest.class)
 public final class WKTParserTest extends CRSParserTest {

@@ -46,8 +46,6 @@ import org.apache.sis.util.ArraysExt;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, OperationMethod> {
     /**

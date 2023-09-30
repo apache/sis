@@ -41,8 +41,6 @@ import org.opengis.metadata.citation.Responsibility;
  * the database created by the latter (i.e. for avoiding to recreate the same database many times).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 public final class MetadataFallbackVerifier {
     /**

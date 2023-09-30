@@ -42,11 +42,8 @@ import org.apache.sis.referencing.NamedIdentifier;
  *       and the types are missing (they are {@code null}) except for geometry types.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see SQLMM#description(Geometries)
- *
- * @since 1.4
  */
 final class FunctionDescription implements AvailableFunction, Serializable {
     /**

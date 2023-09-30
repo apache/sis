@@ -32,11 +32,8 @@ import org.apache.sis.measure.NumberRange;
  * This is mostly the case if coefficients are finite and {@link #scale} is non-zero, as asserted at construction time.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see Vector#transform(double, double)
- *
- * @since 1.0
  */
 final class LinearlyDerivedVector extends Vector implements Serializable {
     /**

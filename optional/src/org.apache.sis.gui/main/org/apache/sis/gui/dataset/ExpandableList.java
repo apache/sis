@@ -46,8 +46,6 @@ import org.opengis.feature.Feature;
  * maximum number of occurrence greater than 1.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class ExpandableList extends TransformationList<Feature,Feature>
         implements Callback<TableColumn<Feature,Feature>, TableCell<Feature,Feature>>,

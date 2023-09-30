@@ -27,8 +27,6 @@ import org.apache.sis.util.resources.Errors;
  * The double-double arithmetic is implemented by a specialized {@link Number} subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public interface ExtendedPrecisionMatrix extends Matrix {
     /**

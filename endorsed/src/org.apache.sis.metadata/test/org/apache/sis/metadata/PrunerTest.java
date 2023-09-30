@@ -40,8 +40,6 @@ import static org.junit.Assert.*;
  * Tests the {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 @DependsOn(HashCodeTest.class)
 public final class PrunerTest extends TestCase {
@@ -59,8 +57,6 @@ public final class PrunerTest extends TestCase {
      * A child of another child metadata object being tested.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-194">SIS-194</a>
-     *
-     * @since 0.6
      */
     private final DefaultRepresentativeFraction scale;
 

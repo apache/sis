@@ -29,8 +29,6 @@ import org.opengis.metadata.identification.CoupledResource;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class SV_CoupledResource extends PropertyType<SV_CoupledResource, CoupledResource> {
     /**

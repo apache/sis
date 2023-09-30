@@ -54,11 +54,8 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see MathTransforms#interpolate(double[], double[])
- *
- * @since 0.7
  */
 final class LinearInterpolator1D extends AbstractMathTransform1D implements Serializable {
     /**

@@ -58,8 +58,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectSet;
  * We distinguish those two cases by the presence or absence of a coordinate operation code in the {@link #projections} map.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.7
  */
 final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperation> {
     /**

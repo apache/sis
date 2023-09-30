@@ -37,8 +37,6 @@ import org.apache.sis.util.Static;
  * only when first needed, when initializing this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.4
  */
 final class InputFactory extends Static {
     /**

@@ -31,8 +31,6 @@ import static org.apache.sis.util.internal.CollectionsExt.singletonOrEmpty;
  * component is available.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public final class SimpleExtent implements Extent {
     /**

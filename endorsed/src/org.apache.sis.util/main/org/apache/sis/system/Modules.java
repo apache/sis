@@ -32,8 +32,6 @@ package org.apache.sis.system;
  * Each constant should be the name of the main package of its corresponding module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.3
  */
 public final class Modules {
     /**

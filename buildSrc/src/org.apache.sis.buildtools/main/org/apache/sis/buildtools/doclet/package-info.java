@@ -21,7 +21,5 @@
  * together with doclet performing post-processing after Javadoc generation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 package org.apache.sis.buildtools.doclet;

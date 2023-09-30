@@ -47,8 +47,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * then this {@code IndexedResourceBundleTest} class will need to be updated.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.3
  */
 public final class IndexedResourceBundleTest extends TestCase {
     /**

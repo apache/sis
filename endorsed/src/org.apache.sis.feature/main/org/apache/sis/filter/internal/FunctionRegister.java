@@ -35,8 +35,6 @@ import org.opengis.filter.capability.AvailableFunction;
  * in any future Apache SIS version.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.0
  *
  * @see org.opengis.filter.FilterFactory#function(String, Expression...)
  */

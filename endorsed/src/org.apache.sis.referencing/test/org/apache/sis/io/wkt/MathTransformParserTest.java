@@ -41,8 +41,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests {@link MathTransformParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn(org.apache.sis.referencing.operation.transform.MathTransformsTest.class)
 public final class MathTransformParserTest extends TestCase {

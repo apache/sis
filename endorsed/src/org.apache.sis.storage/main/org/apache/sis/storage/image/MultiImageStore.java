@@ -28,8 +28,6 @@ import org.apache.sis.storage.DataStoreException;
  * Examples: TIFF and GIF image formats.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class MultiImageStore extends WorldFileStore implements Aggregate {
     /**

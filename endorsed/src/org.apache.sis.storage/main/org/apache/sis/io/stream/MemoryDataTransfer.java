@@ -41,8 +41,6 @@ import org.apache.sis.util.resources.Errors;
  * {@link NullPointerException}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
     /**

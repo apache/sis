@@ -55,8 +55,6 @@ import java.util.Set;
  * class is not to test {@link TreeNode}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 @DependsOn(PropertyAccessorTest.class)
 public final class TreeNodeChildrenTest extends TestCase {

@@ -41,8 +41,6 @@ import org.apache.sis.util.internal.Numerics;
  * This class also contains static help functions for the construction of {@link GridGeometry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class CanvasExtent extends GridExtent {
     /**

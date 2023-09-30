@@ -41,11 +41,8 @@ import org.apache.sis.metadata.sql.util.SQLBuilder;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://postgis.net/docs/ST_EstimatedExtent.html">ST_EstimatedExtent</a>
- *
- * @since 1.2
  */
 final class ExtentEstimator {
     /**

@@ -66,11 +66,8 @@ import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEqu
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Maxime Gavens (Geomatys)
- * @version 1.1
  *
  * @see ModifiedAzimuthalEquidistant
- *
- * @since 1.1
  */
 public class AzimuthalEquidistant extends NormalizedProjection {
     /**

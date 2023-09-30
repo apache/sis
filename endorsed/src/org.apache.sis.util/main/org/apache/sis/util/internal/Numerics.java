@@ -40,8 +40,6 @@ import static java.lang.Math.ulp;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class Numerics extends Static {
     /**
@@ -405,8 +403,6 @@ public final class Numerics extends Static {
      * @param  v1    the first value.
      * @param  v2    the second value.
      * @return the message to put in {@code AssertionError}.
-     *
-     * @since 0.6
      */
     @Debug
     public static String messageForDifference(final String name, final double v1, final double v2) {
@@ -427,8 +423,6 @@ public final class Numerics extends Static {
      *
      * @param  value  the unsigned {@code long} value.
      * @return the given unsigned {@code long} as a {@code float} value.
-     *
-     * @since 0.8
      */
     public static float toUnsignedFloat(final long value) {
         if (value >= 0) {
@@ -444,8 +438,6 @@ public final class Numerics extends Static {
      *
      * @param  value  the unsigned {@code long} value.
      * @return the given unsigned {@code long} as a {@code double} value.
-     *
-     * @since 0.8
      */
     public static double toUnsignedDouble(final long value) {
         if (value >= 0) {
@@ -572,8 +564,6 @@ public final class Numerics extends Static {
      * @return suggested amount of fraction digits for the given precision. Always positive.
      *
      * @see DecimalFunctions#fractionDigitsForDelta(double, boolean)
-     *
-     * @since 1.0
      */
     public static int fractionDigitsForDelta(final double ulp) {
         return (ulp != 0) ? Math.max(0, Math.min(16, DecimalFunctions.fractionDigitsForDelta(ulp, false))) : 0;
@@ -588,8 +578,6 @@ public final class Numerics extends Static {
      *
      * @param  values  the values for which to get suggested amount of fraction digits.
      * @return suggested amount of fraction digits for the given values. Always positive.
-     *
-     * @since 1.0
      */
     public static int suggestFractionDigits(final double... values) {
         double ulp = 0;
@@ -610,8 +598,6 @@ public final class Numerics extends Static {
      *
      * @param  stats  statistics on the data to format.
      * @return number of fraction digits suggested. May be negative.
-     *
-     * @since 1.0
      */
     public static int suggestFractionDigits(final Statistics stats) {
         final double minimum = stats.minimum();

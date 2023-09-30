@@ -28,8 +28,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * This enumeration is temporary and will be deleted after SIS provides more complete styling support.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 enum Stretching {
     /**

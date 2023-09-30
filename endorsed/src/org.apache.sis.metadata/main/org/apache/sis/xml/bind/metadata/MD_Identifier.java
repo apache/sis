@@ -30,8 +30,6 @@ import org.apache.sis.xml.bind.metadata.replace.RS_Identifier;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
     /**

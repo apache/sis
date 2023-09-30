@@ -38,8 +38,6 @@ import static org.apache.sis.referencing.internal.Arithmetic.divide;
  *
  * @author  JAMA team
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 final class Solver implements ExtendedPrecisionMatrix {                 // Not Cloneable, despite the clone() method.
     /**

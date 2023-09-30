@@ -34,8 +34,6 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@code org.apache.sis.util.resources} package.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public class Resources extends IndexedResourceBundle {
     /**

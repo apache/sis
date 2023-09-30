@@ -62,8 +62,6 @@ import org.apache.sis.geometry.wrapper.j2d.PathBuilder;
  * which is possible only with a non-null {@link PolylineBuffer#opposite} field.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class Joiner extends PathBuilder {
     /**

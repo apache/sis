@@ -28,8 +28,6 @@ import static org.junit.Assert.*;
  * This class inherits all the tests from {@link TensorParametersTest}, but applies them on a different instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @DependsOn(MatrixParametersTest.class)
 public final class MatrixParametersAlphaNumTest extends MatrixParametersTest {

@@ -37,8 +37,6 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
  * There is a subclass for each supported data type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 abstract class BandSharing {
     /**

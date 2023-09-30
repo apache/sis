@@ -29,8 +29,6 @@ import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class LI_ProcessStep extends PropertyType<LI_ProcessStep, ProcessStep> {
     /**

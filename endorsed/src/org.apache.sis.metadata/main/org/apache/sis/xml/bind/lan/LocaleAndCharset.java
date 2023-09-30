@@ -57,8 +57,6 @@ import org.apache.sis.util.collection.TreeTable.Node;
  *          └─Character set………………………………………………………… ISO-8859-1</pre>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class LocaleAndCharset implements Node {
     /**

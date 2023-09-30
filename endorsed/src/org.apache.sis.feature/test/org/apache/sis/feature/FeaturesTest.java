@@ -33,8 +33,6 @@ import org.opengis.feature.InvalidPropertyValueException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
- * @since   0.5
  */
 @DependsOn(SingletonAttributeTest.class)
 public final class FeaturesTest extends TestCase {

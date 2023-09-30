@@ -40,8 +40,6 @@ import org.opengis.feature.PropertyType;
  * <p>This class inherits all tests defined in {@link FeatureTestCase}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 @DependsOn({
     DenseFeatureTest.class,

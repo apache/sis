@@ -31,8 +31,6 @@ import org.apache.sis.referencing.util.j2d.AbstractShape;
  * Subclasses should override at least one method for making this class useful.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 abstract class ShapeWrapper extends AbstractShape implements Serializable {
     /**

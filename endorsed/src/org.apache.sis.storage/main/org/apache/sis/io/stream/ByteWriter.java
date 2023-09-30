@@ -34,8 +34,6 @@ import org.apache.sis.math.Vector;
  * can be invoked in a loop until all data have been transferred.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public abstract class ByteWriter {
     /**

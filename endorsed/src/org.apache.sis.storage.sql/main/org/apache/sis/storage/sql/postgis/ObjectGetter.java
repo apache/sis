@@ -27,8 +27,6 @@ import org.apache.sis.storage.sql.feature.ValueGetter;
  * Decoder of object of arbitrary kinds.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class ObjectGetter extends ValueGetter<Object> {
     /**

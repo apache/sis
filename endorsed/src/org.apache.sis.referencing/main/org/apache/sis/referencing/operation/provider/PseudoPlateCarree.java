@@ -36,11 +36,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * axis units are degrees.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see Equirectangular
- *
- * @since 1.0
  */
 @XmlTransient
 public final class PseudoPlateCarree extends AbstractProvider {

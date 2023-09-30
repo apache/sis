@@ -39,8 +39,6 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  * Tests {@link ComputedImage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @DependsOn(PlanarImageTest.class)
 public final class ComputedImageTest extends TestCase {

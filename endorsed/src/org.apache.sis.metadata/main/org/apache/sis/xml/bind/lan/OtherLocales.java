@@ -37,8 +37,6 @@ import java.nio.charset.Charset;
  * are for those remaining elements and are created by the {@link #filter(Map)} method.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.5
  */
 public final class OtherLocales extends AbstractSet<PT_Locale> {
     /**

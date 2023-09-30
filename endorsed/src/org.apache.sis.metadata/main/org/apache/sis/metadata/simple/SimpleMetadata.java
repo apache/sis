@@ -66,8 +66,6 @@ import org.opengis.metadata.citation.Responsibility;
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 public class SimpleMetadata implements Metadata, MetadataScope, DataIdentification, Citation {
     /**

@@ -33,8 +33,6 @@ import static org.junit.Assert.*;
  * Tests the {@link WKTKeywords} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.6
  */
 public final class WKTKeywordsTest extends TestCase {
     /**

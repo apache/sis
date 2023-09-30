@@ -43,8 +43,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(StoreTest.class)
 public final class DataStoresTest extends TestCase {

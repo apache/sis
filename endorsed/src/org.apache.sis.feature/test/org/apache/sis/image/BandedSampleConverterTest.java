@@ -33,8 +33,6 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  * Tests {@link BandedSampleConverter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class BandedSampleConverterTest extends ImageTestCase {
     /**

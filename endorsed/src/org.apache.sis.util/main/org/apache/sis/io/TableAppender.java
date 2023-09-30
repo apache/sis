@@ -881,8 +881,6 @@ public class TableAppender extends Appender implements Flushable {
      * This class if for internal use only.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 0.3
-     * @since   0.3
      */
     private static final class Cell {
         /**

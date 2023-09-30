@@ -61,11 +61,8 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see CoverageAggregator#addRangeAggregate(GridCoverageResource[], int[][])
- *
- * @since 1.4
  */
 final class BandAggregateGridResource extends AbstractGridCoverageResource implements AggregatedResource {
     /**

@@ -35,8 +35,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link ReferencingByIdentifiers}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.8
  */
 @DependsOn(LocationTypeTest.class)
 public final class ReferencingByIdentifiersTest extends TestCase {

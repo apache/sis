@@ -41,8 +41,6 @@ import org.opengis.metadata.identification.DistributedComputingPlatform;
  * Tests {@link DefaultCoupledResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn(ServiceParameterTest.class)
 public final class DefaultCoupledResourceTest extends TestCase {

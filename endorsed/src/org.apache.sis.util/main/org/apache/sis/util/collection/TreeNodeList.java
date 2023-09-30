@@ -58,8 +58,6 @@ import org.apache.sis.util.resources.Errors;
  * creating new copy on deserialization. So the parents should not be mixed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 abstract class TreeNodeList extends AbstractList<TreeTable.Node>
         implements CheckedContainer<TreeTable.Node>, Serializable

@@ -47,8 +47,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * Tests {@link DefaultImageCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public final class DefaultImageCRSTest extends TestCase {
     /**

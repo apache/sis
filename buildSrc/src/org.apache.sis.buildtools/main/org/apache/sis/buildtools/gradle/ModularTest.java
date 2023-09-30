@@ -35,8 +35,6 @@ import org.gradle.api.tasks.testing.Test;
  * this extension replaces completely the Gradle's default task.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class ModularTest extends Conventions {
     /**

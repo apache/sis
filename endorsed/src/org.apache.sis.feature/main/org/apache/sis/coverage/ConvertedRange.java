@@ -32,8 +32,6 @@ import org.apache.sis.measure.MeasurementRange;
  * where we don't know for sure what the user intents to do.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class ConvertedRange extends MeasurementRange<Double> {
     /**

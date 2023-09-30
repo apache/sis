@@ -30,8 +30,6 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class SC_VerticalCRS extends org.apache.sis.xml.bind.gml.SC_VerticalCRS implements AdapterReplacement {
     /**

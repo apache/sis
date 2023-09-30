@@ -53,8 +53,6 @@ import org.opengis.feature.Feature;
  * because the caller usually needs to take in account other data store operations such as reads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public abstract class RewriteOnUpdate implements AutoCloseable {
     /**

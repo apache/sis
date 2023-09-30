@@ -60,8 +60,6 @@ import org.apache.sis.util.internal.Strings;
  * recommended approach, but for Apache SIS private classes this is a way to reduce pressure on garbage collector.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @SuppressWarnings("CloneableImplementsClone")
 public class IntervalRectangle extends Rectangle2D implements Serializable {

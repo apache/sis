@@ -66,8 +66,6 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 class GeoKeysLoader {
     /**

@@ -33,8 +33,6 @@ import java.lang.annotation.RetentionPolicy;
  * support tests chaining.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @Documented
 @Target(ElementType.METHOD)

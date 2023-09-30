@@ -48,7 +48,5 @@
  * See <a href="http://www.xmlmind.com/tutorials/HTML5Books/HTML5Books.html">HTML5 as an alternative to DITA and DocBook</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 package org.apache.sis.buildtools.book;

@@ -33,8 +33,6 @@ import static org.junit.Assume.assumeFalse;
  * convertible to {@link URI}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public abstract class DatumShiftTestCase extends TestCase {
     /**

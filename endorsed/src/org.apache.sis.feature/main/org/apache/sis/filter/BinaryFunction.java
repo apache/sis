@@ -39,13 +39,10 @@ import org.opengis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>   the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <V1>  the type of value computed by the first expression.
  * @param  <V2>  the type of value computed by the second expression.
- *
- * @since 1.1
  */
 abstract class BinaryFunction<R,V1,V2> extends Node {
     /**

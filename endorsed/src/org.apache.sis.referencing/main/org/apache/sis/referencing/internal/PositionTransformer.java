@@ -79,8 +79,6 @@ import org.apache.sis.util.Utilities;
  * This class is not thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   1.0
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})         // Not intended to be serialized and nothing to clone.
 public final class PositionTransformer extends GeneralDirectPosition {

@@ -32,8 +32,6 @@ import org.apache.sis.xml.bind.cat.CodeListAdapter;
  *
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public class CI_TelephoneTypeCode extends CodeListAdapter<CI_TelephoneTypeCode, TelephoneType> {
     /**

@@ -46,13 +46,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * holes are known to exist in use cases like {@code sublist(…).set(…)} or when using the list iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param <E>  the type of elements in the list.
  *
  * @see Collections#checkedList(List, Class)
- *
- * @since 0.3
  */
 @SuppressWarnings("CloneableImplementsClone")           // ArrayList.clone() is sufficient.
 public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedContainer<E> {
@@ -97,8 +94,6 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * @param  type        the element type.
      * @return the given collection as a {@code CheckedArrayList}, or {@code null} if the given collection was null.
      * @throws ClassCastException if an element is not of the expected type.
-     *
-     * @since 0.5
      */
     @SuppressWarnings("unchecked")
     public static <E> CheckedArrayList<E> castOrCopy(final Collection<?> collection, final Class<E> type) {

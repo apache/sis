@@ -28,8 +28,6 @@ import org.apache.sis.xml.NilReason;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 @XmlType(name = "MultiplicityRange_Type", propOrder = {
     "lower",

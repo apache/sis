@@ -29,8 +29,6 @@ import java.awt.image.IndexColorModel;
  * for performance reasons.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public enum ColorModelType {
     /**

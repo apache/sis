@@ -54,12 +54,9 @@ import org.apache.sis.util.internal.SetOfUnknownSize;
  * especially the result of the {@link #size()} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
  *
  * @param <S>  the type of elements in the storage set.
  * @param <E>  the type of elements in this set.
- *
- * @since 0.3
  */
 class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>, Serializable {
     /**

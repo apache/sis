@@ -41,12 +41,9 @@ import org.apache.sis.xml.bind.FilterByVersion;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <ValueType> The subclass implementing this adapter.
  * @param <BoundType> The code list being adapted.
- *
- * @since 0.3
  */
 public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueType,BoundType>,
         BoundType extends CodeList<BoundType>> extends XmlAdapter<ValueType,BoundType>

@@ -31,8 +31,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the various {@link AngleConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.3
  */
 public final class AngleConverterTest extends TestCase {
     /**

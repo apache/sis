@@ -49,8 +49,6 @@ import org.opengis.metadata.content.CoverageDescription;
  * Tests the {@link Merger} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 public final class MergerTest extends TestCase {
     /**

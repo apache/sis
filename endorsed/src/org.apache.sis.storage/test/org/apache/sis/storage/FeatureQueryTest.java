@@ -56,8 +56,6 @@ import org.opengis.filter.SortProperty;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class FeatureQueryTest extends TestCase {
     /**

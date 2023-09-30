@@ -86,8 +86,6 @@ import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADI
  * The EPSG identifiers are provided as references where to find the complete definitions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 final class StandardDefinitions {
     /**

@@ -49,8 +49,6 @@ import org.apache.sis.metadata.iso.maintenance.DefaultScope;
  * Provides validation methods to be shared by different implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.5
  */
 final class Validator {
     /**

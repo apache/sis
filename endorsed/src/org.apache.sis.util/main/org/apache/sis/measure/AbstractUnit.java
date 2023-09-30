@@ -58,11 +58,8 @@ import org.apache.sis.system.Configuration;
  * All unit instances shall be immutable and thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.4
  *
  * @param <Q>  the kind of quantity to be measured using this units.
- *
- * @since 0.8
  */
 abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientComparable, Serializable {
     /**

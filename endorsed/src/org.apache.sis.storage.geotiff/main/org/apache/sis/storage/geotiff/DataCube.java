@@ -49,8 +49,6 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_COMPRESSION;
  * as it may cause an infinite loop in {@code listeners.getLocale()} call.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 abstract class DataCube extends TiledGridResource implements ResourceOnFileSystem, StoreResource {
     /**

@@ -30,8 +30,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 public final class MD_CoverageContentTypeCode
         extends CodeListAdapter<MD_CoverageContentTypeCode, CoverageContentType>

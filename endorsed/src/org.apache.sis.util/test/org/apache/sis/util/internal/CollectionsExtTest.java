@@ -44,8 +44,6 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  * Tests the {@link CollectionsExt} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class CollectionsExtTest extends TestCase {
     /**
@@ -172,8 +170,6 @@ public final class CollectionsExtTest extends TestCase {
 
     /**
      * Tests {@link CollectionsExt#toArray(Collection, Class)}.
-     *
-     * @since 0.6
      */
     @Test
     public void testToArray() {

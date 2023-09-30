@@ -40,8 +40,6 @@ import org.apache.sis.util.ArraysExt;
  * can give a change to Apache SIS to be notified about modifications to pixel data.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public class ObservableImage extends BufferedImage {
     /**

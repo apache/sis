@@ -31,8 +31,6 @@ import org.apache.sis.setup.About;
  * Shows the "About" dialog.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class AboutDialog {
     /**

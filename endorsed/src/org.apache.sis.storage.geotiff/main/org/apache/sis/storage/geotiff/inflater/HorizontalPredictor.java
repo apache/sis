@@ -28,8 +28,6 @@ import org.apache.sis.pending.jdk.JDK17;
  * Values packed on 4, 2 or 1 bits are not yet supported.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 abstract class HorizontalPredictor extends PredictorChannel {
     /**

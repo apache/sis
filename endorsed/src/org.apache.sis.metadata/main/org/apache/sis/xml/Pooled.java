@@ -50,8 +50,6 @@ import org.apache.sis.xml.util.LegacyNamespaces;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 abstract class Pooled {
     /**

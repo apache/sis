@@ -31,8 +31,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  * Tests the {@link EnvelopeReducer} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @DependsOn(EnvelopesTest.class)
 public final class EnvelopeReducerTest extends TestCase {

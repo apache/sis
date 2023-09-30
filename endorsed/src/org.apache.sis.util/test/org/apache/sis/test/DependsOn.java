@@ -38,8 +38,6 @@ import java.lang.annotation.Target;
  *       </ul>
  *
  * @author  Martin Desruisseaux
- * @version 1.4
- * @since   0.3
  */
 @Inherited
 @Documented

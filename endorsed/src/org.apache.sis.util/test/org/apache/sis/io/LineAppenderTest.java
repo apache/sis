@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * which is a problematic involved in every tests. Subclasses will test other aspects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.3
  */
 @DependsOn({
   org.apache.sis.util.CharSequencesTest.class,

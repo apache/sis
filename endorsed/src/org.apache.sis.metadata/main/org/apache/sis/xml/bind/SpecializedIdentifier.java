@@ -41,11 +41,8 @@ import org.opengis.metadata.Identifier;
  * is an object of a type constrained by the authority.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <T>  the value type, typically {@link XLink}, {@link UUID} or {@link String}.
- *
- * @since 0.3
  */
 public final class SpecializedIdentifier<T> implements Identifier, CloneAccess, Serializable {
     /**
@@ -192,8 +189,6 @@ public final class SpecializedIdentifier<T> implements Identifier, CloneAccess, 
      * Infers a code space from the authority.
      *
      * @return the code space, or {@code null} if none.
-     *
-     * @since 0.5
      */
     @Override
     public String getCodeSpace() {

@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Tests the {@link CRSBuilder} base class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class CRSBuilderTest extends TestCase {
     /**

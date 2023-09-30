@@ -52,8 +52,6 @@ import org.apache.sis.system.Loggers;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
- * @since   0.3
  */
 public final class Context extends MarshalContext {
     /**
@@ -161,8 +159,6 @@ public final class Context extends MarshalContext {
     /**
      * The objects associated to XML identifiers. At marhalling time, this is used for avoiding duplicated identifiers
      * in the same XML document. At unmarshalling time, this is used for getting a previous object from its identifier.
-     *
-     * @since 0.7
      */
     private final Map<String,Object> identifiers;
 
@@ -171,8 +167,6 @@ public final class Context extends MarshalContext {
      * identify which {@code gml:id} to use for the given object. The {@code gml:id} to use are not necessarily the
      * same than the one associated to {@link IdentifierSpace#ID} if the identifier was already used for another
      * object in the same XML document.
-     *
-     * @since 0.7
      */
     private final Map<Object,String> identifiedObjects;
 
@@ -492,8 +486,6 @@ public final class Context extends MarshalContext {
      * @param  context  the current context, or {@code null} if none.
      * @param  object   the object for which to get the {@code gml:id}.
      * @return the identifier used in the current XML document for the given object, or {@code null} if none.
-     *
-     * @since 0.7
      */
     public static String getObjectID(final Context context, final Object object) {
         return (context != null) ? context.identifiedObjects.get(object) : null;
@@ -506,8 +498,6 @@ public final class Context extends MarshalContext {
      * @param  context  the current context, or {@code null} if none.
      * @param  id       the identifier for which to get the object.
      * @return the object associated to the given identifier, or {@code null} if none.
-     *
-     * @since 0.7
      */
     public static Object getObjectForID(final Context context, final String id) {
         return (context != null) ? context.identifiers.get(id) : null;
@@ -523,8 +513,6 @@ public final class Context extends MarshalContext {
      * @param  object   the object for which to assign the {@code gml:id}.
      * @param  id       the identifier to assign to the given object.
      * @return {@code true} if the given identifier can be used.
-     *
-     * @since 0.7
      */
     public static boolean setObjectForID(final Context context, final Object object, final String id) {
         if (context != null) {
@@ -594,8 +582,6 @@ public final class Context extends MarshalContext {
      * @param  resources  either {@code Errors.class}, {@code Messages.class} or {@code null} for the exception message.
      * @param  key        the resource keys as one of the constants defined in the {@code Keys} inner class.
      * @param  arguments  the arguments to be given to {@code MessageFormat} for formatting the log message.
-     *
-     * @since 0.5
      */
     public static void warningOccured(final Context context,
             final Level level, final Class<?> classe, final String method, final Throwable exception,
@@ -645,8 +631,6 @@ public final class Context extends MarshalContext {
      * @param  resources  either {@code Errors.class} or {@code Messages.class}.
      * @param  key        the resource keys as one of the constants defined in the {@code Keys} inner class.
      * @param  arguments  the arguments to be given to {@code MessageFormat} for formatting the log message.
-     *
-     * @since 0.5
      */
     public static void warningOccured(final Context context, final Class<?> classe, final String method,
             final Class<? extends IndexedResourceBundle> resources, final short key, final Object... arguments)

@@ -35,8 +35,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Instances can be recreated when needed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 final class PropertySingleton<V> extends AbstractList<V> {
     /**

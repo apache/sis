@@ -32,11 +32,8 @@ import org.opengis.metadata.content.PolarisationOrientation;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-398">SIS-398</a>
- *
- * @since 0.3
  */
 public final class MI_PolarisationOrientationCode
         extends CodeListAdapter<MI_PolarisationOrientationCode, PolarisationOrientation>

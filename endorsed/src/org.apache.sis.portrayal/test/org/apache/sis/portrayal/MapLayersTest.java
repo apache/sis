@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
 /**
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class MapLayersTest extends TestCase {
     /**

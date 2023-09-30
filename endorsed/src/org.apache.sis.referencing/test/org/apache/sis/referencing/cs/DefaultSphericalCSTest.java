@@ -35,8 +35,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * Tests {@link DefaultSphericalCS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.4
  */
 @DependsOn(AbstractCSTest.class)
 public final class DefaultSphericalCSTest extends TestCase {

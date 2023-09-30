@@ -29,8 +29,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link Factory} implementation for Java2D geometries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public final class FactoryTest extends GeometriesTestCase {
     /**

@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Tests {@link FileCacheByteChannel}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class FileCacheByteChannelTest extends TestCase {
     /**

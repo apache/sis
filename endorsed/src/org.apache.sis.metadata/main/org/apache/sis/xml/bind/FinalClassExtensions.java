@@ -36,12 +36,9 @@ import org.apache.sis.xml.NilReason;
  * deprecated for removal.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see NilReason#createNilObject(Class)
  * @see <a href="https://issues.apache.org/jira/browse/SIS-586">SIS-586</a>
- *
- * @since 0.4
  */
 public final class FinalClassExtensions {
     /**

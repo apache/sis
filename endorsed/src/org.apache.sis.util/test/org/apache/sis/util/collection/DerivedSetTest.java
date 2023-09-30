@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
  * converted set).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class DerivedSetTest extends TestCase implements ObjectConverter<Integer,Integer> {
     /**

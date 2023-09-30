@@ -111,8 +111,6 @@ import org.apache.sis.setup.OptionKey;
  * is known to support only one image per file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public class WorldFileStore extends PRJDataStore {
     /**

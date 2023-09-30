@@ -456,8 +456,6 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * </ol>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
-     * @since   0.7
      */
     static class Inverse extends InterpolatedGeocentricTransform {
         /**

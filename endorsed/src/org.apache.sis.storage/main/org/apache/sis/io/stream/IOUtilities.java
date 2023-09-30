@@ -61,11 +61,8 @@ import org.apache.sis.storage.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.io.IO
- *
- * @since 0.3
  */
 public final class IOUtilities extends Static {
     /**
@@ -85,8 +82,6 @@ public final class IOUtilities extends Static {
      *
      * @param  path  the object to verify.
      * @return whether the given object is of known type.
-     *
-     * @since 1.1
      */
     public static boolean isKindOfPath(final Object path) {
         return (path instanceof URI)  || (path instanceof URL)  ||      // Test final classes first.
@@ -326,8 +321,6 @@ public final class IOUtilities extends Static {
      * @return the path converted to an uRL, or {@code null} if the given path was null.
      * @throws MalformedURLException if the path cannot be parsed as an URL.
      * @throws IOException if a non-null {@code encoding} was specified and an encoding error is found.
-     *
-     * @since 1.4
      */
     public static URL toURL(String url, final String encoding) throws IOException {
         if (url == null) {
@@ -558,8 +551,6 @@ public final class IOUtilities extends Static {
      * @param  stream  the input or output stream to converts to an {@code InputStream}.
      * @return the input stream, or {@code null} if the given stream cannot be converted.
      * @throws IOException if an error occurred during input stream creation.
-     *
-     * @since 0.8
      */
     public static InputStream toInputStream(AutoCloseable stream) throws IOException {
         if (stream != null) {
@@ -594,8 +585,6 @@ public final class IOUtilities extends Static {
      * @param  stream  the input or output stream to converts to an {@code OutputStream}.
      * @return the output stream, or {@code null} if the given stream cannot be converted.
      * @throws IOException if an error occurred during output stream creation.
-     *
-     * @since 0.8
      */
     public static OutputStream toOutputStream(AutoCloseable stream) throws IOException {
         if (stream != null) {
@@ -671,8 +660,6 @@ public final class IOUtilities extends Static {
      *
      * @param  options  the open options to check, or {@code null} if none.
      * @return {@code true} if a file opened with the given options would be mostly for write operations.
-     *
-     * @since 0.8
      */
     public static boolean isWrite(final OpenOption[] options) {
         boolean isRead   = false;
@@ -712,8 +699,6 @@ public final class IOUtilities extends Static {
      * @param  in  the reader from which to read code point.
      * @return the next code point, or -1 on end of file.
      * @throws IOException if an error occurred while reading characters.
-     *
-     * @since 0.8
      */
     public static int readCodePoint(final Reader in) throws IOException {
         int c = in.read();
@@ -738,8 +723,6 @@ public final class IOUtilities extends Static {
      * @param  filename  name of the file or the data store.
      * @param  store     the input or output object, or {@code null}.
      * @return the parameters for a localized error message for a file that cannot be processed.
-     *
-     * @since 0.8
      */
     public static String canNotReadFile(final Locale locale, final String format, final String filename, final Object store) {
         final Object[] parameters = errorMessageParameters(format, filename, store);
@@ -751,8 +734,6 @@ public final class IOUtilities extends Static {
      *
      * @param   parameters  the result of {@code errorMessageParameters(…)} method call.
      * @return  the {@link Resources.Keys} value to use for formatting the error message.
-     *
-     * @since 0.8
      */
     public static short errorMessageKey(final Object[] parameters) {
         return (parameters.length == 2) ? Resources.Keys.CanNotReadFile_2 :
@@ -769,8 +750,6 @@ public final class IOUtilities extends Static {
      * @param  filename  name of the file or the data store.
      * @param  store     the input or output object, or {@code null}.
      * @return the parameters for a localized error message for a file that cannot be processed.
-     *
-     * @since 0.8
      */
     @SuppressWarnings("fallthrough")
     public static Object[] errorMessageParameters(final String format, final String filename, final Object store) {

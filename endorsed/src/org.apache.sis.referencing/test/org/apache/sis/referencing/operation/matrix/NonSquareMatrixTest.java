@@ -43,8 +43,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * @todo Use JUnit 5 ordering mechanism for running other matrix tests first.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(SolverTest.class)
 public final class NonSquareMatrixTest extends MatrixTestCase {

@@ -50,8 +50,6 @@ import static org.apache.sis.referencing.operation.provider.Mollweide.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.0
  */
 public class Mollweide extends NormalizedProjection {
     /**

@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests the {@link InputStreamArrayGetter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class InputStreamArrayGetterTest extends TestCase {
     /**

@@ -30,8 +30,6 @@ import static java.util.logging.Logger.getLogger;
  * Contains also some extensions used in astronomy.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.6
  */
 public final class AxisNames {
     /**

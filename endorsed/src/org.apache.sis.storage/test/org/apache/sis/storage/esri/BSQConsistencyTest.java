@@ -33,8 +33,6 @@ import static org.junit.Assert.assertNotNull;
  * Test consistency of read operations in random domains of a BSQ (Band Sequential) file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class BSQConsistencyTest extends CoverageReadConsistency {
     /**

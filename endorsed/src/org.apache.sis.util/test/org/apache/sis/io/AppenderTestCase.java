@@ -32,8 +32,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * This is public because JUnit requires it, but should be considered as an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public abstract class AppenderTestCase extends TestCase {
     /**

@@ -42,8 +42,6 @@ import static java.lang.StrictMath.*;
  * Tests the {@link PolarStereographic} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.6
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final class PolarStereographicTest extends MapProjectionTestCase {

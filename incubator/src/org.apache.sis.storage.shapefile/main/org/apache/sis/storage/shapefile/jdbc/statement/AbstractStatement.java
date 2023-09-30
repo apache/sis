@@ -42,8 +42,6 @@ import org.apache.sis.storage.shapefile.jdbc.AbstractJDBC;
  *
  * @author  Marc Le Bihan
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 @SuppressWarnings("unused")
 abstract class AbstractStatement extends AbstractJDBC implements Statement {

@@ -44,8 +44,6 @@ import org.apache.sis.coverage.grid.j2d.ObservableImage;
  * operations on top of this one, such as {@link BandAggregateImage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 class BandSelectImage extends SourceAlignedImage {
     /**

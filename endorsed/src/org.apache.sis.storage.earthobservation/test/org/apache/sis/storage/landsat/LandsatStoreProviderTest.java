@@ -33,8 +33,6 @@ import static org.junit.Assert.*;
  * Tests {@link LandsatStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class LandsatStoreProviderTest extends TestCase {
     /**

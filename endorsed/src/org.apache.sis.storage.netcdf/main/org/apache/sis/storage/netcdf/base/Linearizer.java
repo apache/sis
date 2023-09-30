@@ -54,11 +54,8 @@ import org.apache.sis.storage.netcdf.internal.Resources;
  * <p>A new instance of this class shall be created for each netCDF file is read.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder#addLinearizers(Map, boolean, int...)
- *
- * @since 1.0
  */
 public final class Linearizer {
     /**

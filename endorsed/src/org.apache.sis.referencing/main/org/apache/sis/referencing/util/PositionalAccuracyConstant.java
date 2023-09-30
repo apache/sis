@@ -45,11 +45,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * Predefined positional accuracy resulting from some coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
- *
- * @since 0.5
  */
 @XmlTransient
 public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPositionalAccuracy {

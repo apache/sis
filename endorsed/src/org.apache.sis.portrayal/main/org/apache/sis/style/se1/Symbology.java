@@ -31,8 +31,6 @@ import org.apache.sis.style.Style;
  * @author  Johann Sorel (Geomatys)
  * @author  Chris Dillard (SYS Technologies)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public class Symbology implements Style, Cloneable {
     /**

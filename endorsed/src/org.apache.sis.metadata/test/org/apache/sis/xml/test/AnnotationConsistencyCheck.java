@@ -76,8 +76,6 @@ import org.opengis.util.ControlledVocabulary;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public abstract class AnnotationConsistencyCheck extends TestCase {
     /**
@@ -556,8 +554,6 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
      *
      * @param  method  the method to verify.
      * @return {@code true} if the given method should be ignored, or {@code false} otherwise.
-     *
-     * @since 0.5
      */
     protected boolean isIgnored(final Method method) {
         switch (method.getName()) {

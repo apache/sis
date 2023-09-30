@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Tests {@link ClientFileSystem}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class ClientFileSystemTest extends TestCase {
     /**

@@ -36,8 +36,6 @@ import org.opengis.temporal.Instant;
  * Note that GML3 does not anymore include {@code TimeInstant} inside {@code TimePeriod}.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "TimeInstantType")
 @XmlRootElement(name="TimeInstant")

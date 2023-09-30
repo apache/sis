@@ -30,8 +30,6 @@ import org.apache.sis.util.iso.Names;
  * This class stores a function name and parameters but cannot do any operation.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class FunctionMock implements Expression<Map<String,?>, Object> {
     /**

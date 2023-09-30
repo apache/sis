@@ -33,12 +33,9 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * Azimuthal (or planar) map projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
  * @see <a href="https://mathworld.wolfram.com/AzimuthalProjection.html">Azimuthal projection on MathWorld</a>
- *
- * @since 0.6
  */
 @XmlTransient
 final class DefaultPlanarProjection extends DefaultProjection implements PlanarProjection {

@@ -56,8 +56,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests the {@link DefaultGeodeticDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn({
     DefaultPrimeMeridianTest.class,

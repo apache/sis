@@ -33,8 +33,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(SolverTest.class)
 public final class Matrix4Test extends MatrixTestCase {

@@ -27,8 +27,6 @@ import org.apache.sis.filter.DefaultFilterFactory;
  * Base class of all CQL tests.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 abstract class CQLTestCase {
     /**

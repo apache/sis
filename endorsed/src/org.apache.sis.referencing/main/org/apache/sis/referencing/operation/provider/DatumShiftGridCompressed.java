@@ -29,13 +29,10 @@ import org.apache.sis.util.internal.Numerics;
  * 5 digits in base 10 in ASCII files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
  *             or {@link javax.measure.quantity.Length}).
- *
- * @since 0.7
  */
 final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
     /**

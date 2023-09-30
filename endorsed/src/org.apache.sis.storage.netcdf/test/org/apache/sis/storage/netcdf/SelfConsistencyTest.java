@@ -39,8 +39,6 @@ import static org.junit.Assume.assumeNotNull;
  * a subset of data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class SelfConsistencyTest extends CoverageReadConsistency {
     /**

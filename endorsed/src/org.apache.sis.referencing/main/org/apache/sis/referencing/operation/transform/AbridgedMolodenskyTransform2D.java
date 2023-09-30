@@ -33,8 +33,6 @@ import static java.lang.Math.*;
  * For the usual abridged Molondensky with non-zero translation terms, use the parent class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class AbridgedMolodenskyTransform2D extends MolodenskyTransform2D {
     /**

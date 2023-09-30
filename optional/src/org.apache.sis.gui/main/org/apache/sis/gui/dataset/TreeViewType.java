@@ -23,8 +23,6 @@ import org.apache.sis.storage.folder.UnstructuredAggregate;
  * The different views (aggregation, etc.) which may be associated to a resource item.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 enum TreeViewType {
     /**

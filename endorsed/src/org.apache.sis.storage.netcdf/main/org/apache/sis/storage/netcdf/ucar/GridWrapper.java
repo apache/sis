@@ -45,8 +45,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
  * Many netCDF variables may be associated to the same {@code GridWrapper} instance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 final class GridWrapper extends Grid {
     /**

@@ -28,8 +28,6 @@ import org.apache.sis.xml.bind.gco.Multiplicity;
  * Partial implementation of {@code FC_FeatureAttribute} with only a few properties for testing purposes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 @XmlType(name = "FC_FeatureAttribute_Type", namespace = LegacyNamespaces.GFC)
 @XmlRootElement(name = "FC_FeatureAttribute", namespace = LegacyNamespaces.GFC)

@@ -43,8 +43,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class DirectReferenceSystemTest extends TestCase {
     /**

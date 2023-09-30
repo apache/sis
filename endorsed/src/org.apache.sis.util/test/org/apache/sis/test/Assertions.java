@@ -47,8 +47,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class Assertions extends Static {
     /**
@@ -109,8 +107,6 @@ public final class Assertions extends Static {
      *
      * @param  expected  the expected objects (array can be {@code null}).
      * @param  actual    the actual objects (array can be {@code null}).
-     *
-     * @since 0.7
      */
     public static void assertArrayEqualsIgnoreMetadata(final Object[] expected, final Object[] actual) {
         if (expected != actual) {
@@ -180,8 +176,6 @@ public final class Assertions extends Static {
      * @param  <E>       the type of values to test.
      * @param  expected  the expected values.
      * @param  actual    the stream to compare with the expected values.
-     *
-     * @since 0.8
      */
     public static <E> void assertSequentialStreamEquals(final Iterator<E> expected, final Stream<E> actual) {
         actual.forEach(new Consumer<E>() {
@@ -209,8 +203,6 @@ public final class Assertions extends Static {
      * @param  <E>       the type of values to test.
      * @param  expected  the expected values.
      * @param  actual    the stream to compare with the expected values.
-     *
-     * @since 0.8
      */
     public static <E> void assertParallelStreamEquals(final Iterator<E> expected, final Stream<E> actual) {
         final Integer ONE = 1;          // For doing autoboxing only once.

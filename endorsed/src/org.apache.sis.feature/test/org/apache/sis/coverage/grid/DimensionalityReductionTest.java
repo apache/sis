@@ -44,8 +44,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests {@link DimensionalityReduction}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class DimensionalityReductionTest extends TestCase {
     /**

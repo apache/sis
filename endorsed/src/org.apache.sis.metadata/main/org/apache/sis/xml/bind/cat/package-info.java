@@ -20,7 +20,5 @@
  * ISO 19115-3:2016 defines them in the {@value org.apache.sis.xml.Namespaces#CAT} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 package org.apache.sis.xml.bind.cat;

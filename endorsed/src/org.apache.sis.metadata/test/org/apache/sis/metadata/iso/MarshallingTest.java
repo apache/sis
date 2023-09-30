@@ -76,11 +76,8 @@ import static org.junit.Assert.*;
  *
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-400">SIS-400</a>
- *
- * @since 1.0
  */
 public final class MarshallingTest extends TestUsingFile implements Filter {
     /**

@@ -46,8 +46,6 @@ import org.apache.sis.system.Loggers;
  * the {@code CachedStatement} instance. This object is closed by a background thread of {@link MetadataSource}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
- * @since   0.8
  */
 final class CachedStatement implements AutoCloseable {
     /**

@@ -29,8 +29,6 @@ import org.opengis.referencing.cs.ParametricCS;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class CS_ParametricCS extends PropertyType<CS_ParametricCS, ParametricCS> {
     /**

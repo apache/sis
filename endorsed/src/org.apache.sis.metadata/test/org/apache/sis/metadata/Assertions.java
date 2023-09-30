@@ -45,8 +45,6 @@ import org.opengis.metadata.content.FeatureTypeInfo;
  * Assertion methods used by the {@code org.apache.sis.metadata} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class Assertions extends Static {
     /**
@@ -62,7 +60,6 @@ public final class Assertions extends Static {
      * @param expected  the expected English title.
      * @param citation  the citation to test.
      *
-     * @since 0.6
      *
      * @see #assertAnyTitleEquals(String, String, Citation)
      */
@@ -80,8 +77,6 @@ public final class Assertions extends Static {
      * @param message   the message to report in case of test failure.
      * @param expected  the expected English responsibly party name.
      * @param citation  the citation to test.
-     *
-     * @since 0.8
      */
     public static void assertPartyNameEquals(final String message, final String expected, final Citation citation) {
         assertNotNull(message, citation);
@@ -98,8 +93,6 @@ public final class Assertions extends Static {
      * @param  name     expected feature type name (possibly null).
      * @param  count    expected feature instance count (possibly null).
      * @param  catalog  the content info to validate.
-     *
-     * @since 1.0
      */
     public static void assertContentInfoEquals(final String name, final Integer count, final FeatureCatalogueDescription catalog) {
         final FeatureTypeInfo info = getSingleton(catalog.getFeatureTypeInfo());
@@ -114,8 +107,6 @@ public final class Assertions extends Static {
      * @param  name      expected source identifier.
      * @param  features  expected names of feature type.
      * @param  source    the source to validate.
-     *
-     * @since 1.0
      */
     public static void assertFeatureSourceEquals(final String name, final String[] features, final Source source) {
         assertEquals("metadata.lineage.source.sourceCitation.title", name, String.valueOf(source.getSourceCitation().getTitle()));

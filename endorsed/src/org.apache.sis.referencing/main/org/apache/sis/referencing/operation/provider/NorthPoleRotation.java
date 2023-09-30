@@ -40,12 +40,9 @@ import org.apache.sis.measure.Units;
  * The 0° rotated meridian is defined as the meridian that runs through both the geographical and the rotated North pole.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see SouthPoleRotation
  * @see <a href="https://cfconventions.org/cf-conventions/cf-conventions.html#_rotated_pole">Rotated pole in CF-conventions</a>
- *
- * @since 1.2
  */
 @XmlTransient
 public final class NorthPoleRotation extends AbstractProvider {

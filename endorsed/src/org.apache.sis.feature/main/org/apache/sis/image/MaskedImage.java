@@ -46,8 +46,6 @@ import static org.apache.sis.util.internal.Numerics.LONG_SHIFT;
  * The geometry shall be expressed in pixel coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class MaskedImage extends SourceAlignedImage {
     /**

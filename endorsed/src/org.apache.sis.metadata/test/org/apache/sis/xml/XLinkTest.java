@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests the {@link XLink}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class XLinkTest extends TestCase {
     /**

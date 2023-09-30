@@ -47,11 +47,8 @@ import javafx.scene.shape.Rectangle;
  * {@link EventHandler} is for reacting to user color selection using the control shown.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <S>  the type of row data as declared in the {@code TableView} generic type.
- *
- * @since 1.1
  */
 final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<ActionEvent> {
     /**

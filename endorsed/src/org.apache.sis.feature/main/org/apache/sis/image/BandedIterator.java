@@ -51,8 +51,6 @@ import org.opengis.coverage.grid.SequenceType;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class BandedIterator extends WritablePixelIterator {
     /**

@@ -25,12 +25,9 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param  <T>  type of values contained in the stream, as defined in {@link BaseStream}.
  * @param  <S>  type of stream interface, as defined in {@link BaseStream}.
- *
- * @since 1.1
  */
 public abstract class BaseStreamWrapper<T, S extends BaseStream<T,S>> implements BaseStream<T,S> {
     /**

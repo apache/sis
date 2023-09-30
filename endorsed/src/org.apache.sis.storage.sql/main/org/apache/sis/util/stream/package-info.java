@@ -27,7 +27,5 @@
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 package org.apache.sis.util.stream;

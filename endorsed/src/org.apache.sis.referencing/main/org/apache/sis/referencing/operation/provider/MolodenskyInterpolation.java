@@ -41,8 +41,6 @@ import org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTran
  * However, this class hierarchy may be revisited in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-500">Deprecate (for removal) InterpolatedMolodenskyTransform</a>
  */

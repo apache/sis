@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * Tests {@link Factory} implementation for ESRI geometries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public final class FactoryTest extends GeometriesTestCase {
     /**

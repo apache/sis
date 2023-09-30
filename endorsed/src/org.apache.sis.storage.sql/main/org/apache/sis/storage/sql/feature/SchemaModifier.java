@@ -33,8 +33,6 @@ import org.opengis.feature.FeatureType;
  *       in which case the {@link TableReference} argument is no longer necessary.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public interface SchemaModifier {
     /**

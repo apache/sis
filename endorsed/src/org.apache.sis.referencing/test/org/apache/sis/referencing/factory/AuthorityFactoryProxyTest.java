@@ -45,8 +45,6 @@ import static org.junit.Assert.*;
  * This test uses {@link CommonAuthorityFactory} as a simple factory implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn(CommonAuthorityFactoryTest.class)
 public final class AuthorityFactoryProxyTest extends TestCase {

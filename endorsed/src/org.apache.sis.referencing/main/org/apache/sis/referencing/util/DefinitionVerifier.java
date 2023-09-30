@@ -63,8 +63,6 @@ import org.apache.sis.util.logging.Logging;
  * but provide a "recommended CRS" field for what we think is the intended CRS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 public final class DefinitionVerifier {
     /**

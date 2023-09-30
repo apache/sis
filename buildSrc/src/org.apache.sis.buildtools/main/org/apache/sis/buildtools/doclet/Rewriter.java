@@ -41,8 +41,6 @@ import org.apache.sis.buildtools.book.Characters;
  * The intent is to avoid large amount of white spaces in Javadoc when a line contains long code.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 final class Rewriter {
     /**

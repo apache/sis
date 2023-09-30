@@ -36,8 +36,6 @@ import static org.junit.Assume.*;
  * Content can be downloaded as ZIP files from <a href="https://schemas.isotc211.org/19115/">ISO portal</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public final class SchemaComplianceTest extends TestCase {
     /**

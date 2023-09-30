@@ -34,8 +34,6 @@ import org.opengis.metadata.Identifier;
  * constructor required by JAXB.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 public final class NilReferencingObject implements NilObject, ReferenceSystem {
     /**
@@ -47,8 +45,6 @@ public final class NilReferencingObject implements NilObject, ReferenceSystem {
      * In theory we do not need a default name because it will be replaced by
      * the value of the {@code <gml:name>} element anyway at XML unmarshalling time.
      * But not all XML documents are valid, so the {@code <gml:name>} may be missing.
-     *
-     * @since 0.6
      */
     public static final Identifier UNNAMED = new NamedIdentifier(null, Vocabulary.format(Vocabulary.Keys.Unnamed));
 

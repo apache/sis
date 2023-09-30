@@ -45,8 +45,6 @@ import org.apache.sis.util.Disposable;
  * All subclasses shall override {@link #equals(Object)} and {@link #hashCode()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 abstract class ImageAdapter extends PlanarImage {
     /**

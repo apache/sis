@@ -30,11 +30,8 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
  * where many operations may exist but only one (typically) will be retained.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-327">SIS-327</a>
- *
- * @since 0.8
  */
 @SuppressWarnings("serial")
 public final class DeferredCoordinateOperation extends AbstractCoordinateOperation {

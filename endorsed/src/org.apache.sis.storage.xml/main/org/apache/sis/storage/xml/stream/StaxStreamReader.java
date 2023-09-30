@@ -102,8 +102,6 @@ import org.opengis.feature.Feature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public abstract class StaxStreamReader extends StaxStreamIO implements XMLStreamConstants, Spliterator<Feature>, Runnable {
     /**

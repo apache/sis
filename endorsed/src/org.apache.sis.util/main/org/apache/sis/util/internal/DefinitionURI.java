@@ -104,13 +104,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see org.apache.sis.metadata.internal.NameMeaning
  * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  * @see <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>
- *
- * @since 0.4
  */
 public final class DefinitionURI {
     /**

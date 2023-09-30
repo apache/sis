@@ -32,8 +32,6 @@ import org.apache.sis.xml.Namespaces;
  * specialized subclasses in GML modules.</p>
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
     /**

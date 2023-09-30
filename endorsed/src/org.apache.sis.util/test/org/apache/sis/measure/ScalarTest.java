@@ -38,8 +38,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link Scalar} and its subclasses.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 @DependsOn(UnitsTest.class)
 public final class ScalarTest extends TestCase {

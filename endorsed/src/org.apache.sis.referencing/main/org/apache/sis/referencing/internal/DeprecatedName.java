@@ -32,8 +32,6 @@ import org.apache.sis.util.Deprecable;
  * {@link #hashCode()} implementations without adding code in this class for taking in account a new field.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.6
  */
 public final class DeprecatedName extends NamedIdentifier implements Deprecable {
     /**

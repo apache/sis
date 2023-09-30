@@ -36,8 +36,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.4
  */
 public final class DefaultRepresentativeFractionTest extends TestCase {
     /**
@@ -121,8 +119,6 @@ public final class DefaultRepresentativeFractionTest extends TestCase {
      * Tests indirectly {@link DefaultRepresentativeFraction#freeze()}.
      * This method verifies that a call to {@code DefaultResolution.transitionTo(FINAL)}
      * implies a call to {@link DefaultRepresentativeFraction#freeze()}.
-     *
-     * @since 0.7
      */
     @Test
     public void testFreeze() {

@@ -38,11 +38,8 @@ import org.apache.sis.util.internal.Numerics;
  * implicitly reverted without the need to rewrite all {@code double[]} array contents.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see Tracer.Level#partialPaths
- *
- * @since 1.1
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})           // Not intended to be serialized.
 final class Fragments extends ArrayList<double[]> {

@@ -70,8 +70,6 @@ import org.opengis.referencing.operation.CoordinateOperation;
  * Tests the {@link Classes} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 public final class ClassesTest extends TestCase {
     /**

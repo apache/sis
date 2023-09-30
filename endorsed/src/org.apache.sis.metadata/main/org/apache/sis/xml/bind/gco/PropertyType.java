@@ -106,14 +106,11 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @param <ValueType>  the adapter subclass.
  * @param <BoundType>  the interface being adapted.
  *
  * @see XmlAdapter
- *
- * @since 0.3
  */
 public abstract class PropertyType<ValueType extends PropertyType<ValueType,BoundType>, BoundType>
         extends XmlAdapter<ValueType,BoundType>
@@ -616,8 +613,6 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      *
      * @param  missing  the name of the missing XML component.
      * @throws IllegalArgumentException always thrown.
-     *
-     * @since 0.7
      */
     protected final void incomplete(final String missing) throws IllegalArgumentException {
         throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingComponentInElement_2, getBoundType(), missing));

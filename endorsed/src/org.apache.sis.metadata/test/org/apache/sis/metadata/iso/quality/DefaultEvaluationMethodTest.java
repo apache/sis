@@ -32,8 +32,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link DefaultEvaluationMethod}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public final class DefaultEvaluationMethodTest extends TestCase {
     /**

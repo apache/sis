@@ -40,8 +40,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests the {@link TimeDependentBWP} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 @DependsOn(BursaWolfParametersTest.class)
 public final class TimeDependentBWPTest extends TestCase {

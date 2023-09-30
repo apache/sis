@@ -45,8 +45,6 @@ import org.opengis.test.ToleranceModifier;
  * Tests {@link PassThroughTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn({
     CoordinateDomainTest.class,

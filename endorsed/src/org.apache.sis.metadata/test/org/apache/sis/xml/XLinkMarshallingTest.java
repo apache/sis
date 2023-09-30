@@ -41,8 +41,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the XML marshalling of object having {@code xlink} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})
 public final class XLinkMarshallingTest extends TestCase {

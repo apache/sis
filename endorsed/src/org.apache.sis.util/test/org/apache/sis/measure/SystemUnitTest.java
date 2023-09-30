@@ -44,8 +44,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link SystemUnit} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 @DependsOn(UnitDimensionTest.class)
 public final class SystemUnitTest extends TestCase {

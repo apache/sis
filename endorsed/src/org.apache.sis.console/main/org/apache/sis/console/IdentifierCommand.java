@@ -41,8 +41,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * The "identifier" sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 final class IdentifierCommand extends FormattedOutputCommand {
     /**

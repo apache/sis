@@ -53,8 +53,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests the {@link StandardDefinitions} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
@@ -70,8 +68,6 @@ public final class StandardDefinitionsTest extends TestCase {
     /**
      * Verifies value of the {@link StandardDefinitions#GREENWICH} code.
      * This method is for ensuring consistency between hard-coded constants.
-     *
-     * @since 0.8
      */
     @Test
     public void verifyGreenwichCode() {
@@ -80,8 +76,6 @@ public final class StandardDefinitionsTest extends TestCase {
 
     /**
      * Tests {@link StandardDefinitions#createCoordinateSystem(short, boolean)}.
-     *
-     * @since 1.0
      */
     @Test
     @DependsOnMethod("testCreateAxis")
@@ -98,8 +92,6 @@ public final class StandardDefinitionsTest extends TestCase {
     /**
      * Tests {@link StandardDefinitions#createUniversal(int, GeographicCRS, boolean, double, double, CartesianCS)}
      * for a Universal Transverse Mercator (UTM) projection.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testCreateGeographicCRS")
@@ -118,8 +110,6 @@ public final class StandardDefinitionsTest extends TestCase {
      * Tests {@link StandardDefinitions#createUniversal(int, GeographicCRS, boolean, double, double, CartesianCS)}
      * for a Universal Polar Stereographic (UPS) projection. This test cheats a little bit on the coordinate system
      * by laziness; we are more interested in the projection parameters.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testCreateGeographicCRS")
@@ -244,8 +234,6 @@ public final class StandardDefinitionsTest extends TestCase {
 
     /**
      * Tests the creation of vertical CRS.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testCreateAxis")

@@ -28,8 +28,6 @@ import org.opengis.referencing.operation.TransformException;
  * This class is not thread-safe.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.0
  */
 final class GeometryCoordinateTransform extends GeometryTransform {
     /**

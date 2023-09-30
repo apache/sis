@@ -25,8 +25,6 @@ import org.apache.sis.filter.sqlmm.SQLMM;
  * This class defines only the names that need to be references from at least two different classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class FunctionNames extends Static {
     /** Value of {@link org.opengis.filter.NullOperator#getOperatorType()}. */

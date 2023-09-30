@@ -41,8 +41,6 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @XmlType(name = "FRA_DirectReferenceSystem_Type")
 @XmlRootElement(name= "FRA_DirectReferenceSystem")

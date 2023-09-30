@@ -34,8 +34,6 @@ import org.apache.sis.test.DependsOn;
  * Tests the {@link GeographicOffsets}, {@link GeographicOffsets2D} and {@link VerticalOffset} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn(AffineTest.class)
 public final class GeographicOffsetsTest extends TransformTestCase {

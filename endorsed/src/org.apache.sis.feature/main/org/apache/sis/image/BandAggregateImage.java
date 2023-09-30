@@ -35,12 +35,9 @@ import org.apache.sis.coverage.internal.MultiSourceArgument;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see BandSelectImage
  * @see ImageCombiner
- *
- * @since 1.4
  */
 class BandAggregateImage extends MultiSourceImage {
     /**

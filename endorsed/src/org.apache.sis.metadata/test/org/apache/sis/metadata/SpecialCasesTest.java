@@ -39,8 +39,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Test the {@link SpecialCases} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.4
  */
 @DependsOn(PropertyAccessorTest.class)
 public final class SpecialCasesTest extends TestCase {

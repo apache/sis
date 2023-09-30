@@ -52,8 +52,6 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public class Store extends StaxDataStore implements FeatureSet {
     /**

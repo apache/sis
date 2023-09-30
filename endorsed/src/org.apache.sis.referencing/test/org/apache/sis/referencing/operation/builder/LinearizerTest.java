@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Tests {@link Linearizer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @DependsOn(LocalizationGridBuilderTest.class)
 public final class LinearizerTest extends TestCase {

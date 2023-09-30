@@ -41,11 +41,8 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
  * needed, but we still have to put all the pieces together.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-462">SIS-462</a>
- *
- * @since 0.5
  */
 final class LooselyDefinedMethod {
     /**

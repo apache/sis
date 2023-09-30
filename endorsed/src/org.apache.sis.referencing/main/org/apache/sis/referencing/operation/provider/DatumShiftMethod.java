@@ -23,8 +23,6 @@ package org.apache.sis.referencing.operation.provider;
  * This enumeration does not include datum shift based on grid files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public enum DatumShiftMethod {
     /**

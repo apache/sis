@@ -27,8 +27,6 @@ import org.apache.sis.storage.base.StoreMetadata;
  * Provides also a {@link DataStore} created by the provider if this class is used for an {@code open(…)} operation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 final class ProbeProviderPair {
     /**

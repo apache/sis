@@ -49,8 +49,6 @@ import org.apache.sis.gui.map.StatusBar;
  * mechanisms are implemented in the view (different views may load a different amount of data).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 abstract class ViewAndControls {
     /**

@@ -27,8 +27,6 @@ import org.opengis.referencing.operation.TransformException;
  * Builds a {@link Polyline}, {@link Polygon} or {@link MultiPolylines} from given coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public class PathBuilder {
     /**

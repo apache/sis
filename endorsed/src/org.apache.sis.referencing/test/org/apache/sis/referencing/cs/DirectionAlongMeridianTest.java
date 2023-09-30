@@ -32,8 +32,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link DirectionAlongMeridian} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.4
- * @since   0.4
  */
 @DependsOn(org.apache.sis.referencing.util.AxisDirectionsTest.class)
 public final class DirectionAlongMeridianTest extends TestCase {

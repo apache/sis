@@ -29,8 +29,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link org.apache.sis.test.Assertions} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.3
  */
 public final class AssertTest extends TestCase {
     /**

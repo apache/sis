@@ -36,8 +36,6 @@ import org.opengis.filter.ValueReference;
  * Tests {@link LeafExpression}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class LeafExpressionTest extends TestCase {
     /**

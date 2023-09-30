@@ -24,8 +24,6 @@ import org.apache.sis.storage.xml.AbstractProvider;
  * A central place where to declare data formats used by SIS application.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class DataFormats {
     /**

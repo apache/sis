@@ -32,8 +32,6 @@ import org.apache.sis.storage.Resource;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

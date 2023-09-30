@@ -42,11 +42,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see org.apache.sis.metadata.internal.MergerTest
- *
- * @since 0.8
  */
 @DependsOn(MetadataStandardTest.class)
 public final class MetadataCopierTest extends TestCase {

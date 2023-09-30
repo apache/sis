@@ -50,8 +50,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @DependsOn(VariableTest.class)
 public class FeatureSetTest extends TestCase {

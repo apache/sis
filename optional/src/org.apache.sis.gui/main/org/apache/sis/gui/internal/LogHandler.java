@@ -44,8 +44,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * This class maintains both a global (system) list and a list of log records specific to each resource.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class LogHandler extends Handler implements StoreListener<WarningEvent> {
     /**

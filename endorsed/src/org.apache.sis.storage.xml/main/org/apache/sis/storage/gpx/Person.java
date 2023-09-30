@@ -55,8 +55,6 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public final class Person implements Responsibility, Party, Contact, Address {
     /**

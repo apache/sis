@@ -1224,8 +1224,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
      */
     private final class SubIter extends Iter {
         /**
@@ -1303,8 +1301,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * All elements are {@link Range} objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
      */
     private class Iter implements Iterator<Range<E>> {
         /**

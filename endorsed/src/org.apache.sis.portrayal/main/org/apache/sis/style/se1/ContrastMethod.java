@@ -22,8 +22,6 @@ package org.apache.sis.style.se1;
  * In the case of a color image, the relative grayscale brightness of a pixel color is used.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public enum ContrastMethod {
     /**

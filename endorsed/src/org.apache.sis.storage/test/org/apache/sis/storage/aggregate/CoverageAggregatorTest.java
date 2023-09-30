@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests {@link CoverageAggregator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class CoverageAggregatorTest extends TestCase {
     /**

@@ -32,8 +32,6 @@ import org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class MD_SpatialRepresentation extends
         PropertyType<MD_SpatialRepresentation, SpatialRepresentation>

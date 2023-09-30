@@ -39,8 +39,6 @@ import org.apache.sis.math.Vector;
  * if another data store needs similar functionality in the future.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 final class Localization {
     /**

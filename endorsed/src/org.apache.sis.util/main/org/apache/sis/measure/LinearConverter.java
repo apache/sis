@@ -43,8 +43,6 @@ import org.apache.sis.util.internal.DoubleDouble;
  * operations and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class LinearConverter extends AbstractConverter implements LenientComparable {
     /**

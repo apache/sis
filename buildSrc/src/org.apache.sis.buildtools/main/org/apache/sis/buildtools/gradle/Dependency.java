@@ -43,8 +43,6 @@ import org.gradle.api.publish.maven.MavenPublication;
  * Information about a dependency.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class Dependency {
     /**

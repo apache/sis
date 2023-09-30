@@ -33,8 +33,6 @@ import org.apache.sis.map.coverage.MultiResolutionCoverageLoader;
  * The same instance may be shared by many {@link CoverageCanvas} or {@link GridView} objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.2
  */
 final class MultiResolutionImageLoader extends MultiResolutionCoverageLoader {
     /**

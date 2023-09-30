@@ -30,12 +30,9 @@ import java.util.function.Consumer;
  * Consequently, this wrapper should be used only for elements that are cheap to wrap.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @param  <S>  type of elements in the source list.
  * @param  <E>  type of elements in this list.
- *
- * @since 1.2
  */
 final class DerivedList<S,E> extends AbstractList<E> {
     /**

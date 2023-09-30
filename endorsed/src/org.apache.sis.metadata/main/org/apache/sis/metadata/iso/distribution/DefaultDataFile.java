@@ -75,23 +75,17 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
 
     /**
      * Name or path of the file.
-     *
-     * @since 1.0
      */
     private URI fileName;
 
     /**
      * Text description of the file.
-     *
-     * @since 1.0
      */
     @SuppressWarnings("serial")
     private InternationalString fileDescription;
 
     /**
      * Format in which the file is encoded.
-     *
-     * @since 1.0
      */
     private String fileType;
 

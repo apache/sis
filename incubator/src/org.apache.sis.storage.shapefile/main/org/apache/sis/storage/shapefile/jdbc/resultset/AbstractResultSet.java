@@ -56,8 +56,6 @@ import org.apache.sis.storage.shapefile.jdbc.AbstractJDBC;
  * then invoke the method of the same name expecting a column index as an {@code int}.
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public abstract class AbstractResultSet extends AbstractJDBC implements ResultSet {
     /*

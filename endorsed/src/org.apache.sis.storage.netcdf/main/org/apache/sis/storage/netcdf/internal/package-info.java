@@ -24,7 +24,5 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 package org.apache.sis.storage.netcdf.internal;

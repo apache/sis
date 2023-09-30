@@ -33,8 +33,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests {@link MultiValuedAttribute}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 @DependsOn(SingletonAttributeTest.class)
 public final class MultiValuedAttributeTest extends TestCase {

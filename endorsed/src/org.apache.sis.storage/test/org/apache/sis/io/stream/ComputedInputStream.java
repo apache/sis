@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * The byte values are the 1, 2, 3, …, 100, -1, -2, -3, … -100 series repeated indefinitely.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class ComputedInputStream extends InputStream {
     /**

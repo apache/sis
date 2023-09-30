@@ -39,8 +39,6 @@ import static org.junit.Assert.*;
  * and compare values computed by the grid using the affine transform as a reference.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public class DatumShiftGridFileTest extends TestCase {
     /**

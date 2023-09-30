@@ -38,8 +38,6 @@ import org.apache.sis.feature.internal.Resources;
  * {@linkplain Key#dispose() cleaned}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class TileCache extends Cache<TileCache.Key, Raster> {
     /**

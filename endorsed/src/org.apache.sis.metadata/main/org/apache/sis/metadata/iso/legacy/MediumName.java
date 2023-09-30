@@ -35,12 +35,9 @@ import static org.opengis.annotation.Specification.*;
  * In more recent specification, this code list has been replaced by a citation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 2.0
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-389">SIS-389</a>
  * @see <a href="https://github.com/opengeospatial/geoapi/issues/14">GeoAPI issue #14</a>
- *
- * @since 2.0
  */
 @UML(identifier="MD_MediumNameCode", specification=ISO_19115, version=2003)
 public final class MediumName extends CodeList<MediumName> implements Citation {

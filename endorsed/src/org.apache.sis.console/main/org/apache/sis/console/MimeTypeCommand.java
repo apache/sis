@@ -38,12 +38,9 @@ import org.apache.sis.util.resources.Errors;
  *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @see Files#probeContentType(Path)
  * @see DataStores#probeContentType(Object)
- *
- * @since 0.4
  */
 final class MimeTypeCommand extends CommandRunner {
     /**

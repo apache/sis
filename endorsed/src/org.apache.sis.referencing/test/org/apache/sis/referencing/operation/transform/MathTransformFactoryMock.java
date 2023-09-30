@@ -36,8 +36,6 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * The operation method shall implement the {@link MathTransformProvider} interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 public final class MathTransformFactoryMock implements MathTransformFactory {
     /**
