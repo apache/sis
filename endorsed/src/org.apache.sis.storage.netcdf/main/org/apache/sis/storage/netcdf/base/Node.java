@@ -31,8 +31,6 @@ import org.apache.sis.storage.netcdf.internal.Resources;
  * The common characteristic of those objects is to have attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.0
  */
 public abstract class Node extends NamedElement {
     /**

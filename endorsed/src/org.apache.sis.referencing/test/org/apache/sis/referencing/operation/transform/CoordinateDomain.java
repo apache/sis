@@ -30,8 +30,6 @@ import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADI
  * This class can generate random number suitable for their domain.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.5
  */
 public class CoordinateDomain {
     /*

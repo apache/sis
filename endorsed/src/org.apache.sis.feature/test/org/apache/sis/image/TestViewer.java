@@ -46,8 +46,6 @@ import static java.lang.StrictMath.*;
  * A viewer for images being tested. This can be used for visual verification.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class TestViewer {
     /**

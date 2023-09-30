@@ -28,8 +28,6 @@ import org.apache.sis.xml.bind.TypeRegistration;
  * {@code org.apache.sis.xml.bind.TypeRegistration} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class ProfileTypes extends TypeRegistration {
     /**

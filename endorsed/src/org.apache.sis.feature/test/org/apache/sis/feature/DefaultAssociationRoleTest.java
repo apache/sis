@@ -41,8 +41,6 @@ import org.opengis.feature.FeatureType;
  * Tests {@link DefaultAssociationRole}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn(DefaultFeatureTypeTest.class)
 public final class DefaultAssociationRoleTest extends TestCase {

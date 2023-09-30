@@ -39,8 +39,6 @@ import org.opengis.feature.Feature;
  * Reader of a Shapefile Binary content by the way of a {@link java.nio.MappedByteBuffer}
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormatException, SQLShapefileNotFoundException> {
     /** Name of the Geometry field. */

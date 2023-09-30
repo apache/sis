@@ -30,8 +30,6 @@ import org.apache.sis.util.resources.Messages;
  * Sub-directories of {@code SIS_DATA} where SIS looks for EPSG database, datum shift grids and other resources.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public enum DataDirectory {
     /**
@@ -133,8 +131,6 @@ public enum DataDirectory {
      * @throws SecurityException if this method is not allowed to query the environment variable.
      *
      * @see System#getenv(String)
-     *
-     * @since 0.8
      */
     public static String getenv() throws SecurityException {
         return System.getenv(ENV);
@@ -146,8 +142,6 @@ public enum DataDirectory {
      * {@link #getRootDirectory()} when a fallback exists in absence of any user attempt to configure the system.
      *
      * @return {@code true} if the {@value #ENV} environment variable is unset.
-     *
-     * @since 0.8
      */
     public static synchronized boolean isUndefined() {
         if (rootDirectory == null) try {

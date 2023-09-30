@@ -38,8 +38,6 @@ import org.apache.sis.math.MathFunctions;
  * The user-provided {@code ranges} argument together with a set of convenience tools.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public final class RangeArgument {
     /**

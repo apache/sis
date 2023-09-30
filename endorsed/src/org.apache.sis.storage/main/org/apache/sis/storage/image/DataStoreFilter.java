@@ -29,11 +29,8 @@ import org.apache.sis.storage.base.StoreUtilities;
  * A filter for data store providers with special handling for world files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.io.stream.InternalOptionKey#PREFERRED_PROVIDERS
- *
- * @since 1.4
  */
 public final class DataStoreFilter implements Predicate<DataStoreProvider> {
     /**

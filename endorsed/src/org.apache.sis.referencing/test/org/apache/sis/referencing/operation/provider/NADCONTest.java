@@ -45,8 +45,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class NADCONTest extends DatumShiftTestCase {
     /**

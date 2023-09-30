@@ -58,8 +58,6 @@ import org.apache.sis.util.internal.Numerics;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 class Polyline extends FlatShape {
     /**

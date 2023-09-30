@@ -24,8 +24,6 @@ import static org.apache.sis.util.internal.DefinitionURI.regionMatches;
  * Parsers of pointers in x-paths, adapted to the syntax found in GML documents.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.2
  */
 enum XPointer {
     /**

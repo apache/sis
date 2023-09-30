@@ -32,8 +32,6 @@ import org.apache.sis.util.resources.Errors;
  * and profiles.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public abstract class DiscreteSampling extends AbstractFeatureSet implements StoreResource {
     /**

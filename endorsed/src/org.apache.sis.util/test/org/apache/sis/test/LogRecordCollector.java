@@ -35,8 +35,6 @@ import org.junit.runner.Description;
  * Those emitters will be reported after the test suite completion.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 final class LogRecordCollector extends Handler {
     /**

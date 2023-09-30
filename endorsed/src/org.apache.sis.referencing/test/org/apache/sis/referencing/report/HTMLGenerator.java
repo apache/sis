@@ -39,8 +39,6 @@ import org.apache.sis.util.internal.Constants;
  * to move the files to the appropriate Apache SIS {@code "content/"} site directory.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.6
  */
 abstract class HTMLGenerator implements Closeable {
     /**

@@ -64,8 +64,6 @@ import static org.apache.sis.util.internal.MetadataServices.EMBEDDED;
  * All other methods are related to getting the {@code DataSource} instance, through JNDI or otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public abstract class Initializer {
     /**
@@ -229,8 +227,6 @@ public abstract class Initializer {
      * @return whether the given data source supplier has been successfully set.
      *
      * @see org.apache.sis.setup.Configuration#setDatabase(Supplier)
-     *
-     * @since 1.0
      */
     @Configuration(writeAccess = Configuration.Access.GLOBAL)
     public static synchronized boolean setDefault(final Supplier<DataSource> ds) {
@@ -376,8 +372,6 @@ public abstract class Initializer {
      * returns the data source for embedded Derby database. Otherwise returns {@code null}.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-337">SIS-337</a>
-     *
-     * @since 0.8
      */
     private static DataSource embedded() {
         for (InstallationResources res : InstallationResources.load()) {
@@ -408,8 +402,6 @@ public abstract class Initializer {
      * @param  classe    the class to report as the source of the logging message.
      * @param  method    the method to report as the source of the logging message.
      * @throws SQLException if an error occurred while fetching the database URL.
-     *
-     * @since 0.8
      */
     public static void connected(final DatabaseMetaData metadata, final Class<?> classe, final String method)
             throws SQLException

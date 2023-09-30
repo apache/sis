@@ -75,8 +75,6 @@ import static org.junit.Assert.*;
  * after any upgrade of the EPSG dataset.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**

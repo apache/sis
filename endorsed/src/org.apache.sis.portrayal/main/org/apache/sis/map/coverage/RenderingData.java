@@ -104,8 +104,6 @@ import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
  * We wait to see if this class works well in the general case before doing special cases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public class RenderingData implements CloneAccess {
     /**

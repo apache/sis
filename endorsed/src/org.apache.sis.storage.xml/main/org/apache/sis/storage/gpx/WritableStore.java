@@ -40,8 +40,6 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class WritableStore extends Store implements WritableFeatureSet {
     /**

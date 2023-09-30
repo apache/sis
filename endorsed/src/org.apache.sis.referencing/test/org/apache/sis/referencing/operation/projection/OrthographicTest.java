@@ -36,8 +36,6 @@ import org.opengis.util.FactoryException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final class OrthographicTest extends MapProjectionTestCase {

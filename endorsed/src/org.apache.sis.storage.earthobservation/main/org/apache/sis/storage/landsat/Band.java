@@ -47,8 +47,6 @@ import static org.apache.sis.util.internal.CollectionsExt.first;
  * A band in a Landsat data set. Each band is represented by a separated GeoTIFF file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 final class Band extends GridResourceWrapper implements SchemaModifier {
     /**

@@ -24,8 +24,6 @@ package org.apache.sis.metadata;
  * is insensitive to the ordering of properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class HashCode extends MetadataVisitor<Integer> {
     /**

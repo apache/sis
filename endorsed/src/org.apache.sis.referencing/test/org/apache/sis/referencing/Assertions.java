@@ -59,8 +59,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 public final class Assertions extends Static {
     /**
@@ -88,8 +86,6 @@ public final class Assertions extends Static {
      *
      * @param expected  the expected identifier code.
      * @param actual    the identifier to verify.
-     *
-     * @since 0.6
      */
     public static void assertOgcIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
@@ -106,8 +102,6 @@ public final class Assertions extends Static {
      *
      * @param expected  the expected identifier code.
      * @param actual    the identifier to verify.
-     *
-     * @since 0.5
      */
     public static void assertEpsgIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
@@ -126,8 +120,6 @@ public final class Assertions extends Static {
      * @param name        the expected EPSG name.
      * @param identifier  the expected EPSG identifier.
      * @param object      the object to verify.
-     *
-     * @since 0.6
      */
     public static void assertEpsgNameAndIdentifierEqual(final String name, final int identifier, final IdentifiedObject object) {
         assertNotNull(name, object);
@@ -294,8 +286,6 @@ public final class Assertions extends Static {
      * @param tolerances  the tolerance threshold on location along each axis. If this array length is shorter
      *                    than the number of dimensions, then the last tolerance is reused for all remaining axes.
      *                    If this array is empty, then the tolerance threshold is zero.
-     *
-     * @since 0.7
      */
     public static void assertEnvelopeEquals(final Envelope expected, final Envelope actual, final double... tolerances) {
         final int dimension = expected.getDimension();
@@ -450,8 +440,6 @@ public final class Assertions extends Static {
      * If the current transform is linear, then this method will also verifies {@link Matrix#isIdentity()}.
      *
      * @param transform  the transform to test.
-     *
-     * @since 0.6
      */
     public static void assertIsIdentity(final MathTransform transform) {
         assertTrue("isIdentity()", transform.isIdentity());
@@ -465,8 +453,6 @@ public final class Assertions extends Static {
      * If the current transform is linear, then this method will also verifies {@link Matrix#isIdentity()}.
      *
      * @param transform  the transform to test.
-     *
-     * @since 0.6
      */
     public static void assertIsNotIdentity(final MathTransform transform) {
         assertFalse("isIdentity()", transform.isIdentity());
@@ -519,8 +505,6 @@ public final class Assertions extends Static {
      * @param convention  the WKT convention to use.
      * @param expected    the expected regular expression, or {@code null} if {@code object} is expected to be null.
      * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
-     *
-     * @since 0.6
      */
     public static void assertWktEqualsRegex(final Convention convention, final String expected, final Object object) {
         if (expected == null) {

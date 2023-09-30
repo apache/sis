@@ -47,8 +47,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * that may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class CoverageStyling extends ColorColumnHandler<Category> implements Function<Category,Color[]> {
     /**

@@ -34,8 +34,6 @@ import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_D
  * Collection of datum for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.4
  */
 public final class HardCodedDatum {
     /**
@@ -47,8 +45,6 @@ public final class HardCodedDatum {
 
     /**
      * Paris meridian (EPSG:8903), with angular measurements in grad.
-     *
-     * @since 0.5
      */
     public static final DefaultPrimeMeridian PARIS = new DefaultPrimeMeridian(
             properties("Paris", "8903", null),
@@ -60,8 +56,6 @@ public final class HardCodedDatum {
      *
      * <p>When used together with {@link #PARIS}, this prime meridian is useful for testing
      * two real-world prime meridians that are very close together but still different.</p>
-     *
-     * @since 0.5
      */
     public static final DefaultPrimeMeridian PARIS_RGS = new DefaultPrimeMeridian(
             properties("Paris RGS", "8914", null),
@@ -86,8 +80,6 @@ public final class HardCodedDatum {
 
     /**
      * Nouvelle Triangulation Française datum (EPSG:6807). Prime meridian is Paris.
-     *
-     * @since 0.5
      */
     public static final DefaultGeodeticDatum NTF = new DefaultGeodeticDatum(
             properties("Nouvelle Triangulation Française", "6807", "Topographic mapping."),
@@ -96,8 +88,6 @@ public final class HardCodedDatum {
     /**
      * Tokyo 1918 datum (EPSG:6301). Ellipsoid is Bessel 1841 and prime meridian is Greenwich.
      * Bursa-Wolf parameters to {@link #JGD2000} are (-146.414, 507.337, 680.507).
-     *
-     * @since 0.6
      */
     public static final DefaultGeodeticDatum TOKYO = new DefaultGeodeticDatum(
             properties("Tokyo 1918", "6301", "Geodetic survey."),
@@ -107,8 +97,6 @@ public final class HardCodedDatum {
     /**
      * Japanese Geodetic Datum 2000 datum (EPSG:6612). Ellipsoid is GRS 1980 and prime meridian is Greenwich.
      * This is useful for testing datum shift from {@link #TOKYO}.
-     *
-     * @since 0.6
      */
     public static final DefaultGeodeticDatum JGD2000 = new DefaultGeodeticDatum(
             properties("Japanese Geodetic Datum 2000", "6612", TOKYO.getScope()),

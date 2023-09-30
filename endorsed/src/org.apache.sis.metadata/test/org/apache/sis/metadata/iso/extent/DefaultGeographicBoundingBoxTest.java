@@ -36,8 +36,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * Tests {@link DefaultGeographicBoundingBox}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.4
  */
 public final class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
@@ -406,8 +404,6 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
      * Tests {@link DefaultGeographicBoundingBox#asMap()}. The longitude and latitude values are
      * expected to be represented by {@link Longitude} and {@link Latitude} objects respectively.
-     *
-     * @since 0.5
      */
     @Test
     public void testAsMap() {
@@ -431,8 +427,6 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
      * Tests the {@code toString()} implementation of a custom geographic bounding box inside a {@link DefaultExtent}.
      * In a previous Apache SIS version, those properties were not properly sorted.
-     *
-     * @since 0.8
      */
     @Test
     public void testToString() {

@@ -45,8 +45,6 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  * in the {@code module-info.java} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 public final class MetadataTypes extends TypeRegistration implements UnaryOperator<Object> {
     /**

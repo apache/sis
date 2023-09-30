@@ -30,8 +30,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class DQM_ValueStructure extends CodeListAdapter<DQM_ValueStructure, ValueStructure> {
     /**

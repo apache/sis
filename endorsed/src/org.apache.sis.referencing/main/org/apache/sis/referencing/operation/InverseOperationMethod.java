@@ -46,8 +46,6 @@ import org.apache.sis.util.collection.Containers;
  * for the inverse, or when the inverse operation cannot be represented by inverting the sign of parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 final class InverseOperationMethod extends DefaultOperationMethod {

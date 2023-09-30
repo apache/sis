@@ -28,8 +28,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class MI_Requirement extends PropertyType<MI_Requirement, Requirement> {
     /**

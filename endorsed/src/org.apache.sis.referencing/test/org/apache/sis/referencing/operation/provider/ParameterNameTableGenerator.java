@@ -50,8 +50,6 @@ import static org.junit.Assert.*;
  * Developer should execute {@code "git diff"} and inspect the changes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
     /**

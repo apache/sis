@@ -46,11 +46,8 @@ import org.apache.sis.util.resources.Errors;
  * and the same false easting (500000 metres).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <T>  the type of the value stored in this parameter.
- *
- * @since 0.6
  */
 @XmlTransient
 final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {

@@ -37,11 +37,8 @@ import org.apache.sis.setup.GeometryLibrary;
  * Enumeration values order is the approximated declaration order in SQLMM standard.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://www.iso.org/standard/60343.html">ISO 13249-3 - SQLMM</a>
- *
- * @since 1.1
  */
 public enum SQLMM {
     /**

@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Test writing in CQL expressions.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ExpressionWritingTest extends CQLTestCase {
     /**

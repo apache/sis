@@ -30,8 +30,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  * class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 final class SC_GeographicCRS extends PropertyType<SC_GeographicCRS, GeographicCRS> {
     /**

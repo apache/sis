@@ -40,8 +40,6 @@ import static org.apache.sis.test.TestUtilities.formatMetadata;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 @DependsOn(TreeNodeTest.class)
 public final class TreeTableViewTest extends TestCase {
@@ -119,8 +117,6 @@ public final class TreeTableViewTest extends TestCase {
      * In this test the longitude value and the remarks and separated by "……" characters, but this is because we
      * use the default {@link org.apache.sis.util.collection.TreeTableFormat}. When using {@link MetadataFormat}
      * specialization, the formatting is a little bit different
-     *
-     * @since 1.0
      */
     @Test
     public void testRemarks() {

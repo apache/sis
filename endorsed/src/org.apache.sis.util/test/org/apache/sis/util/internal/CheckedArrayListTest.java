@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Tests the {@link CheckedArrayList} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.4
  */
 public final class CheckedArrayListTest extends TestCase {
     /**

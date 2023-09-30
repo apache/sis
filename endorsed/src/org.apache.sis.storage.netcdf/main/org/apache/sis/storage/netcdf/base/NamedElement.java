@@ -34,8 +34,6 @@ import org.apache.sis.storage.netcdf.internal.Resources;
  * All those objects share in common a {@link #getName()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.8
  */
 public abstract class NamedElement {
     /**

@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests the {@link HelpCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 @DependsOn(CommandRunnerTest.class)
 public final class HelpCommandTest extends TestCase {

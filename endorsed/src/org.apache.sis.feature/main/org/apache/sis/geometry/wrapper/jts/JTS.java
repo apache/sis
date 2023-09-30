@@ -51,8 +51,6 @@ import static org.apache.sis.geometry.wrapper.Geometries.LOGGER;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class JTS extends Static {
     /**

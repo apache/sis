@@ -29,8 +29,6 @@ import org.apache.sis.test.mock.IdentifiedObjectMock;
  * A dummy implementation of {@link PrimeMeridian}, which is also its own identifier.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.4
  */
 @SuppressWarnings("serial")
 final class PrimeMeridianMock extends IdentifiedObjectMock implements PrimeMeridian {

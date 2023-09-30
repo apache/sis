@@ -42,8 +42,6 @@ import static org.apache.sis.referencing.operation.provider.Sinusoidal.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.0
  */
 public class Sinusoidal extends MeridianArcBased {
     /**
@@ -221,8 +219,6 @@ public class Sinusoidal extends MeridianArcBased {
      * Provides the transform equations for the spherical case of the Sinusoidal projection.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
-     * @since   1.0
      */
     private static final class Spherical extends Sinusoidal {
         /**

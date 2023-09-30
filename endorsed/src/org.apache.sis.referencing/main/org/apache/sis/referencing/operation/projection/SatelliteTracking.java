@@ -64,8 +64,6 @@ import static org.apache.sis.referencing.operation.provider.SatelliteTracking.*;
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public class SatelliteTracking extends NormalizedProjection {
     /**

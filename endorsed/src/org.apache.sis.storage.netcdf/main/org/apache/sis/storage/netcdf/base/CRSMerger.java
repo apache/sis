@@ -35,8 +35,6 @@ import org.apache.sis.util.Utilities;
  * dimensions, while the explicit CRS often has only the horizontal dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class CRSMerger extends GeodeticObjectBuilder {
     /**

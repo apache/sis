@@ -52,8 +52,6 @@ import org.opengis.feature.Feature;
  *       provided that {@link Spliterator#ORDERED} is set.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class FeatureList extends ObservableListBase<Feature> {
     /**

@@ -44,8 +44,6 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @todo Define {@code DerivedGridCoverageResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public abstract class GridResourceWrapper implements GridCoverageResource {
     /**

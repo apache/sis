@@ -41,8 +41,6 @@ import java.nio.charset.Charset;
  * So this mock makes easier to test localization aspects without the interference of automatic mechanism.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.MDB)
 public final class MetadataMock extends SimpleMetadata {

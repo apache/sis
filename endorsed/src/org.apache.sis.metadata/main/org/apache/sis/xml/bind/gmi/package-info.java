@@ -32,8 +32,6 @@
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
     @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),

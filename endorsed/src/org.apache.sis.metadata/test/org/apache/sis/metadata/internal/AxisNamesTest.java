@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests the {@link AxisNames} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 public final class AxisNamesTest extends TestCase {
     /**

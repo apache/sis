@@ -69,8 +69,6 @@ import static java.lang.Double.doubleToRawLongBits;
  * <p>Instances of {@link CategoryList} are immutable and thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
- * @since   1.0
  */
 final class CategoryList extends AbstractList<Category> implements MathTransform1D, Serializable {
     /**

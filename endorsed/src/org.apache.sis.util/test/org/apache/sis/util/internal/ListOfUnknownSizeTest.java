@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link ListOfUnknownSize}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class ListOfUnknownSizeTest extends TestCase {
     /**

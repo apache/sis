@@ -67,8 +67,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralOperationParameter, GeneralParameterDescriptor> {
     /**

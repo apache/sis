@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 public final class StringBuildersTest extends TestCase {
     /**
@@ -87,8 +85,6 @@ public final class StringBuildersTest extends TestCase {
 
     /**
      * Tests the {@link StringBuilders#repeat(StringBuilder, int, char, int)} method.
-     *
-     * @since 0.8
      */
     @Test
     public void testRepeat() {

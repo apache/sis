@@ -28,8 +28,6 @@ import org.apache.sis.storage.Resource;
  * and all children resources.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public interface ResourceTransaction extends Resource {
     /**

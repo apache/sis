@@ -36,8 +36,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the various {@link NumberConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.3
  */
 @DependsOn(SystemRegistryTest.class)
 @SuppressWarnings("UnnecessaryBoxing")

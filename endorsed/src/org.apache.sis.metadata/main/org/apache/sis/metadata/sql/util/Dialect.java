@@ -27,8 +27,6 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public enum Dialect {
     /**

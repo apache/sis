@@ -36,8 +36,6 @@ import org.w3c.dom.NodeList;
  * standard, in GeoAPI or in Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class CodeColorizer {
     /**

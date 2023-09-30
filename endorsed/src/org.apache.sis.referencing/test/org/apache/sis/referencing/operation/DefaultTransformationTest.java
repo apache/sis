@@ -48,8 +48,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests {@link DefaultTransformation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class

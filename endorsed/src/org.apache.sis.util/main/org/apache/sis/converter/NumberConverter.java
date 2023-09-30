@@ -45,12 +45,9 @@ import org.apache.sis.util.resources.Errors;
  * This class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @param <S>  the source number type.
  * @param <T>  the target number type.
- *
- * @since 0.3
  */
 final class NumberConverter<S extends Number, T extends Number> extends SystemConverter<S,T> {
     /**

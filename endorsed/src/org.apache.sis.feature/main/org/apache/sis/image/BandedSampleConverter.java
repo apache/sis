@@ -67,8 +67,6 @@ import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
  * In such case, writing converted values will cause the corresponding source values to be updated too.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 class BandedSampleConverter extends WritableComputedImage {
     /*

@@ -34,8 +34,6 @@ import java.lang.annotation.RetentionPolicy;
  * in a future version if there is an interest for controlling them.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE)

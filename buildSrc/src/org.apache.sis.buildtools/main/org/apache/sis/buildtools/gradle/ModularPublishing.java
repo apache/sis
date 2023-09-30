@@ -30,8 +30,6 @@ import org.apache.sis.buildtools.maven.Generator;
  * The publication name must be the JPMS module name without the {@code org.apache.sis} prefix.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class ModularPublishing {
     /**

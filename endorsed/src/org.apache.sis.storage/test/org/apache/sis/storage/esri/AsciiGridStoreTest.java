@@ -42,8 +42,6 @@ import org.opengis.metadata.identification.Identification;
  * Tests {@link AsciiGridStore} and {@link AsciiGridStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class AsciiGridStoreTest extends TestCase {
     /**

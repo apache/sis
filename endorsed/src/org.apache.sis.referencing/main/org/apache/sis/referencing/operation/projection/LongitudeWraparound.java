@@ -64,12 +64,9 @@ import org.apache.sis.measure.Longitude;
  * <p>This transform is hidden in WKT (it does not appear as a concatenation).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.referencing.operation.transform.WraparoundTransform
  * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
- *
- * @since 1.3
  */
 final class LongitudeWraparound extends AbstractMathTransform2D implements Serializable {
     /**
@@ -234,8 +231,6 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
      * This is a copy of {@code NormalizedProjection.Inverse} with longitude wraparound added after conversion.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
-     * @since   1.3
      */
     private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**

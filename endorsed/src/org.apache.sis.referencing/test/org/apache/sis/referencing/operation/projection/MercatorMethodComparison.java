@@ -54,8 +54,6 @@ import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
  * win in about 50% of cases. But as we increase the eccentricity, the iterative method wins more often.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.6
  */
 public final class MercatorMethodComparison {
     /**

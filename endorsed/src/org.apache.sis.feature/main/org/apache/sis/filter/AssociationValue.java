@@ -43,13 +43,10 @@ import org.opengis.filter.ValueReference;
  * (the tip) is evaluated by a {@link PropertyValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <V>  the type of value computed by the expression.
  *
  * @see PropertyValue
- *
- * @since 1.2
  */
 final class AssociationValue<V> extends LeafExpression<Feature, V>
         implements ValueReference<Feature, V>, Optimization.OnExpression<Feature, V>

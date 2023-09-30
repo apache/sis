@@ -52,8 +52,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class Factory extends Geometries<Geometry> {
     /**

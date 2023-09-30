@@ -36,11 +36,8 @@ import org.apache.sis.measure.Units;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-572">SIS-512</a>
- *
- * @since 0.6
  */
 @XmlTransient
 public final class PolarStereographicA extends AbstractStereographic {
@@ -174,8 +171,6 @@ public final class PolarStereographicA extends AbstractStereographic {
      * @param  north  {@code true} for North pole, or {@code false} for South pole.
      * @return a name like <cite>"Universal Polar Stereographic North"</cite>,
      *         depending on the arguments given to this method.
-     *
-     * @since 0.8
      */
     public static String setParameters(final ParameterValueGroup group, final boolean north) {
         group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(north ? Latitude.MAX_VALUE : Latitude.MIN_VALUE, Units.DEGREE);
@@ -193,8 +188,6 @@ public final class PolarStereographicA extends AbstractStereographic {
      *
      * @param  group  the Transverse Mercator projection parameters.
      * @return +1 if UPS north, -1 if UPS south, or 0 if the given parameters are not for a UPS projection.
-     *
-     * @since 0.8
      */
     public static int isUPS(final ParameterValueGroup group) {
         if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)    .doubleValue(Units.UNITY),     0.994, Numerics.COMPARISON_THRESHOLD) &&

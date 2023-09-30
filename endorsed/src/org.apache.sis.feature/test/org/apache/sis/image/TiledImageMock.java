@@ -52,8 +52,6 @@ import static org.junit.Assert.*;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public final class TiledImageMock extends PlanarImage implements WritableRenderedImage {
     /**
@@ -294,8 +292,6 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      *
      * @param bands   indices of the bands where to apply the "BTYX" pattern. Other bands will be initialized to zero.
      * @param offset  an arbitrary offset to add to all values.
-     *
-     * @since 1.4
      */
     public synchronized void initializeAllTiles(final int[] bands, final int offset) {
         if (bands.length > 1) {   // Skip the following check for the common case of a single band.

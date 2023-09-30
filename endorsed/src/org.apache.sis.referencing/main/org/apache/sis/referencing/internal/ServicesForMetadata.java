@@ -79,8 +79,6 @@ import org.opengis.metadata.Identifier;
  * Implements the referencing services needed by the {@code org.apache.sis.metadata} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class ServicesForMetadata extends ReferencingServices {
     /**
@@ -416,8 +414,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  λ  the longitude value.
      * @param  φ  the latitude value.
      * @return the direct position for the given geographic coordinate.
-     *
-     * @since 0.8
      */
     @Override
     public DirectPosition geographic(final double λ, final double φ) {
@@ -431,8 +427,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  object  the object for which to get an identifier.
      * @return an identifier for the given object, with preference given to EPSG codes.
      * @throws FactoryException if an error occurred while searching for the EPSG code.
-     *
-     * @since 1.0
      */
     @Override
     public String getPreferredIdentifier(final IdentifiedObject object) throws FactoryException {
@@ -479,8 +473,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param  timezone  the timezone, or {@code null} for UTC.
      * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
-     *
-     * @since 0.8
      */
     @Override
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {

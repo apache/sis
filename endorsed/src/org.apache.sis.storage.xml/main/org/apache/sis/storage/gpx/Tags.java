@@ -25,8 +25,6 @@ import org.apache.sis.util.Static;
  * apply to all supported GPX versions.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class Tags extends Static {
     /**

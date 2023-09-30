@@ -46,11 +46,8 @@ import org.apache.sis.system.DelayedRunnable;
  * as a service in their {@code module-info.java} files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.xml.MarshallerPool
- *
- * @since 0.3
  */
 public abstract class TypeRegistration {
     /**
@@ -123,8 +120,6 @@ public abstract class TypeRegistration {
      * of the {@code castOrCopy(…)} static methods defined in various Apache SIS classes.
      *
      * @return converter for the value to marshal, or {@code null} if there are no values to convert.
-     *
-     * @since 0.8
      */
     protected UnaryOperator<Object> beforeMarshal() {
         return null;
@@ -242,8 +237,6 @@ public abstract class TypeRegistration {
      *
      * @param  properties  the properties to complete.
      * @return the given properties with the {@link #ROOT_ADAPTERS} entry added.
-     *
-     * @since 0.8
      */
     public static Map<String,?> getPrivateInfo(final Map<String,?> properties) {
         if (properties != null && properties.containsKey(ROOT_ADAPTERS)) {

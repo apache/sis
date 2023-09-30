@@ -24,8 +24,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * The provider for <cite>"Position Vector transformation (geocentric domain)"</cite> (EPSG:1033).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class PositionVector7Param extends GeocentricAffine {

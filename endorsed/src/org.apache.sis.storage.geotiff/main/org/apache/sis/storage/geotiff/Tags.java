@@ -33,8 +33,6 @@ import javax.imageio.plugins.tiff.TIFFTagSet;
  * <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a> page.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class Tags {
     /**

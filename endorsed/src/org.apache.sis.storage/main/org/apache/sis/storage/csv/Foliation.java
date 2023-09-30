@@ -21,8 +21,6 @@ package org.apache.sis.storage.csv;
  * Appearing order of trajectories.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 enum Foliation {
     /**

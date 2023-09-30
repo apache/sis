@@ -47,8 +47,6 @@ import org.apache.sis.util.Workaround;
  * the {@link #equals(Object) equals} method, hopefully to occur only in exceptional corner cases.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public class AffineTransform2D extends ImmutableAffineTransform
         implements LinearTransform2D, LenientComparable, Parameterized

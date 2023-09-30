@@ -34,11 +34,8 @@ import org.opengis.feature.InvalidPropertyValueException;
  * This include {@code Attribute} and {@code Association}, but not {@code Operation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @param <V> the type of property values.
- *
- * @since 0.5
  */
 abstract class Field<V> implements Property {
     /**

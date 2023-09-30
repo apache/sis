@@ -37,8 +37,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * This is different than {@link DimensionalityReduction}, which works on grid dimensions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class DimensionReducer {
     /**

@@ -30,8 +30,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 public class DS_AssociationTypeCode extends CodeListAdapter<DS_AssociationTypeCode, AssociationType> {
     /**

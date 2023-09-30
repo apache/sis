@@ -44,8 +44,6 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * done in a background thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 abstract class OperationFinder extends Task<MathTransform> {
     /**

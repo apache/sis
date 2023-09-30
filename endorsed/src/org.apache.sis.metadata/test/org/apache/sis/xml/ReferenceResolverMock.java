@@ -26,8 +26,6 @@ import org.apache.sis.xml.bind.Context;
  * identifier substitutions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class ReferenceResolverMock extends ReferenceResolver {
     /**

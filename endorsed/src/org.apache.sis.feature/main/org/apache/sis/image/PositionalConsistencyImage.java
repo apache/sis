@@ -30,8 +30,6 @@ import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
  * This is the implementation of {@link ResampledImage#POSITIONAL_CONSISTENCY_KEY} property value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class PositionalConsistencyImage extends SourceAlignedImage {
     /**

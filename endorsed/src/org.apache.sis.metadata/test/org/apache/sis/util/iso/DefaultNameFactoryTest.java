@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * a {@link DefaultNameFactory} instance shared for all tests in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn({DefaultLocalNameTest.class, DefaultScopedNameTest.class})
 public final class DefaultNameFactoryTest extends NameTest {

@@ -30,8 +30,6 @@ import org.apache.sis.gui.Widget;
  * Base class of widgets providing a table of something.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 abstract class TabularWidget extends Widget {
     /**

@@ -56,8 +56,6 @@ import org.apache.sis.util.internal.StandardDateFormat;
  * Visitor to convert a Filter in CQL.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
 

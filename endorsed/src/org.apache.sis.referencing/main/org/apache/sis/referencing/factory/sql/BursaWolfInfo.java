@@ -42,12 +42,9 @@ import org.apache.sis.measure.Units;
  * <p><b>Note:</b> this class contains many hard-coded EPSG codes relative to Bursa-Wolf parameters.</p>
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.8
  *
  * @see BursaWolfParameters
  * @see TimeDependentBWP
- *
- * @since 0.7
  */
 final class BursaWolfInfo {
     // See org.apache.sis.measure.Units.valueOfEPSG(int) for hard-coded units from EPSG codes.

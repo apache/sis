@@ -35,11 +35,8 @@ import org.apache.sis.util.Debug;
  * Instance of this class represent a single record in the cache content to be listed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
  *
  * @see ConcurrentAuthorityFactory#printCacheContent(PrintWriter)
- *
- * @since 0.7
  */
 @Debug
 final class CacheRecord implements Comparable<CacheRecord> {

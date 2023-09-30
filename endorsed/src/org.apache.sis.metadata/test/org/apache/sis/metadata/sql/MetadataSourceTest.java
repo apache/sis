@@ -43,8 +43,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link MetadataSource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.8
  */
 @DependsOn(org.apache.sis.metadata.sql.util.ScriptRunnerTest.class)
 public final class MetadataSourceTest extends TestCase {

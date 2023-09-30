@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Tests the {@link AbstractCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.4
  */
 @DependsOn(org.apache.sis.referencing.cs.AbstractCSTest.class)
 public final class AbstractCRSTest extends TestCase {

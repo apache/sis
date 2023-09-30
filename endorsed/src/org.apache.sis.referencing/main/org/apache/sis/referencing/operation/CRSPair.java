@@ -33,8 +33,6 @@ import org.apache.sis.util.internal.Strings;
  * Used as key in hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 final class CRSPair {
     /**

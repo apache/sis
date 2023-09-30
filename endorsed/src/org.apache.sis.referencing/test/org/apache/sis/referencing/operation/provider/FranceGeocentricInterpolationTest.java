@@ -39,12 +39,9 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link FranceGeocentricInterpolation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
- *
- * @since 0.7
  */
 public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase {
     /**

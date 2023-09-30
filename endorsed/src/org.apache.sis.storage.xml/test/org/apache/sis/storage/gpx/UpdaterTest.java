@@ -50,11 +50,8 @@ import org.opengis.feature.Feature;
  * Tests (indirectly) the {@link Updater} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-411">SIS-411</a>
- *
- * @since 1.3
  */
 @DependsOn(WriterTest.class)
 public final class UpdaterTest extends TestCase {

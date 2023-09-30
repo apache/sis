@@ -38,8 +38,6 @@ import static org.junit.Assert.*;
  * This class contains a visual test which can be run by a main method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class ScaledColorSpaceTest extends ImageTestCase {
     /**

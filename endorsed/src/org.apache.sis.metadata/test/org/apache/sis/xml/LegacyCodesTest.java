@@ -28,8 +28,6 @@ import static org.junit.Assert.*;
  * Tests {@link LegacyCodes}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public final class LegacyCodesTest extends TestCase {
     /**

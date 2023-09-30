@@ -39,8 +39,6 @@ import org.opengis.util.ControlledVocabulary;
  * Provides access to services defined in the {@code org.apache.sis.metadata} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public class MetadataServices extends OptionalDependency {
     /**

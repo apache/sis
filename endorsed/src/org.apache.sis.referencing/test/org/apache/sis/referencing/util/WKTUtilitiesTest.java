@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Tests {@link WKTUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 @DependsOn(ReferencingUtilitiesTest.class)
 public final class WKTUtilitiesTest extends TestCase {

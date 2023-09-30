@@ -28,8 +28,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * that a complete line has been received.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.8
  */
 final class LogAdapter implements Appendable {
     /**

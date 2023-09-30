@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link GridOrientation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class GridOrientationTest extends TestCase {
     /**

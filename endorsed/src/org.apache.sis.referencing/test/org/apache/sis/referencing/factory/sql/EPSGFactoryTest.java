@@ -84,8 +84,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class,

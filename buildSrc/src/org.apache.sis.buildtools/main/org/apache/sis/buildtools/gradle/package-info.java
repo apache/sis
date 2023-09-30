@@ -24,7 +24,5 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Quentin Bialota (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 package org.apache.sis.buildtools.gradle;

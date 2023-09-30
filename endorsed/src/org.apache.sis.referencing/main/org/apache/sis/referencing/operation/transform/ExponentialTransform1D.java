@@ -50,8 +50,6 @@ import org.apache.sis.util.internal.Numerics;
  * same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
- * @since   0.5
  */
 final class ExponentialTransform1D extends AbstractMathTransform1D implements Serializable {
     /**

@@ -27,8 +27,6 @@ import org.apache.sis.util.CharSequences;
  * The resulting geometry class depends on the library available at runtime.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 final class GeometryParser extends SurjectiveConverter<String,double[]> {
     /**

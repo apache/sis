@@ -44,11 +44,8 @@ import static org.junit.Assert.*;
  * Tests {@link CC_GeneralOperationParameter} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
- *
- * @since 0.6
  */
 @DependsOn(org.apache.sis.parameter.DefaultParameterDescriptorTest.class)
 public final class CC_GeneralOperationParameterTest extends TestCase {

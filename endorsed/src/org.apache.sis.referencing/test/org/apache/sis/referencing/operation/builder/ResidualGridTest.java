@@ -36,8 +36,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests {@link ResidualGrid}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public final class ResidualGridTest extends TestCase {
     /**

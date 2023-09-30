@@ -30,11 +30,8 @@ import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
  * The provider for <cite>"Lambert Cylindrical Equal Area"</cite> projection (EPSG:9835).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/cylindrical_equal_area.html">GeoTIFF parameters for Cylindrical Equal Area</a>
- *
- * @since 0.8
  */
 @XmlTransient
 public final class LambertCylindricalEqualArea extends MapProjection {

@@ -45,8 +45,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link ResamplingGrid}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ResamplingGridTest extends TestCase {
     /**

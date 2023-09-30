@@ -30,11 +30,8 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/oblique_stereographic.html">GeoTIFF parameters for Oblique Stereographic</a>
- *
- * @since 0.6
  */
 @XmlTransient
 public final class ObliqueStereographic extends AbstractStereographic {

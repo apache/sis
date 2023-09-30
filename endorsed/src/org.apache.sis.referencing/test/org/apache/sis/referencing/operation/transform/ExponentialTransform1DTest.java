@@ -41,8 +41,6 @@ import org.opengis.test.ToleranceModifiers;
  * {@link LogarithmicTransform1DTest}, since one transform is the inverse of the other.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 @DependsOn({
     CoordinateDomainTest.class,

@@ -70,8 +70,6 @@ import org.apache.sis.coverage.grid.j2d.ObservableImage;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 abstract class WritableComputedImage extends ComputedImage {
     /**

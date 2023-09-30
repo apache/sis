@@ -60,8 +60,6 @@ import org.opengis.util.NameFactory;
  * Synchronizations are caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public abstract class Decoder extends ReferencingFactoryContainer {
     /**

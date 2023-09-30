@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Element} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.6
  */
 public final class ElementTest extends TestCase {
     /**

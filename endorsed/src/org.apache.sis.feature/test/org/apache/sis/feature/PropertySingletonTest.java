@@ -32,8 +32,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link PropertySingleton}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public final class PropertySingletonTest extends TestCase {
     /**

@@ -33,8 +33,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link TableColumn}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class TableColumnTest extends TestCase {
     /**

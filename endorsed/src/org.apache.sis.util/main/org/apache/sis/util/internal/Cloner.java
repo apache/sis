@@ -32,8 +32,6 @@ import org.apache.sis.util.resources.Errors;
  * for the lack of public {@code clone()} method in the {@link Cloneable} interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @Workaround(library="JDK", version="1.7")
 public final class Cloner {
@@ -228,8 +226,6 @@ public final class Cloner {
      * @param  object  the object to clone, or {@code null}.
      * @return the given object (which may be {@code null}) or a clone of the given object.
      * @throws CloneNotSupportedException if the call to {@link Object#clone()} failed.
-     *
-     * @since 0.6
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     public static Object cloneIfPublic(final Object object) throws CloneNotSupportedException {

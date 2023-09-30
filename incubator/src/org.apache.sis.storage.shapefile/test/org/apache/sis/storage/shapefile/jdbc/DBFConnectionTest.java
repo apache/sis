@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
 /**
  * Tests {@link DBFConnection}.
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
     /**

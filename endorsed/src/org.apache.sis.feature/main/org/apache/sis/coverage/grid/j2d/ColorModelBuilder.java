@@ -63,12 +63,9 @@ import org.apache.sis.util.resources.Vocabulary;
  * for the same product at different times or at different depths.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see ColorModelType
  * @see ColorModelFactory#createColorModel(int, int, int)
- *
- * @since 1.1
  */
 public final class ColorModelBuilder {
     /**

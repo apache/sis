@@ -27,8 +27,6 @@ import java.util.function.Consumer;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public final class Reflect implements Consumer<StackWalker.StackFrame> {
     /**

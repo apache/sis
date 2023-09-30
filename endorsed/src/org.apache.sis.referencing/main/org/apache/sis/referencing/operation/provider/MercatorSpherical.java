@@ -30,8 +30,6 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 public final class MercatorSpherical extends AbstractMercator {

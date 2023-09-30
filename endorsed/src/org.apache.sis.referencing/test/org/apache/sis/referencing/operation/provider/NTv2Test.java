@@ -53,12 +53,9 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * It will also indirectly tests {@link DatumShiftGridGroup} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
- *
- * @since 0.7
  */
 @DependsOn(DatumShiftGridFileTest.class)
 public final class NTv2Test extends DatumShiftTestCase {

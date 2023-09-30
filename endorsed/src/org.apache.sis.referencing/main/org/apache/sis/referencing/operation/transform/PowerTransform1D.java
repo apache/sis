@@ -39,8 +39,6 @@ import org.apache.sis.util.internal.Numerics;
  * same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 final class PowerTransform1D extends AbstractMathTransform1D implements Serializable {
     /**

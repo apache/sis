@@ -41,8 +41,6 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * system than the original location type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 final class FinalLocationType extends AbstractLocationType implements Serializable {
     /**

@@ -53,8 +53,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Base class for all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 public abstract class AbstractProvider extends DefaultOperationMethod implements MathTransformProvider {
@@ -275,8 +273,6 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      *
      * @param  context   the potentially ambiguous context.
      * @return name of the provider to use, or {@code null} if there is nothing to change.
-     *
-     * @since 0.8
      */
     public String resolveAmbiguity(final DefaultMathTransformFactory.Context context) {
         return null;

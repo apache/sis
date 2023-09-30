@@ -35,8 +35,6 @@ import org.apache.sis.util.resources.Errors;
  * Methods working on {@link Identifier} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.4
- * @version 1.0
  */
 public final class Identifiers extends Static {
     /**
@@ -265,8 +263,6 @@ public final class Identifiers extends Static {
      * @param  owner     identifier of the object for which a property is missing.
      * @param  property  name of the missing property.
      * @return a message saying that a value is missing for the given property in the specified identified object.
-     *
-     * @since 1.2
      */
     public static String missingValueForProperty(final Identifier owner, final String property) {
         return (owner == null)

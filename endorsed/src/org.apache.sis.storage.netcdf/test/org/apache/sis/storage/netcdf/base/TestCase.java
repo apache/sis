@@ -49,8 +49,6 @@ import org.opengis.test.dataset.TestData;
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public abstract class TestCase extends org.apache.sis.test.TestCase {
     /**

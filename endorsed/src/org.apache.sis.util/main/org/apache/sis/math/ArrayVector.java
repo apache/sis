@@ -41,11 +41,8 @@ import org.apache.sis.measure.NumberRange;
  * so changes in the underlying array is reflected in this vector and vice-versa.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.2
  *
  * @param <E>  the base type of elements in the vector.
- *
- * @since 0.8
  */
 abstract class ArrayVector<E extends Number> extends Vector implements CheckedContainer<E>, Serializable {
     /**

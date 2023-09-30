@@ -58,8 +58,6 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public class GridCoverage2DTest extends TestCase {
     /**

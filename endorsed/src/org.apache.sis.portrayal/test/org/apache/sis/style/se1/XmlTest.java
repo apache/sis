@@ -30,8 +30,6 @@ import org.apache.sis.test.TestCase;
  * We do not yet have sufficient JAXB annotations and adapters for real marshalling.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class XmlTest extends TestCase {
     /**

@@ -34,8 +34,6 @@ import org.apache.sis.referencing.util.j2d.AbstractShape;
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 abstract class ShapeConverter {
     /**

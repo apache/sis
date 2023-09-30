@@ -67,8 +67,6 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public class TestDatabase implements AutoCloseable {
     /**
@@ -152,8 +150,6 @@ public class TestDatabase implements AutoCloseable {
      * @throws SQLException if an error occurred while creating the database.
      *
      * @see <a href="http://hsqldb.org/doc/apidocs/org/hsqldb/jdbc/JDBCDataSource.html">JDBC data source for HSQL</a>
-     *
-     * @since 1.0
      */
     public static TestDatabase createOnHSQLDB(final String name, final boolean pooled) throws SQLException {
         final DataSource ds;
@@ -187,8 +183,6 @@ public class TestDatabase implements AutoCloseable {
      * @param  name  the database name (without {@code "jdbc:h2:mem:"} prefix).
      * @return connection to the test database.
      * @throws SQLException if an error occurred while creating the database.
-     *
-     * @since 1.2
      */
     public static TestDatabase createOnH2(final String name) throws SQLException {
         /*
@@ -228,8 +222,6 @@ public class TestDatabase implements AutoCloseable {
      * @throws SQLException if an error occurred while connecting to the database or creating the schema.
      *
      * @see <a href="https://sis.apache.org/source.html#postgres">Configuring PostgreSQL for Apache SIS tests</a>
-     *
-     * @since 1.0
      */
     public static TestDatabase createOnPostgreSQL(final String schema, final boolean create) throws SQLException {
         assumeTrue("Extensive tests not enabled.", TestCase.RUN_EXTENSIVE_TESTS);

@@ -26,8 +26,6 @@ import org.apache.sis.util.resources.Errors;
  * This offers a compressed storage using only the minimal amount of bits per value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 final class PackedVector extends ArrayVector<Long> {
     /**

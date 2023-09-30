@@ -40,8 +40,6 @@ import org.apache.sis.filter.internal.FunctionNames;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ComparisonFilterTest extends TestCase {
     /**

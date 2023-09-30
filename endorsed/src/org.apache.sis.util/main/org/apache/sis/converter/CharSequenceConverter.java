@@ -37,11 +37,8 @@ import org.apache.sis.math.FunctionProperty;
  * if the converter given to the constructor is also immutable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @param <T>  the base type of converted objects.
- *
- * @since 0.3
  */
 final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**

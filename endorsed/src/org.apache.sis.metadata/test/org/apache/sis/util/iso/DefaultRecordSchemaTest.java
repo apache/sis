@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  * Tests the {@link DefaultRecordSchema} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.5
  */
 @DependsOn({
     DefaultRecordTypeTest.class,

@@ -28,8 +28,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * {@link Identifier} interface (for inclusion in the {@link IdentifierMapAdapter#identifiers} collection).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.3
  */
 final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements Identifier {
     /**
@@ -64,8 +62,6 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
      * Infers a code space from the authority.
      *
      * @return the code space, or {@code null} if none.
-     *
-     * @since 0.5
      */
     @Override
     public String getCodeSpace() {

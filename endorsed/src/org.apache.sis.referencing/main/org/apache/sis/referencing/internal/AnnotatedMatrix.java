@@ -27,8 +27,6 @@ import org.apache.sis.referencing.util.PositionalAccuracyConstant;
  * We use this class for passing additional information in methods that returns only a {@link Matrix}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class AnnotatedMatrix implements Matrix, CloneAccess {
     /**

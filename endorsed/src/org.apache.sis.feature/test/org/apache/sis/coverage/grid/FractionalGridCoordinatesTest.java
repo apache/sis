@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Tests the {@link FractionalGridCoordinates} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class FractionalGridCoordinatesTest extends TestCase {
     /**

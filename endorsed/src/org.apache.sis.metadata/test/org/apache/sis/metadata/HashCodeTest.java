@@ -53,8 +53,6 @@ import org.opengis.metadata.citation.Individual;
  *
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @DependsOn(PropertyAccessorTest.class)
 public final class HashCodeTest extends TestCase {

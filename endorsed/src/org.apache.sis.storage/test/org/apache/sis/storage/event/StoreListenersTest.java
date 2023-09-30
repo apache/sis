@@ -33,8 +33,6 @@ import static org.junit.Assert.*;
  * Tests the {@link StoreListeners} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.0
  */
 public final class StoreListenersTest extends TestCase implements StoreListener<WarningEvent> {
     /**

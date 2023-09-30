@@ -38,8 +38,6 @@ import org.opengis.util.ControlledVocabulary;
  * {@code false} and {@code true} values since the operation will unconditionally walk through the entire tree.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 final class Pruner extends MetadataVisitor<Boolean> {
     /**

@@ -55,8 +55,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Note that this does not include authority factories tests or GIGS tests.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class,
@@ -145,8 +143,6 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
      * {@link CommonCRS} class instead of creating everything like this test does.</p>
      *
      * @throws FactoryException if the creation of a geodetic component failed.
-     *
-     * @since 0.7
      */
     @Test
     public void testStepByStepCreation() throws FactoryException {

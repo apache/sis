@@ -33,8 +33,6 @@ import org.opengis.metadata.quality.StandaloneQualityReportInformation;
  *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class DQ_StandaloneQualityReportInformation extends
         PropertyType<DQ_StandaloneQualityReportInformation, StandaloneQualityReportInformation>

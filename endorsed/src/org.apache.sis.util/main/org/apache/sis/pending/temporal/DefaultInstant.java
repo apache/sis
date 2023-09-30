@@ -28,8 +28,6 @@ import org.opengis.temporal.TemporalPosition;
  * GeoAPI temporal interfaces are expected to change a lot in a future revision.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class DefaultInstant extends Primitive implements Instant {
     /** The date in milliseconds since epoch. */

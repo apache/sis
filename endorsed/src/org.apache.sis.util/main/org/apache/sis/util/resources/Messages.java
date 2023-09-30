@@ -26,8 +26,6 @@ import org.opengis.util.InternationalString;
  * Locale-dependent resources for miscellaneous (often logging) messages.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class Messages extends IndexedResourceBundle {
     /**
@@ -37,7 +35,6 @@ public class Messages extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3
      */
     public static final class Keys extends KeyConstants {
         /**

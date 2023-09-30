@@ -38,8 +38,6 @@ import org.apache.sis.util.resources.Errors;
  * a temporary buffer and let this {@code CopyFromBytes} class do the subsampling.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 abstract class CopyFromBytes extends Inflater {
     /**

@@ -36,8 +36,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  * Test {@link UnitServices}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @DependsOn(UnitsTest.class)
 public final class UnitServicesTest extends TestCase {

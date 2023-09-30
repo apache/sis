@@ -42,8 +42,6 @@ import org.apache.sis.system.Modules;
  * to <cite>"referencing by coordinates"</cite> but needed by metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class ReferencingServices extends OptionalDependency {
     /**
@@ -217,8 +215,6 @@ public class ReferencingServices extends OptionalDependency {
      * @param  λ  the longitude value.
      * @param  φ  the latitude value.
      * @return the direct position for the given geographic coordinate.
-     *
-     * @since 0.8
      */
     public DirectPosition geographic(final double λ, final double φ) {
         throw moduleNotFound();
@@ -231,8 +227,6 @@ public class ReferencingServices extends OptionalDependency {
      * @param  object  the object for which to get an identifier.
      * @return an identifier for the given object, with preference given to EPSG codes.
      * @throws FactoryException if an error occurred while searching for the EPSG code.
-     *
-     * @since 1.0
      */
     public String getPreferredIdentifier(final IdentifiedObject object) throws FactoryException {
         throw moduleNotFound();
@@ -254,8 +248,6 @@ public class ReferencingServices extends OptionalDependency {
      * @param  parameter  a partially implemented parameter descriptor, or {@code null}.
      * @return a fully implemented parameter descriptor, or {@code null} if the given argument was null.
      * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
-     *
-     * @since 0.5
      */
     public <T> ParameterDescriptor<T> toImplementation(ParameterDescriptor<T> parameter) {
         throw moduleNotFound();
@@ -267,8 +259,6 @@ public class ReferencingServices extends OptionalDependency {
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param  timezone  the timezone, or {@code null} for UTC.
      * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
-     *
-     * @since 0.8
      */
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
         throw moduleNotFound();
@@ -297,8 +287,6 @@ public class ReferencingServices extends OptionalDependency {
      * @return the information, or {@code null} if none.
      *
      * @see org.apache.sis.util.internal.MetadataServices#getInformation(String, Locale)
-     *
-     * @since 0.7
      */
     public String getInformation(String key, Locale locale) {
         return null;

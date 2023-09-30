@@ -33,11 +33,8 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
  * is used by one thread; this class does not need to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param  <R>  the type of result of walking in the metadata.
- *
- * @since 1.0
  */
 abstract class MetadataVisitor<R> {
     /**

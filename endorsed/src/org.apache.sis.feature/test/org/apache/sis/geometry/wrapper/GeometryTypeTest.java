@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests {@link GeometryType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class GeometryTypeTest extends TestCase {
     /**

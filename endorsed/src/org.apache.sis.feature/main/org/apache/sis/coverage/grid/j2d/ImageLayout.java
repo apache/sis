@@ -40,8 +40,6 @@ import org.apache.sis.system.Configuration;
  * those information directly, but provides method for deriving those properties from a given image.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public class ImageLayout {
     /**

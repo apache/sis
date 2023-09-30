@@ -44,11 +44,8 @@ import static java.lang.Math.abs;
  * when a {@code transform} method is invoked for the purpose of a reverse projection.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-478">SIS-478</a>
- *
- * @since 1.1
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})       // Not intended to be serialized.
 final class Inverter extends Matrix2 {

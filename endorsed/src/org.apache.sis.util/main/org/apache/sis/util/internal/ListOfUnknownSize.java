@@ -34,11 +34,8 @@ import java.util.Objects;
  * the random access method {@link #get(int)} instead of {@link #listIterator(int)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @param <E>  the type of elements in the list.
- *
- * @since 1.0
  */
 public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
     /**

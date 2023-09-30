@@ -36,8 +36,6 @@ import org.apache.sis.storage.ProbeResult;
  * it would be way too heavy.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.4
  */
 abstract class MimeTypeDetector {
     /**

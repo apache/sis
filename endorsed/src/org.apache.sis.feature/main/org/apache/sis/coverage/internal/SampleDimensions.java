@@ -34,8 +34,6 @@ import org.apache.sis.util.Static;
  * Utility methods working on {@link SampleDimension} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public final class SampleDimensions extends Static {
     /**

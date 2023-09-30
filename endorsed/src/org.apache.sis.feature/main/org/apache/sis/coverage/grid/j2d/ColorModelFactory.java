@@ -50,8 +50,6 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class ColorModelFactory {
     /**

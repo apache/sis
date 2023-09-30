@@ -46,8 +46,6 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class CoverageSubsetTest extends TestCase {
     /**

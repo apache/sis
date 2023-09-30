@@ -31,11 +31,8 @@ import org.apache.sis.util.internal.Numerics;
  * be overridden by subclasses.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param  <E>  the type of elements stored in the {@link PointTree}.
- *
- * @since 1.1
  */
 @SuppressWarnings("CloneableImplementsClone")
 class NodeIterator<E> implements Spliterator<E>, Cloneable {

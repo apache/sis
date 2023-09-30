@@ -37,8 +37,6 @@ import org.apache.sis.parameter.ParameterBuilder;
  * axis directions in {@link org.apache.sis.referencing.cs.CoordinateSystems}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 public final class LambertConformalWest extends AbstractLambert {

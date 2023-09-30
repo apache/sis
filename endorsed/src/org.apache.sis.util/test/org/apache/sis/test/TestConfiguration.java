@@ -23,8 +23,6 @@ import org.apache.sis.util.Static;
  * Information about the configuration of tests
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 public final class TestConfiguration extends Static {
     /**

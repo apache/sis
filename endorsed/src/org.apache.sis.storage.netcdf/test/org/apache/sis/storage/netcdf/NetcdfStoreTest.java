@@ -36,8 +36,6 @@ import org.opengis.test.dataset.TestData;
  * Tests {@link NetcdfStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.3
  */
 @DependsOn({
     MetadataReaderTest.class,

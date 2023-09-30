@@ -24,8 +24,6 @@ import org.apache.sis.util.resources.Errors;
  * A command-line option.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.3
  */
 enum Option {
     /**

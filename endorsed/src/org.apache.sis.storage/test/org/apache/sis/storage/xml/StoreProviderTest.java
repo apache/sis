@@ -33,8 +33,6 @@ import static org.junit.Assert.*;
  * Tests {@link StoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.4
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final class StoreProviderTest extends TestCase {

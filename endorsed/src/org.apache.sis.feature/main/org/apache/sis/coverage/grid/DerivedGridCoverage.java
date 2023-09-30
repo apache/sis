@@ -35,8 +35,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * If it is not the case, then some methods may need to be overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 abstract class DerivedGridCoverage extends GridCoverage {
     /**

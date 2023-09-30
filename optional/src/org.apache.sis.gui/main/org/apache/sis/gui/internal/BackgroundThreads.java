@@ -49,8 +49,6 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 @SuppressWarnings("serial")                         // Not intended to be serialized.
 public final class BackgroundThreads extends AtomicInteger implements ThreadFactory {

@@ -40,8 +40,6 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * by Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.4
  */
 public final class HardCodedCRS {
     /**
@@ -91,16 +89,12 @@ public final class HardCodedCRS {
 
     /**
      * A (λ,φ,t) CRS where <var>t</var> is the {@link #TIME}.
-     *
-     * @since 1.1
      */
     public static final DefaultCompoundCRS WGS84_WITH_TIME;
 
     /**
      * A (λ,φ,t) CRS where <var>t</var> is the {@link #DAY_OF_YEAR}.
      * This CRS has two wraparound axes: <var>λ</var> and <var>t</var>.
-     *
-     * @since 1.1
      */
     public static final DefaultCompoundCRS WGS84_WITH_CYCLIC_TIME;
 
@@ -109,8 +103,6 @@ public final class HardCodedCRS {
      * This CRS uses (<var>time</var>, <var>longitude</var>, <var>latitude</var>, <var>height</var>)
      * with the first dimension specified by {@link #TIME} and the 3 last dimensions specified by {@link #WGS84_3D}.
      * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
-     *
-     * @since 1.1
      */
     public static final DefaultCompoundCRS WGS84_4D_TIME_FIRST;
 
@@ -122,8 +114,6 @@ public final class HardCodedCRS {
      *
      * <p>This CRS is equivalent to {@code EPSG:4807} except for axis order, since EPSG defines
      * (<var>latitude</var>, <var>longitude</var>).</p>
-     *
-     * @since 0.6
      */
     public static final DefaultGeographicCRS NTF = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, "NTF (Paris)"),
@@ -140,8 +130,6 @@ public final class HardCodedCRS {
      * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grads.  The main purpose of
      * this CRS is to test the convolved case where the unit of prime meridian is different than the
      * axis units.</p>
-     *
-     * @since 0.6
      */
     public static final DefaultGeographicCRS NTF_NORMALIZED_AXES = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, NTF.getName()),
@@ -156,8 +144,6 @@ public final class HardCodedCRS {
      *
      * <p>This CRS is equivalent to {@code EPSG:4301} except for axis order and the addition
      * of ellipsoidal height.</p>
-     *
-     * @since 0.7
      */
     public static final DefaultGeographicCRS TOKYO = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, "Tokyo"),
@@ -172,8 +158,6 @@ public final class HardCodedCRS {
      *
      * <p>This CRS is equivalent to {@code EPSG:4612} except for axis order and the addition
      * of ellipsoidal height.</p>
-     *
-     * @since 0.7
      */
     public static final DefaultGeographicCRS JGD2000 = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, "JGD2000"),
@@ -187,8 +171,6 @@ public final class HardCodedCRS {
      *
      * <p>This CRS is almost identical to {@link #WGS84}.
      * It can be used for testing tiny differences between two datum.</p>
-     *
-     * @since 1.1
      */
     public static final DefaultGeographicCRS GRS80 = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, "Unknown datum based on GRS 1980 ellipsoid"),
@@ -261,8 +243,6 @@ public final class HardCodedCRS {
      *
      * <p>This is not a valid vertical CRS according ISO 19111.
      * This CRS is used by Apache SIS for internal calculation.</p>
-     *
-     * @since 0.7
      */
     public static final DefaultVerticalCRS ELLIPSOIDAL_HEIGHT_cm = new DefaultVerticalCRS(
             getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT_cm), HardCodedDatum.ELLIPSOID, HardCodedCS.ELLIPSOIDAL_HEIGHT_cm);
@@ -294,8 +274,6 @@ public final class HardCodedCRS {
     /**
      * A parametric CRS for day of year, without any particular year.
      * The axis is cyclic: after day 365 we restart at day 1.
-     *
-     * @since 1.1
      */
     public static final DefaultParametricCRS DAY_OF_YEAR = new DefaultParametricCRS(
             getProperties(HardCodedCS.DAY_OF_YEAR), HardCodedDatum.DAY_OF_YEAR, HardCodedCS.DAY_OF_YEAR);
@@ -322,8 +300,6 @@ public final class HardCodedCRS {
     /**
      * A (H,t,φ,λ) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
      * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
-     *
-     * @since 1.1
      */
     public static final DefaultCompoundCRS GEOID_4D_MIXED_ORDER = new DefaultCompoundCRS(
             properties("height + time + WGS 84 (φ,λ)", null), GRAVITY_RELATED_HEIGHT, TIME, WGS84_LATITUDE_FIRST);

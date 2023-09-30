@@ -34,8 +34,6 @@ import static org.junit.Assume.assumeTrue;
  * order to enable the tests requiring those data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 public enum OptionalTestData {
     /**

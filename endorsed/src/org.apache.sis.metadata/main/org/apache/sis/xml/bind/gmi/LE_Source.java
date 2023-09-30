@@ -28,8 +28,6 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "LE_Source_Type", namespace = Namespaces.MRL)
 @XmlRootElement(name = "LE_Source", namespace = Namespaces.MRL)

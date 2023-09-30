@@ -35,8 +35,6 @@ import java.sql.DatabaseMetaData;
  * {@link #DELETE_RULE}, which contain integers.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class Reflection {
     /**

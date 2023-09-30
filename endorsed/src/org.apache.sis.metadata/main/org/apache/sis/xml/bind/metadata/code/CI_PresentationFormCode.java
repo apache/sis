@@ -30,8 +30,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 public final class CI_PresentationFormCode extends CodeListAdapter<CI_PresentationFormCode, PresentationForm> {
     /**

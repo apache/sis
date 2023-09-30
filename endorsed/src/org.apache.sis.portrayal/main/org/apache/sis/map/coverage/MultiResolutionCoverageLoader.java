@@ -52,8 +52,6 @@ import org.apache.sis.system.Configuration;
  * this class does not synchronize accesses to the resource (because it may be used outside this class anyway).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public class MultiResolutionCoverageLoader {
     /**

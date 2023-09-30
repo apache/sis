@@ -44,8 +44,6 @@ import org.opengis.coverage.CannotEvaluateException;
  * All components must have the same "grid to CRS" transform, except for a translation term.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 final class ConcatenatedGridCoverage extends GridCoverage {
     /**

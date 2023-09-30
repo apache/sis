@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Type} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 public final class TypeTest extends TestCase {
     /**

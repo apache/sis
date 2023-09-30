@@ -23,8 +23,6 @@ import org.apache.sis.util.resources.Errors;
  * Place holder for a functionality defined only in JDK17.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.2
- * @version 1.2
  */
 public final class HexFormat {
     private static final HexFormat INSTANCE = new HexFormat();

@@ -27,8 +27,6 @@ import org.opengis.filter.SpatialOperatorName;
  * with PostGIS-specific syntax where useful.
  *
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class ExtendedClauseWriter extends SelectionClauseWriter {
     /**

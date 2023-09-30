@@ -37,8 +37,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * For tests using the name factory, see {@link DefaultNameFactoryTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(DefaultLocalNameTest.class)
 public final class DefaultScopedNameTest extends TestCase {

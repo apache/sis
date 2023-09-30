@@ -33,8 +33,6 @@ import org.opengis.filter.capability.AvailableFunction;
  * Information technology — Database languages — SQL multimedia and application packages — Part 3: Spatial</a>.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class Registry implements FunctionRegister {
     /**

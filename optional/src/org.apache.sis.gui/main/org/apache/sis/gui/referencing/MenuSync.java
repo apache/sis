@@ -50,8 +50,6 @@ import org.apache.sis.util.Utilities;
  * the selected reference system directly.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements EventHandler<ActionEvent> {
     /**

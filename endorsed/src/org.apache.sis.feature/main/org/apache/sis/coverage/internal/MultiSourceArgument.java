@@ -52,11 +52,8 @@ import org.apache.sis.util.resources.Errors;
  * This is okay if instances of this class are discarded immediately after usage.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <S>  type of objects that are the source of sample dimensions.
- *
- * @since 1.4
  */
 @SuppressWarnings("ReturnOfCollectionOrArrayField")     // See class Javadoc.
 public final class MultiSourceArgument<S> {

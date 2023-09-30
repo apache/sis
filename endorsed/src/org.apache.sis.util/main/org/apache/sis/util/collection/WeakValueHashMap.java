@@ -683,8 +683,6 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * The set of entries.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
      */
     private final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
         /**

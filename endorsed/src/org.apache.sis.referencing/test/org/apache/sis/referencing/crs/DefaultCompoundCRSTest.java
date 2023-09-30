@@ -53,8 +53,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * Tests the {@link DefaultCompoundCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn({
     SubTypesTest.class,
@@ -90,8 +88,6 @@ public final class DefaultCompoundCRSTest extends TestCase {
 
     /**
      * Verifies that we do not allow construction with a duplicated horizontal or vertical component.
-     *
-     * @since 0.8
      */
     @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
@@ -122,8 +118,6 @@ public final class DefaultCompoundCRSTest extends TestCase {
      * Verifies that horizontal CRS + ellipsoidal height is disallowed.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-303">SIS-303</a>
-     *
-     * @since 0.8
      */
     @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
@@ -229,8 +223,6 @@ public final class DefaultCompoundCRSTest extends TestCase {
 
     /**
      * Tests {@link DefaultCompoundCRS#isStandardCompliant(List)}.
-     *
-     * @since 0.6
      */
     @Test
     public void testIsStandardCompliant() {
@@ -343,8 +335,6 @@ public final class DefaultCompoundCRSTest extends TestCase {
      * Tests (un)marshalling of a derived coordinate reference system.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
-     *
-     * @since 0.7
      */
     @Test
     public void testXML() throws JAXBException {

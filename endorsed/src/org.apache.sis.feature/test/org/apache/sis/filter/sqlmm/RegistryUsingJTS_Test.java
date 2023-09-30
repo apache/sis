@@ -24,8 +24,6 @@ import org.locationtech.jts.geom.Geometry;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class RegistryUsingJTS_Test extends RegistryTestCase<Geometry> {
     /**

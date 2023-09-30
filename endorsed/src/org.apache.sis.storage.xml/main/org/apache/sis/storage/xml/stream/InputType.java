@@ -41,8 +41,6 @@ import org.w3c.dom.Node;
  * For some inputs, it depends on whether the stream support marks.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 enum InputType {
     /**

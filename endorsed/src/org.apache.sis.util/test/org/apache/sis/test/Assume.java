@@ -28,8 +28,6 @@ import static org.junit.Assume.*;
  * Assumption methods used by the SIS project in addition of the JUnit ones.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class Assume {
     /**

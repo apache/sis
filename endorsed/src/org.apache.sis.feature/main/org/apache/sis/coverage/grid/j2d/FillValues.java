@@ -30,8 +30,6 @@ import java.awt.image.WritableRenderedImage;
  * Helper class for handling the fill values of a raster. A value can be specified for each band.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class FillValues {
     /**

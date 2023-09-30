@@ -37,8 +37,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultRecordType} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.5
  */
 @DependsOn(TypeNamesTest.class)
 public final class DefaultRecordTypeTest extends TestCase {

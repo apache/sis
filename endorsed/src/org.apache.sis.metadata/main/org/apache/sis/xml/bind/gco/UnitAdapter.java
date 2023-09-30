@@ -28,11 +28,8 @@ import org.apache.sis.xml.bind.gml.Measure;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see Measure
- *
- * @since 0.3
  */
 public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     /**

@@ -48,8 +48,6 @@ import org.apache.sis.util.resources.Errors;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 public class ConverterRegistry {
     /**

@@ -47,8 +47,6 @@ import static java.lang.Math.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 abstract class MolodenskyFormula extends DatumShiftTransform {
     /**

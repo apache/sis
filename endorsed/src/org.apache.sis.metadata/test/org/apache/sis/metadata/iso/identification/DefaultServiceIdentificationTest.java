@@ -49,8 +49,6 @@ import org.opengis.metadata.identification.DistributedComputingPlatform;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn({
     DefaultCoupledResourceTest.class,

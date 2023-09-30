@@ -24,11 +24,8 @@ import org.apache.sis.storage.DataStoreProvider;
  * The output format specified by the user as an option.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
  *
  * @see FormattedOutputCommand
- *
- * @since 0.8
  */
 enum OutputFormat {
     /**

@@ -27,8 +27,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * The "help" subcommand.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 final class HelpCommand extends CommandRunner {
     /**

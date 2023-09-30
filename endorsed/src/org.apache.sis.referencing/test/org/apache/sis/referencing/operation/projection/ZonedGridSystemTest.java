@@ -38,8 +38,6 @@ import static org.junit.Assert.*;
  * Tests the {@link ZonedGridSystem} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 @DependsOn(TransverseMercatorTest.class)
 public final class ZonedGridSystemTest extends MapProjectionTestCase {

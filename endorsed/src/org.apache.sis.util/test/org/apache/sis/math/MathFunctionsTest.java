@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   0.3
  */
 @DependsOn({
     org.apache.sis.util.ArraysExtTest.class,

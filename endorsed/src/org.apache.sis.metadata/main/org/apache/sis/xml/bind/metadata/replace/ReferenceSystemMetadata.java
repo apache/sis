@@ -55,12 +55,9 @@ import org.apache.sis.util.collection.Containers;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @see org.apache.sis.referencing.AbstractReferenceSystem
  * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
- *
- * @since 0.3
  */
 @XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS)
 @XmlRootElement(name = "MD_ReferenceSystem", namespace = Namespaces.MRS)

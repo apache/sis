@@ -36,8 +36,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests {@link Category}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class CategoryTest extends TestCase {
     /**

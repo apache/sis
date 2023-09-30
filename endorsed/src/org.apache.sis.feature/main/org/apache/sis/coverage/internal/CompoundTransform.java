@@ -38,8 +38,6 @@ import org.apache.sis.util.ArraysExt;
  * See <a href="https://issues.apache.org/jira/browse/SIS-498">SIS-498</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public abstract class CompoundTransform extends AbstractMathTransform {
     /**

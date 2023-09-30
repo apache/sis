@@ -32,8 +32,6 @@ import org.opengis.filter.Filter;
  * Tests for {@link Rule}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class RuleTest extends StyleTestCase {
     /**

@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * which make testing more difficult.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class GridResourceMock extends AbstractGridCoverageResource {
     /**

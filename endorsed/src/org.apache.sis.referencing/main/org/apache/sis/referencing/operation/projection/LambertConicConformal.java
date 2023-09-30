@@ -66,8 +66,6 @@ import static org.apache.sis.referencing.util.Formulas.fastHypot;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public class LambertConicConformal extends ConformalProjection {
     /**
@@ -412,8 +410,6 @@ public class LambertConicConformal extends ConformalProjection {
      * The limits defined by this method are arbitrary and may change in any future implementation.
      * Current implementation sets a longitude range of ±180° (i.e. the world) and a latitude range
      * from pole to equator in the hemisphere of the projection.
-     *
-     * @since 1.3
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {
@@ -524,8 +520,6 @@ public class LambertConicConformal extends ConformalProjection {
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  André Gosselin (MPO)
      * @author  Rueben Schulz (UBC)
-     * @version 1.1
-     * @since   0.6
      */
     static final class Spherical extends LambertConicConformal {
         /**

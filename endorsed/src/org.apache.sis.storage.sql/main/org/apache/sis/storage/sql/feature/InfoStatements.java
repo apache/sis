@@ -70,11 +70,8 @@ import org.opengis.metadata.Identifier;
  *
  * @author Alexis Manin (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
- * @since  1.2
  *
  * @see <a href="https://www.ogc.org/standards/sfs">OGC Simple feature access — Part 2: SQL option</a>
- *
- * @version 1.1
  */
 public class InfoStatements implements Localized, AutoCloseable {
     /**

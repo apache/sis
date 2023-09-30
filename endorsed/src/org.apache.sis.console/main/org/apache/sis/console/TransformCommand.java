@@ -85,8 +85,6 @@ import org.opengis.referencing.ObjectDomain;
  * The output is a comma separated values (CSV) file, with {@code '#'} as the first character of comment lines.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 final class TransformCommand extends FormattedOutputCommand {
     /**

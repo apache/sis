@@ -55,8 +55,6 @@ import org.apache.sis.xml.XML;
  * The output format is controlled by {@link OutputFormat} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 abstract class FormattedOutputCommand extends CommandRunner {
     /**

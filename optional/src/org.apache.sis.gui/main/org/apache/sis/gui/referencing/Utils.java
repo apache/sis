@@ -39,8 +39,6 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * Utility methods shared by classes in this package only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class Utils {
     /**

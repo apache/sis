@@ -63,8 +63,6 @@ import java.util.Iterator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public final class Person implements ResponsibleParty, Party, Contact, Address {
     /**

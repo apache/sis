@@ -29,8 +29,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests {@link DefaultFormula}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public final class DefaultFormulaTest extends TestCase {
     /**

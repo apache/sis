@@ -36,11 +36,8 @@ import org.opengis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @author  Ian Turton (CCG)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
- *
- * @since 1.5
  */
 @XmlType(name = "AnchorPointType", propOrder = {
     "anchorPointX",

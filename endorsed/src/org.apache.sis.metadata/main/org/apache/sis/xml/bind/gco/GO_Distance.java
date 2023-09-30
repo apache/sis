@@ -32,8 +32,6 @@ import org.apache.sis.measure.Units;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @XmlType(name = "Distance_PropertyType")
 public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {

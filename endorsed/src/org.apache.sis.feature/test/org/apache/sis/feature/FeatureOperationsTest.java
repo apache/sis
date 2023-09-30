@@ -49,8 +49,6 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 @DependsOn({LinkOperationTest.class, EnvelopeOperationTest.class})
 public final class FeatureOperationsTest extends TestCase {

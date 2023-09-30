@@ -48,8 +48,6 @@ import org.apache.sis.util.ArraysExt;
  * This is used for providing utility methods about image formats.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 enum FormatFilter {
     /**

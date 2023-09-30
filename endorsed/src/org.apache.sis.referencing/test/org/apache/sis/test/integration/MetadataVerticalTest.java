@@ -64,11 +64,8 @@ import static org.opengis.test.Assert.assertIdentifierEquals;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
- *
- * @since 0.5
  */
 @DependsOn({
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class

@@ -41,12 +41,9 @@ import org.apache.sis.gui.internal.Styles;
  * for copying the value in the object stored by {@link javafx.scene.control.TableView}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param  <S>  the type of elements contained in {@link javafx.scene.control.TableView}.
  * @param  <T>  the type of elements contained in {@link javafx.scene.control.TableColumn}.
- *
- * @since 1.1
  */
 final class FormatTableCell<S,T> extends TableCell<S,T> {
     /**

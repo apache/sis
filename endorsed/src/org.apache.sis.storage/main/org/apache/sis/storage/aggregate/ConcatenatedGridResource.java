@@ -51,8 +51,6 @@ import org.apache.sis.util.internal.Numerics;
  * Instances of {@code ConcatenatedGridResource} are created by {@link CoverageAggregator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 final class ConcatenatedGridResource extends AbstractGridCoverageResource implements AggregatedResource {
     /**

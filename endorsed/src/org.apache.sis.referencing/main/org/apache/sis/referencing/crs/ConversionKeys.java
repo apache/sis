@@ -29,8 +29,6 @@ import org.apache.sis.math.FunctionProperty;
  * The method to invoke is {@link #unprefix(Map)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 final class ConversionKeys implements ObjectConverter<String,String> {
     /**

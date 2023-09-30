@@ -45,8 +45,6 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 final class Analyzer {
     /**

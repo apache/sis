@@ -40,8 +40,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @XmlType(name = "CodeType")
 public final class Code {

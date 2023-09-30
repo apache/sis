@@ -46,8 +46,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(org.apache.sis.measure.RangeTest.class)
 public final class RangeSetTest extends TestCase {
@@ -346,8 +344,6 @@ public final class RangeSetTest extends TestCase {
      * Tests the {@link RangeSet#remove(Comparable, Comparable)} method with integer values.
      * The test is run for 4 different cases, 3 of them resulting in one range and one case
      * resulting in 2 ranges.
-     *
-     * @since 0.5
      */
     @Test
     @DependsOnMethod("testRangeOfIntegers")
@@ -420,8 +416,6 @@ public final class RangeSetTest extends TestCase {
     /**
      * Tests the {@link RangeSet#remove(Comparable, Comparable)} method with double values.
      * This test uses more ranges than {@link #testRemoveRangeOfIntegers()} did.
-     *
-     * @since 0.5
      */
     @Test
     @DependsOnMethod("testRemoveRangeOfIntegers")

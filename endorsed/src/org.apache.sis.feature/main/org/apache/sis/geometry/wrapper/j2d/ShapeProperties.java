@@ -31,8 +31,6 @@ import org.apache.sis.util.StringBuilders;
  * Provides some information about a {@link Shape} object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 final class ShapeProperties {
     /**

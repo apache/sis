@@ -26,8 +26,6 @@ import org.apache.sis.storage.shapefile.jdbc.statement.DBFStatement;
 /**
  * This Base ResultSet is only used for Descriptions function (getTables(..) and others functions in in Metadata).
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public abstract class BuiltInMemoryResultSet extends DBFResultSet {
     /**

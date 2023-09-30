@@ -46,8 +46,6 @@ import org.apache.sis.util.Workaround;
  * It also helps to choose which {@link WorldFileStore} subclass to instantiate.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 final class FormatFinder implements AutoCloseable {
     /**

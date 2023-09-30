@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Tests the {@link AbstractMathTransformTest} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 @DependsOn(IterationStrategyTest.class)
 public final class AbstractMathTransformTest extends TestCase {

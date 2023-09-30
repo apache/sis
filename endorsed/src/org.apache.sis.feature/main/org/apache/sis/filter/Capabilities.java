@@ -41,8 +41,6 @@ import org.apache.sis.feature.internal.AttributeConvention;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class Capabilities implements FilterCapabilities, Conformance, IdCapabilities, ScalarCapabilities {
     /**

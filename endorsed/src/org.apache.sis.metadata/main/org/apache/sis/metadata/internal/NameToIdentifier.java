@@ -45,8 +45,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * Current version does not yet work with URN or HTTP syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.4
  */
 public final class NameToIdentifier implements ReferenceIdentifier {
     /**
@@ -197,8 +195,6 @@ public final class NameToIdentifier implements ReferenceIdentifier {
      * @param  identifiers  the identifiers to compare against {@code toSearch}.
      * @param  toSearch     the identifier to check for equality.
      * @return {@code true} if the identifier to search is found in the given set of identifiers.
-     *
-     * @since 0.8
      */
     public static boolean isHeuristicMatchForIdentifier(final Iterable<? extends Identifier> identifiers, final String toSearch) {
         if (toSearch != null && identifiers != null) {
@@ -288,8 +284,6 @@ public final class NameToIdentifier implements ReferenceIdentifier {
     /**
      * A function for simplifying an {@link org.opengis.referencing.IdentifiedObject} name before comparison with
      * {@link NameToIdentifier#isHeuristicMatchForName(Identifier, Collection, CharSequence, Simplifier)}.
-     *
-     * @since 1.0
      */
     public static class Simplifier {
         /**

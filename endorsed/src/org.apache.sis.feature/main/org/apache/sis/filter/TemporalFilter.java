@@ -40,11 +40,8 @@ import org.opengis.filter.TemporalOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <T>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
- *
- * @since 1.1
  */
 abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         implements TemporalOperator<T>, Optimization.OnFilter<T>

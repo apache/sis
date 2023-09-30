@@ -44,8 +44,6 @@ import org.apache.sis.util.ArraysExt;
  * For example, WKT may also appear in some global attributes of CF-netCDF files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})       // Not intended to be serialized.
 public final class StoreFormat extends WKTFormat {

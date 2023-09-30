@@ -25,11 +25,8 @@ import org.apache.sis.util.Numbers;
  * A matrix which is not square.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see Matrices#createDiagonal(int, int)
- *
- * @since 0.4
  */
 final class NonSquareMatrix extends GeneralMatrix {
     /**

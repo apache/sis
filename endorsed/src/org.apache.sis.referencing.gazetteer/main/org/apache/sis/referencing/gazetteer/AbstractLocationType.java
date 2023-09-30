@@ -40,8 +40,6 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * for {@code LocationType} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 abstract class AbstractLocationType implements LocationType, LenientComparable {
     /**

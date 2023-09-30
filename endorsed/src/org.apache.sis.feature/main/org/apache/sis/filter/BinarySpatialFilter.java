@@ -38,11 +38,8 @@ import org.opengis.filter.BinarySpatialOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
- *
- * @since 1.1
  */
 final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> implements BinarySpatialOperator<R> {
     /**

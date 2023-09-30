@@ -40,8 +40,6 @@ import org.apache.sis.math.Vector;
  * {@code GridCacheKey}s are associated to {@link GridCacheValue}s in a hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 class GridCacheKey {
     /**

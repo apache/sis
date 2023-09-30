@@ -40,11 +40,8 @@ import org.apache.sis.math.Fraction;
  * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see java.awt.geom.AffineTransform
- *
- * @since 0.5
  */
 class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**

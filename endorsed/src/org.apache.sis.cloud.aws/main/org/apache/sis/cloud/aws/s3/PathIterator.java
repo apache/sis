@@ -34,8 +34,6 @@ import software.amazon.awssdk.core.exception.SdkException;
  * Iterator over the objects in a S3 buckets. Each object if given as a {@link KeyPath}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class PathIterator implements DirectoryStream<Path>, Iterator<Path> {
     /**

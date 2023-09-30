@@ -33,8 +33,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * This class adds only some tests that are specific to {@code ImmutableEnvelope} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn(ArrayEnvelopeTest.class)
 public final class ImmutableEnvelopeTest extends TestCase {

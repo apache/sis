@@ -43,11 +43,8 @@ import org.opengis.filter.DistanceOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
- *
- * @since 1.1
  */
 final class DistanceFilter<R> extends BinaryGeometryFilter<R> implements DistanceOperator<R> {
     /**

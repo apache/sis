@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  * Tests the {@link DecimalFunctions} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.4
  */
 @DependsOn(org.apache.sis.util.internal.NumericsTest.class)
 public final class DecimalFunctionsTest extends TestCase {

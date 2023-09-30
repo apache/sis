@@ -41,8 +41,6 @@ import org.opengis.util.ControlledVocabulary;
  * Used when connection to the spatial metadata cannot be established.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.0
  */
 final class MetadataFallback extends MetadataSource {
     /**

@@ -60,8 +60,6 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * This policy may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class ImageConverter extends Task<Statistics[]> {
     /**

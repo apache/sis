@@ -36,8 +36,6 @@ import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
  * Also opportunistically tests consistency with {@link ProjectiveTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.5
  */
 @DependsOn({
     CoordinateDomainTest.class,

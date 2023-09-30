@@ -39,8 +39,6 @@ import org.apache.sis.measure.Units;
  * Each {@code WraparoundTransform} instance should be used only once.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.1
  */
 public final class WraparoundApplicator {
     /**

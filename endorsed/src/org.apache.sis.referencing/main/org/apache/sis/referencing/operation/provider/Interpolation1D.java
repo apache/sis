@@ -35,8 +35,6 @@ import org.apache.sis.parameter.ParameterBuilder;
  * The provider for interpolation of one-dimensional coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class Interpolation1D extends AbstractProvider {
     /**

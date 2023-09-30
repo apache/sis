@@ -37,8 +37,6 @@ import org.apache.sis.setup.OptionalInstallations;
  * the EPSG terms of use.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 @Fallback
 public final class OptionalDataDownloader extends OptionalInstallations {

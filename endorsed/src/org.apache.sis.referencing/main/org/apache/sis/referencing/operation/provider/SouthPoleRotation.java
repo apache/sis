@@ -44,11 +44,8 @@ import org.apache.sis.measure.Units;
  * in UCAR netCDF library version 5.5.2.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see NorthPoleRotation
- *
- * @since 1.2
  */
 @XmlTransient
 public final class SouthPoleRotation extends AbstractProvider {

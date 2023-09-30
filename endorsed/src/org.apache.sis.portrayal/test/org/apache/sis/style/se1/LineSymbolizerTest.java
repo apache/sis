@@ -31,8 +31,6 @@ import org.opengis.feature.Feature;
  * Tests for {@link LineSymbolizer}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class LineSymbolizerTest extends StyleTestCase {
     /**

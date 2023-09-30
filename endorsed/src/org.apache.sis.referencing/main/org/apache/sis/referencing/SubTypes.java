@@ -50,8 +50,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 final class SubTypes {
     /**

@@ -33,11 +33,8 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * <cite>false westing</cite> (FW) and <cite>false southing</cite> (FS) respectively.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator_south_oriented.html">GeoTIFF parameters for Transverse Mercator (South Oriented)</a>
- *
- * @since 0.6
  */
 @XmlTransient
 public final class TransverseMercatorSouth extends AbstractMercator {

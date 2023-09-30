@@ -45,8 +45,6 @@ import org.apache.sis.util.ArraysExt;
  * on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 final class DataStoreRegistry extends LazySet<DataStoreProvider> {
     /**

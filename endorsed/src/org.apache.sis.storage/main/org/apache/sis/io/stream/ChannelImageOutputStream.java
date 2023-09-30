@@ -41,8 +41,6 @@ import org.apache.sis.storage.internal.Resources;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public class ChannelImageOutputStream extends ChannelDataOutput implements DataOutput, Closeable {
     /**

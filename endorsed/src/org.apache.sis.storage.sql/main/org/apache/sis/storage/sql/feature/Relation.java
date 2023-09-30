@@ -53,8 +53,6 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.0
  */
 final class Relation extends TableReference {
     /**
@@ -173,8 +171,6 @@ final class Relation extends TableReference {
      * This is a temporary information used only at {@code FeatureType} construction time.
      * A relation is excluded if table <var>A</var> is a dependency of table <var>B</var>
      * (defined by foreigner keys) and the relation is pointing back to <var>A</var>.
-     *
-     * @since 1.2
      */
     boolean excluded;
 

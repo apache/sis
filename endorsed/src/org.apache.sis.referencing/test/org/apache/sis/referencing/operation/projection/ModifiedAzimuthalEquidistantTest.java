@@ -29,8 +29,6 @@ import org.apache.sis.test.DependsOn;
  * Tests the {@link ModifiedAzimuthalEquidistant} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistantTest {

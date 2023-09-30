@@ -46,8 +46,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link ServicesForMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.5
  */
 @DependsOn({
     org.apache.sis.referencing.CommonCRSTest.class
@@ -61,8 +59,6 @@ public final class ServicesForMetadataTest extends TestCase {
 
     /**
      * Tests {@link org.apache.sis.metadata.iso.extent.Extents#centroid(GeographicBoundingBox)}.
-     *
-     * @since 0.8
      */
     @Test
     public void testGeographicBoundingBoxCentroid() {
@@ -201,8 +197,6 @@ public final class ServicesForMetadataTest extends TestCase {
      * Tests {@link DefaultVerticalExtent#intersect(VerticalExtent)}.
      *
      * @throws TransformException if the transformation failed.
-     *
-     * @since 0.8
      */
     @Test
     public void testVerticalIntersection() throws TransformException {
@@ -216,8 +210,6 @@ public final class ServicesForMetadataTest extends TestCase {
      * Tests {@link DefaultTemporalExtent#intersect(TemporalExtent)}.
      *
      * @throws TransformException if the transformation failed.
-     *
-     * @since 0.8
      */
     @Test
     public void testTemporalIntersection() throws TransformException {

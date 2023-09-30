@@ -53,8 +53,6 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  * Tests XML (un)marshalling of {@link DefaultParameterValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     DefaultParameterValueTest.class,

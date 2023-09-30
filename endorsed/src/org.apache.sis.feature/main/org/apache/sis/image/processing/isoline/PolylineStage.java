@@ -32,8 +32,6 @@ import org.apache.sis.util.Debug;
  * This information allows {@code StepsViewer} (in test package) to use different colors for different stages.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 @Debug
 enum PolylineStage {

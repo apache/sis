@@ -56,8 +56,6 @@ import org.opengis.metadata.citation.Party;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 @DependsOn(TreeNodeChildrenTest.class)
 public final class TreeNodeTest extends TestCase {

@@ -34,8 +34,6 @@ import org.apache.sis.util.resources.Errors;
  * This class is for Apache SIS internal usage and may change in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 public final class SQLUtilities extends Static {
     /**
@@ -69,8 +67,6 @@ public final class SQLUtilities extends Static {
      * @throws SQLDataException if the given text is non-null and non-empty but not recognized.
      *
      * @see Boolean#parseBoolean(String)
-     *
-     * @since 0.8
      */
     public static Boolean parseBoolean(final String text) throws SQLException {
         if (text == null) {

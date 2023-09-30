@@ -25,8 +25,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * The provider for <cite>"Position Vector transformation (geog2D domain)"</cite> (EPSG:9606).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class PositionVector7Param2D extends GeocentricAffineBetweenGeographic {

@@ -81,8 +81,6 @@ import org.opengis.util.ControlledVocabulary;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public abstract class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
@@ -109,8 +107,6 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
     /**
      * First valid key index.
      * We start at 1 rather than 0 in order to keep value 0 available for meaning "no localized message".
-     *
-     * @since 0.8
      */
     static final int FIRST = 1;
 
@@ -476,8 +472,6 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @param  key         the key for the desired string.
      * @param  toAppendTo  where to write the localized string followed by a colon.
      * @throws IOException if an error occurred while writing to the given destination.
-     *
-     * @since 0.8
      */
     public final void appendLabel(final short key, final Appendable toAppendTo) throws IOException {
         toAppendTo.append(getString(key));
@@ -506,8 +500,6 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      *
      * @param  key  the key for the desired string.
      * @return localized string followed by a colon.
-     *
-     * @since 1.1
      */
     public final String getLabel(final short key) {
         final String text = getString(key);
@@ -761,8 +753,6 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      *
      * @param  properties  the map of properties, or {@code null} if none.
      * @return the locale found in the given map, or {@code null} if none.
-     *
-     * @since 0.8
      */
     protected static Locale getLocale(final Map<?,?> properties) {
         if (properties != null) {

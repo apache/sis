@@ -37,8 +37,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * Tests {@link DefaultPolarCS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.7
  */
 @DependsOn(AbstractCSTest.class)
 public final class DefaultPolarCSTest extends TestCase {

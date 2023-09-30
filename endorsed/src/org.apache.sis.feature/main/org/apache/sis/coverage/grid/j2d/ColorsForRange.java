@@ -34,11 +34,8 @@ import org.apache.sis.util.ArraysExt;
  * used only the time needed for {@link ColorModelFactory#createPiecewise(int, int, int, ColorsForRange[])}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see ColorModelFactory#createPiecewise(int, int, int, ColorsForRange[])
- *
- * @since 1.1
  */
 final class ColorsForRange implements Comparable<ColorsForRange> {
     /**

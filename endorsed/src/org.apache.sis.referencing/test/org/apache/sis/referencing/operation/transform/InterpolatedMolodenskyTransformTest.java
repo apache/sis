@@ -38,8 +38,6 @@ import org.apache.sis.test.DependsOn;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn({
     MolodenskyTransformTest.class,

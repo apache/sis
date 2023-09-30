@@ -27,8 +27,6 @@ import org.apache.sis.util.LocalizedException;
  * It may be for example the attributes produced by {@link FeatureOperations}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class FeatureOperationException extends IllegalStateException implements LocalizedException {
     /**

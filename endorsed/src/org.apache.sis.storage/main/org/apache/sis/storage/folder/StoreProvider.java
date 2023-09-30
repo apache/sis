@@ -59,8 +59,6 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
                capabilities  = {Capability.READ, Capability.WRITE},

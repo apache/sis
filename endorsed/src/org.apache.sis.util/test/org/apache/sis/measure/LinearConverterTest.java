@@ -34,8 +34,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link LinearConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 public final class LinearConverterTest extends TestCase {
     /**

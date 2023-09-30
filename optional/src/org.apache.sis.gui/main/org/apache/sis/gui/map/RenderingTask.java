@@ -24,14 +24,11 @@ import javafx.concurrent.Task;
  * This is currently used only for type safety.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <V>  type of value computed by the task.
  *
  * @see MapCanvas.Renderer
  * @see MapCanvas#renderingCompleted(RenderingTask)
- *
- * @since 1.4
  */
 abstract class RenderingTask<V> extends Task<V> {
     /**

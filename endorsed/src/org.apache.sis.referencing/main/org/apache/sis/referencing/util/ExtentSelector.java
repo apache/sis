@@ -78,11 +78,8 @@ import org.apache.sis.util.resources.Errors;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @param  <T>  the type of object to be selected.
- *
- * @since 0.4
  */
 public final class ExtentSelector<T> {
     /**

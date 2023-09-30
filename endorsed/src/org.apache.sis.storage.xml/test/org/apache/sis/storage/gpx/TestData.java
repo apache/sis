@@ -25,8 +25,6 @@ import org.apache.sis.util.Version;
  * Identification of the data to use for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public enum TestData {
     /**

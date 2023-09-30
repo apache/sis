@@ -80,8 +80,6 @@ import org.opengis.test.Assert;
  * Contrarily to {@link CoordinateOperationRegistryTest}, tests in this class are run without EPSG geodetic dataset.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.7
  */
 @DependsOn({
     DefaultConversionTest.class,
@@ -502,8 +500,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      *
      * @see DefaultCoordinateOperationFactoryTest#testPositionVectorTransformation()
      * @see <a href="https://issues.apache.org/jira/browse/SIS-364">SIS-364</a>
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testGeographicToProjected")

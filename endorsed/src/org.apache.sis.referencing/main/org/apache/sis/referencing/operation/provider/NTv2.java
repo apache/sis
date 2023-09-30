@@ -60,8 +60,6 @@ import org.apache.sis.measure.Units;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class NTv2 extends AbstractProvider {
@@ -200,8 +198,6 @@ public final class NTv2 extends AbstractProvider {
      *
      * @author  Simon Reynard (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.4
-     * @since   0.7
      */
     private static final class Loader extends DatumShiftGridLoader {
         /**

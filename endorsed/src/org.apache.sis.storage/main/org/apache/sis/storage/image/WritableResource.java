@@ -32,8 +32,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * An image which can be replaced or updated.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class WritableResource extends WorldFileResource implements WritableGridCoverageResource {
     /**

@@ -44,8 +44,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * Tests the {@link ParameterFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.4
  */
 @DependsOn(ParameterBuilderTest.class)
 public final class ParameterFormatTest extends TestCase {

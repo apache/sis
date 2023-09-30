@@ -23,8 +23,6 @@ import java.sql.SQLNonTransientException;
  * Thrown when a DBF file has not been found.
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class SQLDbaseFileNotFoundException extends SQLNonTransientException {
     /** Serial UID. */

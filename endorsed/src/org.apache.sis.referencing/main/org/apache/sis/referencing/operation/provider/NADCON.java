@@ -53,11 +53,8 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 1.4
  *
  * @see <a href="http://www.ngs.noaa.gov/cgi-bin/nadcon.prl">NADCON on-line computation</a>
- *
- * @since 0.7
  */
 @XmlTransient
 public final class NADCON extends AbstractProvider {
@@ -218,8 +215,6 @@ public final class NADCON extends AbstractProvider {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @author  Rueben Schulz (UBC)
-     * @version 1.4
-     * @since   0.7
      */
     private static final class Loader extends DatumShiftGridLoader {
         /**

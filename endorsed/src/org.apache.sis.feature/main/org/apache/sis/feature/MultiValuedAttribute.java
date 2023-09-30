@@ -48,13 +48,10 @@ import org.opengis.feature.MultiValuedPropertyException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <V>  the type of the attribute values.
  *
  * @see DefaultAttributeType
- *
- * @since 0.5
  */
 final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements CloneAccess {
     /**

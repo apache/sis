@@ -40,8 +40,6 @@ import javafx.scene.text.FontWeight;
  * This value may be outside image bounds, in which case this {@code GridRow} should be rendered as empty.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class GridRow extends IndexedCell<Void> {
     /**

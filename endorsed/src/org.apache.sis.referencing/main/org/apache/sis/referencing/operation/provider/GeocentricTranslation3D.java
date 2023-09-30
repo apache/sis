@@ -27,8 +27,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * terms can be set to a non-null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class GeocentricTranslation3D extends GeocentricAffineBetweenGeographic {

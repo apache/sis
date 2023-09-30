@@ -42,8 +42,6 @@ import static org.opengis.test.Assert.assertIdentifierEquals;
  * Tests the {@link DefaultTemporalDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class DefaultTemporalDatumTest extends TestCase {
     /**
@@ -83,8 +81,6 @@ public final class DefaultTemporalDatumTest extends TestCase {
 
     /**
      * Tests the consistency of our test with {@link HardCodedDatum#MODIFIED_JULIAN}.
-     *
-     * @since 0.5
      */
     @Test
     public void testConsistency() {
@@ -98,8 +94,6 @@ public final class DefaultTemporalDatumTest extends TestCase {
      * the date could have only the year, or only the year and month, <i>etc</i>. The clock
      * part is optional and also have optional fields: can be only hours, or only hours and minutes, <i>etc</i>.
      * ISO 19162 said that the timezone is restricted to UTC but nevertheless allows to specify a timezone.</p>
-     *
-     * @since 0.5
      */
     @Test
     public void testToWKT() {

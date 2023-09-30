@@ -63,8 +63,6 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @SuppressWarnings("rawtypes")   // For the omission of <T> in Parameter<T> - see javadoc.
 @XmlType(name = "SV_Parameter_Type", namespace = Namespaces.SRV, propOrder = {

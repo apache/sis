@@ -54,8 +54,6 @@ import org.apache.sis.util.StringBuilders;
  * implementation easier, by reducing the amount of {@link Map}s that we need to manage.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class SchemaCompliance extends SchemaInformation {
     /**

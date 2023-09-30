@@ -27,11 +27,8 @@ import org.opengis.filter.ValueReference;
  * The features handled by this implementation are property-value maps.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
  *
  * @param  <V>  type of values returned by this expression.
- *
- * @since 1.4
  */
 final class ValueReferenceMock<V> implements ValueReference<Map<String,?>, V> {
     /**

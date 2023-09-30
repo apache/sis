@@ -35,12 +35,9 @@ import org.apache.sis.util.resources.Errors;
  * {@link java.io.Serializable} do not need to care about this base class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @param <S>  the type of objects to convert.
  * @param <T>  the type of converted objects.
- *
- * @since 0.3
  */
 public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     /**

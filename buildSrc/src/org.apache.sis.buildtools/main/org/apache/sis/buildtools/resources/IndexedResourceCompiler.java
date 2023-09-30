@@ -49,8 +49,6 @@ import java.io.Writer;
  * <p>Instances of this class are not thread safe.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class IndexedResourceCompiler {
     /**

@@ -68,8 +68,6 @@ import org.opengis.metadata.Identifier;
  * first, no HTML characters to escape in non-EPSG identifiers, etc.).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public class CoordinateOperationMethods extends HTMLGenerator {
     /**

@@ -34,8 +34,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * The inverse operation is this operation itself.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @XmlTransient
 public class AxisOrderReversal extends AbstractProvider {

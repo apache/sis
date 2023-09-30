@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn(SolverTest.class)
 public final class Matrix2Test extends MatrixTestCase {

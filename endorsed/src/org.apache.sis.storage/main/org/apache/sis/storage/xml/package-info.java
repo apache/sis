@@ -31,7 +31,5 @@
  * The actual implementation is provided by the JAXB annotations present in metadata and referencing modules.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 package org.apache.sis.storage.xml;

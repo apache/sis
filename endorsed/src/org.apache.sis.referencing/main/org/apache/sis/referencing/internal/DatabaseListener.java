@@ -34,8 +34,6 @@ import static java.util.logging.Logger.getLogger;
  * of the {@code org.apache.sis.metadata.sql.util.Initializer} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 public final class DatabaseListener extends Initializer {
     /**

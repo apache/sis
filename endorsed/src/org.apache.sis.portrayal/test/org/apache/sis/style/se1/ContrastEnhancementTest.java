@@ -26,8 +26,6 @@ import static org.junit.Assert.*;
  * Tests for {@link ContrastEnhancement}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class ContrastEnhancementTest extends StyleTestCase {
     /**

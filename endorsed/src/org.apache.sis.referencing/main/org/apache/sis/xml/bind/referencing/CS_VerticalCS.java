@@ -28,8 +28,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class CS_VerticalCS extends PropertyType<CS_VerticalCS, VerticalCS> {
     /**

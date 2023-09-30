@@ -41,8 +41,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * Tests the WKT {@link Store}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn(StoreProviderTest.class)
 public final class StoreTest extends TestCase {

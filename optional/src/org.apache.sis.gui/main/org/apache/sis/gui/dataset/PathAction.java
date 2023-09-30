@@ -43,8 +43,6 @@ import org.apache.sis.io.stream.IOUtilities;
  * or open the containing folder using native file browser.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class PathAction implements EventHandler<ActionEvent> {
     /**

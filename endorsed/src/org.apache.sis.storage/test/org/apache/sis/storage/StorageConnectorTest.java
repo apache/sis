@@ -51,8 +51,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(org.apache.sis.io.stream.ChannelImageInputStreamTest.class)
 public final class StorageConnectorTest extends TestCase {

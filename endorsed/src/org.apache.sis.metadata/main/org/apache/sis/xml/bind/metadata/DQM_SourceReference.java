@@ -29,8 +29,6 @@ import org.opengis.metadata.quality.SourceReference;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 public final class DQM_SourceReference extends PropertyType<DQM_SourceReference, SourceReference> {
     /**

@@ -30,8 +30,6 @@ import org.apache.sis.util.collection.TreeTable;
  * The "metadata" sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 final class MetadataCommand extends FormattedOutputCommand {
     /**

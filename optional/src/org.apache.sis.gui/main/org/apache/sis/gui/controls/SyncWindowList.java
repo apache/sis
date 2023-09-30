@@ -40,8 +40,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
  * on which to replicate gesture events (zoom, pans, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 public final class SyncWindowList extends TabularWidget implements ListChangeListener<WindowHandler> {
     /**

@@ -39,8 +39,6 @@ import org.apache.sis.measure.Units;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @XmlTransient
 public final class GeographicAndVerticalOffsets extends GeographicOffsets {

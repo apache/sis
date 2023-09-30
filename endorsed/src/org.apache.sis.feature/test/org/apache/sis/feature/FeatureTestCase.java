@@ -48,8 +48,6 @@ import org.opengis.feature.Property;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
- * @version 1.4
- * @since   0.5
  */
 public abstract class FeatureTestCase extends TestCase {
     /**

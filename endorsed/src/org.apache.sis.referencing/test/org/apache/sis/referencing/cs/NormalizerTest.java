@@ -41,8 +41,6 @@ import static org.apache.sis.referencing.Assertions.assertAxisEquals;
  * Tests the {@link Normalizer} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   0.4
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,

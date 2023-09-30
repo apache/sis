@@ -54,8 +54,6 @@ import org.opengis.feature.Feature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.8
  */
 @DependsOn(MetadataTest.class)
 public final class ReaderTest extends TestCase {

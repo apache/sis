@@ -34,8 +34,6 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public class MemoryFeatureSet extends AbstractFeatureSet {
     /**

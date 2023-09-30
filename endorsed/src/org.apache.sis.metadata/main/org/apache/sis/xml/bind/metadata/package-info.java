@@ -51,11 +51,8 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
- * @since   1.3
  *
  * @see jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
- *
- * @since 0.3
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),

@@ -61,8 +61,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
     /**

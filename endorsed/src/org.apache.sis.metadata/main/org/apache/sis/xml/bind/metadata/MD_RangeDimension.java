@@ -30,8 +30,6 @@ import org.apache.sis.metadata.iso.content.DefaultRangeDimension;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class MD_RangeDimension extends PropertyType<MD_RangeDimension, RangeDimension> {
     /**

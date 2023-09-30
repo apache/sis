@@ -26,11 +26,8 @@
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
  *
  * @see jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
- *
- * @since 0.3
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GEX, xmlns = {
     @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX)

@@ -40,8 +40,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests the {@link Geographic3Dto2D} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.7
  */
 @DependsOn(AffineTest.class)
 public final class Geographic3Dto2DTest extends TestCase {

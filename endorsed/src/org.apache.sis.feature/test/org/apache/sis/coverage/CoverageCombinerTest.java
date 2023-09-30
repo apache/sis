@@ -36,8 +36,6 @@ import static org.junit.Assert.*;
  * Tests {@link CoverageCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class CoverageCombinerTest extends TestCase {
     /**

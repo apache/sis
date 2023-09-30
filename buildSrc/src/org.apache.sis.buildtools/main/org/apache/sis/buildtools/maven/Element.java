@@ -21,8 +21,6 @@ package org.apache.sis.buildtools.maven;
  * An XML element to read from the original {@code pom.xml} file content.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 enum Element {
     /**

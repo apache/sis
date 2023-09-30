@@ -50,11 +50,8 @@ import org.apache.sis.geometry.wrapper.Geometries;
  * @param <G> the type of geometry objects created by the factory.
  * @param <V> the type of geometry objects returned by this getter.
  *
- * @version 1.4
  *
  * @see org.apache.sis.storage.sql.postgis.RasterGetter
- *
- * @since 1.1
  */
 final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     /**

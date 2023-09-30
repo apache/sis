@@ -58,8 +58,6 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  *       (see {@link #type} field).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class AuthorityCodes extends ObservableListBase<Code>
         implements Callback<TableColumn.CellDataFeatures<Code,String>, ObservableValue<String>>

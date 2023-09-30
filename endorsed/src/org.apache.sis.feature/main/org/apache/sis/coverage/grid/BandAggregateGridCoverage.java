@@ -43,8 +43,6 @@ import org.apache.sis.util.internal.CollectionsExt;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class BandAggregateGridCoverage extends GridCoverage {
     /**

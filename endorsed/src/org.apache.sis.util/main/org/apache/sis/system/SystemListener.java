@@ -28,8 +28,6 @@ import org.apache.sis.util.ArraysExt;
  * to keep the SIS library OSGi-independent.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public abstract class SystemListener implements EventListener {
     /**
@@ -146,8 +144,6 @@ public abstract class SystemListener implements EventListener {
     /**
      * Invoked when the database content changed.
      * When this method is invoked, EPSG and Citations database are advised to clear their cache.
-     *
-     * @since 0.6
      */
     protected void databaseChanged() {
     }

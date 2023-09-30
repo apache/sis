@@ -39,8 +39,6 @@ import org.opengis.feature.PropertyType;
  * Tests {@link FeatureFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.5
  */
 @DependsOn({
     DenseFeatureTest.class,

@@ -27,8 +27,6 @@ import org.apache.sis.system.Modules;
  * A convenience class for reporting an error during computation of a tile.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class TileErrorHandler {
     /**

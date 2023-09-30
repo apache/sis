@@ -35,8 +35,6 @@ import org.opengis.annotation.Stereotype;
  * Information about an Apache SIS metadata standard implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 final class StandardImplementation extends MetadataStandard {
     /**

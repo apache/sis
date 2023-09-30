@@ -54,8 +54,6 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.8
  */
 public final class MetadataReaderTest extends TestCase {
     /**

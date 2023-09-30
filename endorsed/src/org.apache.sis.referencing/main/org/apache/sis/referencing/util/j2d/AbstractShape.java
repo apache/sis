@@ -25,8 +25,6 @@ import java.awt.Shape;
  * coordinate values as simple-precision or double-precision floating point numbers.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public abstract class AbstractShape implements Shape {
     /**

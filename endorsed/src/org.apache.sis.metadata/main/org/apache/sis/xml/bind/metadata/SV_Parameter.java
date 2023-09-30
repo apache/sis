@@ -27,8 +27,6 @@ import org.apache.sis.xml.bind.metadata.replace.ServiceParameter;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class SV_Parameter extends PropertyType<SV_Parameter, ParameterDescriptor<?>> {
     /**

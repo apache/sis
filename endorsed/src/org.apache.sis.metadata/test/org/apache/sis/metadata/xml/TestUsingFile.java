@@ -30,8 +30,6 @@ import org.apache.sis.xml.test.TestCase;
  * whether ISO 19139:2007 or ISO 19115-3:2016 schema is used.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public abstract class TestUsingFile extends TestCase {
     /**

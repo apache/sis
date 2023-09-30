@@ -33,8 +33,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class RangeTest extends TestCase {
     /**

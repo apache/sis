@@ -48,8 +48,6 @@ import org.opengis.test.ToleranceModifier;
  * Tests {@link EllipsoidToCentricTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     CoordinateDomainTest.class,

@@ -28,8 +28,6 @@ import static org.junit.Assert.*;
  * Tests for {@link Font}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class FontTest extends StyleTestCase {
     /**

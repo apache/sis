@@ -42,8 +42,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * to their parent class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class GridAdjustment {
     /**

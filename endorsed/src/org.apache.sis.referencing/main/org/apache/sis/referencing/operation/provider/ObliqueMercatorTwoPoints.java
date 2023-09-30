@@ -33,8 +33,6 @@ import org.apache.sis.measure.Units;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 @XmlTransient
 public class ObliqueMercatorTwoPoints extends ObliqueMercator {

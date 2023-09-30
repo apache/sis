@@ -38,8 +38,6 @@ import static org.junit.Assert.*;
  * converted map).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @DependsOn(DerivedSetTest.class)
 public final class DerivedMapTest extends TestCase implements ObjectConverter<Integer,Integer> {

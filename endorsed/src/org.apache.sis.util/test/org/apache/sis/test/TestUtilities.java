@@ -54,8 +54,6 @@ import static org.junit.Assert.*;
  * Miscellaneous utility methods for test cases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class TestUtilities extends Static {
     /**
@@ -103,8 +101,6 @@ public final class TestUtilities extends Static {
      * Prints and clear the current content of {@link TestCase#out}, regardless of whether
      * {@link TestCase#VERBOSE} is {@code true} or {@code false}. This method should rarely
      * be needed.
-     *
-     * @since 0.4
      */
     public static void forceFlushOutput() {
         TestCase.flushOutput();
@@ -196,8 +192,6 @@ public final class TestUtilities extends Static {
      *
      * @param  seed  the random generator seed.
      * @return a new random number generator initialized with the given seed.
-     *
-     * @since 0.5
      */
     @Debug
     public static Random createRandomNumberGenerator(final long seed) {
@@ -367,8 +361,6 @@ public final class TestUtilities extends Static {
      * @param  sourceDim    number of dimensions of each point in the {@code coordinates} array.
      * @param  targetDim    number of dimensions to retain.
      * @return copy of the given {@code coordinates} array with only the {@code targetDim} first dimension for each point.
-     *
-     * @since 0.7
      */
     public static double[] dropLastDimensions(final double[] coordinates, final int sourceDim, final int targetDim) {
         assertEquals("Unexpected array length.", 0, coordinates.length % sourceDim);
@@ -465,8 +457,6 @@ public final class TestUtilities extends Static {
      * @param  suffix  suffix (dot included) to append to the temporary file name, or {@code null} if none.
      * @return a channel opened on a copy of the content of the given test resource.
      * @throws IOException if an error occurred while copying the data.
-     *
-     * @since 0.8
      */
     public static SeekableByteChannel createTemporaryFile(final InputStream data, final String suffix) throws IOException {
         final SeekableByteChannel channel;

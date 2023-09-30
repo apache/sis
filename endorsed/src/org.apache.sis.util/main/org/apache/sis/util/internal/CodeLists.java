@@ -33,8 +33,6 @@ import org.opengis.util.ControlledVocabulary;
  * This class opportunistically implements {@link Predicate} interface, but this is an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class CodeLists implements Predicate<CodeList<?>> {
     /**

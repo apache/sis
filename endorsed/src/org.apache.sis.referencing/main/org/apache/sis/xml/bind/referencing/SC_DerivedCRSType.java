@@ -27,8 +27,6 @@ import jakarta.xml.bind.annotation.XmlValue;
  * so we reconstruct in this adapter what would be marshalled if we had that code list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 public final class SC_DerivedCRSType {
     /**

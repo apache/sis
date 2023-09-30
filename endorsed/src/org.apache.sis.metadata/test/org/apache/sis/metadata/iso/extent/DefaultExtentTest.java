@@ -42,8 +42,6 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
 public final class DefaultExtentTest extends TestUsingFile {

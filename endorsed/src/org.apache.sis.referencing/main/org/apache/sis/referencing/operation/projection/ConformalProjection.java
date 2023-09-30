@@ -55,8 +55,6 @@ import static java.lang.Math.*;
  * parallel is a pole, the polar Stereographic results.” (Snyder, page 105).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 abstract class ConformalProjection extends NormalizedProjection {
     /**

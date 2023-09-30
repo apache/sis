@@ -97,8 +97,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
     /**

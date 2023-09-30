@@ -37,8 +37,6 @@ import static org.junit.Assert.assertEquals;
  * Tests the distances along meridian arc computed by {@link MeridianArcBased}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final class MeridianArcTest extends MapProjectionTestCase {

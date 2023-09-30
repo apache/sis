@@ -37,8 +37,6 @@ import org.apache.sis.buildtools.resources.IndexedResourceCompiler;
  * Extension to Gradle {@link JavaCompile} task.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class ModularCompilation extends Conventions {
     /**

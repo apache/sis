@@ -28,8 +28,6 @@ import org.opengis.referencing.operation.TransformException;
  * or an empty optional if this category is a qualitative one.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
- * @since   1.0
  */
 final class ConvertedCategory extends Category {
     /**

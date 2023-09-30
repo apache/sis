@@ -34,8 +34,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link GeneralDirectPosition} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
- * @since   0.3
  */
 @DependsOn(AbstractDirectPositionTest.class)
 public final class GeneralDirectPositionTest extends TestCase {

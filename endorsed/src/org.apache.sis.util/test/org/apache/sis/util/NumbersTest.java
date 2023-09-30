@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Numbers} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class NumbersTest extends TestCase {
     /**

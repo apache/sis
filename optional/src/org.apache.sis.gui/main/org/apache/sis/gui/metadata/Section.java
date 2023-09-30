@@ -45,11 +45,8 @@ import org.apache.sis.gui.internal.Styles;
  * controls before the lines start.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param <T> the type of information object (e.g. {@link org.opengis.metadata.identification.Identification}).
- *
- * @since 1.1
  */
 abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> {
     /**

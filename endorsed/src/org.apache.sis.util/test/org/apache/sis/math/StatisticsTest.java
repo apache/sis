@@ -44,8 +44,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * that are known to produce results inside the range expected by this test class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.3
  */
 public final class StatisticsTest extends TestCase {
     /**

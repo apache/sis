@@ -29,8 +29,6 @@ import java.util.logging.Level;
 /**
  * The Abstract Byte Reader.
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException> implements Dbase3ByteReader {
     /** First data record position, in bytes. */

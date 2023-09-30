@@ -28,8 +28,6 @@ package org.apache.sis.geometry.wrapper;
  * (as of GeoAPI 3.0, the {@code Geometry} interface has not been updated to latest ISO standards).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public abstract class AbstractGeometry {
     /**

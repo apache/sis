@@ -33,11 +33,8 @@ import org.apache.sis.coverage.grid.GridCoverage;
  * {@code RasterGetter} instances shall be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see org.apache.sis.storage.sql.feature.GeometryGetter
- *
- * @since 1.2
  */
 final class RasterGetter extends ValueGetter<GridCoverage> {
     /**

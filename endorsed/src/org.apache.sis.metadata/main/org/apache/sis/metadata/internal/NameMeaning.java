@@ -39,13 +39,10 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * The meaning are defined by <cite>OGC Naming Authority</cite> (OGCNA) or other OGC sources.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
  *
  * @see DefinitionURI
  * @see <a href="https://www.ogc.org/ogcna">https://www.ogc.org/ogcna</a>
  * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
- *
- * @since 0.5
  */
 public final class NameMeaning extends Static {
     /**
@@ -111,8 +108,6 @@ public final class NameMeaning extends Static {
      *
      * @see org.apache.sis.referencing.factory.MultiAuthoritiesFactory
      * @see <a href="http://www.opengis.net/def/auth/">http://www.opengis.net/def/auth/</a>
-     *
-     * @since 0.7
      */
     private static final Map<String,String> AUTHORITIES = Map.ofEntries(
             entry(Constants.EPSG),      // IOGP
@@ -149,8 +144,6 @@ public final class NameMeaning extends Static {
      * @param  version    the code version, or {@code null}. This is the only optional information.
      * @param  code       the code.
      * @return an identifier using the URN syntax, or {@code null} if a mandatory information is missing.
-     *
-     * @since 0.7
      */
     public static String toURN(final Class<?> type, final String authority, String version, String code) {
         if (type == null || authority == null || code == null) {
@@ -232,8 +225,6 @@ loop:   for (int p=0; ; p++) {
      *
      * @param  authority  the authority from which to get a version, or {@code null}.
      * @return the version, or {@code null} if none.
-     *
-     * @since 0.7
      */
     public static String getVersion(final Citation authority) {
         if (authority != null) {

@@ -28,8 +28,6 @@ import org.apache.sis.xml.bind.gco.GO_CharacterString;
  * after the GeoAPI interfaces has been upgraded to ISO 19115-1:2014 model.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class AttributeTypeAdapter extends XmlAdapter<GO_CharacterString, AttributeType> {
     /**

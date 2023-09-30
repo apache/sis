@@ -37,8 +37,6 @@ import org.apache.sis.test.DependsOnMethod;
  * Tests {@link InterpolatedGeocentricTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     GeocentricTranslationTest.class,

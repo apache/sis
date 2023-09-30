@@ -42,11 +42,8 @@ import org.apache.sis.gui.internal.LogHandler;
  * This node contains only the data; for visual appearance, see {@link ResourceCell}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see Cell
- *
- * @since 1.3
  */
 final class ResourceItem extends TreeItem<Resource> {
     /**

@@ -26,8 +26,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * a valid projection method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 public final class PseudoMercator extends AbstractMercator {

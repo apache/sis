@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link Axis}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.3
  */
 public final class AxisTest extends TestCase {
     /**

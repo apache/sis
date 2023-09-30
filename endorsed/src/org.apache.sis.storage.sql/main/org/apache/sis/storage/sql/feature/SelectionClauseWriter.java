@@ -60,8 +60,6 @@ import org.opengis.filter.BetweenComparisonOperator;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     /**

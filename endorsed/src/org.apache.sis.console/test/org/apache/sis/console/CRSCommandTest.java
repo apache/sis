@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests the {@link CRSCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.8
  */
 @DependsOn(CommandRunnerTest.class)
 public final class CRSCommandTest extends TestCase {

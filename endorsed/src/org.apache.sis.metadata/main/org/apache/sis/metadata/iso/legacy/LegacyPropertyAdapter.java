@@ -34,12 +34,9 @@ import org.apache.sis.util.resources.Messages;
  * sub-packages, usually when the deprecation is the result of upgrading from an older to a newer ISO standard.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
  *
  * @param <L>  the legacy type.
  * @param <N>  the new type.
- *
- * @since 0.5
  */
 public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**

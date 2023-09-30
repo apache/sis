@@ -52,8 +52,6 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class ResampledGridCoverage extends DerivedGridCoverage {
     /**

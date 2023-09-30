@@ -48,8 +48,6 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public abstract class TestCase {
     /**
@@ -68,8 +66,6 @@ public abstract class TestCase {
      * <p>Note: sometimes the work is actually pending future GeoAPI development. But we still
      * use that flag for those cases because the {@code "geoapi"} branches of Apache SIS follow
      * closely GeoAPI developments.</p>
-     *
-     * @since 0.4
      */
     public static final boolean PENDING_FUTURE_SIS_VERSION = false;
 

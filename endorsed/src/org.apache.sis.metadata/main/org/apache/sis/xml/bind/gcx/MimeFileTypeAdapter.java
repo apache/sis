@@ -26,8 +26,6 @@ import org.apache.sis.xml.bind.gco.GO_CharacterString;
  * JAXB adapter wrapping a {@code String} value with a {@code <gcx:MimeFileType>} element.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 public final class MimeFileTypeAdapter extends StringAdapter {
     /**

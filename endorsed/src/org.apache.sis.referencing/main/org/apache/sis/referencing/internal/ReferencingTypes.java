@@ -32,8 +32,6 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  * {@code org.apache.sis.xml.bind.TypeRegistration} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.4
  */
 public final class ReferencingTypes extends TypeRegistration implements UnaryOperator<Object> {
     /**

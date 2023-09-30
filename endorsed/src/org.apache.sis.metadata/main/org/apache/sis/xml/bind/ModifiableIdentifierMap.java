@@ -36,11 +36,8 @@ import org.apache.sis.xml.XLink;
  * This class is thread safe if the underlying identifier collection is thread safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
  *
  * @see org.apache.sis.xml.IdentifiedObject
- *
- * @since 0.7
  */
 public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
     /**

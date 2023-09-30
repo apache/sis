@@ -28,8 +28,6 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class Shutdown extends Thread {
     /**

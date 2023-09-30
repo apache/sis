@@ -28,8 +28,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * This class forwards the warnings to the listeners associated to the data store.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class WarningListener implements IIOReadWarningListener, IIOWriteWarningListener {
     /**

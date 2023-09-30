@@ -61,8 +61,6 @@ import static org.apache.sis.util.internal.Numerics.wholeDiv;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 final class RawRasterStore extends RasterStore {
     /**

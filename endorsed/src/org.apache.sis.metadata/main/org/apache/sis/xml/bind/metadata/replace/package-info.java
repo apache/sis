@@ -31,8 +31,6 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @since   1.3
- * @since   0.5
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
     @XmlNs(prefix = "mcc",  namespaceURI = Namespaces.MCC),        // Metadata Common Classes

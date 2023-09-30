@@ -31,8 +31,6 @@ import org.apache.sis.referencing.util.j2d.IntervalRectangle;
  * Consequently, the flatness factor of path iterator can be ignored.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public abstract class FlatShape extends AbstractGeometry implements Shape {
     /**

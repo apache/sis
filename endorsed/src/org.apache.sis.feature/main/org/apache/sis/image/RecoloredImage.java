@@ -44,8 +44,6 @@ import org.apache.sis.measure.NumberRange;
  * for {@link ImageProcessor}, defined here for reducing {@link ImageProcessor} size.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class RecoloredImage extends ImageAdapter {
     /**

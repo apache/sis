@@ -35,11 +35,8 @@ import org.opengis.filter.ValueReference;
  * The two main types are {@link org.opengis.feature.Feature} and {@link org.apache.sis.coverage.BandedCoverage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
  *
  * @param <R>  the type of data to style, such as {@code Feature} or {@code Coverage}.
- *
- * @since   1.5
  */
 public class StyleFactory<R> {
     /**

@@ -98,8 +98,6 @@ import org.apache.sis.style.se1.Symbology;
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class SEPortrayer {
     /**

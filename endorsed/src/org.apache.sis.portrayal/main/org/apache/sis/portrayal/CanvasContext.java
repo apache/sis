@@ -43,8 +43,6 @@ import org.apache.sis.system.Configuration;
  * coordinate operation for the viewed area and resolution.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @SuppressWarnings("serial")   // Not intended to be serialized.
 final class CanvasContext extends CoordinateOperationContext {

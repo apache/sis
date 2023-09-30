@@ -31,8 +31,6 @@ import org.apache.sis.xml.bind.FilterByVersion;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
     /**

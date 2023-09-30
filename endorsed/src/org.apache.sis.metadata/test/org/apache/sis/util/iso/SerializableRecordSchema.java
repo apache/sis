@@ -25,8 +25,6 @@ import java.io.ObjectStreamException;
  * On deserialization, the schema is replaced by the {@link #INSTANCE}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 @SuppressWarnings("serial")
 final class SerializableRecordSchema extends DefaultRecordSchema implements Serializable {

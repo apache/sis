@@ -33,11 +33,8 @@ import org.apache.sis.util.internal.StandardDateFormat;
  * We handle them in a separated class for now and may refactor later in a more general mechanism for providing extensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
- *
- * @since 1.0
  */
 final class HYCOM {
     /**

@@ -30,8 +30,6 @@ import org.apache.sis.parameter.Parameters;
  * The provider for <cite>"Geographic2D offsets"</cite> (EPSG:9619).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @XmlTransient
 public final class GeographicOffsets2D extends GeographicOffsets {

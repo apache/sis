@@ -42,8 +42,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
- * @since   0.3
  */
 final class GridInfo extends Grid {
     /**

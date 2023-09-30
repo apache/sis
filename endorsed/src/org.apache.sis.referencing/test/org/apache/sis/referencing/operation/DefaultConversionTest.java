@@ -60,8 +60,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests {@link DefaultConversion}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @DependsOn({
     DefaultTransformationTest.class     // Because similar to DefaultConversion but simpler.

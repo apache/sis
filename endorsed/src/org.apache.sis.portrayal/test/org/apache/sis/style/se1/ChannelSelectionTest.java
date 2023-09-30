@@ -26,8 +26,6 @@ import static org.junit.Assert.*;
  * Tests for {@link ChannelSelection}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class ChannelSelectionTest extends StyleTestCase {
     /**

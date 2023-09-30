@@ -52,8 +52,6 @@ import org.apache.sis.referencing.operation.provider.RegionalMercator;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
- * @since   0.6
  */
 @DependsOn(ConformalProjectionTest.class)
 public final class MercatorTest extends MapProjectionTestCase {

@@ -54,8 +54,6 @@ import static org.apache.sis.util.internal.Numerics.wholeDiv;
  * <p>This class is not thread-safe. Synchronization, if needed, shall be done by the caller.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class RawRasterReader extends HyperRectangleReader {
     /**

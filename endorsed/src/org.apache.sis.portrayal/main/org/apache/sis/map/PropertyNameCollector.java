@@ -30,8 +30,6 @@ import org.opengis.filter.ValueReference;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 final class PropertyNameCollector extends SymbologyVisitor {
     /**

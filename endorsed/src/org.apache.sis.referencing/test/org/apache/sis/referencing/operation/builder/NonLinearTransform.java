@@ -24,8 +24,6 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
  * A two-dimensional non-linear transform for {@link LinearTransformBuilderTest} purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 final class NonLinearTransform extends AbstractMathTransform2D {
     /**

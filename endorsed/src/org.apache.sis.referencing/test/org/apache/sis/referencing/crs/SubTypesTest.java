@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests the {@link SubTypes} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 @DependsOn(AbstractCRSTest.class)
 public final class SubTypesTest extends TestCase {

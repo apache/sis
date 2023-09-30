@@ -51,8 +51,6 @@ import org.opengis.feature.AttributeType;
  * Tests {@link Store}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.7
  */
 public final class StoreTest extends TestCase {
     /**

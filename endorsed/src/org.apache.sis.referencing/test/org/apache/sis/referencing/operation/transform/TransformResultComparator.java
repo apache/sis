@@ -36,8 +36,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Compares the results of two {@link MathTransform} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 final class TransformResultComparator implements MathTransform {
     /**

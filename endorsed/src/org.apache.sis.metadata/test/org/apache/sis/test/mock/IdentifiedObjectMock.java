@@ -38,8 +38,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * {@code "test"} {@linkplain #getCodeSpace() codespace}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @SuppressWarnings("serial")
 @XmlRootElement(name = "IO_IdentifiedObject")

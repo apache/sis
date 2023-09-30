@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
  * but with the rotation in the opposite direction.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 @DependsOn({
     PositionVector7ParamTest.class

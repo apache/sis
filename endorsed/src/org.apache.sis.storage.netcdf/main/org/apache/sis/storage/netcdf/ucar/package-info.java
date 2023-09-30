@@ -20,7 +20,5 @@
  * as wrappers around the UCAR netCDF library.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.3
  */
 package org.apache.sis.storage.netcdf.ucar;

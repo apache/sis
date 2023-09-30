@@ -29,8 +29,6 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@code org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 public class Resources extends IndexedResourceBundle {
     /**
@@ -40,7 +38,6 @@ public class Resources extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   1.2
      */
     public static final class Keys extends KeyConstants {
         /**

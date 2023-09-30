@@ -28,8 +28,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * For example if the given CRS is projected, this class will search in geographic CRS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class WraparoundAxesFinder {
     /**

@@ -42,8 +42,6 @@ import org.apache.sis.util.internal.StandardDateFormat;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class ReferenceKeeper {
     /**

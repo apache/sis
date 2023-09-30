@@ -33,8 +33,6 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * This is used for implementation of ESRI "Mercator Auxiliary Sphere type 3" projection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.2
  */
 final class AuthalicMercator extends AuthalicConversion {
     /**
@@ -59,8 +57,6 @@ final class AuthalicMercator extends AuthalicConversion {
     /**
      * Returns the domain of input coordinates.
      * This method is defined for consistency with {@link Mercator#getDomain(DomainDefinition)}.
-     *
-     * @since 1.3
      */
     @Override
     public Optional<Envelope> getDomain(final DomainDefinition criteria) {

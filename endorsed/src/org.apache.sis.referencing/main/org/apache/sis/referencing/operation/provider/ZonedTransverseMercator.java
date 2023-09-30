@@ -37,8 +37,6 @@ import org.apache.sis.referencing.operation.projection.ZonedGridSystem;
  * The provider for <cite>"Transverse Mercator Zoned Grid System"</cite> projection (EPSG:9824).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 @XmlTransient
 public final class ZonedTransverseMercator extends AbstractProvider {

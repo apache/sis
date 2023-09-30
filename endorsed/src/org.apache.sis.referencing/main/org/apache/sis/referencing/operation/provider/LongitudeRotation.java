@@ -44,8 +44,6 @@ import org.apache.sis.parameter.Parameters;
  * The longitude axis of source and target CRS shall be converted to degrees before this operation is applied.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 public final class LongitudeRotation extends GeographicOffsets {

@@ -50,8 +50,6 @@ import org.apache.sis.system.Modules;
  * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class SystemRegistry extends ConverterRegistry {
     /**

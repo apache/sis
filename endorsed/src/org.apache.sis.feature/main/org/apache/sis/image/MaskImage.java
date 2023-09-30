@@ -34,12 +34,9 @@ import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
  * This is the implementation of {@value ResampledImage#MASK_KEY} property value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see ResampledImage#getProperty(String)
  * @see ResampledImage#MASK_KEY
- *
- * @since 1.1
  */
 final class MaskImage extends SourceAlignedImage {
     /**

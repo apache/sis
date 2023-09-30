@@ -30,11 +30,8 @@ import org.apache.sis.util.Workaround;
  * in standard JDK. For an unknown reason, Java 8 does not provide a {@code StreamWriterDelegate}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @see javax.xml.stream.util.StreamReaderDelegate
- *
- * @since 0.8
  */
 @Workaround(library = "JDK", version = "1.8")
 public class StreamWriterDelegate implements XMLStreamWriter {

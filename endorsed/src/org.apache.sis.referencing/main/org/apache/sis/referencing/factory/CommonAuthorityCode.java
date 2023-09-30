@@ -27,8 +27,6 @@ import org.apache.sis.referencing.internal.Resources;
  * Result of parsing a code in "OGC", "CRS", "AUTO" or "AUTO2" namespace.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
- * @since   0.7
  */
 final class CommonAuthorityCode {
     /**

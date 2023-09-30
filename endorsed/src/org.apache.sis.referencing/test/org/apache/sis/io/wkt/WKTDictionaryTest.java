@@ -56,8 +56,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * Tests {@link WKTDictionary}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @DependsOn(WKTFormatTest.class)
 public final class WKTDictionaryTest extends TestCase {

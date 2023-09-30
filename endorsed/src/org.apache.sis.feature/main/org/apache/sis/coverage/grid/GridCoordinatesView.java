@@ -29,8 +29,6 @@ import org.apache.sis.util.resources.Errors;
  * This is not a general-purpose grid coordinates since it assumes a {@link GridExtent} coordinates layout.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 final class GridCoordinatesView implements GridCoordinates {
     /**

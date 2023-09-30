@@ -30,8 +30,6 @@ import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
  * Null numbers are interpreted as zero.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public enum Arithmetic {
     /**

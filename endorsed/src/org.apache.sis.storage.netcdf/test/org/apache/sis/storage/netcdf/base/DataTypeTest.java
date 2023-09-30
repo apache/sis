@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link DataType} enumeration values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 public final class DataTypeTest extends TestCase {
     /**

@@ -41,11 +41,8 @@ import org.apache.sis.util.Utilities;
  * The lower and upper values of given envelopes are inclusive.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see MathTransforms#specialize(MathTransform, Map)
- *
- * @since 1.0
  */
 class SpecializableTransform extends AbstractMathTransform implements Serializable {
     /**

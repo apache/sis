@@ -24,8 +24,6 @@ import org.junit.Test;
  * Tests for {@link Displacement}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class DisplacementTest extends StyleTestCase {
     /**

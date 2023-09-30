@@ -57,8 +57,6 @@ import org.opengis.metadata.Identifier;
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public final class RS_Identifier extends XmlAdapter<Code, Identifier> {
     /**

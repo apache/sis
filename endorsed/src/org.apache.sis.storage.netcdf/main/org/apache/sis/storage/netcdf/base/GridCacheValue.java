@@ -32,8 +32,6 @@ import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
  * {@code GridCacheValue}s are associated to {@link GridCacheKey}s in a hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 final class GridCacheValue {
 

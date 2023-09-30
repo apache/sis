@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * This is used for testing robustness to transformation failures.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 final class RandomFailureTransform extends PseudoTransform {
     /**

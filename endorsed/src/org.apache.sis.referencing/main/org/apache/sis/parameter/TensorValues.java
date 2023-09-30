@@ -54,11 +54,8 @@ import org.apache.sis.util.resources.Errors;
  * mutable {@code ParameterDescriptorGroup}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @param <E>  the type of tensor element values.
- *
- * @since 0.4
  */
 @XmlTransient
 final class TensorValues<E> extends AbstractParameterDescriptor

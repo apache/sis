@@ -46,8 +46,6 @@ import org.opengis.feature.FeatureType;
  * Subclasses need to implement {@link #dependencies()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 abstract class AggregatedFeatureSet extends AbstractFeatureSet {
     /**

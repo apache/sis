@@ -55,8 +55,6 @@ import org.apache.sis.xml.bind.Context;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     /**

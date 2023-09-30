@@ -38,8 +38,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Ross Laidlaw
- * @version 0.4
- * @since   0.3
  */
 @DependsOn(AbstractEnvelopeTest.class)
 public final class Envelope2DTest extends TestCase {
@@ -62,8 +60,6 @@ public final class Envelope2DTest extends TestCase {
 
     /**
      * Tests {@link Envelope2D#toRectangles()} on an empty envelope.
-     *
-     * @since 0.4
      */
     @Test
     public void testToRectanglesOnEmptyEnvelope() {
@@ -73,8 +69,6 @@ public final class Envelope2DTest extends TestCase {
 
     /**
      * Tests {@link Envelope2D#toRectangles()} on a simple envelope having no wraparound axis.
-     *
-     * @since 0.4
      */
     @Test
     public void testToRectanglesOnSimpleEnvelope() {
@@ -92,8 +86,6 @@ public final class Envelope2DTest extends TestCase {
     /**
      * Tests {@link Envelope2D#toRectangles()} on an envelope crossing the anti-meridian.
      * The longitude range in this test is [155 … -150].
-     *
-     * @since 0.4
      */
     @Test
     @DependsOnMethod("testToRectanglesOnSimpleEnvelope")

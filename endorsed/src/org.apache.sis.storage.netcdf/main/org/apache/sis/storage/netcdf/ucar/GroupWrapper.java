@@ -26,8 +26,6 @@ import org.apache.sis.storage.netcdf.base.Decoder;
  * Wrapper for a netCDF group.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.0
  */
 final class GroupWrapper extends Node {
     /**

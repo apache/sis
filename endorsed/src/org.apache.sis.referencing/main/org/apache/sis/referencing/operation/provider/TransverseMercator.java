@@ -37,11 +37,8 @@ import org.apache.sis.math.MathFunctions;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator.html">GeoTIFF parameters for Transverse Mercator</a>
- *
- * @since 0.6
  */
 @XmlTransient
 public final class TransverseMercator extends AbstractMercator {
@@ -168,8 +165,6 @@ public final class TransverseMercator extends AbstractMercator {
      * Computes zone numbers and central meridian.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.4
-     * @since   0.8
      */
     public enum Zoner {
         /**

@@ -26,8 +26,6 @@ import org.apache.sis.util.collection.CheckedContainer;
  * Unmodifiable lists of instants backed by a compressed vector.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 final class InstantList extends AbstractList<Instant> implements CheckedContainer<Instant> {
     /**

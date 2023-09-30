@@ -25,8 +25,6 @@ import org.apache.sis.test.DependsOn;
  * This class inherits all tests defined in {@link FeatureTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 @DependsOn({
     DefaultFeatureTypeTest.class,

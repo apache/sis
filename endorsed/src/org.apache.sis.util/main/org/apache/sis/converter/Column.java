@@ -33,8 +33,6 @@ import org.apache.sis.util.collection.DefaultTreeTable;
  * This is used mostly for debugging purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 final class Column extends TableColumn<Class<?>> implements Serializable {
     /**

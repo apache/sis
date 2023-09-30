@@ -47,8 +47,6 @@ import org.apache.sis.storage.Resource;
  *       This would be consistent with legacy GO-1 specification (even if retired, it still have worthy material).
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public abstract class Presentation {
 

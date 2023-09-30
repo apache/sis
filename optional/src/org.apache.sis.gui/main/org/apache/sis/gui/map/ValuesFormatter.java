@@ -60,8 +60,6 @@ import org.opengis.coverage.CannotEvaluateException;
  * from a background thread.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class ValuesFormatter extends ValuesUnderCursor.Formatter {
     /**

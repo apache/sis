@@ -26,8 +26,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * This is sometimes used with remote sensing data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 @XmlTransient
 public final class PseudoSinusoidal extends Sinusoidal {

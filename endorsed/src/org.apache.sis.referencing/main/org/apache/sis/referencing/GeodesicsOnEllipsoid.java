@@ -74,8 +74,6 @@ import static java.lang.Math.*;
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**

@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests the {@link VerticalDatumTypes} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.4
  */
 public final class VerticalDatumTypesTest extends TestCase {
     /**

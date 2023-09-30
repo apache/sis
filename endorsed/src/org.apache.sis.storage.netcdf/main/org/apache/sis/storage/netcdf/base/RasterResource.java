@@ -67,8 +67,6 @@ import org.apache.sis.storage.netcdf.internal.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class RasterResource extends AbstractGridCoverageResource implements StoreResource, ResourceOnFileSystem {
     /**

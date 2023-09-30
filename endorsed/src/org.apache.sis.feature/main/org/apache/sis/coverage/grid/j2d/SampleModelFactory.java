@@ -37,12 +37,9 @@ import org.apache.sis.util.resources.Errors;
  * of an existing sample model, modify them, then create a new sample model with the modified properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @see SampleModel#createCompatibleSampleModel(int, int)
  * @see SampleModel#createSubsetSampleModel(int[])
- *
- * @since 1.1
  */
 public final class SampleModelFactory {
     /**

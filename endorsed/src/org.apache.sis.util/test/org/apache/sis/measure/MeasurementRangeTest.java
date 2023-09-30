@@ -31,8 +31,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link MeasurementRange} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.8
- * @since   0.3
  */
 @DependsOn(NumberRangeTest.class)
 public final class MeasurementRangeTest extends TestCase {

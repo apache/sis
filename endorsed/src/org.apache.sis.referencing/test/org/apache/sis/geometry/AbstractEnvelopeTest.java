@@ -39,8 +39,6 @@ import static org.apache.sis.referencing.Assertions.assertDisjoint;
  * Various implementations are used for each test.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.3
  */
 @DependsOn(GeneralDirectPositionTest.class)
 public final class AbstractEnvelopeTest extends TestCase {
@@ -453,8 +451,6 @@ public final class AbstractEnvelopeTest extends TestCase {
 
     /**
      * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on an empty envelope.
-     *
-     * @since 0.4
      */
     @Test
     public void testToSimpleEnvelopesOnEmptyEnvelope() {
@@ -468,8 +464,6 @@ public final class AbstractEnvelopeTest extends TestCase {
 
     /**
      * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on a simple envelope having no wraparound axis.
-     *
-     * @since 0.4
      */
     @Test
     @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")
@@ -486,8 +480,6 @@ public final class AbstractEnvelopeTest extends TestCase {
 
     /**
      * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on a simple envelope having no wraparound axis.
-     *
-     * @since 0.4
      */
     @Test
     @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")

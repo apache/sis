@@ -37,8 +37,6 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 @DependsOn(ResampledImageTest.class)
 public final class ImageCombinerTest extends ImageTestCase {

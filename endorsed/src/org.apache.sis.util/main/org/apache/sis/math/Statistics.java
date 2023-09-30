@@ -642,8 +642,6 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * which are stored in a {@link #delta} statistics object.
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
-     * @version 0.3
-     * @since   0.3
      */
     private static final class WithDelta extends Statistics {
         /**

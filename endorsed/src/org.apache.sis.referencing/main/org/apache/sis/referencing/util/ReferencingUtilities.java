@@ -65,8 +65,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
  * <p><strong>Do not rely on this API!</strong> It may change in incompatible way in any future release.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
- * @since   0.5
  */
 public final class ReferencingUtilities extends Static {
     /**

@@ -65,8 +65,6 @@ import static org.junit.Assume.assumeTrue;
  * This class does not write anything to disk (except maybe some temporary files).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   0.7
  */
 @DependsOn(EPSGFactoryTest.class)
 public final class EPSGInstallerTest extends TestCase {
@@ -190,8 +188,6 @@ public final class EPSGInstallerTest extends TestCase {
      * See {@linkplain TestDatabase#createOnPostgreSQL here} for more information.
      *
      * @throws Exception if an error occurred while creating the database.
-     *
-     * @since 0.8
      */
     @Test
     public void testCreationOnPostgreSQL() throws Exception {

@@ -40,8 +40,6 @@ import static org.junit.Assert.*;
  * Tests {@link DefinitionVerifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 @DependsOn(org.apache.sis.referencing.CRSTest.class)
 public final class DefinitionVerifierTest extends TestCase {

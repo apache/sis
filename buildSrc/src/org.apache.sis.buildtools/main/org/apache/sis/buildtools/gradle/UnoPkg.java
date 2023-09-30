@@ -43,8 +43,6 @@ import org.gradle.api.Project;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Quentin Bialota (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class UnoPkg extends ZipWriter.JDK {
     /**

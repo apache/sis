@@ -35,8 +35,6 @@ import org.apache.sis.metadata.simple.SimpleCitation;
  * The features handled by this implementation are property-value maps.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Object> {
     /**

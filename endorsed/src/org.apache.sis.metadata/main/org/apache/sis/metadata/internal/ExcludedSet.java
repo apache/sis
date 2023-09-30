@@ -29,11 +29,8 @@ import org.apache.sis.util.resources.Errors;
  * elements because the other property is set.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
  *
  * @param <E>  the type of elements that the collection would have if it was non-empty.
- *
- * @since 0.3
  */
 public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable {
     /**

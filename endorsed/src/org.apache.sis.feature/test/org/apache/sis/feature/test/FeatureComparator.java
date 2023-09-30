@@ -49,8 +49,6 @@ import org.opengis.feature.Operation;
  * Can be used in test suite for comparing an actual feature against its expected value.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public class FeatureComparator {
     /**

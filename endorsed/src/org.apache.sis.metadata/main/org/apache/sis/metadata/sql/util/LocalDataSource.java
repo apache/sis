@@ -43,8 +43,6 @@ import org.apache.sis.util.internal.Strings;
  * It provides our {@linkplain #initialize() starting point} for initiating the system-wide connection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 public final class LocalDataSource implements DataSource, Comparable<LocalDataSource> {
     /**

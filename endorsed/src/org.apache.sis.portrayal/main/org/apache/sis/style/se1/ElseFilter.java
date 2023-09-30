@@ -24,8 +24,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * The element to marshall when no other rule matches the conditions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 @XmlType(name = "ElseFilterType")
 @XmlRootElement(name = "ElseFilter")

@@ -30,8 +30,6 @@ import org.apache.sis.util.ArgumentChecks;
  * The property calculations may be deferred, and {@code null} is a valid property value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class UserProperties extends ImageAdapter {
     /**

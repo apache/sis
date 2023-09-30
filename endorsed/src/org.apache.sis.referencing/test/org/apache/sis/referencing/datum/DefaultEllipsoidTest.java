@@ -34,8 +34,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link DefaultEllipsoid} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @DependsOn({
     org.apache.sis.referencing.util.FormulasTest.class,
@@ -61,8 +59,6 @@ public final class DefaultEllipsoidTest extends TestCase {
 
     /**
      * Tests {@link DefaultEllipsoid#getEccentricity()}.
-     *
-     * @since 0.7
      */
     @Test
     public void testGetEccentricity() {
@@ -76,8 +72,6 @@ public final class DefaultEllipsoidTest extends TestCase {
     /**
      * Tests {@link DefaultEllipsoid#semiMajorAxisDifference(Ellipsoid)}. This test uses the data provided
      * in §2.4.4.2 of IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
-     *
-     * @since 0.7
      */
     @Test
     public void testSemiMajorAxisDifference() {
@@ -89,8 +83,6 @@ public final class DefaultEllipsoidTest extends TestCase {
     /**
      * Tests {@link DefaultEllipsoid#flatteningDifference(Ellipsoid)}. This test uses the data provided
      * in §2.4.4.2 of IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
-     *
-     * @since 0.7
      */
     @Test
     public void testFlatteningDifference() {
@@ -163,8 +155,6 @@ public final class DefaultEllipsoidTest extends TestCase {
      * @throws JAXBException if an error occurred during (un)marshalling.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-333">SIS-333</a>
-     *
-     * @since 0.8
      */
     @Test
     public void testSphereXML() throws JAXBException {

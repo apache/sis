@@ -27,8 +27,6 @@ import org.apache.sis.util.CharSequences;
  * This class is for internal purpose only and may change or be removed in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 public class SQLBuilder extends Syntax {
     /**

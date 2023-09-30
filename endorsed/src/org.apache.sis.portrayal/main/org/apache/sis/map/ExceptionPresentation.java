@@ -33,8 +33,6 @@ import org.apache.sis.util.ArgumentChecks;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public class ExceptionPresentation extends Presentation {
 

@@ -62,8 +62,6 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
- * @since   0.8
  */
 final class Dispatcher implements InvocationHandler {
     /**

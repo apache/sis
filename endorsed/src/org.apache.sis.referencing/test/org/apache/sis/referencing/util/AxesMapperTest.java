@@ -30,8 +30,6 @@ import static org.junit.Assert.*;
  * Tests the {@link AxesMapper} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public final class AxesMapperTest extends TestCase {
     /**

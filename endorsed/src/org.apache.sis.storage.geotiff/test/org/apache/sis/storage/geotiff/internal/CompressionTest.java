@@ -27,8 +27,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Compression} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 public final class CompressionTest extends TestCase {
     /**

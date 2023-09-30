@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * Tests the {@link MimeTypeCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.4
  */
 @DependsOn(CommandRunnerTest.class)
 public final class MimeTypeCommandTest extends TestCase {

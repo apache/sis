@@ -35,8 +35,6 @@ import org.apache.sis.util.Disposable;
  * instances of {@link WritableRenderedImage}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 abstract class MultiSourceImage extends WritableComputedImage {
     /**

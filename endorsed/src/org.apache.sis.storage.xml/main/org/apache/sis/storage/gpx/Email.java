@@ -26,8 +26,6 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
  * at unmarshalling time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class Email extends XmlAdapter<Email, String> {
     /**

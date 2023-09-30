@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests {@link LazySet}
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.6
  */
 public final class LazySetTest extends TestCase {
     /**

@@ -34,8 +34,6 @@ import static org.junit.Assert.*;
  * Tests the {@link IterationStrategy} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public final class IterationStrategyTest extends TestCase {
     /**

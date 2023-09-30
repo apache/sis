@@ -32,8 +32,6 @@ import org.apache.sis.style.se1.Symbolizer;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class SEPresentation extends Presentation {
 

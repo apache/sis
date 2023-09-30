@@ -33,8 +33,6 @@ import java.lang.annotation.RetentionPolicy;
  * if we want to take in account default locale/timezone changes in a future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)

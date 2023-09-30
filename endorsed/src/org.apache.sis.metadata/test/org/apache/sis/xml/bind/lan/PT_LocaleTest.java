@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.4
  */
 public final class PT_LocaleTest extends TestUsingFile {
     /**

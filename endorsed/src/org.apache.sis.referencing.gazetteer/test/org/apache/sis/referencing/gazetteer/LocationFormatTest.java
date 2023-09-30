@@ -33,8 +33,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  * Tests {@link LocationFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class LocationFormatTest extends TestCase {
     /**

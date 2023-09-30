@@ -34,12 +34,9 @@ import org.apache.sis.xml.util.XmlUtilities;
  * The milliseconds are omitted if not different than zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see DateAdapter
  * @see org.apache.sis.xml.bind.gco.GO_DateTime
- *
- * @since 0.4
  */
 public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**

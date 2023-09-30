@@ -28,8 +28,6 @@ import org.apache.sis.storage.netcdf.base.Dimension;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.3
  */
 final class DimensionInfo extends Dimension {
     /**

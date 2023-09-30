@@ -38,8 +38,6 @@ import org.apache.sis.util.ArraysExt;
  *       like the index of the element modified in a list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 abstract class Observable {
     /**
@@ -115,8 +113,6 @@ abstract class Observable {
      *
      * @param  propertyName  name of the property to test.
      * @return {@code true} if the given property has at least one listener.
-     *
-     * @since 1.3
      */
     protected final boolean hasPropertyChangeListener(final String propertyName) {
         return (listeners != null) && listeners.containsKey(propertyName);

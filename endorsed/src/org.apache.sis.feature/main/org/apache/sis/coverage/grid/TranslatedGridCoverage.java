@@ -27,8 +27,6 @@ import org.opengis.coverage.CannotEvaluateException;
  * with only a translation applied on grid coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class TranslatedGridCoverage extends DerivedGridCoverage {
     /**

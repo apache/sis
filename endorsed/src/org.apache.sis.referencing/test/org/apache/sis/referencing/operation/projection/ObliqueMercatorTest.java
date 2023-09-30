@@ -41,8 +41,6 @@ import org.opengis.test.ToleranceModifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Emmanuel Giasson (Thales)
- * @version 1.4
- * @since   1.0
  */
 @DependsOn(MercatorTest.class)
 public final class ObliqueMercatorTest extends MapProjectionTestCase {

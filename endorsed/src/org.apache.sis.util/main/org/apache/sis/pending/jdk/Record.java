@@ -22,8 +22,6 @@ package org.apache.sis.pending.jdk;
  * This is used for making transition easier when SIS will be ready to upgrade to Java 17.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.4
- * @version 1.4
  */
 public abstract class Record {
     /**

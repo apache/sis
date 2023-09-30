@@ -29,11 +29,8 @@ import org.apache.sis.xml.bind.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see TextGroup
- *
- * @since 0.3
  */
 public final class LocalisedCharacterString {
     /**

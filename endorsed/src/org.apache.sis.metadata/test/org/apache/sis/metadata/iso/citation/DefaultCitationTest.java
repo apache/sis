@@ -66,8 +66,6 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 public final class DefaultCitationTest extends TestUsingFile {
     /**
@@ -90,8 +88,6 @@ public final class DefaultCitationTest extends TestUsingFile {
      * Creates a citation with an arbitrary title, presentation form and other properties.
      *
      * @return an arbitrary citation.
-     *
-     * @since 0.7
      */
     public static DefaultCitation create() {
         final DefaultCitation citation = new DefaultCitation();
@@ -233,8 +229,6 @@ public final class DefaultCitationTest extends TestUsingFile {
      * This method also tests usage of {@code gml:id} and {@code xlink:href}.
      *
      * @throws JAXBException if an error occurred during marshalling.
-     *
-     * @since 1.0
      */
     @Test
     public void testMarshalling() throws JAXBException {
@@ -246,8 +240,6 @@ public final class DefaultCitationTest extends TestUsingFile {
      * This method also tests usage of {@code gml:id} and {@code xlink:href}.
      *
      * @throws JAXBException if an error occurred during marshalling.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testMarshalling")
@@ -288,8 +280,6 @@ public final class DefaultCitationTest extends TestUsingFile {
      * This method also tests usage of {@code gml:id} and {@code xlink:href}.
      *
      * @throws JAXBException if an error occurred during unmarshalling.
-     *
-     * @since 1.0
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
@@ -301,8 +291,6 @@ public final class DefaultCitationTest extends TestUsingFile {
      * This method also tests usage of {@code gml:id} and {@code xlink:href}.
      *
      * @throws JAXBException if an error occurred during unmarshalling.
-     *
-     * @since 0.7
      */
     @Test
     @DependsOnMethod("testUnmarshalling")

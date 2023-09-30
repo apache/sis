@@ -50,8 +50,6 @@ import org.opengis.test.dataset.TestData;
  * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 @DependsOn({
     ChannelDecoderTest.class,

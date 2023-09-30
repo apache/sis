@@ -38,8 +38,6 @@ import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 final class PropertiesConverter extends SurjectiveConverter<String,String> {
     /**

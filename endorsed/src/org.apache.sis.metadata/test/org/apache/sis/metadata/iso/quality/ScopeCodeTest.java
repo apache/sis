@@ -35,11 +35,8 @@ import org.opengis.metadata.maintenance.Scope;
  * When formatting legacy XML, {@code MD_Scope} should be renamed {@code DQ_Scope}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-508">SIS-508 on issue tracker</a>
- *
- * @since 1.1
  */
 public final class ScopeCodeTest extends TestCase {
     /**

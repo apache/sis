@@ -42,8 +42,6 @@ import org.opengis.annotation.Obligation;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 final class PropertyComparator implements Comparator<Method> {
     /**

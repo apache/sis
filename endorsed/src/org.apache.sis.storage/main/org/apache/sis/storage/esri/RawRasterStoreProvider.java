@@ -40,8 +40,6 @@ import org.apache.sis.storage.base.PRJDataStore;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 @StoreMetadata(formatName    = RawRasterStoreProvider.NAME,
                fileSuffixes  = {"bil", "bip", "bsq"},

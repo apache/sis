@@ -29,8 +29,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * Base class of providers for all Lambert Conical projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 @XmlTransient
 class AbstractLambert extends MapProjection {

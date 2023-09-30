@@ -43,11 +43,8 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
- *
- * @since 1.1
  */
 abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Object>, Optimization.OnExpression<R,Object> {
     /**

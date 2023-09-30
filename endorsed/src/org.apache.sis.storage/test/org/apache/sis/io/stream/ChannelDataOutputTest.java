@@ -39,8 +39,6 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.5
  */
 public class ChannelDataOutputTest extends ChannelDataTestCase {
     /**

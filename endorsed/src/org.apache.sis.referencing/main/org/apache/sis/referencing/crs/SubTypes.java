@@ -50,8 +50,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.4
  */
 final class SubTypes implements Comparator<Object> {
     /**

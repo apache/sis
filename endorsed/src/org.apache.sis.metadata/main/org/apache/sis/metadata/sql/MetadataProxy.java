@@ -23,8 +23,6 @@ package org.apache.sis.metadata.sql;
  * in {@link MetadataSource#lookup(Class, String)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 interface MetadataProxy {
     /**

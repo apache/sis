@@ -31,12 +31,9 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see <a href="https://mathworld.wolfram.com/MollweideProjection.html">Mathworld formulas</a>
  * @see <a href="http://geotiff.maptools.org/proj_list/mollweide.html">GeoTIFF parameters for Mollweide</a>
- *
- * @since 1.0
  */
 @XmlTransient
 public final class Mollweide extends MapProjection {

@@ -55,8 +55,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.6
  */
 abstract class AbstractParser implements Parser {
     /**

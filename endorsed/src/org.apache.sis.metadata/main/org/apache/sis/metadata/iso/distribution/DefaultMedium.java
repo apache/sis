@@ -196,7 +196,6 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @return name of the medium, or {@code null}.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-389">SIS-389</a>
-     *
      */
     @Override
     @XmlElement(name = "name", namespace = LegacyNamespaces.GMD)

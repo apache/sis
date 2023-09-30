@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * Tests the {@link FrequencySortedSet} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class FrequencySortedSetTest extends TestCase {
     /**

@@ -31,8 +31,6 @@ import org.apache.sis.storage.base.Capability;
  * The provider of {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 @StoreMetadata(formatName   = StoreProvider.NAME,
                fileSuffixes = "xml",

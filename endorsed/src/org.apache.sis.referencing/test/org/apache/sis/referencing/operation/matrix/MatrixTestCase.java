@@ -53,8 +53,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * <p>This class uses <a href="http://math.nist.gov/javanumerics/jama">JAMA</a> as the reference implementation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 public abstract class MatrixTestCase extends TestCase {
     /**
@@ -453,8 +451,6 @@ public abstract class MatrixTestCase extends TestCase {
      * @param  matrix     the matrix of size 3×3 to test.
      * @param  withShear  {@code true} for including shear in the matrix to test.
      *                    This value can be set to {@code false} if the subclass want to test a simpler case.
-     *
-     * @since 0.6
      */
     final void testConvertBefore(final MatrixSIS matrix, final boolean withShear) {
         initialize(4599164481916500056L);
@@ -522,8 +518,6 @@ public abstract class MatrixTestCase extends TestCase {
      * which invoke this method.
      *
      * @param  matrix  the matrix of size 3×3 to test.
-     *
-     * @since 0.6
      */
     final void testConvertAfter(final MatrixSIS matrix) {
         initialize(6501103578268988251L);
@@ -558,8 +552,6 @@ public abstract class MatrixTestCase extends TestCase {
      * a {@code testTranslateVector()} method which invoke this method.
      *
      * @param  matrix  an initially empty matrix of size 3×3 to test.
-     *
-     * @since 1.0
      */
     final void testTranslateVector(final MatrixSIS matrix) {
         initialize(-1691066807752485433L);
@@ -598,8 +590,6 @@ public abstract class MatrixTestCase extends TestCase {
      * a {@code testMultiplyVector()} method which invoke this method.
      *
      * @param  matrix  an initially empty matrix of size 3×3 to test.
-     *
-     * @since 0.8
      */
     final void testMultiplyVector(final MatrixSIS matrix) {
         initialize(8433903323905121506L);

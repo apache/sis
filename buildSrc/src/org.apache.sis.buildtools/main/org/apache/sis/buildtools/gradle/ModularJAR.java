@@ -39,8 +39,6 @@ import org.gradle.api.tasks.bundling.Jar;
  * can apply to only one module, which is identified in this class as the "main module".
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 final class ModularJAR extends ZipWriter.JDK {
     /**

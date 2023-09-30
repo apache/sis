@@ -31,8 +31,6 @@ import static org.junit.Assert.*;
  * to revisit if we want to change convention in the future.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class ProjectDirectories {
     /**

@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link TypeMapper}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class TypeMapperTest extends TestCase {
     /**

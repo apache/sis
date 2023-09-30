@@ -48,8 +48,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * and following entries are images at finer resolutions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.2
  */
 final class MultiResolutionImage extends GridResourceWrapper implements ResourceOnFileSystem, StoreResource {
     /**

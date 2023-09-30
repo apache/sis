@@ -31,8 +31,6 @@ import org.apache.sis.referencing.util.j2d.AbstractShape;
  * An empty shape.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public final class EmptyShape extends AbstractShape implements Serializable, PathIterator {
     /**

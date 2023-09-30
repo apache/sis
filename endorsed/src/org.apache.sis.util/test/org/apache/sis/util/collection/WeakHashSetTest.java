@@ -36,8 +36,6 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * A standard {@link HashSet} object is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
- * @since   0.3
  */
 @DependsOn(org.apache.sis.util.ArraysExtTest.class)
 public final class WeakHashSetTest extends TestCase {

@@ -25,11 +25,8 @@ import javafx.beans.property.ReadOnlyObjectProperty;
  * A property for a value that never change.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
  *
  * @param  <T>  the type of value stored in the property.
- *
- * @since 1.1
  */
 public class ImmutableObjectProperty<T> extends ReadOnlyObjectProperty<T> {
     /**

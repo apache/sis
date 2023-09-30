@@ -33,11 +33,8 @@ import org.apache.sis.coverage.grid.j2d.TilePlaceholder;
  * when the image is tiled and some tiles are not writable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
  *
  * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>
- *
- * @since 1.2
  */
 public final class RenderingWorkaround implements RenderedImage {
     /**

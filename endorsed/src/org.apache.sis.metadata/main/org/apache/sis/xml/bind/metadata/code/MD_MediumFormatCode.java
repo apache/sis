@@ -29,8 +29,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class MD_MediumFormatCode extends CodeListAdapter<MD_MediumFormatCode, MediumFormat> {
     /**

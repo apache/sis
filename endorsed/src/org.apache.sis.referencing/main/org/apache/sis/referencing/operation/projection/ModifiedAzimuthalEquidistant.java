@@ -45,11 +45,8 @@ import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEqu
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Maxime Gavens (Geomatys)
- * @version 1.4
  *
  * @see AzimuthalEquidistant
- *
- * @since 1.1
  */
 public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     /**

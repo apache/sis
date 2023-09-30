@@ -48,11 +48,8 @@ import org.apache.sis.util.ArraysExt;
  * if a variable dimensions should considered as bands instead of spatiotemporal dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @see Decoder#getGridCandidates()
- *
- * @since 0.3
  */
 public abstract class Grid extends NamedElement {
     /**

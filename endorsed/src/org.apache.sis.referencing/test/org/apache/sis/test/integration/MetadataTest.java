@@ -83,11 +83,8 @@ import static org.junit.Assert.*;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
- *
- * @since 0.5
  */
 @DependsOn({
     MetadataVerticalTest.class

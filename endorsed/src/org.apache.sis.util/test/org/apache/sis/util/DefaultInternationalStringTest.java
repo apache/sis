@@ -33,8 +33,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link DefaultInternationalString} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
- * @since   0.3
  */
 public final class DefaultInternationalStringTest extends TestCase {
     /** {@value} */ static final String MESSAGE       = "This is an unlocalized message.";

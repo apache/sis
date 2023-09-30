@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  * Tests {@link ExtentSelector}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public final class ExtentSelectorTest extends TestCase {
     /**

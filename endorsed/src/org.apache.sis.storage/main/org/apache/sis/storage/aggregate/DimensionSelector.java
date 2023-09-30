@@ -25,8 +25,6 @@ import org.apache.sis.util.internal.Strings;
  * A helper class for choosing the dimension on which to perform aggregation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class DimensionSelector implements Comparable<DimensionSelector> {
     /**

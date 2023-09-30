@@ -58,8 +58,6 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.0
  */
 public final class GridExtentTest extends TestCase {
     /**

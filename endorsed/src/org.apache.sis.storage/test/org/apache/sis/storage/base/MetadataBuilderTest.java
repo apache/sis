@@ -47,8 +47,6 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
- * @since   0.8
  */
 public final class MetadataBuilderTest extends TestCase {
     /**

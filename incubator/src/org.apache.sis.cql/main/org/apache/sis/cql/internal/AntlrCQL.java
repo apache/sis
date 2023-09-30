@@ -29,8 +29,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
  * ANTLR CQL parser methods.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 public final class AntlrCQL {
 

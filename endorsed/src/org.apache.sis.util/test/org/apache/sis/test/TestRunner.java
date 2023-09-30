@@ -55,8 +55,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * @author  Stephen Connolly
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
  */
 public final class TestRunner extends BlockJUnit4ClassRunner {
     /**

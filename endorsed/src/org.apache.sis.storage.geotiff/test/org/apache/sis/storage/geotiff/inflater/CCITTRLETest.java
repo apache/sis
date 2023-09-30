@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  * Verifies the table of words for {@link CCITTRLE} implementation of TIFF Modified Huffman Compression.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class CCITTRLETest extends TestCase {
     /**

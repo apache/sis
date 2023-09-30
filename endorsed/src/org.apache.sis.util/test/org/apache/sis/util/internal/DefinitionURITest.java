@@ -28,8 +28,6 @@ import static org.junit.Assert.*;
  * Tests {@link DefinitionURI}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
  */
 public final class DefinitionURITest extends TestCase {
     /**

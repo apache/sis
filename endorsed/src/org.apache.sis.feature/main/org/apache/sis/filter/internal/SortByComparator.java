@@ -36,11 +36,8 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param  <R>  the type of resources (typically {@code Feature}) to sort.
- *
- * @since 1.0
  */
 public final class SortByComparator<R> implements SortBy<R>, Serializable {
     /**

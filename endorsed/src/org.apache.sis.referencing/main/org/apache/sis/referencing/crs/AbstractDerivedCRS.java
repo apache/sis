@@ -53,11 +53,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
- *
- * @since 0.6
  */
 @XmlType(name = "AbstractGeneralDerivedCRSType")
 @XmlRootElement(name = "AbstractGeneralDerivedCRS")

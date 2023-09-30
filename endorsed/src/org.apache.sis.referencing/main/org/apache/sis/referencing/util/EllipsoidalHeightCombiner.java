@@ -46,11 +46,8 @@ import org.apache.sis.util.ArraysExt;
  * three-dimensional CRS. This is the converse of {@link org.apache.sis.referencing.EllipsoidalHeightSeparator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @see org.apache.sis.referencing.EllipsoidalHeightSeparator
- *
- * @since 0.8
  */
 public final class EllipsoidalHeightCombiner {
     /**

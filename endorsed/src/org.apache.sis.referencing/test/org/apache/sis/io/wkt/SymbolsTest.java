@@ -31,8 +31,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link Symbols} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.4
  */
 public final class SymbolsTest extends TestCase {
     /**

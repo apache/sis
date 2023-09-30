@@ -36,11 +36,8 @@ import org.apache.sis.math.Fraction;
  * A unit of measure which is related to a base or derived unit through a conversion formula.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <Q>  the kind of quantity to be measured using this units.
- *
- * @since 0.8
  */
 final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     /**

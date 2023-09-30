@@ -42,12 +42,9 @@ import org.apache.sis.xml.bind.lan.PT_FreeText;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see StringAdapter
  * @see InternationalStringAdapter
- *
- * @since 0.3
  */
 public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequence> {
     /**

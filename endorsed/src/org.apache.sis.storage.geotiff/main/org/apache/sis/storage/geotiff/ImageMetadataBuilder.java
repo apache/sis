@@ -41,8 +41,6 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  * discard them (which save a little bit of space) when no longer needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 final class ImageMetadataBuilder extends MetadataBuilder {
     /**

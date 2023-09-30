@@ -59,8 +59,6 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.7
  */
 @DependsOn({
     CoordinateOperationRegistryTest.class,
@@ -345,8 +343,6 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
      *
      * @see CoordinateOperationFinderTest#testPositionVectorTransformation()
      * @see <a href="https://issues.apache.org/jira/browse/SIS-364">SIS-364</a>
-     *
-     * @since 0.8
      */
     @Test
     public void testPositionVectorTransformation() throws ParseException, FactoryException, TransformException {

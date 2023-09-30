@@ -41,8 +41,6 @@ import org.apache.sis.util.internal.Strings;
  * are grouped by "grid to CRS" transform in the {@link GroupByTransform#members} list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.3
  */
 final class GridSlice {
     /**

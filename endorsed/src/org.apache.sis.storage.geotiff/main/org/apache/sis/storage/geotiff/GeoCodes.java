@@ -23,8 +23,6 @@ package org.apache.sis.storage.geotiff;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
 final class GeoCodes {
     /**

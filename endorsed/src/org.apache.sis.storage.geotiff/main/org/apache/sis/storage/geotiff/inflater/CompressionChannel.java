@@ -34,8 +34,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * <p>The {@link #close()} method shall be invoked when this channel is no longer used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 abstract class CompressionChannel extends PixelChannel {
     /**

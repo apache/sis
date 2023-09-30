@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
  * Tests {@link WraparoundApplicator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class WraparoundApplicatorTest extends TestCase {
     /**

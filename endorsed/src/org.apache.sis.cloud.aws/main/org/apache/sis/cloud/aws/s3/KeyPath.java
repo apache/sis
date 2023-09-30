@@ -48,8 +48,6 @@ import org.apache.sis.cloud.aws.internal.Resources;
  * The interpretation of {@link ClientFileSystem#separator} as a path separator is done by this class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.2
  */
 final class KeyPath implements Path {
     /**

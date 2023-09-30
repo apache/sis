@@ -25,8 +25,6 @@ import org.apache.sis.storage.shapefile.internal.AutoChecker;
 /**
  * Base class for each JDBC class.
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
     /**

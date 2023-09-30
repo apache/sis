@@ -21,8 +21,6 @@ package org.apache.sis.buildtools.book;
  * Thrown when an error is found in the content of the HTML files used for building the developer guide.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @SuppressWarnings("serial")
 public class BookException extends Exception {

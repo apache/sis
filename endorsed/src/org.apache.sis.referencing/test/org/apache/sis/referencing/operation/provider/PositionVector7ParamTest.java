@@ -39,8 +39,6 @@ import static org.junit.Assert.*;
  * Tests {@link PositionVector7Param} and {@link PositionVector7Param3D}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 @DependsOn({
     GeocentricTranslationTest.class

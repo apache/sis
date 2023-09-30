@@ -32,8 +32,6 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@code org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   0.8
  */
 public class Resources extends IndexedResourceBundle {
     /**
@@ -43,7 +41,6 @@ public class Resources extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   1.1
      */
     public static final class Keys extends KeyConstants {
         /**
@@ -561,8 +558,6 @@ public class Resources extends IndexedResourceBundle {
      * @param  properties  the map of properties, or {@code null} if none.
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
-     *
-     * @since 0.4
      */
     public static Resources forProperties(final Map<?,?> properties) throws MissingResourceException {
         return forLocale(getLocale(properties));

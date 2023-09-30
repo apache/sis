@@ -88,8 +88,6 @@ import org.opengis.feature.AttributeType;
  * See package javadoc for more information on the syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.7
  */
 final class Store extends URIDataStore implements FeatureSet {
     /**

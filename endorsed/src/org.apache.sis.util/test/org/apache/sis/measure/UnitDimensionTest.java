@@ -37,8 +37,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link UnitDimension} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  */
 public final class UnitDimensionTest extends TestCase {
     /**

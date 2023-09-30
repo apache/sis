@@ -35,8 +35,6 @@ import org.opengis.filter.Filter;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimization.OnFilter<Feature> {
     /**

@@ -59,8 +59,6 @@ import org.junit.runner.Description;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.6
  */
 public final class LoggingWatcher extends TestWatcher implements Filter {
     /**

@@ -36,8 +36,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * needs to be recomputed every time that the visible area in the {@link GridView} changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class GridError extends VBox {
     /**

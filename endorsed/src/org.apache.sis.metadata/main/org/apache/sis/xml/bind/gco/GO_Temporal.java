@@ -50,12 +50,9 @@ import org.apache.sis.xml.util.XmlUtilities;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @see org.apache.sis.xml.bind.gml.DateAdapter
  * @see org.apache.sis.xml.bind.gml.UniversalTimeAdapter
- *
- * @since 1.3
  */
 @XmlType(name = "Date_PropertyType")
 public class GO_Temporal extends XmlAdapter<GO_Temporal, Temporal> {

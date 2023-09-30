@@ -39,8 +39,6 @@ import org.apache.sis.storage.base.StoreUtilities;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class InputStreamArrayGetter extends OutputStream {
     /**

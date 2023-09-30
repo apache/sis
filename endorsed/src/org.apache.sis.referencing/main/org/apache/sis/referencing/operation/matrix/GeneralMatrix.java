@@ -32,11 +32,8 @@ import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
  * extended precision when needed.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
  *
  * @see Matrices#createDiagonal(int, int)
- *
- * @since 0.4
  */
 class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
@@ -296,8 +293,6 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      *
      * @param  matrix  the matrix to copy.
      * @throws MismatchedMatrixSizeException if the given matrix has a different size than this matrix.
-     *
-     * @since 0.7
      */
     @Override
     public final void setMatrix(final Matrix matrix) throws MismatchedMatrixSizeException {

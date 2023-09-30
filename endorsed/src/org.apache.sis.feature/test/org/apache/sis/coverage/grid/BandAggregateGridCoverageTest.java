@@ -35,8 +35,6 @@ import static org.junit.Assert.*;
  * Tests {@link BandAggregateGridCoverage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class BandAggregateGridCoverageTest extends TestCase {
     /**

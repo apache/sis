@@ -37,8 +37,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * but those methods just delegate to {@link ConventionalUnit#create(AbstractUnit, UnitConverter)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.8
  */
 @DependsOn({SystemUnitTest.class, LinearConverterTest.class, PrefixesTest.class})
 public final class ConventionalUnitTest extends TestCase {

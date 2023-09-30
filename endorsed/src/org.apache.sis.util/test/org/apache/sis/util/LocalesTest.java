@@ -32,8 +32,6 @@ import static org.junit.Assert.*;
  * Tests the {@link Locales} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
  */
 @DependsOn(ArraysExtTest.class)
 public final class LocalesTest extends TestCase {

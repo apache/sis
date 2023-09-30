@@ -27,8 +27,6 @@ import org.apache.sis.util.internal.AbstractMap;
  * Only keys in this map are useful; values are meaningless.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
  */
 final class FilteredCodes extends AbstractMap<String, Boolean> {
     /**

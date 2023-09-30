@@ -38,8 +38,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * A container for a list of slices grouped by their "grid to CRS" transform, ignoring integer translations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
  */
 final class GroupByTransform extends Group<GridSlice> {
     /**

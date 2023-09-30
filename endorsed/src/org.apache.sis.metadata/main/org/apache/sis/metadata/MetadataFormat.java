@@ -28,8 +28,6 @@ import org.apache.sis.io.TableAppender;
  * Default format for {@link AbstractMetadata} objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})       // Not intended to be serialized.
 final class MetadataFormat extends TreeTableFormat {

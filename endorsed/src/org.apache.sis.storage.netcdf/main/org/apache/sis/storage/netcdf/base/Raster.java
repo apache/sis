@@ -40,8 +40,6 @@ import org.apache.sis.coverage.grid.BufferedGridCoverage;
  * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
- * @since   1.0
  */
 final class Raster extends BufferedGridCoverage {
     /**

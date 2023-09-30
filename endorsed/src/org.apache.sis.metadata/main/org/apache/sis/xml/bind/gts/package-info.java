@@ -21,8 +21,6 @@
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- * @since   0.3
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = LegacyNamespaces.GTS, xmlns = {
     @XmlNs(prefix = "gts", namespaceURI = LegacyNamespaces.GTS),

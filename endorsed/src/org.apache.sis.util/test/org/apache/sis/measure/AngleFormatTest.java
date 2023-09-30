@@ -36,8 +36,6 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests parsing and formatting done by the {@link AngleFormat} class.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.1
- * @since   0.3
  */
 @DependsOn({
   FormattedCharacterIteratorTest.class,
@@ -232,8 +230,6 @@ public final class AngleFormatTest extends TestCase {
 
     /**
      * Tests formatting the same value with different rounding modes.
-     *
-     * @since 0.8
      */
     @Test
     @DependsOnMethod("testDegreeMinutesSeconds")

@@ -36,8 +36,6 @@ import org.apache.sis.util.ArraysExt;
  * in different packages without making toolbar API public.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 public abstract class ToolbarButton implements EventHandler<ActionEvent> {
     /**

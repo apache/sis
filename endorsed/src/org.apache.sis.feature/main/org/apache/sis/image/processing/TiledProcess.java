@@ -55,11 +55,8 @@ import org.apache.sis.image.PixelIterator;
  * Consequently, tile size will be determined by other considerations such as the number of processors.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
  *
  * @param  <R>  the type of value computed as a result of this process.
- *
- * @since 1.1
  */
 public abstract class TiledProcess<R> {
     /**

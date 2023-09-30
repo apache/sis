@@ -34,8 +34,6 @@ import org.apache.sis.util.resources.Errors;
  * Computes a linear approximation of a {@link MathTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 final class Linearizer {
     /**

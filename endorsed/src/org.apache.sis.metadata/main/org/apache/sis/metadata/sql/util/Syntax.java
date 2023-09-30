@@ -26,8 +26,6 @@ import java.sql.SQLException;
  * It can be cached if many {@link SQLBuilder} instances are going to be created.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public class Syntax {
     /**

@@ -61,11 +61,8 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
  *
  * @see <a href="https://en.wikipedia.org/wiki/Compound_key">Compound key on Wikipedia</a>
- *
- * @since 0.7
  */
 final class StringJoinOperation extends AbstractOperation {
     /**

@@ -37,8 +37,6 @@ import org.opengis.feature.AttributeType;
  * This class is <strong>not</strong> thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
 public class MovingFeatures {
     /**

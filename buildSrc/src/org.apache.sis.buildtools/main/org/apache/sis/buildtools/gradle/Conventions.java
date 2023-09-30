@@ -28,8 +28,6 @@ import org.gradle.api.Project;
  * An helper class working on hard-coded file and directory names.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.4
  */
 abstract class Conventions {
     /**

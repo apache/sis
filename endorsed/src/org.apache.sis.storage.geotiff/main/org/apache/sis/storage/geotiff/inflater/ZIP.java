@@ -30,8 +30,6 @@ import org.apache.sis.io.stream.ChannelDataInput;
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 final class ZIP extends CompressionChannel {
     /**

@@ -39,8 +39,6 @@ import static org.junit.Assert.assertTrue;
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   1.1
  */
 public final class SatelliteTrackingTest extends MapProjectionTestCase {
     /**

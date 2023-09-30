@@ -59,11 +59,8 @@ import org.opengis.filter.BinarySpatialOperator;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
  *
  * @param  <G> root class of geometry implementation.
- *
- * @since 1.1
  */
 public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     /**

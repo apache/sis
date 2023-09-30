@@ -43,8 +43,6 @@ import org.apache.sis.system.Semaphores;
  * In such case, we must give a reference to an object able to provide those parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
- * @since   0.6
  */
 @SuppressWarnings("CloneableImplementsClone")
 public final class ParameterizedAffine extends AffineTransform2D {

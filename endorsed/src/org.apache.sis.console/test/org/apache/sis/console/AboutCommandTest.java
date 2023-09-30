@@ -32,8 +32,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link AboutCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
- * @since   0.3
  */
 @DependsOn(CommandRunnerTest.class)
 public final class AboutCommandTest extends TestCase {

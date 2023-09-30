@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   0.3
  */
 public final class IOUtilitiesTest extends TestCase {
     /**

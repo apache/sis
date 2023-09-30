@@ -28,8 +28,6 @@ import org.apache.sis.util.Classes;
  * Object order is not significant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
  */
 final class ObjectPair {
     /**

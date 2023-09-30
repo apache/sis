@@ -38,8 +38,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * Tests the {@link DefaultRecord} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 @DependsOn(DefaultRecordSchemaTest.class)
 public final class DefaultRecordTest extends TestCase {

@@ -27,12 +27,9 @@ import org.apache.sis.util.resources.Errors;
  * for a map entry.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
  *
  * @param <K>  the type of keys maintained by the map.
  * @param <V>  the type of mapped values.
- *
- * @since 0.5
  */
 public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {
     /**

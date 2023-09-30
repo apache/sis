@@ -29,8 +29,6 @@ import org.opengis.metadata.citation.Party;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.5
  */
 public final class CI_Party extends PropertyType<CI_Party, Party> {
     /**

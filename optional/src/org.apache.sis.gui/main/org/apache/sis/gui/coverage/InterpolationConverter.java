@@ -28,8 +28,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * Gives a localized {@link String} instance for a given {@link Interpolation} and conversely.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.1
  */
 final class InterpolationConverter extends StringConverter<Interpolation> {
     /**

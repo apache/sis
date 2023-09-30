@@ -41,8 +41,6 @@ import org.gradle.api.tasks.testing.Test;
  *
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 public final class BuildHelper implements Plugin<Project> {
     /**

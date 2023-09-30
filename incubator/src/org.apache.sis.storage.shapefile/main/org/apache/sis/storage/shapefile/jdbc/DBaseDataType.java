@@ -21,11 +21,8 @@ package org.apache.sis.storage.shapefile.jdbc;
  * Provides a simple DataType class.
  *
  * @author  Travis L. Pinney
- * @version 0.5
  *
  * @see <a href="http://www.clicketyclick.dk/databases/xbase/format/data_types.html">Xbase Data Types</a>
- *
- * @since 0.5
  */
 public enum DBaseDataType {
     /** Character (less than 254 characters). */

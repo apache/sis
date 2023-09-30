@@ -28,8 +28,6 @@ import org.opengis.temporal.PeriodDuration;
  * GeoAPI temporal interfaces are expected to change a lot in a future revision.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 final class DefaultPeriodDuration implements PeriodDuration {
     /** Components of this period duration. */

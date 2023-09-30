@@ -26,8 +26,6 @@ import static org.apache.sis.util.internal.Constants.EPSG;
  * JAXB adapter for (un)marshalling of GeoAPI code list.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
- * @since   0.4
  */
 public final class CS_AxisDirection extends CodeListAdapter<AxisDirection> {
     /**
