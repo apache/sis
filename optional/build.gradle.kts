@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 group = "org.apache.sis"
-version = "1.4-SNAPSHOT"
+version = "1.4"
 
 val pathToFX = System.getenv("PATH_TO_FX")
 if (pathToFX == null) {

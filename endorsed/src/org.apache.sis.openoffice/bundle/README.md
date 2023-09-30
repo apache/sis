@@ -83,7 +83,7 @@ Launch:
 
 ```
 cd target
-unopkg add apache-sis-1.4-SNAPSHOT.oxt --log-file log.txt
+unopkg add apache-sis-1.4.oxt --log-file log.txt
 scalc -env:RTL_LOGFILE=log.txt
 ```
 
