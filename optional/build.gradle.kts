@@ -60,7 +60,12 @@ dependencies {
     api           (files("${mainDepPath}/org.apache.sis.feature"))
     api           (files("${mainDepPath}/org.apache.sis.storage"))
     implementation(files("${mainDepPath}/org.apache.sis.storage.xml"))
+    runtimeOnly   (files("${mainDepPath}/org.apache.sis.storage.netcdf"))
+    runtimeOnly   (files("${mainDepPath}/org.apache.sis.storage.geotiff"))
+    runtimeOnly   (files("${mainDepPath}/org.apache.sis.storage.earthobservation"))
     api           (files("${mainDepPath}/org.apache.sis.portrayal"))
+    runtimeOnly   (drivers.derby.core)
+    runtimeOnly   (drivers.derby.tools)
 
     // Test dependencies
     testImplementation(tests.geoapi)
