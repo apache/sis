@@ -220,8 +220,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * because we may get both on unmarshalling.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}
-     * and {@link #setDomainOfValidity(Extent)}.</p>
+     * This field is modified only at unmarshalling time by {@link #setDomainScope(InternationalString)}
+     * and {@link #setDomainExtent(Extent)}.</p>
      *
      * @see #getDomains()
      */

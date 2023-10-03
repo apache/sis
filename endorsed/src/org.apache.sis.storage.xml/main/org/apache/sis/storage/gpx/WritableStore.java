@@ -89,7 +89,6 @@ public final class WritableStore extends Store implements WritableFeatureSet {
      * Removes all feature instances from this {@code FeatureSet} which matches the given predicate.
      *
      * @param  filter  a predicate which returns {@code true} for feature instances to be removed.
-     * @return {@code true} if any elements were removed.
      * @throws DataStoreException if the feature stream cannot be obtained or updated.
      */
     @Override

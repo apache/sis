@@ -1003,6 +1003,8 @@ public class StorageConnector implements Serializable {
      * absent file will rather throw {@link java.nio.file.NoSuchFileException} or {@link java.io.FileNotFoundException}.
      * So this method is useful only for {@link DataStore} having write capabilities.</p>
      *
+     * @return  whether returning the storage would have required the creation of a new file.
+     *
      * @since 1.4
      */
     public boolean wasProbingAbsentFile() {
