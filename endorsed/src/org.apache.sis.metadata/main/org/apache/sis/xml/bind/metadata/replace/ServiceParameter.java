@@ -180,7 +180,7 @@ public final class ServiceParameter extends Parameter {
      *   <li>Otherwise this method searches for the first {@linkplain ParameterDescriptor#getAlias() alias}
      *       which is an instance of {@code MemberName}. If found, that alias is returned.</li>
      *   <li>If no alias is found, then this method tries to build a member name from the primary name and the
-     *       {@linkplain ParameterDescriptor#getValueType() value type} (if available) or the
+     *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValueType() value type} (if available) or the
      *       {@linkplain ParameterDescriptor#getValueClass() value class}.</li>
      * </ul>
      *

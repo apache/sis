@@ -84,7 +84,7 @@ public final class QualityParameter extends Parameter {
 
     /**
      * Definition of the data quality parameter.
-     * Stored in {@link Identifier#getDescription()}.
+     * Stored in {@link ReferenceIdentifier#getDescription()}.
      *
      * @see #getName()
      */

@@ -1057,7 +1057,7 @@ public class MetadataBuilder {
 
     /**
      * Adds information about the scope of the resource.
-     * The scope is typically (but not restricted to) {@link ScopeCode#COVERAGE},
+     * The scope is typically (but not restricted to) {@code ScopeCode.COVERAGE},
      * {@link ScopeCode#FEATURE} or the more generic {@link ScopeCode#DATASET}.
      * Storage locations are:
      *

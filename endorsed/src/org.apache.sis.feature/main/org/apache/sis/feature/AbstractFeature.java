@@ -54,8 +54,8 @@ import org.apache.sis.feature.internal.Resources;
  * </ul>
  *
  * <h2>Operations</h2>
- * Properties that are instances of {@link Operation} are usually not stored in {@code Feature} instances.
- * Instead, the {@link Operation#apply Operation.apply(…)} method is invoked every times that the property
+ * Properties that are instances of {@code Operation} are usually not stored in {@code Feature} instances.
+ * Instead, the {@link AbstractOperation#apply Operation.apply(…)} method is invoked every times that the property
  * value is requested. {@code AbstractFeature} does not cache operation results.
  * Those results are usually read-only, but may be writable under the conditions documented in
  * {@link #setOperationValue(String, Object)}.

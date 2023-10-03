@@ -73,9 +73,9 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
 
     /**
      * Provides the expected type of values produced by this expression when a feature of the given
-     * type is evaluated. The resulting type shall describe a "static" property, i.e. it can be an
-     * {@link AttributeType} or a {@link org.opengis.feature.FeatureAssociationRole}
-     * but not an {@link org.opengis.feature.Operation}.
+     * type is evaluated. The resulting type shall describe a "static" property, i.e. it can be a
+     * {@link org.apache.sis.feature.DefaultAttributeType} or a {@link org.apache.sis.feature.DefaultAssociationRole}
+     * but not an {@link org.apache.sis.feature.AbstractOperation}.
      *
      * <p>If this method returns an instance of {@link AttributeTypeBuilder}, then its parameterized
      * type should be the same {@code <V>} than this {@code FeatureExpression}.</p>

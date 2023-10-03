@@ -152,7 +152,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
     /**
      * Invoked by {@link PropertyFormat} for formatting a value which has not been recognized as one of the types
      * to be handled in a special way. Some of the types handled in a special way are {@link InternationalString},
-     * {@link ControlledVocabulary}, {@link Enum}, {@link Type}, {@link Locale}, {@link TimeZone}, {@link Charset},
+     * {@link CodeList}, {@link Enum}, {@link Type}, {@link Locale}, {@link TimeZone}, {@link Charset},
      * {@link Currency}, {@link Record}, {@link Iterable} and arrays. Other types should be handled by this method.
      * In particular, {@link Number}, {@link java.util.Date} and {@link org.apache.sis.measure.Angle}
      * are <strong>not</strong> handled by default by this {@link PropertyFormat} class and should be handled here.

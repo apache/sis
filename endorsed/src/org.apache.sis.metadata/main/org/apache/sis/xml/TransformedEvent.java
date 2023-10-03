@@ -126,7 +126,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
     /**
      * Wrapper over a namespace emitted during the reading or writing of an XML document.
      * This wrapper is used for changing the namespace URI. The wrapped {@link #event}
-     * should be a {@link Namespace}, but this class accepts also the {@link Attribute}
+     * should be a {@link Namespace}, but this class accepts also the {@code Attribute}
      * super-type for allowing the {@link Type} attribute to create synthetic namespaces.
      */
     static final class NS extends TransformedEvent<Attribute> implements Namespace {

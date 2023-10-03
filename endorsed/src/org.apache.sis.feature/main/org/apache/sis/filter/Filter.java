@@ -32,6 +32,8 @@ import java.util.function.Predicate;
  * instead of {@code org.apache.sis.filter}.
  * </div>
  *
+ * @param  <R>  the type of resources (e.g. {@link org.apache.sis.feature.AbstractFeature}) to filter.
+ *
  * @since 1.1
  */
 public interface Filter<R> extends Predicate<R> {

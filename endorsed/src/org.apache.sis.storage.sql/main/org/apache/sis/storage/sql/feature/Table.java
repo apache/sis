@@ -46,7 +46,7 @@ import org.apache.sis.feature.DefaultAssociationRole;
 /**
  * Description of a table in the database, including columns, primary keys and foreigner keys.
  * This class contains a {@code FeatureType} inferred from the table structure.
- * The {@code FeatureType} contains an {@link AttributeType} for each table column,
+ * The {@code FeatureType} contains an {@code AttributeType} for each table column,
  * except foreigner keys which are represented by {@code FeatureAssociationRole}s.
  *
  * <h2>Multi-threading</h2>

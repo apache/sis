@@ -434,8 +434,8 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     /**
      * Whether a property evaluated by a query is computed on the fly or stored.
      * By default, an expression is evaluated only once for each feature instance,
-     * then the result is stored as a feature {@link Attribute} value.
-     * But the same expression can also be wrapped in a feature {@link Operation}
+     * then the result is stored as a feature {@link DefaultAttribute} value.
+     * But the same expression can also be wrapped in a feature {@link AbstractOperation}
      * and evaluated every times that the value is requested.
      *
      * <h2>Analogy with relational databases</h2>
@@ -452,7 +452,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         /**
          * The expression is evaluated exactly once when a feature instance is created,
          * and the result is stored as a feature attribute.
-         * The feature property type will be {@link Attribute} and its value will be modifiable.
+         * The feature property type will be {@link DefaultAttribute} and its value will be modifiable.
          * This is the default projection type.
          *
          * <h4>Feature instances in expression evaluation</h4>
@@ -483,7 +483,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
 
         /**
          * The expression is evaluated every times that the property value is requested.
-         * The feature property type will be {@link Operation}.
+         * The feature property type will be {@link AbstractOperation}.
          * This projection type may be preferable to {@link #STORED} in the following circumstances:
          *
          * <ul>
@@ -546,8 +546,8 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
 
         /**
          * Whether the expression result should be stored or evaluated every times that it is requested.
-         * A stored value will exist as a feature {@link Attribute}, while a virtual value will exist as
-         * a feature {@link Operation}. The latter are commonly called "computed fields" and are equivalent
+         * A stored value will exist as a feature {@link DefaultAttribute}, while a virtual value will exist as
+         * a feature {@link AbstractOperation}. The latter are commonly called "computed fields" and are equivalent
          * to SQL {@code GENERATED ALWAYS} keyword for columns.
          *
          * @since 1.4
@@ -592,7 +592,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          *
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
-         * @param type        whether to create a feature {@link Attribute} or a feature {@link Operation}.
+         * @param type        whether to create a feature {@link DefaultAttribute} or a feature {@link AbstractOperation}.
          *
          * @since 1.4
          */
