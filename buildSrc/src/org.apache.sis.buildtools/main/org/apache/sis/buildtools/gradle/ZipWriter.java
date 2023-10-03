@@ -19,6 +19,7 @@ package org.apache.sis.buildtools.gradle;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -218,9 +219,13 @@ abstract class ZipWriter extends Conventions {
      * @throws IOException if an error occurred while reading the source or writing the ZIP file.
      */
     protected final void writeDirectory(final File source, final FileFilter filter, final String target) throws IOException {
+        final File[] files = listIgnoreHidden(source);
+        if (files == null) {
+            throw new FileNotFoundException("Directory does not exist: " + source);
+        }
         path.setLength(0);
         path.append(target);
-        for (final File file : listIgnoreHidden(source)) {
+        for (final File file : files) {
             if (filter == null || filter.accept(file)) {
                 appendRecursively(file);
             }

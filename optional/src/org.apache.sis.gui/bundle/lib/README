@@ -1,4 +1,5 @@
 This directory contains Apache SIS files together with dependencies.
+Some optional dependencies need to be added by users if desired.
 
   - Derby database
   - JAXB API

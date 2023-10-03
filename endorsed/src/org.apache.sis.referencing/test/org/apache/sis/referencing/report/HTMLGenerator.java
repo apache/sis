@@ -32,7 +32,7 @@ import org.apache.sis.util.internal.Constants;
 
 
 /**
- * Base class of all classes used to generate HTML pages to be published on
+ * Base class of some classes used to generate HTML pages to be published on
  * the <a href="https://sis.apache.org/">https://sis.apache.org/</a> web site.
  *
  * <p>This class creates files in the current default directory. It is user's responsibility

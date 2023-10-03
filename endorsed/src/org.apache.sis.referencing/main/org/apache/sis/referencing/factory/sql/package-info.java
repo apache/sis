@@ -35,7 +35,7 @@
  *       a JDBC connection for the {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"} URL.</li>
  *   <li>If the {@code "derby.system.home"} {@linkplain java.lang.System#getProperty(String) property} is defined,
  *       a JDBC connection for the {@code "jdbc:derby:SpatialMetadata"} URL.</li>
- *   <li>If the {@code org.apache.sis.non-free:sis-embedded-data} module is present on the module path,
+ *   <li>If the {@code org.apache.sis.referencing.database} module is present on the module path,
  *       a read-only connection to the database in the JAR file.</li>
  * </ol>
  *

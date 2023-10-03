@@ -64,6 +64,8 @@ dependencies {
     compileOnly(libs.ucar)
     compileOnly(libs.aws.s3)
     compileOnly(drivers.postgres)
+    runtimeOnly(drivers.derby.core)
+    runtimeOnly(drivers.derby.tools)
 
     // Test dependencies
     testImplementation(tests.junit4)

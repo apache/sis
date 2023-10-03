@@ -21,6 +21,7 @@ import java.util.logging.LogRecord;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.net.URI;
 import java.nio.file.Path;
@@ -235,7 +236,7 @@ abstract class DatumShiftGridLoader {
                 Logging.completeAndLog(AbstractProvider.LOGGER, DatumShiftGridLoader.class, "readGrid", record);
             }
         }
-        final boolean notFound = (cause instanceof NoSuchFileException);
+        final boolean notFound = (cause instanceof NoSuchFileException) || (cause instanceof FileNotFoundException);
         final String message = Resources.format(notFound ? Resources.Keys.FileNotFound_2
                                                          : Resources.Keys.FileNotReadable_2, format, file);
         if (notFound) {
