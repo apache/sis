@@ -27,7 +27,10 @@ import org.opengis.util.FactoryException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
- * @since   0.7
+ *
+ * @see MissingFactoryResourceException
+ *
+ * @since 0.7
  */
 public class FactoryDataException extends FactoryException {
     /**

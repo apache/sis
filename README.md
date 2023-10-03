@@ -48,6 +48,15 @@ For publishing to the local `~/.m2` repository
     gradle publishToMavenLocal
 
 
+### Build the graphical application
+
+If the [optional modules](optional/README.md) prerequisites are met,
+a ZIP file containing a subset of Apache SIS modules and dependencies
+is automatically built in the `optional/build/bundle/` sub-directory.
+That ZIP file can be unzipped in any directory and the application is
+launched by running the `./bin/sisfx` script.
+
+
 ## Getting Started
 
 Information for running a [command-line tool](https://sis.apache.org/command-line.html)

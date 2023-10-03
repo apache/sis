@@ -360,9 +360,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * </ul>
      *
      * <h4>Legal constraint</h4>
-     * The EPSG dataset cannot be distributed with Apache SIS at this time for licensing reasons.
+     * The EPSG dataset cannot be distributed with Apache SIS for licensing reasons.
      * Users need to either install the dataset manually (for example with the help of this method),
-     * or add on the module path to a separated bundle like {@code org.apache.sis:non-free:sis-epsg.jar}.
+     * or add on the module path a separated bundle such as the {@code org.apache.sis.referencing.epsg} module.
      * See <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> for more information.
      *
      * @param  connection  connection to the database where to create the EPSG schema.

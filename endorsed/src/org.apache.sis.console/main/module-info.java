@@ -23,14 +23,16 @@
  * @since   0.3
  */
 module org.apache.sis.console {
-    requires java.sql;
-    requires java.rmi;
-    requires java.management;
-    requires jakarta.xml.bind;
-
-    requires transitive org.apache.sis.util;
-    requires org.apache.sis.storage;
-    requires org.apache.sis.storage.xml;
+    requires            java.sql;
+    requires            java.rmi;
+    requires            java.management;
+    requires            jakarta.xml.bind;
+    requires transitive org.apache.sis.util;            // Transitive because of `ResourcesDownloader`.
+    requires            org.apache.sis.metadata;
+    requires            org.apache.sis.referencing;
+    requires            org.apache.sis.feature;
+    requires            org.apache.sis.storage;
+    requires            org.apache.sis.storage.xml;     // Because of GPX in `OutputFormat`.
 
     provides org.apache.sis.setup.InstallationResources
         with org.apache.sis.console.ResourcesDownloader;

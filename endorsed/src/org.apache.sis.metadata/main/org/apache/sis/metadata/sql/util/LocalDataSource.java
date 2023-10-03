@@ -304,7 +304,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
      * While this method is primarily used for Derby shutdown, the error code tested may be applicable to other systems.
      *
      * <h4>Dependency note</h4>
-     * This method is public for the needs of {@code non-free:sis-embedded-data} module.
+     * This method is public for the needs of {@code org.apache.sis.referencing.database} module.
      *
      * @param  e  the exception thrown by Derby.
      * @return {@code true} if the exception indicates a successful shutdown.

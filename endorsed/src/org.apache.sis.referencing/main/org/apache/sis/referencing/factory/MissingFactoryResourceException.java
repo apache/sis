@@ -35,6 +35,7 @@ import org.opengis.util.FactoryException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  *
+ * @see FactoryDataException
  * @see ConcurrentAuthorityFactory#newDataAccess()
  *
  * @since 0.7

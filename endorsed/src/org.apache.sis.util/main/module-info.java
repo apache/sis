@@ -34,8 +34,8 @@
  * @since   0.3
  */
 module org.apache.sis.util {
-    requires java.sql;
     requires java.management;
+    requires transitive java.sql;
     requires transitive java.logging;
     requires transitive java.measure;
     requires transitive org.opengis.geoapi;

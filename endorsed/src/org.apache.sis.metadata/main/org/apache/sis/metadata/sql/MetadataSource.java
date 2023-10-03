@@ -446,7 +446,7 @@ public class MetadataSource implements AutoCloseable {
      *   <li>The schema name must be {@code "metadata"}, as this is the name used unquoted in SQL scripts.</li>
      * </ul>
      *
-     * Maintenance note: this method is invoked by reflection in {@code non-free:sis-embedded-data} module.
+     * Maintenance note: this method is invoked by reflection in the {@code org.apache.sis.referencing.database} module.
      * If we make this method public in a future Apache SIS version, then we can remove the reflection code.
      *
      * @throws SQLException if an error occurred while inserting the metadata.

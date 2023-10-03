@@ -25,20 +25,24 @@
  * @since   1.1
  */
 module org.apache.sis.gui {
-    // Dependencies visible in public API.
+    requires            java.prefs;
+    requires            java.logging;
     requires transitive java.desktop;
+    requires            java.sql;
+    requires            java.xml;
+    requires            jakarta.xml.bind;
+    requires transitive javafx.base;
     requires transitive javafx.controls;
+    requires transitive javafx.graphics;
+    requires            javafx.web;
+    requires transitive org.apache.sis.util;
+    requires transitive org.apache.sis.metadata;
+    requires transitive org.apache.sis.referencing;
+    requires            org.apache.sis.referencing.gazetteer;
+    requires transitive org.apache.sis.feature;
+    requires transitive org.apache.sis.storage;
+    requires            org.apache.sis.storage.xml;         // Those formats have special handling in `DataViewer`.
     requires transitive org.apache.sis.portrayal;
-
-    // Dependencies for implementation only.
-    requires java.prefs;
-    requires java.logging;
-    requires java.sql;
-    requires java.xml;
-    requires jakarta.xml.bind;
-    requires javafx.web;
-    requires org.apache.sis.storage.xml;
-    requires org.apache.sis.referencing.gazetteer;
 
     provides org.apache.sis.setup.InstallationResources
         with org.apache.sis.gui.internal.io.OptionalDataDownloader;
