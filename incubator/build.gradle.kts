@@ -115,27 +115,36 @@ tasks.test {
 publishing {
     publications {
         create<MavenPublication>("cql") {
+            var module = "org.apache.sis.cql"
             groupId    = "org.apache.sis.core"
             artifactId = "sis-cql"
-            artifact(layout.buildDirectory.file("libs/org.apache.sis.cql.jar"))
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
             pom {
                 name        = "Apache SIS CQL"
                 description = "CQL parser."
             }
         }
         create<MavenPublication>("storage.shapefile") {
+            var module = "org.apache.sis.storage.shapefile"
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-shapefile"
-            artifact(layout.buildDirectory.file("libs/org.apache.sis.storage.shapefile.jar"))
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
             pom {
                 name        = "Apache SIS Shapefile storage"
                 description = "Read and write files in the Shapefile format."
             }
         }
         create<MavenPublication>("webapp") {
+            var module = "org.apache.sis.webapp"
             groupId    = "org.apache.sis.application"
             artifactId = "sis-webapp"
-            artifact(layout.buildDirectory.file("libs/org.apache.sis.webapp.jar"))
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
             pom {
                 name        = "Apache SIS web services layer"
                 description = "Placeholder for future developments."

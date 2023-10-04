@@ -151,7 +151,7 @@ public final class Dependency {
                 }
             }
         }
-        return null;
+        return name.replace('-', '.');
     }
 
     /**
