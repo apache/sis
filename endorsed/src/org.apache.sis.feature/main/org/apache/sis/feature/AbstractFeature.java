@@ -437,7 +437,7 @@ public abstract class AbstractFeature implements Serializable {
      * but the {@linkplain FeatureOperations#link link} and
      * {@linkplain FeatureOperations#compound compound} operations (for instances) do.
      * Whether an operation is writable or not depends on whether the computed {@link Property}
-     * supports {@link Attribute#setValue(Object)} or {@link FeatureAssociation#setValue(Feature)}.
+     * supports {@link AbstractAttribute#setValue(Object)} or {@link AbstractAssociation#setValue(Feature)}.
      *
      * @param  name   the name of the operation to execute. The caller is responsible to ensure that the
      *                property type for that name is an instance of {@link AbstractOperation}.

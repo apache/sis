@@ -91,7 +91,7 @@ public final class IdentifiedObjects extends Static {
      *       <td>{@link AbstractIdentifiedObject#getDomains()}</td></tr>
      *   <tr><td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *       <td>{@link IdentifiedObject#getRemarks()}</td></tr>
-     *   <tr><td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY</td>
+     *   <tr><td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *       <td>{@link DefaultObjectDomain#getScope()}</td></tr>
      *   <tr><td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *       <td>{@link DefaultObjectDomain#getDomainOfValidity()}</td></tr>

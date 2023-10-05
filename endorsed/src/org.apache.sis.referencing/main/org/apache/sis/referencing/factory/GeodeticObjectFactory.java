@@ -139,7 +139,7 @@ import org.apache.sis.xml.XML;
  *   </tr><tr>
  *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
  *     <td>{@link String} or {@link InternationalString}</td>
- *     <td>{@link DefaultObjectDomain#getScope()}</td>
+ *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getScope()}</td>
  *   </tr><tr>
  *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
