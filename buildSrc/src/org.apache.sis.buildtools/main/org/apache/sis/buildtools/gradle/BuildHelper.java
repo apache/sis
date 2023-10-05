@@ -160,6 +160,7 @@ public final class BuildHelper implements Plugin<Project> {
             });
         });
         tasks.withType(Jar.class).forEach((task) -> {
+            task.getInputs().dir(Conventions.SOURCE_DIRECTORY);
             task.getOutputs().dir(Conventions.fileRelativeToBuild(project, Conventions.LIBS_DIRECTORY));
             task.setActions(List.of((t) -> {            // Replace the default action by our own.
                 ModularJAR.execute(BuildHelper.this, (Jar) t);

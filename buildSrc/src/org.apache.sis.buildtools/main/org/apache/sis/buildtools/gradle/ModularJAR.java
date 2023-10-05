@@ -81,7 +81,7 @@ final class ModularJAR extends ZipWriter.JDK {
      * Invoked when the {@code jar} task is executed.
      *
      * @param  context  the extension which is invoking this task.
-     * @param  task     the {@link Javadoc} task to configure.
+     * @param  task     the {@link Jar} task to configure.
      */
     static void execute(final BuildHelper context, final Jar task) {
         final Project       project    = task.getProject();
@@ -106,9 +106,14 @@ final class ModularJAR extends ZipWriter.JDK {
                 }
             }
             try {
-                write(project, module, new File(target, module.getName() + ".jar"), filteredAttributes);
+                final String name = module.getName();
+                write(project, module, new File(target, name + ".jar"), filteredAttributes);
+                ModularSources.write(task, name, false);
+                ModularSources.write(task, name, true);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
             filteredAttributes.clear();
         }

@@ -131,11 +131,11 @@ import org.apache.sis.xml.XML;
  *   </tr><tr>
  *     <td>"domains"</td>
  *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain} (optionally as array)</td>
- *     <td>{@link #getDomains()}</td>
+ *     <td>{@link AbstractIdentifiedObject#getDomains()}</td>
  *   </tr><tr>
  *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
  *     <td>{@link Extent}</td>
- *     <td>{@link DefaultObjectDomain#getDomainOfValidity()}</td>
+ *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()}</td>
  *   </tr><tr>
  *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
  *     <td>{@link String} or {@link InternationalString}</td>

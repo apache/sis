@@ -283,7 +283,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      *     <td>{@link Objects#deepEquals(Object, Object)}</td>
      *   </tr><tr>
      *     <td>Identity (like {@link java.util.IdentityHashMap})</td>
-     *     <td>{@link System#identityHashCode()}</td>
+     *     <td>{@link System#identityHashCode(Object)}</td>
      *     <td>{@code (o1,o2) -> o1 == o2}</td>
      *   </tr>
      * </table>

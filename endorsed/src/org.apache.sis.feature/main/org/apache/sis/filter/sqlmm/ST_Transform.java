@@ -57,6 +57,8 @@ import org.apache.sis.pending.geoapi.filter.Literal;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  */
 final class ST_Transform<R> extends FunctionWithSRID<R> {
     /**

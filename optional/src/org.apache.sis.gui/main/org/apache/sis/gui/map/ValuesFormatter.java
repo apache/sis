@@ -94,7 +94,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
     /**
      * Buffer where to format the textual content.
      * We use this buffer as a synchronization lock because this class is already synchronized,
-     * so synchronizing on {@cod buffer} allows us to use only one lock.
+     * so synchronizing on {@code buffer} allows us to use only one lock.
      */
     private final StringBuffer buffer;
 

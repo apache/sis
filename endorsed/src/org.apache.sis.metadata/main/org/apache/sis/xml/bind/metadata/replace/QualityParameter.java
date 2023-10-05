@@ -94,8 +94,6 @@ public final class QualityParameter extends Parameter {
 
     /**
      * Description of the data quality parameter.
-     *
-     * @see #getDescription()
      */
     @XmlElement
     public DefaultMeasureDescription description;
@@ -200,9 +198,11 @@ public final class QualityParameter extends Parameter {
      *   <li>If the given class is a class, then its {@linkplain Class#getComponentType() component type} is used.</li>
      *   <li>Otherwise if the class is an {@link Iterable}, then the upper bound of elements is fetched.</li>
      *   <li>Otherwise if the class is a {@link Map}, then the upper bound of keys is fetched.</li>
-     *   <li>Otherwise if the class is a {@link Matrix} or {@link Coverage}, then {@link Double} components is assumed.</li>
+     *   <li>Otherwise if the class is a {@link Matrix}, then {@link Double} components is assumed.</li>
      *   <li>Otherwise the given class is used as if it was already a component type (i.e. a singleton item).</li>
      * </ul>
+     *
+     * @todo {@code Coverage} case needs to be added. It would be handle like {@link Matrix}.
      *
      * @param  valueClass  the type of values for which to infer a {@link TypeName} instance.
      * @return a type name for components of the given type.

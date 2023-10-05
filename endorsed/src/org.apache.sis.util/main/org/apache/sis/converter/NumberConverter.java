@@ -142,6 +142,8 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
     /**
      * Converter from numbers to comparables. This special case exists because {@link Number}
      * does not implement {@link java.lang.Comparable} directly, but all known subclasses do.
+     *
+     * @param  <S>  type of numbers to compare.
      */
     static final class Comparable<S extends Number> extends SystemConverter<S, java.lang.Comparable<?>> {
         /**

@@ -214,7 +214,7 @@ abstract class ZipWriter extends Conventions {
      * Copies to the ZIP file the content of the given directory.
      *
      * @param  source  the directory to zip.
-     * @param  filter  filter to apply on the files, or {@code null} if none.
+     * @param  filter  filter to apply on the files of the root directory, or {@code null} if none.
      * @param  target  where to write the files in the ZIP file. Empty for writing in the root.
      * @throws IOException if an error occurred while reading the source or writing the ZIP file.
      */
