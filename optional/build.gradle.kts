@@ -32,6 +32,7 @@ if (!File(pathToFX, "javafx.base.jar").isFile()) {
 plugins {
     `java-library`
     `maven-publish`
+    signing
     id("org.apache.sis.buildtools")
 }
 
@@ -173,5 +174,12 @@ publishing {
                               "See https://openjfx.io/openjfx-docs/#install-javafx for details."
             }
         }
+    }
+}
+
+signing {
+    useGpgCmd()
+    if (System.getProperty("org.apache.sis.releaseVersion") != null) {
+        sign(publishing.publications["gui"])
     }
 }

@@ -42,6 +42,7 @@ version = "2.0-SNAPSHOT"
 plugins {
     `java-library`
     `maven-publish`
+    signing
     id("org.apache.sis.buildtools")
 }
 
@@ -442,5 +443,28 @@ publishing {
                               "inside the Calc spreadsheet."
             }
         }
+    }
+}
+
+signing {
+    useGpgCmd()
+    if (System.getProperty("org.apache.sis.releaseVersion") != null) {
+        sign(publishing.publications["util"])
+        sign(publishing.publications["metadata"])
+        sign(publishing.publications["referencing"])
+        sign(publishing.publications["referencing.gazetteer"])
+        sign(publishing.publications["feature"])
+        sign(publishing.publications["portrayal"])
+        sign(publishing.publications["storage"])
+        sign(publishing.publications["storage.sql"])
+        sign(publishing.publications["storage.xml"])
+        sign(publishing.publications["storage.netcdf"])
+        sign(publishing.publications["storage.geotiff"])
+        sign(publishing.publications["storage.earthobservation"])
+        sign(publishing.publications["cloud.aws"])
+        sign(publishing.publications["profile.france"])
+        sign(publishing.publications["profile.japan"])
+        sign(publishing.publications["console"])
+        sign(publishing.publications["openoffice"])
     }
 }

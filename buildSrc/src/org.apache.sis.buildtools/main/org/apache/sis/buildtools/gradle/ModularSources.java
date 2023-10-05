@@ -39,7 +39,7 @@ final class ModularSources extends ZipWriter.JDK {
     /**
      * The Java system property to set to {@code true} for enabling Javadoc generation.
      */
-    private static final String CREATE_JAVADOC_PROPERTY = "org.apache.sis.create-javadoc";
+    private static final String RELEASE_VERSION_PROPERTY = "org.apache.sis.releaseVersion";
 
     /**
      * Creates a helper instance.
@@ -101,13 +101,14 @@ final class ModularSources extends ZipWriter.JDK {
             }
             /*
              * For performance reason, we actually generate the Javadoc only of the
-             * "org.apache.sis.create-javadoc" system property is set to `true`.
+             * "org.apache.sis.releaseVersion" system property is set to a non-null value.
              * Otherwise the Javadoc files will be empty.
              */
-            if (Boolean.getBoolean(CREATE_JAVADOC_PROPERTY)) {
+            final String version = System.getProperty(RELEASE_VERSION_PROPERTY);
+            if (version != null) {
                 final var pb = new ProcessBuilder("javadoc",
                         "-locale",              "en",
-                        "-doctitle",            "Apache SIS API",
+                        "-doctitle",            "Apache SIS " + version + " API",
                         "-tag",                 "category:X:Category:",
                         "-tag",                 "todo:a:TODO:",
                         "-nonavbar", "-noindex", "-nodeprecatedlist", "-notree", "-nohelp",
@@ -129,7 +130,7 @@ final class ModularSources extends ZipWriter.JDK {
                         "For performance reason, Javadoc generation is disabled by default.\n" +
                         "For generating Javadoc, set the following system property:\n" +
                         "\n" +
-                        "    " + CREATE_JAVADOC_PROPERTY + "=true\n" +
+                        "    " + RELEASE_VERSION_PROPERTY + "=<version>\n" +
                         "\n");
             }
         } else {
