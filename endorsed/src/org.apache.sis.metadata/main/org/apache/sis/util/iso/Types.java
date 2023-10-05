@@ -403,9 +403,8 @@ public final class Types extends Static {
 
     /**
      * The {@link InternationalString} returned by the {@code Types.getCodeTitle(…)} method.
-     * The code below is a duplicated - in a different way - of {@code CodeListUID(CodeList)}
-     * constructor ({@link org.apache.sis.xml.bind.metadata.code package}). This duplication exists
-     * because {@code CodeListUID} constructor stores more information in an opportunist way.
+     * The code below is a duplicated - in a different way - of {@code CodeListUID(CodeList)} constructor.
+     * This duplication exists because {@code CodeListUID} constructor stores more information in an opportunist way.
      * If this class is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)

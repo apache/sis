@@ -103,6 +103,8 @@ class OneGeometry<R> extends SpatialFunction<R> {
 
     /**
      * SQLMM spatial functions taking a single geometry operand with one argument.
+     *
+     * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
      */
     static final class WithArgument<R> extends OneGeometry<R> {
         /** For cross-version compatibility. */

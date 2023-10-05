@@ -110,6 +110,8 @@ class ObjectToString<S> extends SystemConverter<S,String> {
      * Specialized instance for {@link org.opengis.util.CodeList}.
      * This class invokes {@link org.opengis.util.CodeList#name()} instead of {@code toString()}.
      *
+     * @param  <S>  type of code list values.
+     *
      * @see org.apache.sis.converter.StringConverter.CodeList
      */
     static final class CodeList<S extends org.opengis.util.CodeList<S>> extends ObjectToString<S> {
@@ -136,6 +138,8 @@ class ObjectToString<S> extends SystemConverter<S,String> {
     /**
      * Specialized instance for {@link java.lang.Enum}.
      * This class invokes {@link java.lang.Enum#name()} instead of {@code toString()}.
+     *
+     * @param  <S>  type of enumeration values.
      *
      * @see org.apache.sis.converter.StringConverter.Enum
      */

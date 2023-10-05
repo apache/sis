@@ -341,6 +341,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      *
      * <p>Instances of this class are created by
      * {@link SystemRegistry#createConverter(Class, Class)}.</p>
+     *
+     * @param  <T>  type of code list values.
      */
     static final class CodeList<T extends org.opengis.util.CodeList<T>> extends StringConverter<T> {
         /** For cross-version compatibility on serialization. */
@@ -373,6 +375,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      *
      * <p>Instances of this class are created by
      * {@link SystemRegistry#createConverter(Class, Class)}.</p>
+     *
+     * @param  <T>  type of enumeration values.
      */
     static final class Enum<T extends java.lang.Enum<T>> extends StringConverter<T> {
         /** For cross-version compatibility on serialization. */

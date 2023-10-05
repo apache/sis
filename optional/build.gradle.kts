@@ -32,6 +32,7 @@ if (!File(pathToFX, "javafx.base.jar").isFile()) {
 plugins {
     `java-library`
     `maven-publish`
+    signing
     id("org.apache.sis.buildtools")
 }
 
@@ -160,9 +161,12 @@ tasks.jar {
 publishing {
     publications {
         create<MavenPublication>("gui") {
+            var module = "org.apache.sis.gui"
             groupId    = "org.apache.sis.application"
             artifactId = "sis-javafx"
-            artifact(layout.buildDirectory.file("libs/org.apache.sis.gui.jar"))
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
             pom {
                 name        = "Apache SIS application for JavaFX (optional)"
                 description = "Client application for JavaFX. " +
@@ -170,5 +174,12 @@ publishing {
                               "See https://openjfx.io/openjfx-docs/#install-javafx for details."
             }
         }
+    }
+}
+
+signing {
+    useGpgCmd()
+    if (System.getProperty("org.apache.sis.releaseVersion") != null) {
+        sign(publishing.publications["gui"])
     }
 }
