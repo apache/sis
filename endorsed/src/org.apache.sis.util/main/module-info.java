@@ -112,7 +112,9 @@ module org.apache.sis.util {
             org.apache.sis.cloud.aws,
             org.apache.sis.console,
             org.apache.sis.openoffice,
-            org.apache.sis.gui;                         // In the "optional" sub-project.
+            org.apache.sis.gui,                         // In the "optional" sub-project.
+            org.apache.sis.referencing.epsg,
+            org.apache.sis.referencing.database;
 
     exports org.apache.sis.util.internal to
             org.apache.sis.metadata,
@@ -129,7 +131,9 @@ module org.apache.sis.util {
             org.apache.sis.portrayal,
             org.apache.sis.cloud.aws,
             org.apache.sis.console,
-            org.apache.sis.gui;                         // In the "optional" sub-project.
+            org.apache.sis.gui,                         // In the "optional" sub-project.
+            org.apache.sis.referencing.epsg,
+            org.apache.sis.referencing.database;
 
     exports org.apache.sis.pending.temporal to
             org.apache.sis.metadata;
@@ -155,7 +159,8 @@ module org.apache.sis.util {
             org.apache.sis.portrayal,
             org.apache.sis.console,
             org.apache.sis.webapp,                      // In the "incubator" sub-project.
-            org.apache.sis.gui;                         // In the "optional" sub-project.
+            org.apache.sis.gui,                         // In the "optional" sub-project.
+            org.apache.sis.referencing.database;
 
     exports org.apache.sis.pending.jdk to
             org.apache.sis.feature,

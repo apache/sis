@@ -149,7 +149,8 @@ module org.apache.sis.metadata {
 
     exports org.apache.sis.metadata.sql.util to
             org.apache.sis.referencing,
-            org.apache.sis.storage.sql;
+            org.apache.sis.storage.sql,
+            org.apache.sis.referencing.database;
 
     exports org.apache.sis.metadata.simple to
             org.apache.sis.referencing,
