@@ -136,4 +136,21 @@ publishing {
             }
         }
     }
+    /* Following block is currently repeated in all sub-projects. */
+    repositories {
+        maven {
+            name = "Apache"
+            url = uri(if (version.toString().endsWith("SNAPSHOT"))
+                      "https://repository.apache.org/content/repositories/snapshots" else
+                      "https://repository.apache.org/service/local/staging/deploy/maven2")
+            credentials {
+                val asfNexusUsername = providers.gradleProperty("asfNexusUsername")
+                val asfNexusPassword = providers.gradleProperty("asfNexusPassword")
+                if (asfNexusUsername.isPresent() && asfNexusPassword.isPresent()) {
+                    username = asfNexusUsername.get()
+                    password = asfNexusPassword.get()
+                }
+            }
+        }
+    }
 }

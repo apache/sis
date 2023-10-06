@@ -70,6 +70,7 @@ final class ModularJavadoc extends Conventions {
         options.links(
                 "https://docs.oracle.com/en/java/javase/11/docs/api",
                 "http://www.geoapi.org/3.0/javadoc",
+                "https://openjfx.io/javadoc/21/",
                 "http://unitsofmeasurement.github.io/unit-api/site/apidocs");
         /*
          * Taglet defined in this `buildSrc` sub-project.

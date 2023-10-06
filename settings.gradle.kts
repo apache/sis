@@ -39,6 +39,7 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
         maven {
+            name = "UCAR"
             url = uri("https://artifacts.unidata.ucar.edu/repository/unidata-releases")
             content {
                 includeGroup("edu.ucar")        // Restrict usage to those dependencies.

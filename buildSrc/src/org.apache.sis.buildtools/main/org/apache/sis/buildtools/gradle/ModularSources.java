@@ -32,11 +32,6 @@ import org.gradle.api.Task;
  */
 final class ModularSources extends ZipWriter.JDK {
     /**
-     * The directory where the ZIP files will be written.
-     */
-    private static final String OUTPUT_DIRECTORY = "docs";
-
-    /**
      * The Java system property to set to {@code true} for enabling Javadoc generation.
      */
     private static final String RELEASE_VERSION_PROPERTY = "org.apache.sis.releaseVersion";
@@ -136,7 +131,7 @@ final class ModularSources extends ZipWriter.JDK {
         } else {
             sources = sourcesDir(project, module);
         }
-        final var target = Conventions.fileRelativeToBuild(project, OUTPUT_DIRECTORY);
+        final var target = Conventions.fileRelativeToBuild(project, Conventions.DOCS_DIRECTORY);
         target.mkdir();
         final File file = new File(target, module + '-' + (javadoc ? "javadoc" : "sources") + ".jar");
         try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file))) {

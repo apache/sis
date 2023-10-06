@@ -81,6 +81,11 @@ abstract class Conventions {
     static final String LIBS_DIRECTORY = "libs";
 
     /**
+     * The sub-directory inside "{@value #BUILD_DIRECTORY}" for the Javadoc and sources ZIP files.
+     */
+    static final String DOCS_DIRECTORY = "docs";
+
+    /**
      * The sub-directory inside "{@value #BUILD_DIRECTORY}" for the ZIP or OXT files (assemblies).
      * Also the sibling directory of "{@value #MAIN_DIRECTORY}" and "{@value #TEST_DIRECTORY}"
      * for the sources to copy in the ZIP file. This is an Apache SIS convention.
