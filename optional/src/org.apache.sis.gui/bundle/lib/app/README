@@ -1,0 +1,2 @@
+This directory contains Apache SIS modules for interactive applications.
+They should generally not be on the module-path for other applications.

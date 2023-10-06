@@ -27,7 +27,7 @@ IF "%PATH_TO_FX%"=="" (
 )
 
 java -splash:"%BASE_DIR%\lib\logo.jpg"^
- --module-path "%PATH_TO_FX%;%BASE_DIR%\lib"^
+ --module-path "%PATH_TO_FX%;%BASE_DIR%\lib;%BASE_DIR%\lib\app\org.apache.sis.gui.jar"^
  -Djava.util.logging.config.class=org.apache.sis.util.logging.Initializer^
  -Djava.util.logging.config.file="%BASE_DIR%\conf\logging.properties"^
  -Dderby.stream.error.file="%BASE_DIR%\log\derby.log"^
