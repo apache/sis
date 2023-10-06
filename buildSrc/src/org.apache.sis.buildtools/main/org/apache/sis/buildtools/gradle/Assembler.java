@@ -16,8 +16,9 @@
  */
 package org.apache.sis.buildtools.gradle;
 
+import java.util.Set;
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.UncheckedIOException;
 import java.io.IOException;
@@ -35,13 +36,13 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
  *   <li>the content of the <code>endorsed/build/libs</code> and <code>optional/build/libs</code> directories.</li>
  * </ul>
  *
- * Assemblies are created only for module having an {@code bundle} sub-directory.
- * The module is hard-coded for now (a future version could perform a search if desired).
+ * Assemblies are created only for the module having a {@code bundle} sub-directory in source code.
+ * That module is hard-coded for now (a future version could perform a search if desired).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Quentin Bialota (Geomatys)
  */
-final class Assembler extends ZipWriter.Apache implements FilenameFilter {
+final class Assembler extends ZipWriter.Apache implements FileFilter {
     /**
      * The module on which to apply this task.
      */
@@ -53,6 +54,40 @@ final class Assembler extends ZipWriter.Apache implements FilenameFilter {
      * which is reproduced in the ZIP file.
      */
     private static final String LIB_DIRECTORY = "lib/";
+
+    /**
+     * Subdirectory of {@link #LIB_DIRECTORY} where to put applications.
+     * We keep them in a separated directory because we need to put only
+     * one of them in the module-path.
+     */
+    private static final String APP_DIRECTORY = "app/";
+
+    /**
+     * Modules to put in the {@link #APP_DIRECTORY} directory.
+     */
+    private static final Set<String> APPLICATIONS = Set.of(MODULE, "org.apache.sis.console");
+
+    /**
+     * Modules to exclude from the {@link #LIB_DIRECTORY}, not counting applications.
+     */
+    private static final Set<String> EXCLUDES = Set.of(
+            "org.apache.sis.profile.japan",             // For avoiding UCAR dependencies.
+            "org.apache.sis.cloud.aws");                // For avoiding UCAR dependencies.
+
+    /**
+     * Suffix of JAR files. This is the part to remove from filenames for getting the module names.
+     */
+    private static final String JAR_SUFFIX = ".jar";
+
+    /**
+     * Whether this task is in the process of copying the application JAR files.
+     */
+    private boolean isCopyingApplication;
+
+    /**
+     * Whether the copy operation shall include dependencies.
+     */
+    private boolean includeDependencies;
 
     /**
      * Creates an helper object for creating the assembly.
@@ -78,10 +113,14 @@ final class Assembler extends ZipWriter.Apache implements FilenameFilter {
             String filename = FINALNAME_PREFIX + project.getVersion();
             target = new File(target, filename + ".zip");
             filename += '/';
+            final String libDir = filename + LIB_DIRECTORY;
             try (ZipArchiveOutputStream out = new ZipArchiveOutputStream(target)) {
                 final var c = new Assembler(project, out);
                 c.writeDirectory(sourceDirectory, null, filename);
-                c.copyCompiledJARs(filename + LIB_DIRECTORY);
+                c.isCopyingApplication = false;
+                c.copyCompiledJARs(libDir);
+                c.isCopyingApplication = true;
+                c.copyCompiledJARs(libDir + APP_DIRECTORY);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -95,7 +134,9 @@ final class Assembler extends ZipWriter.Apache implements FilenameFilter {
      * @throws IOException if an error occurred while copying a file.
      */
     private void copyCompiledJARs(final String libDir) throws IOException {
-        writeDirectory(fileRelativeToBuild(LIBS_DIRECTORY), null, libDir);
+        includeDependencies = true;
+        writeDirectory(fileRelativeToBuild(LIBS_DIRECTORY), this, libDir);
+        includeDependencies = false;
         final File endorsed = new File(new File(new File(project.getRootDir(), ENDORSED_SUBPROJECT), BUILD_DIRECTORY), LIBS_DIRECTORY);
         final File[] deps = endorsed.listFiles(this);
         if (deps == null) {
@@ -109,21 +150,18 @@ final class Assembler extends ZipWriter.Apache implements FilenameFilter {
     /**
      * Whether to include the given file in the ZIP file.
      *
-     * @param  dir   directory of the file.
-     * @param  name  name of the file.
+     * @param  path  the file or directory to test.
      * @return whether to include the file.
      */
     @Override
-    public boolean accept(final File dir, final String name) {
-        if (!name.endsWith(".jar")) {
-            return false;
+    public boolean accept(final File path) {
+        String name = path.getName();
+        if (name.endsWith(JAR_SUFFIX) && (includeDependencies || name.startsWith("org.apache.sis."))) {
+            name = name.substring(0, name.length() - JAR_SUFFIX.length());
+            if (!EXCLUDES.contains(name)) {
+                return APPLICATIONS.contains(name) == isCopyingApplication;
+            }
         }
-        if (name.startsWith("org.apache.sis.cloud.aws")) {
-            return false;       // Excluded for avoiding AWS dependencies.
-        }
-        if (name.startsWith("org.apache.sis.profile.japan")) {
-            return false;       // Excluded for avoiding UCAR dependencies.
-        }
-        return name.startsWith("org.apache.sis.");
+        return false;
     }
 }

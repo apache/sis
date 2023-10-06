@@ -53,6 +53,7 @@ module org.apache.sis.storage {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
+            org.apache.sis.util,                        // For the "About" command.
             org.apache.sis.console,
             org.apache.sis.openoffice,
             org.apache.sis.gui;                         // In the "optional" sub-project.
