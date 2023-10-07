@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 group = "org.apache.sis"
-version = "1.4-SNAPSHOT"
+version = "1.5-SNAPSHOT"
 
 /*
  * "org.apache.sis.buildtools" is a custom Gradle plugin for building a project with Module Source Hierarchy.

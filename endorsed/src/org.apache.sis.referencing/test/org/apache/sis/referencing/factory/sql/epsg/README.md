@@ -98,7 +98,7 @@ cd _<path to SIS project directory>_
 mvn clean install
 export CLASSPATH=~/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
 export CLASSPATH=$PWD/core/sis-metadata/target/test-classes:$CLASSPATH
-export CLASSPATH=$PWD/target/binaries/sis-referencing-1.4-SNAPSHOT.jar:$CLASSPATH
+export CLASSPATH=$PWD/target/binaries/sis-referencing-1.5-SNAPSHOT.jar:$CLASSPATH
 export CLASSPATH=$PWD/core/sis-metadata/target/test-classes:$CLASSPATH
 export CLASSPATH=$PWD/core/sis-referencing/target/test-classes:$CLASSPATH
 cd <path to local copy of http://svn.apache.org/repos/asf/sis/data/non-free/>
