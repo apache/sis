@@ -174,6 +174,7 @@ public final class IdentifiedObjects extends Static {
      *
      * @see AbstractIdentifiedObject#getName()
      */
+    @OptionalCandidate
     public static String getName(final IdentifiedObject object, final Citation authority) {
         return getName(object, authority, null);
     }
@@ -255,6 +256,7 @@ public final class IdentifiedObjects extends Static {
      *
      * @see AbstractIdentifiedObject#getIdentifier()
      */
+    @OptionalCandidate
     public static Identifier getIdentifier(final IdentifiedObject object, final Citation authority) {
         if (object != null) {
             String cs = null;
@@ -297,19 +299,16 @@ public final class IdentifiedObjects extends Static {
      * @see #lookupURN(IdentifiedObject, Citation)
      */
     public static String getIdentifierOrName(final IdentifiedObject object) {
-        if (object != null) {
-            for (final Identifier id : nonNull(object.getIdentifiers())) {
-                final String code = toString(id);
-                if (code != null) {                                 // Paranoiac check.
-                    return code;
-                }
-            }
-            final String name = toString(object.getName());
-            if (name != null) {                                     // Paranoiac check.
-                return name;
+        if (object == null) {
+            return null;
+        }
+        for (final Identifier id : nonNull(object.getIdentifiers())) {
+            final String code = toString(id);
+            if (code != null) {                                 // Paranoiac check.
+                return code;
             }
         }
-        return null;
+        return toString(object.getName());
     }
 
     /**
@@ -336,6 +335,7 @@ public final class IdentifiedObjects extends Static {
      *
      * @since 1.0
      */
+    @OptionalCandidate
     public static String getSimpleNameOrIdentifier(final IdentifiedObject object) {
         if (object != null) {
             Identifier identifier = object.getName();
@@ -449,6 +449,7 @@ public final class IdentifiedObjects extends Static {
      *
      * @since 0.7
      */
+    @OptionalCandidate
     public static String lookupURN(final IdentifiedObject object, final Citation authority) throws FactoryException {
         if (object == null) {
             return null;

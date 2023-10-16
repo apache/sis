@@ -36,6 +36,8 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.spatial.CellGeometry;
+import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.IdentifiedObject;
@@ -56,30 +58,31 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.util.FactoryException;
-import org.apache.sis.storage.geotiff.internal.Resources;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.util.NilReferencingObject;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.io.TableAppender;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.storage.geotiff.internal.Resources;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
@@ -411,7 +414,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * If the values do not match, a warning is reported and the caller should use the EPSG value.
      *
      * @param  epsg      the EPSG object, to be used for formatting the warning in case of mismatched values.
-     * @param  expected  the expected value for an object identified by the {@code epsg} code.
+     * @param  expected  the expected value for an object identified by the {@code epsg} code, or NaN for no comparison.
      * @param  key       the GeoTIFF key of the user-defined value to compare with the expected one.
      * @param  unit      the unit of measurement for {@code expected} and {@code actual}, or {@code null} if none.
      */
@@ -539,25 +542,18 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         }
         /*
          * At this point we finished parsing all GeoTIFF tags, both for metadata purpose or for CRS construction.
-         * Emit a warning for unprocessed GeoTIFF tags. A single warning is emitted for all ignored tags.
+         * Emits a warning for unprocessed GeoTIFF tags. A single warning is emitted for all ignored tags.
          */
         if (!geoKeys.isEmpty()) {
             final StringJoiner joiner = new StringJoiner(", ");
-            for (final short key : remainingKeys()) {
+            final Short[] keys = geoKeys.keySet().toArray(Short[]::new);
+            Arrays.sort(keys);
+            for (final short key : keys) {
                 joiner.add(GeoKeys.name(key));
             }
             warning(Resources.Keys.IgnoredGeoKeys_1, joiner.toString());
         }
         return crs;
-    }
-
-    /**
-     * Returns all remaining keys, sorted in increasing order.
-     */
-    private Short[] remainingKeys() {
-        final Short[] keys = geoKeys.keySet().toArray(Short[]::new);
-        Arrays.sort(keys);
-        return keys;
     }
 
 
@@ -1299,15 +1295,18 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         final Conversion projection = crs.getConversionFromBase();
         verifyIdentifier(crs, projection, GeoKeys.Projection);
         verify(projection, angularUnit, linearUnit);
+        getAsString(GeoKeys.ProjectedCitation);
     }
 
     /**
      * Returns the code of the operation method to request.
      * This method tries to resolves some ambiguities in the way operation methods are defined.
      * For example there is an ambiguity between Polar Stereographic (variant A) and (variant B).
+     *
+     * @param  code  value of {@code getMandatoryString(GeoKeys.ProjMethod)}.
+     * @return the method code in the GeoTIFF or EPSG name space.
      */
-    private String methodCode() {
-        final String code = getMandatoryString(GeoKeys.ProjMethod);
+    private String methodCode(final String code) {
         try {
             switch (Integer.parseInt(code)) {
                 case GeoCodes.PolarStereographic: {
@@ -1335,6 +1334,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 // More cases may be added in the future.
             }
         } catch (NumberFormatException e) {
+            invalidValue(GeoKeys.ProjMethod, code);
             return code;
         }
         return Constants.GEOTIFF + ':' + code;
@@ -1362,7 +1362,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             }
             case GeoCodes.userDefined: {
                 final Unit<Angle>         azimuthUnit = createAngularUnit(UnitKey.AZIMUTH);
-                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(methodCode());
+                final String              code        = methodCode(getMandatoryString(GeoKeys.ProjMethod));
+                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(code);
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
                 final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
                 final Map<Object,Number>  paramValues = new HashMap<>();    // Keys: [String|Short] instances for [known|unknown] parameters.
@@ -1444,38 +1445,57 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             throws FactoryException
     {
         final Unit<Angle> azimuthUnit = createAngularUnit(UnitKey.AZIMUTH);
-        final String type = getAsString(GeoKeys.ProjMethod);
-        if (type != null) {
+        final String code = getAsString(GeoKeys.ProjMethod);
+        if (code != null) {
             /*
-             * Compare the name of the map projection declared in the GeoTIFF file with the name
-             * of the projection used by the EPSG geodetic dataset.
+             * Compare the identifier of the map projection declared in the GeoTIFF file with the identifier
+             * of the projection used by the EPSG geodetic dataset. The two cases may use different variants
+             * of the same projection (e.g. Mercator variant A, B and C), so the GeoTIFF code may be missing
+             * in the projection given in argument.
              */
-            final OperationMethod method = projection.getMethod();
-            if (!IdentifiedObjects.isHeuristicMatchForName(method, type)) {
-                Identifier expected = IdentifiedObjects.getIdentifier(method, Citations.GEOTIFF);
-                if (expected == null) {
-                    expected = IdentifiedObjects.getIdentifier(method, null);
+            OperationMethod method = projection.getMethod();
+            Identifier id = IdentifiedObjects.getIdentifier(method, Citations.GEOTIFF);
+            final boolean isSameProjection = (id != null) && code.equals(id.getCode());
+            if (!isSameProjection) {
+                if (id != null) {
+                    final String key    = GeoKeys.name(GeoKeys.ProjMethod);
+                    final String parent = IdentifiedObjects.getIdentifierOrName(projection);
+                    warning(Resources.Keys.NotTheEpsgValue_5, parent, id.getCode(), key, code, "");
                 }
-                warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(projection),
-                        expected.getCode(), GeoKeys.name(GeoKeys.ProjMethod), type, "");
+                method = getCoordinateOperationFactory().getOperationMethod(methodCode(code));
             }
             /*
              * Compare the parameter values with the ones declared in the EPSG geodetic dataset.
              */
-            final ParameterValueGroup parameters = projection.getParameterValues();
-            for (final short key : remainingKeys()) {
-                final Unit<?> unit;
-                switch (UnitKey.ofProjectionParameter(key)) {
-                    case RATIO:     unit = Units.UNITY; break;
-                    case PROJECTED: unit = linearUnit;  break;
-                    case ANGULAR:   unit = angularUnit; break;
-                    case AZIMUTH:   unit = azimuthUnit; break;
-                    default: continue;
-                }
-                try {
-                    verify(projection, parameters.parameter("GeoTIFF:" + key).doubleValue(unit), key, unit);
-                } catch (ParameterNotFoundException e) {
-                    warning(Resources.Keys.UnexpectedParameter_2, type, GeoKeys.name(key));
+            final Parameters parameters = Parameters.castOrWrap(projection.getParameterValues());
+            for (final GeneralParameterDescriptor desc : method.getParameters().descriptors()) {
+                id = IdentifiedObjects.getIdentifier(desc, Citations.GEOTIFF);
+                if (id != null) {
+                    final short key;
+                    try {
+                        key = Short.parseShort(id.getCode());
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
+                    final Unit<?> unit;
+                    switch (UnitKey.ofProjectionParameter(key)) {
+                        case RATIO:     unit = Units.UNITY; break;
+                        case PROJECTED: unit = linearUnit;  break;
+                        case ANGULAR:   unit = angularUnit; break;
+                        case AZIMUTH:   unit = azimuthUnit; break;
+                        default: continue;
+                    }
+                    double value = Double.NaN;
+                    try {
+                        @SuppressWarnings("unchecked")                          // Because we catch ClassCastException.
+                        var p = (ParameterDescriptor<? extends Number>) desc;
+                        value = parameters.doubleValue(p, unit);
+                    } catch (ClassCastException | ParameterNotFoundException e) {
+                        if (isSameProjection) {
+                            warning(Resources.Keys.UnexpectedParameter_2, code, GeoKeys.name(key));
+                        }
+                    }
+                    verify(projection, value, key, unit);
                 }
             }
         }
