@@ -43,7 +43,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     public final long position;
 
     /**
-     * Prepares a new updatable value.
+     * Prepares a new updatable value at the current output position.
      *
      * @param  position  stream where to write the value.
      */
@@ -52,7 +52,16 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     }
 
     /**
-     * Creates a pseudo-updatable associated to no value.
+     * Prepares a new updatable value at the specified position.
+     *
+     * @param  position  position where to write the value.
+     */
+    private UpdatableWrite(final long position) {
+        this.position = position;
+    }
+
+    /**
+     * Creates a pseudo-updatable associated to no value at the current output position.
      * This variant can be used when the caller only want to record the position, with no write operation.
      *
      * @param  output  stream where to write the value.
@@ -65,7 +74,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     }
 
     /**
-     * Creates an updatable unsigned short value.
+     * Creates an updatable unsigned short value at the current output position.
      *
      * @param  output  stream where to write the value.
      * @param  value   the unsigned short value to write.
@@ -79,7 +88,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     }
 
     /**
-     * Creates an updatable unsigned integer value.
+     * Creates an updatable unsigned integer value at the current output position.
      *
      * @param  output  stream where to write the value.
      * @param  value   the unsigned integer value to write.
@@ -93,7 +102,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     }
 
     /**
-     * Creates an updatable long value.
+     * Creates an updatable long value at the current output position.
      *
      * @param  output  stream where to write the value.
      * @param  value   the value to write.
@@ -104,6 +113,23 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
         final var dw = new OfLong(output, value);
         dw.write(output);
         return dw;
+    }
+
+    /**
+     * Creates an updatable value at the specified position.
+     * The existing value is assumed to be zero.
+     *
+     * @param  <V>       compile-time value of {@code type}.
+     * @param  position  position where the value is written. Current value must be zero (this is not verified).
+     * @param  type      class of the value as {@code Short.class}, {@code Integer.class} or {@code Long.class}.
+     * @return handler for modifying the value later.
+     */
+    @SuppressWarnings("unchecked")
+    public static <V extends Number> UpdatableWrite<V> ofZeroAt(final long position, final Class<V> type) {
+        if (type == Integer.class) return (UpdatableWrite<V>) new OfInt  (position);
+        if (type ==   Short.class) return (UpdatableWrite<V>) new OfShort(position);
+        if (type ==    Long.class) return (UpdatableWrite<V>) new OfLong (position);
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
     }
 
     /**
@@ -136,6 +162,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
             defined = value;
         }
 
+        OfShort(long position) {super(position);}
         @Override public Class<Short> getElementType()   {return Short.class;}
         @Override public int          sizeInBytes()      {return Short.BYTES;}
         @Override public boolean      changed()          {return defined != current;}
@@ -164,6 +191,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
             defined = value;
         }
 
+        OfInt(long position) {super(position);}
         @Override public Class<Integer> getElementType()  {return Integer.class;}
         @Override public int            sizeInBytes()     {return Integer.BYTES;}
         @Override public boolean        changed()         {return defined != current;}
@@ -192,6 +220,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
             defined = value;
         }
 
+        OfLong(long position) {super(position);}
         @Override public Class<Long>  getElementType()   {return Long.class;}
         @Override public int          sizeInBytes()      {return Long.BYTES;}
         @Override public boolean      changed()          {return defined != current;}

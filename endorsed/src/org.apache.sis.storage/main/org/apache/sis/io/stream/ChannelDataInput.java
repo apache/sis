@@ -30,6 +30,7 @@ import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
+import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.storage.internal.Resources;
@@ -127,22 +128,19 @@ public class ChannelDataInput extends ChannelData implements DataInput {
      * @param  input  the existing instance from which to takes the channel and buffer.
      */
     ChannelDataInput(final ChannelDataInput input) {
-        super(input);
+        super(input, true);
         channel = input.channel;
     }
 
     /**
-     * Returns the length of the stream (in bytes), or -1 if unknown.
-     * The length is relative to the channel position at {@linkplain #ChannelDataInput construction time}.
+     * {@return the wrapped channel where data are read}.
+     * This is the {@link #channel} field value.
      *
-     * @return the length of the stream (in bytes) relative to {@link #channelOffset}, or -1 if unknown.
-     * @throws IOException if an error occurred while fetching the stream length.
+     * @see #channel
      */
-    public final long length() throws IOException {     // Method signature must match ImageInputStream.length().
-        if (channel instanceof SeekableByteChannel) {
-            return Math.subtractExact(((SeekableByteChannel) channel).size(), channelOffset);
-        }
-        return -1;
+    @Override
+    public final Channel channel() {
+        return channel;
     }
 
     /**
@@ -234,6 +232,16 @@ public class ChannelDataInput extends ChannelData implements DataInput {
         if (!hasRemaining()) {
             throw new EOFException(eof());
         }
+    }
+
+    /**
+     * Returns the current byte position of the stream.
+     *
+     * @return the position of the stream.
+     */
+    @Override
+    public final long getStreamPosition() {
+        return position();
     }
 
     /**
@@ -998,8 +1006,7 @@ loop:   while (hasRemaining()) {
     }
 
     /**
-     * Moves to the given position in the stream. The given position is relative to
-     * the position that the stream had at {@code ChannelDataInput} construction time.
+     * Moves to the given position in this stream.
      *
      * @param  position  the position where to move.
      * @throws IOException if the stream cannot be moved to the given position.
@@ -1017,7 +1024,7 @@ loop:   while (hasRemaining()) {
              * Requested position is outside the current limits of the buffer,
              * but we can set the new position directly in the channel.
              */
-            ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
+            ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(position));
             bufferOffset = position;
             buffer.clear().limit(0);
         } else if (p >= 0) {
@@ -1058,27 +1065,52 @@ loop:   while (hasRemaining()) {
      */
     public final void rangeOfInterest(long lower, long upper) {
         if (channel instanceof ByteRangeChannel) {
-            lower = Math.addExact(lower, channelOffset);
-            upper = Math.addExact(upper, channelOffset);
+            lower = toSeekableByteChannelPosition(lower);
+            upper = toSeekableByteChannelPosition(upper);
             ((ByteRangeChannel) channel).rangeOfInterest(lower, upper);
         }
     }
 
     /**
-     * Empties the buffer and reset the channel position at the beginning of the stream.
-     * This method is similar to {@code seek(0)} except that the buffer content is discarded.
+     * Forgets the given number of bytes in the buffer.
+     * This is invoked for making room for more bytes.
      *
-     * @return {@code true} on success, or {@code false} if it is not possible to reset the position.
-     * @throws IOException if the stream cannot be moved to the original position.
+     * @param  count  number of bytes to forget, between 1 and buffer limit.
      */
-    public final boolean rewind() throws IOException {
-        if (channel instanceof SeekableByteChannel) {
-            ((SeekableByteChannel) channel).position(channelOffset);
-            buffer.clear().limit(0);
-            bufferOffset = 0;
-            clearBitOffset();
-            return true;
+    @Override
+    final void flushNBytes(final int count) throws IOException {
+        final int p = buffer.position();
+        buffer.position(count).compact()
+              .limit(buffer.position())     // Not the same value as `p`. It is rather equal to `limit - count`.
+              .position(p - count);
+        bufferOffset = Math.addExact(bufferOffset, count);
+    }
+
+    /**
+     * Notifies two {@code ChannelData} instances that operations will continue with the specified take over.
+     * This method should be invoked when read operations with this {@code ChannelDataInput} are completed for
+     * now, and write operations are about to begin with a {@link ChannelDataOutput} sharing the same channel.
+     *
+     * @param  takeOver  the {@link ChannelDataOutput} which will continue operations after this instance.
+     */
+    @Override
+    public void yield(final ChannelData takeOver) throws IOException {
+        /*
+         * If we filled the buffer with more bytes than the buffer position,
+         * the channel position is too far ahead. We need to seek backward.
+         */
+        if (buffer.hasRemaining()) {
+            if (channel instanceof SeekableByteChannel) {
+                ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(position()));
+            } else {
+                throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, takeOver.filename));
+            }
         }
-        return false;
+        clearBitOffset();
+        bufferOffset = position();
+        if (buffer.limit(0) != takeOver.buffer) {          // Must be after `position()`.
+            takeOver.buffer.limit(0);
+        }
+        super.yield(takeOver);
     }
 }

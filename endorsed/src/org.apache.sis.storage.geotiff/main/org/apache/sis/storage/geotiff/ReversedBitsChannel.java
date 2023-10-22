@@ -63,11 +63,10 @@ final class ReversedBitsChannel implements ReadableByteChannel, SeekableByteChan
      * and because a new buffer is created for each strip or tile to read.
      */
     static ChannelDataInput wrap(final ChannelDataInput input) throws IOException {
-        final ChannelDataInput output = new ChannelDataInput(
-                input.filename, new ReversedBitsChannel(input),
-                ByteBuffer.allocate(2048).order(input.buffer.order()).limit(0), true);
-        output.setStreamPosition(input.getStreamPosition());
-        return output;
+        final var buffer  = ByteBuffer.allocate(2048).order(input.buffer.order());
+        final var reverse = new ChannelDataInput(input.filename, new ReversedBitsChannel(input), buffer, true);
+        input.yield(reverse);
+        return reverse;
     }
 
     /**
@@ -75,11 +74,9 @@ final class ReversedBitsChannel implements ReadableByteChannel, SeekableByteChan
      */
     @Override
     public long size() throws IOException {
-        if (input.channel instanceof SeekableByteChannel) {
-            return ((SeekableByteChannel) input.channel).size();
-        } else {
-            throw unsupported("size");
-        }
+        final long size = input.length();
+        if (size >= 0) return size;
+        throw unsupported("size");
     }
 
     /**
@@ -95,7 +92,7 @@ final class ReversedBitsChannel implements ReadableByteChannel, SeekableByteChan
      */
     @Override
     public SeekableByteChannel position(final long p) throws IOException {
-        input.setStreamPosition(p);
+        input.seek(p);
         return this;
     }
 

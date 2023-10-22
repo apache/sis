@@ -22,13 +22,13 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.nio.channels.Channel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -52,6 +52,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  *
  * <p>Since this class is only a helper tool, it does not "own" the channel and consequently does not provide
  * {@code close()} method. It is users responsibility to close the channel after usage.</p>
+ *
+ * <h2>Interpretation of buffer position and limit</h2>
+ * The buffer position is the position where to write the next byte.
+ * It may be either a new byte appended to the channel, or byte overwriting an existing byte.
+ * Those two case are differentiated by the buffer limit, which is the number of valid bytes in the buffer.
  *
  * <h2>Relationship with {@code ImageOutputStream}</h2>
  * This class API is compatibly with the {@link javax.imageio.stream.ImageOutputStream} interface, so subclasses
@@ -85,19 +90,64 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     }
 
     /**
+     * Creates a new data output which will write in the same channel than the given input.
+     * The new instance will share the same channel and buffer than the given {@code input}.
+     * Callers should not use the two {@code ChannelData} in same time for avoiding chaos.
+     * Bytes will be written starting at the current position of the given input.
+     *
+     * <p>Callers <strong>must</strong> invoke {@link ChannelDataInput#yield(ChannelData)}
+     * before the first use of this output. Example:</p>
+     *
+     * {@snippet lang="java":
+     *     ChannelDataInput  input  = ...;
+     *     ChannelDataOutput output = new ChannelDataOutput(input);
+     *     input.yield(output)
+     *     // ...some writing to `output` here...
+     *     output.yield(input);
+     *     // ...some reading from `input` here...
+     *     input.yield(output)
+     *     // ...some writing to `output` here...
+     * }
+     *
+     * @param  input  the input to make writable.
+     * @throws ClassCastException if the given input is not writable.
+     *
+     * @see #flush()
+     * @see #yield(ChannelData)
+     */
+    public ChannelDataOutput(final ChannelDataInput input) {
+        super(input, false);
+        channel = (WritableByteChannel) input.channel;      // `ClassCastException` is part of the contract.
+        // Do not invoke `synchronized(input)` because caller may want to do some more read operations first.
+    }
+
+    /**
+     * {@return the wrapped channel where data are written}.
+     * This is the {@link #channel} field value.
+     *
+     * @see #channel
+     */
+    @Override
+    public final Channel channel() {
+        return channel;
+    }
+
+    /**
      * Makes sure that the buffer can accept at least <var>n</var> more bytes.
      * It is caller's responsibility to ensure that the given number of bytes is
      * not greater than the {@linkplain ByteBuffer#capacity() buffer capacity}.
      *
      * <p>After this method call, the buffer {@linkplain ByteBuffer#limit() limit}
-     * will be equal or greater than {@code position + n}.</p>
+     * will be equal or greater than {@code position + n}. This limit is the number
+     * of valid bytes in the buffer, i.e. bytes that already exist in the channel.
+     * If the caller is appending new bytes and does not use all the space specified
+     * to this method, then the caller should adjust the limit after writing.</p>
      *
      * @param  n  the minimal number of additional bytes that the {@linkplain #buffer buffer} shall accept.
      * @throws IOException if an error occurred while writing to the channel.
      */
     public final void ensureBufferAccepts(final int n) throws IOException {
-        final int capacity = buffer.capacity();
-        assert n >= 0 && n <= capacity : n;
+        assert n >= 0 && n <= buffer.capacity() : n;
         int after = buffer.position() + n;
         if (after > buffer.limit()) {
             /*
@@ -105,7 +155,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
              * of valid bytes in the buffer. If the new limit would exceed the buffer capacity, then we
              * need to write some bytes now.
              */
-            if (after > capacity) {
+            if (after > buffer.capacity()) {
                 buffer.flip();
                 do {
                     final int c = channel.write(buffer);
@@ -113,14 +163,14 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
                         onEmptyTransfer();
                     }
                     after -= c;
-                } while (after > capacity);
+                } while (after > buffer.capacity());
                 /*
                  * We wrote a sufficient amount of bytes - usually all of them, but not necessarily.
                  * If there is some unwritten bytes, move them the beginning of the buffer.
                  */
                 bufferOffset += buffer.position();
                 buffer.compact();
-                assert after >= buffer.position();
+                assert after >= buffer.position() : after;
             }
             buffer.limit(after);
         }
@@ -132,8 +182,8 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @return the position of the stream.
      */
     @Override
-    public long getStreamPosition() {
-        long position = super.getStreamPosition();
+    public final long getStreamPosition() {
+        long position = position();
         /*
          * ChannelDataOutput uses a different strategy than ChannelDataInput: if some bits were in process
          * of being written, the buffer position is set to the byte AFTER the byte containing the bits.
@@ -540,11 +590,11 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @param  length  the number of chars to write.
      * @throws IOException if an error occurred while writing the stream.
      */
-    public final void writeChars(final char[] src, int offset, int length) throws IOException {
+    public final void writeChars(final char[] src, final int offset, final int length) throws IOException {
         new ArrayWriter() {
             private CharBuffer view;
             @Override Buffer createView() {return view = buffer.asCharBuffer();}
-            @Override void transfer(int offset, int n) {view.put(src, offset, n);}
+            @Override void transfer(int start, int n) {view.put(src, start, n);}
         }.writeFully(Character.BYTES, offset, length);
     }
 
@@ -556,11 +606,11 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @param  length  the number of shorts to write.
      * @throws IOException if an error occurred while writing the stream.
      */
-    public final void writeShorts(final short[] src, int offset, int length) throws IOException {
+    public final void writeShorts(final short[] src, final int offset, final int length) throws IOException {
         new ArrayWriter() {
             private ShortBuffer view;
             @Override Buffer createView() {return view = buffer.asShortBuffer();}
-            @Override void transfer(int offset, int length) {view.put(src, offset, length);}
+            @Override void transfer(int start, int n) {view.put(src, start, n);}
         }.writeFully(Short.BYTES, offset, length);
     }
 
@@ -572,11 +622,11 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @param  length  the number of integers to write.
      * @throws IOException if an error occurred while writing the stream.
      */
-    public final void writeInts(final int[] src, int offset, int length) throws IOException {
+    public final void writeInts(final int[] src, final int offset, final int length) throws IOException {
         new ArrayWriter() {
             private IntBuffer view;
             @Override Buffer createView() {return view = buffer.asIntBuffer();}
-            @Override void transfer(int offset, int n) {view.put(src, offset, n);}
+            @Override void transfer(int start, int n) {view.put(src, start, n);}
         }.writeFully(Integer.BYTES, offset, length);
     }
 
@@ -588,11 +638,11 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @param  length  the number of longs to write.
      * @throws IOException if an error occurred while writing the stream.
      */
-    public final void writeLongs(final long[] src, int offset, int length) throws IOException {
+    public final void writeLongs(final long[] src, final int offset, final int length) throws IOException {
         new ArrayWriter() {
             private LongBuffer view;
             @Override Buffer createView() {return view = buffer.asLongBuffer();}
-            @Override void transfer(int offset, int n) {view.put(src, offset, n);}
+            @Override void transfer(int start, int n) {view.put(src, start, n);}
         }.writeFully(Long.BYTES, offset, length);
     }
 
@@ -604,11 +654,11 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @param  length  the number of floats to write.
      * @throws IOException if an error occurred while writing the stream.
      */
-    public final void writeFloats(final float[] src, int offset, int length) throws IOException {
+    public final void writeFloats(final float[] src, final int offset, final int length) throws IOException {
         new ArrayWriter() {
             private FloatBuffer view;
             @Override Buffer createView() {return view = buffer.asFloatBuffer();}
-            @Override void transfer(int offset, int n) {view.put(src, offset, n);}
+            @Override void transfer(int start, int n) {view.put(src, start, n);}
         }.writeFully(Float.BYTES, offset, length);
     }
 
@@ -620,11 +670,11 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @param  length  the number of doubles to write.
      * @throws IOException if an error occurred while writing the stream.
      */
-    public final void writeDoubles(final double[] src, int offset, int length) throws IOException {
+    public final void writeDoubles(final double[] src, final int offset, final int length) throws IOException {
         new ArrayWriter() {
             private DoubleBuffer view;
             @Override Buffer createView() {return view = buffer.asDoubleBuffer();}
-            @Override void transfer(int offset, int n) {view.put(src, offset, n);}
+            @Override void transfer(int start, int n) {view.put(src, start, n);}
         }.writeFully(Double.BYTES, offset, length);
     }
 
@@ -669,18 +719,15 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     @Override
     public void writeUTF(final String s) throws IOException {
         byte[] data = s.getBytes(StandardCharsets.UTF_8);
-        if (data.length > Short.MAX_VALUE) {
+        final int length = data.length;
+        if (length > Short.MAX_VALUE) {
             throw new IllegalArgumentException(Resources.format(
-                    Resources.Keys.ExcessiveStringSize_3, filename, Short.MAX_VALUE, data.length));
+                    Resources.Keys.ExcessiveStringSize_3, filename, Short.MAX_VALUE, length));
         }
-        final ByteOrder oldOrder = buffer.order();
-        buffer.order(ByteOrder.BIG_ENDIAN);
-        try {
-            writeShort(data.length);
-            write(data);
-        } finally {
-            buffer.order(oldOrder);
-        }
+        ensureBufferAccepts(Short.BYTES);
+        buffer.put((byte) (length >>> Byte.SIZE));      // Write using ByteOrder.BIG_ENDIAN.
+        buffer.put((byte) length);
+        write(data);
     }
 
     /**
@@ -734,9 +781,9 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     }
 
     /**
-     * Moves to the given position in the stream, relative to the stream position at construction time.
-     * If the given position is greater than the stream length, then the values of bytes between the
-     * previous stream length and the given position are unspecified. The limit is unchanged.
+     * Moves to the given position in this stream.
+     * If the given position is greater than the stream length, then the values of all bytes between
+     * the previous stream length and the given position are unspecified. The limit is unchanged.
      *
      * @param  position  the position where to move.
      * @throws IOException if the stream cannot be moved to the given position.
@@ -756,7 +803,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
              * but we can set the new position directly in the channel.
              */
             flush();
-            ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
+            ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(position));
             bufferOffset = position;
         } else if ((p -= buffer.position()) >= 0) {
             /*
@@ -768,52 +815,86 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
             // We cannot move position beyond the buffered part.
             throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
-        assert super.getStreamPosition() == position;
+        assert position() == position;
     }
 
     /**
-     * Flushes the {@link #buffer buffer} content to the channel.
+     * Flushes the buffer content to the channel, from buffer beginning to buffer limit.
+     * If the buffer position is not already at the buffer limit, the position is moved.
+     * The buffer is empty after this method call, i.e. the limit is zero.
      * This method does <strong>not</strong> flush the channel itself.
      *
      * @throws IOException if an error occurred while writing to the channel.
      */
     @Override
     public final void flush() throws IOException {
-        buffer.rewind();
-        writeFully();
-        buffer.limit(0);
         clearBitOffset();
+        writeFully();
+        bufferOffset = position();
+        buffer.limit(0);
     }
 
     /**
-     * Writes the buffer content up to the given position, then set the buffer position to the given value.
-     * The {@linkplain ByteBuffer#limit() buffer limit} is unchanged, and the buffer offset is incremented
-     * by the given value.
+     * Writes the given number of bytes from the buffer.
+     * This is invoked for making room for more bytes.
+     *
+     * @param  count  number of bytes to write, between 1 and buffer limit.
+     * @throws IOException if an error occurred while writing the bytes to the channel.
      */
     @Override
-    final void flushAndSetPosition(final int position) throws IOException {
-        final int limit = buffer.limit();
-        buffer.rewind().limit(position);
+    final void flushNBytes(final int count) throws IOException {
+        final int position = buffer.position();
+        final int validity = buffer.limit();
+        buffer.limit(count);
         writeFully();
-        buffer.limit(limit);
+        bufferOffset = position();
+        buffer.limit(validity).compact().limit(buffer.position()).position(position - count);
     }
 
     /**
-     * Writes fully the buffer content from its position to its limit.
-     * After this method call, the buffer position is equal to its limit.
+     * Writes fully the buffer content from beginning to buffer limit.
+     * Caller must update the buffer position after this method call.
      *
      * @throws IOException if an error occurred while writing to the channel.
      */
     private void writeFully() throws IOException {
-        int n = buffer.remaining();
-        bufferOffset += n;
-        while (n != 0) {
-            final int c = channel.write(buffer);
-            if (c == 0) {
+        buffer.rewind();
+        while (buffer.hasRemaining()) {
+            if (channel.write(buffer) == 0) {
                 onEmptyTransfer();
             }
-            n -= c;
         }
-        assert !buffer.hasRemaining() : buffer;
+    }
+
+    /**
+     * Notifies two {@code ChannelData} instances that operations will continue with the specified take over.
+     * This method should be invoked when write operations with this {@code ChannelDataOutput} are completed
+     * for now, and read operations are about to begin with a {@link ChannelDataInput} sharing the same channel.
+     *
+     * @param  takeOver  the {@link ChannelDataInput} which will continue operations after this instance.
+     */
+    @Override
+    public void yield(final ChannelData takeOver) throws IOException {
+        final int position = buffer.position();
+        final int limit    = buffer.limit();
+        /*
+         * Flush the full buffer content for avoiding data lost. Note that the buffer position
+         * is not necessarily at the end, so we may write more bytes than the stream position.
+         * It may force us to seek backward after flushing.
+         */
+        clearBitOffset();
+        writeFully();
+        if (position >= limit) {
+            // We were at the end of the buffer, so the channel is already at the right position.
+            bufferOffset = position();
+            buffer.limit(0);
+        } else if (channel instanceof SeekableByteChannel) {
+            // Do not move `bufferOffset`. Instead make the channel position consistent with it.
+            buffer.limit(limit).position(position);
+            ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(position()));
+        } else {
+            throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
+        }
+        super.yield(takeOver);
     }
 }

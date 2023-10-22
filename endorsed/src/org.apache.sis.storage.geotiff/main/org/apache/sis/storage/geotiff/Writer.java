@@ -172,7 +172,7 @@ final class Writer extends GeoTIFF implements Flushable {
          * Write the TIFF file header before first IFD. Stream position matter and must start at zero.
          * Note that it does not necessarily mean that the stream has no bytes before current position.
          */
-        output.setStreamPosition(0);                          // Not a seek, only setting the counter.
+        output.relocateOrigin();
         output.writeShort(ByteOrder.LITTLE_ENDIAN.equals(output.buffer.order()) ? LITTLE_ENDIAN : BIG_ENDIAN);
         output.writeShort(isBigTIFF ? BIG_TIFF : CLASSIC);
         if (isBigTIFF) {

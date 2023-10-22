@@ -62,8 +62,10 @@ public abstract class ChannelData implements Markable {
      *
      * <p>This value is added to the argument given to the {@link #seek(long)} method. Users can ignore
      * this field, unless they want to invoke {@link SeekableByteChannel#position(long)} directly.</p>
+     *
+     * @see #toSeekableByteChannelPosition(long)
      */
-    public final long channelOffset;
+    private long channelOffset;
 
     /**
      * The channel position where is located the {@link #buffer} value at index 0.
@@ -117,25 +119,31 @@ public abstract class ChannelData implements Markable {
      * @throws IOException if an error occurred while reading the channel.
      */
     ChannelData(final String filename, final Channel channel, final ByteBuffer buffer) throws IOException {
-        this.filename      = filename;
-        this.buffer        = buffer;
-        this.channelOffset = (channel instanceof SeekableByteChannel) ? ((SeekableByteChannel) channel).position() : 0;
+        this.filename = filename;
+        this.buffer   = buffer;
+        if (channel instanceof SeekableByteChannel) {
+            channelOffset = ((SeekableByteChannel) channel).position();
+        }
     }
 
     /**
      * Creates a new instance from the given {@code ChannelData}.
      * This constructor is invoked when we need to change the implementation class.
-     * The old {@code ChannelData} should not be used anymore after this constructor.
+     * If {@code replacing} is {@code true}, then the old {@code ChannelData} should
+     * not be used anymore after this constructor.
      *
-     * @param  old  the existing instance from which to takes the channel and buffer.
+     * @param  other      the existing instance from which to takes the channel and buffer.
+     * @param  replacing  {@code true} if {@code other} will be discarded in favor of the new instance.
      */
-    ChannelData(final ChannelData old) {
-        filename      = old.filename;
-        buffer        = old.buffer;
-        channelOffset = old.channelOffset;
-        bufferOffset  = old.bufferOffset;
-        bitPosition   = old.bitPosition;
-        mark          = old.mark;
+    ChannelData(final ChannelData other, final boolean replacing) {
+        filename      = other.filename;
+        buffer        = other.buffer;
+        channelOffset = other.channelOffset;
+        bufferOffset  = other.bufferOffset;
+        bitPosition   = other.bitPosition;
+        if (replacing) {
+            mark = other.mark;
+        }
     }
 
     /**
@@ -150,7 +158,35 @@ public abstract class ChannelData implements Markable {
         this.filename = filename;
         buffer = data.asReadOnlyBuffer();
         buffer.order(data.order());
-        channelOffset = 0;
+    }
+
+    /**
+     * {@return the wrapped channel where data are read or written}.
+     * This is the {@code channel} field of the {@code ChannelData} subclass.
+     *
+     * @see ChannelDataInput#channel
+     * @see ChannelDataOutput#channel
+     */
+    public abstract Channel channel();
+
+    /**
+     * Returns the length of the stream (in bytes), or -1 if unknown.
+     * The length is relative to the position during the last call to {@link #relocateOrigin()}.
+     * If the latter method has never been invoked, then the length is relative to the channel
+     * position at {@code ChannelData} construction time.
+     *
+     * @return the length of the stream (in bytes) relative to origin, or -1 if unknown.
+     * @throws IOException if an error occurred while fetching the stream length.
+     */
+    public final long length() throws IOException {     // Method signature must match ImageInputStream.length().
+        final Channel channel = channel();
+        if (channel instanceof SeekableByteChannel) {
+            final long length = Math.subtractExact(((SeekableByteChannel) channel).size(), channelOffset);
+            if (length >= 0) {
+                return Math.max(length, Math.addExact(bufferOffset, buffer.limit()));
+            }
+        }
+        return -1;
     }
 
     /**
@@ -220,45 +256,23 @@ public abstract class ChannelData implements Markable {
 
     /**
      * Returns the current byte position of the stream.
-     * The returned value is relative to the position that the stream had at {@code ChannelData} construction time.
+     * The returned value is relative to the position during the last call to {@link #relocateOrigin()}.
+     * If the latter method has never been invoked, then the returned value is relative to the channel
+     * position at {@code ChannelData} construction time.
      *
      * @return the position of the stream.
      */
     @Override
-    public long getStreamPosition() {
-        return position();
-    }
+    public abstract long getStreamPosition();
 
     /**
      * Returns the current byte position of the stream, ignoring overriding by subclasses.
-     * The returned value is relative to the position that the stream had at {@code ChannelData} construction time.
+     * The returned value is relative to the position during the last call to {@link #relocateOrigin()}.
+     * If the latter method has never been invoked, then the returned value is relative to the channel
+     * position at {@code ChannelData} construction time.
      */
-    private long position() {
+    final long position() {
         return Math.addExact(bufferOffset, buffer.position());
-    }
-
-    /**
-     * Sets the current byte position of the stream. This method does <strong>not</strong> seeks the stream;
-     * this method only modifies the value to be returned by {@link #getStreamPosition()}. This method can
-     * be invoked when some external code has performed some work with the channel and wants to inform this
-     * {@code ChannelData} about the new position resulting from this work.
-     *
-     * <b>Notes:</b>
-     * <ul>
-     *   <li>Invoking this method clears the {@linkplain #getBitOffset() bit offset}
-     *       and the {@linkplain #mark() marks}.</li>
-     *   <li>This method does not need to be invoked when only the {@linkplain ByteBuffer#position() buffer position}
-     *       has changed.</li>
-     * </ul>
-     *
-     * @param position the new position of the stream.
-     */
-    public final void setStreamPosition(final long position) {
-        bufferOffset = Math.subtractExact(position, buffer.position());
-        // Clearing the bit offset is needed if we don't want to handle the case of ChannelDataOutput,
-        // which use a different stream position calculation when the bit offset is non-zero.
-        clearBitOffset();
-        mark = null;
     }
 
     /**
@@ -291,11 +305,10 @@ public abstract class ChannelData implements Markable {
         if (buffer.isReadOnly()) {
             return;
         }
-        final int n = (int) Math.max(position - bufferOffset, 0);
-        final int p = buffer.position() - n;
-        final int r = buffer.limit() - n;
-        flushAndSetPosition(n);                             // Number of bytes to forget.
-        buffer.compact().position(p).limit(r);
+        final long count = Math.subtractExact(position, bufferOffset);
+        if (count > 0) {
+            flushNBytes((int) Math.min(count, buffer.limit()));
+        }
         /*
          * Discard trailing obsolete marks. Note that obsolete marks between valid marks
          * cannot be discarded - only the trailing obsolete marks can be removed.
@@ -314,18 +327,20 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * Writes (if applicable) the buffer content up to the given position, then sets the buffer position
-     * to the given value. The {@linkplain ByteBuffer#limit() buffer limit} is unchanged, and the buffer
-     * offset is incremented by the given value.
+     * Flushes the given number of bytes in the buffer.
+     * This is invoked for making room for more bytes.
+     * If the given count is larger than the buffer content, then this method flushes everything.
+     * If the given count is zero or negative, then this method does nothing.
+     *
+     * @param  count  number of bytes to write, between 1 and buffer limit.
+     * @throws IOException if an error occurred while writing the bytes to the channel.
      */
-    void flushAndSetPosition(final int position) throws IOException {
-        buffer.position(position);
-        bufferOffset += position;
-    }
+    abstract void flushNBytes(final int count) throws IOException;
 
     /**
-     * Moves to the given position in the stream. The given position is relative to
-     * the position that the stream had at {@code ChannelData} construction time.
+     * Moves to the given position in the stream. The given position is relative to the position during
+     * the last call to {@link #relocateOrigin()}. If the latter method has never been invoked, then the
+     * argument is relative to the channel position at {@code ChannelData} construction time.
      *
      * @param  position  the position where to move.
      * @throws IOException if the stream cannot be moved to the given position.
@@ -339,7 +354,7 @@ public abstract class ChannelData implements Markable {
      */
     @Override
     public final void mark() {
-        mark = new Mark(getStreamPosition(), (byte) getBitOffset(), mark);
+        mark = new Mark(position(), (byte) getBitOffset(), mark);
     }
 
     /**
@@ -386,6 +401,108 @@ public abstract class ChannelData implements Markable {
         if (lastValid != null) {
             setBitOffset(lastValid.bitOffset);
         }
+    }
+
+    /**
+     * Empties the buffer and sets the channel position to the beginning of this stream (the origin).
+     * This method is similar to {@code seek(0)} except that the buffer content and all marks are discarded,
+     * and that this method returns {@code false} instead of throwing an exception if the channel is not seekable.
+     *
+     * @return {@code true} on success, or {@code false} if it is not possible to reset the position.
+     * @throws IOException if an error occurred while setting the channel position.
+     */
+    public final boolean rewind() throws IOException {
+        final Channel channel = channel();
+        if (channel instanceof SeekableByteChannel) {
+            ((SeekableByteChannel) channel).position(channelOffset);
+            buffer.clear().limit(0);
+            bufferOffset = 0;
+            clearBitOffset();
+            mark = null;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Notifies two {@code ChannelData} instances that operations will continue with the specified take over.
+     * The two {@code ChannelData} instances should share the same {@link Channel}, or use two channels that
+     * are at the same {@linkplain SeekableByteChannel#position() channel position}.
+     *
+     * <h4>Usage</h4>
+     * This method is used when a {@link ChannelDataInput} and a {@link ChannelDataOutput} are wrapping
+     * the same {@link java.nio.channels.ByteChannel} and used alternatively for reading and writing.
+     * After a read operation, {@code in.yield(put)} should be invoked for ensuring that the output
+     * position is valid for the new channel position.
+     *
+     * <h4>Implementation note</h4>
+     * Subclasses <strong>must</strong> override this method and set the buffer position to zero.
+     * Whether this need to be done before or after {@code super.field(takeOver)} depends on whether
+     * this {@code ChannelData} is for input or output.
+     *
+     * @param  takeOver  the {@code ChannelData} which will continue operations after this one.
+     *
+     * @see ChannelDataOutput#ChannelDataOutput(ChannelDataInput)
+     */
+    public void yield(final ChannelData takeOver) throws IOException {
+        takeOver.bufferOffset  = bufferOffset;
+        takeOver.channelOffset = channelOffset;
+        takeOver.bitPosition   = bitPosition;
+    }
+
+    /**
+     * Invalidates the buffer content and updates the value reported as the stream position.
+     * This method is not a {@linkplain #seek(long) seek},
+     * i.e. it does not change the {@linkplain #channel() channel} position,
+     * This method only modifies the value returned by the {@link #getStreamPosition()} method.
+     * This {@code refresh(long)} method can be invoked when external code has performed some work
+     * directly on the {@linkplain #channel() channel} and wants to inform this {@code ChannelData}
+     * about the new position resulting from this work.
+     *
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Invoking this method clears the {@linkplain #getBitOffset() bit offset} and {@linkplain #mark() marks}.</li>
+     *   <li>Invoking this method sets the {@linkplain #buffer} {@linkplain ByteBuffer#limit() limit} to zero.</li>
+     *   <li>This method does not need to be invoked when only the {@linkplain ByteBuffer#position() buffer position}
+     *       has changed.</li>
+     * </ul>
+     *
+     * @param  position  the new position of the stream.
+     */
+    public final void refresh(final long position) {
+        buffer.limit(0);
+        bufferOffset = position;
+        /*
+         * Clearing the bit offset is needed if we don't want to handle the case of `ChannelDataOutput`,
+         * which use a different stream position calculation when the bit offset is non-zero.
+         */
+        clearBitOffset();
+        mark = null;
+    }
+
+    /**
+     * Sets the current position as the new origin of this {@code ChannelData}.
+     * After this method call, {@link #getStreamPosition()} will return zero when
+     * {@code ChannelData} is about to read the byte located at the current position.
+     *
+     * <p>Note that invoking this method may change the value returned by {@link #length()},
+     * because the length is relative to the origin.</p>
+     */
+    public final void relocateOrigin() {
+        final long position = getStreamPosition();
+        channelOffset = toSeekableByteChannelPosition(position);
+        bufferOffset  = Math.subtractExact(bufferOffset, position);
+    }
+
+    /**
+     * Converts a position in this {@code ChannelData} to position in the Java NIO channel.
+     * This is often the same value, but not necessarily.
+     *
+     * @param  position  position in this {@code ChannelData}.
+     * @return Corresponding position in the {@code SeekableByteChannel}.
+     */
+    final long toSeekableByteChannelPosition(final long position) {
+        return Math.addExact(channelOffset, position);
     }
 
     /**

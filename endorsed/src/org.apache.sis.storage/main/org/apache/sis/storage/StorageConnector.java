@@ -37,7 +37,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.OpenOption;
 import java.nio.file.NoSuchFileException;
@@ -64,6 +63,7 @@ import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.ChannelFactory;
+import org.apache.sis.io.stream.ChannelData;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.ChannelImageInputStream;
@@ -106,7 +106,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public class StorageConnector implements Serializable {
@@ -513,15 +513,14 @@ public class StorageConnector implements Serializable {
                  * (except in BufferedReader if the original storage does not support mark/reset).
                  */
                 ((Reader) view).reset();
-            } else if (view instanceof ChannelDataInput) {
+            } else if (view instanceof ChannelData) {
                 /*
-                 * ChannelDataInput can be recycled without the need to discard and recreate them. Note that
-                 * this code requires that SeekableByteChannel has been seek to the channel beginning first.
-                 * This should be done by the above `wrapperFor.reset()` call.
+                 * `ChannelDataInput` can be recycled without the need to discard and recreate it.
+                 * However if a `Channel` was used directly, it should have been seek to the channel
+                 * beginning first. This seek should be done by above call to `wrapperFor.reset()`,
+                 * which should cause the block below (with a call to `rewind()`) to be executed.
                  */
-                final ChannelDataInput input = (ChannelDataInput) view;
-                input.buffer.limit(0);                                      // Must be after channel reset.
-                input.setStreamPosition(0);                                 // Must be after buffer.limit(0).
+                ((ChannelData) view).seek(0);
             } else if (view instanceof Channel) {
                 /*
                  * Searches for a ChannelDataInput wrapping the channel, because it contains the original position
@@ -532,10 +531,10 @@ public class StorageConnector implements Serializable {
                 String name = null;
                 if (wrappedBy != null) {
                     for (Coupled c : wrappedBy) {
-                        if (c.view instanceof ChannelDataInput) {
-                            final ChannelDataInput in = ((ChannelDataInput) c.view);
-                            if (view instanceof SeekableByteChannel) {
-                                ((SeekableByteChannel) view).position(in.channelOffset);
+                        if (c.view instanceof ChannelData) {
+                            final var in = (ChannelData) c.view;
+                            assert in.channel() == view : c;
+                            if (in.rewind()) {
                                 return true;
                             }
                             name = in.filename;                                     // For the error message.

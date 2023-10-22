@@ -224,7 +224,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         location   = connector.getStorageAs(URI.class);
         path       = connector.getStorageAs(Path.class);
         try {
-            if (URIDataStore.Provider.isWritable(connector)) {
+            if (URIDataStore.Provider.isWritable(connector, true)) {
                 ChannelDataOutput output = connector.commit(ChannelDataOutput.class, Constants.GEOTIFF);
                 writer = new Writer(this, output, connector.getOption(GeoTiffOption.OPTION_KEY));
             } else {

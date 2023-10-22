@@ -265,8 +265,7 @@ public abstract class Inflater implements Closeable {
          */
         if (input.channel instanceof PixelChannel) {
             ((PixelChannel) input.channel).setInputRegion(start, byteCount);
-            input.buffer.limit(0);
-            input.setStreamPosition(start);         // Must be after above call to `limit(0)`.
+            input.refresh(start);
         }
     }
 

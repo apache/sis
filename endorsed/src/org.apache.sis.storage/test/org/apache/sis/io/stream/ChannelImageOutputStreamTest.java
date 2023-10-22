@@ -84,7 +84,7 @@ public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
      */
     @Test
     public void testMarkAndReset() throws IOException {
-        initialize("testMarkAndReset", STREAM_LENGTH, 1000); // We need a larger buffer for this test.
+        initialize("testMarkAndReset", STREAM_LENGTH, 1000);        // We need a larger buffer for this test.
         /*
          * Fill both streams with random data.
          * During this process, randomly takes mark.
