@@ -246,7 +246,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                 coverage = preload(coverage);
             }
         } catch (RuntimeException e) {
-            throw canNotRead(reader.input.filename, domain, e);
+            throw canNotRead(filename(), domain, e);
         }
         logReadOperation(reader.store.path, coverage.getGridGeometry(), startTime);
         return coverage;

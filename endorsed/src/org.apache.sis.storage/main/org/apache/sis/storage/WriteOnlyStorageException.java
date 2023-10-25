@@ -18,31 +18,28 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when a {@code DataStore} cannot perform a write operation.
- * If a data store does not support any write operation, then it should not implement
- * {@link WritableAggregate} or {@link WritableFeatureSet} interface.
- * But in some situations, a data store may implement a {@code Writable*} interface
- * and nevertheless be unable to perform a write operation, for example because the
- * underlying {@link java.nio.channels.Channel} is read-only or part of the file is
- * locked by another process.
+ * Thrown when a {@code DataStore} cannot perform a read operation.
+ * This exception may happen if the {@link java.nio.channels.Channel} used by a data store
+ * implements {@link java.nio.channels.WritableByteChannel} only, without implementing also
+ * {@link java.nio.channels.ReadableByteChannel}.
  *
- * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  *
- * @see WriteOnlyStorageException
+ * @see ReadOnlyStorageException
  * @see ForwardOnlyStorageException
  */
-public class ReadOnlyStorageException extends DataStoreException {
+public class WriteOnlyStorageException extends DataStoreException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5710116172772560023L;
+    private static final long serialVersionUID = -5809491968506721317L;
 
     /**
      * Creates an exception with no cause and no details message.
      */
-    public ReadOnlyStorageException() {
+    public WriteOnlyStorageException() {
     }
 
     /**
@@ -50,7 +47,7 @@ public class ReadOnlyStorageException extends DataStoreException {
      *
      * @param message  the detail message.
      */
-    public ReadOnlyStorageException(final String message) {
+    public WriteOnlyStorageException(final String message) {
         super(message);
     }
 
@@ -59,7 +56,7 @@ public class ReadOnlyStorageException extends DataStoreException {
      *
      * @param cause  the cause for this exception.
      */
-    public ReadOnlyStorageException(final Throwable cause) {
+    public WriteOnlyStorageException(final Throwable cause) {
         super(cause);
     }
 
@@ -69,7 +66,7 @@ public class ReadOnlyStorageException extends DataStoreException {
      * @param message  the detail message.
      * @param cause    the cause for this exception.
      */
-    public ReadOnlyStorageException(final String message, final Throwable cause) {
+    public WriteOnlyStorageException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

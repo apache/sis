@@ -25,10 +25,11 @@ import java.util.Iterator;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import org.opengis.util.NameFactory;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.geotiff.internal.Resources;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
@@ -57,11 +58,6 @@ final class Reader extends GeoTIFF {
     final ChannelDataInput input;
 
     /**
-     * Stream position of the first byte of the GeoTIFF file. This is usually zero.
-     */
-    final long origin;
-
-    /**
      * A multiplication factor for the size of pointers, expressed as a power of 2.
      * The pointer size in bytes is given by {@code Integer.BYTES << pointerExpansion}.
      *
@@ -86,12 +82,20 @@ final class Reader extends GeoTIFF {
     private ImageFileDirectory lastIFD;
 
     /**
-     * Offset (relative to the beginning of the TIFF file) of the next Image File Directory (IFD)
-     * to read, or 0 if we have finished to read all of them.
+     * Offset (relative to the beginning of the TIFF file) of the next Image File Directory (IFD) to read.
+     * This is valid only if {@link #endOfFile} is {@code false}, otherwise this value is actually the offset
+     * where to write a new IFD value if a new image is appended by {@link Writer}.
      *
      * @see #readNextImageOffset()
      */
     private long nextIFD;
+
+    /**
+     * Whether all existing Image File Directories (IFD) have been read. If {@code true}, the {@link #nextIFD}
+     * is not the offset of the next IFD, but rather the offset where to <em>write</em> the next IFD if a new
+     * image is appended by {@link Writer}.
+     */
+    private boolean endOfFile;
 
     /**
      * Offsets of all <cite>Image File Directory</cite> (IFD) that have been read so far.
@@ -141,7 +145,6 @@ final class Reader extends GeoTIFF {
     Reader(final GeoTiffStore store, final ChannelDataInput input) throws IOException, DataStoreException {
         super(store);
         this.input       = input;
-        this.origin      = input.getStreamPosition();
         this.doneIFD     = new HashSet<>();
         this.nameFactory = DefaultNameFactory.provider();
         /*
@@ -149,6 +152,7 @@ final class Reader extends GeoTIFF {
          * Those characters identify the byte order. Note that we do not need to care
          * about the byte order for this flag since the two bytes shall have the same value.
          */
+        input.relocateOrigin();
         final short order = input.readShort();
         final boolean isBigEndian = (order == BIG_ENDIAN);
         if (isBigEndian || order == LITTLE_ENDIAN) {
@@ -193,7 +197,7 @@ final class Reader extends GeoTIFF {
      * {@return the options (BigTIFF, COG…) used by this reader}.
      */
     @Override
-    final Set<GeoTiffOption> getOptions() {
+    public final Set<GeoTiffOption> getOptions() {
         return (intSizeExpansion != 0) ? Set.of(GeoTiffOption.BIG_TIFF) : Set.of();
     }
 
@@ -202,8 +206,12 @@ final class Reader extends GeoTIFF {
      * and makes sure that it will not cause an infinite loop.
      */
     private void readNextImageOffset() throws IOException, DataStoreException {
+        final long p = input.getStreamPosition();
         nextIFD = readUnsignedInt();
-        if (!doneIFD.add(nextIFD)) {
+        endOfFile = (nextIFD == 0);
+        if (endOfFile) {
+            nextIFD = p;
+        } else if (!doneIFD.add(nextIFD)) {
             throw new DataStoreContentException(resources().getString(
                     Resources.Keys.CircularImageReference_1, input.filename));
         }
@@ -244,7 +252,7 @@ final class Reader extends GeoTIFF {
     }
 
     /**
-     * Returns the next <cite>Image File Directory</cite> (IFD), or {@code null} if we reached the last IFD.
+     * Returns the next Image File Directory (IFD), or {@code null} if we reached the last IFD.
      * The IFD consists of a 2 (classical) or 8 (BigTiff)-bytes count of the number of directory entries,
      * followed by a sequence of 12-byte field entries, followed by a pointer to the next IFD (or 0 if none).
      *
@@ -254,12 +262,12 @@ final class Reader extends GeoTIFF {
      *
      * @see #getImage(int)
      */
-    private ImageFileDirectory getImageFileDirectory(final int index) throws IOException, DataStoreException {
-        if (nextIFD == 0) {
+    private ImageFileDirectory readNextIFD(final int index) throws IOException, DataStoreException {
+        if (endOfFile || nextIFD == 0) {
             return null;
         }
         resolveDeferredEntries(null, nextIFD);
-        input.seek(Math.addExact(origin, nextIFD));
+        input.seek(nextIFD);
         nextIFD = 0;               // Prevent trying other IFD if we fail to read this one.
         /*
          * Design note: we parse the Image File Directory entry now because even if we were
@@ -354,7 +362,7 @@ final class Reader extends GeoTIFF {
             deferredEntries.sort(null);                                 // Sequential order in input stream.
             deferredNeedsSort = false;
         }
-        final long ignoreBefore = input.getStreamPosition() - origin;   // Avoid seeking back, unless we need to.
+        final long ignoreBefore = input.getStreamPosition();            // Avoid seeking back, unless we need to.
         DeferredEntry stopAfter = null;                                 // Avoid reading more entries than needed.
         if (dir != null) {
             for (final Iterator<DeferredEntry> it = deferredEntries.descendingIterator(); it.hasNext();) {
@@ -365,7 +373,7 @@ final class Reader extends GeoTIFF {
         for (final Iterator<DeferredEntry> it = deferredEntries.iterator(); it.hasNext();) {
             final DeferredEntry entry = it.next();
             if (entry.owner == dir || (entry.offset >= ignoreBefore && entry.offset <= ignoreAfter)) {
-                input.seek(Math.addExact(origin, entry.offset));
+                input.seek(entry.offset);
                 Object error;
                 try {
                     error = entry.owner.addEntry(entry.tag, entry.type, entry.count);
@@ -395,12 +403,12 @@ final class Reader extends GeoTIFF {
      * @return the pyramid if we found it, or {@code null} if there is no more pyramid at the given index.
      * @throws ArithmeticException if the pointer to a next IFD is too far.
      */
-    final GridCoverageResource getImage(final int index) throws IOException, DataStoreException {
+    public final GridCoverageResource getImage(final int index) throws IOException, DataStoreException {
         while (index >= images.size()) {
             int imageIndex = images.size();
             ImageFileDirectory fullResolution = lastIFD;
             if (fullResolution == null) {
-                fullResolution = getImageFileDirectory(imageIndex);
+                fullResolution = readNextIFD(imageIndex);
                 if (fullResolution == null) {
                     return null;
                 }
@@ -409,7 +417,7 @@ final class Reader extends GeoTIFF {
             imageIndex++;       // In case next image is full-resolution.
             ImageFileDirectory image;
             final List<ImageFileDirectory> overviews = new ArrayList<>();
-            while ((image = getImageFileDirectory(imageIndex)) != null) {
+            while ((image = readNextIFD(imageIndex)) != null) {
                 if (image.isReducedResolution()) {
                     overviews.add(image);
                 } else {
@@ -457,6 +465,34 @@ final class Reader extends GeoTIFF {
         }
         args[0] = Tags.name(tag);
         store.listeners().warning(errors().getString(key, args), exception);
+    }
+
+    /**
+     * Returns the stream position where to write the IFD for a new image to append.
+     * Invoking this method forces this reader to read all existing IFDs.
+     * The {@link #input} position is undetermined, not necessarily end of file.
+     * The value at the returned offset is zero.
+     *
+     * @return offset where to write a new IFD.
+     */
+    final long offsetOfWritableIFD() throws IOException, DataStoreException {
+        if (getImage(Integer.MAX_VALUE) == null && endOfFile) {
+            return nextIFD;
+        }
+        throw new InternalDataStoreException();     // Should never happen.
+    }
+
+    /**
+     * Sets the offsets of the image that has been written.
+     *
+     * @param  position  offset of the new Image File Directory (IFD).
+     */
+    final void offsetOfWrittenIFD(final long position) throws IOException, DataStoreException {
+        if (getImage(Integer.MAX_VALUE) == null && endOfFile) {
+            nextIFD = position;
+            endOfFile = false;
+        }
+        throw new InternalDataStoreException();     // Should never happen.
     }
 
     /**

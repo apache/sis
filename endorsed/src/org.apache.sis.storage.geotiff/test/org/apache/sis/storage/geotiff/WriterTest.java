@@ -166,13 +166,8 @@ public final class WriterTest extends TestCase {
      * @throws IOException should never happen since the tests are writing in memory.
      * @throws DataStoreException if the image is incompatible with writer capability.
      */
-    @SuppressWarnings("SynchronizeOnNonFinalField")
     private void writeImage() throws IOException, DataStoreException {
-        synchronized (store) {
-            final Writer writer = store.writer();
-            writer.append(image, gridGeometry, null);
-            writer.flush();
-        }
+        store.append(image, gridGeometry, null);
         data.clear().limit(Math.toIntExact(output.size()));
     }
 

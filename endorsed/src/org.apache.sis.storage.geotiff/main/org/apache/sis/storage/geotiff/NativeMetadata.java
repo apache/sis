@@ -109,7 +109,7 @@ final class NativeMetadata extends GeoKeysLoader {
         root.setValue(NAME, "TIFF");
         input.mark();
         try {
-            input.seek(addExact(reader.origin, isClassic ? 2*Short.BYTES : 4*Short.BYTES));
+            input.seek(isClassic ? 2*Short.BYTES : 4*Short.BYTES);
             final Set<Long> doneIFD = new HashSet<>();
             long nextIFD;
             /*
@@ -124,7 +124,7 @@ final class NativeMetadata extends GeoKeysLoader {
                 }
                 final TreeTable.Node image = root.newChild();
                 image.setValue(NAME, vocabulary.getString(Vocabulary.Keys.Image_1, imageNumber));
-                input.seek(Math.addExact(reader.origin, nextIFD));
+                input.seek(nextIFD);
                 for (long remaining = readInt(true); --remaining >= 0;) {
                     final short tag  = (short) input.readUnsignedShort();
                     final Type type  = Type.valueOf(input.readShort());        // May be null.
@@ -147,7 +147,7 @@ final class NativeMetadata extends GeoKeysLoader {
                     if (visible) {
                         if (size > offsetSize) {
                             final long offset = readInt(false);
-                            input.seek(Math.addExact(reader.origin, offset));
+                            input.seek(offset);
                         }
                         /*
                          * Some tags need to be handle in a special way. The main cases are GeoTIFF keys.

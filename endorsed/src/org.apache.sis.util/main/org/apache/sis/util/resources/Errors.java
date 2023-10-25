@@ -790,6 +790,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short OddArrayLength_1 = 118;
 
         /**
+         * “{1}” is opened in {0,choice,0#read|1#write}-only mode.
+         */
+        public static final short OpenedReadOrWriteOnly_2 = 203;
+
+        /**
          * Coordinate is outside the domain of validity.
          */
         public static final short OutsideDomainOfValidity = 119;

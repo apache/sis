@@ -46,6 +46,11 @@ import org.apache.sis.io.stream.HyperRectangleWriter;
  */
 final class TileMatrixWriter {
     /**
+     * Offset in {@link ChannelDataOutput} where the IFD starts.
+     */
+    final long offsetIFD;
+
+    /**
      * The images to write.
      */
     private final RenderedImage image;
@@ -94,16 +99,19 @@ final class TileMatrixWriter {
      * Creates a new set of information about tiles to write.
      *
      * @param image          the image to write.
-     * @param dataType       the type of sample values.
      * @param numBands       the number of bands.
      * @param bitsPerSample  number of bits per sample to write.
      * @param isPlanar       whether the planar configuration is to store bands in separated planes.
+     * @param offsetIFD      offset in {@link ChannelDataOutput} where the IFD starts.
      */
-    TileMatrixWriter(final RenderedImage image, final DataType type, final int numPlanes, final int[] bitsPerSample) {
+    TileMatrixWriter(final RenderedImage image, final int numPlanes, final int[] bitsPerSample,
+                     final long offsetIFD)
+    {
         final int pixelSize, numArrays;
+        this.offsetIFD = offsetIFD;
         this.numPlanes = numPlanes;
-        this.type  = type;
-        this.image = image;
+        this.image     = image;
+        type       = DataType.forBands(image);
         tileWidth  = image.getTileWidth();
         tileHeight = image.getTileHeight();
         pixelSize  = (bitsPerSample != null) ? Numerics.ceilDiv(Arrays.stream(bitsPerSample).sum(), Byte.SIZE) : 1;

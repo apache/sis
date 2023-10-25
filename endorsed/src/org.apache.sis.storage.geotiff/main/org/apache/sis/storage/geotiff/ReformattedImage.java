@@ -20,6 +20,7 @@ import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Statistics;
@@ -101,6 +102,18 @@ found:  if (property instanceof Statistics[]) {
             return new double[][] {min, max};
         }
         return new double[2][];
+    }
+
+    /**
+     * Returns the TIFF sample format.
+     *
+     * @return One of {@code SAMPLE_FORMAT_*} constants.
+     */
+    final int getSampleFormat() {
+        final SampleModel sm = visibleBands.getSampleModel();
+        if (ImageUtilities.isUnsignedType(sm)) return SAMPLE_FORMAT_UNSIGNED_INTEGER;
+        if (ImageUtilities.isIntegerType(sm))  return SAMPLE_FORMAT_SIGNED_INTEGER;
+        return SAMPLE_FORMAT_FLOATING_POINT;
     }
 
     /**

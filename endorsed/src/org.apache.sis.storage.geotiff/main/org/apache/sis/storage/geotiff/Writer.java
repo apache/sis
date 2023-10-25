@@ -35,11 +35,11 @@ import javax.imageio.plugins.tiff.TIFFTag;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.base.MetadataFetcher;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.UpdatableWrite;
@@ -129,8 +129,11 @@ final class Writer extends GeoTIFF implements Flushable {
     private final boolean isBigTIFF;
 
     /**
-     * Offset where to write the next image, or an offset value of 0 if none.
-     * Shall be one of the elements in the {@link #deferredWrites} queue.
+     * Offset where to write the next image, or {@code null} if writing a mandatory image (the first one).
+     * If null, the IFD offset is assumed already written and the {@linkplain #output} already at that position.
+     * Otherwise the value at the specified offset should be zero and will be updated if a new image is appended.
+     *
+     * @see #seekToNextImage()
      */
     private UpdatableWrite<?> nextIFD;
 
@@ -138,13 +141,13 @@ final class Writer extends GeoTIFF implements Flushable {
      * All values that couldn't be written immediately.
      * Values shall be sorted in increasing order of stream position.
      */
-    private final Deque<UpdatableWrite<?>> deferredWrites;
+    private final Deque<UpdatableWrite<?>> deferredWrites = new ArrayDeque<>();
 
     /**
      * Write operations for tag having data too large for fitting inside a IFD tag entry.
      * The writing of those data need to be delayed somewhere after the sequence of entries.
      */
-    private final Queue<TagValueWriter> largeTagData;
+    private final Queue<TagValueWriter> largeTagData = new ArrayDeque<>();
 
     /**
      * Number of TIFF tag entries in the image being written.
@@ -164,10 +167,8 @@ final class Writer extends GeoTIFF implements Flushable {
             throws IOException, DataStoreException
     {
         super(store);
-        this.output    = output;
-        isBigTIFF      = ArraysExt.contains(options, GeoTiffOption.BIG_TIFF);
-        deferredWrites = new ArrayDeque<>();
-        largeTagData   = new ArrayDeque<>();
+        this.output = output;
+        isBigTIFF   = ArraysExt.contains(options, GeoTiffOption.BIG_TIFF);
         /*
          * Write the TIFF file header before first IFD. Stream position matter and must start at zero.
          * Note that it does not necessarily mean that the stream has no bytes before current position.
@@ -185,10 +186,51 @@ final class Writer extends GeoTIFF implements Flushable {
     }
 
     /**
+     * Creates a new writer which will append images a the end of an existing file.
+     * It is caller's responsibility to keep reader and writer positions consistent.
+     * This is done by invoking {@link #synchronize(Reader, boolean)} before and after
+     * write operations.
+     *
+     * @param  reader  the reader of the existing GeoTIFF file.
+     * @throws ReadOnlyStorageException if the channel is read-only.
+     * @throws DataStoreException if the writer cannot be created.
+     * @throws IOException if an I/O error occurred.
+     */
+    Writer(final Reader reader) throws IOException, DataStoreException {
+        super(reader.store);
+        isBigTIFF = (reader.intSizeExpansion != 0);
+        try {
+            output = new ChannelDataOutput(reader.input);
+        } catch (ClassCastException e) {
+            throw new ReadOnlyStorageException(store.readOrWriteOnly(0), e);
+        }
+        Class<? extends Number> type = isBigTIFF ? Long.class : Integer.class;
+        nextIFD = UpdatableWrite.ofZeroAt(reader.offsetOfWritableIFD(), type);
+    }
+
+    /**
+     * Ensures that the reader and writer positions are consistent. It is caller's responsibility to invoke
+     * {@link #flush()} before to invoke {@code synchronize(reader, true)}, unless the write operation failed.
+     * In the latter case, the caller should cancel the write operation if possible.
+     *
+     * @param  reader  the reader, or {@code null} if none.
+     * @param  finish  {@code false} if invoked before write operations, or {@code true} if invoked after.
+     */
+    final void synchronize(final Reader reader, final boolean finish) throws IOException {
+        if (reader != null) {
+            if (finish) {
+                output.yield(reader.input);
+            } else {
+                reader.input.yield(output);
+            }
+        }
+    }
+
+    /**
      * {@return the options (BigTIFF, COG…) used by this writer}.
      */
     @Override
-    final Set<GeoTiffOption> getOptions() {
+    public final Set<GeoTiffOption> getOptions() {
         return isBigTIFF ? Set.of(GeoTiffOption.BIG_TIFF) : Set.of();
     }
 
@@ -212,11 +254,12 @@ final class Writer extends GeoTIFF implements Flushable {
      * @param  image     the image to encode.
      * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata  title, author and other information, or {@code null} if none.
+     * @return offset if {@link #output} where the Image File Directory (IFD) starts.
      * @throws IOException if an error occurred while writing to the output.
      * @throws DataStoreException if the given {@code image} has a property
      *         which is not supported by TIFF specification or by this writer.
      */
-    final void append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
+    public final long append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws IOException, DataStoreException
     {
         final TileMatrixWriter tiles;
@@ -228,10 +271,32 @@ final class Writer extends GeoTIFF implements Flushable {
         tiles.writeRasters(output);
         wordAlign(output);
         tiles.writeOffsetsAndLengths(output);
+        return tiles.offsetIFD;
     }
 
     /**
-     * Writes the Image File Directory (IFD) of the given image.
+     * Sets the {@linkplain #output} position to where to write the next image.
+     *
+     * @return offset where the image IFD will start. This is the {@link #output} position.
+     *
+     * @todo Current version append the new image at the end of file. A future version could perform a more extensive
+     *       search for free space in the middle of the file. It could be useful when images have been deleted.
+     */
+    private long seekToNextImage() throws IOException {
+        if (nextIFD == null) {
+            // `output` is already at the right position.
+            return output.getStreamPosition();
+        }
+        final long position = output.length();
+        nextIFD.setAsLong(position);
+        writeOrQueue(nextIFD);
+        output.seek(position);
+        nextIFD = null;
+        return position;
+    }
+
+    /**
+     * Writes the Image File Directory (IFD) of the given image at the current {@link #output} position.
      * This method does not write the pixel values. Those values must be written by the caller.
      * This separation makes possible to write directories in any order compared to pixel data.
      *
@@ -259,20 +324,11 @@ final class Writer extends GeoTIFF implements Flushable {
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
             numberOfTags++;
         }
-        final SampleModel sm = image.visibleBands.getSampleModel();
+        final SampleModel sm      = image.visibleBands.getSampleModel();
+        final int   sampleFormat  = image.getSampleFormat();
         final int[] bitsPerSample = sm.getSampleSize();
-        final int   numBands = sm.getNumBands();
-        final int sampleFormat;
-        final DataType dataType = DataType.forDataBufferType(sm.getDataType());
-        if (dataType.isUnsigned()) {
-            sampleFormat = SAMPLE_FORMAT_UNSIGNED_INTEGER;
-        } else if (dataType.isInteger()) {
-            sampleFormat = SAMPLE_FORMAT_SIGNED_INTEGER;
-        } else {
-            sampleFormat = SAMPLE_FORMAT_FLOATING_POINT;
-        }
-        final int numPlanes;
-        final int planarConfiguration;
+        final int   numBands      = sm.getNumBands();
+        final int   numPlanes, planarConfiguration;
         if (sm instanceof BandedSampleModel) {
             planarConfiguration = PLANAR_CONFIGURATION_PLANAR;
             numPlanes = numBands;
@@ -311,6 +367,7 @@ final class Writer extends GeoTIFF implements Flushable {
          */
         output.flush();             // Makes room in the buffer for increasing our ability to modify past values.
         largeTagData.clear();
+        final long offsetIFD = seekToNextImage();
         final UpdatableWrite<?> tagCountWriter =
                 isBigTIFF ? UpdatableWrite.of(output, (long)  numberOfTags)
                           : UpdatableWrite.of(output, (short) numberOfTags);
@@ -338,7 +395,7 @@ final class Writer extends GeoTIFF implements Flushable {
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
             writeColorPalette((IndexColorModel) image.visibleBands.getColorModel(), 1L << bitsPerSample[0]);
         }
-        final var tiling = new TileMatrixWriter(image.visibleBands, dataType, numPlanes, bitsPerSample);
+        final var tiling = new TileMatrixWriter(image.visibleBands, numPlanes, bitsPerSample, offsetIFD);
         writeTag((short) TAG_TILE_WIDTH,  (short) TIFFTag.TIFF_LONG, tiling.tileWidth);
         writeTag((short) TAG_TILE_LENGTH, (short) TIFFTag.TIFF_LONG, tiling.tileHeight);
         tiling.offsetsTag = writeTag((short) TAG_TILE_OFFSETS, tiling.offsets);
@@ -438,7 +495,9 @@ final class Writer extends GeoTIFF implements Flushable {
      */
     private int writeTagHeader(final short tag, final short type, final long count) throws IOException {
         numberOfTags++;
-        output.ensureBufferAccepts(2*Short.BYTES + 2*Long.BYTES);
+        output.ensureBufferAccepts(isBigTIFF
+                ? (2*Short.BYTES + 2*Long.BYTES)
+                : (2*Short.BYTES + 2*Integer.BYTES));
         final ByteBuffer buffer = output.buffer;
         buffer.putShort(tag);
         buffer.putShort(type);
@@ -734,7 +793,8 @@ final class Writer extends GeoTIFF implements Flushable {
      * @throws IOException if an error occurred while writing deferred data.
      */
     private void flushDeferredWrites() throws IOException {
-        for (final UpdatableWrite<?> change : deferredWrites) {
+        UpdatableWrite<?> change;
+        while ((change = deferredWrites.pollFirst()) != null) {
             change.update(output);
         }
     }

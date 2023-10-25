@@ -79,8 +79,10 @@ abstract class GeoTIFF implements Closeable {
 
     /**
      * {@return the options (BigTIFF, COG…) used by this reader or writer}.
+     *
+     * @see GeoTiffStore#getOptions()
      */
-    abstract Set<GeoTiffOption> getOptions();
+    public abstract Set<GeoTiffOption> getOptions();
 
     /**
      * Returns the resources to use for formatting error messages.
