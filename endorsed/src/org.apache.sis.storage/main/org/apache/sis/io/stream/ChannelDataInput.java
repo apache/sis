@@ -182,7 +182,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
         if (buffer.hasRemaining()) {
             return true;
         }
-        bufferOffset += buffer.limit();
+        moveBufferForward(buffer.limit());
         buffer.clear();
         int c = channel.read(buffer);
         while (c == 0) {
@@ -206,7 +206,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
         assert n >= 0 && n <= buffer.capacity() : n;
         n -= buffer.remaining();
         if (n > 0) {
-            bufferOffset += buffer.position();
+            moveBufferForward(buffer.position());
             buffer.compact();
             do {
                 final int c = channel.read(buffer);
@@ -671,7 +671,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
                 // Buffer position must be a multiple of the data size.
                 // If not, fix that by shifting the content to index 0.
                 if ((buffer.position() & ((1 << dataSizeShift) - 1)) != 0) {
-                    bufferOffset += buffer.position();
+                    moveBufferForward(buffer.position());
                     buffer.compact().flip();
                 }
                 view.limit   (buffer.limit()    >> dataSizeShift)
@@ -1033,7 +1033,7 @@ loop:   while (hasRemaining()) {
              * we cannot seek, so we have to read everything before.
              */
             do {
-                bufferOffset += buffer.limit();
+                moveBufferForward(buffer.limit());
                 p -= buffer.limit();
                 buffer.clear();
                 final int c = channel.read(buffer);
@@ -1053,6 +1053,7 @@ loop:   while (hasRemaining()) {
             throw new InvalidSeekException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
         clearBitOffset();
+        assert position() == position : position;
     }
 
     /**
@@ -1095,6 +1096,10 @@ loop:   while (hasRemaining()) {
      */
     @Override
     public void yield(final ChannelData takeOver) throws IOException {
+        if (getBitOffset() != 0) {
+            clearBitOffset();
+            buffer.get();
+        }
         /*
          * If we filled the buffer with more bytes than the buffer position,
          * the channel position is too far ahead. We need to seek backward.
@@ -1106,7 +1111,6 @@ loop:   while (hasRemaining()) {
                 throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, takeOver.filename));
             }
         }
-        clearBitOffset();
         bufferOffset = position();
         if (buffer.limit(0) != takeOver.buffer) {          // Must be after `position()`.
             takeOver.buffer.limit(0);

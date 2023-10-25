@@ -168,7 +168,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
                  * We wrote a sufficient amount of bytes - usually all of them, but not necessarily.
                  * If there is some unwritten bytes, move them the beginning of the buffer.
                  */
-                bufferOffset += buffer.position();
+                moveBufferForward(buffer.position());
                 buffer.compact();
                 assert after >= buffer.position() : after;
             }
@@ -768,7 +768,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
                 int c;
                 do {
                     c = channel.write(buffer.rewind());
-                    bufferOffset += c;
+                    moveBufferForward(c);
                     if (c == 0) {
                         onEmptyTransfer();
                     }
@@ -815,7 +815,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
             // We cannot move position beyond the buffered part.
             throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
-        assert position() == position;
+        assert position() == position : position;
     }
 
     /**
@@ -891,7 +891,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
         } else if (channel instanceof SeekableByteChannel) {
             // Do not move `bufferOffset`. Instead make the channel position consistent with it.
             buffer.limit(limit).position(position);
-            ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(position()));
+            ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(Math.addExact(bufferOffset, limit)));
         } else {
             throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }

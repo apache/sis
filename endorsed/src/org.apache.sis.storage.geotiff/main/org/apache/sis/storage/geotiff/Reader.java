@@ -491,8 +491,9 @@ final class Reader extends GeoTIFF {
         if (getImage(Integer.MAX_VALUE) == null && endOfFile) {
             nextIFD = position;
             endOfFile = false;
+        } else {
+            throw new InternalDataStoreException();     // Should never happen.
         }
-        throw new InternalDataStoreException();     // Should never happen.
     }
 
     /**

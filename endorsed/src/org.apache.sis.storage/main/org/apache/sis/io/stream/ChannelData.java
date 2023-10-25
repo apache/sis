@@ -448,6 +448,8 @@ public abstract class ChannelData implements Markable {
         takeOver.bufferOffset  = bufferOffset;
         takeOver.channelOffset = channelOffset;
         takeOver.bitPosition   = bitPosition;
+        takeOver.mark          = mark;
+        mark = null;
     }
 
     /**
@@ -503,6 +505,16 @@ public abstract class ChannelData implements Markable {
      */
     final long toSeekableByteChannelPosition(final long position) {
         return Math.addExact(channelOffset, position);
+    }
+
+    /**
+     * Translates the buffer by the given amount of bytes.
+     * Callers should subtract the same amount from the buffer position.
+     *
+     * @param  count  number of bytes to add to {@link #bufferOffset}.
+     */
+    final void moveBufferForward(final int count) {
+        bufferOffset = Math.addExact(bufferOffset, count);
     }
 
     /**
