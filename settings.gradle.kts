@@ -67,6 +67,7 @@ dependencyResolutionManagement {
             library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("7.6.1")}
             library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.5.3")}
             library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.20.155")}
+            library("yasson",        "org.eclipse",            "yasson")              .version {strictly("3.0.3");       prefer("3.0.3")}
         }
         create("tests") {
             library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}

@@ -56,7 +56,8 @@ module org.apache.sis.storage {
             org.apache.sis.util,                        // For the "About" command.
             org.apache.sis.console,
             org.apache.sis.openoffice,
-            org.apache.sis.gui;                         // In the "optional" sub-project.
+            org.apache.sis.gui,                         // In the "optional" sub-project.
+            org.apache.sis.storage.coveragejson;        // In the "incubator"
 
     exports org.apache.sis.io.stream to
             org.apache.sis.storage.xml,
@@ -64,7 +65,8 @@ module org.apache.sis.storage {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.cloud.aws,
-            org.apache.sis.gui;                         // In the "optional" sub-project.
+            org.apache.sis.gui,                         // In the "optional" sub-project.
+            org.apache.sis.storage.coveragejson;        // In the "incubator"
 
     exports org.apache.sis.storage.xml to
             org.apache.sis.storage.xml,
