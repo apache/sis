@@ -167,7 +167,8 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     /**
      * Reads up to {@code length} bytes from the stream, and modifies the supplied
      * {@code IIOByteBuffer} to indicate the byte array, offset, and length where
-     * the data may be found.
+     * the data may be found. This method may reference the internal buffer, thus
+     * avoiding a copy.
      *
      * @param  dest    the buffer to be written to.
      * @param  length  the maximum number of bytes to read.
@@ -175,10 +176,22 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
      */
     @Override
     public final void readBytes(final IIOByteBuffer dest, int length) throws IOException {
-        final byte[] data = new byte[length];
-        length = read(data);
+        clearBitOffset();
+        final byte[] data;
+        final int offset;
+        if (buffer.hasArray()) {
+            ensureBufferContains(1);
+            data   = buffer.array();
+            offset = buffer.position();
+            length = Math.min(buffer.remaining(), length);
+            buffer.position(offset + length);
+        } else {
+            data   = new byte[length];
+            length = read(data);
+            offset = 0;
+        }
         dest.setData(data);
-        dest.setOffset(0);
+        dest.setOffset(offset);
         dest.setLength(length);
     }
 

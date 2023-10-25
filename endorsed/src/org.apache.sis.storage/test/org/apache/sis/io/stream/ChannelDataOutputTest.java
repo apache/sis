@@ -18,7 +18,6 @@ package org.apache.sis.io.stream;
 
 import java.util.Arrays;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
@@ -28,7 +27,7 @@ import javax.imageio.stream.ImageOutputStream;
 import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -38,25 +37,24 @@ import static org.junit.Assert.*;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class ChannelDataOutputTest extends ChannelDataTestCase {
+public final class ChannelDataOutputTest extends ChannelDataTestCase {
     /**
-     * The {@link DataOutput} implementation to test. This implementation will write data to
-     * {@link #testedStreamBackingArray}. The content of that array will be compared to
-     * {@link #expectedData} for verifying result correctness.
+     * The implementation to test. This implementation will write data to {@link #testedStreamBackingArray}.
+     * The content of that array will be compared to {@link #expectedData} for verifying result correctness.
      */
-    ChannelDataOutput testedStream;
+    private ChannelDataOutput testedStream;
 
     /**
      * A stream to use as a reference implementation. Any data written in {@link #testedStream}
      * will also be written in {@code referenceStream}, for later comparison.
      */
-    ImageOutputStream referenceStream;
+    private ImageOutputStream referenceStream;
 
     /**
      * Byte array which is filled by the {@linkplain #testedStream} implementation during write operations.
      * The content of this array will be compared to {@linkplain #expectedData}.
      */
-    byte[] testedStreamBackingArray;
+    private byte[] testedStreamBackingArray;
 
     /**
      * Object which is filled by {@link #referenceStream} implementation during write operations.
@@ -79,12 +77,12 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
      * @param  bufferLength  length of the {@code ByteBuffer} to use for the tests.
      * @throws IOException should never happen since we read and write in memory only.
      */
-    void initialize(final String testName, final int streamLength, final int bufferLength) throws IOException {
+    private void initialize(final String testName, final int streamLength, final int bufferLength) throws IOException {
         expectedData             = new ByteArrayOutputStream(streamLength);
         referenceStream          = new MemoryCacheImageOutputStream(expectedData);
         testedStreamBackingArray = new byte[streamLength];
-        testedStream             = new ChannelDataOutput(testName,
-                new ByteArrayChannel(testedStreamBackingArray, false), ByteBuffer.allocate(bufferLength));
+        var channel              = new ByteArrayChannel(testedStreamBackingArray, false);
+        testedStream             = new ChannelDataOutput(testName, channel, ByteBuffer.allocate(bufferLength));
     }
 
     /**
@@ -119,7 +117,7 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
      * Asserts that the content of {@link #testedStream} is equal to the content of {@link #referenceStream}.
      * This method closes the reference stream before to perform the comparison.
      */
-    final void assertStreamContentEquals() throws IOException {
+    private void assertStreamContentEquals() throws IOException {
         testedStream.flush();
         referenceStream.close();
         final byte[] expectedArray = expectedData.toByteArray();
@@ -143,7 +141,7 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
         for (int i=0; i<100; i++) {
             final int position = random.nextInt(seekRange);
             testedStream.seek(position);
-            assertEquals("getStreamPosition()", position, testedStream.getStreamPosition());
+            assertEquals(position, testedStream.getStreamPosition(), "getStreamPosition()");
             final long v = random.nextLong();
             testedStream.writeLong(v);
             arrayView.putLong(position, v);
@@ -178,7 +176,7 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
             referenceStream.writeLong(v);
             testedStream.writeLong(v);
         }
-        assertEquals("getStreamPosition()", 24, testedStream.getStreamPosition());
+        assertEquals(24, testedStream.getStreamPosition(), "getStreamPosition()");
         testedStream.seek(40);                          // Move 2 long ahead. Space shall be filled by 0.
         referenceStream.writeLong(0);
         referenceStream.writeLong(0);
@@ -197,36 +195,26 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
     @Test
     public void testArgumentChecks() throws IOException {
         initialize("testArgumentChecks", 20, 10);
-        try {
-            testedStream.setBitOffset(9);
-            fail("Shall not accept invalid bitOffset.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("bitOffset"));
-        }
-        try {
-            testedStream.reset();
-            fail("Shall not accept reset without mark.");
-        } catch (IOException e) {
-            // This is the expected exception.
-            assertNotNull(e.getMessage());
-        }
-        /*
-         * flushBefore(int).
-         */
+        String message;
+
+        // Shall not accept invalid bitOffset.
+        message = assertThrows(IllegalArgumentException.class, () -> testedStream.setBitOffset(9)).getMessage();
+        assertTrue(message.contains("bitOffset"), message);
+
+        // Shall not accept reset without mark.
+        message = assertThrows(IOException.class, () -> testedStream.reset()).getMessage();
+        assertNotNull(message);
+
+        // Shall not flush at a position greater than buffer limit.
         final int v = random.nextInt();
         referenceStream.writeShort(v);
         testedStream.writeShort(v);
-        testedStream.flushBefore(0); // Valid.
-        try {
-            testedStream.flushBefore(3);
-            fail("Shall not flush at a position greater than buffer limit.");
-        } catch (IndexOutOfBoundsException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("position"));
-        }
+        testedStream.flushBefore(0);        // Valid.
+        message = assertThrows(IndexOutOfBoundsException.class, () -> testedStream.flushBefore(3)).getMessage();
+        assertTrue(message.contains("position"), message);
+
         testedStream.flush();
-        testedStream.flushBefore(0);    // Should be a no-operation.
+        testedStream.flushBefore(0);        // Should be a no-operation.
         assertStreamContentEquals();
     }
 
@@ -250,140 +238,30 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
         final ImageOutputStream r = this.referenceStream;
         final ChannelDataOutput t = this.testedStream;
         switch (operation) {
-            case 0: {
-                final byte v = (byte) random.nextInt(1 << Byte.SIZE);
-                r.writeByte(v);
-                t.writeByte(v);
-                break;
-            }
-            case 1: {
-                final short v = (short) random.nextInt(1 << Short.SIZE);
-                r.writeShort(v);
-                t.writeShort(v);
-                break;
-            }
-            case 2: {
-                final char v = (char) random.nextInt(1 << Character.SIZE);
-                r.writeChar(v);
-                t.writeChar(v);
-                break;
-            }
-            case 3: {
-                final int v = random.nextInt();
-                r.writeInt(v);
-                t.writeInt(v);
-                break;
-            }
-            case 4: {
-                final long v = random.nextLong();
-                r.writeLong(v);
-                t.writeLong(v);
-                break;
-            }
-            case 5: {
-                final float v = random.nextFloat();
-                r.writeFloat(v);
-                t.writeFloat(v);
-                break;
-            }
-            case 6: {
-                final double v = random.nextDouble();
-                r.writeDouble(v);
-                t.writeDouble(v);
-                break;
-            }
-            case 7: {
-                final byte[] tmp = new byte[random.nextInt(ARRAY_MAX_LENGTH / Byte.BYTES)];
-                random.nextBytes(tmp);
-                r.write(tmp);
-                t.write(tmp);
-                break;
-            }
-            case 8: {
-                final char[] tmp = new char[random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES)];
-                for (int i=0; i<tmp.length; i++) {
-                    tmp[i] = (char) random.nextInt(1 << Character.SIZE);
-                }
-                r.writeChars(tmp, 0, tmp.length);
-                t.writeChars(tmp);
-                break;
-            }
-            case 9: {
-                final short[] tmp = new short[random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES)];
-                for (int i=0; i<tmp.length; i++) {
-                    tmp[i] = (short) random.nextInt(1 << Short.SIZE);
-                }
-                r.writeShorts(tmp, 0, tmp.length);
-                t.writeShorts(tmp);
-                break;
-            }
-            case 10: {
-                final int[] tmp = new int[random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES)];
-                for (int i=0; i<tmp.length; i++) {
-                    tmp[i] = random.nextInt();
-                }
-                r.writeInts(tmp, 0, tmp.length);
-                t.writeInts(tmp);
-                break;
-            }
-            case 11: {
-                final long[] tmp = new long[random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES)];
-                for (int i=0; i<tmp.length; i++) {
-                    tmp[i] = random.nextLong();
-                }
-                r.writeLongs(tmp, 0, tmp.length);
-                t.writeLongs(tmp);
-                break;
-            }
-            case 12: {
-                final float[] tmp = new float[random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES)];
-                for (int i=0; i<tmp.length; i++) {
-                    tmp[i] = random.nextFloat();
-                }
-                r.writeFloats(tmp, 0, tmp.length);
-                t.writeFloats(tmp);
-                break;
-            }
-            case 13: {
-                final double[] tmp = new double[random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES)];
-                for (int i=0; i<tmp.length; i++) {
-                    tmp[i] = random.nextDouble();
-                }
-                r.writeDoubles(tmp, 0, tmp.length);
-                t.writeDoubles(tmp);
-                break;
-            }
-            case 14: {
+            default: throw new AssertionError(operation);
+            case  0: {byte     v = (byte)  random.nextInt();     r.writeByte   (v); t.writeByte   (v); break;}
+            case  1: {short    v = (short) random.nextInt();     r.writeShort  (v); t.writeShort  (v); break;}
+            case  2: {char     v = (char)  random.nextInt();     r.writeChar   (v); t.writeChar   (v); break;}
+            case  3: {int      v =         random.nextInt();     r.writeInt    (v); t.writeInt    (v); break;}
+            case  4: {long     v =         random.nextLong();    r.writeLong   (v); t.writeLong   (v); break;}
+            case  5: {float    v =         random.nextFloat();   r.writeFloat  (v); t.writeFloat  (v); break;}
+            case  6: {double   v =         random.nextDouble();  r.writeDouble (v); t.writeDouble (v); break;}
+            case  7: {boolean  v =         random.nextBoolean(); r.writeBoolean(v); t.writeBoolean(v); break;}
+            case  8: {byte[]   v = randomBytes();   r.write       (v);              t.write       (v); break;}
+            case  9: {char[]   v = randomChars();   r.writeChars  (v, 0, v.length); t.writeChars  (v); break;}
+            case 10: {short[]  v = randomShorts();  r.writeShorts (v, 0, v.length); t.writeShorts (v); break;}
+            case 11: {int[]    v = randomInts();    r.writeInts   (v, 0, v.length); t.writeInts   (v); break;}
+            case 12: {long[]   v = randomLongs();   r.writeLongs  (v, 0, v.length); t.writeLongs  (v); break;}
+            case 13: {float[]  v = randomFloats();  r.writeFloats (v, 0, v.length); t.writeFloats (v); break;}
+            case 14: {double[] v = randomDoubles(); r.writeDoubles(v, 0, v.length); t.writeDoubles(v); break;}
+            case 15: {String   v = "Byte sequence";      r.writeBytes(v); t.writeBytes(v); break;}
+            case 16: {String   v = "Character sequence"; r.writeChars(v); t.writeChars(v); break;}
+            case 17: {String   v = "お元気ですか";       r.writeUTF  (v); t.writeUTF  (v); break;}
+            case 18: {
                 final long v = random.nextLong();
                 final int numBits = random.nextInt(Byte.SIZE);
                 r.writeBits(v, numBits);
                 t.writeBits(v, numBits);
-                break;
-            }
-            case 15: {
-                final boolean v = random.nextBoolean();
-                r.writeBoolean(v);
-                t.writeBoolean(v);
-                break;
-            }
-            case 16: {
-                final String s = "Byte sequence";
-                r.writeBytes(s);
-                t.writeBytes(s);
-                break;
-            }
-            case 17: {
-                final String s = "Character sequence";
-                r.writeChars(s);
-                t.writeChars(s);
-                break;
-            }
-            case 18: {
-                final String s = "お元気ですか";
-                final byte[] array = s.getBytes("UTF-8");
-                assertEquals(s.length() * 3, array.length); // Sanity check.
-                r.writeUTF(s);
-                t.writeUTF(s);
                 break;
             }
             case 19: {
@@ -398,9 +276,123 @@ public class ChannelDataOutputTest extends ChannelDataTestCase {
                 t.flush();
                 break;
             }
-            default: throw new AssertionError(operation);
         }
-        assertEquals("getBitOffset()",      r.getBitOffset(),      t.getBitOffset());
-        assertEquals("getStreamPosition()", r.getStreamPosition(), t.getStreamPosition());
+        assertEquals(r.getBitOffset(),      t.getBitOffset(),      "getBitOffset()");
+        assertEquals(r.getStreamPosition(), t.getStreamPosition(), "getStreamPosition()");
+    }
+
+    /**
+     * Test writing a sequence of bits.
+     *
+     * @throws IOException should never happen since we read and write in memory only.
+     */
+    @Test
+    public void testWriteBits() throws IOException {
+        initialize("testWriteBits", STREAM_LENGTH, randomBufferCapacity());
+        final int length = testedStreamBackingArray.length - ARRAY_MAX_LENGTH;      // Keep a margin against buffer underflow.
+        while (testedStream.getStreamPosition() < length) {
+            final long v = random.nextLong();
+            final int numBits = random.nextInt(Byte.SIZE);
+            referenceStream.writeBits(v, numBits);
+            testedStream.writeBits(v, numBits);
+            /*
+             * Randomly force flushing of bits.
+             */
+            if (randomEvent()) {
+                final int f = random.nextInt(256);
+                referenceStream.writeByte(f);
+                testedStream.writeByte(f);
+            }
+            assertEquals(referenceStream.getBitOffset(),      testedStream.getBitOffset(),      "getBitOffset");
+            assertEquals(referenceStream.getStreamPosition(), testedStream.getStreamPosition(), "getStreamPosition");
+        }
+        assertStreamContentEquals();
+    }
+
+    /**
+     * Tests {@link ChannelImageOutputStream#mark()} and {@code reset()} methods.
+     *
+     * @throws IOException should never happen since we read and write in memory only.
+     */
+    @Test
+    public void testMarkAndReset() throws IOException {
+        initialize("testMarkAndReset", STREAM_LENGTH, 1000);        // We need a larger buffer for this test.
+        /*
+         * Fill both streams with random data.
+         * During this process, randomly takes mark.
+         */
+        int nbMarks = 0;
+        for (int i=0; i<STREAM_LENGTH; i++) {
+            if (randomEvent() && i < STREAM_LENGTH - Long.BYTES) {
+                referenceStream.mark();
+                testedStream.mark();
+                nbMarks++;
+            }
+            final int v = random.nextInt(256);
+            referenceStream.writeByte(v);
+            testedStream.writeByte(v);
+        }
+        compareMarks(nbMarks);
+    }
+
+    /**
+     * Invokes {@link ChannelImageOutputStream#reset()} {@code nbMarks} times and verify that the stream position
+     * is the expected one. This method will then write random values at those positions, and finally compare the
+     * stream content.
+     */
+    private void compareMarks(int nbMarks) throws IOException {
+        while (--nbMarks >= 0) {
+            referenceStream.reset();
+            testedStream.reset();
+            assertEquals(referenceStream.getBitOffset(),      testedStream.getBitOffset());
+            assertEquals(referenceStream.getStreamPosition(), testedStream.getStreamPosition());
+            final long v = random.nextLong();
+            referenceStream.writeLong(v);
+            testedStream.writeLong(v);
+        }
+        /*
+         * Verify that we have no remaining marks, and finally compare stream content.
+         */
+        String message = assertThrows(IOException.class, () -> testedStream.reset()).getMessage();
+        assertNotNull(message);
+        assertStreamContentEquals();
+    }
+
+    /**
+     * Tests {@link ChannelImageOutputStream#flushBefore(long)}.
+     *
+     * @throws IOException should never happen since we read and write in memory only.
+     */
+    @Test
+    @DependsOnMethod("testMarkAndReset")
+    public void testFlushBefore() throws IOException {
+        final int N = 50; // Number of long values to write.
+        initialize("testFlushBefore", N*Long.BYTES, 200);
+        for (int i=0; i<N; i++) {
+            switch (i) {
+                case 20:
+                case 30:
+                case 40:
+                case 45: {
+                    referenceStream.mark();
+                    testedStream.mark();
+                    break;
+                }
+                case 10: {
+                    referenceStream.flushBefore(5 * Long.BYTES);
+                    testedStream.flushBefore(5 * Long.BYTES);
+                    break;
+                }
+                case 35: {
+                    referenceStream.flushBefore(32 * Long.BYTES);
+                    testedStream.flushBefore(32 * Long.BYTES);
+                    break;
+                }
+            }
+            final long v = random.nextLong();
+            referenceStream.writeLong(v);
+            testedStream.writeLong(v);
+        }
+        compareMarks(2);
     }
 }
