@@ -38,7 +38,13 @@ import javax.imageio.stream.ImageInputStream;
  * Furthermore, this class allows us to reuse an existing buffer (especially direct buffer, which are costly to create)
  * and allow subclasses to store additional information, for example the file path.
  *
- * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.</p>
+ * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.
+ * The following methods behave in a slightly different way compared to {@link ChannelDataInput}:</p>
+ *
+ * <ul>
+ *   <li>{@link #skipBytes(int)} with a more restrictive interpretation of method contract.</li>
+ *   <li>{@link #yield(ChannelDataOutput)} when the bit offset is non-zero.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -176,7 +182,7 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
      */
     @Override
     public final void readBytes(final IIOByteBuffer dest, int length) throws IOException {
-        clearBitOffset();
+        bitPosition = 0;
         final byte[] data;
         final int offset;
         if (buffer.hasArray()) {
@@ -214,7 +220,7 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
             long p = buffer.position() + n;
             if (p >= 0 && p <= buffer.limit()) {
                 buffer.position((int) p);
-                clearBitOffset();
+                bitPosition = 0;
             } else {
                 final long offset = getStreamPosition();
                 p = Math.max(Math.addExact(offset, n), 0);
@@ -309,5 +315,19 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     @Override
     public final void close() throws IOException {
         channel.close();
+    }
+
+    /**
+     * Returns the bits to save in {@link ChannelDataOutput} for avoiding information lost.
+     * The Image I/O specification requires that we discard (force to zero) all bits after
+     * the last bit that we have read. It may cause a lost of some bits, so we do that only
+     * if an {@link ImageInputStream} was requested.
+     *
+     * @param  bitOffset  current value of {@link #getBitOffset()}, which must be non-zero.
+     * @return the byte to copy from the input channel to the output channel.
+     */
+    @Override
+    final byte savedBitsForOutput(final int bitOffset) {
+        return (byte) (super.savedBitsForOutput(bitOffset) & ~((1 << (Byte.SIZE - bitOffset)) - 1));
     }
 }

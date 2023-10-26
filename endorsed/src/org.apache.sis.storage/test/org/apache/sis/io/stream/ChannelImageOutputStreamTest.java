@@ -97,6 +97,7 @@ public final class ChannelImageOutputStreamTest extends ChannelDataTestCase {
         testWrapper              = new ChannelData(testName, channel, testedStream.input().buffer) {
             @Override public Channel channel()        {return channel;}
             @Override public long getStreamPosition() {return testedStream.getStreamPosition();}
+            @Override public void skipRemainingBits() {fail("Should not be invoked.");}
             @Override public void seek(long p)        {fail("Should not be invoked.");}
             @Override void flushNBytes(int n)         {fail("Should not be invoked.");}
         };
@@ -111,7 +112,7 @@ public final class ChannelImageOutputStreamTest extends ChannelDataTestCase {
     @Test
     public void testAllMethods() throws IOException {
         initialize("testAllMethods", STREAM_LENGTH, randomBufferCapacity());
-        transferRandomData(testWrapper, testedStreamBackingArray.length - ARRAY_MAX_LENGTH, 22);
+        transferRandomData(testWrapper, testedStreamBackingArray.length - ARRAY_MAX_LENGTH, 21);
         assertStreamContentEquals();
     }
 
@@ -170,16 +171,11 @@ public final class ChannelImageOutputStreamTest extends ChannelDataTestCase {
                 t.flushBefore(flushedPosition);
                 break;
             }
-            case 20: {
-                r.flush();
-                t.flush();
-                break;
-            }
             /*
              * Seek operation, potentially followed by a few read operations.
              * The seek is necessary for moving to a position where there is something to read.
              */
-            case 21: {
+            case 20: {
                 long length = r.length();
                 assertTrue(length >= 0, "length");
                 assertEquals(length, t.length(), "length");
@@ -193,7 +189,7 @@ public final class ChannelImageOutputStreamTest extends ChannelDataTestCase {
                         position = r.getStreamPosition();
                         assertEquals(position, t.getStreamPosition());
                         if (position >= length) break;
-                        switch (random.nextInt(11)) {                   // TODO: should be 12. See class javadoc.
+                        switch (random.nextInt(12)) {
                             default: throw new AssertionError();
                             case  0: assertEquals(r.read(),              t.read(),               "read()");              break;
                             case  1: assertEquals(r.readBoolean(),       t.readBoolean(),        "readBoolean()");       break;

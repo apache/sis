@@ -42,7 +42,7 @@ public abstract class ChannelData implements Markable {
      *     assert (1 << BIT_OFFSET_SIZE) == Byte.SIZE;
      *     }
      */
-    private static final int BIT_OFFSET_SIZE = 3;
+    static final int BIT_OFFSET_SIZE = 3;
 
     /**
      * A short identifier (typically a filename without path) used for formatting error message.
@@ -68,13 +68,18 @@ public abstract class ChannelData implements Markable {
     private long channelOffset;
 
     /**
-     * The channel position where is located the {@link #buffer} value at index 0.
+     * The channel position where is located the {@link #buffer}.
      * This is initially zero and shall be incremented as below:
      *
      * <ul>
      *   <li>By {@link ByteBuffer#position()} every time {@link ByteBuffer#compact()} is invoked.</li>
      *   <li>By {@link ByteBuffer#limit()}    every time {@link ByteBuffer#clear()}   is invoked.</li>
      * </ul>
+     *
+     * <h4>Subclass-dependent interpretation</h4>
+     * The value depends on whether the buffer is used before or after transfer from/to the channel.
+     * For {@link ChannelDataOutput}, the value is the channel position of buffer position 0.
+     * For {@link ChannelDataInput},  the value is the channel position of buffer limit.
      */
     long bufferOffset;
 
@@ -83,9 +88,16 @@ public abstract class ChannelData implements Markable {
      * and the remaining of the {@code long} value is the stream position where the bit
      * offset is valid.
      *
+     * <h4>Subclass-dependent interpretation</h4>
+     * Which byte contains the bits depends on whether this {@code ChannelData} is an input or an output.
+     * For {@link ChannelDataOutput}, the bits are stored in the byte before the current buffer position.
+     * For {@link ChannelDataInput},  the bits are stored in the byte at the current buffer position.
+     *
      * @see #getBitOffset()
+     * @see #setBitOffset(int)
+     * @see #skipRemainingBits()
      */
-    private long bitPosition;
+    long bitPosition;
 
     /**
      * The most recent mark, or {@code null} if none.
@@ -133,14 +145,15 @@ public abstract class ChannelData implements Markable {
      * not be used anymore after this constructor.
      *
      * @param  other      the existing instance from which to takes the channel and buffer.
+     * @param  buffer     either {@code other.buffer} or a new buffer with an equivalent position.
      * @param  replacing  {@code true} if {@code other} will be discarded in favor of the new instance.
      */
-    ChannelData(final ChannelData other, final boolean replacing) {
+    ChannelData(final ChannelData other, final ByteBuffer buffer, final boolean replacing) {
         filename      = other.filename;
-        buffer        = other.buffer;
         channelOffset = other.channelOffset;
         bufferOffset  = other.bufferOffset;
         bitPosition   = other.bitPosition;
+        this.buffer   = buffer;
         if (replacing) {
             mark = other.mark;
         }
@@ -190,21 +203,6 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * Implementation of {@link ChannelDataInput#readBit()} provided here for performance reasons.
-     * It is caller responsibility to ensure that the {@link #buffer} contains at least one byte.
-     */
-    final int readBitFromBuffer() {
-        final int bp = buffer.position();
-        final long position = Math.addExact(bufferOffset, bp);
-        if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
-            bitPosition = position << BIT_OFFSET_SIZE;
-        }
-        final int bitOffset = (Byte.SIZE - 1) - (int) (bitPosition++ & ((1L << BIT_OFFSET_SIZE) - 1));
-        final byte value = (bitOffset != 0) ? buffer.get(bp) : buffer.get();
-        return (value & (1 << bitOffset)) == 0 ? 0 : 1;
-    }
-
-    /**
      * Returns the current bit offset, as an integer between 0 and 7 inclusive.
      *
      * <p>According {@link javax.imageio.stream.ImageInputStream} contract, the bit offset shall be reset to 0
@@ -214,11 +212,12 @@ public abstract class ChannelData implements Markable {
      * @return the bit offset of the stream.
      */
     public final int getBitOffset() {
-        final long position = position();
-        if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
-            bitPosition = position << BIT_OFFSET_SIZE;
+        // No need to use `Math.addExact(…)` because integer overflow results in `false`.
+        if ((bitPosition >>> BIT_OFFSET_SIZE) == bufferOffset + buffer.position()) {
+            return (int) (bitPosition & ((1L << BIT_OFFSET_SIZE) - 1));
         }
-        return (int) (bitPosition & ((1L << BIT_OFFSET_SIZE) - 1));
+        bitPosition = 0;    // Bits are invalid even if the user moves back to this position later.
+        return 0;
     }
 
     /**
@@ -238,21 +237,7 @@ public abstract class ChannelData implements Markable {
      * If the bit offset is zero, this method does nothing.
      * Otherwise it skips the remaining bits in current byte.
      */
-    public final void skipRemainingBits() {
-        if (bitPosition != 0) {             // Quick check for common case.
-            if (getBitOffset() != 0) {
-                buffer.get();               // Should never fail, otherwise bit offset should have been invalid.
-            }
-            clearBitOffset();
-        }
-    }
-
-    /**
-     * Sets the bit offset to zero.
-     */
-    final void clearBitOffset() {
-        bitPosition = 0;
-    }
+    public abstract void skipRemainingBits();
 
     /**
      * Returns the current byte position of the stream.
@@ -417,7 +402,7 @@ public abstract class ChannelData implements Markable {
             ((SeekableByteChannel) channel).position(channelOffset);
             buffer.clear().limit(0);
             bufferOffset = 0;
-            clearBitOffset();
+            bitPosition  = 0;
             mark = null;
             return true;
         }
@@ -425,26 +410,15 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * Notifies two {@code ChannelData} instances that operations will continue with the specified take over.
+     * Copies all field values to the given object for {@code yield(…)} implementation in subclasses.
+     * This is used for notifying that read or write operations will continue with the specified take over.
      * The two {@code ChannelData} instances should share the same {@link Channel}, or use two channels that
      * are at the same {@linkplain SeekableByteChannel#position() channel position}.
      *
-     * <h4>Usage</h4>
-     * This method is used when a {@link ChannelDataInput} and a {@link ChannelDataOutput} are wrapping
-     * the same {@link java.nio.channels.ByteChannel} and used alternatively for reading and writing.
-     * After a read operation, {@code in.yield(put)} should be invoked for ensuring that the output
-     * position is valid for the new channel position.
-     *
-     * <h4>Implementation note</h4>
-     * Subclasses <strong>must</strong> override this method and set the buffer position to zero.
-     * Whether this need to be done before or after {@code super.field(takeOver)} depends on whether
-     * this {@code ChannelData} is for input or output.
-     *
-     * @param  takeOver  the {@code ChannelData} which will continue operations after this one.
-     *
-     * @see ChannelDataOutput#ChannelDataOutput(ChannelDataInput)
+     * @param  takeOver   the {@code ChannelData} which will continue operations after this one.
      */
-    public void yield(final ChannelData takeOver) throws IOException {
+    final void copyTo(final ChannelData takeOver) {
+        assert takeOver.channel() == channel();
         takeOver.bufferOffset  = bufferOffset;
         takeOver.channelOffset = channelOffset;
         takeOver.bitPosition   = bitPosition;
@@ -478,7 +452,7 @@ public abstract class ChannelData implements Markable {
          * Clearing the bit offset is needed if we don't want to handle the case of `ChannelDataOutput`,
          * which use a different stream position calculation when the bit offset is non-zero.
          */
-        clearBitOffset();
+        bitPosition = 0;
         mark = null;
     }
 

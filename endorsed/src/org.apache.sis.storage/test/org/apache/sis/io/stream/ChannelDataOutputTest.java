@@ -224,7 +224,7 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
      * @throws IOException should never happen since we read and write in memory only.
      */
     private void writeInStreams() throws IOException {
-        transferRandomData(testedStream, testedStreamBackingArray.length - ARRAY_MAX_LENGTH, 21);
+        transferRandomData(testedStream, testedStreamBackingArray.length - ARRAY_MAX_LENGTH, 20);
     }
 
     /**
@@ -271,11 +271,10 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
                 t.flushBefore(flushedPosition);
                 break;
             }
-            case 20: {
-                r.flush();
-                t.flush();
-                break;
-            }
+            /*
+             * Do not test flush, because `ChannelDataOutput.flush()` semantic
+             * is very different than the `ImageOutputStream.flush()` semantic.
+             */
         }
         assertEquals(r.getBitOffset(),      t.getBitOffset(),      "getBitOffset()");
         assertEquals(r.getStreamPosition(), t.getStreamPosition(), "getStreamPosition()");

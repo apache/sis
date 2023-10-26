@@ -63,10 +63,8 @@ final class ReversedBitsChannel implements ReadableByteChannel, SeekableByteChan
      * and because a new buffer is created for each strip or tile to read.
      */
     static ChannelDataInput wrap(final ChannelDataInput input) throws IOException {
-        final var buffer  = ByteBuffer.allocate(2048).order(input.buffer.order());
-        final var reverse = new ChannelDataInput(input.filename, new ReversedBitsChannel(input), buffer, true);
-        input.yield(reverse);
-        return reverse;
+        final var buffer = ByteBuffer.allocate(2048).order(input.buffer.order());
+        return new ChannelDataInput(input, new ReversedBitsChannel(input), buffer);
     }
 
     /**

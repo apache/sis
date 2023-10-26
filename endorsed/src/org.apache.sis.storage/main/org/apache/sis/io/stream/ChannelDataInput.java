@@ -108,6 +108,22 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
+     * Creates a new data input with the same name and position than the given object, but a different channel.
+     * This is used when the channel performs some filtering on the data, for example inflating a ZIP file.
+     *
+     * @param other    the other stream from which to copy the filename and position.
+     * @param channel  the new channel to use. Stream position shall be the same as {@code other.channel} position.
+     * @param buffer   the new buffer to use. Its content will be discarded (limit set to 0).
+     */
+    public ChannelDataInput(final ChannelDataInput other, final ReadableByteChannel channel, final ByteBuffer buffer) {
+        super(other, buffer, false);
+        this.channel = channel;
+        moveBufferForward(other.buffer.limit());
+        buffer.limit(0);
+        bitPosition = 0;
+    }
+
+    /**
      * Creates a new instance for a buffer filled with the bytes to use.
      * This constructor uses an independent, read-only view of the given buffer.
      * No reference to the given buffer will be retained.
@@ -128,7 +144,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
      * @param  input  the existing instance from which to takes the channel and buffer.
      */
     ChannelDataInput(final ChannelDataInput input) {
-        super(input, true);
+        super(input, input.buffer, true);
         channel = input.channel;
     }
 
@@ -167,6 +183,21 @@ public class ChannelDataInput extends ChannelData implements DataInput {
         }
         buffer.limit(buffer.position()).position(position);
         return c;
+    }
+
+    /**
+     * Moves the stream position to the next byte boundary.
+     * If the bit offset is zero, this method does nothing.
+     * Otherwise it skips the remaining bits in current byte.
+     */
+    @Override
+    public final void skipRemainingBits() {
+        if (bitPosition != 0) {             // Quick check for common case.
+            if (getBitOffset() != 0) {
+                buffer.get();               // Should never fail, otherwise bit offset should have been invalid.
+            }
+            bitPosition = 0;
+        }
     }
 
     /**
@@ -270,7 +301,14 @@ public class ChannelDataInput extends ChannelData implements DataInput {
      */
     public final int readBit() throws IOException {
         ensureBufferContains(Byte.BYTES);
-        return readBitFromBuffer();
+        final int bp = buffer.position();
+        final long position = Math.addExact(bufferOffset, bp);      // = position() but inlined for reusing `bp`.
+        if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
+            bitPosition = position << BIT_OFFSET_SIZE;              // Clear the bits and mark as valid position.
+        }
+        final int bitOffset = (Byte.SIZE - 1) - (int) (bitPosition++ & ((1L << BIT_OFFSET_SIZE) - 1));
+        final byte value = (bitOffset != 0) ? buffer.get(bp) : buffer.get();
+        return (value & (1 << bitOffset)) == 0 ? 0 : 1;
     }
 
     /**
@@ -1052,7 +1090,7 @@ loop:   while (hasRemaining()) {
              */
             throw new InvalidSeekException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
-        clearBitOffset();
+        bitPosition = 0;
         assert position() == position : position;
     }
 
@@ -1092,29 +1130,62 @@ loop:   while (hasRemaining()) {
      * This method should be invoked when read operations with this {@code ChannelDataInput} are completed for
      * now, and write operations are about to begin with a {@link ChannelDataOutput} sharing the same channel.
      *
+     * <h4>Usage</h4>
+     * This method is used when a {@link ChannelDataInput} and a {@link ChannelDataOutput} are wrapping
+     * the same {@link java.nio.channels.ByteChannel} and used alternatively for reading and writing.
+     * After a read operation, {@code in.yield(out)} should be invoked for ensuring that the output
+     * position is valid for the new channel position.
+     *
      * @param  takeOver  the {@link ChannelDataOutput} which will continue operations after this instance.
+     *
+     * @see ChannelDataOutput#ChannelDataOutput(ChannelDataInput)
      */
-    @Override
-    public void yield(final ChannelData takeOver) throws IOException {
-        if (getBitOffset() != 0) {
-            clearBitOffset();
-            buffer.get();
-        }
+    public final void yield(final ChannelDataOutput takeOver) throws IOException {
+        int bitOffset = 0;
+        byte bits = 0;
         /*
          * If we filled the buffer with more bytes than the buffer position,
          * the channel position is too far ahead. We need to seek backward.
+         * Note that if `bitOffset` is not zero, then there is at least one
+         * remaining byte, which is the byte where bits are read from.
          */
         if (buffer.hasRemaining()) {
-            if (channel instanceof SeekableByteChannel) {
-                ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(position()));
-            } else {
+            if (!(channel instanceof SeekableByteChannel)) {
                 throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, takeOver.filename));
             }
+            bitOffset = getBitOffset();
+            if (bitOffset != 0) {
+                bits = savedBitsForOutput(bitOffset);
+            }
+            final long p = position();
+            ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(p));
+            bufferOffset = p;                   // Modify object state only on success.
+        } else {
+            moveBufferForward(buffer.limit());
         }
-        bufferOffset = position();
-        if (buffer.limit(0) != takeOver.buffer) {          // Must be after `position()`.
-            takeOver.buffer.limit(0);
+        copyTo(takeOver);
+        takeOver.buffer.limit(0);               // Also set the position to 0.
+        if (bitOffset != 0) {
+            takeOver.buffer.limit(1).put(bits);
+            takeOver.bitPosition += (1L << BIT_OFFSET_SIZE);        // In output mode, position is after the byte.
         }
-        super.yield(takeOver);
+    }
+
+    /**
+     * Returns the bits to save in {@link ChannelDataOutput} for avoiding information lost.
+     * This method is invoked by {@link #yield(ChannelDataOutput)} if this input channel was reading
+     * some bits in the middle of a byte. In order to keep the same bit offset in the output channel,
+     * the output buffer must contain that byte for allowing to continue to write bits in that byte.
+     * This method returns that byte to copy from the input channel to the output channel.
+     *
+     * @param  bitOffset  current value of {@link #getBitOffset()}, which must be non-zero.
+     * @return the byte to copy from the input channel to the output channel.
+     */
+    byte savedBitsForOutput(final int bitOffset) {
+        /*
+         * We do not check the position validity because it is guaranteed valid when bitOffset > 0.
+         * An IndexOutOfBoundsException here with would be a bug in the way we manage bit offsets.
+         */
+        return buffer.get(buffer.position());
     }
 }

@@ -116,9 +116,9 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @see #yield(ChannelData)
      */
     public ChannelDataOutput(final ChannelDataInput input) {
-        super(input, false);
+        super(input, input.buffer, false);
         channel = (WritableByteChannel) input.channel;      // `ClassCastException` is part of the contract.
-        // Do not invoke `synchronized(input)` because caller may want to do some more read operations first.
+        // Do not invoke `input.yield(this)` because caller may want to do some more read operations first.
     }
 
     /**
@@ -196,6 +196,15 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     }
 
     /**
+     * Moves the stream position to the next byte boundary.
+     */
+    @Override
+    public final void skipRemainingBits() {
+        // See the comment in `getStreamPosition()` method body.
+        bitPosition = 0;
+    }
+
+    /**
      * Writes a single bit. This method uses only the rightmost bit of the given argument;
      * the upper 31 bits are ignored.
      *
@@ -224,7 +233,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
                 bits &= Numerics.bitmask(numBits) - 1;                  // Make sure that high-order bits are zero.
                 final int r = numBits - (Byte.SIZE - bitOffset);
                 /*
-                 * `r` is the number of bits than we cannot store in the current byte. This value may be negative,
+                 * `r` is the number of bits that we cannot store in the current byte. This value may be negative,
                  * which means that the current byte has space for more bits than what we have, in which case some
                  * room will still exist after this method call (i.e. the `bitOffset` will still non-zero).
                  */
@@ -507,6 +516,11 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      */
     @Override
     public final void write(final byte[] src, int offset, int length) throws IOException {
+        /*
+         * Since the `bitOffset` validity is determined by the position, if the position
+         * did not changed, then we need to clear the `bitOffset` flag manually.
+         */
+        skipRemainingBits();
         if (length != 0) {
             do {
                 final int n = Math.min(buffer.capacity(), length);
@@ -515,12 +529,6 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
                 offset += n;
                 length -= n;
             } while (length != 0);
-        } else {
-            /*
-             * Since the `bitOffset` validity is determined by the position, if the position
-             * did not changed, then we need to clear the `bitOffset` flag manually.
-             */
-            clearBitOffset();
         }
     }
 
@@ -566,7 +574,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
          * @throws IOException if an error occurred while writing the stream.
          */
         final void writeFully(final int dataSize, int offset, int length) throws IOException {
-            clearBitOffset();                           // Actually needed only if `length` == 0.
+            skipRemainingBits();                        // Actually needed only if `length` = 0.
             ensureBufferAccepts(Math.min(length * dataSize, buffer.capacity()));
             final Buffer view = createView();           // Must be after `ensureBufferAccept(…)`
             int n = Math.min(view.remaining(), length);
@@ -738,7 +746,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * @param  value  the byte to repeat the given amount of times.
      */
     public final void repeat(long count, final byte value) throws IOException {
-        clearBitOffset();
+        skipRemainingBits();        // Actually needed only if `count` = 0.
         if (count > 0) {
             /*
              * Fill the buffer with the specified value. The filling is done only once,
@@ -796,7 +804,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
              * Requested position is inside the current limits of the buffer.
              */
             buffer.position((int) p);
-            clearBitOffset();
+            bitPosition = 0;
         } else if (channel instanceof SeekableByteChannel) {
             /*
              * Requested position is outside the current limits of the buffer,
@@ -828,7 +836,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      */
     @Override
     public final void flush() throws IOException {
-        clearBitOffset();
+        skipRemainingBits();
         writeFully();
         bufferOffset = position();
         buffer.limit(0);
@@ -871,30 +879,41 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * This method should be invoked when write operations with this {@code ChannelDataOutput} are completed
      * for now, and read operations are about to begin with a {@link ChannelDataInput} sharing the same channel.
      *
+     * <h4>Usage</h4>
+     * This method is used when a {@link ChannelDataInput} and a {@link ChannelDataOutput} are wrapping
+     * the same {@link java.nio.channels.ByteChannel} and used alternatively for reading and writing.
+     * After a read operation, {@code in.yield(out)} should be invoked for ensuring that the output
+     * position is valid for the new channel position.
+     *
      * @param  takeOver  the {@link ChannelDataInput} which will continue operations after this instance.
+     *
+     * @see ChannelDataOutput#ChannelDataOutput(ChannelDataInput)
      */
-    @Override
-    public void yield(final ChannelData takeOver) throws IOException {
-        final int position = buffer.position();
-        final int limit    = buffer.limit();
+    public final void yield(final ChannelDataInput takeOver) throws IOException {
         /*
          * Flush the full buffer content for avoiding data lost. Note that the buffer position
-         * is not necessarily at the end, so we may write more bytes than the stream position.
-         * It may force us to seek backward after flushing.
+         * is not necessarily at the buffer limit, so some bytes may be written past the position.
+         * The buffer content is still valid, so we configure `takeOver` as if the write operation
+         * was immediately following by a read of the same bytes. This is not only an optimization,
+         * but also needed for preserving the byte containing the bits when `bitOffset` is non-zero.
          */
-        clearBitOffset();
+        int position = buffer.position();
         writeFully();
-        if (position >= limit) {
-            // We were at the end of the buffer, so the channel is already at the right position.
-            bufferOffset = position();
-            buffer.limit(0);
-        } else if (channel instanceof SeekableByteChannel) {
-            // Do not move `bufferOffset`. Instead make the channel position consistent with it.
-            buffer.limit(limit).position(position);
-            ((SeekableByteChannel) channel).position(toSeekableByteChannelPosition(Math.addExact(bufferOffset, limit)));
-        } else {
-            throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
+        if (getBitOffset() != 0) {
+            position--;     // For input, the byte containing bits is at instead of after the position.
+            bitPosition -= (1L << BIT_OFFSET_SIZE);
         }
-        super.yield(takeOver);
+        buffer.position(position);
+        copyTo(takeOver);
+        assert takeOver.buffer == buffer;
+        /*
+         * If above assertion is false, we could still work with:
+         *
+         *     moveBufferForward(buffer.limit());
+         *     takeOver.buffer.limit(0);
+         *
+         * However there is a slight complication because of the need to copy bits if `bitOffset` is non-zero
+         * (see ChannelDataInput.yield(…) for code example). For now it is not needed.
+         */
     }
 }

@@ -68,11 +68,6 @@ public class ChannelImageOutputStream extends OutputStream implements ImageOutpu
         output = new ChannelDataOutput(filename, channel, buffer);
     }
 
-    /** Declares that this stream does not cache data itself. */
-    @Override public boolean isCached()       {return false;}
-    @Override public boolean isCachedMemory() {return false;}
-    @Override public boolean isCachedFile()   {return false;}
-
     /**
      * Returns the {@linkplain #input} or {@linkplain #output},
      * depending on whether this stream is reading or writing.
@@ -112,6 +107,9 @@ public class ChannelImageOutputStream extends OutputStream implements ImageOutpu
     }
 
     /** Delegates to the reader or writer. */
+    @Override public boolean   isCached()                                                {return input.isCached();}
+    @Override public boolean   isCachedMemory()                                          {return input.isCachedMemory();}
+    @Override public boolean   isCachedFile()                                            {return input.isCachedFile();}
     @Override public long      length()                               throws IOException {return current().length();}
     @Override public void      mark()                                                    {       current().mark();}
     @Override public void      reset()                                throws IOException {       current().reset();}
@@ -178,15 +176,13 @@ public class ChannelImageOutputStream extends OutputStream implements ImageOutpu
 
     /**
      * Discards the initial position of the stream prior to the current stream position.
+     * Note that this behavior is as specified by Image I/O, but different than the flush
+     * method of {@link OutputStream}.
      *
      * @throws IOException if an I/O error occurred.
      */
     @Override
     public void flush() throws IOException {
-        if (writing) {
-            // Reproduce the behavior of Imava I/O implementation.
-            output.clearBitOffset();
-        }
         current().flushBefore(getStreamPosition());
     }
 
