@@ -21,7 +21,9 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.List;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A reference system connection object creates a link between values within
  * domain axes and a reference system to be able to interpret those values, e.g.
  * as coordinates in a certain coordinate reference system.
@@ -31,8 +33,8 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"coordinates","system"})
 public final class ReferenceSystemConnection extends Dictionary<Object> {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A reference system connection object MUST have a member "coordinates"
      * which has as value an array of coordinate identifiers that are referenced
      * in this object. Depending on the type of referencing, the ordering of the
@@ -41,11 +43,16 @@ public final class ReferenceSystemConnection extends Dictionary<Object> {
      * in the coordinate reference system.
      */
     public List<String> coordinates;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A reference system connection object MUST have a member "system" whose
      * value MUST be a Reference System Object.
      */
     public CoverageJsonObject system;
+
+    public ReferenceSystemConnection() {
+    }
 
     @Override
     public boolean equals(Object other) {

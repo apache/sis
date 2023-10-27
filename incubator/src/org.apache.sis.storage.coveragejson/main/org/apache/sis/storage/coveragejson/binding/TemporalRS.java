@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * Time is referenced by a temporal reference system (temporal RS). In the current
  * version of this Community Standard, only a string-based notation for time
  * values is defined. Future versions of this Community Standard may allow for
@@ -46,18 +48,23 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","calendar","timeScale"})
 public final class TemporalRS extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A temporal RS object MUST have a member "calendar" with value "Gregorian" or a URI.
      * If the Gregorian calendar is used, then "calendar" MUST have the value "Gregorian" and cannot be a URI.
      */
     public String calendar;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A temporal RS object MAY have a member "timeScale" with a URI as value.
      * If omitted, the time scale defaults to "UTC". If the time scale is UTC,
      * the "timeScale" member MUST be omitted.
      */
     public String timeScale;
+
+    public TemporalRS() {
+    }
 
     @Override
     public boolean equals(Object other) {

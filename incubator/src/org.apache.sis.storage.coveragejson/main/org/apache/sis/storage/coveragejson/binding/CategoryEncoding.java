@@ -31,6 +31,7 @@ import org.apache.sis.storage.coveragejson.binding.CategoryEncoding.Serializer;
 
 
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * CategoryEncoding is an object where each key is equal to an "id" value of
  * the "categories" array within the "observedProperty" member of the
  * parameter object. There MUST be no duplicate keys. The value is either
@@ -42,8 +43,13 @@ import org.apache.sis.storage.coveragejson.binding.CategoryEncoding.Serializer;
 @JsonbTypeDeserializer(Deserializer.class)
 @JsonbTypeSerializer(Serializer.class)
 public final class CategoryEncoding extends Dictionary<Object> {
+    public CategoryEncoding() {
+    }
 
     public static class Deserializer implements JsonbDeserializer<CategoryEncoding> {
+        public Deserializer() {
+        }
+
         @Override
         public CategoryEncoding deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
             final CategoryEncoding candidate = new CategoryEncoding();
@@ -61,6 +67,8 @@ public final class CategoryEncoding extends Dictionary<Object> {
     }
 
     public static class Serializer implements JsonbSerializer<CategoryEncoding> {
+        public Serializer() {
+        }
 
         @Override
         public void serialize(CategoryEncoding ranges, JsonGenerator jg, SerializationContext sc) {
@@ -70,6 +78,5 @@ public final class CategoryEncoding extends Dictionary<Object> {
             }
             jg.writeEnd();
         }
-
     }
 }

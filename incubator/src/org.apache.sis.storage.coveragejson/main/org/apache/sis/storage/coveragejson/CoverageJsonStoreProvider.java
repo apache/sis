@@ -31,6 +31,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.Version;
 import org.opengis.parameter.ParameterDescriptorGroup;
 
+
 /**
  * The provider of {@link CoverageJsonStore} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a {@code CoverageJsonStore}.
@@ -48,6 +49,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 public class CoverageJsonStoreProvider extends DataStoreProvider {
 
     public static final String NAME = "CoverageJSON";
+
     /**
      * The MIME type for Coverage-JSON files.
      */
@@ -64,6 +66,9 @@ public class CoverageJsonStoreProvider extends DataStoreProvider {
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
     private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(NAME);
+
+    public CoverageJsonStoreProvider() {
+    }
 
     @Override
     public String getShortName() {

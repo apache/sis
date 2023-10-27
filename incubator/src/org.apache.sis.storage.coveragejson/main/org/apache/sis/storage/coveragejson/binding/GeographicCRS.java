@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * Geographic CRSs anchor coordinate values to an ellipsoidal approximation of
  * the Earth. They have coordinate axes of geodetic longitude and geodetic
  * latitude, and perhaps height above the ellipsoid (i.e. they can be two- or three-dimensional).
@@ -40,17 +42,22 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","id","description"})
 public final class GeographicCRS extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The object MAY have an "id" member, whose value MUST be a string and
      * SHOULD be a common identifier for the reference system.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The object MAY have a "description" member, where the value MUST be an
      * i18n object, but no standardized content is interpreted from this description.
      */
     public I18N description;
+
+    public GeographicCRS() {
+    }
 
     @Override
     public boolean equals(Object other) {

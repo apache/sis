@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A category object MUST an "id" and a "label" member, and MAY have a
  * "description" member.
  *
@@ -29,21 +31,28 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"id","label","description"})
 public final class Category extends Dictionary<Object> {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The value of "id" MUST be a string and SHOULD be a common identifier.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The value of "label" MUST be an i18n object of the name of the
      * category and SHOULD be short.
      */
     public I18N label;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * If given, the value of "description" MUST be an i18n object with a
      * textual description of the* category.
      */
     public I18N description;
+
+    public Category() {
+    }
 
     @Override
     public boolean equals(Object other) {
@@ -64,5 +73,4 @@ public final class Category extends Dictionary<Object> {
                 label,
                 description);
     }
-
 }

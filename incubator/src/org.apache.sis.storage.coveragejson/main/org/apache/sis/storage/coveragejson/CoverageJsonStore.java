@@ -48,6 +48,7 @@ import org.apache.sis.storage.WritableAggregate;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 
+
 /**
  * A data store backed by Coverage-JSON files.
  *

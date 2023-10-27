@@ -21,6 +21,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Arrays;
 import java.util.Objects;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
@@ -28,8 +29,8 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"tileShape","urlTemplate"})
 public final class TileSet extends Dictionary<Object> {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A TileSet object MUST have a member with the name "tileShape" where
      * the value is an array of the same length as "shape" and where each
      * array element is either null or an integer lower or equal than the
@@ -37,7 +38,9 @@ public final class TileSet extends Dictionary<Object> {
      * is not tiled.
      */
     public Integer[] tileShape;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A TileSet object MUST have a member with the name "urlTemplate" where
      * the value is a Level 1 URI template as defined in RFC 6570 .
      * The URI template MUST contain a variable for each axis name whose
@@ -54,6 +57,9 @@ public final class TileSet extends Dictionary<Object> {
      * "shape" of the TiledNdArray.
      */
     public String urlTemplate;
+
+    public TileSet() {
+    }
 
     @Override
     public boolean equals(Object other) {

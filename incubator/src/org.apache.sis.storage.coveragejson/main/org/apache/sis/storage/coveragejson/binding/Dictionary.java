@@ -21,7 +21,7 @@ import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.annotation.JsonbTransient;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
+
 
 /**
  * @author Johann Sorel (Geomatys)
@@ -33,7 +33,11 @@ public class Dictionary<T> {
      * TODO find how to cath any other property as in Jackson @JsonAnyGetter and Johnzon @JohnzonAny
      */
     @JsonbTransient
-    public final LinkedHashMap<String, T> any = new LinkedHashMap<>();
+    public final LinkedHashMap<String, T> any;
+
+    public Dictionary() {
+        any = new LinkedHashMap<>();
+    }
 
     public final Map<String, T> getAny() {
         return this.any;
@@ -56,14 +60,14 @@ public class Dictionary<T> {
     @Override
     public boolean equals(Object other) {
         if (other == this) return true;
-        if (!(other instanceof Dictionary)) return false;
+        if (!(other instanceof Dictionary<?>)) return false;
 
-        final Dictionary cdt = ((Dictionary) other);
-        return Objects.equals(any, cdt.any);
+        final var cdt = ((Dictionary<?>) other);
+        return any.equals(cdt.any);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(any);
+        return any.hashCode();
     }
 }

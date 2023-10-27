@@ -20,6 +20,7 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
@@ -27,18 +28,22 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"value","type"})
 public final class Symbol extends Dictionary<Object> {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * "value" is the symbolic unit notation
      */
     public String value;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * "type" references the unit serialization scheme that is used. "type" MUST
      * HAVE the value "http://www.opengis.net/def/uom/UCUM/" if UCUM is used, or
      * a custom value as recommended in section Extensions.
      */
     public String type;
 
+    public Symbol() {
+    }
 
     @Override
     public boolean equals(Object other) {

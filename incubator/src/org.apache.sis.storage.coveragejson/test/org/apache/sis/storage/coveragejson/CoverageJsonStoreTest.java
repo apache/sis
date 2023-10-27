@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.coveragejson;
 
-import jakarta.json.bind.JsonbBuilder;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -24,6 +23,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -43,18 +43,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.Test;
 import org.opengis.metadata.spatial.DimensionNameType;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
 public class CoverageJsonStoreTest {
+    public CoverageJsonStoreTest() {
+    }
 
     /**
      * Test coverage example from https://covjson.org/playground/.
      */
     @Test
-    public void testReadCoverageXYZT() throws Exception {
-
+    public void testReadCoverageXYZT() throws DataStoreException, FactoryException {
         try (final DataStore store = new CoverageJsonStoreProvider().open(new StorageConnector(CoverageJsonStoreTest.class.getResource("coverage_xyzt.json")))) {
 
             //test grid coverage resource exist
@@ -81,7 +83,6 @@ public class CoverageJsonStoreTest {
                 //TODO test transform
             }
 
-
             {   //test data
                 GridCoverage coverage = gcr.read(null);
                 Raster data = coverage.render(null).getData();
@@ -93,7 +94,6 @@ public class CoverageJsonStoreTest {
                 assertEquals(Double.NaN, data.getSampleDouble(2, 1, 0), 0.0);
             }
         }
-
     }
 
     /**
@@ -125,7 +125,6 @@ public class CoverageJsonStoreTest {
             raster.setSample(2, 1, 0, 7);
             raster.setSample(3, 1, 0, 8);
 
-
             final GridCoverageBuilder gcb = new GridCoverageBuilder();
             gcb.setDomain(grid);
             gcb.setValues(image);
@@ -135,12 +134,9 @@ public class CoverageJsonStoreTest {
 
             aggregate.add(gcr);
 
-
             String json = Files.readString(tempPath, StandardCharsets.UTF_8);
-
         } finally {
             Files.deleteIfExists(tempPath);
         }
     }
-
 }

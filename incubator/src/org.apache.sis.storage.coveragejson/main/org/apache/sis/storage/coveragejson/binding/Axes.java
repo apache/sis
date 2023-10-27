@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * The "axes" member MUST NOT be empty.
  *
  * @author Johann Sorel (Geomatys)
@@ -33,6 +35,9 @@ public final class Axes extends Dictionary<Object> {
     public Axe y;
     public Axe z;
     public Axe t;
+
+    public Axes() {
+    }
 
     @Override
     public boolean equals(Object other) {

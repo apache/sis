@@ -21,7 +21,9 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Arrays;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A parameter group object MUST have either or both the members "label" or/and "observedProperty".
  *
  * @author Johann Sorel (Geomatys)
@@ -29,36 +31,46 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","id","label","description","observedProperty","members"})
 public final class ParameterGroup extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter group object MAY have a member with the name "id" where the
      * value MUST be a string and SHOULD be a common identifier.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter group object MAY have a member with the name "label" where
      * the value MUST be an i18n object that is the name of the parameter group
      * and which SHOULD be short. Note that this SHOULD be left out if it would
      * be identical to the "label" of the "observedProperty" member.
      */
     public I18N label;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter group object MAY have a member with the name "description"
      * where the value MUST be an i18n object which is a, perhaps lengthy,
      * textual description of the parameter group.
      */
     public String description;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter group object MAY have a member with the name "observedProperty"
      * where the value is an object as specified for parameter objects.
      */
     public ObservedProperty observedProperty;
+
     /**
      * A parameter group object MUST have a member with the name "members"
      * where the value is a non-empty array of parameter identifiers
      * (see 6.3 Coverage objects).
      */
     public String[] members;
+
+    public ParameterGroup() {
+    }
 
     @Override
     public boolean equals(Object other) {

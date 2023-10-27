@@ -21,7 +21,9 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Arrays;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A CoverageJSON object with the type "TiledNdArray" is a TiledNdArray object.
  * It represents a multidimensional (>= 1D) array with named axes that is split
  * up into sets of linked NdArray documents. Each tileset typically covers a
@@ -33,27 +35,36 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"dataType","shape","axisNames","tileSets"})
 public final class TiledNdArray extends Dictionary<Object> {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A TiledNdArray object MUST have a member with the name "dataType" where
      * the value is either "float", "integer", or "string".
      */
     public String dataType;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A TiledNdArray object MUST have a member with the name "shape" where the
      * value is a non-empty array of integers.
      */
     public int[] shape;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A TiledNdArray object MUST have a member with the name "axisNames" where
      * the value is a string array of the same length as "shape".
      */
     public String[] axisNames;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A TiledNdArray object MUST have a member with the name "tileSets" where
      * the value is a non-empty array of TileSet objects.
      */
     public TileSet[] tileSets;
+
+    public TiledNdArray() {
+    }
 
     @Override
     public boolean equals(Object other) {

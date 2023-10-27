@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * Identifier-based reference systems (identifier RS) .
  *
  * Coordinate values associated with an identifier RS MUST be strings.
@@ -30,32 +32,42 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","id","label","description","targetConcept","identifiers"})
 public final class IdentifierRS extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An identifier RS object MAY have a member "id" where the value MUST be a
      * string and SHOULD be a common identifier for the reference system.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An identifier RS object MAY have a member "label" where the value MUST be
      * an i18n object that is the name of the reference system.
      */
     public I18N label;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An identifier RS object MAY have a member "description" where the value
      * MUST be an i18n object that is the (perhaps lengthy) description of the
      * reference system.
      */
     public I18N description;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An identifier RS object MUST have a member "targetConcept"
      */
     public TargetConcept targetConcept;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An identifier RS object MAY have a member "identifiers".
      */
     public Identifiers identifiers;
 
+    public IdentifierRS() {
+    }
 
     @Override
     public boolean equals(Object other) {
@@ -80,5 +92,4 @@ public final class IdentifierRS extends CoverageJsonObject {
                 targetConcept,
                 identifiers);
     }
-
 }

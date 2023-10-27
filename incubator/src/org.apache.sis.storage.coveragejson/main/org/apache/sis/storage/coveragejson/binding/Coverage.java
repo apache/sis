@@ -26,7 +26,9 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A CoverageJSON object with the type "Coverage" is a coverage object.
  *
  * @author Johann Sorel (Geomatys)
@@ -34,13 +36,15 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","id","domain","parameters","parameterGroups","ranges"})
 public final class Coverage extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * If a coverage has a commonly used identifier, that identifier SHOULD be
      * included as a member of the coverage object with the name "id".
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage object MUST have a member with the name "domain" where the
      * value is either a domain object or a URL.
      *
@@ -55,7 +59,9 @@ public final class Coverage extends CoverageJsonObject {
     //@JsonbTypeDeserializer(Coverage.DomainDeserializer.class)
     //TODO should be a Domain or an URL, DomainDeserializer not working as expected
     public Domain domain;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage object MAY have a member with the name "parameters" where the
      * value is an object where each member has as name a short identifier and
      * as value a parameter object. The identifier corresponds to the commonly
@@ -67,12 +73,16 @@ public final class Coverage extends CoverageJsonObject {
      * not have a "parameters" member.
      */
     public Parameters parameters;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage object MAY have a member with the name "parameterGroups" where
      * the value is an array of ParameterGroup objects.
      */
     public List<ParameterGroup> parameterGroups;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage object MUST have a member with the name "ranges" where the
      * value is a range set object. Any member of a range set object has as
      * name any of the names in a "parameters" object in scope and as value
@@ -89,6 +99,9 @@ public final class Coverage extends CoverageJsonObject {
      * interpreted as the matching category.
      */
     public Ranges ranges;
+
+    public Coverage() {
+    }
 
     @Override
     public boolean equals(Object other) {
@@ -115,6 +128,9 @@ public final class Coverage extends CoverageJsonObject {
     }
 
     public static class DomainDeserializer implements JsonbDeserializer<Object> {
+        public DomainDeserializer() {
+        }
+
         @Override
         public Object deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
             final JsonParser.Event event = parser.next();

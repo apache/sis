@@ -27,6 +27,7 @@ import jakarta.json.stream.JsonParser;
 import java.lang.reflect.Type;
 import java.util.Map.Entry;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
@@ -34,8 +35,13 @@ import java.util.Map.Entry;
 @JsonbTypeDeserializer(Ranges.Deserializer.class)
 @JsonbTypeSerializer(Ranges.Serializer.class)
 public final class Ranges extends Dictionary<NdArray> {
+    public Ranges() {
+    }
 
     public static class Deserializer implements JsonbDeserializer<Ranges> {
+        public Deserializer() {
+        }
+
         @Override
         public Ranges deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
             final Ranges candidate = new Ranges();
@@ -53,6 +59,8 @@ public final class Ranges extends Dictionary<NdArray> {
     }
 
     public static class Serializer implements JsonbSerializer<Ranges> {
+        public Serializer() {
+        }
 
         @Override
         public void serialize(Ranges ranges, JsonGenerator jg, SerializationContext sc) {
@@ -62,6 +70,5 @@ public final class Ranges extends Dictionary<NdArray> {
             }
             jg.writeEnd();
         }
-
     }
 }

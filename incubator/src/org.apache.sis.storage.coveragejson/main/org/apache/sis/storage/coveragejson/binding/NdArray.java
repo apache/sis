@@ -22,7 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A CoverageJSON object with the type "NdArray" is an NdArray object.
  * It represents a multidimensional (>= 0D) array with named axes, encoded as a
  * flat, one-dimensional JSON array in row-major order.
@@ -45,12 +47,15 @@ public final class NdArray extends CoverageJsonObject {
     public static final String DATATYPE_STRING = "string";
 
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An NdArray object MUST have a member with the name "dataType" where the
      * value is either "float", "integer", or "string" and MUST correspond to
      * the data type of the non-null values in the "values" array.
      */
     public String dataType;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An NdArray object MAY have a member with the name "axisNames" where the
      * value is an array of strings of the same length as "shape", such that
      * each string assigns a name to the corresponding dimension. For 0D arrays,
@@ -58,7 +63,9 @@ public final class NdArray extends CoverageJsonObject {
      * be included.
      */
     public String[] axisNames;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An NdArray object MAY have a member with the name "shape" where the value
      * is an array of integers. For 0D arrays, "shape" MAY be omitted
      * (defaulting to []). For >= 1D arrays it MUST be included.
@@ -67,7 +74,9 @@ public final class NdArray extends CoverageJsonObject {
      * equal the number of elements in the "values" array.
      */
     public int[] shape;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An NdArray object MUST have a member with the name "values" where the
      * value is a non-empty array of numbers and nulls, or strings and nulls,
      * where nulls represent missing data.
@@ -79,6 +88,9 @@ public final class NdArray extends CoverageJsonObject {
      * (This mimics the approach taken in NetCDF; see the example below.)
      */
     public List<Object> values; //because of null and string values
+
+    public NdArray() {
+    }
 
     @Override
     public boolean equals(Object other) {

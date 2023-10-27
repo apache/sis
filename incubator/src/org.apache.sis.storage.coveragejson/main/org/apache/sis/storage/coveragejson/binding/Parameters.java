@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.sis.storage.coveragejson.binding.Parameters.Deserializer;
 import org.apache.sis.storage.coveragejson.binding.Parameters.Serializer;
 
+
 /**
  * Constains a map of parameter objects.
  *
@@ -38,8 +39,13 @@ import org.apache.sis.storage.coveragejson.binding.Parameters.Serializer;
 @JsonbTypeDeserializer(Deserializer.class)
 @JsonbTypeSerializer(Serializer.class)
 public final class Parameters extends Dictionary<Parameter> {
+    public Parameters() {
+    }
 
     public static class Deserializer implements JsonbDeserializer<Parameters> {
+        public Deserializer() {
+        }
+
         @Override
         public Parameters deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
             final Parameters parameters = new Parameters();
@@ -57,6 +63,8 @@ public final class Parameters extends Dictionary<Parameter> {
     }
 
     public static class Serializer implements JsonbSerializer<Parameters> {
+        public Serializer() {
+        }
 
         @Override
         public void serialize(Parameters parameters, JsonGenerator jg, SerializationContext sc) {
@@ -66,6 +74,5 @@ public final class Parameters extends Dictionary<Parameter> {
             }
             jg.writeEnd();
         }
-
     }
 }

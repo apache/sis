@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A "unit" where the value is an object which MUST have either or both the members
  * "label" or/and "symbol".
  *
@@ -29,20 +31,24 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"id","label","symbol"})
 public final class Unit extends Dictionary<Object> {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * MAY have the member "id".
      * If given, the value of "id" MUST be a string and
      * SHOULD be a common identifier. It is RECOMMENDED to reference a unit
      * serialization scheme to allow automatic unit conversion.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * If given, the value of "label" MUST be an i18n object of the name of
      * the unit and SHOULD be short.
      */
     public I18N label;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * If given, the value of "symbol" MUST either be a string of the symbolic notation of the unit,
      * or an object with the members "value" and "type".
      */

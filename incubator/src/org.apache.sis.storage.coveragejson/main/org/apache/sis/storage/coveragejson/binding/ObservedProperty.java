@@ -21,7 +21,9 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.List;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * Observed property is an object which MUST have the member "label" and which
  * MAY have the members "id", "description", and "categories".
  *
@@ -30,24 +32,29 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"id","label","description","categories"})
 public final class ObservedProperty extends Dictionary<Object> {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * If given, the value of "id" MUST be a string and SHOULD be a common
      * identifier.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The value of "label" MUST be an i18n object that is the name of the
      * observed property and which SHOULD be short.
      */
     public I18N label;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * If given, the value of "description" MUST be an i18n object with a
      * textual description of the observed property.
      */
     public I18N description;
+
     /**
-     *
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * If given, the value of "categories" MUST be a non-empty array of category
      * objects.
      */
@@ -84,5 +91,4 @@ public final class ObservedProperty extends Dictionary<Object> {
                 description,
                 categories);
     }
-
 }

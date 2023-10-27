@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * Vertical CRSs use a single coordinate to denote some measure of height or depth,
  * usually approximately oriented with gravity.
  *
@@ -29,17 +31,22 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","id","description"})
 public final class VerticalCRS extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The object MAY have an "id" member, whose value MUST be a string and
      * SHOULD be a common identifier for the reference system.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The object MAY have a "description" member, where the value MUST be an
      * i18n object, but no standardised content is interpreted from this description.
      */
     public I18N description;
+
+    public VerticalCRS() {
+    }
 
     @Override
     public boolean equals(Object other) {

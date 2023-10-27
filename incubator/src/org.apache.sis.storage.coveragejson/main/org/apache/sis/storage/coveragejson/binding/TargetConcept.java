@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * TargetConcept is an object that MUST have a member "label" and MAY have a member
  * "description" where the value of each MUST be an i18n object that is the
  * name or description, respectively, of the concept which is referenced in the system.
@@ -33,6 +35,9 @@ public final class TargetConcept extends Dictionary<Object> {
 
     public I18N label;
     public I18N description;
+
+    public TargetConcept() {
+    }
 
     @Override
     public boolean equals(Object other) {

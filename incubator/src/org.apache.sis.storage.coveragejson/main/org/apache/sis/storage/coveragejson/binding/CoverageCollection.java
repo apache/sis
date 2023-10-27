@@ -21,7 +21,9 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.List;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A CoverageJSON object with the type "CoverageCollection" is a coverage collection object.
  *
  * @author Johann Sorel (Geomatys)
@@ -29,8 +31,8 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","domainType","parameters","parameterGroups","referencing","coverages"})
 public final class CoverageCollection extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage collection object MAY have the member "domainType" with a
      * string value to indicate that the coverage collection only contains
      * coverages of the given domain type. See the section Common Domain Types
@@ -41,28 +43,39 @@ public final class CoverageCollection extends CoverageJsonObject {
      * member is inherited to all included coverages.
      */
     public String domainType;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage collection object MAY have a member with the name "parameters"
      * where the value is an object where each member has as name a short
      * identifier and as value a parameter object.
      */
     public Parameter parameters;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage collection object MAY have a member with the name
      * "parameterGroups" where the value is an array of ParameterGroup objects.
      */
     public List<ParameterGroup> parameterGroups;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage collection object MAY have a member with the name "referencing"
      * where the value is an array of reference system connection objects.
      */
     public List<ReferenceSystemConnection> referencing;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A coverage collection object MUST have a member with the name "coverages".
      * The value corresponding to "coverages" is an array. Each element in the
      * array is a coverage object as defined above.
      */
     public List<Coverage> coverages;
+
+    public CoverageCollection() {
+    }
 
     @Override
     public boolean equals(Object other) {

@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A parameter object MAY have any number of members (name/value pairs).
  *
  * @author Johann Sorel (Geomatys)
@@ -28,39 +30,52 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","id","label","description","unit","observedProperty","categoryEncoding"})
 public final class Parameter extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter object MAY have a member with the name "id" where the value
      * MUST be a string and SHOULD be a common identifier.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter object MAY have a member with the name "label" where the value
      * MUST be an i18n object that is the name of the parameter and which SHOULD be short.
      * Note that this SHOULD be left out if it would be identical to the "label"
      * of the "observedProperty" member.
      */
     public I18N label;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter object MAY have a member with the name "description" where
      * the value MUST be an i18n object which is a, perhaps lengthy, textual
      * description of the parameter.
      */
     public I18N description;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter object MAY have a member with the name "unit".
      * A parameter object MUST NOT have a "unit" member if the "observedProperty"
      * member has a "categories" member.
      */
     public Unit unit;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter object MUST have a member with the name "observedProperty".
      */
     public ObservedProperty observedProperty;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A parameter object MAY have a member with the name "categoryEncoding".
      */
     public CategoryEncoding categoryEncoding;
+
+    public Parameter() {
+    }
 
     @Override
     public boolean equals(Object other) {
@@ -87,5 +102,4 @@ public final class Parameter extends CoverageJsonObject {
                 observedProperty,
                 categoryEncoding);
     }
-
 }

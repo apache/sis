@@ -30,7 +30,9 @@ import java.util.Map;
 import org.apache.sis.storage.coveragejson.binding.I18N.Serializer;
 import org.opengis.util.InternationalString;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * The special language tag "und" can be used to identify a value whose language
  * is unknown or undetermined.
  *
@@ -88,6 +90,9 @@ public final class I18N extends Dictionary<String> implements InternationalStrin
     }
 
     public static class Deserializer implements JsonbDeserializer<I18N> {
+        public Deserializer() {
+        }
+
         @Override
         public I18N deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
             final I18N candidate = new I18N();
@@ -105,6 +110,8 @@ public final class I18N extends Dictionary<String> implements InternationalStrin
     }
 
     public static class Serializer implements JsonbSerializer<I18N> {
+        public Serializer() {
+        }
 
         @Override
         public void serialize(I18N ranges, JsonGenerator jg, SerializationContext sc) {
@@ -114,6 +121,5 @@ public final class I18N extends Dictionary<String> implements InternationalStrin
             }
             jg.writeEnd();
         }
-
     }
 }

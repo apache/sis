@@ -18,6 +18,7 @@ package org.apache.sis.storage.coveragejson.binding;
 
 
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * An identifier RS object MAY have a member "identifiers" where the value is
  * an object where each key is an identifier referenced by the identifier RS
  * and each value an object describing the referenced concept, equal to "targetConcept".
@@ -25,5 +26,6 @@ package org.apache.sis.storage.coveragejson.binding;
  * @author Johann Sorel (Geomatys)
  */
 public final class Identifiers extends Dictionary<TargetConcept> {
-
+    public Identifiers() {
+    }
 }

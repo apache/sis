@@ -20,7 +20,9 @@ import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * Projected CRSs use two coordinates to denote positions on a Cartesian plane,
  * which is derived from projecting the ellipsoid according to some defined transformation.
  *
@@ -32,17 +34,22 @@ import java.util.Objects;
 @JsonbNillable(false)
 @JsonbPropertyOrder({"type","id","description"})
 public final class ProjectedCRS extends CoverageJsonObject {
-
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The object MAY have an "id" member, whose value MUST be a string and
      * SHOULD be a common identifier for the reference system.
      */
     public String id;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The object MAY have a "description" member, where the value MUST be an
      * i18n object, but no standardized content is interpreted from this description.
      */
     public I18N description;
+
+    public ProjectedCRS() {
+    }
 
     @Override
     public boolean equals(Object other) {

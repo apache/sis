@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+
 /**
  * Test coverage-json bindings.
  *
@@ -47,6 +48,9 @@ public class BindingTest {
     private static final JsonbConfig CONFIG = new YassonConfig().withFormatting(true);
 
     private static Jsonb jsonb;
+
+    public BindingTest() {
+    }
 
     public static String readResource(String path) throws IOException {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -134,7 +138,6 @@ public class BindingTest {
 
     @Test
     public void testCoverageVerticalProfile() throws Exception {
-
         final GeographicCRS geoCrs = new GeographicCRS();
         geoCrs.id = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
 

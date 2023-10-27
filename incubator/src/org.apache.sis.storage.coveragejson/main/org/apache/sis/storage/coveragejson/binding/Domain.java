@@ -21,7 +21,9 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.List;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A domain object is a CoverageJSON object which defines a set of positions and
  * their extent in one or more referencing systems.
  *
@@ -45,6 +47,7 @@ public final class Domain extends CoverageJsonObject {
     public static final String DOMAINTYPE_SECTION = "Section";
 
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * For interoperability reasons it is RECOMMENDED that a domain object has
      * the member "domainType" with a string value to indicate that the domain
      * follows a certain structure (e.g. a time series, a vertical profile, a
@@ -52,12 +55,16 @@ public final class Domain extends CoverageJsonObject {
      * Custom domain types may be used as recommended in the section Extensions.
      */
     public String domainType;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A domain object MUST have the member "axes" which has as value an object
      * where each key is an axis identifier and each value an axis object as defined below.
      */
     public Axes axes;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A domain object MAY have the member "referencing" where the value is an
      * array of reference system connection objects as defined below.
      *
@@ -66,6 +73,9 @@ public final class Domain extends CoverageJsonObject {
      * have a "referencing" member.
      */
     public List<ReferenceSystemConnection> referencing;
+
+    public Domain() {
+    }
 
     @Override
     public boolean equals(Object other) {
@@ -86,5 +96,4 @@ public final class Domain extends CoverageJsonObject {
                 axes,
                 referencing);
     }
-
 }

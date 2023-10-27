@@ -19,7 +19,9 @@ package org.apache.sis.storage.coveragejson.binding;
 import jakarta.json.bind.annotation.JsonbSubtype;
 import jakarta.json.bind.annotation.JsonbTypeInfo;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A CoverageJSON document can be extended with custom members and types in a
  * robust and interoperable way. For that, it makes use of absolute URIs and
  * compact URIs (prefix:suffix) in order to avoid conflicts with other extensions
@@ -51,5 +53,6 @@ import jakarta.json.bind.annotation.JsonbTypeInfo;
     @JsonbSubtype(alias = "TemporalRS", type = TemporalRS.class)
 })
 public class CoverageJsonObject extends Dictionary<Object> {
-
+    public CoverageJsonObject() {
+    }
 }

@@ -21,7 +21,9 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.List;
 import java.util.Objects;
 
+
 /**
+ * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * An axis object MUST have either a "values" member or, as a compact notation
  * for a regularly spaced numeric axis, have all the members "start", "stop",
  * and "num".
@@ -37,14 +39,19 @@ public final class Axe extends Dictionary<Object> {
     public static final String DATATYPE_POLYGON = "polygon";
 
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The values of "start" and "stop" MUST be numbers
      */
     public Double start;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The values of "start" and "stop" MUST be numbers
      */
     public Double stop;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * the value of "num" an integer greater than zero.
      *
      * If the value of "num" is 1, then "start" and "stop" MUST have identical
@@ -56,7 +63,9 @@ public final class Axe extends Dictionary<Object> {
      * than "stop" in which case the axis values are descending.
      */
     public Integer num;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The value of "dataType" determines the structure of an axis value and its
      * coordinates that are made available for referencing. The values of
      * "dataType" defined in this Community Standard are "primitive", "tuple",
@@ -78,7 +87,9 @@ public final class Axe extends Dictionary<Object> {
      * or decreasing.
      */
     public String dataType;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The value of "coordinates" is a non-empty array of coordinate identifiers
      * corresponding to the order of the coordinates defined by "dataType".
      *
@@ -89,11 +100,15 @@ public final class Axe extends Dictionary<Object> {
      * objects of a domain object.
      */
     public List<String> coordinates;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * The value of "values" is a non-empty array of axis values.
      */
     public List<Object> values;
+
     /**
+     * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An axis object MAY have axis value bounds defined in the member "bounds"
      * where the value is an array of values of length len*2 with len being the
      * length of the "values" array. For each axis value at array index i in the
@@ -104,6 +119,9 @@ public final class Axe extends Dictionary<Object> {
      * derived automatically.
      */
     public List<Object> bounds;
+
+    public Axe() {
+    }
 
     @Override
     public boolean equals(Object other) {
@@ -132,5 +150,4 @@ public final class Axe extends Dictionary<Object> {
                 values,
                 bounds);
     }
-
 }
