@@ -18,18 +18,37 @@
 /**
  * Coverage-json store.
  *
+ * @todo Consider renaming as {@code org.apache.sis.storage.json.coverage} in order to group all JSON formats
+ *       in a single root. Also rename package names accordingly. Having the exact format name "coveragejson"
+ *       in module/package name is redundant with {@code CoverageJsonStore} class name. Furthermore the
+ *       "Coverage-json" description appears right after module name in Javadoc. Having a single "json"
+ *       root allow Javadoc to detect more easily the related modules and organize them accordingly.
+ *
  * @author  Johann Sorel (Geomatys)
  */
 module org.apache.sis.storage.coveragejson {
+    // Dependencies used in public API.
+    requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
-    requires transitive jakarta.json.bind;
-    requires transitive jakarta.json;
-    requires transitive org.eclipse.yasson;
+
+    // Dependencies internal to the implementation.
+    requires jakarta.json;
+    requires jakarta.json.bind;
+
+    // Temporary dependency used by BindingTest class. TODO: remove that dependency.
+    requires org.eclipse.yasson;
 
     provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.coveragejson.CoverageJsonStoreProvider;
+        with org.apache.sis.storage.coveragejson.CoverageJsonStoreProvider;
 
     exports org.apache.sis.storage.coveragejson;
-    //should not be exposed but is needed for yasson to find classes and methods.
+
+    /*
+     * TODO
+     * Following should be a qualified export to `org.eclipse.yasson` only.
+     * However it does not work with Yasson:
+     *
+     * https://github.com/eclipse-ee4j/yasson/issues/545
+     */
     exports org.apache.sis.storage.coveragejson.binding;
 }

@@ -16,13 +16,8 @@
  */
 
 /**
- * This package contains json binding test files extracted from the specification.
- * According to https://github.com/opengeospatial/CoverageJSON the json test files are in Apache 2.
+ * Coverage-json store.
  *
- * Copyright Open Geospatial Consortium (OGC)
- * Licensed under the Apache License, Version 2.0.
- * https://github.com/opengeospatial/CoverageJSON
- *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  */
-package org.apache.sis.storage.coveragejson.binding;
+package org.apache.sis.storage.coveragejson;

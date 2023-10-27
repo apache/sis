@@ -83,11 +83,12 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.FactoryException;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class CoverageResource extends AbstractGridCoverageResource {
+final class CoverageResource extends AbstractGridCoverageResource {
 
     private static final DateTimeFormatter YEAR = new DateTimeFormatterBuilder()
                 .appendValue(ChronoField.YEAR, 1, 19, SignStyle.EXCEEDS_PAD)
@@ -483,7 +484,7 @@ public final class CoverageResource extends AbstractGridCoverageResource {
         throw new DataStoreException("Unable to parse date : " + str);
     }
 
-    public static Coverage gridCoverageToBinding(GridCoverage coverage) throws DataStoreException {
+    static Coverage gridCoverageToBinding(GridCoverage coverage) throws DataStoreException {
         final Coverage binding = new Coverage();
 
         try {
