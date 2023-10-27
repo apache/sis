@@ -14,10 +14,10 @@
         ]
       }
     },
-    "referencing": [...]
+    "referencing": []
   },
   "parameters" : {
-    "temperature": {...}
+    "temperature": {}
   },
   "ranges" : {
     "temperature" : {
@@ -25,7 +25,7 @@
       "dataType": "float",
       "axisNames": ["z", "composite"],
       "shape": [3, 2],
-      "values" : [...]
+      "values" : []
     }
   }
 }

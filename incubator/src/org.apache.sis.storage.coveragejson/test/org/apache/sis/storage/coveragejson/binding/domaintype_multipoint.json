@@ -16,7 +16,7 @@
     }
   },
   "parameters" : {
-    "temperature": {...}
+    "temperature": {}
   },
   "ranges" : {
     "temperature" : {
@@ -24,7 +24,7 @@
       "dataType": "float",
       "axisNames": ["composite"],
       "shape": [2],
-      "values" : [...]
+      "values" : []
     }
   }
 }

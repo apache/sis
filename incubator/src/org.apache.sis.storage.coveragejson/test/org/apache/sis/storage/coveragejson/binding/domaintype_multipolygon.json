@@ -15,10 +15,10 @@
       "z": { "values": [2] },
       "t": { "values": ["2008-01-01T04:00:00Z"] }
     },
-    "referencing": [...]
+    "referencing": []
   },
   "parameters" : {
-    "temperature": {...}
+    "temperature": {}
   },
   "ranges" : {
     "temperature" : {
@@ -26,7 +26,7 @@
       "dataType": "float",
       "axisNames": ["composite"],
       "shape": [2],
-      "values" : [...]
+      "values" : []
     }
   }
 }
