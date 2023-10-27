@@ -42,7 +42,8 @@ import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.coverage.grid.j2d.TilePlaceholder;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.RasterFactory;
-import org.apache.sis.storage.geotiff.internal.Resources;
+import org.apache.sis.storage.geotiff.base.Resources;
+import org.apache.sis.storage.geotiff.reader.ReversedBitsChannel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 

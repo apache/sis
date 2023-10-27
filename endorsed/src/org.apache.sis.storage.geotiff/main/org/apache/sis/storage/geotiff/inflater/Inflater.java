@@ -25,9 +25,9 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.storage.UnsupportedEncodingException;
-import org.apache.sis.storage.geotiff.internal.Compression;
-import org.apache.sis.storage.geotiff.internal.Predictor;
-import org.apache.sis.storage.geotiff.internal.Resources;
+import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.Predictor;
+import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
 

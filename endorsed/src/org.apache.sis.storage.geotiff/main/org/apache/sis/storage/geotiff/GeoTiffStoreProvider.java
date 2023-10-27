@@ -135,11 +135,11 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
             switch (buffer.getShort()) {
-                case GeoTIFF.LITTLE_ENDIAN: buffer.order(ByteOrder.LITTLE_ENDIAN);      // Fall through
-                case GeoTIFF.BIG_ENDIAN: {  // Default buffer order is big endian.
+                case IOBase.LITTLE_ENDIAN: buffer.order(ByteOrder.LITTLE_ENDIAN);       // Fall through
+                case IOBase.BIG_ENDIAN: {   // Default buffer order is big endian.
                     switch (buffer.getShort()) {
-                        case GeoTIFF.CLASSIC:
-                        case GeoTIFF.BIG_TIFF: return new ProbeResult(true, MIME_TYPE, VERSION);
+                        case IOBase.CLASSIC:
+                        case IOBase.BIG_TIFF: return new ProbeResult(true, MIME_TYPE, VERSION);
                     }
                 }
             }

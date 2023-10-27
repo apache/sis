@@ -19,8 +19,10 @@ package org.apache.sis.storage.geotiff;
 import java.util.Set;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Optional;
-import java.util.logging.LogRecord;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -106,6 +108,18 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * which is about formatting error messages. A null value means "unlocalized", which is usually English.
      */
     final Locale dataLocale;
+
+    /**
+     * The timezone for the date and time parsing, or {@code null} for the default.
+     */
+    private final TimeZone timezone;
+
+    /**
+     * The object to use for parsing and formatting dates. Created when first needed.
+     *
+     * @see #getDateFormat()
+     */
+    private transient DateFormat dateFormat;
 
     /**
      * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
@@ -227,6 +241,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
 
         dataLocale = connector.getOption(OptionKey.LOCALE);
+        timezone   = connector.getOption(OptionKey.TIMEZONE);
         location   = connector.getStorageAs(URI.class);
         path       = connector.getStorageAs(Path.class);
         try {
@@ -284,8 +299,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Opens access to listeners for {@link ImageFileDirectory}.
-     *
-     * @see #warning(LogRecord)
      */
     final StoreListeners listeners() {
         return listeners;
@@ -424,21 +437,16 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the exception to throw when an I/O error occurred.
-     * This method wraps the exception with a {@literal "Cannot read <filename>"} message.
+     * {@return the object to use for parsing and formatting dates}.
      */
-    final DataStoreException errorIO(final IOException e) {
-        return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, getDisplayName()), e);
-    }
-
-    /**
-     * Returns a localized error message saying that this data store has been opened in read-only or write-only mode.
-     *
-     * @param  mode  0 for read-only, or 1 for write-only.
-     * @return localized error message.
-     */
-    final String readOrWriteOnly(final int mode) {
-        return errors().getString(Errors.Keys.OpenedReadOrWriteOnly_2, mode, getDisplayName());
+    final DateFormat getDateFormat() {
+        if (dateFormat == null) {
+            dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US);
+            if (timezone != null) {
+                dateFormat.setTimeZone(timezone);
+            }
+        }
+        return dateFormat;
     }
 
     /**
@@ -708,6 +716,31 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the error resources in the current locale.
+     */
+    private Errors errors() {
+        return Errors.getResources(getLocale());
+    }
+
+    /**
+     * Returns the exception to throw when an I/O error occurred.
+     * This method wraps the exception with a {@literal "Cannot read <filename>"} message.
+     */
+    final DataStoreException errorIO(final IOException e) {
+        return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, getDisplayName()), e);
+    }
+
+    /**
+     * Returns a localized error message saying that this data store has been opened in read-only or write-only mode.
+     *
+     * @param  mode  0 for read-only, or 1 for write-only.
+     * @return localized error message.
+     */
+    final String readOrWriteOnly(final int mode) {
+        return errors().getString(Errors.Keys.OpenedReadOrWriteOnly_2, mode, getDisplayName());
+    }
+
+    /**
      * Closes this GeoTIFF store and releases any underlying resources.
      * This method can be invoked asynchronously for interrupting a long reading process.
      *
@@ -733,33 +766,5 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 writer         = null;
             }
         }
-    }
-
-    /**
-     * Returns the error resources in the current locale.
-     */
-    final Errors errors() {
-        return Errors.getResources(getLocale());
-    }
-
-    /**
-     * Reports a warning contained in the given {@link LogRecord}.
-     * Note that the given record will not necessarily be sent to the logging framework;
-     * if the user has registered at least one listener, then the record will be sent to the listeners instead.
-     *
-     * <p>This method sets the {@linkplain LogRecord#setSourceClassName(String) source class name} and
-     * {@linkplain LogRecord#setSourceMethodName(String) source method name} to hard-coded values.
-     * Those values assume that the warnings occurred indirectly from a call to {@link #getMetadata()}
-     * in this class. We do not report private classes or methods as the source of warnings.</p>
-     *
-     * @param  record  the warning to report.
-     *
-     * @see #listeners()
-     */
-    final void warning(final LogRecord record) {
-        // Logger name will be set by listeners.warning(record).
-        record.setSourceClassName(GeoTiffStore.class.getName());
-        record.setSourceMethodName("getMetadata");
-        listeners.warning(record);
     }
 }

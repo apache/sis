@@ -30,7 +30,10 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.storage.geotiff.internal.Resources;
+import org.apache.sis.storage.geotiff.base.Resources;
+import org.apache.sis.storage.geotiff.base.Tags;
+import org.apache.sis.storage.geotiff.reader.Type;
+import org.apache.sis.storage.geotiff.reader.XMLMetadata;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 
@@ -51,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class Reader extends GeoTIFF {
+final class Reader extends IOBase {
     /**
      * The stream from which to read the data.
      */
@@ -190,7 +193,7 @@ final class Reader extends GeoTIFF {
             }
         }
         // Do not invoke this.errors() yet because GeoTiffStore construction may not be finished. Owner.error() is okay.
-        throw new DataStoreContentException(store.errors().getString(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+        throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
     }
 
     /**
@@ -441,6 +444,19 @@ final class Reader extends GeoTIFF {
             resolveDeferredEntries((ImageFileDirectory) image);
         }
         return image;
+    }
+
+    /**
+     * Reads metadata that embedded in some TIFF files as XML document.
+     *
+     * @param  type       type of the metadata tag to read.
+     * @param  count      number of bytes or characters in the value to read.
+     * @param  tag        the tag where the metadata was stored.
+     * @return the metadata embedded in a XML document.
+     * @throws IOException if an error occurred while reading the TIFF tag content.
+     */
+    final XMLMetadata readXML(final Type type, final long count, final short tag) throws IOException {
+        return new XMLMetadata(input, store.encoding, store.listeners(), type, count, tag);
     }
 
     /**

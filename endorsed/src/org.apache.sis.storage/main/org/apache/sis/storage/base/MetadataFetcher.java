@@ -219,7 +219,7 @@ public abstract class MetadataFetcher<T> {
     protected boolean accept(final CitationDate info) {
         if (creationDate == null) {
             if (DateType.CREATION.equals(info.getDateType())) {
-                creationDate = List.of(parseDate(info.getDate()));
+                creationDate = List.of(convertDate(info.getDate()));
             } else {
                 return false;       // Search another date.
             }
@@ -391,5 +391,5 @@ public abstract class MetadataFetcher<T> {
      * @param  date  the date to convert.
      * @return subclass-dependent object representing the given date.
      */
-    protected abstract T parseDate(final Date date);
+    protected abstract T convertDate(final Date date);
 }

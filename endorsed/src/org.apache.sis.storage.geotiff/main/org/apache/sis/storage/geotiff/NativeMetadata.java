@@ -30,8 +30,13 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.geotiff.internal.Compression;
-import org.apache.sis.storage.geotiff.internal.Predictor;
+import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.Predictor;
+import org.apache.sis.storage.geotiff.base.GeoKeys;
+import org.apache.sis.storage.geotiff.base.Tags;
+import org.apache.sis.storage.geotiff.reader.Type;
+import org.apache.sis.storage.geotiff.reader.GeoKeysLoader;
+import org.apache.sis.storage.geotiff.reader.XMLMetadata;
 
 import static java.lang.Math.addExact;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
@@ -62,12 +67,12 @@ final class NativeMetadata extends GeoKeysLoader {
      * Column for the name associated to the tag.
      * Value may be null if the name is unknown.
      */
-    static final TableColumn<CharSequence> NAME = TableColumn.NAME;
+    private static final TableColumn<CharSequence> NAME = TableColumn.NAME;
 
     /**
      * Column for the value associated to the tag.
      */
-    static final TableColumn<Object> VALUE = TableColumn.VALUE;
+    private static final TableColumn<Object> VALUE = TableColumn.VALUE;
 
     /**
      * The stream from which to read the data.
@@ -174,7 +179,7 @@ final class NativeMetadata extends GeoKeysLoader {
                             }
                             case Tags.GDAL_METADATA:
                             case Tags.GEO_METADATA: {
-                                children = new XMLMetadata(reader, type, count, tag);
+                                children = reader.readXML(type, count, tag);
                                 if (children.isEmpty()) {
                                     // Fallback on showing array of numerical values.
                                     value = type.readAsVector(input, count);

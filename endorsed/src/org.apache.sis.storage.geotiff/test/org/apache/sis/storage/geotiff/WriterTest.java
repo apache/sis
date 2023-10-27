@@ -37,6 +37,7 @@ import org.apache.sis.io.stream.ByteArrayChannel;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
@@ -182,7 +183,7 @@ public final class WriterTest extends TestCase {
     public void testUntiledGrayScale() throws IOException, DataStoreException {
         initialize(DataType.BYTE, ByteOrder.BIG_ENDIAN, false, 1, 1, 1);
         writeImage();
-        verifyHeader(false, GeoTIFF.BIG_ENDIAN);
+        verifyHeader(false, IOBase.BIG_ENDIAN);
         verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
                                  new short[] {Byte.SIZE});
         verifySampleValues(1);
@@ -199,7 +200,7 @@ public final class WriterTest extends TestCase {
     public void testUntiledBigTIFF() throws IOException, DataStoreException {
         initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, GeoTiffOption.BIG_TIFF);
         writeImage();
-        verifyHeader(true, GeoTIFF.LITTLE_ENDIAN);
+        verifyHeader(true, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
                                  new short[] {Byte.SIZE});
         verifySampleValues(1);
@@ -217,7 +218,7 @@ public final class WriterTest extends TestCase {
     public void testTiledGrayScale() throws IOException, DataStoreException {
         initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 3, 4);
         writeImage();
-        verifyHeader(false, GeoTIFF.LITTLE_ENDIAN);
+        verifyHeader(false, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
                                  new short[] {Byte.SIZE});
         verifySampleValues(1);
@@ -235,7 +236,7 @@ public final class WriterTest extends TestCase {
         initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 3, 1, 1);
         image.setColorModel(ColorModelFactory.createRGB(image.getSampleModel()));
         writeImage();
-        verifyHeader(false, GeoTIFF.LITTLE_ENDIAN);
+        verifyHeader(false, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_RGB,
                                  new short[] {Byte.SIZE, Byte.SIZE, Byte.SIZE});
         verifySampleValues(3);
@@ -253,7 +254,7 @@ public final class WriterTest extends TestCase {
         initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1);
         createGridGeometry();
         writeImage();
-        verifyHeader(false, GeoTIFF.LITTLE_ENDIAN);
+        verifyHeader(false, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS + 3,                     // GeoTIFF adds 3 tags.
                 PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, new short[] {Byte.SIZE});
         verifySampleValues(1);

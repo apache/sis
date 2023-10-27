@@ -48,6 +48,10 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.storage.geotiff.writer.TagValue;
+import org.apache.sis.storage.geotiff.writer.TileMatrix;
+import org.apache.sis.storage.geotiff.writer.GeoEncoder;
+import org.apache.sis.storage.geotiff.writer.ReformattedImage;
 
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
@@ -69,7 +73,7 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
  * @author  Erwan Roussel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class Writer extends GeoTIFF implements Flushable {
+final class Writer extends IOBase implements Flushable {
     /**
      * BigTIFF code for unsigned 64-bits integer type.
      *
@@ -147,7 +151,7 @@ final class Writer extends GeoTIFF implements Flushable {
      * Write operations for tag having data too large for fitting inside a IFD tag entry.
      * The writing of those data need to be delayed somewhere after the sequence of entries.
      */
-    private final Queue<TagValueWriter> largeTagData = new ArrayDeque<>();
+    private final Queue<TagValue> largeTagData = new ArrayDeque<>();
 
     /**
      * Number of TIFF tag entries in the image being written.
@@ -238,7 +242,7 @@ final class Writer extends GeoTIFF implements Flushable {
      * {@return the processor to use for reformatting the image before to write it}.
      * The processor is created only when this method is first invoked.
      */
-    final ImageProcessor processor() {
+    private ImageProcessor processor() {
         if (processor == null) {
             processor = new ImageProcessor();
         }
@@ -262,9 +266,9 @@ final class Writer extends GeoTIFF implements Flushable {
     public final long append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws IOException, DataStoreException
     {
-        final TileMatrixWriter tiles;
+        final TileMatrix tiles;
         try {
-            tiles = writeImageFileDirectory(new ReformattedImage(this, image), grid, metadata, false);
+            tiles = writeImageFileDirectory(new ReformattedImage(image, this::processor), grid, metadata, false);
         } finally {
             largeTagData.clear();       // For making sure that there is no memory retention.
         }
@@ -309,7 +313,7 @@ final class Writer extends GeoTIFF implements Flushable {
      * @throws DataStoreException if the given {@code image} has a property
      *         which is not supported by TIFF specification or by this writer.
      */
-    private TileMatrixWriter writeImageFileDirectory(final ReformattedImage image, final GridGeometry grid, final Metadata metadata,
+    private TileMatrix writeImageFileDirectory(final ReformattedImage image, final GridGeometry grid, final Metadata metadata,
             final boolean overview) throws IOException, DataStoreException
     {
         /*
@@ -342,14 +346,14 @@ final class Writer extends GeoTIFF implements Flushable {
         final double[][] statistics = image.statistics(numBands);
         final  short[][] shortStats = toShorts(statistics, sampleFormat);
         final MetadataFetcher<String> mf = new MetadataFetcher<>(store.dataLocale) {
-            @Override protected String parseDate(final Date date) {
-                return getDateFormat().format(date);
+            @Override protected String convertDate(final Date date) {
+                return store.getDateFormat().format(date);
             }
         };
         mf.accept(metadata);
-        GeoKeysWriter geoKeys = null;
+        GeoEncoder geoKeys = null;
         if (grid != null && grid.isDefined(GridGeometry.GRID_TO_CRS)) try {
-            geoKeys = new GeoKeysWriter(store);
+            geoKeys = new GeoEncoder(store.listeners());
             geoKeys.write(grid, mf);
         } catch (FactoryException | IncommensurableException | RuntimeException e) {
             throw new DataStoreReferencingException(e);
@@ -395,7 +399,7 @@ final class Writer extends GeoTIFF implements Flushable {
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
             writeColorPalette((IndexColorModel) image.visibleBands.getColorModel(), 1L << bitsPerSample[0]);
         }
-        final var tiling = new TileMatrixWriter(image.visibleBands, numPlanes, bitsPerSample, offsetIFD);
+        final var tiling = new TileMatrix(image.visibleBands, numPlanes, bitsPerSample, offsetIFD);
         writeTag((short) TAG_TILE_WIDTH,  (short) TIFFTag.TIFF_LONG, tiling.tileWidth);
         writeTag((short) TAG_TILE_LENGTH, (short) TIFFTag.TIFF_LONG, tiling.tileHeight);
         tiling.offsetsTag = writeTag((short) TAG_TILE_OFFSETS, tiling.offsets);
@@ -416,11 +420,9 @@ final class Writer extends GeoTIFF implements Flushable {
         tagCountWriter.setAsLong(numberOfTags);
         writeOrQueue(tagCountWriter);
         nextIFD = writeOffset(0);
-        for (final TagValueWriter tag : largeTagData) {
-            final UpdatableWrite<?> offset = tag.offset;
-            offset.setAsLong(output.getStreamPosition());
-            writeOrQueue(offset);
-            tag.write(output);
+        for (final TagValue tag : largeTagData) {
+            UpdatableWrite<?> offset = tag.writeHere(output);
+            if (offset != null) deferredWrites.add(offset);
         }
         return tiling;
     }
@@ -509,7 +511,7 @@ final class Writer extends GeoTIFF implements Flushable {
             buffer.putInt((int) count);
             return Integer.BYTES;
         } else {
-            throw new ArithmeticException(store.errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
+            throw new ArithmeticException(errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
         }
     }
 
@@ -522,14 +524,13 @@ final class Writer extends GeoTIFF implements Flushable {
      * @throws IOException if an error occurred while writing to the output.
      * @throws ArithmeticException if the count is too large for the TIFF format in use.
      */
-    private TagValueWriter writeLargeTag(final short tag, final short type, final long count, final TagValueWriter deferred) throws IOException {
+    private TagValue writeLargeTag(final short tag, final short type, final long count, final TagValue deferred) throws IOException {
         final long r = writeTagHeader(tag, type, count) - TYPE_SIZES[type] * count;
         if (r >= 0) {
-            deferred.offset = UpdatableWrite.of(output);        // Record only the position.
-            deferred.write(output);
+            deferred.markAndWrite(output);
             output.repeat(r, (byte) 0);
         } else {
-            deferred.offset = writeOffset(0);
+            deferred.mark(writeOffset(0));
             largeTagData.add(deferred);
         }
         return deferred;
@@ -544,8 +545,8 @@ final class Writer extends GeoTIFF implements Flushable {
      */
     private void writeColorPalette(final IndexColorModel cm, final long count) throws IOException {
         final int numBands = 3;
-        writeLargeTag((short) TAG_COLOR_MAP, (short) TIFFTag.TIFF_SHORT, count * numBands, new TagValueWriter() {
-            @Override void write(final ChannelDataOutput output) throws IOException {
+        writeLargeTag((short) TAG_COLOR_MAP, (short) TIFFTag.TIFF_SHORT, count * numBands, new TagValue() {
+            @Override protected void write(final ChannelDataOutput output) throws IOException {
                 final int n = (int) Math.min(cm.getMapSize(), count);
                 for (int band=0; band < numBands; band++) {
                     for (int i=0; i<n; i++) {
@@ -595,8 +596,8 @@ final class Writer extends GeoTIFF implements Flushable {
             }
         }
         if (count != 0) {
-            writeLargeTag(tag, (short) TIFFTag.TIFF_ASCII, count, new TagValueWriter() {
-                @Override void write(final ChannelDataOutput output) throws IOException {
+            writeLargeTag(tag, (short) TIFFTag.TIFF_ASCII, count, new TagValue() {
+                @Override protected void write(final ChannelDataOutput output) throws IOException {
                     for (final byte[] c : chars) {
                         if (c != null) {
                             output.write(c);
@@ -623,8 +624,8 @@ final class Writer extends GeoTIFF implements Flushable {
         if (value == null) {
             return;
         }
-        writeLargeTag(tag, (short) TIFFTag.TIFF_RATIONAL, 1, new TagValueWriter() {
-            @Override void write(final ChannelDataOutput output) throws IOException {
+        writeLargeTag(tag, (short) TIFFTag.TIFF_RATIONAL, 1, new TagValue() {
+            @Override protected void write(final ChannelDataOutput output) throws IOException {
                 output.writeInt(value.numerator);
                 output.writeInt(value.denominator);
             }
@@ -641,12 +642,12 @@ final class Writer extends GeoTIFF implements Flushable {
      * @return a handler for rewriting the data if the array content changes.
      * @throws IOException if an error occurred while writing to the output.
      */
-    private TagValueWriter writeTag(final short tag, final short type, final double[] values) throws IOException {
+    private TagValue writeTag(final short tag, final short type, final double[] values) throws IOException {
         if (values == null || values.length == 0) {
             return null;
         }
-        return writeLargeTag(tag, type, values.length, new TagValueWriter() {
-            @Override void write(final ChannelDataOutput output) throws IOException {
+        return writeLargeTag(tag, type, values.length, new TagValue() {
+            @Override protected void write(final ChannelDataOutput output) throws IOException {
                 switch (type) {
                     default: throw new AssertionError(type);
                     case TIFFTag.TIFF_DOUBLE: output.writeDoubles(values); break;
@@ -670,13 +671,13 @@ final class Writer extends GeoTIFF implements Flushable {
      * @return a handler for rewriting the data if the array content changes.
      * @throws IOException if an error occurred while writing to the output.
      */
-    private TagValueWriter writeTag(final short tag, final long[] values) throws IOException {
+    private TagValue writeTag(final short tag, final long[] values) throws IOException {
         if (values == null || values.length == 0) {
             return null;
         }
         final short type = isBigTIFF ? TIFF_ULONG : TIFFTag.TIFF_LONG;
-        return writeLargeTag(tag, type, values.length, new TagValueWriter() {
-            @Override void write(final ChannelDataOutput output) throws IOException {
+        return writeLargeTag(tag, type, values.length, new TagValue() {
+            @Override protected void write(final ChannelDataOutput output) throws IOException {
                 switch (type) {
                     default: throw new AssertionError(type);
                     case TIFF_ULONG: output.writeLongs(values); break;
@@ -699,12 +700,12 @@ final class Writer extends GeoTIFF implements Flushable {
      * @return a handler for rewriting the data if the array content changes.
      * @throws IOException if an error occurred while writing to the output.
      */
-    private TagValueWriter writeTag(final short tag, final short[] values) throws IOException {
+    private TagValue writeTag(final short tag, final short[] values) throws IOException {
         if (values == null || values.length == 0) {
             return null;
         }
-        return writeLargeTag(tag, (short) TIFFTag.TIFF_SHORT, values.length, new TagValueWriter() {
-            @Override void write(final ChannelDataOutput output) throws IOException {
+        return writeLargeTag(tag, (short) TIFFTag.TIFF_SHORT, values.length, new TagValue() {
+            @Override protected void write(final ChannelDataOutput output) throws IOException {
                 output.writeShorts(values);
             }
         });
@@ -720,12 +721,12 @@ final class Writer extends GeoTIFF implements Flushable {
      * @return a handler for rewriting the data if the array content changes.
      * @throws IOException if an error occurred while writing to the output.
      */
-    private TagValueWriter writeTag(final short tag, final short type, final int[] values) throws IOException {
+    private TagValue writeTag(final short tag, final short type, final int[] values) throws IOException {
         if (values == null || values.length == 0) {
             return null;
         }
-        return writeLargeTag(tag, type, values.length, new TagValueWriter() {
-            @Override void write(final ChannelDataOutput output) throws IOException {
+        return writeLargeTag(tag, type, values.length, new TagValue() {
+            @Override protected void write(final ChannelDataOutput output) throws IOException {
                 switch (type) {
                     default: throw new AssertionError(type);
                     case TIFFTag.TIFF_LONG: output.writeInts(values); break;

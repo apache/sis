@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import org.apache.sis.storage.geotiff.reader.Type;
+
 
 /**
  * Offset to a TIFF tag entry that has not yet been read.
