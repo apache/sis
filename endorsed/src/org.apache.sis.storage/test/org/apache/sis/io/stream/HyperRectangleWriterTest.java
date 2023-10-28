@@ -22,9 +22,11 @@ import java.lang.reflect.Array;
 import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.ToDoubleFunction;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
+
+// Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 
 import static org.junit.jupiter.api.Assertions.*;
 

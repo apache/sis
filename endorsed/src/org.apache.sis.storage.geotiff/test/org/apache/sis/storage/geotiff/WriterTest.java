@@ -24,14 +24,13 @@ import java.util.stream.Collectors;
 import java.lang.reflect.Array;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import javax.imageio.plugins.tiff.TIFFTag;
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.io.stream.ByteArrayChannel;
 import org.apache.sis.io.stream.ChannelDataOutput;
@@ -44,6 +43,8 @@ import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.DataType;
+
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 // Test dependencies
 import org.apache.sis.referencing.operation.HardCodedConversions;

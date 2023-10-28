@@ -16,9 +16,6 @@
  */
 package org.apache.sis.storage.coveragejson;
 
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,13 +28,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.storage.coveragejson.binding.Coverage;
-import org.apache.sis.storage.coveragejson.binding.CoverageCollection;
-import org.apache.sis.storage.coveragejson.binding.CoverageJsonObject;
-import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.base.URIDataStore;
-import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -45,8 +41,12 @@ import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.WritableAggregate;
-import org.opengis.metadata.Metadata;
-import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.storage.coveragejson.binding.Coverage;
+import org.apache.sis.storage.coveragejson.binding.CoverageCollection;
+import org.apache.sis.storage.coveragejson.binding.CoverageJsonObject;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.io.stream.IOUtilities;
 
 
 /**

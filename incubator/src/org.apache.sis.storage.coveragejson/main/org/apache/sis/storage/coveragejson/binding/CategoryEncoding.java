@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import java.lang.reflect.Type;
+import java.util.Map;
 import jakarta.json.bind.annotation.JsonbTypeDeserializer;
 import jakarta.json.bind.annotation.JsonbTypeSerializer;
 import jakarta.json.bind.serializer.DeserializationContext;
@@ -24,8 +26,6 @@ import jakarta.json.bind.serializer.JsonbSerializer;
 import jakarta.json.bind.serializer.SerializationContext;
 import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonParser;
-import java.lang.reflect.Type;
-import java.util.Map;
 import org.apache.sis.storage.coveragejson.binding.CategoryEncoding.Deserializer;
 import org.apache.sis.storage.coveragejson.binding.CategoryEncoding.Serializer;
 

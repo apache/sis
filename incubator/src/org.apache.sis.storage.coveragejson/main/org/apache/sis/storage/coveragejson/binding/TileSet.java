@@ -16,10 +16,10 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Arrays;
 import java.util.Objects;
+import jakarta.json.bind.annotation.JsonbNillable;
+import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -46,7 +46,7 @@ public final class TileSet extends Dictionary<Object> {
      * The URI template MUST contain a variable for each axis name whose
      * corresponding element in "tileShape" is not null. A variable for an
      * axis of total size totalSize (from "shape") and tile size tileSize
-     * (from "tileShape") has as value one of the integers 0, 1, …​, q + r - 1
+     * (from "tileShape") has as value one of the integers 0, 1, …, q + r - 1
      * where q and r are the quotient and remainder obtained by dividing
      * totalSize by tileSize. Each URI that can be generated from the URI
      * template MUST resolve to an NdArray CoverageJSON document where the
