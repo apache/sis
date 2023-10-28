@@ -86,7 +86,7 @@
  * for example by specifying the area of interest.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.6
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/coordinateOperations.xsd",

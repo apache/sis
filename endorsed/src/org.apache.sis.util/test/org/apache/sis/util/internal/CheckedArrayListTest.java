@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.apache.sis.util.NullArgumentException;
 
 // Test dependencies
 import org.junit.Test;
@@ -73,7 +72,7 @@ public final class CheckedArrayListTest extends TestCase {
         final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         try {
             list.add(null);
-        } catch (NullArgumentException e) {
+        } catch (NullPointerException e) {
             final String message = e.getMessage();
             assertTrue(message.contains("CheckedArrayList<String>"));
         }
@@ -88,7 +87,7 @@ public final class CheckedArrayListTest extends TestCase {
         final Collection<String> toAdd = Arrays.asList("One", null, "Three");
         try {
             list.addAll(toAdd);
-        } catch (NullArgumentException e) {
+        } catch (NullPointerException e) {
             final String message = e.getMessage();
             assertTrue(message.contains("CheckedArrayList<String>"));
         }

@@ -19,7 +19,6 @@ package org.apache.sis.util.internal;
 import java.util.Set;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.collection.CheckedContainer;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -108,7 +107,7 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
             return false;
         }
         if (element == null) {
-            throw new NullArgumentException(message);
+            throw new NullPointerException(message);
         } else {
             throw new IllegalArgumentException(message);
         }

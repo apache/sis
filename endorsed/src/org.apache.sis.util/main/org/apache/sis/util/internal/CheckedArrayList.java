@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 
@@ -186,7 +185,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
             return false;
         }
         if (element == null) {
-            throw new NullArgumentException(message);
+            throw new NullPointerException(message);
         } else {
             throw new ClassCastException(message);
         }

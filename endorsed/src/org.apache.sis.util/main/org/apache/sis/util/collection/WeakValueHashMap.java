@@ -30,7 +30,6 @@ import java.lang.ref.WeakReference;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
@@ -75,7 +74,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * then the caller can synchronize on {@code this}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @param <K>  the class of key elements.
  * @param <V>  the class of value elements.
@@ -543,7 +542,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     @Override
     public V put(final K key, final V value) {
         if (key == null || value == null) {
-            throw new NullArgumentException(Errors.format(key == null
+            throw new NullPointerException(Errors.format(key == null
                     ? Errors.Keys.NullMapKey : Errors.Keys.NullMapValue));
         }
         return intern(key, value, null);
@@ -565,7 +564,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     @Override
     public V putIfAbsent(final K key, final V value) {
         if (key == null || value == null) {
-            throw new NullArgumentException(Errors.format(key == null
+            throw new NullPointerException(Errors.format(key == null
                     ? Errors.Keys.NullMapKey : Errors.Keys.NullMapValue));
         }
         return intern(key, value, Wildcard.NO_VALUE);
@@ -584,7 +583,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     @Override
     public V replace(final K key, final V value) {
         if (value == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullMapValue));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullMapValue));
         }
         if (key == null) return null;
         return intern(key, value, Wildcard.ANY_VALUE);
@@ -604,7 +603,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     @Override
     public boolean replace(final K key, final V oldValue, final V newValue) {
         if (newValue == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullMapValue));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullMapValue));
         }
         return replaceOrRemove(key, oldValue, newValue);
     }

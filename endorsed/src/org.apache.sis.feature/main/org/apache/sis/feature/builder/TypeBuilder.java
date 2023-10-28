@@ -26,7 +26,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
@@ -74,7 +73,7 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.5
  * @since   0.8
  */
 public abstract class TypeBuilder implements Localized {
@@ -498,7 +497,7 @@ public abstract class TypeBuilder implements Localized {
      */
     final void ensureNonNull(final String name, final Object value) {
         if (value == null) {
-            throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(errors().getString(Errors.Keys.NullArgument_1, name));
         }
     }
 
@@ -524,7 +523,7 @@ public abstract class TypeBuilder implements Localized {
      */
     final void ensureNonEmpty(final String name, final CharSequence text) {
         if (text == null) {
-            throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(errors().getString(Errors.Keys.NullArgument_1, name));
         }
         if (text.length() == 0) {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.EmptyArgument_1, name));

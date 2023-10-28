@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.internal.CodeLists;
 import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.util.resources.Errors;
@@ -51,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.5
  *
  * @param <E>  the type of code list elements in the set.
  *
@@ -229,7 +228,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
                  */
                 return false;
             }
-            throw new NullArgumentException(message);
+            throw new NullPointerException(message);
         }
         int ordinal = element.ordinal();
         if (ordinal < Long.SIZE) {
