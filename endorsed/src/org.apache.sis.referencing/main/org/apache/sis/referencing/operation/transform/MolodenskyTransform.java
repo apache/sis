@@ -272,7 +272,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
                             final boolean derivate) throws TransformException
     {
         return transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
-                         dstPts, dstOff, tX, tY, tZ, null, derivate);
+                         dstPts, dstOff, tX, tY, tZ, derivate);
     }
 
     /**

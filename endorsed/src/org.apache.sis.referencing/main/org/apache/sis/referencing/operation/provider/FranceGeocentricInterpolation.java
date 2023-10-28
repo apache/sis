@@ -226,9 +226,8 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Returns the provider for the specified combination of source and target dimensions.
      */
-    // TODO: make final after removal of deprecated `MolodenskyInterpolation` subclass.
     @Override
-    GeodeticOperation redimensioned(int indexOfDim) {
+    final GeodeticOperation redimensioned(int indexOfDim) {
         return REDIMENSIONED[indexOfDim];
     }
 
@@ -357,31 +356,17 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             // NumberFormatException, ArithmeticException, NoSuchElementException, and more.
             throw DatumShiftGridLoader.canNotLoad(HEADER, file, e);
         }
-        MathTransform tr = createGeodeticTransformation(factory,
+        MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
-                                    Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()),   // GRS 1980 ellipsoid
+                                    Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()), withHeights,  // GRS 1980 ellipsoid
                 createEllipsoid(pg, Molodensky.SRC_SEMI_MAJOR,
-                                    Molodensky.SRC_SEMI_MINOR, null),                           // Clarke 1880 (IGN) ellipsoid
-                withHeights, grid);
+                                    Molodensky.SRC_SEMI_MINOR, null), withHeights, grid);                   // Clarke 1880 (IGN) ellipsoid
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
             throw new FactoryException(e);                  // Should never happen.
         }
         return tr;
-    }
-
-    /**
-     * Creates the actual math transform. The default implementation delegates to the static method defined in
-     * {@link InterpolatedGeocentricTransform}, but the {@link MolodenskyInterpolation} subclass will rather
-     * delegate to {@link org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTransform}.
-     */
-    MathTransform createGeodeticTransformation(final MathTransformFactory factory,
-            final Ellipsoid source, final Ellipsoid target, final boolean withHeights,
-            final DatumShiftGridFile<Angle,Length> grid) throws FactoryException
-    {
-        return InterpolatedGeocentricTransform.createGeodeticTransformation(
-                factory, source, withHeights, target, withHeights, grid);
     }
 
     /**

@@ -22,6 +22,7 @@ import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -31,11 +32,13 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
 import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.internal.Resources;
 
 
 /**
@@ -73,15 +76,9 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * because the {@code DatumShiftGrid} inputs are geographic coordinates even if the interpolated
  * grid values are in geocentric space.</p>
  *
- * <h2>Performance consideration</h2>
- * {@link InterpolatedMolodenskyTransform} performs the same calculation more efficiently at the cost of
- * a few centimetres error. Both classes are instantiated in the same way and expect the same inputs.
- *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see InterpolatedMolodenskyTransform
  *
  * @since 0.7
  */
@@ -282,6 +279,27 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
             }
         }
         this.inverse = inverse;
+    }
+
+    /**
+     * Ensures that the {@link #grid} performs geocentric translations in the given units.
+     * This method is invoked by constructor for validation of given arguments.
+     *
+     * @param  grid  the grid to validate.
+     * @param  unit  the unit of semi-axis length of the <strong>source</strong> ellipsoid.
+     * @throws IllegalArgumentException if the given grid is not valid.
+     */
+    private static void ensureGeocentricTranslation(final DatumShiftGrid<?,?> grid, final Unit<Length> unit)
+            throws IllegalArgumentException
+    {
+        final int dim = grid.getTranslationDimensions();
+        if (dim != 3) {
+            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "grid", 3, dim));
+        }
+        Object unitLabel = "ratio";
+        if (grid.isCellValueRatio() || (unitLabel = grid.getTranslationUnit()) != unit) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalUnitFor_2, "translation", unitLabel));
+        }
     }
 
     /**

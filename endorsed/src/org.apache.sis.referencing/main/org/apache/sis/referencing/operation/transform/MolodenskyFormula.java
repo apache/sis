@@ -37,14 +37,7 @@ import static java.lang.Math.*;
 
 
 /**
- * Implementation of Molodensky formulas. This class is used by:
- *
- * <ul>
- *   <li>The "real" {@link MolodenskyTransform} (see that class for documentation about Molodensky transform).</li>
- *   <li>{@link InterpolatedMolodenskyTransform}, which conceptually works on geocentric coordinates but
- *       is implemented in Apache SIS using Molodensky (never abridged) formulas for performance reasons.
- *       However, this implementation choice should be hidden to users (except by mention in javadoc).</li>
- * </ul>
+ * Implementation of Molodensky formulas.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -295,13 +288,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
     /**
      * Implementation of {@link #transform(double[], int, double[], int, boolean)} with possibility
      * to override some field values. In this method signature, parameters having the same name than
-     * fields have the same value, except in some special circumstances:
-     *
-     * <ul>
-     *   <li>{@code tX}, {@code tY} and {@code tZ} parameters always have the values of {@link #tX}, {@link #tY}
-     *       and {@link #tZ} fields when this method is invoked by {@link MolodenskyTransform}. But those values
-     *       may be slightly different when this method is invoked by {@link InterpolatedMolodenskyTransform}.</li>
-     * </ul>
+     * fields have the same value.
      *
      * @param  λ           longitude (radians).
      * @param  φ           latitude (radians).
@@ -311,12 +298,11 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      * @param  tX          the {@link #tX} field value (or a slightly different value during geocentric interpolation).
      * @param  tY          the {@link #tY} field value (or a slightly different value during geocentric interpolation).
      * @param  tZ          the {@link #tZ} field value (or a slightly different value during geocentric interpolation).
-     * @param  offset      an array of length 3 if this method should use the interpolation grid, or {@code null} otherwise.
      * @param  derivate    {@code true} for computing the derivative, or {@code false} if not needed.
      * @throws TransformException if a point cannot be transformed.
      */
     final Matrix transform(final double λ, final double φ, final double h, final double[] dstPts, int dstOff,
-                           double tX, double tY, double tZ, double[] offset, final boolean derivate)
+                           double tX, double tY, double tZ, final boolean derivate)
             throws TransformException
     {
         /*
@@ -350,26 +336,13 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
             t = t*(0.5/νden + 0.5/ρden)                 // = Δf⋅[ν⋅(b/a) + ρ⋅(a/b)]     (without the +h in ν and ρ)
                     + Δa*eccentricitySquared/νden;      // = Δa⋅[ℯ²⋅ν/a]
         }
-        double spcλ, cmsλ, cmsφ, scaleX, scaleY;        // Intermediate terms to be reused by the derivative
-        double λt, φt;                                  // The target geographic coordinates
-        do {
-            spcλ = tY*sinλ + tX*cosλ;                   // "spc" stands for "sin plus cos"
-            cmsλ = tY*cosλ - tX*sinλ;                   // "cms" stands for "cos minus sin"
-            cmsφ = (tZ + t*sinφ)*cosφ - spcλ*sinφ;
-            scaleX = ANGULAR_SCALE / (ν*cosφ);
-            scaleY = ANGULAR_SCALE / ρ;
-            λt = λ + (cmsλ * scaleX);
-            φt = φ + (cmsφ * scaleY);
-            if (offset == null) break;
-            /*
-             * Following is executed only in InterpolatedMolodenskyTransform case.
-             */
-            grid.interpolateInCell(normalizedToGridX(λt), normalizedToGridY(φt), offset);
-            tX = -offset[0];
-            tY = -offset[1];
-            tZ = -offset[2];
-            offset = null;
-        } while (true);
+        final double spcλ = tY*sinλ + tX*cosλ;                  // "spc" stands for "sin plus cos"
+        final double cmsλ = tY*cosλ - tX*sinλ;                  // "cms" stands for "cos minus sin"
+        final double cmsφ = (tZ + t*sinφ)*cosφ - spcλ*sinφ;
+        final double scaleX = ANGULAR_SCALE / (ν*cosφ);
+        final double scaleY = ANGULAR_SCALE / ρ;
+        final double λt = λ + (cmsλ * scaleX);          // The target geographic coordinates
+        final double φt = φ + (cmsφ * scaleY);
         if (dstPts != null) {
             dstPts[dstOff++] = λt;
             dstPts[dstOff++] = φt;

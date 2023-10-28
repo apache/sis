@@ -125,7 +125,6 @@ public final class ProvidersTest extends TestCase {
             NTv1.class,
             NADCON.class,
             FranceGeocentricInterpolation.class,
-            MolodenskyInterpolation.class,
             Interpolation1D.class,
             Wraparound.class
         };
