@@ -30,8 +30,13 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.geotiff.internal.Compression;
-import org.apache.sis.storage.geotiff.internal.Predictor;
+import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.Predictor;
+import org.apache.sis.storage.geotiff.base.GeoKeys;
+import org.apache.sis.storage.geotiff.base.Tags;
+import org.apache.sis.storage.geotiff.reader.Type;
+import org.apache.sis.storage.geotiff.reader.GeoKeysLoader;
+import org.apache.sis.storage.geotiff.reader.XMLMetadata;
 
 import static java.lang.Math.addExact;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
@@ -62,12 +67,12 @@ final class NativeMetadata extends GeoKeysLoader {
      * Column for the name associated to the tag.
      * Value may be null if the name is unknown.
      */
-    static final TableColumn<CharSequence> NAME = TableColumn.NAME;
+    private static final TableColumn<CharSequence> NAME = TableColumn.NAME;
 
     /**
      * Column for the value associated to the tag.
      */
-    static final TableColumn<Object> VALUE = TableColumn.VALUE;
+    private static final TableColumn<Object> VALUE = TableColumn.VALUE;
 
     /**
      * The stream from which to read the data.
@@ -109,7 +114,7 @@ final class NativeMetadata extends GeoKeysLoader {
         root.setValue(NAME, "TIFF");
         input.mark();
         try {
-            input.seek(addExact(reader.origin, isClassic ? 2*Short.BYTES : 4*Short.BYTES));
+            input.seek(isClassic ? 2*Short.BYTES : 4*Short.BYTES);
             final Set<Long> doneIFD = new HashSet<>();
             long nextIFD;
             /*
@@ -124,7 +129,7 @@ final class NativeMetadata extends GeoKeysLoader {
                 }
                 final TreeTable.Node image = root.newChild();
                 image.setValue(NAME, vocabulary.getString(Vocabulary.Keys.Image_1, imageNumber));
-                input.seek(Math.addExact(reader.origin, nextIFD));
+                input.seek(nextIFD);
                 for (long remaining = readInt(true); --remaining >= 0;) {
                     final short tag  = (short) input.readUnsignedShort();
                     final Type type  = Type.valueOf(input.readShort());        // May be null.
@@ -147,7 +152,7 @@ final class NativeMetadata extends GeoKeysLoader {
                     if (visible) {
                         if (size > offsetSize) {
                             final long offset = readInt(false);
-                            input.seek(Math.addExact(reader.origin, offset));
+                            input.seek(offset);
                         }
                         /*
                          * Some tags need to be handle in a special way. The main cases are GeoTIFF keys.
@@ -174,7 +179,7 @@ final class NativeMetadata extends GeoKeysLoader {
                             }
                             case Tags.GDAL_METADATA:
                             case Tags.GEO_METADATA: {
-                                children = new XMLMetadata(reader, type, count, tag);
+                                children = reader.readXML(type, count, tag);
                                 if (children.isEmpty()) {
                                     // Fallback on showing array of numerical values.
                                     value = type.readAsVector(input, count);

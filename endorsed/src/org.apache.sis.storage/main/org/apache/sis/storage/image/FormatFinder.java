@@ -155,7 +155,7 @@ final class FormatFinder implements AutoCloseable {
             openAsWriter = false;
             fileIsEmpty  = false;
         } else {
-            isWritable = WorldFileStoreProvider.isWritable(connector);
+            isWritable = WorldFileStoreProvider.isWritable(connector, false);
             if (isWritable) {
                 final Path path = connector.getStorageAs(Path.class);
                 if (path != null) {

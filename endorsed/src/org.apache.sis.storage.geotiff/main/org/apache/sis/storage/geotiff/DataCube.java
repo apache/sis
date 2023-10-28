@@ -28,9 +28,10 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.storage.geotiff.internal.Resources;
-import org.apache.sis.storage.geotiff.internal.Predictor;
-import org.apache.sis.storage.geotiff.internal.Compression;
+import org.apache.sis.storage.geotiff.base.Tags;
+import org.apache.sis.storage.geotiff.base.Resources;
+import org.apache.sis.storage.geotiff.base.Predictor;
+import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.base.StoreResource;
@@ -246,7 +247,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                 coverage = preload(coverage);
             }
         } catch (RuntimeException e) {
-            throw canNotRead(reader.input.filename, domain, e);
+            throw canNotRead(filename(), domain, e);
         }
         logReadOperation(reader.store.path, coverage.getGridGeometry(), startTime);
         return coverage;

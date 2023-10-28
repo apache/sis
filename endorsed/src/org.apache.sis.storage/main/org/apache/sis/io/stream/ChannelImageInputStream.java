@@ -16,7 +16,6 @@
  */
 package org.apache.sis.io.stream;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -39,7 +38,13 @@ import javax.imageio.stream.ImageInputStream;
  * Furthermore, this class allows us to reuse an existing buffer (especially direct buffer, which are costly to create)
  * and allow subclasses to store additional information, for example the file path.
  *
- * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.</p>
+ * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.
+ * The following methods behave in a slightly different way compared to {@link ChannelDataInput}:</p>
+ *
+ * <ul>
+ *   <li>{@link #skipBytes(int)} with a more restrictive interpretation of method contract.</li>
+ *   <li>{@link #yield(ChannelDataOutput)} when the bit offset is non-zero.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -111,73 +116,6 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     }
 
     /**
-     * Reads a byte from the stream and returns a {@code true} if it is nonzero, {@code false} otherwise.
-     * The implementation is as below:
-     *
-     * {@snippet lang="java" :
-     *     return readByte() != 0;
-     *     }
-     *
-     * @return the value of the next boolean from the stream.
-     * @throws IOException if an error (including EOF) occurred while reading the stream.
-     */
-    @Override
-    public final boolean readBoolean() throws IOException {
-        return readByte() != 0;
-    }
-
-    /**
-     * Reads in a string that has been encoded using a UTF-8 string.
-     *
-     * @return the string reads from the stream.
-     * @throws IOException if an error (including EOF) occurred while reading the stream.
-     */
-    @Override
-    public final String readUTF() throws IOException {
-        final ByteOrder oldOrder = buffer.order();
-        buffer.order(ByteOrder.BIG_ENDIAN);
-        try {
-            return DataInputStream.readUTF(this);
-        } finally {
-            buffer.order(oldOrder);
-        }
-    }
-
-    /**
-     * Reads the new bytes until the next EOL. This method can read only US-ASCII strings.
-     * This method is provided for compliance with the {@link java.io.DataInput} interface,
-     * but is generally not recommended.
-     *
-     * @return the next line, or {@code null} if the EOF has been reached.
-     * @throws IOException if an error occurred while reading.
-     */
-    @Override
-    public final String readLine() throws IOException {
-        int c = read();
-        if (c < 0) {
-            return null;
-        }
-        StringBuilder line = new StringBuilder();
-        line.append((char) c);
-loop:   while ((c = read()) >= 0) {
-            switch (c) {
-                case '\r': {
-                    c = read();
-                    if (c >= 0 && c != '\n') {
-                        pushBack();
-                    }
-                    break loop;
-                }
-                case '\n': {
-                    break loop;
-                }
-            }
-            line.append((char) c);
-        }
-        return line.toString();
-    }
-
-    /**
      * Returns the next byte from the stream as an unsigned integer between 0 and 255,
      * or -1 if we reached the end of stream.
      *
@@ -235,7 +173,8 @@ loop:   while ((c = read()) >= 0) {
     /**
      * Reads up to {@code length} bytes from the stream, and modifies the supplied
      * {@code IIOByteBuffer} to indicate the byte array, offset, and length where
-     * the data may be found.
+     * the data may be found. This method may reference the internal buffer, thus
+     * avoiding a copy.
      *
      * @param  dest    the buffer to be written to.
      * @param  length  the maximum number of bytes to read.
@@ -243,10 +182,22 @@ loop:   while ((c = read()) >= 0) {
      */
     @Override
     public final void readBytes(final IIOByteBuffer dest, int length) throws IOException {
-        final byte[] data = new byte[length];
-        length = read(data);
+        bitPosition = 0;
+        final byte[] data;
+        final int offset;
+        if (buffer.hasArray()) {
+            ensureBufferContains(1);
+            data   = buffer.array();
+            offset = buffer.position();
+            length = Math.min(buffer.remaining(), length);
+            buffer.position(offset + length);
+        } else {
+            data   = new byte[length];
+            length = read(data);
+            offset = 0;
+        }
         dest.setData(data);
-        dest.setOffset(0);
+        dest.setOffset(offset);
         dest.setLength(length);
     }
 
@@ -259,7 +210,7 @@ loop:   while ((c = read()) >= 0) {
      * But experience shows that various {@code ImageReader} implementations outside Apache SIS
      * expect that we skip exactly the specified amount of bytes and ignore the returned value.
      *
-     * @param  n  maximal number of bytes to skip. Can be negative.
+     * @param  n  number of bytes to skip. Can be negative.
      * @return number of bytes actually skipped.
      * @throws IOException if an error occurred while reading.
      */
@@ -269,7 +220,7 @@ loop:   while ((c = read()) >= 0) {
             long p = buffer.position() + n;
             if (p >= 0 && p <= buffer.limit()) {
                 buffer.position((int) p);
-                clearBitOffset();
+                bitPosition = 0;
             } else {
                 final long offset = getStreamPosition();
                 p = Math.max(Math.addExact(offset, n), 0);
@@ -364,5 +315,19 @@ loop:   while ((c = read()) >= 0) {
     @Override
     public final void close() throws IOException {
         channel.close();
+    }
+
+    /**
+     * Returns the bits to save in {@link ChannelDataOutput} for avoiding information lost.
+     * The Image I/O specification requires that we discard (force to zero) all bits after
+     * the last bit that we have read. It may cause a lost of some bits, so we do that only
+     * if an {@link ImageInputStream} was requested.
+     *
+     * @param  bitOffset  current value of {@link #getBitOffset()}, which must be non-zero.
+     * @return the byte to copy from the input channel to the output channel.
+     */
+    @Override
+    final byte savedBitsForOutput(final int bitOffset) {
+        return (byte) (super.savedBitsForOutput(bitOffset) & ~((1 << (Byte.SIZE - bitOffset)) - 1));
     }
 }

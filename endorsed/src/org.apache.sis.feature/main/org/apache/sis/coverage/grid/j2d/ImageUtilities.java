@@ -116,6 +116,22 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * Returns whether the given image has an alpha channel.
+     *
+     * @param  image  the image or {@code null}.
+     * @return whether the image has an alpha channel.
+     *
+     * @see #getTransparencyDescription(ColorModel)
+     */
+    public static boolean hasAlpha(final RenderedImage image) {
+        if (image != null) {
+            final ColorModel cm = image.getColorModel();
+            if (cm != null) return cm.hasAlpha();
+        }
+        return false;
+    }
+
+    /**
      * Returns the number of bands in the given image, or 0 if the image or its sample model is null.
      *
      * @param  image  the image for which to get the number of bands, or {@code null}.
@@ -242,6 +258,8 @@ public final class ImageUtilities extends Static {
      *
      * @param  cm  the color model from which to get the transparency, or {@code null}.
      * @return a {@link Resources.Keys} value for the transparency, or 0 if unknown.
+     *
+     * @see #hasAlpha(RenderedImage)
      */
     public static short getTransparencyDescription(final ColorModel cm) {
         if (cm != null) {

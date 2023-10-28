@@ -201,13 +201,13 @@ public final class StorageConnectorTest extends TestCase {
         assertEquals(asStream, connector.getStorageAs(Path.class) == null);
         final DataInput input = connector.getStorageAs(DataInput.class);
         assertSame("Value shall be cached.", input, connector.getStorageAs(DataInput.class));
-        assertInstanceOf("Needs the SIS implementation.", ChannelImageInputStream.class, input);
+        assertInstanceOf("Needs the SIS implementation.", ChannelDataInput.class, input);
         assertSame("Instance shall be shared.", input, connector.getStorageAs(ChannelDataInput.class));
         /*
          * Reads a single integer for checking that the stream is at the right position, then close the stream.
          * Since the file is a compiled Java class, the integer that we read shall be the Java magic number.
          */
-        final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
+        final ReadableByteChannel channel = ((ChannelDataInput) input).channel;
         assertTrue("channel.isOpen()", channel.isOpen());
         assertEquals("First 4 bytes", MAGIC_NUMBER, input.readInt());
         connector.closeAllExcept(null);
@@ -343,7 +343,7 @@ public final class StorageConnectorTest extends TestCase {
         /*
          * Get as an image input stream and ensure that the cached value has been replaced.
          */
-        final DataInput stream = connector.getStorageAs(DataInput.class);
+        final ImageInputStream stream = connector.getStorageAs(ImageInputStream.class);
         assertInstanceOf("Needs the SIS implementation", ChannelImageInputStream.class, stream);
         assertNotSame("Expected a new instance.", input, stream);
         assertSame("Shall share the channel.", input.channel, ((ChannelDataInput) stream).channel);
@@ -439,8 +439,8 @@ public final class StorageConnectorTest extends TestCase {
     @DependsOnMethod("testGetAsDataInputFromStream")
     public void testCloseAllExcept() throws DataStoreException, IOException {
         final StorageConnector connector = create(true);
-        final DataInput input = connector.getStorageAs(DataInput.class);
-        final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
+        final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
+        final ReadableByteChannel channel = input.channel;
         assertTrue("channel.isOpen()", channel.isOpen());
         connector.closeAllExcept(input);
         assertTrue("channel.isOpen()", channel.isOpen());

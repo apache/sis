@@ -38,10 +38,13 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.geotiff.internal.Resources;
-import org.apache.sis.storage.geotiff.internal.Predictor;
-import org.apache.sis.storage.geotiff.internal.Compression;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.geotiff.base.Tags;
+import org.apache.sis.storage.geotiff.base.Resources;
+import org.apache.sis.storage.geotiff.base.Predictor;
+import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.reader.Type;
+import org.apache.sis.storage.geotiff.reader.GridGeometryBuilder;
+import org.apache.sis.storage.geotiff.reader.ImageMetadataBuilder;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -50,6 +53,7 @@ import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.coverage.grid.j2d.SampleModelFactory;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Strings;
@@ -460,7 +464,7 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Returns the image index used in the default identifier.
      */
-    final String getImageIndex() {
+    private String getImageIndex() {
         return String.valueOf(index + 1);
     }
 
@@ -1007,8 +1011,8 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_DATE_TIME: {
                 for (final String value : type.readAsStrings(input(), count, encoding())) {
-                    metadata.addCitationDate(reader.getDateFormat().parse(value),
-                            DateType.CREATION, MetadataBuilder.Scope.RESOURCE);
+                    metadata.addCitationDate(reader.store.getDateFormat().parse(value),
+                            DateType.CREATION, ImageMetadataBuilder.Scope.RESOURCE);
                 }
                 break;
             }
@@ -1126,7 +1130,7 @@ final class ImageFileDirectory extends DataCube {
 
             case Tags.GEO_METADATA:
             case Tags.GDAL_METADATA: {
-                metadata.addXML(new XMLMetadata(reader, type, count, tag));
+                metadata.addXML(reader.readXML(type, count, tag));
                 break;
             }
             case Tags.GDAL_NODATA: {
@@ -1373,6 +1377,11 @@ final class ImageFileDirectory extends DataCube {
             return super.createMetadata();
         }
         this.metadata = null;     // Clear now in case an exception happens.
+        getIdentifier().ifPresent((id) -> {
+            if (!getImageIndex().equals(id.tip().toString())) {
+                metadata.addTitle(id.toString());
+            }
+        });
         /*
          * Add information about sample dimensions.
          *
@@ -1405,9 +1414,20 @@ final class ImageFileDirectory extends DataCube {
             referencing.completeMetadata(gridGeometry, metadata);
         }
         /*
+         * Add information about the file format.
+         *
+         * Destination: metadata/identificationInfo/resourceFormat
+         */
+        if (reader.store.hidden) {
+            reader.store.setFormatInfo(metadata);   // Should be before `addCompression(…)`.
+        }
+        if (compression != null) {
+            metadata.addCompression(CharSequences.upperCaseToSentence(compression.name()));
+        }
+        /*
          * End of metadata construction from TIFF tags.
          */
-        metadata.finish(this, listeners);
+        metadata.finish(reader.store, listeners);
         final DefaultMetadata md = metadata.build();
         if (isIndexValid) {
             final Metadata c = reader.store.customizer.customize(index, md);
@@ -1458,7 +1478,7 @@ final class ImageFileDirectory extends DataCube {
         synchronized (getSynchronizationLock()) {
             if (gridGeometry == null) {
                 if (referencing != null) try {
-                    gridGeometry = referencing.build(reader, imageWidth, imageHeight);
+                    gridGeometry = referencing.build(reader.store.listeners(), imageWidth, imageHeight);
                 } catch (FactoryException e) {
                     throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
                 } else {

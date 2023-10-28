@@ -30,7 +30,7 @@ import java.io.IOException;
  *
  * <h2>Design note</h2>
  * An alternative could be to support the {@code seek(long)} method. But using marks instead allows the stream
- * to invalidate the marks if needed (for example when {@link ChannelData#setStreamPosition(long)} is invoked).
+ * to invalidate the marks if needed (for example when {@link ChannelData#refresh(long)} is invoked).
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

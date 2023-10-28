@@ -42,11 +42,11 @@ import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.coverage.grid.j2d.TilePlaceholder;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.RasterFactory;
-import org.apache.sis.storage.geotiff.internal.Resources;
+import org.apache.sis.storage.geotiff.base.Resources;
+import org.apache.sis.storage.geotiff.reader.ReversedBitsChannel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 
-import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.multiplyFull;
@@ -386,7 +386,6 @@ class DataSubset extends TiledGridCoverage implements Localized {
                             boolean isEmpty = true;
                             for (int b=0; b<offsets.length; b++) {
                                 isEmpty &= (byteCounts[b] == 0);
-                                offsets[b] = addExact(offsets[b], source.reader.origin);
                             }
                             /*
                              * If the length if zero for all bands, the GDAL "sparse files" convention said

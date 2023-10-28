@@ -16,146 +16,187 @@
  */
 package org.apache.sis.io.stream;
 
-import java.io.Closeable;
-import java.io.DataOutput;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.WritableByteChannel;
+import java.nio.channels.ByteChannel;
+import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageOutputStream;
-import org.apache.sis.storage.internal.Resources;
 
 
 /**
- * Adds the missing methods in {@code ChannelDataOutput} for implementing the {@code DataOutput} interface.
- * Current implementation does not yet implements the {@code ImageOutputStream} sub-interface, but a future
- * implementation may do so.
+ * An {@code ImageOutputStream} backed by {@code ChannelDataInput} and {@code ChannelDataOutput}.
+ * Contrarily to most other I/O frameworks in the standard JDK, {@code ImageOutputStream} is read/write.
  *
- * <p>We do not implement {@link ImageOutputStream} yet because the latter inherits all read operations from
- * {@code ImageInputStream}, while the {@code org.apache.sis.storage.base} package keeps the concerns
- * separated. Despite that, the name of this {@code ChannelImageOutputStream} anticipates a future version
- * which would implement the image I/O interface.</p>
- *
- * <p>{@code DataOutput} methods are defined in this separated class rather than in the parent class
- * because some methods are Java 1.0 legacy and should be avoided (e.g. {@link #writeBytes(String)}).</p>
+ * @todo Not yet used in {@link org.apache.sis.storage.StorageConnector}.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class ChannelImageOutputStream extends ChannelDataOutput implements DataOutput, Closeable {
+@SuppressWarnings("deprecation")
+public class ChannelImageOutputStream extends OutputStream implements ImageOutputStream, Markable {
     /**
-     * Creates a new output stream for the given channel and using the given buffer.
+     * The object to use for reading from the channel.
+     */
+    private final ChannelImageInputStream input;
+
+    /**
+     * The object to use for writing to the channel.
+     */
+    private final ChannelDataOutput output;
+
+    /**
+     * {@code false} if the stream is reading, or {@code true} if it is writing.
+     *
+     * @see #current()
+     */
+    private boolean writing;
+
+    /**
+     * Creates a new input/output stream for the given channel and using the given buffer.
      *
      * @param  filename  a file identifier used only for formatting error message.
-     * @param  channel   the channel where to write data.
-     * @param  buffer    the buffer from where to read the data.
-     * @throws IOException if an error occurred while writing into channel.
+     * @param  channel   the channel where to read and write data.
+     * @param  buffer    the buffer for data to read and write.
+     * @throws IOException if the stream cannot be created.
      */
-    public ChannelImageOutputStream(final String filename, final WritableByteChannel channel, final ByteBuffer buffer)
+    public ChannelImageOutputStream(final String filename, final ByteChannel channel, final ByteBuffer buffer)
             throws IOException
     {
-        super(filename, channel, buffer);
+        input  = new ChannelImageInputStream(filename, channel, buffer, true);
+        output = new ChannelDataOutput(filename, channel, buffer);
     }
 
     /**
-     * Creates a new output source from the given {@code ChannelDataOutput}.
-     * This constructor is invoked when we need to change the implementation class
-     * from {@code ChannelDataOutput} to {@code ChannelImageOutputStream}.
-     *
-     * @param  output  the existing instance from which to takes the channel and buffer.
-     * @throws IOException if an error occurred while writing into channel.
+     * Returns the {@linkplain #input} or {@linkplain #output},
+     * depending on whether this stream is reading or writing.
      */
-    public ChannelImageOutputStream(final ChannelDataOutput output) throws IOException {
-        super(output.filename, output.channel, output.buffer);
+    private ChannelData current() {
+        return writing ? output : input;
     }
 
     /**
-     * Writes a single byte to the stream at the current position.
-     * The 24 high-order bits of {@code v} are ignored.
+     * {@return the object to use for reading from the stream}.
+     * The returned object should not be used anymore after {@link #output()}
+     * has been invoked, until {@code input()} is invoked again.
      *
-     * @param  v  an integer whose lower 8 bits are to be written.
-     * @throws IOException if some I/O exception occurs during writing.
+     * @throws IOException if an error occurred while flushing a buffer.
      */
-    @Override
-    public final void write(final int v) throws IOException {
-        writeByte(v);
-    }
-
-    /**
-     * Writes boolean value (8 bits) into the steam. This method delegates to {@linkplain #writeByte(int)}.
-     * If boolean {@code v} is {@code true} the byte value 1 is written whereas if boolean is {@code false}
-     * zero is written.
-     *
-     * @param  v  boolean to be written.
-     * @throws IOException if some I/O exception occurs during writing.
-     */
-    @Override
-    public final void writeBoolean(final boolean v) throws IOException {
-        writeByte(v ? 1 : 0);
-    }
-
-    /**
-     * Writes the lower-order byte of each character. The high-order eight bits of each character
-     * in the string are ignored - this method does <strong>not</strong> applies any encoding.
-     *
-     * <p>This method is provided because required by the {@link DataOutput} interface, but its
-     * usage should generally be avoided.</p>
-     *
-     * @param  s  the string to be written.
-     * @throws IOException if an error occurred while writing the stream.
-     */
-    @Override
-    public void writeBytes(final String s) throws IOException {
-        final byte[] data = new byte[s.length()];
-        for (int i=0; i<data.length; i++) {
-            data[i] = (byte) s.charAt(i);
+    public final ChannelImageInputStream input() throws IOException {
+        if (writing) {
+            output.yield(input);
+            writing = false;
         }
-        write(data);
+        return input;
     }
 
     /**
-     * Writes all characters from the source into the stream.
+     * {@return the object to use for writing to the stream}.
+     * The returned object should not be used anymore after {@link #input()}
+     * has been invoked, until {@code output()} is invoked again.
      *
-     * @param  s  a String consider as an array of characters to be written into stream.
-     * @throws IOException if an error occurred while writing the stream.
+     * @throws IOException if an error occurred while flushing a buffer.
+     */
+    public final ChannelDataOutput output() throws IOException {
+        if (!writing) {
+            input.yield(output);
+            writing = true;
+        }
+        return output;
+    }
+
+    /** Delegates to the reader or writer. */
+    @Override public boolean   isCached()                                                {return input.isCached();}
+    @Override public boolean   isCachedMemory()                                          {return input.isCachedMemory();}
+    @Override public boolean   isCachedFile()                                            {return input.isCachedFile();}
+    @Override public long      length()                               throws IOException {return current().length();}
+    @Override public void      mark()                                                    {       current().mark();}
+    @Override public void      reset()                                throws IOException {       current().reset();}
+    @Override public void      reset(long p)                          throws IOException {       current().reset(p);}
+    @Override public void      seek(long p)                           throws IOException {       current().seek(p);}
+    @Override public void      flushBefore(long p)                    throws IOException {       current().flushBefore(p);}
+    @Override public long      getFlushedPosition()                                      {return current().getFlushedPosition();}
+    @Override public long      getStreamPosition()                                       {return current().getStreamPosition();}
+    @Override public int       getBitOffset()                                            {return current().getBitOffset();}
+    @Override public void      setBitOffset(int n)                                       {       current().setBitOffset(n);}
+    @Override public ByteOrder getByteOrder()                                            {return input.getByteOrder();}
+    @Override public void      setByteOrder(ByteOrder v)                                 {       input.setByteOrder(v);}
+    @Override public void      readBytes(IIOByteBuffer v, int n)      throws IOException {       input().readBytes(v, n);}
+    @Override public int       read()                                 throws IOException {return input().read();}
+    @Override public int       readBit()                              throws IOException {return input().readBit();}
+    @Override public long      readBits(int n)                        throws IOException {return input().readBits(n);}
+    @Override public boolean   readBoolean()                          throws IOException {return input().readBoolean();}
+    @Override public byte      readByte()                             throws IOException {return input().readByte();}
+    @Override public int       readUnsignedByte()                     throws IOException {return input().readUnsignedByte();}
+    @Override public short     readShort()                            throws IOException {return input().readShort();}
+    @Override public int       readUnsignedShort()                    throws IOException {return input().readUnsignedShort();}
+    @Override public char      readChar()                             throws IOException {return input().readChar();}
+    @Override public int       readInt()                              throws IOException {return input().readInt();}
+    @Override public long      readUnsignedInt()                      throws IOException {return input().readUnsignedInt();}
+    @Override public long      readLong()                             throws IOException {return input().readLong();}
+    @Override public float     readFloat()                            throws IOException {return input().readFloat();}
+    @Override public double    readDouble()                           throws IOException {return input().readDouble();}
+    @Override public String    readLine()                             throws IOException {return input().readLine();}
+    @Override public String    readUTF()                              throws IOException {return input().readUTF();}
+    @Override public int       read        (byte[]   v)               throws IOException {return input().read(v);}
+    @Override public int       read        (byte[]   v, int s, int n) throws IOException {return input().read(v, s, n);}
+    @Override public void      readFully   (byte[]   v)               throws IOException {       input().readFully(v);}
+    @Override public void      readFully   (byte[]   v, int s, int n) throws IOException {       input().readFully(v, s, n);}
+    @Override public void      readFully   (short[]  v, int s, int n) throws IOException {       input().readFully(v, s, n);}
+    @Override public void      readFully   (char[]   v, int s, int n) throws IOException {       input().readFully(v, s, n);}
+    @Override public void      readFully   (int[]    v, int s, int n) throws IOException {       input().readFully(v, s, n);}
+    @Override public void      readFully   (long[]   v, int s, int n) throws IOException {       input().readFully(v, s, n);}
+    @Override public void      readFully   (float[]  v, int s, int n) throws IOException {       input().readFully(v, s, n);}
+    @Override public void      readFully   (double[] v, int s, int n) throws IOException {       input().readFully(v, s, n);}
+    @Override public int       skipBytes   (int      n)               throws IOException {return input().skipBytes(n);}
+    @Override public long      skipBytes   (long     n)               throws IOException {return input().skipBytes(n);}
+    @Override public void      write       (int      v)               throws IOException {      output().write(v);}
+    @Override public void      writeBit    (int      v)               throws IOException {      output().writeBit    (v);}
+    @Override public void      writeBits   (long     v, int n)        throws IOException {      output().writeBits   (v, n);}
+    @Override public void      writeBoolean(boolean  v)               throws IOException {      output().writeBoolean(v);}
+    @Override public void      writeByte   (int      v)               throws IOException {      output().writeByte   (v);}
+    @Override public void      writeShort  (int      v)               throws IOException {      output().writeShort  (v);}
+    @Override public void      writeChar   (int      v)               throws IOException {      output().writeChar   (v);}
+    @Override public void      writeInt    (int      v)               throws IOException {      output().writeInt    (v);}
+    @Override public void      writeLong   (long     v)               throws IOException {      output().writeLong   (v);}
+    @Override public void      writeFloat  (float    v)               throws IOException {      output().writeFloat  (v);}
+    @Override public void      writeDouble (double   v)               throws IOException {      output().writeDouble (v);}
+    @Override public void      writeBytes  (String   v)               throws IOException {      output().writeBytes  (v);}
+    @Override public void      writeChars  (String   v)               throws IOException {      output().writeChars  (v);}
+    @Override public void      writeUTF    (String   v)               throws IOException {      output().writeUTF    (v);}
+    @Override public void      write       (byte[]   v)               throws IOException {      output().write(v);}
+    @Override public void      write       (byte[]   v, int s, int n) throws IOException {      output().write(v, s, n);}
+    @Override public void      writeShorts (short[]  v, int s, int n) throws IOException {      output().writeShorts (v, s, n);}
+    @Override public void      writeChars  (char[]   v, int s, int n) throws IOException {      output().writeChars  (v, s, n);}
+    @Override public void      writeInts   (int[]    v, int s, int n) throws IOException {      output().writeInts   (v, s, n);}
+    @Override public void      writeLongs  (long[]   v, int s, int n) throws IOException {      output().writeLongs  (v, s, n);}
+    @Override public void      writeFloats (float[]  v, int s, int n) throws IOException {      output().writeFloats (v, s, n);}
+    @Override public void      writeDoubles(double[] v, int s, int n) throws IOException {      output().writeDoubles(v, s, n);}
+
+    /**
+     * Discards the initial position of the stream prior to the current stream position.
+     * Note that this behavior is as specified by Image I/O, but different than the flush
+     * method of {@link OutputStream}.
+     *
+     * @throws IOException if an I/O error occurred.
      */
     @Override
-    public final void writeChars(final String s) throws IOException {
-        writeChars(s.toCharArray());
+    public void flush() throws IOException {
+        current().flushBefore(getStreamPosition());
     }
 
     /**
-     * Writes two bytes of length information to the output stream, followed by the modified UTF-8 representation
-     * of every character in the {@code str} string. Each character is converted to a group of one, two, or three
-     * bytes, depending on the character code point value.
-     *
-     * @param  s  the string to be written.
-     * @throws IOException if an error occurred while writing the stream.
-     */
-    @Override
-    public void writeUTF(final String s) throws IOException {
-        byte[] data = s.getBytes("UTF-8");
-        if (data.length > Short.MAX_VALUE) {
-            throw new IllegalArgumentException(Resources.format(
-                    Resources.Keys.ExcessiveStringSize_3, filename, Short.MAX_VALUE, data.length));
-        }
-        final ByteOrder oldOrder = buffer.order();
-        buffer.order(ByteOrder.BIG_ENDIAN);
-        try {
-            writeShort(data.length);
-            write(data);
-        } finally {
-            buffer.order(oldOrder);
-        }
-    }
-
-    /**
-     * Closes the {@linkplain #channel}.
+     * Closes the channel.
      *
      * @throws IOException if an error occurred while closing the channel.
      */
     @Override
-    public final void close() throws IOException {
-        channel.close();
+    public void close() throws IOException {
+        try (output.channel) {
+            if (writing) {
+                output.flush();
+            }
+        }
     }
 }
