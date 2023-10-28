@@ -30,6 +30,7 @@ package org.apache.sis.storage;
  * @version 0.8
  * @since   0.8
  *
+ * @see WriteOnlyStorageException
  * @see ForwardOnlyStorageException
  */
 public class ReadOnlyStorageException extends DataStoreException {

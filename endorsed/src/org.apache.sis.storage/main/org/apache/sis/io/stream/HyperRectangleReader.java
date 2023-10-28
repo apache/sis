@@ -201,7 +201,7 @@ loop:       do {
                      * new row, or a new plane, or a new cube?). This determines how many bytes we have to
                      * skip.
                      */
-                    if (++cursor[i] < region.targetSize[contiguousDataDimension + i]) {
+                    if (++cursor[i] < region.getTargetSize(contiguousDataDimension + i)) {
                         streamPosition = Math.addExact(streamPosition, strides[i]);
                         arrayPosition  = Math.addExact(arrayPosition, contiguousDataLength);
                         continue loop;

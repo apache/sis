@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.channels.SeekableByteChannel;
@@ -552,25 +553,29 @@ public final class IOUtilities extends Static {
      * @return the input stream, or {@code null} if the given stream cannot be converted.
      * @throws IOException if an error occurred during input stream creation.
      */
-    public static InputStream toInputStream(AutoCloseable stream) throws IOException {
-        if (stream != null) {
-            if (stream instanceof InputStream) {
-                return (InputStream) stream;
-            }
-            if (stream instanceof OutputStreamAdapter) {
-                stream = ((OutputStreamAdapter) stream).output;
-            }
-            if (stream instanceof ChannelDataOutput) {
-                final ChannelDataOutput c = (ChannelDataOutput) stream;
-                if (c.channel instanceof ReadableByteChannel) {
-                    stream = new ChannelImageInputStream(c.filename, (ReadableByteChannel) c.channel, c.buffer, true);
-                }
-            }
-            if (stream instanceof ImageInputStream) {
-                return new InputStreamAdapter((ImageInputStream) stream);
-            }
+    public static InputStream toInputStream(final AutoCloseable stream) throws IOException {
+        if (stream instanceof InputStream) {
+            return (InputStream) stream;
         }
-        return null;
+        final ImageInputStream input;
+        if (stream instanceof ImageInputStream) {
+            input = (ImageInputStream) stream;
+        } else {
+            final ChannelData output;
+            if (stream instanceof ChannelData) {
+                output = (ChannelData) stream;
+            } else if (stream instanceof OutputStreamAdapter) {
+                output = ((OutputStreamAdapter) stream).output;
+            } else {
+                return null;
+            }
+            final Channel channel = output.channel();
+            if (!(channel instanceof ReadableByteChannel)) {
+                return null;
+            }
+            input = new ChannelImageInputStream(output.filename, (ReadableByteChannel) channel, output.buffer, true);
+        }
+        return new InputStreamAdapter(input);
     }
 
     /**
@@ -587,22 +592,23 @@ public final class IOUtilities extends Static {
      * @throws IOException if an error occurred during output stream creation.
      */
     public static OutputStream toOutputStream(AutoCloseable stream) throws IOException {
-        if (stream != null) {
-            if (stream instanceof OutputStream) {
-                return (OutputStream) stream;
+        if (stream instanceof OutputStream) {
+            return (OutputStream) stream;
+        }
+        if (stream instanceof InputStreamAdapter) {
+            stream = ((InputStreamAdapter) stream).input;
+        }
+check:  if (stream instanceof ChannelData) {
+            final ChannelData data = (ChannelData) stream;
+            final ChannelDataOutput output;
+            if (stream instanceof ChannelDataOutput) {
+                output = (ChannelDataOutput) stream;
+            } else {
+                final Channel channel = data.channel();
+                if (!(channel instanceof WritableByteChannel)) break check;
+                output = new ChannelDataOutput(data.filename, (WritableByteChannel) channel, data.buffer);
             }
-            if (stream instanceof InputStreamAdapter) {
-                stream = ((InputStreamAdapter) stream).input;
-            }
-            if (stream instanceof ChannelDataInput) {
-                final ChannelDataInput c = (ChannelDataInput) stream;
-                if (c.channel instanceof WritableByteChannel) {
-                    stream = new ChannelImageOutputStream(c.filename, (WritableByteChannel) c.channel, c.buffer);
-                }
-            }
-            if (stream instanceof ChannelImageOutputStream) {
-                return new OutputStreamAdapter((ChannelImageOutputStream) stream);
-            }
+            return new OutputStreamAdapter(output);
         }
         return null;
     }
@@ -618,10 +624,9 @@ public final class IOUtilities extends Static {
      */
     public static boolean truncate(AutoCloseable stream) throws IOException {
         if (stream instanceof OutputStreamAdapter) {
-            stream = ((OutputStreamAdapter) stream).output;
-        }
-        if (stream instanceof ChannelDataOutput) {
-            stream = ((ChannelDataOutput) stream).channel;
+            stream = (((OutputStreamAdapter) stream).output).channel();
+        } else if (stream instanceof ChannelData) {
+            stream = ((ChannelData) stream).channel();
         }
         if (stream instanceof SeekableByteChannel) {
             final SeekableByteChannel s = (SeekableByteChannel) stream;

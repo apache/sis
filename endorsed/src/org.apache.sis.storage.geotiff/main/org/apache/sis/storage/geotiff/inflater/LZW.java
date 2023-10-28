@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.io.IOException;
 import java.io.EOFException;
 import java.nio.ByteBuffer;
-import org.apache.sis.storage.geotiff.internal.Resources;
+import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
 

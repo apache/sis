@@ -107,6 +107,12 @@ public final class Numerics extends Static {
     public static final long SIGN_BIT_MASK = Long.MIN_VALUE;
 
     /**
+     * Mask for the highest 32 bits of a long integers.
+     * It can be used for checking if a {@code long} can be casted as an unsigned integer.
+     */
+    public static final long HIGH_BITS_MASK = ~((1L << Integer.SIZE) - 1);
+
+    /**
      * Number of bits in the significand (mantissa) part of IEEE 754 {@code double} representation,
      * <strong>not</strong> including the hidden bit.
      */

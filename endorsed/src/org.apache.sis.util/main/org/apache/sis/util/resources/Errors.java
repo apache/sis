@@ -324,6 +324,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short ForbiddenProperty_1 = 41;
 
         /**
+         * “{0}” uses two or more different units of measurement.
+         */
+        public static final short HeterogynousUnitsIn_1 = 202;
+
+        /**
          * Identifier “{1}” is not in “{0}” namespace.
          */
         public static final short IdentifierNotInNamespace_2 = 199;
@@ -783,6 +788,11 @@ public class Errors extends IndexedResourceBundle {
          * Array length is {0}, while we expected an even length.
          */
         public static final short OddArrayLength_1 = 118;
+
+        /**
+         * “{1}” is opened in {0,choice,0#read|1#write}-only mode.
+         */
+        public static final short OpenedReadOrWriteOnly_2 = 203;
 
         /**
          * Coordinate is outside the domain of validity.

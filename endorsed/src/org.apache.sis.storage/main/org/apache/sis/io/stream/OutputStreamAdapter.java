@@ -32,18 +32,15 @@ final class OutputStreamAdapter extends OutputStream implements Markable {
      * The underlying data output stream. In principle, public access to this field breaks encapsulation.
      * But since {@code OutputStreamAdapter} does not hold any state and just forwards every method calls
      * to that {@code ChannelDataOutput}, using on object or the other does not make a difference.
-     *
-     * @todo to be replaced by a reference to {@link javax.imageio.stream.ImageOutputStream} if the
-     *       {@link ChannelImageOutputStream} class implements that interface in a future version.
      */
-    final ChannelImageOutputStream output;
+    final ChannelDataOutput output;
 
     /**
      * Constructs a new output stream.
      *
      * @param output  the stream to wrap.
      */
-    OutputStreamAdapter(final ChannelImageOutputStream output) {
+    OutputStreamAdapter(final ChannelDataOutput output) {
         this.output = output;
     }
 
@@ -139,6 +136,8 @@ final class OutputStreamAdapter extends OutputStream implements Markable {
      */
     @Override
     public void close() throws IOException {
-        output.close();
+        try (output.channel) {
+            output.flush();
+        }
     }
 }

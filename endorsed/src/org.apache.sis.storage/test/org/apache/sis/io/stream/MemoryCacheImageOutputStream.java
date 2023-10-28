@@ -31,10 +31,55 @@ import org.apache.sis.util.Workaround;
 @Workaround(library = "JDK", version = "1.8")
 final class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCacheImageOutputStream {
     /**
+     * Whether this stream potentially needs a flush of bits.
+     * This is needed because {@link #readBit()} implementation in super-class invokes {@link #seek(long)}.
+     * If our subclass invokes {@link #flushBits()}, it causes the data to be overwritten by garbage data.
+     */
+    private boolean needFlush;
+
+    /**
      * Creates a new instance which will write the data in the given stream.
      */
     MemoryCacheImageOutputStream(final OutputStream stream) {
         super(stream);
+    }
+
+    /**
+     * Reads a bit.
+     */
+    @Override
+    public int readBit() throws IOException {
+        needFlush = false;
+        return super.readBit();
+    }
+
+    /**
+     * Reads many bits.
+     */
+    @Override
+    public long readBits(final int numBits) throws IOException {
+        needFlush = false;
+        return super.readBit();
+    }
+
+    /**
+     * Writes the given bit and remember that this bit may need to be flushed.
+     */
+    @Override
+    public void writeBit(final int bit) throws IOException {
+        needFlush = false;
+        super.writeBit(bit);
+        needFlush = true;
+    }
+
+    /**
+     * Writes the given bits and remember that those bits may need to be flushed.
+     */
+    @Override
+    public void writeBits(final long bits, final int numBits) throws IOException {
+        needFlush = false;
+        super.writeBits(bits, numBits);
+        needFlush = true;
     }
 
     /**
@@ -46,7 +91,10 @@ final class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCach
      */
     @Override
     public void seek(final long pos) throws IOException {
-        flushBits();
+        if (needFlush) {
+            needFlush = false;
+            flushBits();
+        }
         super.seek(pos);
     }
 
@@ -54,9 +102,16 @@ final class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCach
      * Writes the bits (if any) before to flush the stream.
      */
     @Override
-    public void flush() throws IOException {
-        flushBits();
-        super.flush();
+    public void flushBefore(final long pos) throws IOException {
+        if (needFlush) {
+            needFlush = false;
+            long p = getStreamPosition();
+            int  b = getBitOffset();
+            flushBits();
+            super.seek(p);
+            setBitOffset(b);
+        }
+        super.flushBefore(pos);
     }
 
     /**
@@ -64,7 +119,10 @@ final class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCach
      */
     @Override
     public void close() throws IOException {
-        flushBits();
+        if (needFlush) {
+            needFlush = false;
+            flushBits();
+        }
         super.close();
     }
 }

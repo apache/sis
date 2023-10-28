@@ -308,17 +308,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Sets this matrix to the values of another matrix.
      * The given matrix must have the same size.
      *
-     * @param  matrix  the matrix to copy.
+     * @param  source  the matrix to copy.
      * @throws MismatchedMatrixSizeException if the given matrix has a different size than this matrix.
      *
      * @since 0.7
      */
-    public void setMatrix(final Matrix matrix) throws MismatchedMatrixSizeException {
-        ArgumentChecks.ensureNonNull("matrix", matrix);
+    public void setMatrix(final Matrix source) throws MismatchedMatrixSizeException {
+        ArgumentChecks.ensureNonNull("source", source);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        ensureSizeMatch(numRow, numCol, matrix);
-        setElements(matrix, 0, 0, 0, 0, numRow, numCol);
+        ensureSizeMatch(numRow, numCol, source);
+        setElements(source, 0, 0, 0, 0, numRow, numCol);
     }
 
     /**
@@ -512,23 +512,23 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
 
     /**
      * Returns a new matrix which is the result of multiplying this matrix with the specified one.
-     * In other words, returns {@code this} × {@code matrix}.
+     * In other words, returns {@code this} × {@code other}.
      *
      * <h4>Relationship with coordinate operations</h4>
-     * In the context of coordinate operations, {@code Matrix.multiply(other)} is equivalent to
+     * In the context of coordinate operations, {@code other.multiply(other)} is equivalent to
      * <code>{@linkplain AffineTransform#concatenate AffineTransform.concatenate}(other)</code>:
      * first transforms by the {@code other} transform and then transform the result by {@code this} transform.
      *
-     * @param  matrix  the matrix to multiply to this matrix.
-     * @return the result of {@code this} × {@code matrix}.
+     * @param  other  the matrix to multiply to this matrix.
+     * @return the result of {@code this} × {@code other}.
      * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals to the
      *         number of columns in this matrix.
      */
-    public MatrixSIS multiply(final Matrix matrix) throws MismatchedMatrixSizeException {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(getNumCol(), matrix.getNumRow(), nc);
+    public MatrixSIS multiply(final Matrix other) throws MismatchedMatrixSizeException {
+        final int nc = other.getNumCol();
+        ensureNumRowMatch(getNumCol(), other.getNumRow(), nc);
         final GeneralMatrix result = GeneralMatrix.create(getNumRow(), nc, false);
-        result.setToProduct(this, matrix);
+        result.setToProduct(this, other);
         return result;
     }
 
@@ -615,18 +615,18 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Returns the value of <var>U</var> which solves {@code this} × <var>U</var> = {@code matrix}.
+     * Returns the value of <var>U</var> which solves {@code this} × <var>U</var> = {@code target}.
      * This is equivalent to first computing the inverse of {@code this}, then multiplying the result
      * by the given matrix.
      *
-     * @param  matrix  the matrix to solve.
-     * @return the <var>U</var> matrix that satisfies {@code this} × <var>U</var> = {@code matrix}.
+     * @param  target  the matrix to solve.
+     * @return the <var>U</var> matrix that satisfies {@code this} × <var>U</var> = {@code target}.
      * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals
      *         to the number of columns in this matrix.
      * @throws NoninvertibleMatrixException if this matrix is not invertible.
      */
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        return Solver.solve(this, matrix);
+    public MatrixSIS solve(final Matrix target) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
+        return Solver.solve(this, target);
     }
 
     /**

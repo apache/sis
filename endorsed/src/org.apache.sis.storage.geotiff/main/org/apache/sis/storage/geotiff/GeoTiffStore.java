@@ -16,16 +16,20 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Optional;
-import java.util.logging.LogRecord;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.awt.image.RenderedImage;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
@@ -40,22 +44,28 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.ReadOnlyStorageException;
+import org.apache.sis.storage.WriteOnlyStorageException;
 import org.apache.sis.storage.IllegalNameException;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.base.StoreUtilities;
-import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.geotiff.spi.SchemaModifier;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataOutput;
+import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.ListOfUnknownSize;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -69,7 +79,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.8
  */
 public class GeoTiffStore extends DataStore implements Aggregate {
@@ -85,6 +95,31 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @see #reader()
      */
     private volatile Reader reader;
+
+    /**
+     * The GeoTIFF writer implementation, or {@code null} if the store has been closed.
+     *
+     * @see #writer()
+     */
+    private volatile Writer writer;
+
+    /**
+     * The locale to use for formatting metadata. This is not necessarily the same as {@link #getLocale()},
+     * which is about formatting error messages. A null value means "unlocalized", which is usually English.
+     */
+    final Locale dataLocale;
+
+    /**
+     * The timezone for the date and time parsing, or {@code null} for the default.
+     */
+    private final TimeZone timezone;
+
+    /**
+     * The object to use for parsing and formatting dates. Created when first needed.
+     *
+     * @see #getDateFormat()
+     */
+    private transient DateFormat dateFormat;
 
     /**
      * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
@@ -143,7 +178,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @see #components()
      */
-    private List<GridCoverageResource> components;
+    private Components components;
 
     /**
      * Whether this {@code GeotiffStore} will be hidden. If {@code true}, then some metadata that would
@@ -197,23 +232,42 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         super(parent, provider, connector, hidden);
         this.hidden = hidden;
 
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION);
         this.customizer = (customizer != null) ? customizer : SchemaModifier.DEFAULT;
 
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
 
-        location = connector.getStorageAs(URI.class);
-        path = connector.getStorageAs(Path.class);
-        final ChannelDataInput input = connector.commit(ChannelDataInput.class, Constants.GEOTIFF);
+        dataLocale = connector.getOption(OptionKey.LOCALE);
+        timezone   = connector.getOption(OptionKey.TIMEZONE);
+        location   = connector.getStorageAs(URI.class);
+        path       = connector.getStorageAs(Path.class);
         try {
-            reader = new Reader(this, input);
+            if (URIDataStore.Provider.isWritable(connector, true)) {
+                ChannelDataOutput output = connector.commit(ChannelDataOutput.class, Constants.GEOTIFF);
+                writer = new Writer(this, output, connector.getOption(GeoTiffOption.OPTION_KEY));
+            } else {
+                ChannelDataInput input = connector.commit(ChannelDataInput.class, Constants.GEOTIFF);
+                reader = new Reader(this, input);
+            }
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
-        if (getClass() == GeoTiffStore.class) {
-            listeners.useReadOnlyEvents();
-        }
+    }
+
+    /**
+     * Returns the options (BigTIFF, COG…) of this data store.
+     *
+     * @return options of this data store.
+     *
+     * @since 1.5
+     */
+    public Set<GeoTiffOption> getOptions() {
+        final Writer w = writer; if (w != null) return w.getOptions();
+        final Reader r = reader; if (r != null) return r.getOptions();
+        return Set.of();
     }
 
     /**
@@ -221,6 +275,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * This method must be invoked inside a block synchronized on {@code this}.
      */
     final NameSpace namespace() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Reader reader = this.reader;
         if (!isNamespaceSet && reader != null) {
             final NameFactory f = reader.nameFactory;
@@ -244,8 +299,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Opens access to listeners for {@link ImageFileDirectory}.
-     *
-     * @see #warning(LogRecord)
      */
     final StoreListeners listeners() {
         return listeners;
@@ -262,7 +315,17 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        return Optional.ofNullable(URIDataStore.parameters(provider, location));
+        final ParameterValueGroup param = URIDataStore.parameters(provider, location);
+        if (param != null) {
+            final Writer w = writer;
+            if (w != null) {
+                final Set<GeoTiffOption> options = w.getOptions();
+                if (!options.isEmpty()) {
+                    param.parameter(GeoTiffStoreProvider.OPTIONS).setValue(options.toArray(GeoTiffOption[]::new));
+                }
+            }
+        }
+        return Optional.ofNullable(param);
     }
 
     /**
@@ -277,6 +340,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final NameSpace namespace;
         synchronized (this) {
             namespace = namespace();
@@ -309,6 +373,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Reader reader = reader();
             final MetadataBuilder builder = new MetadataBuilder();
             setFormatInfo(builder);
@@ -372,15 +437,23 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the exception to throw when an I/O error occurred.
-     * This method wraps the exception with a {@literal "Cannot read <filename>"} message.
+     * {@return the object to use for parsing and formatting dates}.
      */
-    final DataStoreException errorIO(final IOException e) {
-        return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
+    final DateFormat getDateFormat() {
+        if (dateFormat == null) {
+            dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US);
+            if (timezone != null) {
+                dateFormat.setTimeZone(timezone);
+            }
+        }
+        return dateFormat;
     }
 
     /**
      * Returns the reader if it is not closed, or throws an exception otherwise.
+     *
+     * @return the reader, potentially created when first needed.
+     * @throws WriteOnlyStorageException if the channel is write-only.
      *
      * @see #close()
      */
@@ -388,9 +461,43 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         assert Thread.holdsLock(this);
         final Reader r = reader;
         if (r == null) {
+            if (writer != null) {
+                throw new WriteOnlyStorageException(readOrWriteOnly(1));
+            }
             throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.READ);
         }
         return r;
+    }
+
+    /**
+     * Returns the writer if it can be created and is not closed, or throws an exception otherwise.
+     * If there is no writer but a reader exists, then a writer is created for writing past the last image.
+     * After the write operation has been completed, it is caller responsibility to invoke the following code:
+     *
+     * {@snippet lang="java":
+     *     writer.synchronize(reader, false);
+     *     // Write the image
+     *     writer.flush();
+     *     writer.synchronize(reader, true);
+     * }
+     *
+     * @return the writer, potentially created when first needed.
+     * @throws ReadOnlyStorageException if this data store is read-only.
+     *
+     * @see #close()
+     * @see Writer#synchronize(Reader, boolean)
+     */
+    private Writer writer() throws DataStoreException, IOException {
+        assert Thread.holdsLock(this);
+        Writer w = writer;
+        if (w == null) {
+            final Reader r = reader;
+            if (r == null) {
+                throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.WRITE);
+            }
+            writer = w = new Writer(r);
+        }
+        return w;
     }
 
     /**
@@ -423,6 +530,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         /** The collection size, cached when first computed. */
         private int size = -1;
 
+        /** Creates a new list of components. */
+        Components() {
+        }
+
         /** Returns the size or -1 if not yet known. */
         @Override protected int sizeIfKnown() {
             synchronized (GeoTiffStore.this) {
@@ -437,6 +548,15 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                     size = super.size();
                 }
                 return size;
+            }
+        }
+
+        /** Increments the size by the given amount of images. */
+        final void incrementSize(final int n) {
+            synchronized (GeoTiffStore.this) {
+                if (size >= 0) {
+                    size += n;
+                }
             }
         }
 
@@ -505,6 +625,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @throws IllegalNameException if the argument use an invalid namespace or if the tip is not an integer.
      */
     private int parseImageIndex(String sequence) throws IllegalNameException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final NameSpace namespace = namespace();
         final String separator = DefaultNameSpace.getSeparator(namespace, false);
         final int s = sequence.lastIndexOf(separator);
@@ -525,6 +646,63 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Encodes the given image in the GeoTIFF file.
+     * The image is appended after any existing images in the GeoTIFF file.
+     * This method does not handle pyramids such as Cloud Optimized GeoTIFF (COG).
+     *
+     * @param  image     the image to encode.
+     * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
+     * @param  metadata  title, author and other information, or {@code null} if none.
+     * @throws ReadOnlyStorageException if this data store is read-only.
+     * @throws DataStoreException if the given {@code image} has a property which is not supported by this writer,
+     *         or if an error occurred while writing to the output stream.
+     *
+     * @since 1.5
+     */
+    public synchronized void append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
+            throws DataStoreException
+    {
+        try {
+            @SuppressWarnings("LocalVariableHidesMemberVariable") final Writer writer = writer();
+            @SuppressWarnings("LocalVariableHidesMemberVariable") final Reader reader = this.reader;
+            writer.synchronize(reader, false);
+            final long offsetIFD;
+            try {
+                offsetIFD = writer.append(image, grid, metadata);
+                writer.flush();
+            } finally {
+                writer.synchronize(reader, true);
+            }
+            if (reader != null) {
+                reader.offsetOfWrittenIFD(offsetIFD);
+            }
+        } catch (IOException e) {
+            throw new DataStoreException(errors().getString(Errors.Keys.CanNotWriteFile_2, Constants.GEOTIFF, getDisplayName()), e);
+        }
+        if (components != null) {
+            components.incrementSize(1);
+        }
+    }
+
+    /**
+     * Adds a new grid coverage in the GeoTIFF file.
+     * The coverage is appended after any existing images in the GeoTIFF file.
+     * This method does not handle pyramids such as Cloud Optimized GeoTIFF (COG).
+     *
+     * @param  coverage  the grid coverage to encode.
+     * @param  metadata  title, author and other information, or {@code null} if none.
+     * @throws SubspaceNotSpecifiedException if the given grid coverage is not a two-dimensional slice.
+     * @throws ReadOnlyStorageException if this data store is read-only.
+     * @throws DataStoreException if the given {@code image} has a property which is not supported by this writer,
+     *         or if an error occurred while writing to the output stream.
+     *
+     * @since 1.5
+     */
+    public void append(final GridCoverage coverage, final Metadata metadata) throws DataStoreException {
+        append(coverage.render(null), coverage.getGridGeometry(), metadata);
+    }
+
+    /**
      * Registers a listener to notify when the specified kind of event occurs in this data store.
      * The current implementation of this data store can emit only {@link WarningEvent}s;
      * any listener specified for another kind of events will be ignored.
@@ -538,6 +716,31 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the error resources in the current locale.
+     */
+    private Errors errors() {
+        return Errors.getResources(getLocale());
+    }
+
+    /**
+     * Returns the exception to throw when an I/O error occurred.
+     * This method wraps the exception with a {@literal "Cannot read <filename>"} message.
+     */
+    final DataStoreException errorIO(final IOException e) {
+        return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, getDisplayName()), e);
+    }
+
+    /**
+     * Returns a localized error message saying that this data store has been opened in read-only or write-only mode.
+     *
+     * @param  mode  0 for read-only, or 1 for write-only.
+     * @return localized error message.
+     */
+    final String readOrWriteOnly(final int mode) {
+        return errors().getString(Errors.Keys.OpenedReadOrWriteOnly_2, mode, getDisplayName());
+    }
+
+    /**
      * Closes this GeoTIFF store and releases any underlying resources.
      * This method can be invoked asynchronously for interrupting a long reading process.
      *
@@ -548,6 +751,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         try {
             listeners.close();                  // Should never fail.
             final Reader r = reader;
+            final Writer w = writer;
+            if (w != null) w.close();
             if (r != null) r.close();
         } catch (IOException e) {
             throw new DataStoreException(e);
@@ -558,35 +763,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 metadata       = null;
                 nativeMetadata = null;
                 reader         = null;
+                writer         = null;
             }
         }
-    }
-
-    /**
-     * Returns the error resources in the current locale.
-     */
-    final Errors errors() {
-        return Errors.getResources(getLocale());
-    }
-
-    /**
-     * Reports a warning contained in the given {@link LogRecord}.
-     * Note that the given record will not necessarily be sent to the logging framework;
-     * if the user has registered at least one listener, then the record will be sent to the listeners instead.
-     *
-     * <p>This method sets the {@linkplain LogRecord#setSourceClassName(String) source class name} and
-     * {@linkplain LogRecord#setSourceMethodName(String) source method name} to hard-coded values.
-     * Those values assume that the warnings occurred indirectly from a call to {@link #getMetadata()}
-     * in this class. We do not report private classes or methods as the source of warnings.</p>
-     *
-     * @param  record  the warning to report.
-     *
-     * @see #listeners()
-     */
-    final void warning(final LogRecord record) {
-        // Logger name will be set by listeners.warning(record).
-        record.setSourceClassName(GeoTiffStore.class.getName());
-        record.setSourceMethodName("getMetadata");
-        listeners.warning(record);
     }
 }

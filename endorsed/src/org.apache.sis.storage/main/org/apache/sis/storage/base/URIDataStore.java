@@ -17,11 +17,15 @@
 package org.apache.sis.storage.base;
 
 import java.util.Optional;
+import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.Charset;
@@ -315,18 +319,35 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
 
         /**
          * Returns {@code true} if the open options contains {@link StandardOpenOption#WRITE}
-         * or if the storage type is some kind of output stream.
+         * or if the storage type is some kind of output stream. An ambiguity may exist between
+         * the case when a new file would be created and when an existing file would be updated.
+         * This ambiguity is resolved by the {@code ifNew} argument:
+         * if {@code false}, then the two cases are not distinguished.
+         * If {@code true}, then this method returns {@code true} only if a new file would be created.
          *
          * @param  connector  the connector to use for opening a file.
+         * @param  ifNew  whether to return {@code true} only if a new file would be created.
          * @return whether the specified connector should open a writable data store.
          * @throws DataStoreException if the storage object has already been used and cannot be reused.
          */
-        public static boolean isWritable(final StorageConnector connector) throws DataStoreException {
+        public static boolean isWritable(final StorageConnector connector, final boolean ifNew) throws DataStoreException {
             final Object storage = connector.getStorage();
-            if (storage instanceof OutputStream || storage instanceof DataOutput) {
-                return true;
+            if (storage instanceof OutputStream || storage instanceof DataOutput) return true;    // Must be tested first.
+            if (storage instanceof InputStream  || storage instanceof DataInput)  return false;   // Ignore options.
+            final OpenOption[] options = connector.getOption(OptionKey.OPEN_OPTIONS);
+            if (ArraysExt.contains(options, StandardOpenOption.WRITE)) {
+                if (!ifNew || ArraysExt.contains(options, StandardOpenOption.TRUNCATE_EXISTING)) {
+                    return true;
+                }
+                if (ArraysExt.contains(options, StandardOpenOption.CREATE_NEW)) {
+                    return IOUtilities.isKindOfPath(storage);
+                }
+                if (ArraysExt.contains(options, StandardOpenOption.CREATE)) {
+                    final Path path = connector.getStorageAs(Path.class);
+                    return (path != null) && Files.notExists(path);
+                }
             }
-            return ArraysExt.contains(connector.getOption(OptionKey.OPEN_OPTIONS), StandardOpenOption.WRITE);
+            return false;
         }
     }
 

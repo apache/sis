@@ -28,10 +28,10 @@ import static org.apache.sis.util.internal.Numerics.ceilDiv;
 
 /**
  * A sub-area in a <var>n</var>-dimensional hyper-rectangle, optionally with subsampling.
- * The size of the hyper-rectangle is given by the {@code size} argument at construction time,
- * where {@code size.length} is the number of dimensions and {@code size[i]} is the number of
- * values along dimension <var>i</var>. For each dimension, the index ranges from 0 inclusive
- * to {@code size[i]} exclusive.
+ * The size of the hyper-rectangle is given by the {@code sourceSize} argument at construction time,
+ * where {@code sourceSize.length} is the number of dimensions
+ * and {@code sourceSize[i]} is the number of values along dimension <var>i</var>.
+ * For each dimension, the index ranges from 0 inclusive to {@code sourceSize[i]} exclusive.
  *
  * <p>This class assumes that the values are stored in a sequence (array or uncompressed file)
  * where index at dimension 0 varies fastest, followed by index at dimension 1, <i>etc</i>.</p>
@@ -47,9 +47,10 @@ public final class Region {
      * The size after reading only the sub-region at the given subsampling.
      * The length of this array is the hyper-rectangle dimension.
      *
+     * @see #getTargetSize(int)
      * @see #targetLength(int)
      */
-    final int[] targetSize;
+    private final int[] targetSize;
 
     /**
      * Position of the first value to read.
@@ -82,7 +83,7 @@ public final class Region {
 
     /**
      * Total length of the region.
-     * This is the product of all values in the {@code size} argument given to the constructor.
+     * This is the product of all values in the {@code sourceSize} argument given to the constructor.
      */
     public final long length;
 
@@ -90,22 +91,22 @@ public final class Region {
      * Creates a new region. It is caller's responsibility to ensure that:
      * <ul>
      *   <li>all arrays have the same length</li>
-     *   <li>{@code size[i] > 0} for all <var>i</var></li>
+     *   <li>{@code sourceSize[i] > 0} for all <var>i</var></li>
      *   <li>{@code regionLower[i] >= 0} for all <var>i</var></li>
-     *   <li>{@code regionLower[i] < regionUpper[i] <= size[i]} for all <var>i</var></li>
+     *   <li>{@code regionLower[i] < regionUpper[i] <= sourceSize[i]} for all <var>i</var></li>
      *   <li>{@code subsampling[i] > 0} for all <var>i</var></li>
      *   <li>The total length of data to read does not exceed {@link Integer#MAX_VALUE}.</li>
      * </ul>
      *
-     * @param  size         the number of elements along each dimension.
+     * @param  sourceSize   the number of elements along each dimension.
      * @param  regionLower  indices of the first value to read or write along each dimension.
      * @param  regionUpper  indices after the last value to read or write along each dimension.
      * @param  subsampling  subsampling along each dimension. Shall be greater than zero.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE},
      *                             or the total hyper-cube size exceeds {@link Long#MAX_VALUE}.
      */
-    public Region(final long[] size, final long[] regionLower, final long[] regionUpper, final int[] subsampling) {
-        final int dimension = size.length;
+    public Region(final long[] sourceSize, final long[] regionLower, final long[] regionUpper, final int[] subsampling) {
+        final int dimension = sourceSize.length;
         targetSize = new int[dimension];
         skips = new long[dimension + 1];
         long position = 0;
@@ -116,7 +117,7 @@ public final class Region {
             final long lower = regionLower[i];
             final long count = ceilDiv(subtractExact(regionUpper[i], lower), step);
             final long upper = addExact(lower, incrementExact(multiplyExact(count-1, step)));
-            final long span  = size[i];
+            final long span  = sourceSize[i];
             assert (count > 0) && (lower >= 0) && (upper > lower) && (upper <= span) : i;
 
             targetSize[i] = toIntExact(count);
@@ -168,6 +169,8 @@ public final class Region {
     /**
      * Number of dimensions for which we can collapse the read operations in a single operation because their
      * data are contiguous. This is the index of the first non-zero element in the {@link #skips} array.
+     *
+     * @return number of dimensions which can be transferred in a single I/O operation.
      */
     final int contiguousDataDimension() {
         final int dimension = skips.length - 1;
@@ -222,8 +225,19 @@ public final class Region {
     }
 
     /**
+     * {@return the number of values to skip after having read values in the given dimension}.
+     */
+    final long getSkip(final int dimension) {
+        return skips[dimension];
+    }
+
+    /**
      * Returns the total number of values to be read from the sub-region while applying the subsampling.
      * This method takes in account only the given number of dimensions.
+     *
+     * @param  dimension  number of dimensions to use.
+     * @return number of values to read. Always greater than zero.
+     * @throws ArithmeticException if the size is too large.
      */
     final int targetLength(final int dimension) {
         long size = 1;

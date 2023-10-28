@@ -37,7 +37,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.OpenOption;
 import java.nio.file.NoSuchFileException;
@@ -64,10 +63,10 @@ import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.ChannelFactory;
+import org.apache.sis.io.stream.ChannelData;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.ChannelImageInputStream;
-import org.apache.sis.io.stream.ChannelImageOutputStream;
 import org.apache.sis.io.stream.InputStreamAdapter;
 import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.io.stream.InternalOptionKey;
@@ -107,7 +106,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public class StorageConnector implements Serializable {
@@ -213,7 +212,7 @@ public class StorageConnector implements Serializable {
         add(OutputStream.class,      StorageConnector::createOutputStream);
         add(Reader.class,            StorageConnector::createReader);
         add(Connection.class,        StorageConnector::createConnection);
-        add(ChannelDataInput.class,  (s) -> s.createChannelDataInput(false));     // Undocumented case (SIS internal)
+        add(ChannelDataInput.class,  StorageConnector::createChannelDataInput);   // Undocumented case (SIS internal)
         add(ChannelDataOutput.class, StorageConnector::createChannelDataOutput);  // Undocumented case (SIS internal)
         add(ChannelFactory.class,    (s) -> null);                                // Undocumented. Shall not cache.
         /*
@@ -514,15 +513,14 @@ public class StorageConnector implements Serializable {
                  * (except in BufferedReader if the original storage does not support mark/reset).
                  */
                 ((Reader) view).reset();
-            } else if (view instanceof ChannelDataInput) {
+            } else if (view instanceof ChannelData) {
                 /*
-                 * ChannelDataInput can be recycled without the need to discard and recreate them. Note that
-                 * this code requires that SeekableByteChannel has been seek to the channel beginning first.
-                 * This should be done by the above `wrapperFor.reset()` call.
+                 * `ChannelDataInput` can be recycled without the need to discard and recreate it.
+                 * However if a `Channel` was used directly, it should have been seek to the channel
+                 * beginning first. This seek should be done by above call to `wrapperFor.reset()`,
+                 * which should cause the block below (with a call to `rewind()`) to be executed.
                  */
-                final ChannelDataInput input = (ChannelDataInput) view;
-                input.buffer.limit(0);                                      // Must be after channel reset.
-                input.setStreamPosition(0);                                 // Must be after buffer.limit(0).
+                ((ChannelData) view).seek(0);
             } else if (view instanceof Channel) {
                 /*
                  * Searches for a ChannelDataInput wrapping the channel, because it contains the original position
@@ -533,10 +531,10 @@ public class StorageConnector implements Serializable {
                 String name = null;
                 if (wrappedBy != null) {
                     for (Coupled c : wrappedBy) {
-                        if (c.view instanceof ChannelDataInput) {
-                            final ChannelDataInput in = ((ChannelDataInput) c.view);
-                            if (view instanceof SeekableByteChannel) {
-                                ((SeekableByteChannel) view).position(in.channelOffset);
+                        if (c.view instanceof ChannelData) {
+                            final var in = (ChannelData) c.view;
+                            assert in.channel() == view : c;
+                            if (in.rewind()) {
                                 return true;
                             }
                             name = in.filename;                                     // For the error message.
@@ -1017,13 +1015,12 @@ public class StorageConnector implements Serializable {
      * This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.
      *
-     * @param  asImageInputStream  whether the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
      * @return input channel, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
      * @throws IOException if an error occurred while opening a channel for the input.
      *
      * @see #createChannelDataOutput()
      */
-    private ChannelDataInput createChannelDataInput(final boolean asImageInputStream) throws IOException, DataStoreException {
+    private ChannelDataInput createChannelDataInput() throws IOException, DataStoreException {
         /*
          * Before to try to wrap an InputStream, mark its position so we can rewind if the user asks for
          * the InputStream directly. We need to reset because ChannelDataInput may have read some bytes.
@@ -1065,12 +1062,7 @@ public class StorageConnector implements Serializable {
         final ReadableByteChannel channel = factory.readable(name, null);
         addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
         final ByteBuffer buffer = getChannelBuffer(factory);
-        final ChannelDataInput asDataInput;
-        if (asImageInputStream) {
-            asDataInput = new ChannelImageInputStream(name, channel, buffer, false);
-        } else {
-            asDataInput = new ChannelDataInput(name, channel, buffer, false);
-        }
+        final ChannelDataInput asDataInput = new ChannelDataInput(name, channel, buffer, false);
         addView(ChannelDataInput.class, asDataInput, ReadableByteChannel.class, CASCADE_ON_RESET);
         /*
          * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore
@@ -1107,20 +1099,15 @@ public class StorageConnector implements Serializable {
         if (reset(c)) {
             in = (ChannelDataInput) c.view;
         } else {
-            in = createChannelDataInput(true);                      // May be null.
+            in = createChannelDataInput();          // May be null. This method should not have been invoked before.
         }
         final DataInput asDataInput;
         if (in != null) {
-            c = getView(ChannelDataInput.class);                    // May have been added by createChannelDataInput(…).
-            if (in instanceof DataInput) {
-                asDataInput = (DataInput) in;
-            } else {
-                asDataInput = new ChannelImageInputStream(in);      // Upgrade existing instance.
-                c.view = asDataInput;
-            }
-            views.put(DataInput.class, c);                          // Share the same Coupled instance.
+            asDataInput = in;
+            c = getView(ChannelDataInput.class);    // Refresh because may have been added by createChannelDataInput().
+            views.put(DataInput.class, c);          // Share the same `Coupled` instance.
         } else if (wasProbingAbsentFile()) {
-            return null;                                            // Do not cache, for allowing file creation later.
+            return null;                            // Do not cache, for allowing file creation later.
         } else {
             reset();
             try {
@@ -1195,8 +1182,8 @@ public class StorageConnector implements Serializable {
             /*
              * If no ChannelDataInput has been created by the above code, get the input as an ImageInputStream and
              * read an arbitrary number of bytes. Read only a small amount of bytes because, at the contrary of the
-             * buffer created in `createChannelDataInput(boolean)`, the buffer created here is unlikely to be used
-             * for the reading process after the recognition of the file format.
+             * buffer created in `createChannelDataInput()`, the buffer created here is unlikely to be used for the
+             * reading process after the recognition of the file format.
              */
             final ImageInputStream in = getStorageAs(ImageInputStream.class);
             if (in != null) {
@@ -1271,31 +1258,46 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Creates an {@link ImageInputStream} from the {@link DataInput} if possible. This method simply
-     * casts {@code DataInput} if such cast is allowed. Since {@link #createDataInput()} instantiates
-     * {@link ChannelImageInputStream}, this cast is usually possible.
+     * Creates an {@link ImageInputStream} from the {@link DataInput} if possible. This method casts
+     * {@code DataInput} if such cast is allowed, or upgrades {@link ChannelDataInput} implementation.
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
      * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
      */
-    private ImageInputStream createImageInputStream() throws DataStoreException {
-        final Class<DataInput> source = DataInput.class;
-        final DataInput input = getStorageAs(source);
+    private ImageInputStream createImageInputStream() throws IOException, DataStoreException {
+        final Coupled c;
+        final ImageInputStream asDataInput;
+        DataInput input = getStorageAs(DataInput.class);
         if (input instanceof ImageInputStream) {
-            views.put(ImageInputStream.class, views.get(source));               // Share the same Coupled instance.
-            return (ImageInputStream) input;
-        } else if (!wasProbingAbsentFile()) {
-            /*
-             * We do not invoke `ImageIO.createImageInputStream(Object)` because we do not know
-             * how the stream will use the `storage` object. It may read in advance some bytes,
-             * which can invalidate the storage for use outside the `ImageInputStream`. Instead
-             * creating image input/output streams is left to caller's responsibility.
-             */
-            addView(ImageInputStream.class, null);                              // Remember that there is no view.
+            asDataInput = (ImageInputStream) input;
+            c = views.get(DataInput.class);
+        } else {
+            input = getStorageAs(ChannelDataInput.class);
+            if (input != null)  {
+                c = getView(ChannelDataInput.class);
+                if (input instanceof ImageInputStream) {
+                    asDataInput = (ImageInputStream) input;
+                } else {
+                    asDataInput = new ChannelImageInputStream((ChannelDataInput) input);
+                    c.view = asDataInput;   // Upgrade existing instance for all views.
+                }
+            } else {
+                if (!wasProbingAbsentFile()) {
+                    /*
+                     * We do not invoke `ImageIO.createImageInputStream(Object)` because we do not know
+                     * how the stream will use the `storage` object. It may read in advance some bytes,
+                     * which can invalidate the storage for use outside the `ImageInputStream`. Instead
+                     * creating image input/output streams is left to caller's responsibility.
+                     */
+                    addView(ImageInputStream.class, null);          // Remember that there is no view.
+                }
+                return null;
+            }
         }
-        return null;
+        views.put(ImageInputStream.class, c);       // Share the same `Coupled` instance.
+        return asDataInput;
     }
 
     /**
@@ -1310,18 +1312,19 @@ public class StorageConnector implements Serializable {
      * @see #createOutputStream()
      */
     private InputStream createInputStream() throws IOException, DataStoreException {
-        final Class<DataInput> source = DataInput.class;
-        final DataInput input = getStorageAs(source);
-        if (input instanceof InputStream) {
-            views.put(InputStream.class, views.get(source));                    // Share the same Coupled instance.
-            return (InputStream) input;
-        } else if (input instanceof ImageInputStream) {
+        final Class<ImageInputStream> source = ImageInputStream.class;
+        final ImageInputStream input = getStorageAs(source);
+        if (input != null) {
+            if (input instanceof InputStream) {
+                views.put(InputStream.class, views.get(source));        // Share the same `Coupled` instance.
+                return (InputStream) input;
+            }
             /*
              * Wrap the ImageInputStream as an ordinary InputStream. We avoid setting CASCADE_ON_RESET (unless
              * reset() needs to propagate further than ImageInputStream) because changes in InputStreamAdapter
              * position are immediately reflected by corresponding changes in ImageInputStream position.
              */
-            final InputStream in = new InputStreamAdapter((ImageInputStream) input);
+            final InputStream in = new InputStreamAdapter(input);
             addView(InputStream.class, in, source, (byte) (getView(source).cascade & CASCADE_ON_RESET));
             return in;
         } else if (!wasProbingAbsentFile()) {
@@ -1418,7 +1421,7 @@ public class StorageConnector implements Serializable {
      * @return output channel, or {@code null} if none.
      * @throws IOException if an error occurred while opening a channel for the output.
      *
-     * @see #createChannelDataInput(boolean)
+     * @see #createChannelDataInput()
      */
     private ChannelDataOutput createChannelDataOutput() throws IOException, DataStoreException {
         /*
@@ -1470,18 +1473,13 @@ public class StorageConnector implements Serializable {
         if (reset(c)) {
             out = (ChannelDataOutput) c.view;
         } else {
-            out = createChannelDataOutput();                        // May be null.
+            out = createChannelDataOutput();        // May be null. This method should not have been invoked before.
         }
         final DataOutput asDataOutput;
         if (out != null) {
-            c = getView(ChannelDataOutput.class);                   // May have been added by createChannelDataOutput(…).
-            if (out instanceof DataOutput) {
-                asDataOutput = (DataOutput) out;
-            } else {
-                asDataOutput = new ChannelImageOutputStream(out);   // Upgrade existing instance.
-                c.view = asDataOutput;
-            }
-            views.put(DataOutput.class, c);                         // Share the same Coupled instance.
+            asDataOutput = out;
+            c = getView(ChannelDataOutput.class);   // Refresh because may have been added by createChannelDataInput().
+            views.put(DataOutput.class, c);         // Share the same `Coupled` instance.
         } else {
             reset();
             try {
@@ -1517,7 +1515,7 @@ public class StorageConnector implements Serializable {
         final Class<DataOutput> target = DataOutput.class;
         final DataOutput output = getStorageAs(target);
         if (output instanceof OutputStream) {
-            views.put(OutputStream.class, views.get(target));                   // Share the same Coupled instance.
+            views.put(OutputStream.class, views.get(target));                   // Share the same `Coupled` instance.
             return (OutputStream) output;
         } else {
             addView(OutputStream.class, null);                                  // Remember that there is no view.

@@ -41,7 +41,7 @@ import org.apache.sis.coverage.grid.j2d.WritableTiledImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Numerics;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -180,7 +180,19 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     }
 
     /**
-     * Returns a gray scale color model if the data type is byte, or {@code null} otherwise.
+     * Sets the color model. This method can be invoked at most once.
+     *
+     * @param  cm  the color model to use.
+     */
+    public synchronized void setColorModel(final ColorModel cm) {
+        assertNull(colorModel, "Already initialized.");
+        assertTrue(cm.isCompatibleSampleModel(sampleModel));
+        colorModel = cm;
+    }
+
+    /**
+     * Returns the color model.
+     * The default value is a gray scale color model if the data type is byte, or {@code null} otherwise.
      * More color models may be supported in future versions if there is a need for them.
      */
     @Override
@@ -267,6 +279,14 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
         }
         tile(StrictMath.floorDiv(ox, tileWidth)  + minTileX,
              StrictMath.floorDiv(oy, tileHeight) + minTileY, true).setSample(x, y, b, value);
+    }
+
+    /**
+     * Initializes the sample values of all all bands in all tiles to testing values.
+     * The sample value pattern is described by {@link #initializeAllTiles(int[], int)}.
+     */
+    public void initializeAllTiles() {
+        initializeAllTiles(ArraysExt.range(0, sampleModel.getNumBands()), 0);
     }
 
     /**
@@ -369,7 +389,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      */
     @Override
     public synchronized Raster getTile(final int tileX, final int tileY) {
-        assertFalse("isTileAcquired", isTileAcquired);              // See javadoc.
+        assertFalse(isTileAcquired, "isTileAcquired");              // See javadoc.
         return tile(tileX, tileY, false);
     }
 
@@ -378,7 +398,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      */
     @Override
     public synchronized WritableRaster getWritableTile(final int tileX, final int tileY) {
-        assertFalse("isTileAcquired", isTileAcquired);
+        assertFalse(isTileAcquired, "isTileAcquired");
         final WritableRaster raster = tile(tileX, tileY, true);
         isTileAcquired = true;
         acquiredTileX  = tileX;
@@ -420,9 +440,9 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      */
     @Override
     public synchronized void releaseWritableTile(final int tileX, final int tileY) {
-        assertTrue("isTileAcquired", isTileAcquired);
-        assertEquals("tileX", acquiredTileX, tileX);
-        assertEquals("tileY", acquiredTileY, tileY);
+        assertTrue(isTileAcquired, "isTileAcquired");
+        assertEquals(acquiredTileX, tileX, "tileX");
+        assertEquals(acquiredTileY, tileY, "tileY");
         isTileAcquired = false;
     }
 
@@ -476,8 +496,8 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
         final int minY = r.getMinY();
         final int tx = ImageUtilities.pixelToTileX(this, minX);
         final int ty = ImageUtilities.pixelToTileY(this, minY);
-        assertEquals("Unsupported operation.", tx, ImageUtilities.pixelToTileX(this, minX + r.getWidth()  - 1));
-        assertEquals("Unsupported operation.", ty, ImageUtilities.pixelToTileX(this, minY + r.getHeight() - 1));
+        assertEquals(tx, ImageUtilities.pixelToTileX(this, minX + r.getWidth()  - 1), "Unsupported operation.");
+        assertEquals(ty, ImageUtilities.pixelToTileX(this, minY + r.getHeight() - 1), "Unsupported operation.");
         tile(tx, ty, true).setRect(r);
     }
 

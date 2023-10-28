@@ -99,7 +99,7 @@ public final class StoreProvider extends StaxDataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        if (isWritable(connector)) {
+        if (isWritable(connector, false)) {
             return new WritableStore(this, connector);
         } else {
             return new Store(this, connector);
