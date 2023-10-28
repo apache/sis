@@ -24,14 +24,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
-import org.apache.sis.storage.base.MemoryGridResource;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -39,9 +37,14 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.WritableAggregate;
-import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.storage.base.MemoryGridResource;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
 import org.junit.Test;
-import org.opengis.metadata.spatial.DimensionNameType;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
