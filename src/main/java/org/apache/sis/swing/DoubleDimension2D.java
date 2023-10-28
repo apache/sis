@@ -19,7 +19,7 @@ package org.apache.sis.swing;
 import java.io.Serializable;
 import java.awt.geom.Dimension2D;
 import static java.lang.Double.doubleToLongBits;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.internal.Numerics;
 
 
 /**

@@ -74,7 +74,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.swing.internal.Resources;
@@ -1353,7 +1352,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
          *       because some classes use it for updating scrollbars.
          */
         if (change == null) {
-            throw new NullArgumentException();
+            throw new NullPointerException();
         }
         ZoomChangeEvent event = null;
         final Object[] listeners = listenerList.getListenerList();
