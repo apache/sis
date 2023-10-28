@@ -61,18 +61,13 @@ import static java.lang.Character.*;
  * {@code isSpaceChar(…)} while most of the rest of the SIS library, including this
  * {@code CharSequences} class, consistently uses {@code isWhitespace(…)}.
  *
- * <p>Note that the {@link String#trim()} method doesn't follow any of those policies and should
- * generally be avoided. That {@code trim()} method removes every ISO control characters without
- * distinction about whether the characters are space or not, and ignore all Unicode spaces.
- * The {@link #trimWhitespaces(String)} method defined in this class can be used as an alternative.</p>
- *
  * <h2>Handling of null values</h2>
  * Most methods in this class accept a {@code null} {@code CharSequence} argument. In such cases
  * the method return value is either a {@code null} {@code CharSequence}, an empty array, or a
  * {@code 0} or {@code false} primitive type calculated as if the input was an empty string.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.5
  *
  * @see StringBuilders
  *
@@ -946,37 +941,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
-     * Returns a string with leading and trailing whitespace characters omitted.
-     * This method is similar in purpose to {@link String#trim()}, except that the latter considers
-     * every {@linkplain Character#isISOControl(int) ISO control codes} below 32 to be a whitespace.
-     * That {@code String.trim()} behavior has the side effect of removing the heading of ANSI escape
-     * sequences (a.k.a. X3.64), and to ignore Unicode spaces. This {@code trimWhitespaces(…)} method
-     * is built on the more accurate {@link Character#isWhitespace(int)} method instead.
-     *
-     * <p>This method performs the same work than {@link #trimWhitespaces(CharSequence)},
-     * but is overloaded for the {@code String} type because of its frequent use.</p>
-     *
-     * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
-     * @return a string with leading and trailing whitespaces removed, or {@code null} is the given
-     *         text was null.
-     *
-     * @deprecated Replaced by {@link String#strip()} in JDK 11.
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public static String trimWhitespaces(String text) {
-        if (text != null) {
-            final int length = text.length();
-            final int lower = skipLeadingWhitespaces(text, 0, length);
-            text = text.substring(lower, skipTrailingWhitespaces(text, lower, length));
-        }
-        return text;
-    }
-
-    /**
      * Returns a text with leading and trailing whitespace characters omitted.
      * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * <p>This method is the generic version of {@link #trimWhitespaces(String)}.</p>
+     * <p>This method is the generalized version of {@link String#strip()}.</p>
      *
      * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
      * @return a characters sequence with leading and trailing whitespaces removed,

@@ -353,7 +353,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @deprecated The dimensions attributes have been removed in ISO 19111:2019 revision.
      */
     @Override
-    @Deprecated(since = "1.4", forRemoval = true)
+    @Deprecated(since = "1.4")
     public OperationMethod createOperationMethod(final Map<String,?> properties,
             final Integer sourceDimensions, final Integer targetDimensions,
             ParameterDescriptorGroup parameters) throws FactoryException

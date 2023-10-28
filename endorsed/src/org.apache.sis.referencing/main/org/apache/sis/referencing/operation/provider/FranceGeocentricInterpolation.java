@@ -86,7 +86,7 @@ import static org.apache.sis.util.internal.Constants.DIM;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @XmlTransient
-public class FranceGeocentricInterpolation extends GeodeticOperation {
+public final class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -258,13 +258,6 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      */
     FranceGeocentricInterpolation(int indexOfDim) {
         super(Transformation.class, PARAMETERS, indexOfDim,
-              EllipsoidalCS.class, true,
-              EllipsoidalCS.class, true);
-    }
-
-    @Deprecated(forRemoval = true)
-    FranceGeocentricInterpolation(ParameterDescriptorGroup parameters, int indexOfDim) {
-        super(Transformation.class, parameters, indexOfDim,
               EllipsoidalCS.class, true,
               EllipsoidalCS.class, true);
     }

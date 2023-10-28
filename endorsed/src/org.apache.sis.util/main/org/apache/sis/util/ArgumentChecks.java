@@ -237,34 +237,6 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Ensures that the given {@code values} array is non-null and non-empty. This method can also ensures that all values
-     * are between the given bounds (inclusive) and are distinct. The distinct values requirement is useful for validating
-     * arrays of spatiotemporal dimension indices, where dimensions cannot be repeated.
-     *
-     * <p>Note that a successful call to {@code ensureNonEmpty(name, values, 0, max, true)} implies
-     * 1 ≤ {@code values.length} ≤ {@code max}.</p>
-     *
-     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  values    integer values to validate.
-     * @param  min       the minimal allowed value (inclusive), or {@link Integer#MIN_VALUE} if none.
-     * @param  max       the maximal allowed value (inclusive), or {@link Integer#MAX_VALUE} if none.
-     * @param  distinct  {@code true} if each value must be unique.
-     * @throws NullPointerException if {@code values} is null.
-     * @throws IllegalArgumentException if {@code values} is empty, contains a value lower than {@code min},
-     *         contains a value greater than {@code max}, or contains duplicated values while {@code distinct} is {@code true}.
-     *
-     * @since 1.0
-     *
-     * @deprecated Replaced by {@link #ensureNonEmptyBounded(String, boolean, int, int, int[])}.
-     */
-    @Deprecated(since = "1.3", forRemoval = true)
-    public static void ensureNonEmpty(final String name, final int[] values, final int min, final int max, final boolean distinct)
-            throws IllegalArgumentException
-    {
-        ensureNonEmptyBounded(name, distinct, min, max, values);
-    }
-
-    /**
      * Ensures that the given {@code values} array contains at least one element and that all elements are within bounds.
      * The minimum and maximum values are inclusive. Optionaly, this method can also ensure that all values are distinct.
      *
@@ -318,24 +290,6 @@ public final class ArgumentChecks extends Static {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedNumber_1, index));
             }
         }
-    }
-
-    /**
-     * Ensures that a method receiving a variable number of arguments got the expected count.
-     * If {@code actual} = {@code expected}, then this method does nothing.
-     * Otherwise an exception saying "Too few" or "Too many arguments" is thrown.
-     *
-     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  expected  expected number of arguments.
-     * @param  actual    actual number of arguments.
-     *
-     * @since 1.0
-     *
-     * @deprecated Renamed {@link #ensureCountBetween(String, boolean, int, int, int)}.
-     */
-    @Deprecated(since = "1.3", forRemoval = true)
-    public static void ensureExpectedCount(final String name, final int expected, final int actual) {
-        ensureCountBetween(name, false, expected, expected, actual);
     }
 
     /**
@@ -691,26 +645,6 @@ public final class ArgumentChecks extends Static {
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
-    }
-
-    /**
-     * Ensures that the given collection size or array length is between the given bounds, inclusive.
-     * This method performs the same check than {@link #ensureBetween(String, int, int, int)
-     * ensureBetween(…)}, but the error message is different in case of failure.
-     *
-     * @param  name  the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  min   the minimal size (inclusive), or 0 if none.
-     * @param  max   the maximal size (inclusive), or {@link Integer#MAX_VALUE} if none.
-     * @param  size  the user collection size or array length to be checked.
-     * @throws IllegalArgumentException if the given value is not in the given range.
-     *
-     * @deprecated Renamed {@link #ensureCountBetween(String, boolean, int, int, int)}.
-     */
-    @Deprecated(since = "1.3", forRemoval = true)
-    public static void ensureSizeBetween(final String name, final int min, final int max, final int size)
-            throws IllegalArgumentException
-    {
-        ensureCountBetween(name, true, min, max, size);
     }
 
     /**

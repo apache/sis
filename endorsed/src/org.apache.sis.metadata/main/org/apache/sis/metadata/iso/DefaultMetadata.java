@@ -141,7 +141,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.storage.Resource#getMetadata()
  *
@@ -584,41 +584,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Returns the language(s) used for documenting metadata.
-     * The first element in iteration order is the default language.
-     * All other elements, if any, are alternate language(s) used within the resource.
-     *
-     * @return language(s) used for documenting metadata.
-     *
-     * @since 0.5
-     *
-     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
-     */
-    @Deprecated(since="1.0", forRemoval=true)
-    @Dependencies("getLocalesAndCharsets")
-    public Collection<Locale> getLanguages() {
-        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
-        return FilterByVersion.LEGACY_METADATA.accept() ? LocaleAndCharset.getLanguages(getLocalesAndCharsets()) : null;
-    }
-
-    /**
-     * Sets the language(s) used for documenting metadata.
-     * The first element in iteration order shall be the default language.
-     * All other elements, if any, are alternate language(s) used within the resource.
-     *
-     * @param  newValues  the new languages.
-     *
-     * @since 0.5
-     *
-     * @deprecated Replaced by putting keys in {@link #getLocalesAndCharsets()} map.
-     */
-    @Deprecated(since="1.0", forRemoval=true)
-    public void setLanguages(final Collection<Locale> newValues) {
-        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
-        setLocalesAndCharsets(LocaleAndCharset.setLanguages(getLocalesAndCharsets(), newValues));
-    }
-
-    /**
      * Returns the default language used for documenting metadata.
      *
      * @return language used for documenting metadata, or {@code null}.
@@ -630,11 +595,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
     public Locale getLanguage() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
-        /*
-         * No warning if the collection contains more than one locale, because
-         * this is allowed by the "getLanguage() + getLocales()" contract.
-         */
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return CollectionsExt.first(LocaleAndCharset.getLanguages(getLocalesAndCharsets()));
+            /*
+             * No warning if the collection contains more than one locale, because
+             * this is allowed by the "getLanguage() + getLocales()" contract.
+             */
+        }
+        return null;
     }
 
     /**
@@ -704,31 +672,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Returns the character coding standard used for the metadata set.
      *
      * @return character coding standards used for the metadata.
-     *
-     * @since 0.5
-     *
-     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.values()</code>.
      */
-    @Deprecated(since="1.0", forRemoval=true)
-    @Dependencies("getLocalesAndCharsets")
-    public Collection<Charset> getCharacterSets() {
-        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
-        return LocaleAndCharset.getCharacterSets(getLocalesAndCharsets());
-    }
-
-    /**
-     * Sets the character coding standard used for the metadata set.
-     *
-     * @param  newValues  the new character coding standards.
-     *
-     * @since 0.5
-     *
-     * @deprecated Replaced by putting values in {@link #getLocalesAndCharsets()} map.
-     */
-    @Deprecated(since="1.0", forRemoval=true)
-    public void setCharacterSets(final Collection<? extends Charset> newValues) {
-        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
-        setLocalesAndCharsets(LocaleAndCharset.setCharacterSets(getLocalesAndCharsets(), newValues));
+    private Charset getCharacterSets() {
+        return LegacyPropertyAdapter.getSingleton(
+                (LocaleAndCharset.getCharacterSets(getLocalesAndCharsets())),
+                Charset.class, null, DefaultMetadata.class, "getCharacterSet");
     }
 
     /**
@@ -743,8 +691,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Dependencies("getLocalesAndCharsets")
     // @XmlElement at the end of this class.
     public CharacterSet getCharacterSet() {
-        return CharacterSet.fromCharset(LegacyPropertyAdapter.getSingleton(getCharacterSets(),
-                Charset.class, null, DefaultMetadata.class, "getCharacterSet"));
+        return CharacterSet.fromCharset(getCharacterSets());
     }
 
     /**
@@ -756,7 +703,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated(since="1.0")
     public void setCharacterSet(final CharacterSet newValue) {
-        setCharacterSets(CollectionsExt.singletonOrEmpty((newValue != null) ? newValue.toCharset() : null));
+        setCharset((newValue != null) ? newValue.toCharset() : null);
     }
 
     /**
@@ -1692,8 +1639,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
     private Charset getCharset() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
-            return LegacyPropertyAdapter.getSingleton(getCharacterSets(),
-                    Charset.class, null, DefaultMetadata.class, "getCharacterSet");
+            return getCharacterSets();
         }
         return null;
     }
@@ -1702,7 +1648,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Sets the character coding standard for the metadata set (used in legacy ISO 19157 format).
      */
     private void setCharset(final Charset newValue) {
-        setCharacterSets(CollectionsExt.singletonOrEmpty(newValue));
+        setLocalesAndCharsets(LocaleAndCharset.setCharacterSets(getLocalesAndCharsets(), CollectionsExt.singletonOrEmpty(newValue)));
     }
 
     /**

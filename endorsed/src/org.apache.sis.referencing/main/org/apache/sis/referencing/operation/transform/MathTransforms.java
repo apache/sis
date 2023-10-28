@@ -222,24 +222,6 @@ public final class MathTransforms extends Static {
 
     /**
      * Returns a linear (usually affine) transform which approximates the given transform in the vicinity of the given position.
-     *
-     * @param  transform  the transform to approximate by an affine transform.
-     * @param  position   position in source CRS around which to get the an affine transform approximation.
-     * @return a transform approximating the given transform around the given position.
-     * @throws TransformException if an error occurred while transforming the given position
-     *         or computing the derivative at that position.
-     *
-     * @since 1.0
-     *
-     * @deprecated This method duplicates {@link #tangent(MathTransform, DirectPosition)}.
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public static LinearTransform linear(MathTransform transform, DirectPosition position) throws TransformException {
-        return tangent(transform, position);
-    }
-
-    /**
-     * Returns a linear (usually affine) transform which approximates the given transform in the vicinity of the given position.
      * If the given transform is already an instance of {@link LinearTransform}, then it is returned as-is.
      * Otherwise an approximation for the given position is created using the
      * {@linkplain MathTransform#derivative(DirectPosition) transform derivative} at that given position.

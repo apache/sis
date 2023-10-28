@@ -30,7 +30,7 @@
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 module org.apache.sis.util {
