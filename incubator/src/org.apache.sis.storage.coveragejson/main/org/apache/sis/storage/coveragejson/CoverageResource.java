@@ -36,6 +36,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.measure.Unit;
+import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.BufferedGridCoverage;
 import org.apache.sis.coverage.grid.DisjointExtentException;
@@ -44,6 +51,9 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.image.PixelIterator;
+import org.apache.sis.storage.AbstractGridCoverageResource;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.coveragejson.binding.Axe;
 import org.apache.sis.storage.coveragejson.binding.Axes;
 import org.apache.sis.storage.coveragejson.binding.Category;
@@ -71,17 +81,8 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.storage.AbstractGridCoverageResource;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.NoSuchDataException;
-import org.opengis.metadata.spatial.DimensionNameType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransform1D;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.util.FactoryException;
 
+// Specific to the main branch:
 import org.apache.sis.image.SequenceType;
 
 

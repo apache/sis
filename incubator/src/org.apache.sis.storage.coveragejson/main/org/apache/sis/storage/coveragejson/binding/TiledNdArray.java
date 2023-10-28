@@ -16,10 +16,10 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.Arrays;
 import java.util.Objects;
+import jakarta.json.bind.annotation.JsonbNillable;
+import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**

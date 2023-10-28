@@ -25,7 +25,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.collection.CodeListSet;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -41,7 +40,9 @@ import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.Georectified;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
+import org.apache.sis.util.collection.CodeListSet;
 
+// Specific to the main branch:
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 

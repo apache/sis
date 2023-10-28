@@ -16,15 +16,15 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Objects;
 import jakarta.json.bind.JsonbException;
 import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import jakarta.json.bind.serializer.DeserializationContext;
 import jakarta.json.bind.serializer.JsonbDeserializer;
 import jakarta.json.stream.JsonParser;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Objects;
 
 
 /**

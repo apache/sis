@@ -16,10 +16,6 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import jakarta.json.JsonObject;
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,11 +27,18 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import jakarta.json.JsonObject;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
 import org.eclipse.yasson.YassonConfig;
+
+// Test dependencies
 import org.junit.AfterClass;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**

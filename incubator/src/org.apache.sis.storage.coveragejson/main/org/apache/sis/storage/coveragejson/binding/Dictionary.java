@@ -16,11 +16,11 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.annotation.JsonbTransient;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 
 /**
