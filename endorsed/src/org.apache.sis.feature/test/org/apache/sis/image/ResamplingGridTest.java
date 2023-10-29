@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Shapes2D;
-import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.util.internal.Numerics;
@@ -34,8 +33,9 @@ import org.apache.sis.math.StatisticsFormat;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

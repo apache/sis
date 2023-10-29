@@ -23,7 +23,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
 
@@ -31,6 +30,7 @@ import org.apache.sis.measure.Units;
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static java.lang.StrictMath.*;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;

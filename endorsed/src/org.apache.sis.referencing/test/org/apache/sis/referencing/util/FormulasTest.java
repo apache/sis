@@ -22,11 +22,11 @@ import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
-import org.apache.sis.referencing.datum.HardCodedDatum;
 
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 
 import static org.junit.Assert.*;
 

@@ -39,6 +39,8 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.extent.Extents;
+
+// Test dependencies
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;

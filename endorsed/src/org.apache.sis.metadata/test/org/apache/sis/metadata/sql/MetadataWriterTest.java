@@ -24,14 +24,14 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 import static org.junit.Assert.*;
 

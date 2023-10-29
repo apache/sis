@@ -32,10 +32,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
-import org.apache.sis.referencing.cs.HardCodedCS;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -44,10 +41,13 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.parameter.DefaultParameterDescriptorTest;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.parameter.DefaultParameterDescriptorTest;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;

@@ -22,7 +22,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.xml.Namespaces;
@@ -30,6 +29,7 @@ import org.apache.sis.xml.Namespaces;
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.xml.test.TestCase;
+import org.apache.sis.referencing.cs.HardCodedCS;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

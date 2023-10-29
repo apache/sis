@@ -25,14 +25,14 @@ import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 

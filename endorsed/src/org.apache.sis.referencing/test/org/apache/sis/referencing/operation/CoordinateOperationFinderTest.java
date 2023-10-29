@@ -47,12 +47,10 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
-import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.measure.Units;
 
@@ -63,6 +61,8 @@ import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;

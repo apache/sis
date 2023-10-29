@@ -44,16 +44,15 @@ import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.DataType;
 
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
-
 // Test dependencies
-import org.apache.sis.referencing.operation.HardCodedConversions;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.image.TiledImageMock;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.image.TiledImageMock;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 

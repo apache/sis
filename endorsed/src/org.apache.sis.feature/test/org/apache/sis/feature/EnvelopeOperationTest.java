@@ -22,7 +22,6 @@ import com.esri.core.geometry.Geometry;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -33,6 +32,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

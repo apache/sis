@@ -36,14 +36,11 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -51,10 +48,13 @@ import org.apache.sis.referencing.operation.transform.TransformSeparator;
 
 // Test dependencies
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.image.TiledImageMock;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 
 import static org.opengis.referencing.datum.PixelInCell.CELL_CENTER;
 import static org.junit.Assert.*;
