@@ -20,8 +20,6 @@
  *
  * @author  Travis L. Pinney
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 module org.apache.sis.storage.shapefile {
     requires java.sql;

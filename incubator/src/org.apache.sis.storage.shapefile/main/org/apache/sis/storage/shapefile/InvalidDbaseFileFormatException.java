@@ -10,8 +10,6 @@ import org.apache.sis.storage.DataStoreException;
  * not yet target for any Apache SIS release at this time.</div>
  *
  * @author Marc LE BIHAN
- * @version 0.6
- * @since   0.6
  */
 public class InvalidDbaseFileFormatException extends DataStoreException {
     /** Serial ID. */

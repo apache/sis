@@ -26,8 +26,6 @@ import org.apache.sis.storage.DataStoreException;
  * not yet target for any Apache SIS release at this time.</div>
  *
  * @author  Marc Le Bihan
- * @version 0.6
- * @since   0.6
  */
 public class DbaseFileNotFoundException extends DataStoreException {
     /** Serial UID. */

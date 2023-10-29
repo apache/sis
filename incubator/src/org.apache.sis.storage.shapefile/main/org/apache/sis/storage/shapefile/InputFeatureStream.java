@@ -53,8 +53,6 @@ import org.opengis.feature.Feature;
  * not yet target for any Apache SIS release at this time.</div>
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
  */
 public class InputFeatureStream extends InputStream {
     /** Logger. */
