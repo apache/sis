@@ -132,7 +132,7 @@ public final class ObliqueMercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Hotine Oblique Mercator (variant B)"</cite> (EPSG:9815) projection method.
+     * Tests the <q>Hotine Oblique Mercator (variant B)</q> (EPSG:9815) projection method.
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.

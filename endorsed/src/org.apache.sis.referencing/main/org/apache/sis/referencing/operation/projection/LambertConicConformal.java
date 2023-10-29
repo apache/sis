@@ -84,19 +84,19 @@ public class LambertConicConformal extends ConformalProjection {
     private enum Variant implements ProjectionVariant {
         // Declaration order matter. Patterns are matched in that order.
 
-        /** The <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection. */
+        /** The <q>Lambert Conic Conformal (2SP Belgium)</q> projection. */
         BELGIUM(".*\\bBelgium\\b.*", LambertConformalBelgium.IDENTIFIER, false),
 
-        /** The <cite>"Lambert Conic Conformal (2SP Michigan)"</cite> projection. */
+        /** The <q>Lambert Conic Conformal (2SP Michigan)</q> projection. */
         MICHIGAN(".*\\bMichigan\\b.*", LambertConformalMichigan.IDENTIFIER, false),
 
-        /** The <cite>"Lambert Conic Conformal (West Orientated)"</cite> projection. */
+        /** The <q>Lambert Conic Conformal (West Orientated)</q> projection. */
         WEST(".*\\bWest\\b.*", LambertConformalWest.IDENTIFIER, true),
 
-        /** The <cite>"Lambert Conic Conformal (1SP)"</cite> projection. */
+        /** The <q>Lambert Conic Conformal (1SP)</q> projection. */
         ONE_PARALLEL(".*\\b1SP\\b.*", LambertConformal1SP.IDENTIFIER, true),
 
-        /** The  <cite>"Lambert Conic Conformal (2SP)"</cite> projection. */
+        /** The  <q>Lambert Conic Conformal (2SP)</q> projection. */
         TWO_PARALLELS(".*\\b2SP\\b.*", LambertConformal2SP.IDENTIFIER, false);
 
         /** Name pattern for this variant.    */ private final Pattern operationName;
@@ -166,11 +166,11 @@ public class LambertConicConformal extends ConformalProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Lambert Conic Conformal (1SP)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (West Orientated)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP Belgium)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP Michigan)"</cite>.</li>
+     *   <li><q>Lambert Conic Conformal (1SP)</q>.</li>
+     *   <li><q>Lambert Conic Conformal (West Orientated)</q>.</li>
+     *   <li><q>Lambert Conic Conformal (2SP)</q>.</li>
+     *   <li><q>Lambert Conic Conformal (2SP Belgium)</q>.</li>
+     *   <li><q>Lambert Conic Conformal (2SP Michigan)</q>.</li>
      * </ul>
      *
      * @param method      description of the projection parameters.

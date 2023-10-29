@@ -158,7 +158,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
 
     /**
      * Creates a datum shift operation without using the provider. This method is equivalent to the
-     * <cite>"Geocentric translations (geog3D domain)"</cite> method (EPSG:1035), but the transform
+     * <q>Geocentric translations (geog3D domain)</q> method (EPSG:1035), but the transform
      * steps are created without the use of any {@link ParameterValueGroup}. This way to create the
      * datum shift is provided for better separation of aspects being tested.
      *
@@ -243,7 +243,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests <cite>"Geocentric translations (geocentric domain)"</cite> (EPSG:1031).
+     * Tests <q>Geocentric translations (geocentric domain)</q> (EPSG:1031).
      *
      * @throws FactoryException if an error occurred while creating the transform.
      * @throws TransformException if transformation of a point failed.
@@ -257,7 +257,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests <cite>"Geocentric translations (geog3D domain)"</cite> (EPSG:1035).
+     * Tests <q>Geocentric translations (geog3D domain)</q> (EPSG:1035).
      *
      * @throws FactoryException if an error occurred while creating the transform.
      * @throws TransformException if transformation of a point failed.

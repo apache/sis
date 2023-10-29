@@ -110,7 +110,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Transverse Mercator Zoned Grid System"</cite>.</li>
+     *   <li><q>Transverse Mercator Zoned Grid System</q>.</li>
      * </ul>
      *
      * Contrarily to other map projections in this package, there is no {@code createMapProjection(MathTransformFactory)}

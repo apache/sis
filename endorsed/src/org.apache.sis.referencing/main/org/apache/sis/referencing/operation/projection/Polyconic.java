@@ -104,7 +104,7 @@ public class Polyconic extends MeridianArcBased {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"American Polyconic"</cite>.</li>
+     *   <li><q>American Polyconic</q>.</li>
      * </ul>
      *
      * @param method      description of the projection parameters.

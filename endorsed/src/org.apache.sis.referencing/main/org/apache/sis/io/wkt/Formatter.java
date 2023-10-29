@@ -494,9 +494,9 @@ public class Formatter implements Localized {
      * This is not necessarily the authority who created the object to format.
      *
      * <h4>Example</h4>
-     * The EPSG name of the {@code EPSG:6326} datum is <cite>"World Geodetic System 1984"</cite>.
+     * The EPSG name of the {@code EPSG:6326} datum is <q>World Geodetic System 1984</q>.
      * However if the preferred authority is OGC, then the formatted datum name will rather look like
-     * <cite>"WGS84"</cite> (the exact string depends on the object aliases).
+     * <q>WGS84</q> (the exact string depends on the object aliases).
      *
      * @return the authority for projection and parameter names.
      *

@@ -171,7 +171,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         codes.setMaxWidth (120);            // Seems to be required for preventing `codes` to be as large as `names`.
         table.setPrefWidth(500);
         table.getColumns().setAll(codes, names);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         final Label clock = new Label("\u23F3");      // Unicode U+23F3: Hourglass With Flowing Sand.
         clock.setFont(Font.font(30));
         table.setPlaceholder(clock);

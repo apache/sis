@@ -41,7 +41,7 @@ import static java.lang.Math.toRadians;
 
 
 /**
- * The provider for the <cite>"Geocentric/topocentric conversions"</cite> (EPSG:9836).
+ * The provider for the <q>Geocentric/topocentric conversions</q> (EPSG:9836).
  * This operation is implemented using existing {@link MathTransform} implementations;
  * there is no need for a class specifically for this transform.
  *

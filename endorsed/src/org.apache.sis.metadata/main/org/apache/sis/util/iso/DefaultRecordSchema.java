@@ -72,13 +72,16 @@ import org.opengis.feature.AttributeType;
  * {@link java.io.Serializable} interface) returning a system-wide static constant for their schema.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultRecordType
  * @see DefaultRecord
  *
  * @since 0.5
+ *
+ * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of the ISO 19103 standard.
  */
+@Deprecated(since = "1.5", forRemoval = true)
 public class DefaultRecordSchema implements RecordSchema {
     /**
      * The factory to use for creating names.

@@ -137,11 +137,11 @@ public class ObliqueMercator extends ConformalProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Hotine Oblique Mercator (variant A)"</cite>.</li>
-     *   <li><cite>"Hotine Oblique Mercator (variant B)"</cite>.</li>
-     *   <li><cite>"Hotine Oblique Mercator two point center"</cite> (from ESRI).</li>
-     *   <li><cite>"Hotine Oblique Mercator two point natural origin"</cite> (from ESRI).</li>
-     *   <li><cite>"Rectified Skew Orthomorphic"</cite>.</li>
+     *   <li><q>Hotine Oblique Mercator (variant A)</q>.</li>
+     *   <li><q>Hotine Oblique Mercator (variant B)</q>.</li>
+     *   <li><q>Hotine Oblique Mercator two point center</q> (from ESRI).</li>
+     *   <li><q>Hotine Oblique Mercator two point natural origin</q> (from ESRI).</li>
+     *   <li><q>Rectified Skew Orthomorphic</q>.</li>
      * </ul>
      *
      * @param  method      description of the projection parameters.

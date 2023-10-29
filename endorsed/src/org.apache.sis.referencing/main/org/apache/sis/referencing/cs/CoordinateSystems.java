@@ -85,10 +85,10 @@ public final class CoordinateSystems extends Static {
      * Names are case-insensitive. They may be:
      *
      * <ul>
-     *   <li>Cardinal directions like <cite>"north"</cite> and <cite>"east"</cite>.</li>
-     *   <li>Inter-cardinal directions <cite>"north-east"</cite> and <cite>"south-south-east"</cite>,
+     *   <li>Cardinal directions like <q>north</q> and <q>east</q>.</li>
+     *   <li>Inter-cardinal directions <q>north-east</q> and <q>south-south-east</q>,
      *       using either {@code '-'}, {@code '_'} or spaces as separator between the cardinal points.</li>
-     *   <li>Directions from a pole like <cite>"South along 180 deg"</cite> and <cite>"South along 90° East"</cite>,
+     *   <li>Directions from a pole like <q>South along 180 deg</q> and <q>South along 90° East</q>,
      *       using either the {@code "deg"} or {@code "°"} symbol. Note that the meridian is not necessarily relative
      *       to Greenwich (see {@link #directionAlongMeridian directionAlongMeridian(…)} for more information).</li>
      * </ul>
@@ -136,7 +136,7 @@ public final class CoordinateSystems extends Static {
      *
      * <h4>Example</h4>
      * {@code directionAlongMeridian(AxisDirection.SOUTH, -90)} returns an axis direction for
-     * <cite>“South along 90°W”</cite>.
+     * <q>South along 90°W</q>.
      *
      * @param  baseDirection  the base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
      * @param  meridian       the meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
@@ -184,10 +184,10 @@ public final class CoordinateSystems extends Static {
      * <ul>
      *   <li>The angle from {@link AxisDirection#EAST EAST} to {@link AxisDirection#NORTH NORTH} is 90°</li>
      *   <li>The angle from {@link AxisDirection#SOUTH SOUTH} to {@link AxisDirection#WEST WEST} is -90°</li>
-     *   <li>The angle from <cite>"North along 90° East"</cite> to <cite>"North along 0°"</cite> is 90°.</li>
+     *   <li>The angle from <q>North along 90° East</q> to <q>North along 0°</q> is 90°.</li>
      * </ul>
      *
-     * In the case of directions like <cite>“South along 90°W”</cite>, the caller is responsible to make sure
+     * In the case of directions like <q>South along 90°W</q>, the caller is responsible to make sure
      * that the meridians are relative to the same prime meridian. This is the case if the axes are part of
      * the same {@code CoordinateSystem} instance.
      *

@@ -22,6 +22,7 @@ import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -31,16 +32,18 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
 import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.internal.Resources;
 
 
 /**
  * Transforms between two geographic CRS by performing geocentric translations interpolated from a grid file.
- * This transform is used mainly for <cite>"France geocentric interpolation"</cite> (ESPG:9655) datum shifts,
+ * This transform is used mainly for <q>France geocentric interpolation</q> (ESPG:9655) datum shifts,
  * but Apache SIS implementation allows the use for other regions.
  *
  * <h2>Algorithm</h2>
@@ -62,7 +65,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  *
  * <h3>Reference</h3>
  * IGN document {@code NTG_88.pdf},
- * <cite>"Grille de paramètres de transformation de coordonnées"</cite>
+ * <q>Grille de paramètres de transformation de coordonnées</q>
  * at <a href="http://www.ign.fr">http://www.ign.fr</a>.
  * Note however that the signs of (ΔX, ΔY, ΔZ) values expected by this class are the opposite of the
  * signs used in NTG_88 document. This is because NTG_88 grid defines shifts from target to source,
@@ -73,15 +76,9 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * because the {@code DatumShiftGrid} inputs are geographic coordinates even if the interpolated
  * grid values are in geocentric space.</p>
  *
- * <h2>Performance consideration</h2>
- * {@link InterpolatedMolodenskyTransform} performs the same calculation more efficiently at the cost of
- * a few centimetres error. Both classes are instantiated in the same way and expect the same inputs.
- *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see InterpolatedMolodenskyTransform
  *
  * @since 0.7
  */
@@ -93,7 +90,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
 
     /**
      * Parameter descriptor to use with the contextual parameters for the forward transformation.
-     * We do not use the <cite>"France geocentric interpolation"</cite> (ESPG:9655) descriptor
+     * We do not use the <q>France geocentric interpolation</q> (ESPG:9655) descriptor
      * because their "forward" transformation is our "inverse" transformation, and conversely.
      * The {@code DESCRIPTOR} defined here is non-standard, but allows this class to be used
      * for other geographic areas than France.
@@ -102,7 +99,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
 
     /**
      * Parameter descriptor to use with the contextual parameters for the inverse transformation.
-     * We do not use the <cite>"France geocentric interpolation"</cite> (ESPG:9655) descriptor
+     * We do not use the <q>France geocentric interpolation</q> (ESPG:9655) descriptor
      * because it is specific to a single country, has hard-coded parameters and uses a sign
      * convention for (ΔX,ΔY,ΔZ) translations different than the one used in this class.
      * The {@code INVERSE} descriptor defined here is non-standard, but allows this class
@@ -282,6 +279,27 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
             }
         }
         this.inverse = inverse;
+    }
+
+    /**
+     * Ensures that the {@link #grid} performs geocentric translations in the given units.
+     * This method is invoked by constructor for validation of given arguments.
+     *
+     * @param  grid  the grid to validate.
+     * @param  unit  the unit of semi-axis length of the <strong>source</strong> ellipsoid.
+     * @throws IllegalArgumentException if the given grid is not valid.
+     */
+    private static void ensureGeocentricTranslation(final DatumShiftGrid<?,?> grid, final Unit<Length> unit)
+            throws IllegalArgumentException
+    {
+        final int dim = grid.getTranslationDimensions();
+        if (dim != 3) {
+            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "grid", 3, dim));
+        }
+        Object unitLabel = "ratio";
+        if (grid.isCellValueRatio() || (unitLabel = grid.getTranslationUnit()) != unit) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalUnitFor_2, "translation", unitLabel));
+        }
     }
 
     /**

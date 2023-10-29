@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Mercator (variant B)"</cite> projection (EPSG:9805).
+ * The provider for <q>Mercator (variant B)</q> projection (EPSG:9805).
  *
  * <p>This provider reuses some of the parameters defined in {@link Mercator2SP}.</p>
  *

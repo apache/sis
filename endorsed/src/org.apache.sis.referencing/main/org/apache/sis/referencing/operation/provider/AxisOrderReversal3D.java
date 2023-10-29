@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"axis order reversal (geographic3D horizontal)"</cite> (EPSG:9844).
+ * The provider for <q>axis order reversal (geographic3D horizontal)</q> (EPSG:9844).
  * This is a trivial operation that just swap the two first axes.
  * The inverse operation is this operation itself.
  *

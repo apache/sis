@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The <cite>"Pseudo Plate Carrée"</cite> pseudo-projection (EPSG:9825). This is only the identity transform.
+ * The <q>Pseudo Plate Carrée</q> pseudo-projection (EPSG:9825). This is only the identity transform.
  * The semi-major and semi-minor axis lengths are ignored (they could be fixed to 1) but nevertheless declared
  * for allowing netCDF file encoding to declare the ellipsoid in pseudo-projection parameters.
  *

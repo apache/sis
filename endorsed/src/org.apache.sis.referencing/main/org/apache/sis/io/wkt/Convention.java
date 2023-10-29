@@ -157,7 +157,7 @@ public enum Convention {
      *   <li>The angular units of {@code PRIMEM} and {@code PARAMETER} elements are always degrees,
      *       no matter the units of the enclosing {@code GEOGCS} element.</li>
      *   <li>Unit names use American spelling instead of the international ones
-     *       (e.g. <cite>"meter"</cite> instead of <cite>"metre"</cite>).</li>
+     *       (e.g. <q>meter</q> instead of <q>metre</q>).</li>
      * </ul>
      */
     WKT1_COMMON_UNITS(true, true, true),

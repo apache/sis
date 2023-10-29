@@ -31,7 +31,7 @@
  *
  * <ul>
  *   <li>Format projection and parameters using the names of a chosen authority.
- *       For example, the <cite>"Mercator (variant A)"</cite> projection is named
+ *       For example, the <q>Mercator (variant A)</q> projection is named
  *       {@code "Mercator_1SP"} by OGC 01-009 and {@code "CT_Mercator"} by GeoTIFF.</li>
  *   <li>Format the elements with different quote characters or brackets style.
  *       For example, both {@code ID["EPSG",4326]} and {@code ID("EPSG",4326)} are legal WKT.</li>
@@ -71,7 +71,7 @@
  * The WKT of many Coordinate Reference System object can be viewed using the pattern below
  * (replace {@code 3395} by the EPSG code of the desired CRS):
  *
- * <blockquote><b>Example</b>: <cite>"WGS 84 / World Mercator"</cite>:
+ * <blockquote><b>Example</b>: <q>WGS 84 / World Mercator</q>:
  * <a href="https://epsg.org/crs/wkt/id/3395">https://epsg.org/crs/wkt/id/3395</a>
  * </blockquote>
  *

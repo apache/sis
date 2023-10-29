@@ -33,7 +33,7 @@ import org.apache.sis.math.MathFunctions;
 
 
 /**
- * The provider for <cite>"Transverse Mercator"</cite> projection (EPSG:9807).
+ * The provider for <q>Transverse Mercator</q> projection (EPSG:9807).
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
@@ -300,7 +300,7 @@ public final class TransverseMercator extends AbstractMercator {
          * @param  group      the parameters for which to set the values.
          * @param  latitude   the latitude in the center of the desired projection.
          * @param  longitude  the longitude in the center of the desired projection.
-         * @return a name like <cite>"Transverse Mercator"</cite> or <cite>"UTM zone 10N"</cite>,
+         * @return a name like <q>Transverse Mercator</q> or <q>UTM zone 10N</q>,
          *         depending on the arguments given to this method.
          */
         public final String setParameters(final ParameterValueGroup group, double latitude, double longitude) {

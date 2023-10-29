@@ -42,10 +42,10 @@ import static java.lang.Math.*;
 
 
 /**
- * The provider for <cite>"Equidistant Cylindrical (Spherical)"</cite> projection
+ * The provider for <q>Equidistant Cylindrical (Spherical)</q> projection
  * (EPSG:1029, <span class="deprecated">EPSG:9823</span>).
  * In the particular case where the longitude of origin and the standard parallel are 0°,
- * this projection is also known as <cite>"Plate Carrée"</cite>.
+ * this projection is also known as <q>Plate Carrée</q>.
  *
  * <p>At the difference of most other map projection providers, this class does not extend {@link MapProjection}
  * because it does not create non-liner kernel. Instead, the projection created by this class is implemented

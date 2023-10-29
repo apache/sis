@@ -140,7 +140,7 @@ public final class CoordinateOperations extends Static {
 
     /**
      * Returns the operation method for the specified name or identifier. The given argument shall be either a
-     * method name (e.g. <cite>"Transverse Mercator"</cite>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
+     * method name (e.g. <q>Transverse Mercator</q>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
      *
      * @param  methods     the method candidates.
      * @param  identifier  the name or identifier of the operation method to search.

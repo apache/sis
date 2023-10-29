@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"Geocentric translations (geog3D domain)"</cite> (EPSG:1035).
+ * The provider for <q>Geocentric translations (geog3D domain)</q> (EPSG:1035).
  * This is a special case of {@link PositionVector7Param3D} where only the translation
  * terms can be set to a non-null value.
  *

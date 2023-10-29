@@ -168,7 +168,7 @@ final class AppendableWriter extends Writer {
 
     /**
      * Returns the content of the underlying {@link Appendable} as a string if possible,
-     * or the localized <cite>"Unavailable content"</cite> string otherwise.
+     * or the localized <q>Unavailable content</q> string otherwise.
      *
      * @return the content of the underlying {@code Appendable},
      *         or a localized message for unavailable content.

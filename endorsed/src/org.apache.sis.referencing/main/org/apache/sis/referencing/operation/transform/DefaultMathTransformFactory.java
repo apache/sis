@@ -108,8 +108,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>Each descriptor has many aliases, and those aliases may vary between different projections.
  * For example, the <cite>false easting</cite> parameter is usually called {@code "false_easting"}
- * by OGC, while EPSG uses various names like <cite>"False easting"</cite> or <cite>"Easting at
- * false origin"</cite>.</p>
+ * by OGC, while EPSG uses various names like <q>False easting</q> or <q>Easting at
+ * false origin</q>.</p>
  *
  * <h2>Dynamic parameters</h2>
  * A few non-standard parameters are defined for compatibility reasons,
@@ -443,7 +443,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Returns the operation method for the specified name or identifier. The given argument shall be either
-     * a method {@linkplain DefaultOperationMethod#getName() name} (e.g. <cite>"Transverse Mercator"</cite>)
+     * a method {@linkplain DefaultOperationMethod#getName() name} (e.g. <q>Transverse Mercator</q>)
      * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
      *
      * <p>The search is case-insensitive. Comparisons against method names can be
@@ -541,7 +541,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * This class does <strong>not</strong> handle change of
      * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian}
      * or anything else related to datum. Datum changes have dedicated {@link OperationMethod},
-     * for example <cite>"Longitude rotation"</cite> (EPSG:9601) for changing the prime meridian.
+     * for example <q>Longitude rotation</q> (EPSG:9601) for changing the prime meridian.
      *
      * <h2>Scope</h2>
      * Instances of this class should be short-lived
@@ -1498,9 +1498,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * This method does not accept separated ellipsoid arguments for {@code source} and {@code target} because
      * this method should not be used for datum shifts. If the two given coordinate systems are ellipsoidal,
      * then they are assumed to use the same ellipsoid. If different ellipsoids are desired, then a
-     * {@linkplain #createParameterizedTransform parameterized transform} like <cite>"Molodensky"</cite>,
-     * <cite>"Geocentric translations"</cite>, <cite>"Coordinate Frame Rotation"</cite> or
-     * <cite>"Position Vector transformation"</cite> should be used instead.
+     * {@linkplain #createParameterizedTransform parameterized transform} like <q>Molodensky</q>,
+     * <q>Geocentric translations</q>, <q>Coordinate Frame Rotation</q> or
+     * <q>Position Vector transformation</q> should be used instead.
      *
      * @param  source     the source coordinate system.
      * @param  target     the target coordinate system.

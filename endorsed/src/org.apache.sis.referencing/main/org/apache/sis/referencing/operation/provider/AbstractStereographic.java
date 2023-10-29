@@ -82,7 +82,7 @@ abstract class AbstractStereographic extends MapProjection {
     /**
      * {@inheritDoc}
      *
-     * The default implementation creates a projection for the <cite>"Polar Stereographic"</cite> case only.
+     * The default implementation creates a projection for the <q>Polar Stereographic</q> case only.
      * Subclasses need to override if they want to support other cases (oblique and equatorial).
      *
      * @return the map projection created from the given parameter values.

@@ -101,8 +101,8 @@ import org.opengis.referencing.ReferenceIdentifier;
  * </ul>
  *
  * <h2>Example</h2>
- * The EPSG database defines a projection named <cite>"Mercator (variant A)"</cite> (EPSG:9804).
- * This projection was named <cite>"Mercator (1SP)"</cite> in older EPSG database versions.
+ * The EPSG database defines a projection named <q>Mercator (variant A)</q> (EPSG:9804).
+ * This projection was named <q>Mercator (1SP)</q> in older EPSG database versions.
  * The same projection was also named "{@code Mercator_1SP}" by OGC some specifications.
  * If we choose EPSG as our primary naming authority, then those three names can be declared as below:
  *
@@ -489,7 +489,7 @@ public abstract class Builder<B extends Builder<B>> {
      * If <code>{@linkplain #setDeprecated(boolean) setDeprecated}(true)</code> has been invoked, then this
      * method creates a deprecated alias with the current {@linkplain #setRemarks(CharSequence) remarks}.
      * The remark should suggest a replacement, for example with a sentence like
-     * <cite>"Superseded by {@literal <new-name>}"</cite>.
+     * <q>Superseded by {@literal <new-name>}</q>.
      *
      * <p>Note that deprecated names are always added as aliases, never as the primary name of an identified object.</p>
      *
@@ -515,7 +515,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain AbstractIdentifiedObject#getAlias() aliases} defined after the primary name.
      *
      * <h4>Example</h4>
-     * The <cite>"Longitude of natural origin"</cite> parameter defined by EPSG is named differently
+     * The <q>Longitude of natural origin</q> parameter defined by EPSG is named differently
      * by OGC and GeoTIFF. Those alternative names can be defined as below:
      *
      * {@snippet lang="java" :
@@ -629,7 +629,7 @@ public abstract class Builder<B extends Builder<B>> {
      * If <code>{@linkplain #setDeprecated(boolean) setDeprecated}(true)</code> has been invoked, then this
      * method creates a deprecated identifier with the current {@linkplain #setRemarks(CharSequence) remarks}.
      * The remark should suggest a replacement, for example with a sentence like
-     * <cite>"Superseded by {@literal <new-code>}"</cite>.
+     * <q>Superseded by {@literal <new-code>}</q>.
      *
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>

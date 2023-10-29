@@ -24,11 +24,11 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for <cite>"Lambert Conic Conformal (West Orientated)"</cite> projection (EPSG:9826).
+ * The provider for <q>Lambert Conic Conformal (West Orientated)</q> projection (EPSG:9826).
  * In this projection method, the <var>x</var> values increase toward West. However, the projection
  * is defined in such a way that the sign of <var>x</var> values are reversed before to apply the
- * <cite>"false easting"</cite> translation. As a consequence of this operation order, despite its
- * name the <cite>"false easting"</cite> is effectively a <cite>"false westing"</cite> (FW) parameter.
+ * <q>false easting</q> translation. As a consequence of this operation order, despite its
+ * name the <q>false easting</q> is effectively a <q>false westing</q> (FW) parameter.
  * See §1.3.1.3 in <i>Geomatics Guidance Note number 7, part 2 – April 2015</i>.
  *
  * <p>In Apache SIS implementation, this operation method does <strong>not</strong> reverse the sign of

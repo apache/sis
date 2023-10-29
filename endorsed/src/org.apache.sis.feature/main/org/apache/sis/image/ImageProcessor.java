@@ -137,7 +137,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
@@ -222,18 +222,6 @@ public class ImageProcessor implements Cloneable {
      * @see #setColorizer(Colorizer)
      */
     private Colorizer colorizer;
-
-    /**
-     * Colors to use for arbitrary categories of sample values. This function can return {@code null}
-     * or empty arrays for some categories, which are interpreted as fully transparent pixels.
-     *
-     * @see #getCategoryColors()
-     * @see #setCategoryColors(Function)
-     *
-     * @deprecated Replaced by {@link #colorizer}.
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    private Function<Category,Color[]> colors;
 
     /**
      * Hints about the desired positional accuracy (in "real world" units or in pixel units),
@@ -403,44 +391,6 @@ public class ImageProcessor implements Cloneable {
      */
     public synchronized void setColorizer(final Colorizer colorizer) {
         this.colorizer = colorizer;
-        colors = null;
-    }
-
-    /**
-     * Returns the colors to use for given categories of sample values, or {@code null} if unspecified.
-     * This method returns the function set by the last call to {@link #setCategoryColors(Function)}.
-     *
-     * @return colors to use for arbitrary categories of sample values, or {@code null} for default.
-     *
-     * @deprecated Replaced by {@link #getColorizer()}.
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public synchronized Function<Category,Color[]> getCategoryColors() {
-        return colors;
-    }
-
-    /**
-     * Sets the colors to use for given categories in image, or {@code null} if unspecified.
-     * This function provides a way to colorize images without knowing in advance the numerical values of pixels.
-     * For example, instead of specifying <cite>"pixel value 0 is blue, 1 is green, 2 is yellow"</cite>,
-     * this function allows to specify <cite>"Lakes are blue, Forests are green, Sand is yellow"</cite>.
-     * It is still possible however to use numerical values if the function desires to do so,
-     * since this information is available with {@link Category#getSampleRange()}.
-     *
-     * <p>This function is used by methods expecting {@link SampleDimension} arguments such as
-     * {@link #visualize(RenderedImage, List)}. The given function can return {@code null} or
-     * empty arrays for some categories, which are interpreted as fully transparent pixels.</p>
-     *
-     * @param  colors  colors to use for arbitrary categories of sample values, or {@code null} for default.
-     *
-     * @deprecated Replaced by {@link #setColorizer(Colorizer)}.
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public synchronized void setCategoryColors(final Function<Category,Color[]> colors) {
-        if (colors != this.colors) {
-            setColorizer(colors != null ? Colorizer.forCategories(colors) : null);
-            this.colors = colors;
-        }
     }
 
     /**
@@ -1093,26 +1043,6 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * @deprecated Replaced by {@link #convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType)}
-     *             with a color model inferred from the {@link Colorizer}.
-     *
-     * @param  colorModel  color model of resulting image, or {@code null}.
-     */
-    @SuppressWarnings("doclint:missing")
-    @Deprecated(since="1.4", forRemoval=true)
-    public synchronized RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
-                MathTransform1D[] converters, final DataType targetType, final ColorModel colorModel)
-    {
-        final Colorizer old = colorizer;
-        try {
-            colorizer = Colorizer.forInstance(colorModel);
-            return convert(source, sourceRanges, converters, targetType);
-        } finally {
-            colorizer = old;
-        }
-    }
-
-    /**
      * Verifies that the given rectangle, if non-null, is non-empty.
      * This method assumes that the argument name is "bounds".
      */
@@ -1261,63 +1191,6 @@ public class ImageProcessor implements Cloneable {
      * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
      * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
      *
-     * <p>The given map specifies the color to use for different ranges of values in the source image.
-     * The ranges of values in the returned image may not be the same; this method is free to rescale them.
-     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
-     * the ranges of values in the destination image.</p>
-     *
-     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
-     * There is no guarantee about the number of bands in returned image or about which formula is used for converting
-     * floating point values to integer values.</p>
-     *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
-     * <ul>
-     *   <li>(none)</li>
-     * </ul>
-     *
-     * @param  source  the image to recolor for visualization purposes.
-     * @param  colors  colors to use for each range of values in the source image.
-     * @deprecated Replaced by {@link #visualize(RenderedImage)} with colors map inferred from the {@link Colorizer}.
-     */
-    @SuppressWarnings({"removal", "doclint:missing"})
-    @Deprecated(since="1.4", forRemoval=true)
-    public synchronized RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
-        /*
-         * TODO: after removal of this method, search for usages of
-         * `visualize(RenderedImage, List)` and remove unecessary `(List) null` cast.
-         */
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("colors", colors);
-        final Colorizer old = colorizer;
-        try {
-            colorizer = Colorizer.forRanges(colors);
-            return visualize(new Visualization.Builder(null, source, null, null));
-        } finally {
-            colorizer = old;
-        }
-    }
-
-    /**
-     * @deprecated Replaced by {@link #visualize(RenderedImage)} with sample dimensions
-     *             read from the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property.
-     *
-     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
-     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
-     */
-    @SuppressWarnings({"removal", "doclint:missing"})
-    @Deprecated(since="1.4", forRemoval=true)
-    public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
-        ArgumentChecks.ensureNonNull("source", source);
-        return visualize(new Visualization.Builder(null, source, null, ranges));
-    }
-
-    /**
-     * Returns an image where all sample values are indices of colors in an {@link IndexColorModel}.
-     * If the given image stores sample values as unsigned bytes or short integers, then those values
-     * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
-     * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
-     *
      * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
      * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
@@ -1453,25 +1326,6 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * @deprecated Replaced by {@link #visualize(RenderedImage, Rectangle, MathTransform)} with
-     *             sample dimensions read from the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property.
-     *
-     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
-     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
-     */
-    @SuppressWarnings({"removal", "doclint:missing"})
-    @Deprecated(since="1.4", forRemoval=true)
-    public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
-                                   final List<SampleDimension> ranges)
-    {
-        ArgumentChecks.ensureNonNull("source",   source);
-        ArgumentChecks.ensureNonNull("bounds",   bounds);
-        ArgumentChecks.ensureNonNull("toSource", toSource);
-        ensureNonEmpty(bounds);
-        return visualize(new Visualization.Builder(bounds, source, toSource, ranges));
-    }
-
-    /**
      * Finishes builder configuration and creates the {@link Visualization} image.
      */
     private RenderedImage visualize(final Visualization.Builder builder) {
@@ -1546,7 +1400,6 @@ public class ImageProcessor implements Cloneable {
             final Number[]      fillValues;
             final ImageLayout   layout;
             final Colorizer     colorizer;
-            final Function<Category,Color[]> colors;
             final Quantity<?>[] positionalAccuracyHints;
             synchronized (this) {
                 executionMode           = this.executionMode;
@@ -1555,7 +1408,6 @@ public class ImageProcessor implements Cloneable {
                 fillValues              = this.fillValues;
                 layout                  = this.layout;
                 colorizer               = this.colorizer;
-                colors                  = this.colors;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
             synchronized (other) {
@@ -1564,7 +1416,6 @@ public class ImageProcessor implements Cloneable {
                       executionMode.equals(other.executionMode)   &&
                       interpolation.equals(other.interpolation)   &&
                       Objects.equals(colorizer, other.colorizer)  &&
-                      Objects.equals(colors, other.colors)        &&
                       Arrays.equals(fillValues, other.fillValues) &&
                       Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
             }

@@ -198,7 +198,7 @@ public final class CRS extends Static {
      * For codes in above table, the EPSG geodetic database is used when available,
      * otherwise Apache SIS fallbacks on definitions from public sources with no EPSG metadata except the identifiers.
      * If the EPSG geodetic dataset has been used, the {@linkplain NamedIdentifier#getAuthority() authority} title
-     * will be something like <cite>"EPSG geodetic dataset"</cite>, otherwise it will be <cite>"Subset of EPSG"</cite>.
+     * will be something like <q>EPSG geodetic dataset</q>, otherwise it will be <q>Subset of EPSG</q>.
      *
      * <h4>URI forms</h4>
      * This method accepts also the URN and URL syntaxes.
@@ -372,8 +372,8 @@ public final class CRS extends Static {
      * In such cases, Apache SIS behavior in {@link #fromWKT(String)}, {@link #fromXML(String)} and other methods is
      * conform to the <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">ISO 19162 specification</a>:
      *
-     * <blockquote><cite>"Should any attributes or values given in the cited identifier be in conflict with attributes
-     * or values given explicitly in the WKT description, the WKT values shall prevail."</cite></blockquote>
+     * <blockquote><q>Should any attributes or values given in the cited identifier be in conflict with attributes
+     * or values given explicitly in the WKT description, the WKT values shall prevail.</q></blockquote>
      *
      * In situations where the opposite behavior is desired (i.e. to make the authority identifier prevails),
      * this method can be invoked. This method performs the following actions:

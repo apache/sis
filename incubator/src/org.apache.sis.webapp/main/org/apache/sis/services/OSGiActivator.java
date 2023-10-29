@@ -28,8 +28,6 @@ import org.apache.sis.system.SystemListener;
  * Bundle activator for OSGi environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since 0.3
  */
 public final class OSGiActivator implements BundleActivator, BundleListener {
     /**

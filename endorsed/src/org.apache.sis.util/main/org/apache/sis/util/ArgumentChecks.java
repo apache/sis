@@ -42,7 +42,7 @@ import org.opengis.coverage.grid.GridEnvelope;
  *   <th>Exception</th>
  *   <th class="sep">Thrown by</th>
  * </tr><tr>
- *   <td>{@link NullArgumentException}</td>
+ *   <td>{@link NullPointerException}</td>
  *   <td class="sep">
  *     {@link #ensureNonNull(String, Object) ensureNonNull},
  *     {@link #ensureNonEmpty(String, CharSequence) ensureNonEmpty}.
@@ -88,7 +88,7 @@ import org.opengis.coverage.grid.GridEnvelope;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public final class ArgumentChecks extends Static {
@@ -100,23 +100,23 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Makes sure that an argument is non-null. If the given {@code object} is null, then a
-     * {@link NullArgumentException} is thrown with a localized message containing the given name.
+     * {@link NullPointerException} is thrown with a localized message containing the given name.
      *
      * @param  name    the name of the argument to be checked. Used only if an exception is thrown.
      * @param  object  the user argument to check against null value.
-     * @throws NullArgumentException if {@code object} is null.
+     * @throws NullPointerException if {@code object} is null.
      */
     public static void ensureNonNull(final String name, final Object object)
-            throws NullArgumentException
+            throws NullPointerException
     {
         if (object == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, name));
         }
     }
 
     /**
      * Makes sure that an array element is non-null. If {@code element} is null, then a
-     * {@link NullArgumentException} is thrown with a localized message containing the
+     * {@link NullPointerException} is thrown with a localized message containing the
      * given name and index. The name and index are formatted as below:
      *
      * <ul>
@@ -131,10 +131,10 @@ public final class ArgumentChecks extends Static {
      * @param  name     the name of the argument to be checked. Used only if an exception is thrown.
      * @param  index    the Index of the element to check in an array or a list. Used only if an exception is thrown.
      * @param  element  the array or list element to check against null value.
-     * @throws NullArgumentException if {@code element} is null.
+     * @throws NullPointerException if {@code element} is null.
      */
     public static void ensureNonNullElement(final String name, final int index, final Object element)
-            throws NullArgumentException
+            throws NullPointerException
     {
         if (element == null) {
             final StringBuilder buffer = new StringBuilder(name);
@@ -145,26 +145,26 @@ public final class ArgumentChecks extends Static {
             } else {
                 buffer.append('[').append(index).append(']');
             }
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, buffer.toString()));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, buffer.toString()));
         }
     }
 
     /**
      * Makes sure that a character sequence is non-null and non-empty. If the given {@code text} is
-     * null, then a {@link NullArgumentException} is thrown. Otherwise if the given {@code text} has
+     * null, then a {@link NullPointerException} is thrown. Otherwise if the given {@code text} has
      * a {@linkplain CharSequence#length() length} equals to 0, then an {@link IllegalArgumentException}
      * is thrown.
      *
      * @param  name  the name of the argument to be checked. Used only if an exception is thrown.
      * @param  text  the user argument to check against null value and empty sequences.
-     * @throws NullArgumentException if {@code text} is null.
+     * @throws NullPointerException if {@code text} is null.
      * @throws IllegalArgumentException if {@code text} is empty.
      */
     public static void ensureNonEmpty(final String name, final CharSequence text)
-            throws NullArgumentException, IllegalArgumentException
+            throws NullPointerException, IllegalArgumentException
     {
         if (text == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, name));
         }
         if (text.length() == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
@@ -173,21 +173,21 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Makes sure that an array is non-null and non-empty. If the given {@code array} is null,
-     * then a {@link NullArgumentException} is thrown. Otherwise if the array length is equal
+     * then a {@link NullPointerException} is thrown. Otherwise if the array length is equal
      * to 0, then an {@link IllegalArgumentException} is thrown.
      *
      * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
      * @param  array  the user argument to check against null value and empty array.
-     * @throws NullArgumentException if {@code array} is null.
+     * @throws NullPointerException if {@code array} is null.
      * @throws IllegalArgumentException if {@code array} is empty.
      *
      * @since 1.0
      */
     public static void ensureNonEmpty(final String name, final Object[] array)
-            throws NullArgumentException, IllegalArgumentException
+            throws NullPointerException, IllegalArgumentException
     {
         if (array == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, name));
         }
         if (array.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
@@ -196,19 +196,19 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Makes sure that given collection is non-null and non-empty.
-     * If it is null, then a {@link NullArgumentException} is thrown.
+     * If it is null, then a {@link NullPointerException} is thrown.
      * Otherwise if it {@linkplain Collection#isEmpty() is empty}, then an {@link IllegalArgumentException} is thrown.
      *
      * @param  name     the name of the argument to be checked. Used only if an exception is thrown.
      * @param  toCheck  the user argument to check against null value and empty collection.
-     * @throws NullArgumentException if {@code toCheck} is null.
+     * @throws NullPointerException if {@code toCheck} is null.
      * @throws IllegalArgumentException if {@code toCheck} is empty.
      *
      * @since 1.1
      */
     public static void ensureNonEmpty(final String name, final Collection<?> toCheck) {
         if (toCheck == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, name));
         }
         if (toCheck.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
@@ -217,51 +217,23 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Makes sure that given object is non-null and non-empty.
-     * If it is null, then a {@link NullArgumentException} is thrown.
+     * If it is null, then a {@link NullPointerException} is thrown.
      * Otherwise if it {@linkplain Emptiable#isEmpty() is empty}, then an {@link IllegalArgumentException} is thrown.
      *
      * @param  name     the name of the argument to be checked. Used only if an exception is thrown.
      * @param  toCheck  the user argument to check against null value and empty object.
-     * @throws NullArgumentException if {@code toCheck} is null.
+     * @throws NullPointerException if {@code toCheck} is null.
      * @throws IllegalArgumentException if {@code toCheck} is empty.
      *
      * @since 1.4
      */
     public static void ensureNonEmpty(final String name, final Emptiable toCheck) {
         if (toCheck == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, name));
         }
         if (toCheck.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
         }
-    }
-
-    /**
-     * Ensures that the given {@code values} array is non-null and non-empty. This method can also ensures that all values
-     * are between the given bounds (inclusive) and are distinct. The distinct values requirement is useful for validating
-     * arrays of spatiotemporal dimension indices, where dimensions cannot be repeated.
-     *
-     * <p>Note that a successful call to {@code ensureNonEmpty(name, values, 0, max, true)} implies
-     * 1 ≤ {@code values.length} ≤ {@code max}.</p>
-     *
-     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  values    integer values to validate.
-     * @param  min       the minimal allowed value (inclusive), or {@link Integer#MIN_VALUE} if none.
-     * @param  max       the maximal allowed value (inclusive), or {@link Integer#MAX_VALUE} if none.
-     * @param  distinct  {@code true} if each value must be unique.
-     * @throws NullArgumentException if {@code values} is null.
-     * @throws IllegalArgumentException if {@code values} is empty, contains a value lower than {@code min},
-     *         contains a value greater than {@code max}, or contains duplicated values while {@code distinct} is {@code true}.
-     *
-     * @since 1.0
-     *
-     * @deprecated Replaced by {@link #ensureNonEmptyBounded(String, boolean, int, int, int[])}.
-     */
-    @Deprecated(since = "1.3", forRemoval = true)
-    public static void ensureNonEmpty(final String name, final int[] values, final int min, final int max, final boolean distinct)
-            throws IllegalArgumentException
-    {
-        ensureNonEmptyBounded(name, distinct, min, max, values);
     }
 
     /**
@@ -276,7 +248,7 @@ public final class ArgumentChecks extends Static {
      * @param  min       the minimal allowed value (inclusive), or {@link Integer#MIN_VALUE} if none.
      * @param  max       the maximal allowed value (inclusive), or {@link Integer#MAX_VALUE} if none.
      * @param  values    integer values to validate.
-     * @throws NullArgumentException if {@code values} is null.
+     * @throws NullPointerException if {@code values} is null.
      * @throws IllegalArgumentException if {@code values} is empty, contains a value lower than {@code min},
      *         contains a value greater than {@code max}, or contains duplicated values while {@code distinct} is {@code true}.
      *
@@ -286,7 +258,7 @@ public final class ArgumentChecks extends Static {
             throws IllegalArgumentException
     {
         if (values == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, name));
         }
         if (values.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
@@ -318,24 +290,6 @@ public final class ArgumentChecks extends Static {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedNumber_1, index));
             }
         }
-    }
-
-    /**
-     * Ensures that a method receiving a variable number of arguments got the expected count.
-     * If {@code actual} = {@code expected}, then this method does nothing.
-     * Otherwise an exception saying "Too few" or "Too many arguments" is thrown.
-     *
-     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  expected  expected number of arguments.
-     * @param  actual    actual number of arguments.
-     *
-     * @since 1.0
-     *
-     * @deprecated Renamed {@link #ensureCountBetween(String, boolean, int, int, int)}.
-     */
-    @Deprecated(since = "1.3", forRemoval = true)
-    public static void ensureExpectedCount(final String name, final int expected, final int actual) {
-        ensureCountBetween(name, false, expected, expected, actual);
     }
 
     /**
@@ -691,26 +645,6 @@ public final class ArgumentChecks extends Static {
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
-    }
-
-    /**
-     * Ensures that the given collection size or array length is between the given bounds, inclusive.
-     * This method performs the same check than {@link #ensureBetween(String, int, int, int)
-     * ensureBetween(…)}, but the error message is different in case of failure.
-     *
-     * @param  name  the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  min   the minimal size (inclusive), or 0 if none.
-     * @param  max   the maximal size (inclusive), or {@link Integer#MAX_VALUE} if none.
-     * @param  size  the user collection size or array length to be checked.
-     * @throws IllegalArgumentException if the given value is not in the given range.
-     *
-     * @deprecated Renamed {@link #ensureCountBetween(String, boolean, int, int, int)}.
-     */
-    @Deprecated(since = "1.3", forRemoval = true)
-    public static void ensureSizeBetween(final String name, final int min, final int max, final int size)
-            throws IllegalArgumentException
-    {
-        ensureCountBetween(name, true, min, max, size);
     }
 
     /**

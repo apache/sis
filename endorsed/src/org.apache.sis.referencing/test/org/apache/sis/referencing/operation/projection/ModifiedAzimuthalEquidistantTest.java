@@ -75,7 +75,7 @@ public final class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistant
     }
 
     /**
-     * Tests the <cite>"Modified Azimuthal Equidistant"</cite> (EPSG:9832) projection method.
+     * Tests the <q>Modified Azimuthal Equidistant</q> (EPSG:9832) projection method.
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.

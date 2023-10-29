@@ -174,8 +174,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * operations that expect the same parameters than another operation, but perform a different process.
      *
      * <h4>Example</h4>
-     * The various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
-     * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
+     * The various <q>Coordinate Frame Rotation</q> variants (EPSG codes 1032, 1038 and 9607)
+     * expect the same parameters than their <q>Position Vector transformation</q> counterpart
      * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.
      *
      * @param properties  the properties to be given to the new parameter group.

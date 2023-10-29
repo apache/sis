@@ -71,7 +71,7 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension,Numbe
     TableView<SampleDimension> create(final Vocabulary vocabulary) {
         final TableView<SampleDimension> table = new TableView<>();
         table.setPrefHeight(NUM_VISIBLE_ROW * Styles.ROW_HEIGHT);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         table.getColumns().setAll(
                 createStringColumn(vocabulary, Vocabulary.Keys.Name,    NAME),
                 createNumberColumn(vocabulary, Vocabulary.Keys.Minimum, MINIMUM),

@@ -89,7 +89,7 @@ final class StoredTree implements Serializable {
 
         /**
          * Creates an anonymous node for an array of roots. This constructor is only for the corner
-         * case documented in <cite>"Multi roots"</cite> section of {@link StoredTree#root} javadoc.
+         * case documented in <q>Multi roots</q> section of {@link StoredTree#root} javadoc.
          *
          * @see StoredTree#StoredTree(List, Map)
          */
@@ -341,7 +341,7 @@ final class StoredTree implements Serializable {
 
     /**
      * Creates a new {@code StoredTree} with a snapshot of given trees of elements.
-     * This is for a corner case only; see <cite>"Multi roots"</cite> in {@link #root}.
+     * This is for a corner case only; see <q>Multi roots</q> in {@link #root}.
      *
      * @param  trees         roots of the trees of WKT elements.
      * @param  sharedValues  pool to use for sharing unique instances of values.

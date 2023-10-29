@@ -141,13 +141,24 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
     };
 
     /**
-     * Packages of test dependencies. The first time that one of those packages is found,
+     * Classes or packages of test dependencies. The first time that one of those elements is found,
      * a "// Test dependencies" header comment will be added.
      */
-    private static final String[] TEST_PACKAGES = {
+    private static final String[] TEST_ELEMENTS = {
         "org.junit",
         "org.opengis.test",
-        "org.apache.sis.test"
+        "org.apache.sis.test",
+        "org.apache.sis.util.test",
+        "org.apache.sis.xml.test",
+        "org.apache.sis.storage.test",
+        "org.apache.sis.image.TiledImageMock",
+        "org.apache.sis.metadata.sql.TestDatabase",
+        "org.apache.sis.referencing.cs.HardCodedAxes",
+        "org.apache.sis.referencing.cs.HardCodedCS",
+        "org.apache.sis.referencing.crs.HardCodedCRS",
+        "org.apache.sis.referencing.datum.HardCodedDatum",
+        "org.apache.sis.referencing.operation.HardCodedConversions",
+        "org.apache.sis.metadata.iso.citation.HardCodedCitations"
     };
 
     /**
@@ -235,7 +246,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         private String[] header, body;
 
         /**
-         * The imported package names, together with a bitmask telling in which branches they are found.
+         * The imported class or package names, together with a bitmask telling in which branches they are found.
          */
         private final Map<String,Integer> imports;
 
@@ -420,13 +431,13 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         }
 
         /**
-         * Returns whether the given imported package is a test package.
+         * Returns whether the given imported class or package is for testing purpose.
          *
-         * @param  element  name of the package to test.
-         * @return whether the specified package is a test package.
+         * @param  element  name of the class or package to filter.
+         * @return whether the specified class or package is for tests.
          */
-        private static boolean isTestPackage(final String element) {
-            for (final String c : TEST_PACKAGES) {
+        private static boolean isTestElement(final String element) {
+            for (final String c : TEST_ELEMENTS) {
                 if (element.startsWith(c)) {
                     return true;
                 }
@@ -495,7 +506,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                          * imports to a group of static imports, then add the import statement.
                          */
                         final String element = entry.getKey();
-                        if (!isTestImports && isTestPackage(element)) {
+                        if (!isTestImports && isTestElement(element)) {
                             needSeparator = false;
                             isTestImports = true;
                             dest.add("");

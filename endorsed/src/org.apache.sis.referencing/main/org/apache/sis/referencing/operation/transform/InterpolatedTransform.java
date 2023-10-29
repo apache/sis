@@ -49,7 +49,7 @@ import org.apache.sis.referencing.util.DirectPositionView;
  * <p>This transform is used for example with NADCON and NTv2 datum shift grids.</p>
  *
  * <h2>Input and output coordinates</h2>
- * First, <cite>"real world"</cite> input coordinates (<var>x</var>,<var>y</var>) are converted to
+ * First, <q>real world</q> input coordinates (<var>x</var>,<var>y</var>) are converted to
  * <cite>grid</cite> coordinates (<var>gridX</var>, <var>gridY</var>), which are zero-based indices
  * in the two-dimensional grid. This conversion is applied by an affine transform <em>before</em>
  * to be passed to the {@code transform} methods of this {@code InterpolatedTransform} class.

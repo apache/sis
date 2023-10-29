@@ -61,18 +61,13 @@ import static java.lang.Character.*;
  * {@code isSpaceChar(…)} while most of the rest of the SIS library, including this
  * {@code CharSequences} class, consistently uses {@code isWhitespace(…)}.
  *
- * <p>Note that the {@link String#trim()} method doesn't follow any of those policies and should
- * generally be avoided. That {@code trim()} method removes every ISO control characters without
- * distinction about whether the characters are space or not, and ignore all Unicode spaces.
- * The {@link #trimWhitespaces(String)} method defined in this class can be used as an alternative.</p>
- *
  * <h2>Handling of null values</h2>
  * Most methods in this class accept a {@code null} {@code CharSequence} argument. In such cases
  * the method return value is either a {@code null} {@code CharSequence}, an empty array, or a
  * {@code 0} or {@code false} primitive type calculated as if the input was an empty string.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.5
  *
  * @see StringBuilders
  *
@@ -946,37 +941,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
-     * Returns a string with leading and trailing whitespace characters omitted.
-     * This method is similar in purpose to {@link String#trim()}, except that the latter considers
-     * every {@linkplain Character#isISOControl(int) ISO control codes} below 32 to be a whitespace.
-     * That {@code String.trim()} behavior has the side effect of removing the heading of ANSI escape
-     * sequences (a.k.a. X3.64), and to ignore Unicode spaces. This {@code trimWhitespaces(…)} method
-     * is built on the more accurate {@link Character#isWhitespace(int)} method instead.
-     *
-     * <p>This method performs the same work than {@link #trimWhitespaces(CharSequence)},
-     * but is overloaded for the {@code String} type because of its frequent use.</p>
-     *
-     * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
-     * @return a string with leading and trailing whitespaces removed, or {@code null} is the given
-     *         text was null.
-     *
-     * @deprecated Replaced by {@link String#strip()} in JDK 11.
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public static String trimWhitespaces(String text) {
-        if (text != null) {
-            final int length = text.length();
-            final int lower = skipLeadingWhitespaces(text, 0, length);
-            text = text.substring(lower, skipTrailingWhitespaces(text, lower, length));
-        }
-        return text;
-    }
-
-    /**
      * Returns a text with leading and trailing whitespace characters omitted.
      * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * <p>This method is the generic version of {@link #trimWhitespaces(String)}.</p>
+     * <p>This method is the generalized version of {@link String#strip()}.</p>
      *
      * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
      * @return a characters sequence with leading and trailing whitespaces removed,
@@ -1032,7 +1000,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * <p>More specifically if the given value ends with a {@code '.'} character followed by a
      * sequence of {@code '0'} characters, then those characters are omitted. Otherwise this
-     * method returns the text unchanged. This is a <cite>"all or nothing"</cite> method:
+     * method returns the text unchanged. This is a <q>all or nothing</q> method:
      * either the fractional part is completely removed, or either it is left unchanged.</p>
      *
      * <h4>Examples</h4>
@@ -1208,7 +1176,7 @@ searchWordBreak:    while (true) {
      * <ol>
      *   <li>Invoke {@link #camelCaseToWords(CharSequence, boolean)}, which separate the words
      *     on the basis of character case. For example, {@code "transferFunctionType"} become
-     *     <cite>"transfer function type"</cite>. This works fine for ISO 19115 identifiers.</li>
+     *     <q>transfer function type</q>. This works fine for ISO 19115 identifiers.</li>
      *
      *   <li>Next replace all occurrence of {@code '_'} by spaces in order to take in account
      *     another common naming convention, which uses {@code '_'} as a word separator. This
@@ -1259,7 +1227,7 @@ searchWordBreak:    while (true) {
      * Given a string in camel cases, returns a string with the same words separated by spaces.
      * A word begins with a upper-case character following a lower-case character. For example
      * if the given string is {@code "PixelInterleavedSampleModel"}, then this method returns
-     * <cite>"Pixel Interleaved Sample Model"</cite> or <cite>"Pixel interleaved sample model"</cite>
+     * <q>Pixel Interleaved Sample Model</q> or <q>Pixel interleaved sample model</q>
      * depending on the value of the {@code toLowerCase} argument.
      *
      * <p>If {@code toLowerCase} is {@code false}, then this method inserts spaces but does not change

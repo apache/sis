@@ -211,7 +211,7 @@ public enum AxesConvention implements AxisFilter {
      * </table>
      *
      * <h4>API notes</h4>
-     * we do not provide a <cite>"longitude or <var>x</var> axis first"</cite> enumeration value because such criterion
+     * we do not provide a <q>longitude or <var>x</var> axis first</q> enumeration value because such criterion
      * is hard to apply to inter-cardinal directions and has no meaning for map projections over a pole.
      * The <cite>display oriented</cite> enumeration name applies to a wider range of cases,
      * but still have a loosely definition which may be adjusted in future Apache SIS versions.

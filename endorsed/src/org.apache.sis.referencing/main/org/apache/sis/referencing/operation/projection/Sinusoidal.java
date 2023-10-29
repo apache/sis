@@ -34,7 +34,7 @@ import static org.apache.sis.referencing.operation.provider.Sinusoidal.*;
 
 
 /**
- * <cite>Sinusoidal equal-area</cite> projection, also known as <cite>"Sanson-Flamsteed"</cite>.
+ * <cite>Sinusoidal equal-area</cite> projection, also known as <q>Sanson-Flamsteed</q>.
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Sinusoidal_projection">Sinusoidal projection on Wikipedia</a></li>
@@ -59,7 +59,7 @@ public class Sinusoidal extends MeridianArcBased {
     private enum Variant implements ProjectionVariant {
         // Declaration order matter. Patterns are matched in that order.
 
-        /** The <cite>"Pseudo sinusoidal equal-area"</cite> projection. */
+        /** The <q>Pseudo sinusoidal equal-area</q> projection. */
         PSEUDO(".*\\bPseudo.*");
 
         /** Name pattern for this variant. */
@@ -111,7 +111,7 @@ public class Sinusoidal extends MeridianArcBased {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Sinusoidal"</cite>, also known as <cite>"Sanson-Flamsteed"</cite>.</li>
+     *   <li><q>Sinusoidal</q>, also known as <q>Sanson-Flamsteed</q>.</li>
      * </ul>
      *
      * @param method      description of the projection parameters.

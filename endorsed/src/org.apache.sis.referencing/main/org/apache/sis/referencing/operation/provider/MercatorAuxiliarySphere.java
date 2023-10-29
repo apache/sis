@@ -24,7 +24,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Mercator Auxiliary Sphere"</cite> projection (defined by ESRI).
+ * The provider for <q>Mercator Auxiliary Sphere</q> projection (defined by ESRI).
  * This is often equivalent to {@link PseudoMercator}.
  *
  * @author  Martin Desruisseaux (Geomatys)

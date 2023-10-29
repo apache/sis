@@ -78,7 +78,7 @@ public final class DeprecatedName extends NamedIdentifier implements Deprecable 
 
     /**
      * Returns {@code null}, since we used the description for the superseded information.
-     * See <cite>"Implementation note"</cite> in class javadoc.
+     * See <q>Implementation note</q> in class javadoc.
      *
      * @return {@code null}.
      */

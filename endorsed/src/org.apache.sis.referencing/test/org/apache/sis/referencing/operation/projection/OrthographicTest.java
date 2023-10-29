@@ -154,7 +154,7 @@ public final class OrthographicTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Orthographic"</cite> (EPSG:9840) projection method.
+     * Tests the <q>Orthographic</q> (EPSG:9840) projection method.
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.

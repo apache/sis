@@ -43,7 +43,7 @@ import org.apache.sis.util.iso.Types;
  *
  * <h2>Examples</h2>
  * A geographic area may be identified by the {@code 1731} code in the {@code EPSG} codespace.
- * The natural language description for {@code EPSG:1731} can be <cite>“France – mainland north of 48.15°N”</cite>.
+ * The natural language description for {@code EPSG:1731} can be <q>France – mainland north of 48.15°N</q>.
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -91,7 +91,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      *
      * <h4>Example</h4>
      * <code>new DefaultGeographicDescription({@link org.apache.sis.metadata.iso.citation.Citations#EPSG}, "1731")</code>
-     * can stand for <cite>“France – mainland north of 48.15°N”</cite>.
+     * can stand for <q>France – mainland north of 48.15°N</q>.
      *
      * @param authority  the authority of the identifier code, or {@code null} if none.
      * @param code       the identifier code used to represent a geographic area, or {@code null} if none.
@@ -185,7 +185,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * <ul>
      *   <li>the {@code "EPSG"} code space,</li>
      *   <li>the {@code "1731"} code, and</li>
-     *   <li>the <cite>“France – mainland north of 48.15°N”</cite> description.</li>
+     *   <li>the <q>France – mainland north of 48.15°N</q> description.</li>
      * </ul>
      *
      * @return the identifier used to represent a geographic area, or {@code null}.

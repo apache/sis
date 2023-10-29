@@ -109,7 +109,7 @@ final class GridInfo extends Grid {
     }
 
     /**
-     * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
+     * Returns the number of dimensions of source coordinates in the <q>grid to CRS</q> conversion.
      * This is the number of dimensions of the <em>grid</em>.
      */
     @Override

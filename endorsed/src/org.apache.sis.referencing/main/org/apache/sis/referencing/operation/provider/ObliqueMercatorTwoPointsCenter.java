@@ -20,7 +20,7 @@ import jakarta.xml.bind.annotation.XmlTransient;
 
 
 /**
- * The provider for <cite>"Oblique Mercator"</cite> projection specified by two points on the central line,
+ * The provider for <q>Oblique Mercator</q> projection specified by two points on the central line,
  * with easting/northing specified at projection center instead of coordinate system natural origin.
  * This projection is specific to ESRI software.
  *

@@ -121,12 +121,12 @@
  *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#getMatrix denormalization} affine transform</li>
  * </ul>
  *
- * The first step (<cite>"normalization"</cite>) converts longitude and latitude values from degrees to radians
+ * The first step (<q>normalization</q>) converts longitude and latitude values from degrees to radians
  * and removes the <cite>central meridian</cite> from the longitude.
- * The last step (<cite>"denormalization"</cite>) multiplies the result of the middle step by the global scale factor
+ * The last step (<q>denormalization</q>) multiplies the result of the middle step by the global scale factor
  * (typically the product of the <cite>scale factor</cite> with the <cite>semi-major</cite> axis length),
  * then adds the <cite>false easting</cite> and <cite>false northing</cite>.
- * This means that the middle step (<cite>"normalized projection"</cite>) is performed on an ellipse (or sphere)
+ * This means that the middle step (<q>normalized projection</q>) is performed on an ellipse (or sphere)
  * having a semi-major axis of 1.
  *
  * <p>In other words, the

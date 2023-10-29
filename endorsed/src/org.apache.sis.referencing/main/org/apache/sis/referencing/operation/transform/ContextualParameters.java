@@ -91,7 +91,7 @@ import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
  * <ol class="verbose">
  *   <li>A {@link MathTransformProvider} instantiates a non-linear transform working in a predefined coordinate system.
  *     Note that different providers may instantiate the same transform class but with different parameters.
- *     For example, both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> operation methods
+ *     For example, both <q>Mercator (variant A)</q> and <q>Mercator (variant B)</q> operation methods
  *     instantiate the same Mercator projection class, but with different ways to represent the parameters.</li>
  *
  *   <li>The map projection constructor fetches all parameters that it needs from the user supplied

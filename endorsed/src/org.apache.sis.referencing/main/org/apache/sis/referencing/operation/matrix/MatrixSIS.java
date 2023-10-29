@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see Matrices
  *
@@ -170,27 +170,6 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     Number getElementOrNull(final int row, final int column) {
         final double value = getElement(row, column);
         return (value == 0) ? null : value;
-    }
-
-    /**
-     * Retrieves the value at the specified row and column of this matrix, rounded to nearest integer.
-     * This method may be more accurate than {@link #getElement(int, int)} in some implementations
-     * when the value is expected to be an integer (for example in conversions of pixel coordinates).
-     *
-     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
-     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @return the current value at the given row and column, rounded to nearest integer.
-     * @throws IndexOutOfBoundsException if the specified row or column is out of bounds.
-     * @throws ArithmeticException if the value is NaN or overflows integer capacity.
-     *
-     * @since 1.3
-     *
-     * @deprecated Replaced by {@code Numbers.round(getNumber(row, column))}.
-     * @see Numbers#round(Number)
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public long getInteger(int row, int column) {
-        return Numbers.round(getNumber(row, column));
     }
 
     /**

@@ -34,7 +34,7 @@ import org.apache.sis.util.internal.Strings;
  * The {@linkplain Comparable natural ordering} is defined by the value returned by {@link #toString()}.</p>
  *
  * <h2>Substituting a free text by a code list</h2>
- * The ISO standard allows to substitute some character strings in the <cite>"free text"</cite> domain
+ * The ISO standard allows to substitute some character strings in the <q>free text</q> domain
  * by a {@link org.opengis.util.CodeList} value. This can be done with:
  *
  * <ul>

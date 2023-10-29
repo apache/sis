@@ -61,7 +61,6 @@ import org.apache.sis.referencing.util.TemporalAccessor;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
@@ -132,7 +131,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.0
  */
 public class GridGeometry implements LenientComparable, Serializable {
@@ -166,7 +165,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     public static final int EXTENT = 4;
 
     /**
-     * A bitmask to specify the validity of the <cite>"grid to CRS"</cite> transform.
+     * A bitmask to specify the validity of the <q>grid to CRS</q> transform.
      *
      * @see #isDefined(int)
      * @see #getGridToCRS(PixelInCell)
@@ -661,7 +660,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         boolean nilEnvelope = true;
         if (target == null || ((nilEnvelope = target.isAllNaN()) && target.getCoordinateReferenceSystem() == null)) {
             if (target != null && nilEnvelope) {
-                throw new NullArgumentException(Errors.format(Errors.Keys.UnspecifiedCRS));
+                throw new NullPointerException(Errors.format(Errors.Keys.UnspecifiedCRS));
             }
             ArgumentChecks.ensureNonNull("extent", extent);
             this.envelope = null;

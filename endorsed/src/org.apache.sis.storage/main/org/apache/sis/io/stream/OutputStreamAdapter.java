@@ -52,7 +52,7 @@ final class OutputStreamAdapter extends OutputStream implements Markable {
      */
     @Override
     public void write(final int b) throws IOException {
-        output.write(b);
+        output.writeByte(b);
     }
 
     /**

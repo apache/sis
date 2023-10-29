@@ -181,7 +181,7 @@ final class GridWrapper extends Grid {
     }
 
     /**
-     * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
+     * Returns the number of dimensions of source coordinates in the <q>grid to CRS</q> conversion.
      * This is the number of dimensions of the <em>grid</em>.
      * It should be equal to the size of {@link #getDimensions()} list.
      */

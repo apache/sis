@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Parses {@linkplain AxisDirection axis direction} of the kind <cite>"South along 90 deg East"</cite>.
+ * Parses {@linkplain AxisDirection axis direction} of the kind <q>South along 90 deg East</q>.
  * Those directions are used in the EPSG database for polar stereographic projections.
  *
  * <h2>Reference meridian</h2>
@@ -49,8 +49,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * A parser for EPSG axis names. Examples:
      *
      * <ul>
-     *   <li><cite>"South along 180 deg"</cite></li>
-     *   <li><cite>"South along 90 deg East"</cite></li>
+     *   <li><q>South along 180 deg</q></li>
+     *   <li><q>South along 90 deg East</q></li>
      * </ul>
      */
     private static final Pattern EPSG = Pattern.compile(
@@ -183,7 +183,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * A positive angle denote a right-handed system.
      *
      * <h4>Example</h4>
-     * The angle from <cite>"North along 90 deg East"</cite> to <cite>"North along 0 deg</cite> is 90°.
+     * The angle from <q>North along 90 deg East</q> to <q>North along 0 deg</cite> is 90°.
      */
     public double angle(final DirectionAlongMeridian other) {
         if (!baseDirection.equals(other.baseDirection)) {

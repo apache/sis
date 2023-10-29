@@ -46,15 +46,15 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
  */
 final class LooselyDefinedMethod {
     /**
-     * The <cite>"Affine parametric transformation in geocentric domain"</cite> method.
+     * The <q>Affine parametric transformation in geocentric domain</q> method.
      * It could be done by a concatenation of the following standard methods:
      *
      * <ol>
-     *   <li><cite>"Geographic 2D to 3D conversion"</cite></li>
-     *   <li><cite>"Geographic/geocentric conversions"</cite> (EPSG:9602)</li>
-     *   <li><cite>"Affine parametric transformation"</cite> (EPSG:9624)</li>
-     *   <li>Inverse of <cite>"Geographic/geocentric conversions"</cite></li>
-     *   <li><cite>"Geographic 3D to 2D conversion"</cite> (EPSG:9659)</li>
+     *   <li><q>Geographic 2D to 3D conversion</q></li>
+     *   <li><q>Geographic/geocentric conversions</q> (EPSG:9602)</li>
+     *   <li><q>Affine parametric transformation</q> (EPSG:9624)</li>
+     *   <li>Inverse of <q>Geographic/geocentric conversions</q></li>
+     *   <li><q>Geographic 3D to 2D conversion</q> (EPSG:9659)</li>
      * </ol>
      *
      * It is not implemented that way for now because we need more work for analyzing the source and target

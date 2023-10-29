@@ -28,7 +28,7 @@ import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for <cite>"Longitude rotation"</cite> (EPSG:9601).
+ * The provider for <q>Longitude rotation</q> (EPSG:9601).
  * The "Longitude rotation" is created as an affine transform containing only a translation term in degrees.
  * Advantage of using an affine transform for such simple operation is that this {@code AffineTransform} can
  * be efficiently concatenated with other affine transform instances.

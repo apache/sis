@@ -50,7 +50,7 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Creates the <cite>"France geocentric interpolation"</cite> transform,
+     * Creates the <q>France geocentric interpolation</q> transform,
      * including the normalization and denormalization parts.
      *
      * @throws FactoryException if an error occurred while loading the grid.

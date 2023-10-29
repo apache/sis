@@ -43,7 +43,7 @@ public final class Interpolation1D extends AbstractProvider {
     private static final long serialVersionUID = -2571645687075958970L;
 
     /**
-     * The operation parameter descriptor for the <cite>"preimage"</cite> parameter value.
+     * The operation parameter descriptor for the <q>preimage</q> parameter value.
      * This parameter is optional and often omitted.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Image_%28mathematics%29#Inverse_image">Preimage on Wikipedia</a>
@@ -52,7 +52,7 @@ public final class Interpolation1D extends AbstractProvider {
     private static final ParameterDescriptor<double[]> PREIMAGE;
 
     /**
-     * The operation parameter descriptor for the <cite>"values"</cite> parameter value.
+     * The operation parameter descriptor for the <q>values</q> parameter value.
      */
     private static final ParameterDescriptor<double[]> VALUES;
 

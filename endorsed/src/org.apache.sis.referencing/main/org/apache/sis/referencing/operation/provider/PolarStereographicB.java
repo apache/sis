@@ -24,8 +24,8 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for <cite>"Polar Stereographic (variant B)"</cite> projection (EPSG:9829).
- * This provider includes a <cite>"Latitude of standard parallel"</cite> parameter and
+ * The provider for <q>Polar Stereographic (variant B)</q> projection (EPSG:9829).
+ * This provider includes a <q>Latitude of standard parallel</q> parameter and
  * determines the hemisphere of the projection from that parameter value.
  *
  * @author  Rueben Schulz (UBC)

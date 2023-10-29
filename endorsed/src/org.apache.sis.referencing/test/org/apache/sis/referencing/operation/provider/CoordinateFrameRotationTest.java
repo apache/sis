@@ -57,7 +57,7 @@ public final class CoordinateFrameRotationTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests <cite>"Coordinate Frame Rotation (geocentric domain)"</cite> (EPSG:1032).
+     * Tests <q>Coordinate Frame Rotation (geocentric domain)</q> (EPSG:1032).
      * with a sample point from WGS 72 to WGS 84 (EPSG Dataset transformation code 1238).
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -74,7 +74,7 @@ public final class CoordinateFrameRotationTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests <cite>"Coordinate Frame Rotation (geog3D domain)"</cite> (EPSG:1038).
+     * Tests <q>Coordinate Frame Rotation (geog3D domain)</q> (EPSG:1038).
      *
      * @throws FactoryException if an error occurred while creating the transform.
      * @throws TransformException if transformation of a point failed.

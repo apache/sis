@@ -137,7 +137,7 @@ public final class BuilderTest extends TestCase {
     }
 
     /**
-     * Creates a {@link Builder} with <cite>"Mercator (variant A)"</cite> projection (EPSG:9804) names and identifiers.
+     * Creates a {@link Builder} with <q>Mercator (variant A)</q> projection (EPSG:9804) names and identifiers.
      * This method uses scopes for differentiating the EPSG names from the OGC and GeoTIFF ones.
      *
      * @param  withNames       {@code true} for adding the names in the builder.

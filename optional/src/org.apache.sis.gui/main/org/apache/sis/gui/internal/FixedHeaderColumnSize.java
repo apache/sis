@@ -70,7 +70,7 @@ public final class FixedHeaderColumnSize<E> implements Callback<TableView.Resize
                 try {
                     column.setMinWidth(width);
                     column.setMaxWidth(width);
-                    result = TableView.CONSTRAINED_RESIZE_POLICY.call(prop);
+                    result = TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN.call(prop);
                 } finally {
                     if (reducing) {
                         column.setMinWidth(save);
@@ -81,6 +81,6 @@ public final class FixedHeaderColumnSize<E> implements Callback<TableView.Resize
                 return result;
             }
         }
-        return TableView.CONSTRAINED_RESIZE_POLICY.call(prop);
+        return TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN.call(prop);
     }
 }

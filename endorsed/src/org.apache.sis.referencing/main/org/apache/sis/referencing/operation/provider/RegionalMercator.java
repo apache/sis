@@ -24,7 +24,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for <cite>"Mercator (variant C)"</cite> projection (EPSG:1044).
+ * The provider for <q>Mercator (variant C)</q> projection (EPSG:1044).
  *
  * <h2>Note on naming</h2>
  * The "Regional Mercator" class name is inspired by MapInfo practice, while not exactly the same projection.

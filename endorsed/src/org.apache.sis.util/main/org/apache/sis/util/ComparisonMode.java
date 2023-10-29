@@ -112,8 +112,8 @@ public enum ComparisonMode {
      * transformations still produce the same results.
      *
      * <h4>Example</h4>
-     * A <cite>"Mercator (variant B)"</cite> projection with a <cite>standard parallel</cite> value of 60° produces the
-     * same results than a <cite>"Mercator (variant A)"</cite> projection with a <cite>scale factor</cite> value of 0.5.
+     * A <q>Mercator (variant B)</q> projection with a <cite>standard parallel</cite> value of 60° produces the
+     * same results than a <q>Mercator (variant A)</q> projection with a <cite>scale factor</cite> value of 0.5.
      *
      * @see org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)
      */

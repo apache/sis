@@ -16,7 +16,7 @@
  */
 
 /**
- * Coverage-json store.
+ * CoverageJSON store.
  *
  * @author  Johann Sorel (Geomatys)
  */

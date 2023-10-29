@@ -113,7 +113,7 @@ public final class PositionVector7ParamTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests <cite>"Position Vector transformation (geocentric domain)"</cite> (EPSG:1033)
+     * Tests <q>Position Vector transformation (geocentric domain)</q> (EPSG:1033)
      * with a sample point from WGS 72 to WGS 84 (EPSG Dataset transformation code 1238).
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -129,7 +129,7 @@ public final class PositionVector7ParamTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests <cite>"Position Vector transformation (geog3D domain)"</cite> (EPSG:1037).
+     * Tests <q>Position Vector transformation (geog3D domain)</q> (EPSG:1037).
      *
      * @throws FactoryException if an error occurred while creating the transform.
      * @throws TransformException if transformation of a point failed.

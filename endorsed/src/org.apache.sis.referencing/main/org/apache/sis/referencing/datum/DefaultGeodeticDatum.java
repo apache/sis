@@ -522,8 +522,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * compared by the {@link #equals(Object)} method.
      *
      * <h4>Example</h4>
-     * If the datum name is <cite>"Nouvelle Triangulation Française (Paris)"</cite> and the prime meridian name is
-     * <cite>"Paris"</cite>, then this method compares only the <cite>"Nouvelle Triangulation Française"</cite> part.
+     * If the datum name is <q>Nouvelle Triangulation Française (Paris)</q> and the prime meridian name is
+     * <q>Paris</q>, then this method compares only the <q>Nouvelle Triangulation Française</q> part.
      *
      * <h4>Future evolutions</h4>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability

@@ -68,7 +68,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *     If there is no code space, then the scope is derived from the shortest {@linkplain #getAuthority() authority}'s
  *     {@linkplain Citation#getAlternateTitles() alternate titles}, or the {@linkplain Citation#getTitle() main title}
  *     if there are no alternate titles. This policy exploits the ISO 19115 comment saying that citation alternate titles
- *     often contain abbreviation (for example "DCW" as an alternative title for <cite>"Digital Chart of the World"</cite>).</li>
+ *     often contain abbreviation (for example "DCW" as an alternative title for <q>Digital Chart of the World</q>).</li>
  * </ul>
  *
  * <h3>Example</h3>

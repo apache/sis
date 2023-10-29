@@ -403,7 +403,7 @@ public final class Context extends MarshalContext {
      * This method is static for the convenience of performing the check for null context.</div>
      *
      * @param  context        the current context, or {@code null} if none.
-     * @param  key            one of the value documented in the <cite>"Map key"</cite> column of
+     * @param  key            one of the value documented in the <q>Map key</q> column of
      *                        {@link org.apache.sis.xml.XML#SCHEMAS}.
      * @param  defaultSchema  the value to return if no schema is found for the given key.
      * @return the base URL of the schema, or an empty buffer if none were specified.

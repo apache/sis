@@ -955,9 +955,9 @@ convert:            if (componentType != null) {
      *
      * <h4>Example</h4>
      * The snippet below show WKT representations of the map projection parameters of a projected CRS
-     * (most other elements are omitted). The map projection uses a <cite>"Latitude of natural origin"</cite>
+     * (most other elements are omitted). The map projection uses a <q>Latitude of natural origin</q>
      * parameters which is set to 52 <strong>grads</strong>, as defined in the {@code UNIT[…]} element of the
-     * enclosing CRS. A similar rule applies to <cite>“False easting”</cite> and <cite>“False northing”</cite>
+     * enclosing CRS. A similar rule applies to <q>False easting</q> and <q>False northing</q>
      * parameters, which are in kilometres in this example.
      *
      * <p><b>WKT 1:</b></p>

@@ -99,7 +99,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Azimuthal Equidistant (Spherical)"</cite>.</li>
+     *   <li><q>Azimuthal Equidistant (Spherical)</q>.</li>
      * </ul>
      *
      * @param method      description of the projection parameters.

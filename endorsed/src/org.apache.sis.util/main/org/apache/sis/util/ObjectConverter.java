@@ -140,7 +140,7 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      * </ul>
      *
      * In other words, the {@code ""} value is unconvertible but nevertheless considered as part of the converter
-     * domain, and is mapped to <cite>"no number"</cite>. All other unparsable strings are considered outside the
+     * domain, and is mapped to <q>no number</q>. All other unparsable strings are considered outside the
      * converter domain.
      *
      * @param  object  the object to convert, or {@code null}.

@@ -49,7 +49,7 @@ import static java.lang.Double.doubleToRawLongBits;
  *   <li><b>Example of quantitative observation:</b>
  *   another sample dimension may have a {@code Category} instance specifying that sample values in the range [0…100]
  *   stands for elevation data. Those sample values are related to measurements in the real world (altitudes in metres)
- *   through a <cite>transfer function</cite>, foe example <var>altitude</var> = (<var>sample value</var>)×100 - 25.</li>
+ *   through a <cite>transfer function</cite>, for example <var>altitude</var> = (<var>sample value</var>)×100 - 25.</li>
  * </ul>
  *
  * Some image mixes both qualitative and quantitative categories. For example, images of <cite>Sea Surface Temperature</cite>

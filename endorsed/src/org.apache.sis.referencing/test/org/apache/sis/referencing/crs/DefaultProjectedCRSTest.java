@@ -396,7 +396,7 @@ public final class DefaultProjectedCRSTest extends TestCase {
     /**
      * Tests WKT 1 formatting of a pseudo-projection with explicit {@code "semi-major"} and {@code "semi-minor"}
      * parameter values. This was a way to define the Google pseudo-projection using standard projection method
-     * name before EPSG introduced the <cite>"Popular Visualisation Pseudo Mercator"</cite> projection method.
+     * name before EPSG introduced the <q>Popular Visualisation Pseudo Mercator</q> projection method.
      * The approach tested in this method is now deprecated at least for the Google projection (while it may
      * still be useful for other projections), but we still test it for compatibility reasons.
      *

@@ -248,8 +248,8 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * colors to predefined ranges of pixel values, it maps colors to {@linkplain Category#getName() category names},
      * {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement} or other properties.
      * The given function provides a way to colorize images without knowing in advance the numerical values of pixels.
-     * For example, instead of specifying <cite>"pixel value 0 is blue, 1 is green, 2 is yellow"</cite>,
-     * the given function allows to specify <cite>"Lakes are blue, Forests are green, Sand is yellow"</cite>.
+     * For example, instead of specifying <q>pixel value 0 is blue, 1 is green, 2 is yellow</q>,
+     * the given function allows to specify <q>Lakes are blue, Forests are green, Sand is yellow</q>.
      *
      * <h4>Default colors</h4>
      * The given function can return {@code null} or empty color arrays for some categories.

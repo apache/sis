@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
- * The provider for <cite>"Vertical Offset"</cite> (EPSG:9616).
+ * The provider for <q>Vertical Offset</q> (EPSG:9616).
  * The Apache SIS implementation of this operation method always perform the vertical offset in metres.
  * The vertical axis of source and target CRS shall be converted to metres before this operation is applied.
  *
@@ -45,7 +45,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * Consequently, the <var>offset</var> value is always applied in the direction of the target axis. This is different
  * than the Apache SIS design, which always interpret the parameter in the direction of a normalized coordinate axis
  * (up in this case, regardless the source and target coordinate systems). Consequently, the sign of the
- * <cite>"Vertical Offset"</cite> parameter value needs to be reversed if the target coordinate system axis is down.
+ * <q>Vertical Offset</q> parameter value needs to be reversed if the target coordinate system axis is down.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

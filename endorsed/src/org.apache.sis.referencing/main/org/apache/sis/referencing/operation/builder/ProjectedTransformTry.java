@@ -46,7 +46,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * {@link LocalizationGridBuilder} first computes a linear (affine) approximation of a localization grid, then stores the residuals.
  * This approach works well when the residuals are small. However if the localization grid is non-linear, then the affine transform
  * is a poor approximation of that grid and the residuals are high. High residuals make inverse transforms hard to compute, which
- * sometimes cause a {@link TransformException} with <cite>"no convergence"</cite> error message.</p>
+ * sometimes cause a {@link TransformException} with <q>no convergence</q> error message.</p>
  *
  * <p>In practice, localization grids in netCDF files are often used for storing the results of a map projection, e.g. Mercator.
  * This class allows {@link LocalizationGridBuilder} to try to transform the grid using a given list of map projections and see

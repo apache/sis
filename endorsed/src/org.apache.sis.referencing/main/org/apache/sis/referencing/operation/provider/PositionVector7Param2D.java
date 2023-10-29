@@ -22,7 +22,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Position Vector transformation (geog2D domain)"</cite> (EPSG:9606).
+ * The provider for <q>Position Vector transformation (geog2D domain)</q> (EPSG:9606).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */

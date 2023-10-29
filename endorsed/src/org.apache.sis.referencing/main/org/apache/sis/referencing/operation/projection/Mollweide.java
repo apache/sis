@@ -99,8 +99,8 @@ public class Mollweide extends NormalizedProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Mollweide"</cite>, also known as
-     *       <cite>"Homalographic"</cite> or <cite>"Homolographic"</cite>.</li>
+     *   <li><q>Mollweide</q>, also known as
+     *       <q>Homalographic</q> or <q>Homolographic</q>.</li>
      * </ul>
      *
      * @param method      description of the projection parameters.

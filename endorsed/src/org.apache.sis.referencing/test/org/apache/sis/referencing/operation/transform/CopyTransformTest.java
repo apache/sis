@@ -142,7 +142,7 @@ public final class CopyTransformTest extends MathTransformTestCase {
     /**
      * Tests a transform with more output dimensions than input dimensions.
      * The extra dimension has values set to 0. This kind of transform happen
-     * in the inverse of <cite>"Geographic 3D to 2D conversion"</cite> (EPSG:9659).
+     * in the inverse of <q>Geographic 3D to 2D conversion</q> (EPSG:9659).
      *
      * @throws TransformException should never happen.
      */

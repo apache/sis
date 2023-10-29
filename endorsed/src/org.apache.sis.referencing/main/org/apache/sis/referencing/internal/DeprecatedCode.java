@@ -86,7 +86,7 @@ public final class DeprecatedCode extends ImmutableIdentifier implements Depreca
 
     /**
      * Returns {@code null}, since we used the description for the superseded information.
-     * See <cite>"Implementation note"</cite> in class javadoc.
+     * See <q>Implementation note</q> in class javadoc.
      *
      * @return {@code null}.
      */

@@ -30,7 +30,7 @@
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 module org.apache.sis.util {
@@ -113,8 +113,8 @@ module org.apache.sis.util {
             org.apache.sis.console,
             org.apache.sis.openoffice,
             org.apache.sis.gui,                         // In the "optional" sub-project.
-            org.apache.sis.referencing.epsg,
-            org.apache.sis.referencing.database;
+            org.apache.sis.referencing.epsg,            // In the "non-free" sub-project.
+            org.apache.sis.referencing.database;        // In the "non-free" sub-project.
 
     exports org.apache.sis.util.internal to
             org.apache.sis.metadata,
@@ -132,8 +132,8 @@ module org.apache.sis.util {
             org.apache.sis.cloud.aws,
             org.apache.sis.console,
             org.apache.sis.gui,                         // In the "optional" sub-project.
-            org.apache.sis.referencing.epsg,
-            org.apache.sis.referencing.database;
+            org.apache.sis.referencing.epsg,            // In the "non-free" sub-project.
+            org.apache.sis.referencing.database;        // In the "non-free" sub-project.
 
     exports org.apache.sis.pending.temporal to
             org.apache.sis.metadata;
@@ -152,7 +152,7 @@ module org.apache.sis.util {
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
-            org.apache.sis.storage.shapefile,
+            org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
@@ -160,7 +160,7 @@ module org.apache.sis.util {
             org.apache.sis.console,
             org.apache.sis.webapp,                      // In the "incubator" sub-project.
             org.apache.sis.gui,                         // In the "optional" sub-project.
-            org.apache.sis.referencing.database;
+            org.apache.sis.referencing.database;        // In the "non-free" sub-project.
 
     exports org.apache.sis.pending.jdk to
             org.apache.sis.feature,

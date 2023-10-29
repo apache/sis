@@ -74,7 +74,7 @@ import org.opengis.util.ControlledVocabulary;
  * </ul>
  *
  * <h2>Substituting a free text by a code list</h2>
- * The ISO standard allows to substitute some character strings in the <cite>"free text"</cite> domain
+ * The ISO standard allows to substitute some character strings in the <q>free text</q> domain
  * by a {@link CodeList} value. Such substitution can be done with:
  *
  * <ul>

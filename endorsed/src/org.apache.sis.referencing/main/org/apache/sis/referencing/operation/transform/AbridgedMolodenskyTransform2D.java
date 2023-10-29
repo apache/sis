@@ -26,7 +26,7 @@ import static java.lang.Math.*;
 /**
  * Two-dimensional abridged Molodensky transform with all translation terms fixed to zero.
  * This implementation performs only a change of ellipsoid. It provides nothing new compared
- * to {@link MolodenskyFormula}, except performance.
+ * to {@link MolodenskyTransform}, except performance.
  *
  * <p><b>Note:</b> this transform is yet more abridged than standard "abridged Molondensky" transform since
  * it sets all translation terms to zero. A better class name could be "Very abridged Molodensky transform".

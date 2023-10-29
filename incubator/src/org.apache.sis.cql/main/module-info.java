@@ -19,8 +19,6 @@
  * CQL parser.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
- * @since   1.1
  */
 module org.apache.sis.cql {
     requires transitive org.apache.sis.feature;
