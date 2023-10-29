@@ -58,7 +58,7 @@ dependencies {
     api(libs.jaxb.api)
 
     // Optional dependencies
-    runtimeOnly(libs.jaxb.impl)
+    api(libs.jaxb.impl)                 // Actually runtime only, but declared as API for avoiding compiler warnings.
     compileOnly(libs.jts.core)
     compileOnly(libs.esri.geometry)
     compileOnly(libs.libreoffice)

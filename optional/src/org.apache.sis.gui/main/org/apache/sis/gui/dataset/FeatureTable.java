@@ -169,7 +169,7 @@ public class FeatureTable extends TableView<Feature> {
      */
     private void initialize() {
         featuresProperty.addListener((p,o,n) -> startFeaturesLoading(n));
-        setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
+        setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         setTableMenuButtonVisible(true);
     }
 

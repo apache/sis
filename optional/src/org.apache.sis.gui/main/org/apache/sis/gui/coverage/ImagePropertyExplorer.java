@@ -414,7 +414,7 @@ public class ImagePropertyExplorer extends Widget {
             yCol .setCellValueFactory((cell) -> cell.getValue().yp);
             label.setCellValueFactory((cell) -> cell.getValue());
             layout.getColumns().setAll(label, xCol, yCol);
-            layout.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+            layout.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
             layout.getColumns().forEach((c) -> {
                 c.setReorderable(false);
                 c.setSortable(false);
@@ -436,7 +436,7 @@ public class ImagePropertyExplorer extends Widget {
             value.setCellValueFactory((cell) -> cell.getValue().value);
             value.setCellFactory((column) -> new PropertyCell(locale));
             properties.getColumns().setAll(label, value);
-            properties.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+            properties.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
             properties.getColumns().forEach((c) -> c.setReorderable(false));
         }
         /*

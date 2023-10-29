@@ -208,7 +208,7 @@ check:      if (data != null) {
         nameColumn .setCellValueFactory(MetadataTree::getPropertyName);
         valueColumn.setCellValueFactory(formatter);
 
-        setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
+        setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         getColumns().setAll(nameColumn, valueColumn);
         contentProperty.addListener(MetadataTree::applyChange);
     }
