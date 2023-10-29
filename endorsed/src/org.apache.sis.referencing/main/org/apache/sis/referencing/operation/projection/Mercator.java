@@ -101,22 +101,22 @@ public class Mercator extends ConformalProjection {
     private enum Variant implements ProjectionVariant {
         // Declaration order matter. Patterns are matched in that order.
 
-        /** The <cite>"Mercator (variant A)"</cite> projection (one standard parallel). */
+        /** The <q>Mercator (variant A)</q> projection (one standard parallel). */
         ONE_PARALLEL(".*\\bvariant\\s*A\\b.*", Mercator1SP.IDENTIFIER, false),
 
-        /** The <cite>"Mercator (variant B)"</cite> projection (two standard parallels). */
+        /** The <q>Mercator (variant B)</q> projection (two standard parallels). */
         TWO_PARALLELS(".*\\bvariant\\s*B\\b.*", Mercator2SP.IDENTIFIER, false),
 
-        /** The <cite>"Mercator (variant C)"</cite> projection. */
+        /** The <q>Mercator (variant C)</q> projection. */
         REGIONAL(".*\\bvariant\\s*C\\b.*", RegionalMercator.IDENTIFIER, false),
 
-        /** The <cite>"Mercator (Spherical)"</cite> projection. */
+        /** The <q>Mercator (Spherical)</q> projection. */
         SPHERICAL(".*\\bSpherical\\b.*", MercatorSpherical.IDENTIFIER, true),
 
-        /** The <cite>"Popular Visualisation Pseudo Mercator"</cite> projection. */
+        /** The <q>Popular Visualisation Pseudo Mercator</q> projection. */
         PSEUDO(".*\\bPseudo.*", PseudoMercator.IDENTIFIER, true),
 
-        /** The <cite>"Mercator Auxiliary Sphere"</cite> projection. */
+        /** The <q>Mercator Auxiliary Sphere</q> projection. */
         AUXILIARY(".*\\bAuxiliary\\s*Sphere\\b.*", null, true),
 
         /** Miller projection. */
@@ -164,13 +164,13 @@ public class Mercator extends ConformalProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Mercator (variant A)"</cite>, also known as <cite>"Mercator (1SP)"</cite>.</li>
-     *   <li><cite>"Mercator (variant B)"</cite>, also known as <cite>"Mercator (2SP)"</cite>.</li>
-     *   <li><cite>"Mercator (variant C)"</cite>.</li>
-     *   <li><cite>"Mercator (Spherical)"</cite>.</li>
-     *   <li><cite>"Mercator Auxiliary Sphere"</cite>.</li>
-     *   <li><cite>"Popular Visualisation Pseudo Mercator"</cite>.</li>
-     *   <li><cite>"Miller Cylindrical"</cite>.</li>
+     *   <li><q>Mercator (variant A)</q>, also known as <q>Mercator (1SP)</q>.</li>
+     *   <li><q>Mercator (variant B)</q>, also known as <q>Mercator (2SP)</q>.</li>
+     *   <li><q>Mercator (variant C)</q>.</li>
+     *   <li><q>Mercator (Spherical)</q>.</li>
+     *   <li><q>Mercator Auxiliary Sphere</q>.</li>
+     *   <li><q>Popular Visualisation Pseudo Mercator</q>.</li>
+     *   <li><q>Miller Cylindrical</q>.</li>
      * </ul>
      *
      * @param method      description of the projection parameters.

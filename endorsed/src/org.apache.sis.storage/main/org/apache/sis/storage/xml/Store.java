@@ -189,7 +189,7 @@ final class Store extends URIDataStore implements Filter {
      * <ul>
      *   <li>If the unmarshalled object implements the {@link Metadata} interface, then it is returned directly.</li>
      *   <li>Otherwise if the unmarshalled object implements {@link ReferenceSystem}, then it is wrapped in the
-     *       <cite>"reference system info"</cite> property of a new {@link DefaultMetadata} instance.</li>
+     *       <q>reference system info</q> property of a new {@link DefaultMetadata} instance.</li>
      * </ul>
      *
      * Other cases may be added in any future SIS version.

@@ -1000,7 +1000,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * <p>More specifically if the given value ends with a {@code '.'} character followed by a
      * sequence of {@code '0'} characters, then those characters are omitted. Otherwise this
-     * method returns the text unchanged. This is a <cite>"all or nothing"</cite> method:
+     * method returns the text unchanged. This is a <q>all or nothing</q> method:
      * either the fractional part is completely removed, or either it is left unchanged.</p>
      *
      * <h4>Examples</h4>
@@ -1176,7 +1176,7 @@ searchWordBreak:    while (true) {
      * <ol>
      *   <li>Invoke {@link #camelCaseToWords(CharSequence, boolean)}, which separate the words
      *     on the basis of character case. For example, {@code "transferFunctionType"} become
-     *     <cite>"transfer function type"</cite>. This works fine for ISO 19115 identifiers.</li>
+     *     <q>transfer function type</q>. This works fine for ISO 19115 identifiers.</li>
      *
      *   <li>Next replace all occurrence of {@code '_'} by spaces in order to take in account
      *     another common naming convention, which uses {@code '_'} as a word separator. This
@@ -1227,7 +1227,7 @@ searchWordBreak:    while (true) {
      * Given a string in camel cases, returns a string with the same words separated by spaces.
      * A word begins with a upper-case character following a lower-case character. For example
      * if the given string is {@code "PixelInterleavedSampleModel"}, then this method returns
-     * <cite>"Pixel Interleaved Sample Model"</cite> or <cite>"Pixel interleaved sample model"</cite>
+     * <q>Pixel Interleaved Sample Model</q> or <q>Pixel interleaved sample model</q>
      * depending on the value of the {@code toLowerCase} argument.
      *
      * <p>If {@code toLowerCase} is {@code false}, then this method inserts spaces but does not change

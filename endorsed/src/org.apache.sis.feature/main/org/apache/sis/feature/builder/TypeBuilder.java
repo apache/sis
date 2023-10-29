@@ -370,7 +370,7 @@ public abstract class TypeBuilder implements Localized {
      * Sets optional information beyond that required for concise definition of the element.
      * The description may assist in understanding the feature scope and application.
      * If the type {@linkplain #isDeprecated() is deprecated}, then the description should
-     * give indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * give indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @param  description  information beyond that required for concise definition of the element, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
@@ -388,7 +388,7 @@ public abstract class TypeBuilder implements Localized {
     /**
      * Returns {@code true} if the type is deprecated.
      * If this method returns {@code true}, then the {@linkplain #getDescription() description} should give
-     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @return whether this type is deprecated.
      *
@@ -401,7 +401,7 @@ public abstract class TypeBuilder implements Localized {
     /**
      * Sets whether the type is deprecated.
      * If the type is deprecated, then the {@linkplain #setDescription(CharSequence) description}
-     * should be set to an indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * should be set to an indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @param  deprecated  whether this type is deprecated.
      * @return {@code this} for allowing method calls chaining.

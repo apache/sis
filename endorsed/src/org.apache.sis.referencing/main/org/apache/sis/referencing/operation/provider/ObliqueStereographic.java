@@ -26,7 +26,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>"Oblique Stereographic"</cite> projection (EPSG:9809).
+ * The provider for <q>Oblique Stereographic</q> projection (EPSG:9809).
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)

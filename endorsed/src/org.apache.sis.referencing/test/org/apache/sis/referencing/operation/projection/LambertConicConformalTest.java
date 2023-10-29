@@ -62,7 +62,7 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
     }
 
     /**
-     * Verifies the value of the constant used in <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection.
+     * Verifies the value of the constant used in <q>Lambert Conic Conformal (2SP Belgium)</q> projection.
      *
      * @see #testLambertConicConformalBelgium()
      */
@@ -184,7 +184,7 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Lambert Conic Conformal (1SP)"</cite> case (EPSG:9801).
+     * Tests the <q>Lambert Conic Conformal (1SP)</q> case (EPSG:9801).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -199,7 +199,7 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Lambert Conic Conformal (2SP)"</cite> case (EPSG:9802).
+     * Tests the <q>Lambert Conic Conformal (2SP)</q> case (EPSG:9802).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -214,7 +214,7 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> case (EPSG:9803).
+     * Tests the <q>Lambert Conic Conformal (2SP Belgium)</q> case (EPSG:9803).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -229,7 +229,7 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Lambert Conic Conformal (2SP Michigan)"</cite> case (EPSG:1051).
+     * Tests the <q>Lambert Conic Conformal (2SP Michigan)</q> case (EPSG:1051).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -244,7 +244,7 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Lambert Conic Conformal (1SP West Orientated)"</cite> case (EPSG:9826)).
+     * Tests the <q>Lambert Conic Conformal (1SP West Orientated)</q> case (EPSG:9826)).
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.

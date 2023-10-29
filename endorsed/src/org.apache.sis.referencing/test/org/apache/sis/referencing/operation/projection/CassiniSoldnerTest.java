@@ -191,7 +191,7 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Cassini-Soldner"</cite> (EPSG:9806) projection method.
+     * Tests the <q>Cassini-Soldner</q> (EPSG:9806) projection method.
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -205,7 +205,7 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Hyperbolic Cassini-Soldner"</cite> (EPSG:9833) projection method.
+     * Tests the <q>Hyperbolic Cassini-Soldner</q> (EPSG:9833) projection method.
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.

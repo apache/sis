@@ -38,7 +38,7 @@ public final class HardCodedAxes {
      * Axis for geodetic longitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain Units#DEGREE degrees}.
-     * The ISO 19111 name is <cite>"geodetic longitude"</cite> and the abbreviation is "λ" (lambda).
+     * The ISO 19111 name is <q>geodetic longitude</q> and the abbreviation is "λ" (lambda).
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
      * {@link #ELLIPSOIDAL_HEIGHT} set. The EPSG code depends on axis order; consequently it is
@@ -54,7 +54,7 @@ public final class HardCodedAxes {
      * Axis for geodetic latitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain Units#DEGREE degrees}.
-     * The ISO 19111 name is <cite>"geodetic latitude"</cite> and the abbreviation is "φ" (phi).
+     * The ISO 19111 name is <q>geodetic latitude</q> and the abbreviation is "φ" (phi).
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
      * {@link #ELLIPSOIDAL_HEIGHT} set. The EPSG code depends on axis order; consequently it is
@@ -100,7 +100,7 @@ public final class HardCodedAxes {
      * Axis for height values above the ellipsoid in a
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"ellipsoidal height"</cite> and the abbreviation is lower case <cite>"h"</cite>.
+     * The ISO 19111 name is <q>ellipsoidal height</q> and the abbreviation is lower case <q>h</q>.
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
      * {@link #ELLIPSOIDAL_HEIGHT} set. The EPSG code depends on axis order; consequently it is
@@ -125,7 +125,7 @@ public final class HardCodedAxes {
     /**
      * Axis for height values measured from gravity.
      * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"gravity-related height"</cite> and the abbreviation is upper case <cite>"H"</cite>.
+     * The ISO 19111 name is <q>gravity-related height</q> and the abbreviation is upper case <q>H</q>.
      *
      * @see #ALTITUDE
      * @see #ELLIPSOIDAL_HEIGHT
@@ -144,7 +144,7 @@ public final class HardCodedAxes {
     /**
      * Axis for altitude values.
      * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
-     * The abbreviation is lower case <cite>"h"</cite>.
+     * The abbreviation is lower case <q>h</q>.
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
      * {@link #ALTITUDE} tuple.</p>
@@ -160,7 +160,7 @@ public final class HardCodedAxes {
     /**
      * Axis for depth.
      * Increasing coordinate values go {@linkplain AxisDirection#DOWN down} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"depth"</cite>.
+     * The ISO 19111 name is <q>depth</q>.
      *
      * @see #ALTITUDE
      * @see #ELLIPSOIDAL_HEIGHT
@@ -174,13 +174,13 @@ public final class HardCodedAxes {
      * Axis for radius in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"geocentric radius"</cite> and the abbreviation is lower-case <cite>"r"</cite>.
+     * The ISO 19111 name is <q>geocentric radius</q> and the abbreviation is lower-case <q>r</q>.
      *
      * <div class="note"><b>Note:</b>
-     * EPSG dataset 8.9 uses upper-case <cite>"R"</cite>.
-     * ISO 19111 and 19162 use lower-case <cite>"r"</cite> instead,
+     * EPSG dataset 8.9 uses upper-case <q>R</q>.
+     * ISO 19111 and 19162 use lower-case <q>r</q> instead,
      * but with "awayFrom" direction instead of "geocentricRadius".
-     * In this class, <cite>"r"</cite> is also used by {@link #DISTANCE}.</div>
+     * In this class, <q>r</q> is also used by {@link #DISTANCE}.</div>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -199,7 +199,7 @@ public final class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing coordinate values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain Units#DEGREE degrees}.
-     * The ISO 19111 name is <cite>"spherical longitude"</cite> (also called <cite>"azimuthal angle"</cite>)
+     * The ISO 19111 name is <q>spherical longitude</q> (also called <q>azimuthal angle</q>)
      * and the abbreviation is "θ" (theta).
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "long" abbreviation which
@@ -223,7 +223,7 @@ public final class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing coordinate values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain Units#DEGREE degrees}.
-     * The ISO 19111 name is <cite>"spherical latitude"</cite> (also called <cite>"polar (zenith) angle"</cite>)
+     * The ISO 19111 name is <q>spherical latitude</q> (also called <q>polar (zenith) angle</q>)
      * and the abbreviation is "Ω".
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "lat" abbreviation
@@ -244,7 +244,7 @@ public final class HardCodedAxes {
     /**
      * Axis for <var>x</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing coordinate values go {@linkplain AxisDirection#EAST East} and units are {@linkplain Units#METRE metres}.
-     * The abbreviation is lower case <cite>"x"</cite>.
+     * The abbreviation is lower case <q>x</q>.
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
      *
@@ -260,7 +260,7 @@ public final class HardCodedAxes {
     /**
      * Axis for <var>y</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing coordinate values go {@linkplain AxisDirection#NORTH North} and units are {@linkplain Units#METRE metres}.
-     * The abbreviation is lower case <cite>"y"</cite>.
+     * The abbreviation is lower case <q>y</q>.
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
      *
@@ -276,7 +276,7 @@ public final class HardCodedAxes {
     /**
      * Axis for <var>z</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
-     * The abbreviation is lower case <cite>"z"</cite>.
+     * The abbreviation is lower case <q>z</q>.
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
      */
@@ -288,7 +288,7 @@ public final class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing coordinate values goes typically toward prime meridian, but the actual axis direction
      * is {@link AxisDirection#GEOCENTRIC_X GEOCENTRIC_X}. The units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"Geocentric X"</cite> and the abbreviation is upper case <cite>"X"</cite>.
+     * The ISO 19111 name is <q>Geocentric X</q> and the abbreviation is upper case <q>X</q>.
      *
      * <p>In legacy OGC 01-009 specification (still in use for WKT 1 format),
      * the direction was {@link AxisDirection#OTHER OTHER}).</p>
@@ -303,7 +303,7 @@ public final class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing coordinate values goes typically toward East, but the actual axis direction is
      * {@link AxisDirection#GEOCENTRIC_Y GEOCENTRIC_Y}. The units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"Geocentric Y"</cite> and the abbreviation is upper case <cite>"Y"</cite>.
+     * The ISO 19111 name is <q>Geocentric Y</q> and the abbreviation is upper case <q>Y</q>.
      *
      * <p>In legacy OGC 01-009 specification (still in use for WKT 1 format),
      * the direction was {@link AxisDirection#EAST EAST}).</p>
@@ -318,7 +318,7 @@ public final class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing coordinate values goes typically toward North, but the actual axis direction is
      * {@link AxisDirection#GEOCENTRIC_Z GEOCENTRIC_Z}. The units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"Geocentric Z"</cite> and the abbreviation is upper case <cite>"Z"</cite>.
+     * The ISO 19111 name is <q>Geocentric Z</q> and the abbreviation is upper case <q>Z</q>.
      *
      * <p>In legacy OGC 01-009 specification (still in use for WKT 1 format),
      * the direction was {@link AxisDirection#NORTH NORTH}).</p>
@@ -331,7 +331,7 @@ public final class HardCodedAxes {
     /**
      * Axis for Easting values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#EAST East} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"easting"</cite> and the abbreviation is upper case <cite>"E"</cite>.
+     * The ISO 19111 name is <q>easting</q> and the abbreviation is upper case <q>E</q>.
      *
      * <p>This axis is usually part of a {@link #EASTING}, {@link #NORTHING} set.</p>
      *
@@ -345,7 +345,7 @@ public final class HardCodedAxes {
     /**
      * Axis for Westing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#WEST West} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"westing"</cite> and the abbreviation is upper case <cite>"W"</cite>.
+     * The ISO 19111 name is <q>westing</q> and the abbreviation is upper case <q>W</q>.
      *
      * @see #X
      * @see #EASTING
@@ -357,7 +357,7 @@ public final class HardCodedAxes {
     /**
      * Axis for Northing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#NORTH North} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"northing"</cite> and the abbreviation is upper case <cite>"N"</cite>.
+     * The ISO 19111 name is <q>northing</q> and the abbreviation is upper case <q>N</q>.
      *
      * <p>This axis is usually part of a {@link #EASTING}, {@link #NORTHING} set.</p>
      *
@@ -371,7 +371,7 @@ public final class HardCodedAxes {
     /**
      * Axis for Southing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#SOUTH South} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"southing"</cite> and the abbreviation is upper case <cite>"S"</cite>.
+     * The ISO 19111 name is <q>southing</q> and the abbreviation is upper case <q>S</q>.
      *
      * @see #Y
      * @see #NORTHING
@@ -421,7 +421,7 @@ public final class HardCodedAxes {
     /**
      * Axis for time values in a {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS time CS}.
      * Increasing time go toward {@linkplain AxisDirection#FUTURE future} and units are {@linkplain Units#DAY days}.
-     * The abbreviation is lower case <cite>"t"</cite>.
+     * The abbreviation is lower case <q>t</q>.
      */
     public static final DefaultCoordinateSystemAxis TIME = create("Time", "t",
             AxisDirection.FUTURE, Units.DAY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
@@ -436,7 +436,7 @@ public final class HardCodedAxes {
     /**
      * Axis for column indices in a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}.
      * Increasing values go toward {@linkplain AxisDirection#COLUMN_POSITIVE positive column number}.
-     * The abbreviation is lower case <cite>"i"</cite>.
+     * The abbreviation is lower case <q>i</q>.
      */
     public static final DefaultCoordinateSystemAxis COLUMN = create("Column", "i",
             AxisDirection.COLUMN_POSITIVE, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
@@ -444,7 +444,7 @@ public final class HardCodedAxes {
     /**
      * Axis for row indices in a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}.
      * Increasing values go toward {@linkplain AxisDirection#ROW_POSITIVE positive row number}.
-     * The abbreviation is lower case <cite>"j"</cite>.
+     * The abbreviation is lower case <q>j</q>.
      */
     public static final DefaultCoordinateSystemAxis ROW = create("Row", "j",
             AxisDirection.ROW_POSITIVE, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
@@ -452,7 +452,7 @@ public final class HardCodedAxes {
     /**
      * Axis for <var>x</var> values in a display device.
      * Increasing values go toward {@linkplain AxisDirection#DISPLAY_RIGHT display right}.
-     * The abbreviation is lower case <cite>"x"</cite>.
+     * The abbreviation is lower case <q>x</q>.
      */
     public static final DefaultCoordinateSystemAxis DISPLAY_X = create("x", "x",
             AxisDirection.DISPLAY_RIGHT, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
@@ -460,7 +460,7 @@ public final class HardCodedAxes {
     /**
      * Axis for <var>y</var> values in a display device.
      * Increasing values go toward {@linkplain AxisDirection#DISPLAY_DOWN display down}.
-     * The abbreviation is lower case <cite>"y"</cite>.
+     * The abbreviation is lower case <q>y</q>.
      */
     public static final DefaultCoordinateSystemAxis DISPLAY_Y = create("y", "y",
             AxisDirection.DISPLAY_DOWN, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);

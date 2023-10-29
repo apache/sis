@@ -28,7 +28,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Stereographic North Pole"</cite> projection (ESRI).
+ * The provider for <q>Stereographic North Pole</q> projection (ESRI).
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)

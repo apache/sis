@@ -211,9 +211,9 @@ class MathTransformParser extends AbstractParser {
      * Otherwise this method returns null.
      *
      * <h4>Standard compliance note</h4>
-     * This method is a slight departure of ISO 19162, which said <cite>"Should any attributes or values given
+     * This method is a slight departure of ISO 19162, which said <q>Should any attributes or values given
      * in the cited identifier be in conflict with attributes or values given explicitly in the WKT description,
-     * the WKT values shall prevail."</cite> But some units can hardly be expressed by the {@code UNIT} element,
+     * the WKT values shall prevail.</q> But some units can hardly be expressed by the {@code UNIT} element,
      * because the latter can contain only a conversion factor. For example, sexagesimal units (EPSG:9108, 9110
      * and 9111) can hardly be expressed in another way than by their EPSG code. Thankfully, identifiers in
      * {@code UNIT} elements are rare, so risk of conflicts should be low.

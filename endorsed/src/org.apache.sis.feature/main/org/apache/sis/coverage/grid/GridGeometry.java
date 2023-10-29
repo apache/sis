@@ -165,7 +165,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     public static final int EXTENT = 4;
 
     /**
-     * A bitmask to specify the validity of the <cite>"grid to CRS"</cite> transform.
+     * A bitmask to specify the validity of the <q>grid to CRS</q> transform.
      *
      * @see #isDefined(int)
      * @see #getGridToCRS(PixelInCell)

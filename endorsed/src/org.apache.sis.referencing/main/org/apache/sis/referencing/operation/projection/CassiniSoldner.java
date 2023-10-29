@@ -69,12 +69,12 @@ public class CassiniSoldner extends MeridianArcBased {
         DEFAULT(null, IDENTIFIER_OF_BASE),
 
         /**
-         * The <cite>"Hyperbolic Cassini-Soldner"</cite> variant, which is non-invertible.
+         * The <q>Hyperbolic Cassini-Soldner</q> variant, which is non-invertible.
          */
         HYPERBOLIC(Pattern.compile(".*\\bHyperbolic\\b.*", Pattern.CASE_INSENSITIVE), HyperbolicCassiniSoldner.IDENTIFIER),
 
         /**
-         * The special case of <cite>"Vanua Levu Grid"</cite> at φ₀=16°15′S.
+         * The special case of <q>Vanua Levu Grid</q> at φ₀=16°15′S.
          * This is the only hyperbolic variant for which reverse projection is supported.
          * This special case is detected by checking the value of the latitude of origin.
          */
@@ -130,8 +130,8 @@ public class CassiniSoldner extends MeridianArcBased {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Cassini-Soldner"</cite>.</li>
-     *   <li><cite>"Hyperbolic Cassini-Soldner"</cite>.</li>
+     *   <li><q>Cassini-Soldner</q>.</li>
+     *   <li><q>Hyperbolic Cassini-Soldner</q>.</li>
      * </ul>
      *
      * @param  method      description of the projection parameters.

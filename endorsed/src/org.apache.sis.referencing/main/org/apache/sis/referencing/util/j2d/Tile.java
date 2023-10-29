@@ -191,7 +191,7 @@ public class Tile implements Serializable {
     }
 
     /**
-     * Creates a tile for the given region and <cite>"grid to real world"</cite> transform.
+     * Creates a tile for the given region and <q>grid to real world</q> transform.
      * This constructor can be used when the {@linkplain #getLocation() location} of the tile is unknown.
      * The location and subsampling will be computed automatically when this tile will be processed by a
      * {@link TileOrganizer}.
@@ -204,7 +204,7 @@ public class Tile implements Serializable {
      * @param region     the tile region, or {@code null} if unknown.
      *                   The (<var>x</var>,<var>y</var> location of this region is typically (0,0).
      *                   The final location will be computed when this tile will be given to a {@link TileOrganizer}.
-     * @param gridToCRS  the <cite>"grid to real world"</cite> transform mapping pixel
+     * @param gridToCRS  the <q>grid to real world</q> transform mapping pixel
      *                   {@linkplain PixelOrientation#UPPER_LEFT upper left} corner.
      */
     public Tile(final Rectangle region, final AffineTransform gridToCRS) {
@@ -421,7 +421,7 @@ public class Tile implements Serializable {
     }
 
     /**
-     * Returns the <cite>"grid to real world"</cite> transform, or {@code null} if unknown.
+     * Returns the <q>grid to real world</q> transform, or {@code null} if unknown.
      * This transform is derived from the value given to the constructor, but may not be identical
      * since it may have been {@linkplain AffineTransform#translate(double, double) translated}
      * in order to get a uniform grid geometry for every tiles.
@@ -437,7 +437,7 @@ public class Tile implements Serializable {
      *     gridToCRS.translate(location.x, location.y);
      *     }
      *
-     * @return the <cite>"grid to real world"</cite> transform mapping pixel
+     * @return the <q>grid to real world</q> transform mapping pixel
      *         {@linkplain PixelOrientation#UPPER_LEFT upper left} corner, or {@code null} if undefined.
      * @throws IllegalStateException if this tile has been {@linkplain #Tile(Rectangle, AffineTransform)
      *         created without location} and has not yet been processed by {@link TileOrganizer}.
@@ -454,10 +454,10 @@ public class Tile implements Serializable {
     }
 
     /**
-     * Sets the new <cite>"grid to real world"</cite> transform to use after the translation performed by
+     * Sets the new <q>grid to real world</q> transform to use after the translation performed by
      * {@link #translate(int, int)}, if any. The given instance should be immutable; it will not be cloned.
      *
-     * @param  at  the <cite>"grid to real world"</cite> transform mapping pixel
+     * @param  at  the <q>grid to real world</q> transform mapping pixel
      *             {@linkplain PixelOrientation#UPPER_LEFT upper left} corner.
      * @throws IllegalStateException if another transform was already assigned to this tile.
      */

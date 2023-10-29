@@ -26,7 +26,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>"Mollweide"</cite> (also known as <cite>"Homalographic"</cite>) projection.
+ * The provider for <q>Mollweide</q> (also known as <q>Homalographic</q>) projection.
  * As of version 9.4 of EPSG geodetic dataset, there is no known EPSG code for this projection.
  *
  * @author  Johann Sorel (Geomatys)

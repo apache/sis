@@ -292,8 +292,8 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      * approximation is. This test performs the comparison for the following transformations:
      *
      * <ul>
-     *   <li>Transformation from NTF to RGF93. Those CRS are the source and target of <cite>"France geocentric
-     *       interpolation"</cite> (ESPG:9655). This test allows us to verify the accuracy documented in
+     *   <li>Transformation from NTF to RGF93. Those CRS are the source and target of <q>France geocentric
+     *       interpolation</q> (ESPG:9655). This test allows us to verify the accuracy documented in
      *       {@link InterpolatedGeocentricTransform}.</li>
      *   <li>(More areas may be added later).</li>
      * </ul>

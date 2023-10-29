@@ -182,7 +182,7 @@ public class TensorParameters<E> implements Serializable {
      *
      * <h4>Relationship with EPSG</h4>
      * The above-cited group of parameters are close, but not identical, to the definitions provided
-     * by the <cite>"Affine parametric transformation"</cite> (EPSG:9624) operation method.
+     * by the <q>Affine parametric transformation</q> (EPSG:9624) operation method.
      * The differences are:
      *
      * <ul>

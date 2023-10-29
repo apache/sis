@@ -26,7 +26,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Stereographic North South"</cite> projection (ESRI).
+ * The provider for <q>Stereographic North South</q> projection (ESRI).
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)

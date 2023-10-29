@@ -187,7 +187,7 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Mercator (variant A)"</cite> case (EPSG:9804).
+     * Tests the <q>Mercator (variant A)</q> case (EPSG:9804).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -202,7 +202,7 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Mercator (variant B)"</cite> case (EPSG:9805).
+     * Tests the <q>Mercator (variant B)</q> case (EPSG:9805).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -217,7 +217,7 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Mercator (variant C)"</cite> case (EPSG:1044).
+     * Tests the <q>Mercator (variant C)</q> case (EPSG:1044).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -232,7 +232,7 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Mercator (Spherical)"</cite> case (EPSG:1026).
+     * Tests the <q>Mercator (Spherical)</q> case (EPSG:1026).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -247,7 +247,7 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Popular Visualisation Pseudo Mercator"</cite> case (EPSG:1024).
+     * Tests the <q>Popular Visualisation Pseudo Mercator</q> case (EPSG:1024).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -262,7 +262,7 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Miller Cylindrical"</cite> case.
+     * Tests the <q>Miller Cylindrical</q> case.
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -277,9 +277,9 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Mercator Auxiliary Sphere"</cite> case with type 3.
+     * Tests the <q>Mercator Auxiliary Sphere</q> case with type 3.
      * This type mandate conversion between geodetic latitude and authalic latitude.
-     * The values used in this test are close to <cite>"Mercator (Spherical)"</cite> (EPSG:1026) case.
+     * The values used in this test are close to <q>Mercator (Spherical)</q> (EPSG:1026) case.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
@@ -298,7 +298,7 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Mercator Auxiliary Sphere"</cite> case.
+     * Tests the <q>Mercator Auxiliary Sphere</q> case.
      * For the sphere type 0, which is the default, this is equivalent to pseudo-Mercator.
      * This simple test measures the length of an arc of 1 radian at equator.
      *
@@ -324,10 +324,10 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Creates an ESRI  <cite>"Mercator Auxiliary Sphere"</cite> projection.
+     * Creates an ESRI  <q>Mercator Auxiliary Sphere</q> projection.
      * The axis lengths are those of WGS 84, which result in an authalic radius of about 6371007 meters.
      *
-     * @param  type  the <cite>"Auxiliary sphere type"</cite> parameter value.
+     * @param  type  the <q>Auxiliary sphere type</q> parameter value.
      * @throws FactoryException if an error occurred while creating the map projection.
      */
     private void createAuxiliarySphereProjection(final int type) throws FactoryException {

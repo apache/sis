@@ -136,13 +136,13 @@ public abstract class Grid extends NamedElement {
     protected abstract Grid forDimensions(Dimension[] dimensions);
 
     /**
-     * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
+     * Returns the number of dimensions of source coordinates in the <q>grid to CRS</q> conversion.
      * This is the number of dimensions of the <em>grid</em>.
      * It should be equal to the size of {@link #getDimensions()} list.
      *
      * <h4>Note on target dimensions</h4>
      * A {@code getTargetDimensions()} method would return the number of dimensions of the
-     * <em>coordinate reference system</em>, which is the target of the <cite>"grid to CRS"</cite> conversion.
+     * <em>coordinate reference system</em>, which is the target of the <q>grid to CRS</q> conversion.
      * However, we do not provide that method because, while it should be equal to {@code getAxes(decoder).length},
      * it sometimes differs because {@link #getAxes(Decoder)} may exclude axis with zero dimensions.
      * The latter method should be used as the authoritative one.

@@ -301,9 +301,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Performs the final adjustment of the {@link #offsetToNextRecord} field of all the given variables.
      * This method applies padding except for the special case documented in netCDF specification:
-     * <cite>"In the special case when there is only one {@linkplain #isUnlimited() record variable}
+     * <q>In the special case when there is only one {@linkplain #isUnlimited() record variable}
      * and it is of type character, byte, or short, no padding is used between record slabs,
-     * so records after the first record do not necessarily start on four-byte boundaries"</cite>.
+     * so records after the first record do not necessarily start on four-byte boundaries</q>.
      *
      * <p>After padding has been applied, this method set the {@link #offsetToNextRecord} of all unlimited
      * variables to the number of bytes to skip before reading the next record.</p>

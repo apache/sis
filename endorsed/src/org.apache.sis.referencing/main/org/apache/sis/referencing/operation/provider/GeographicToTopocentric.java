@@ -32,7 +32,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for the <cite>"Geographic/topocentric conversions"</cite> (EPSG:9837).
+ * The provider for the <q>Geographic/topocentric conversions</q> (EPSG:9837).
  * This operation is implemented using existing {@link MathTransform} implementations;
  * there is no need for a class specifically for this transform.
  *

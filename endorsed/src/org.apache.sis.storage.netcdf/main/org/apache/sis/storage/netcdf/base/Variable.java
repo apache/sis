@@ -306,7 +306,7 @@ public abstract class Variable extends Node {
      * for example for more stable identifier or more consistency between similar data.
      *
      * <p>This method does not check the {@code "long_name"} attribute because the long
-     * name is more like a sentence (e.g. <cite>"model wind direction at 10 m"</cite>)
+     * name is more like a sentence (e.g. <q>model wind direction at 10 m</q>)
      * while standard name and variable name are more like identifiers.
      * For the long name, use {@link #getDescription()} instead.</p>
      *

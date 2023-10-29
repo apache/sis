@@ -22,7 +22,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Geocentric translations (geog2D domain)"</cite> (EPSG:9603).
+ * The provider for <q>Geocentric translations (geog2D domain)</q> (EPSG:9603).
  * This is a special case of {@link PositionVector7Param2D} where only the translation
  * terms can be set to a non-null value.
  *

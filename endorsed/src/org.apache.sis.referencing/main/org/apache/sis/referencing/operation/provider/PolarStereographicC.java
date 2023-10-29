@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"Polar Stereographic (Variant C)"</cite> projection (EPSG:9830).
+ * The provider for <q>Polar Stereographic (Variant C)</q> projection (EPSG:9830).
  * This is very similar to variant B except in the way to use the false northing.
  *
  * @author  Martin Desruisseaux (Geomatys)

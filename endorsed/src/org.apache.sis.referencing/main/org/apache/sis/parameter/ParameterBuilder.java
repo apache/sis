@@ -58,11 +58,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <h2>Usage example</h2>
  * Parameter descriptors are typically grouped in a {@link ParameterDescriptorGroup}.
  * All parameters usually have the same namespace, which can be declared only once.
- * The following example creates parameters for <cite>"Mercator (variant A)"</cite>
- * projection method (EPSG:9804), previously known as <cite>"Mercator (1SP)"</cite>,
+ * The following example creates parameters for <q>Mercator (variant A)</q>
+ * projection method (EPSG:9804), previously known as <q>Mercator (1SP)</q>,
  * centered by default on (0°,0°) with no scale factor and no false easting/northing.
  * The projection is valid from 80°S to 84°N and on all the longitude range (±180°).
- * In this example, the <cite>"Longitude of natural origin"</cite> parameter is giving different aliases
+ * In this example, the <q>Longitude of natural origin</q> parameter is giving different aliases
  * for illustrating the case of different software libraries or standards using different conventions.
  *
  * {@snippet lang="java" :
@@ -382,8 +382,8 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * for operations that expect the same parameters than another operation, but perform a different process.
      *
      * <h4>Example</h4>
-     * The various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
-     * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
+     * The various <q>Coordinate Frame Rotation</q> variants (EPSG codes 1032, 1038 and 9607)
+     * expect the same parameters than their <q>Position Vector transformation</q> counterpart
      * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.
      *
      * @param  parameters  the existing group from which to copy the parameters.

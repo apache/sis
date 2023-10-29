@@ -208,7 +208,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
     private final JLabel javafxPathError;
 
     /**
-     * The message shown on the last page. This is <cite>"Apache SIS setup is completed"</cite>,
+     * The message shown on the last page. This is <q>Apache SIS setup is completed</q>,
      * but may be changed if the setup failed.
      */
     private JLabel finalMessage;

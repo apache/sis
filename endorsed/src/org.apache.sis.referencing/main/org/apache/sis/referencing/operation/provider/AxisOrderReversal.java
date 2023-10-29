@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
- * The provider for <cite>"axis order reversal (2D)"</cite> (EPSG:9843).
+ * The provider for <q>axis order reversal (2D)</q> (EPSG:9843).
  * This is a trivial operation that just swap the two first axes.
  * The inverse operation is this operation itself.
  *

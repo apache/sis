@@ -262,7 +262,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
     }
 
     /**
-     * Verifies the datum shift parameters in the <cite>"NTF to WGS 84 (1)"</cite> transformation.
+     * Verifies the datum shift parameters in the <q>NTF to WGS 84 (1)</q> transformation.
      * Those parameters depends on whether an EPSG database have been used or not.
      *
      * @param  steps            the list returned by {@link DefaultConcatenatedOperation#getOperations()}.

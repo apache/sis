@@ -61,16 +61,16 @@ import static org.apache.sis.util.internal.Constants.DIM;
 
 
 /**
- * The provider for <cite>"Geocentric translation by Grid Interpolation (IGN)"</cite> (EPSG:1087).
- * This method replaces the deprecated <cite>"France geocentric interpolation"</cite> (ESPG:9655).
+ * The provider for <q>Geocentric translation by Grid Interpolation (IGN)</q> (EPSG:1087).
+ * This method replaces the deprecated <q>France geocentric interpolation</q> (ESPG:9655).
  * This operation requires a grid file provided by the French mapping agency.
  *
  * <p><b>Source:</b> IGN document {@code NTG_88.pdf},
- * <cite>"Grille de paramètres de transformation de coordonnées"</cite>
+ * <q>Grille de paramètres de transformation de coordonnées</q>
  * at <a href="http://www.ign.fr">http://www.ign.fr</a>.</p>
  *
  * In principle, this operation method is designed specifically for the French mapping
- * (e.g. EPSG:1053 <cite>"NTF to RGF93 (1)"</cite>) using the following hard-coded parameters:
+ * (e.g. EPSG:1053 <q>NTF to RGF93 (1)</q>) using the following hard-coded parameters:
  * <ul>
  *   <li>Source ellipsoid: Clarke 1880</li>
  *   <li>Target ellipsoid: RGF93</li>
@@ -264,7 +264,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
 
     /**
      * Returns {@code true} if the given path seems to be a grid published by the French mapping agency for France.
-     * In principle this <cite>"France geocentric interpolation"</cite> is designed specifically for use with the
+     * In principle this <q>France geocentric interpolation</q> is designed specifically for use with the
      * {@code "gr3df97a.txt"} grid, but in fact the Apache SIS implementation should be flexible enough for use
      * with other area.
      *

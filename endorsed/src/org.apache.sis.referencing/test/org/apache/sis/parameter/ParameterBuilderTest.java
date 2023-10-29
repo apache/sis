@@ -76,7 +76,7 @@ public final class ParameterBuilderTest extends TestCase {
     }
 
     /**
-     * Tests the <cite>"Mercator (variant A)"</cite> example given in Javadoc.
+     * Tests the <q>Mercator (variant A)</q> example given in Javadoc.
      */
     @Test
     @DependsOnMethod("testCreate")

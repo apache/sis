@@ -47,7 +47,7 @@ public class LocalizationGridException extends FactoryDataException {
 
     /**
      * Additional information about what may be the cause of this exception.
-     * Example: <cite>"The grid spans more than 180° of longitude"</cite>,
+     * Example: <q>The grid spans more than 180° of longitude</q>,
      * which may be a cause of map projection failures.
      *
      * @see #getPotentialCause()
@@ -93,7 +93,7 @@ public class LocalizationGridException extends FactoryDataException {
 
     /**
      * Specifies additional information about what may be the cause of this exception.
-     * Example: <cite>"The grid spans more than 180° of longitude"</cite>,
+     * Example: <q>The grid spans more than 180° of longitude</q>,
      * which may be a cause of map projection failures.
      *
      * @param  details  a potential cause, or {@code null} if none.

@@ -303,7 +303,7 @@ abstract class CommandRunner {
     }
 
     /**
-     * Prints the <cite>"Cannot open …"</cite> error message followed by the message in the given exception.
+     * Prints the <q>Cannot open …</q> error message followed by the message in the given exception.
      *
      * @param fileIndex  index in the {@link #files} list of the file that cannot be opened.
      * @param e          the exception which occurred.

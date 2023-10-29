@@ -693,7 +693,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * {@link #getCellValue getCellValue(dim, …)}, but subclasses may override with more specific values.
      *
      * <h4>Example</h4>
-     * In the <cite>"France geocentric interpolation"</cite> (ESPG:9655) operation method, those "average" values
+     * In the <q>France geocentric interpolation</q> (ESPG:9655) operation method, those "average" values
      * are fixed by definition to -168, -60 and +320 metres for dimensions 0, 1 and 2 respectively
      * (geocentric <var>X</var>, <var>Y</var> and <var>Z</var>).
      *

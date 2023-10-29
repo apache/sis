@@ -24,7 +24,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>"Azimuthal Equidistant (Spherical)"</cite> projection.
+ * The provider for <q>Azimuthal Equidistant (Spherical)</q> projection.
  * This projection method has no EPSG code.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -39,7 +39,7 @@ import org.apache.sis.system.Modules;
 /**
  * Provides access to services defined in the {@code org.apache.sis.referencing} module.
  * This class also opportunistically defines some methods and constants related
- * to <cite>"referencing by coordinates"</cite> but needed by metadata.
+ * to <q>referencing by coordinates</q> but needed by metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

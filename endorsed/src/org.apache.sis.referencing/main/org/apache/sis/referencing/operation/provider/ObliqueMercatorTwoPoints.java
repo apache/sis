@@ -27,7 +27,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Oblique Mercator"</cite> projection specified by two points on the central line.
+ * The provider for <q>Oblique Mercator</q> projection specified by two points on the central line.
  * This is different than the classical {@linkplain ObliqueMercator Oblique Mercator}, which uses a central
  * point and azimuth. This projection is specific to ESRI software.
  *

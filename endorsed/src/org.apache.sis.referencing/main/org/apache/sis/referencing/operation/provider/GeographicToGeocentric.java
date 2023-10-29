@@ -37,7 +37,7 @@ import org.apache.sis.util.internal.Constants;
 
 
 /**
- * The provider for <cite>"Geographic/geocentric conversions"</cite> (EPSG:9602).
+ * The provider for <q>Geographic/geocentric conversions</q> (EPSG:9602).
  * This provider creates transforms from geographic to geocentric coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -135,7 +135,7 @@ public final class GeographicToGeocentric extends GeodeticOperation {
     }
 
     /**
-     * If the user asked for the <cite>"Geographic/geocentric conversions"</cite> operation but the parameter types
+     * If the user asked for the <q>Geographic/geocentric conversions</q> operation but the parameter types
      * suggest that (s)he intended to convert in the opposite direction, return the name of operation method to use.
      * We need this check because EPSG defines a single operation method for both {@code "Ellipsoid_To_Geocentric"}
      * and {@code "Geocentric_To_Ellipsoid"} methods.

@@ -26,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Annotates classes or methods that are provided mostly for debugging purpose.
  * This annotation is defined in order to make easier to find which debugging tools are available in case of problem.
- * See the <cite>"Use"</cite> javadoc link for a list of annotated classes and methods.
+ * See the <q>Use</q> javadoc link for a list of annotated classes and methods.
  *
  * <p>Unless specified otherwise in javadoc, {@link Object#toString()} method implementations in Apache SIS
  * are implicitly for debugging purpose. Those methods are usually <em>not</em> annotated with {@code @Debug}

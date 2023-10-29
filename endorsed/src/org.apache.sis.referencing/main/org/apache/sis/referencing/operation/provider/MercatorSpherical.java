@@ -24,7 +24,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for <cite>"Mercator (Spherical)"</cite> projection (EPSG:1026, <span class="deprecated">EPSG:9841</span>).
+ * The provider for <q>Mercator (Spherical)</q> projection (EPSG:1026, <span class="deprecated">EPSG:9841</span>).
  * This provider reuses all parameters defined in {@link Mercator2SP}, except that the standard parallel is made optional
  * since it is not formally a parameter of this projection.
  *

@@ -31,7 +31,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Polar Stereographic (variant A)"</cite> projection (EPSG:9810).
+ * The provider for <q>Polar Stereographic (variant A)</q> projection (EPSG:9810).
  * Also used for the definition of Universal Polar Stereographic (UPS) projection.
  *
  * @author  Rueben Schulz (UBC)
@@ -169,7 +169,7 @@ public final class PolarStereographicA extends AbstractStereographic {
      *
      * @param  group  the parameters for which to set the values.
      * @param  north  {@code true} for North pole, or {@code false} for South pole.
-     * @return a name like <cite>"Universal Polar Stereographic North"</cite>,
+     * @return a name like <q>Universal Polar Stereographic North</q>,
      *         depending on the arguments given to this method.
      */
     public static String setParameters(final ParameterValueGroup group, final boolean north) {

@@ -386,7 +386,7 @@ public class RecentReferenceSystems {
      * If a previous preferred system existed, the previous system will be moved to alternative choices.
      *
      * <p>The {@code replaceByAuthoritativeDefinition} argument specifies whether the given reference system should
-     * be replaced by authoritative definition. If {@code true} then for example a <cite>"WGS 84"</cite> geographic
+     * be replaced by authoritative definition. If {@code true} then for example a <q>WGS 84</q> geographic
      * CRS with (<var>longitude</var>, <var>latitude</var>) axis order may be replaced by "EPSG::4326" definition with
      * (<var>latitude</var>, <var>longitude</var>) axis order.</p>
      *
@@ -443,7 +443,7 @@ public class RecentReferenceSystems {
      * then reference systems that do not intersect the AOI will be hidden.
      *
      * <p>The {@code replaceByAuthoritativeDefinition} argument specifies whether the given reference systems should
-     * be replaced by authoritative definitions. If {@code true} then for example a <cite>"WGS 84"</cite> geographic
+     * be replaced by authoritative definitions. If {@code true} then for example a <q>WGS 84</q> geographic
      * CRS with (<var>longitude</var>, <var>latitude</var>) axis order may be replaced by "EPSG::4326" definition with
      * (<var>latitude</var>, <var>longitude</var>) axis order.</p>
      *

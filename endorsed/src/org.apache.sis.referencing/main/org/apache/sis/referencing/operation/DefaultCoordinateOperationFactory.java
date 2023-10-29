@@ -263,7 +263,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 
     /**
      * Returns the operation method of the given name. The given argument shall be either a method
-     * {@linkplain DefaultOperationMethod#getName() name} (e.g. <cite>"Transverse Mercator"</cite>)
+     * {@linkplain DefaultOperationMethod#getName() name} (e.g. <q>Transverse Mercator</q>)
      * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
      * The search is case-insensitive and comparisons against method names can be
      * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.

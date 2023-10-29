@@ -71,7 +71,7 @@
  *   System.out.println( Units.PASCAL.multiply(1000) );
  *   }
  *
- * prints <cite>"kPa"</cite>, i.e. the kilo prefix has been automatically applied
+ * prints <q>kPa</q>, i.e. the kilo prefix has been automatically applied
  * (SI prefixes are applied on SI units only, not on other systems).
  * Other example:
  *
@@ -84,7 +84,7 @@
  *   System.out.println("Instance of Power: " + (e instanceof Power));
  *   }
  *
- * prints <cite>"8 mW"</cite> and <cite>"Instance of Power: true"</cite>,
+ * prints <q>8 mW</q> and <q>Instance of Power: true</q>,
  * i.e. Apache SIS detects that the result of N⋅m∕s is Watt,
  * inherits the milli prefix from millimetre and creates an instance
  * of {@link javax.measure.quantity.Power}, not just {@code Quantity<Power>} (the generic parent).
@@ -92,7 +92,7 @@
  * <p>{@linkplain org.apache.sis.measure.Units#valueOf(String) Parsing} and formatting use Unicode symbols by default, as in µg/m².
  * Parenthesis are recognized at parsing time and used for denominators at formatting time, as in kg/(m²⋅s).
  * While uncommon, Apache SIS accepts fractional powers as in m^⅔.
- * Some sentences like <cite>"100 feet"</cite>, <cite>"square metre"</cite> and <cite>"degree Kelvin"</cite>
+ * Some sentences like <q>100 feet</q>, <q>square metre</q> and <q>degree Kelvin</q>
  * are also recognized at parsing time.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)

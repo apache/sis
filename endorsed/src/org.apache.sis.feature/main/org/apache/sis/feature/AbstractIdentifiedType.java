@@ -91,7 +91,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * This is used for setting the value to be returned by {@link #isDeprecated()}.
      *
      * <p>If this property is set to {@code true}, then the value associated to {@link #DESCRIPTION_KEY}
-     * should give the replacement (e.g. <cite>"superceded by …"</cite>).</p>
+     * should give the replacement (e.g. <q>superceded by …</q>).</p>
      *
      * @see #isDeprecated()
      *
@@ -294,7 +294,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * The description may assist in understanding the element scope and application.
      *
      * <p>If this type {@linkplain #isDeprecated() is deprecated}, then the description should give
-     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).</p>
+     * indication about the replacement (e.g. <q>superceded by …</q>).</p>
      *
      * @return information beyond that required for concise definition of the element, or {@code null} if none.
      */
@@ -310,7 +310,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * <ul>
      *   <li>If this type {@linkplain #isDeprecated() is deprecated}, returns the
      *       {@linkplain #getDescription() description}. The description of deprecated types
-     *       should give indication about the replacement (e.g. <cite>"superceded by …"</cite>).</li>
+     *       should give indication about the replacement (e.g. <q>superceded by …</q>).</li>
      *   <li>Otherwise returns {@code null} since remarks are not part of the ISO 19109 feature model.</li>
      * </ul>
      *
@@ -326,7 +326,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
     /**
      * Returns {@code true} if this type is deprecated.
      * If this method returns {@code true}, then the {@linkplain #getRemarks() remarks} should give
-     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @return whether this type is deprecated.
      *

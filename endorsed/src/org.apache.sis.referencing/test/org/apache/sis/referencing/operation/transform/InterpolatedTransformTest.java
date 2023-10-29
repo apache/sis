@@ -73,7 +73,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Creates the same transformation than <cite>"France geocentric interpolation"</cite> transform
+     * Creates the same transformation than <q>France geocentric interpolation</q> transform
      * (approximately), but using shifts in geographic domain instead of in geocentric domain.
      *
      * @throws FactoryException if an error occurred while loading the grid.
@@ -213,7 +213,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Performs the tests using the same transformation than <cite>"France geocentric interpolation"</cite>
+     * Performs the tests using the same transformation than <q>France geocentric interpolation</q>
      * transform (approximately), but using shifts in geographic domain instead of in geocentric domain.
      *
      * @throws FactoryException if an error occurred while creating a transform.

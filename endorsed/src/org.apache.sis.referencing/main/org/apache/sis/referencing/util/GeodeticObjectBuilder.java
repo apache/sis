@@ -363,8 +363,8 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * This convenience method delegates to the following methods:
      *
      * <ul>
-     *   <li>{@link #setConversionName(String)} with a name like <cite>"Transverse Mercator"</cite>
-     *       or <cite>"UTM zone 10N"</cite>, depending on the arguments given to this method.</li>
+     *   <li>{@link #setConversionName(String)} with a name like <q>Transverse Mercator</q>
+     *       or <q>UTM zone 10N</q>, depending on the arguments given to this method.</li>
      *   <li>{@link #setConversionMethod(String)} with the name of the Transverse Mercator projection method.</li>
      *   <li>{@link #setParameter(String, double, Unit)} for each of the parameters enumerated below:</li>
      * </ul>
@@ -409,7 +409,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * This convenience method delegates to the following methods:
      *
      * <ul>
-     *   <li>{@link #setConversionName(String)} with a name like <cite>"Universal Polar Stereographic North"</cite>,
+     *   <li>{@link #setConversionName(String)} with a name like <q>Universal Polar Stereographic North</q>,
      *       depending on the argument given to this method.</li>
      *   <li>{@link #setConversionMethod(String)} with the name of the Polar Stereographic (variant A) projection method.</li>
      *   <li>{@link #setParameter(String, double, Unit)} for each of the parameters enumerated below:</li>
@@ -440,7 +440,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a projected CRS using a conversion built from the values given by the {@code setParameter(…)} calls.
      *
      * <h4>Example</h4>
-     * The following example creates a projected CRS for the <cite>"NTF (Paris) / Lambert zone II"</cite> projection,
+     * The following example creates a projected CRS for the <q>NTF (Paris) / Lambert zone II</q> projection,
      * from a base CRS which is presumed to already exists in this example.
      *
      * {@snippet lang="java" :

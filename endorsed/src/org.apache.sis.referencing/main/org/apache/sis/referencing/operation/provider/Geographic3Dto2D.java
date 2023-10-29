@@ -34,7 +34,7 @@ import org.apache.sis.referencing.util.WKTUtilities;
 
 
 /**
- * The provider for <cite>"Geographic 3D to 2D conversion"</cite> (EPSG:9659).
+ * The provider for <q>Geographic 3D to 2D conversion</q> (EPSG:9659).
  * This is a trivial operation that just drop the height in a geographic coordinate.
  * The inverse operation arbitrarily sets the ellipsoidal height to zero.
  *

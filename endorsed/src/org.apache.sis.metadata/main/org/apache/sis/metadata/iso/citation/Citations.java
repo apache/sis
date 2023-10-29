@@ -52,12 +52,12 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
  * </ul>
  *
  * For example {@code "EPSG:4326"} is a widely-used identifier
- * for the <cite>“World Geodetic System (WGS) 1984”</cite> Coordinate Reference System (CRS).
+ * for the <cite>World Geodetic System (WGS) 1984</cite> Coordinate Reference System (CRS).
  * The {@code "4326"} part is the identifier {@linkplain DefaultIdentifier#getCode() code} and
  * the {@code "EPSG"} part is the identifier {@linkplain DefaultIdentifier#getCodeSpace() code space}.
  * The meaning of codes in that code space is controlled by an {@linkplain DefaultIdentifier#getAuthority() authority},
- * the <cite>“EPSG Geodetic Parameter Dataset”</cite>. The {@linkplain DefaultCitation#getCitedResponsibleParties() cited
- * responsible party} for the EPSG dataset is the <cite>“International Association of Oil &amp; Gas producers”</cite> (IOGP).
+ * the <cite>EPSG Geodetic Parameter Dataset</cite>. The {@linkplain DefaultCitation#getCitedResponsibleParties() cited
+ * responsible party} for the EPSG dataset is the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP).
  *
  * <p>The constants defined in this class are typically values returned by:</p>
  * <ul>
@@ -142,11 +142,11 @@ public final class Citations extends Static {
      * EPSG is the default namespace of map projection method and parameter names in Apache SIS.
      *
      * <div class="note"><b>Historical note:</b>
-     * The EPSG acronym meaning was <cite>“European Petroleum Survey Group”</cite>.
+     * The EPSG acronym meaning was <cite>European Petroleum Survey Group</cite>.
      * But this meaning does not apply anymore since the European and American associations merged into
-     * the <cite>“Association of Oil &amp; Gas producers”</cite> (OGP), later renamed as IOGP.
+     * the <cite>Association of Oil &amp; Gas producers</cite> (OGP), later renamed as IOGP.
      * The legacy acronym now applies only to the database Coordinate Reference System definitions,
-     * known as <cite>“EPSG Geodetic Parameter Dataset”</cite>.</div>
+     * known as <cite>EPSG Geodetic Parameter Dataset</cite>.</div>
      *
      * The citation {@linkplain DefaultCitation#getCitedResponsibleParties() responsible party} is
      * the IOGP organization, but the {@linkplain IdentifierSpace#getName() namespace} is {@code "EPSG"}.

@@ -387,8 +387,8 @@ public final class Extents extends Static {
      *   But this method is more useful if the returned ranges are close to a frequently used surface, like the
      *   Mean Sea Level. The same simplification is applied in the
      *   <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#31">{@code VerticalExtent} element of
-     *   Well Known Text (WKT) format</a>, which specifies that <cite>“Vertical extent is an approximate description
-     *   of location; heights are relative to an unspecified mean sea level.”</cite></div></li>
+     *   Well Known Text (WKT) format</a>, which specifies that <q>Vertical extent is an approximate description
+     *   of location; heights are relative to an unspecified mean sea level.</q></div></li>
      *
      *   <li><p><b>Choice based on units of measurement</b><br>
      *   If, after the choice based on the vertical datum described above, there is still more than one vertical

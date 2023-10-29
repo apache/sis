@@ -142,10 +142,10 @@ public abstract class DataStoreProvider {
      *       format specification citation}, including:
      *     <ul>
      *       <li>a format specification {@linkplain DefaultCitation#getTitle() title}
-     *           (example: <cite>“PNG (Portable Network Graphics) Specification”</cite>),</li>
+     *           (example: <q>PNG (Portable Network Graphics) Specification</q>),</li>
      *       <li>the format {@linkplain #getShortName() short name} as a citation
      *           {@linkplain DefaultCitation#getAlternateTitles() alternate title}
-     *           (example: <cite>“PNG”</cite>),</li>
+     *           (example: <q>PNG</q>),</li>
      *       <li>the format version as the citation {@linkplain DefaultCitation#getEdition() edition},</li>
      *       <li>link to an {@linkplain DefaultCitation#getOnlineResources() online} version of the specification.</li>
      *     </ul>

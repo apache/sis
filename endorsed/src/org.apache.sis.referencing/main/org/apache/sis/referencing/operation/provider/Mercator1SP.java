@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Mercator (variant A)"</cite> projection (EPSG:9804).
+ * The provider for <q>Mercator (variant A)</q> projection (EPSG:9804).
  * EPSG defines two projections with the same parameters, 1026 being the spherical case and 9804 the ellipsoidal case.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

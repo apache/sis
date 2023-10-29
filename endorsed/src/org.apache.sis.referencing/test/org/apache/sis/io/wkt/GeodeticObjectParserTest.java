@@ -157,7 +157,7 @@ public final class GeodeticObjectParserTest extends TestCase {
 
     /**
      * Asserts that the given axis is a longitude axis. This method expects the name to be
-     * <cite>"Geodetic longitude"</cite> even if the WKT string contained a different name,
+     * <q>Geodetic longitude</q> even if the WKT string contained a different name,
      * because {@link GeodeticObjectParser} should have done the replacement.
      */
     private static void assertLongitudeAxisEquals(final CoordinateSystemAxis axis) {
@@ -166,7 +166,7 @@ public final class GeodeticObjectParserTest extends TestCase {
 
     /**
      * Asserts that the given axis is a latitude axis. This method expects the name to be
-     * <cite>"Geodetic latitude"</cite> even if the WKT string contained a different name,
+     * <q>Geodetic latitude</q> even if the WKT string contained a different name,
      * because {@link GeodeticObjectParser} should have done the replacement.
      */
     private static void assertLatitudeAxisEquals(final CoordinateSystemAxis axis) {

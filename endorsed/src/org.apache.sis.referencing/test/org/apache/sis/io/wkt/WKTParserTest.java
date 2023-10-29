@@ -71,7 +71,7 @@ public final class WKTParserTest extends CRSParserTest {
 
     /**
      * Verifies the axis names of a geographic CRS. This method is invoked when the parsed object is
-     * expected to have <cite>"Geodetic latitude"</cite> and <cite>"Geodetic longitude"</cite> names.
+     * expected to have <q>Geodetic latitude</q> and <q>Geodetic longitude</q> names.
      */
     @SuppressWarnings("fallthrough")
     private void verifyEllipsoidalCS() {

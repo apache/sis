@@ -43,7 +43,7 @@ import org.apache.sis.referencing.internal.Resources;
 
 /**
  * Transforms between two geographic CRS by performing geocentric translations interpolated from a grid file.
- * This transform is used mainly for <cite>"France geocentric interpolation"</cite> (ESPG:9655) datum shifts,
+ * This transform is used mainly for <q>France geocentric interpolation</q> (ESPG:9655) datum shifts,
  * but Apache SIS implementation allows the use for other regions.
  *
  * <h2>Algorithm</h2>
@@ -65,7 +65,7 @@ import org.apache.sis.referencing.internal.Resources;
  *
  * <h3>Reference</h3>
  * IGN document {@code NTG_88.pdf},
- * <cite>"Grille de paramètres de transformation de coordonnées"</cite>
+ * <q>Grille de paramètres de transformation de coordonnées</q>
  * at <a href="http://www.ign.fr">http://www.ign.fr</a>.
  * Note however that the signs of (ΔX, ΔY, ΔZ) values expected by this class are the opposite of the
  * signs used in NTG_88 document. This is because NTG_88 grid defines shifts from target to source,
@@ -90,7 +90,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
 
     /**
      * Parameter descriptor to use with the contextual parameters for the forward transformation.
-     * We do not use the <cite>"France geocentric interpolation"</cite> (ESPG:9655) descriptor
+     * We do not use the <q>France geocentric interpolation</q> (ESPG:9655) descriptor
      * because their "forward" transformation is our "inverse" transformation, and conversely.
      * The {@code DESCRIPTOR} defined here is non-standard, but allows this class to be used
      * for other geographic areas than France.
@@ -99,7 +99,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
 
     /**
      * Parameter descriptor to use with the contextual parameters for the inverse transformation.
-     * We do not use the <cite>"France geocentric interpolation"</cite> (ESPG:9655) descriptor
+     * We do not use the <q>France geocentric interpolation</q> (ESPG:9655) descriptor
      * because it is specific to a single country, has hard-coded parameters and uses a sign
      * convention for (ΔX,ΔY,ΔZ) translations different than the one used in this class.
      * The {@code INVERSE} descriptor defined here is non-standard, but allows this class
