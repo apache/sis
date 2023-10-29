@@ -125,13 +125,13 @@ final class CoverageResource extends AbstractGridCoverageResource {
         this.store = store;
         this.binding = binding;
 
-        //rebuild grid geometry
+        // Rebuild grid geometry
         try {
             gridGeometry = jsonToGridGeometry(binding.domain);
         } catch (FactoryException ex) {
             throw new DataStoreException("Failed to create GridGeometry from JSON Domain", ex);
         }
-        //rebuild sample dimensions
+        // Rebuild sample dimensions
         sampleDimensions = new ArrayList<>();
         for (Entry<String,Parameter> entry : binding.parameters.any.entrySet()) {
             final SampleDimension sd = jsonToSampleDimension(entry.getKey(), entry.getValue());
@@ -140,7 +140,7 @@ final class CoverageResource extends AbstractGridCoverageResource {
         if (binding.parameterGroups != null) {
             throw new UnsupportedOperationException("Parameter groups not supported yet.");
         }
-        //read datas
+        // Read datas
         datas = new HashMap<>();
         for (Entry<String,NdArray> entry : binding.ranges.any.entrySet()) {
             datas.put(entry.getKey(), jsonToDataBuffer(entry.getValue()));
@@ -148,7 +148,7 @@ final class CoverageResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Return the JSON coverage binding.
+     * Returns the JSON coverage binding.
      */
     Coverage getBinding() {
         return binding;
@@ -166,7 +166,6 @@ final class CoverageResource extends AbstractGridCoverageResource {
 
     @Override
     public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
-
         final GridGeometry intersection;
         if (domain != null) {
             try {
@@ -177,7 +176,6 @@ final class CoverageResource extends AbstractGridCoverageResource {
         } else {
             intersection = gridGeometry;
         }
-
         final double[][] rawDatas;
         final List<SampleDimension> selected;
         if (ranges == null || ranges.length == 0) {
@@ -186,7 +184,6 @@ final class CoverageResource extends AbstractGridCoverageResource {
             for (int i = 0; i < rawDatas.length; i++) {
                 rawDatas[i] = datas.get(sampleDimensions.get(i).getName().toString());
             }
-
         } else {
             selected = new ArrayList<>();
             rawDatas = new double[ranges.length][0];
@@ -196,19 +193,17 @@ final class CoverageResource extends AbstractGridCoverageResource {
                 rawDatas[i] = datas.get(sd.getName().toString());
             }
         }
-
         final DataBuffer buffer = new DataBufferDouble(rawDatas, rawDatas[0].length);
         return new BufferedGridCoverage(intersection, selected, buffer);
     }
 
     /**
-     * Transform JSON domain to GridGeometry.
+     * Transforms JSON domain to GridGeometry.
      */
     private static GridGeometry jsonToGridGeometry(Domain domain) throws DataStoreException, FactoryException {
-
         if (Domain.DOMAINTYPE_GRID.equalsIgnoreCase(domain.domainType)) {
 
-            //build coordinate system
+            // Build coordinate system
             final List<ReferenceSystemConnection> referencing = domain.referencing;
             final List<String> axeNames = new ArrayList<>();
             final List<CoordinateReferenceSystem> crss = new ArrayList<>();
@@ -225,12 +220,12 @@ final class CoverageResource extends AbstractGridCoverageResource {
                 throw new DataStoreException("Coverage domain must be defined, Coverage as part of CoverageCollection not supported yet.");
             }
 
-            //build extent
+            // Build extent
             final int dimension = axeNames.size();
             final Axes axes = domain.axes;
             final GridGeometry[] axeGrids = new GridGeometry[dimension];
 
-            //check if axes declared on crs are ordered in the same way as the grid extent.
+            // Check if axes declared on crs are ordered in the same way as the grid extent.
             final int[] reorder = new int[dimension];
             boolean inOrder = true;
 
@@ -286,7 +281,6 @@ final class CoverageResource extends AbstractGridCoverageResource {
                 }
             }
 
-
             if (!inOrder) {
                 final MatrixSIS m = Matrices.createZero(dimension+1, dimension+1);
                 for (int i = 0; i < dimension; i++) {
@@ -296,7 +290,6 @@ final class CoverageResource extends AbstractGridCoverageResource {
                 final MathTransform reorderTrs = MathTransforms.linear(m);
                 gridToCrs = MathTransforms.concatenate(reorderTrs, gridToCrs);
             }
-
 
             final CoordinateReferenceSystem crs = CRS.compound(crss.toArray(CoordinateReferenceSystem[]::new));
             final GridExtent extent = new GridExtent(dnt, lower, upper, true);
@@ -322,7 +315,7 @@ final class CoverageResource extends AbstractGridCoverageResource {
             throw new DataStoreException("Unexpected axe data type :" + axe.dataType);
         }
 
-        //rebuild axe transform
+        // Rebuild axe transform
         final MathTransform1D axeTrs;
         final int size;
         if (axe.values != null) {
@@ -349,7 +342,7 @@ final class CoverageResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Transform JSON system object to CoordinateReferenceSystem.
+     * Transforms JSON system object to CoordinateReferenceSystem.
      */
     private static CoordinateReferenceSystem jsonToCoordinateReferenceSystem(CoverageJsonObject obj) throws FactoryException {
         if (obj instanceof GeographicCRS) {
@@ -435,10 +428,10 @@ final class CoverageResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Transform JSON NdArray to number array.
+     * Transforms JSON NdArray to number array.
      */
     private static double[] jsonToDataBuffer(NdArray array) throws DataStoreException {
-        //TODO more work on checking axes order
+        // TODO: more work on checking axes order
         double[] values = new double[array.values.size()];
         for (int i = 0; i < values.length; i++) {
             values[i] = asDouble(array.values.get(i));
@@ -474,13 +467,12 @@ final class CoverageResource extends AbstractGridCoverageResource {
      * in that reduced precision.
      */
     private static Instant parseDataTime(String str) throws DataStoreException {
-
         for (DateTimeFormatter dtf : Arrays.asList(YEAR,YEAR_MONTH, YEAR_MONTH_DAY, DATE_TIME)) {
             try {
                 TemporalAccessor accesser = dtf.parse(str);
                 return Instant.from(accesser);
             } catch (DateTimeParseException ex) {
-                //do nothing
+                // Do nothing
             }
         }
         throw new DataStoreException("Unable to parse date : " + str);
@@ -488,7 +480,6 @@ final class CoverageResource extends AbstractGridCoverageResource {
 
     static Coverage gridCoverageToBinding(GridCoverage coverage) throws DataStoreException {
         final Coverage binding = new Coverage();
-
         try {
             //build domain
             binding.domain = gridGeometryToJson(coverage.getGridGeometry());
@@ -496,16 +487,16 @@ final class CoverageResource extends AbstractGridCoverageResource {
             throw new DataStoreException(ex.getMessage(), ex);
         }
 
-        //build parameters
+        // Build parameters
         binding.parameters = new Parameters();
         for (SampleDimension sd : coverage.getSampleDimensions()) {
             final Entry<String, Parameter> entry = sampleDimensionToJson(sd);
             binding.parameters.setAnyProperty(entry.getKey(), entry.getValue());
         }
 
-        //build datas
+        // Build datas
         binding.ranges = new Ranges();
-        binding.ranges.any.putAll(imageToJson(coverage, new ArrayList(binding.parameters.any.keySet())));
+        binding.ranges.any.putAll(imageToJson(coverage, new ArrayList<>(binding.parameters.any.keySet())));
 
         return binding;
     }
@@ -543,7 +534,7 @@ final class CoverageResource extends AbstractGridCoverageResource {
                 throw new DataStoreException("An axe in the Grid to CRS transform has no scale value");
             }
         } else {
-            //todo handle cases of compound transforms, would allow us to handle no linear 1D axes.
+            // TODO: handle cases of compound transforms, would allow us to handle no linear 1D axes.
             throw new DataStoreException("Coveragejson only support linear grid to CRS transform without rotation or shearing");
         }
 
@@ -648,8 +639,7 @@ final class CoverageResource extends AbstractGridCoverageResource {
             }
         }
 
-
-        //TODO convert categories, units,... we might need a database of observed properties
+        // TODO: convert categories, units,... we might need a database of observed properties
         return new AbstractMap.SimpleImmutableEntry<>(name, binding);
     }
 

@@ -32,7 +32,7 @@ import org.apache.sis.storage.coveragejson.binding.Parameters.Serializer;
 
 
 /**
- * Constains a map of parameter objects.
+ * Contains a map of parameter objects.
  *
  * @author Johann Sorel (Geomatys)
  */

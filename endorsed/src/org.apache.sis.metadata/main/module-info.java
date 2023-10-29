@@ -150,7 +150,7 @@ module org.apache.sis.metadata {
     exports org.apache.sis.metadata.sql.util to
             org.apache.sis.referencing,
             org.apache.sis.storage.sql,
-            org.apache.sis.referencing.database;
+            org.apache.sis.referencing.database;    // In the "non-free" subproject.
 
     exports org.apache.sis.metadata.simple to
             org.apache.sis.referencing,

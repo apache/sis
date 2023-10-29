@@ -631,7 +631,7 @@ public final class GeoEncoder {
      *
      * @param  value  the value to cast to an unsigned short.
      * @return the value as an unsigned short.
-     * @throws ArithmeticException if the given value can not be stored as an unsigned 16 bits integer.
+     * @throws ArithmeticException if the given value cannot be stored as an unsigned 16 bits integer.
      *
      * @see #toShortEPSG(Integer)
      */

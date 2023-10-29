@@ -55,7 +55,6 @@ import org.apache.sis.io.stream.IOUtilities;
  * @author Johann Sorel (Geomatys)
  */
 public class CoverageJsonStore extends DataStore implements WritableAggregate {
-
     /**
      * The {@link CoverageJsonStoreProvider#LOCATION} parameter value, or {@code null} if none.
      * This is used for information purpose only, not for actual reading operations.
@@ -115,13 +114,12 @@ public class CoverageJsonStore extends DataStore implements WritableAggregate {
                 }
             }
         }
-
         return Collections.unmodifiableList(components);
     }
 
     @Override
     public synchronized Resource add(Resource resource) throws DataStoreException {
-        //ensure file is parsed
+        // Ensure file is parsed
         components();
 
         if (resource instanceof GridCoverageResource) {
@@ -133,13 +131,12 @@ public class CoverageJsonStore extends DataStore implements WritableAggregate {
             save();
             return jcr;
         }
-
         throw new DataStoreException("Only GridCoverage resource are supported");
     }
 
     @Override
     public synchronized void remove(Resource resource) throws DataStoreException {
-        //ensure file is parsed
+        // Ensure file is parsed
         components();
 
         for (int i = 0, n = components.size(); i < n ;i++) {
@@ -153,7 +150,7 @@ public class CoverageJsonStore extends DataStore implements WritableAggregate {
     }
 
     private synchronized void save() throws DataStoreException {
-        //ensure file is parsed
+        // Ensure file is parsed
         components();
 
         final int size = components.size();
