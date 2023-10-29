@@ -186,8 +186,8 @@ public class TransverseMercator extends NormalizedProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Transverse Mercator"</cite>.</li>
-     *   <li><cite>"Transverse Mercator (South Orientated)"</cite>.</li>
+     *   <li><q>Transverse Mercator</q>.</li>
+     *   <li><q>Transverse Mercator (South Orientated)</q>.</li>
      * </ul>
      *
      * @param  method      description of the projection parameters.

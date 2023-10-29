@@ -55,9 +55,9 @@ import org.apache.sis.util.logging.Logging;
  *   <li>Warnings if the given CRS does not match the authoritative description.</li>
  * </ul>
  *
- * <b>Note:</b> ISO 19162 said about the {@code Identifier} keyword:  <cite>"In the event of conflict in values given
+ * <b>Note:</b> ISO 19162 said about the {@code Identifier} keyword:  <q>In the event of conflict in values given
  * in the CRS WKT string and given by an authority through an object’s name or an identifier, reading software should
- * throw an exception or give users a warning message. The WKT values should be assumed to prevail."</cite>
+ * throw an exception or give users a warning message. The WKT values should be assumed to prevail.</q>
  * In practice when such conflicts happen, we often see that the given WKT string contains mistakes and the
  * provider intended to use the authoritative description. We nevertheless comply with ISO 19162 requirement,
  * but provide a "recommended CRS" field for what we think is the intended CRS.
@@ -81,8 +81,8 @@ public final class DefinitionVerifier {
      * or an instance created from the authority factory. May also be {@code null} if all CRS given to the
      * {@link #compare(CoordinateReferenceSystem, CoordinateReferenceSystem, Locale) compare(…)} method were null.
      *
-     * Note that ISO 19162 said <cite>"Should any attributes or values given in the cited identifier be in conflict
-     * with attributes or values given explicitly in the WKT description, the WKT values shall prevail."</cite>
+     * Note that ISO 19162 said <q>Should any attributes or values given in the cited identifier be in conflict
+     * with attributes or values given explicitly in the WKT description, the WKT values shall prevail.</q>
      * So we normally do not use this field.
      */
     public final CoordinateReferenceSystem recommendation;

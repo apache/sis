@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"Position Vector transformation (geog3D domain)"</cite> (EPSG:1037).
+ * The provider for <q>Position Vector transformation (geog3D domain)</q> (EPSG:1037).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */

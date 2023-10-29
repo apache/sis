@@ -263,7 +263,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * Otherwise returns {@code null}. The ambiguities that need to be resolved are:
      *
      * <ul>
-     *   <li>Method <cite>"Geographic/geocentric conversions"</cite> (EPSG:9602) can be either:
+     *   <li>Method <q>Geographic/geocentric conversions</q> (EPSG:9602) can be either:
      *     <ul>
      *       <li>{@code "Ellipsoid_To_Geocentric"} (implemented by {@link GeographicToGeocentric}</li>
      *       <li>{@code "Geocentric_To_Ellipsoid"} (implemented by {@link GeocentricToGeographic}</li>

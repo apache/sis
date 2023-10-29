@@ -26,7 +26,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
@@ -70,7 +69,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.5
  * @since   0.8
  */
 public abstract class TypeBuilder implements Localized {
@@ -367,7 +366,7 @@ public abstract class TypeBuilder implements Localized {
      * Sets optional information beyond that required for concise definition of the element.
      * The description may assist in understanding the feature scope and application.
      * If the type {@linkplain #isDeprecated() is deprecated}, then the description should
-     * give indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * give indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @param  description  information beyond that required for concise definition of the element, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
@@ -385,7 +384,7 @@ public abstract class TypeBuilder implements Localized {
     /**
      * Returns {@code true} if the type is deprecated.
      * If this method returns {@code true}, then the {@linkplain #getDescription() description} should give
-     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @return whether this type is deprecated.
      *
@@ -398,7 +397,7 @@ public abstract class TypeBuilder implements Localized {
     /**
      * Sets whether the type is deprecated.
      * If the type is deprecated, then the {@linkplain #setDescription(CharSequence) description}
-     * should be set to an indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * should be set to an indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @param  deprecated  whether this type is deprecated.
      * @return {@code this} for allowing method calls chaining.
@@ -494,7 +493,7 @@ public abstract class TypeBuilder implements Localized {
      */
     final void ensureNonNull(final String name, final Object value) {
         if (value == null) {
-            throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(errors().getString(Errors.Keys.NullArgument_1, name));
         }
     }
 
@@ -520,7 +519,7 @@ public abstract class TypeBuilder implements Localized {
      */
     final void ensureNonEmpty(final String name, final CharSequence text) {
         if (text == null) {
-            throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
+            throw new NullPointerException(errors().getString(Errors.Keys.NullArgument_1, name));
         }
         if (text.length() == 0) {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.EmptyArgument_1, name));

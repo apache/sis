@@ -185,7 +185,7 @@ abstract class Appender implements Appendable {
 
     /**
      * Returns the content of this {@code Appendable} as a string if possible,
-     * or the localized <cite>"Unavailable content"</cite> string otherwise.
+     * or the localized <q>Unavailable content</q> string otherwise.
      *
      * @return the content of this {@code Appendable}, or a localized message for unavailable content.
      *

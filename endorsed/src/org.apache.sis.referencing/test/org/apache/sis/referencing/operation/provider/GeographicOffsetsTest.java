@@ -89,11 +89,11 @@ public final class GeographicOffsetsTest extends TransformTestCase {
     /**
      * Tests {@code VerticalOffset.createMathTransform(…)}.
      * This test uses the sample point given in §2.4.2.1 of EPSG guide (April 2015)
-     * for the <cite>"KOC CD height to KOC WD depth (ft) (1)"</cite> transformation (EPSG:5453).
+     * for the <q>KOC CD height to KOC WD depth (ft) (1)</q> transformation (EPSG:5453).
      *
      * <p><b>IMPORTANT:</b> since the source and target axis directions are opposite, the input coordinate
      * need to be multiplied by -1 <strong>before</strong> the operation is applied. This order is required
-     * for consistency with the sign of <cite>"Vertical Offset"</cite> parameter value.</p>
+     * for consistency with the sign of <q>Vertical Offset</q> parameter value.</p>
      *
      * @throws FactoryException should never happen.
      * @throws TransformException should never happen.

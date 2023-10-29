@@ -573,7 +573,7 @@ next:       for (int i=0; i <= limit; i++) {
      * Returns the indices of {@code cs} axes presumed covariant with {@code subCS} axes.
      * The mapping is based on axis directions only, with colinear axes mapped in priority.
      * If some axes cannot be mapped using collinearity criterion, then directions from poles
-     * (e.g. <cite>"South along 90°E"</cite>) are arbitrarily handled as if they were covariant
+     * (e.g. <q>South along 90°E</q>) are arbitrarily handled as if they were covariant
      * with East and North directions, in that order.
      *
      * @param  cs     the coordinate system which contains all axes, or {@code null}.
@@ -622,7 +622,7 @@ next:       for (int i=0; i <= limit; i++) {
     /**
      * Searches predefined {@link AxisDirection} for a given name. This method searches for a match in the set
      * of known axis directions as returned by {@link AxisDirection#values()}, plus a few special cases like
-     * <cite>"Geocentre &gt; equator/90°E"</cite>. The latter are used in the EPSG database for geocentric CRS.
+     * <q>Geocentre &gt; equator/90°E</q>. The latter are used in the EPSG database for geocentric CRS.
      *
      * <p>This method does not know about {@code org.apache.sis.referencing.cs.DirectionAlongMeridian}.
      * The latter is a parser which may create new directions, while this method searches only in a set

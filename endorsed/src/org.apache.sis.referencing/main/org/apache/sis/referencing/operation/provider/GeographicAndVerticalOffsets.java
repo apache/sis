@@ -25,8 +25,8 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Geographic2D with Height Offsets"</cite> (EPSG:9618).
- * This is not the same than a <cite>"Geographic3D offsets"</cite> because this
+ * The provider for <q>Geographic2D with Height Offsets</q> (EPSG:9618).
+ * This is not the same than a <q>Geographic3D offsets</q> because this
  * operation also performs a simplified transformation from ellipsoidal height
  * to geoidal height, as can be seen from the difference in parameter name.
  * For a "Geographic3D offsets" with ellipsoidal heights, see the parent class.
@@ -48,7 +48,7 @@ public final class GeographicAndVerticalOffsets extends GeographicOffsets {
     private static final long serialVersionUID = 7822664525013018023L;
 
     /**
-     * The operation parameter descriptor for the <cite>"Geoid undulation"</cite> parameter value.
+     * The operation parameter descriptor for the <q>Geoid undulation</q> parameter value.
      *
      * @see #TZ
      *

@@ -634,8 +634,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * This class is stricter about NaN values than other classes like {@link org.apache.sis.geometry.GeneralEnvelope}.
      * The reason is that computations on {@code GeographicBoundingBox} instances are rare ({@code Envelope} instances
      * are preferred for this purpose). Usually, {@code GeographicBoundingBox} values come directly from some metadata
-     * structure. Consequently, NaN values in {@code GeographicBoundingBox} means <cite>"information is unknown"</cite>
-     * more often than <cite>"not yet calculated"</cite>.
+     * structure. Consequently, NaN values in {@code GeographicBoundingBox} means <q>information is unknown</q>
+     * more often than <q>not yet calculated</q>.
      *
      * @param  box  the geographic bounding box to add to this box.
      *

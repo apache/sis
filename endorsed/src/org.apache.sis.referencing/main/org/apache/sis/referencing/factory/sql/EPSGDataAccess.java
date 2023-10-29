@@ -133,12 +133,12 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
  * Current version of this class requires EPSG database version 6.6 or above.
  *
  * <h2>Object identifier (code or name)</h2>
- * EPSG codes are numerical identifiers. For example, code 3395 stands for <cite>"WGS 84 / World Mercator"</cite>.
+ * EPSG codes are numerical identifiers. For example, code 3395 stands for <q>WGS 84 / World Mercator</q>.
  * Coordinate Reference Objects are normally created from their numerical codes, but this factory accepts also names.
  * For example, {@code createProjectedCRS("3395")} and {@code createProjectedCRS("WGS 84 / World Mercator")} both fetch
  * the same object.
  * However, names may be ambiguous since the same name may be used for more than one object.
- * This is the case of <cite>"WGS 84"</cite> for instance.
+ * This is the case of <q>WGS 84</q> for instance.
  * If such an ambiguity is found, an exception will be thrown.
  *
  * <h2>Life cycle and caching</h2>
@@ -660,7 +660,7 @@ addURIs:    for (int i=0; ; i++) {
      *
      * <p>When this method returns {@code false}, {@code createFoo(String)} methods
      * may look for the code in the name column instead of the primary key column.
-     * This allows to accept the <cite>"WGS 84 / World Mercator"</cite> string (for example)
+     * This allows to accept the <q>WGS 84 / World Mercator</q> string (for example)
      * in addition to the {@code "3395"} primary key. Both string values should fetch the same object.</p>
      *
      * <p>If this method returns {@code true}, then this factory does not search for matching names.

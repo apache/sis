@@ -77,8 +77,8 @@ import static org.apache.sis.referencing.util.NilReferencingObject.UNNAMED;
  * <h2>Axis names</h2>
  * In some case, the axis name is constrained by ISO 19111 depending on the
  * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system} type.
- * This constraint works in two directions. For example, the names <cite>"geodetic latitude"</cite> and
- * <cite>"geodetic longitude"</cite> shall be used to designate the coordinate axis names associated
+ * This constraint works in two directions. For example, the names <q>geodetic latitude</q> and
+ * <q>geodetic longitude</q> shall be used to designate the coordinate axis names associated
  * with a {@link org.opengis.referencing.crs.GeographicCRS}. Conversely, these names shall not be used
  * in any other context. See the GeoAPI {@link CoordinateSystemAxis} javadoc for more information.
  *
@@ -179,7 +179,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * The abbreviation used for this coordinate system axes.
-     * Examples are <cite>"X"</cite> and <cite>"Y"</cite>.
+     * Examples are <q>X</q> and <q>Y</q>.
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setAbbreviation(String)}</p>
@@ -415,7 +415,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * Returns the abbreviation used for this coordinate system axes.
-     * Examples are <cite>"X"</cite> and <cite>"Y"</cite>.
+     * Examples are <q>X</q> and <q>Y</q>.
      *
      * @return the coordinate system axis abbreviation.
      */
@@ -502,9 +502,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * The above special cases are needed in order to workaround a conflict in specifications:
      * ISO 19111 states explicitly that the latitude and longitude axis names shall be
-     * <cite>"Geodetic latitude"</cite> and <cite>"Geodetic longitude"</cite>, while the legacy
+     * <q>Geodetic latitude</q> and <q>Geodetic longitude</q>, while the legacy
      * OGC 01-009 (where version 1 of the WKT format is defined) said that the default values shall be
-     * <cite>"Lat"</cite> and <cite>"Lon"</cite>.
+     * <q>Lat</q> and <q>Lon</q>.
      *
      * <h4>Future evolutions</h4>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability
@@ -711,8 +711,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * The only actions (derived from ISO 19162 rules) taken by this method (by default) are:
      *
      * <ul>
-     *   <li>Replace <cite>“Geodetic latitude”</cite> and <cite>“Geodetic longitude”</cite> names (case insensitive)
-     *       by <cite>“latitude”</cite> and <cite>“longitude”</cite> respectively.</li>
+     *   <li>Replace <q>Geodetic latitude</q> and <q>Geodetic longitude</q> names (case insensitive)
+     *       by <q>latitude</q> and <q>longitude</q> respectively.</li>
      *   <li>For latitude and longitude axes, replace “φ” and “λ” abbreviations by <var>“B”</var> and <var>“L”</var>
      *       respectively (from German “Breite” and “Länge”, used in academic texts worldwide).
      *       Note that <var>“L”</var> is also the transliteration of Greek letter “lambda” (λ).</li>

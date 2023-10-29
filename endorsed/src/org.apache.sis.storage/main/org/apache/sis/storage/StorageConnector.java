@@ -1732,7 +1732,7 @@ public class StorageConnector implements Serializable {
      *
      * <h4>Rational</h4>
      * As of Java 18, above-cited methods systematically catch all {@link IOException}s and wrap
-     * them in an {@link IIOException} with <cite>"Cannot create cache file!"</cite> error message.
+     * them in an {@link IIOException} with <q>Cannot create cache file!</q> error message.
      * This is conform to Image I/O specification but misleading if the stream provider throws an
      * {@link IOException} for another reason. Even when the failure is really caused by a problem
      * with cache file, we want to propagate the original exception to user because its message

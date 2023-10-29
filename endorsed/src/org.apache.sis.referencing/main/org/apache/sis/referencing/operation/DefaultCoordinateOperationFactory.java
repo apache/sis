@@ -44,7 +44,6 @@ import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.Constants;
@@ -87,7 +86,7 @@ import org.apache.sis.util.resources.Errors;
  * This class is safe for multi-thread usage if all referenced factories are thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.6
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
@@ -264,7 +263,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 
     /**
      * Returns the operation method of the given name. The given argument shall be either a method
-     * {@linkplain DefaultOperationMethod#getName() name} (e.g. <cite>"Transverse Mercator"</cite>)
+     * {@linkplain DefaultOperationMethod#getName() name} (e.g. <q>Transverse Mercator</q>)
      * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
      * The search is case-insensitive and comparisons against method names can be
      * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.
@@ -506,7 +505,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             final ParameterValueGroup parameters = Containers.property(properties,
                     CoordinateOperations.PARAMETERS_KEY, ParameterValueGroup.class);
             if (parameters == null) {
-                throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
+                throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
             }
             transform = ReferencingUtilities.createBaseToDerived(getMathTransformFactory(), sourceCRS, parameters, targetCRS);
         }

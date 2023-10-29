@@ -28,11 +28,8 @@ import java.util.Map;
  * not yet target for any Apache SIS release at this time.</div>
  *
  * @author  Travis L. Pinney
- * @version 0.5
  *
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
- *
- * @since 0.5
  */
 public enum ShapeTypeEnum  {
 

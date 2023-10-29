@@ -57,23 +57,6 @@ import org.apache.sis.metadata.internal.RecordSchemaSIS;
  * The set of fields in a {@code RecordType} can be though as equivalent to the set of fields in a class.
  * </div>
  *
- * <h2>Instantiation</h2>
- * The easiest way to create {@code DefaultRecordType} instances is to use the
- * {@link DefaultRecordSchema#createRecordType(CharSequence, Map)} method.
- * Example:
- *
- * {@snippet lang="java" :
- *     DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
- *     // The same instance can be reused for all records to create in that schema.
- *
- *     Map<CharSequence,Class<?>> fields = new LinkedHashMap<>();
- *     fields.put("city",        String .class);
- *     fields.put("latitude",    Double .class);
- *     fields.put("longitude",   Double .class);
- *     fields.put("population",  Integer.class);
- *     RecordType record = schema.createRecordType("MyRecordType", fields);
- *     }
- *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe if the {@link TypeName}, the {@link RecordSchema}
  * and all ({@link MemberName}, {@link Type}) entries in the map given to the constructor are also immutable.
@@ -86,10 +69,9 @@ import org.apache.sis.metadata.internal.RecordSchemaSIS;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultRecord
- * @see DefaultRecordSchema
  * @see DefaultMemberName
  *
  * @since 0.3
@@ -110,7 +92,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     private final TypeName typeName;
 
     /**
-     * The schema that contains this record type.
+     * The schema that contains this record type, or {@code null} if none.
      *
      * @see #getContainer()
      */
@@ -136,6 +118,18 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     }
 
     /**
+     * Creates a new record type.
+     *
+     * @param typeName  the name that identifies this record type.
+     * @param fields    the name and type of the fields to be included in this record type.
+     *
+     * @since 1.5
+     */
+    public DefaultRecordType(final TypeName typeName, final Map<? extends MemberName, ? extends Type> fields) {
+        this(typeName, null, fields);
+    }
+
+    /**
      * Creates a new record in the given schema.
      * It is caller responsibility to add the new {@code RecordType} in the container
      * {@linkplain RecordSchema#getDescription() description} map, if desired.
@@ -146,17 +140,19 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * method provides an easier alternative.</p>
      *
      * @param typeName   the name that identifies this record type.
-     * @param container  the schema that contains this record type.
+     * @param container  the schema that contains this record type, or {@code null} if none.
      * @param fields     the name and type of the fields to be included in this record type.
      *
      * @see DefaultRecordSchema#createRecordType(CharSequence, Map)
+     *
+     * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of the ISO 19103 standard.
      */
+    @Deprecated(since = "1.5", forRemoval = true)
     public DefaultRecordType(final TypeName typeName, final RecordSchema container,
             final Map<? extends MemberName, ? extends Type> fields)
     {
-        ArgumentChecks.ensureNonNull("typeName",  typeName);
-        ArgumentChecks.ensureNonNull("container", container);
-        ArgumentChecks.ensureNonNull("field",     fields);
+        ArgumentChecks.ensureNonNull("typeName", typeName);
+        ArgumentChecks.ensureNonNull("field",    fields);
         this.typeName   = typeName;
         this.container  = container;
         this.fieldTypes = computeTransientFields(fields);
@@ -164,10 +160,12 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
          * Ensure that the record namespace is equal to the schema name. For example if the schema
          * name is "MyNameSpace", then the record type name can be "MyNameSpace:MyRecordType".
          */
-        final LocalName   schemaName   = container.getSchemaName();
         final GenericName fullTypeName = typeName.toFullyQualifiedName();
-        if (schemaName.compareTo(typeName.scope().name().tip()) != 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedNamespace_2, schemaName, fullTypeName));
+        if (container != null) {
+            final LocalName schemaName = container.getSchemaName();
+            if (schemaName.compareTo(typeName.scope().name().tip()) != 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedNamespace_2, schemaName, fullTypeName));
+            }
         }
         final int size = size();
         for (int i=0; i<size; i++) {
@@ -191,7 +189,10 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * @param container    the schema that contains this record type.
      * @param fields       the name of the fields to be included in this record type.
      * @param nameFactory  the factory to use for instantiating {@link MemberName}.
+     *
+     * @deprecated To be removed after {@link DefaultRecordSchema} has been removed.
      */
+    @Deprecated(since = "1.5", forRemoval = true)
     DefaultRecordType(final TypeName typeName, final RecordSchema container,
             final Map<? extends CharSequence, ? extends Type> fields, final DefaultNameFactory nameFactory)
     {
@@ -309,7 +310,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * Returns the schema that contains this record type.
      *
-     * @return the schema that contains this record type.
+     * @return the schema that contains this record type, or {@code null} if none.
      *
      * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of ISO 19103 standard.
      */

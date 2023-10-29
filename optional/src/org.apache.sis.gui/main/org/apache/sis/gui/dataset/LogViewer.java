@@ -235,7 +235,7 @@ public class LogViewer extends Widget {
         shortDates = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, vocabulary.getLocale());
         longDates  = DateFormat.getDateTimeInstance(DateFormat.LONG,  DateFormat.LONG,  vocabulary.getLocale());
         table      = new TableView<>(FXCollections.emptyObservableList());
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         table.setTableMenuButtonVisible(true);
         table.getColumns().setAll(column(vocabulary, Vocabulary.Keys.Level),
                                   column(vocabulary, Vocabulary.Keys.DateAndTime),

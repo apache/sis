@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
 
 
 /**
- * The provider for <cite>"Lambert Cylindrical Equal Area"</cite> projection (EPSG:9835).
+ * The provider for <q>Lambert Cylindrical Equal Area</q> projection (EPSG:9835).
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

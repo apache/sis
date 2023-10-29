@@ -511,8 +511,8 @@ public final class Axis extends NamedElement {
      * A {@code false} value does not necessarily means that the axis maps cell center; it can be unknown.
      * This method assumes a geographic CRS.
      *
-     * <p>From CF-Convention: <cite>"If bounds are not provided, an application might reasonably assume the
-     * grid points to be at the centers of the cells, but we do not require that in this standard."</cite>
+     * <p>From CF-Convention: <q>If bounds are not provided, an application might reasonably assume the
+     * grid points to be at the centers of the cells, but we do not require that in this standard.</q>
      * We nevertheless tries to guess by checking if the "cell center" convention would result in coordinates
      * outside the range of longitude or latitude values.</p>
      */

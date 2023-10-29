@@ -173,7 +173,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     /**
      * Creates a derived CRS from a math transform. The given {@code MathTransform} shall transform coordinate
      * values specifically from the {@code baseCRS} to {@code this} CRS (optionally with an interpolation CRS);
-     * there is no consideration about <cite>“normalized CRS”</cite> in this constructor.
+     * there is no consideration about <q>normalized CRS</q> in this constructor.
      *
      * <h4>Conversion properties</h4>
      * The {@code properties} map given in argument can contain any entries documented in the

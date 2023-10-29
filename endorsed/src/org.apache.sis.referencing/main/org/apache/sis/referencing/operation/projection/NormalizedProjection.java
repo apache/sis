@@ -282,7 +282,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *
          * <h4>When to use</h4>
          * This enumeration value should be used only when the user requested explicitly the spherical formulas
-         * of a conformal projection, for example the <cite>"Mercator (Spherical)"</cite> projection (EPSG:1026),
+         * of a conformal projection, for example the <q>Mercator (Spherical)</q> projection (EPSG:1026),
          * but the figure of the Earth may be an ellipsoid rather than a sphere.
          * This enumeration value can also be used for other kinds of projection except Equal Area, in which case
          * the {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius}
@@ -336,7 +336,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * This is the same <var>x</var> translation than {@link #FALSE_EASTING}, but of opposite sign.
          *
          * <p>Actually, there is usually no parameter named "false westing" in a map projection.
-         * But some projections like <cite>"Lambert Conic Conformal (West Orientated)"</cite> are
+         * But some projections like <q>Lambert Conic Conformal (West Orientated)</q> are
          * defined in such a way that their "false easting" parameter is effectively a "false westing".
          * This enumeration value can be used for informing {@link NormalizedProjection} about that fact.</p>
          */
@@ -360,7 +360,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * This is the same <var>y</var> translation than {@link #FALSE_NORTHING}, but of opposite sign.
          *
          * <p>Actually, there is usually no parameter named "false southing" in a map projection.
-         * But some projections like <cite>"Transverse Mercator (South Orientated)"</cite> are
+         * But some projections like <q>Transverse Mercator (South Orientated)</q> are
          * defined in such a way that their "false northing" parameter is effectively a "false southing".
          * This enumeration value can be used for informing {@link NormalizedProjection} about that fact.</p>
          */

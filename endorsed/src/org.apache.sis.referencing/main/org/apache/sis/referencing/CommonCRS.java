@@ -109,7 +109,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_D
  * The definitions used as fallbacks are available in public sources
  * and do not include EPSG metadata except the identifier.
  * If the EPSG geodetic dataset has been used, the {@linkplain NamedIdentifier#getAuthority() authority} title
- * will be something like <cite>"EPSG geodetic dataset"</cite>, otherwise it will be <cite>"Subset of EPSG"</cite>.
+ * will be something like <q>EPSG geodetic dataset</q>, otherwise it will be <q>Subset of EPSG</q>.
  *
  * <p>Referencing objects are cached after creation. Invoking the same method on the same {@code CommonCRS}
  * instance twice will return the same {@link IdentifiedObject} instance, unless the internal cache has been cleared
@@ -189,7 +189,7 @@ public enum CommonCRS {
 
     /**
      * North American Datum 1983.
-     * The ellipsoid is <cite>"GRS 1980"</cite>.
+     * The ellipsoid is <q>GRS 1980</q>.
      * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
      *
      * <blockquote><table class="compact">
@@ -229,7 +229,7 @@ public enum CommonCRS {
 
     /**
      * European Terrestrial Reference System 1989.
-     * The ellipsoid is <cite>"GRS 1980"</cite>.
+     * The ellipsoid is <q>GRS 1980</q>.
      * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
      *
      * <blockquote><table class="compact">

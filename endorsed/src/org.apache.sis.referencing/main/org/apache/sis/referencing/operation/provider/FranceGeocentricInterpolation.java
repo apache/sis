@@ -61,16 +61,16 @@ import static org.apache.sis.util.internal.Constants.DIM;
 
 
 /**
- * The provider for <cite>"Geocentric translation by Grid Interpolation (IGN)"</cite> (EPSG:1087).
- * This method replaces the deprecated <cite>"France geocentric interpolation"</cite> (ESPG:9655).
+ * The provider for <q>Geocentric translation by Grid Interpolation (IGN)</q> (EPSG:1087).
+ * This method replaces the deprecated <q>France geocentric interpolation</q> (ESPG:9655).
  * This operation requires a grid file provided by the French mapping agency.
  *
  * <p><b>Source:</b> IGN document {@code NTG_88.pdf},
- * <cite>"Grille de paramètres de transformation de coordonnées"</cite>
+ * <q>Grille de paramètres de transformation de coordonnées</q>
  * at <a href="http://www.ign.fr">http://www.ign.fr</a>.</p>
  *
  * In principle, this operation method is designed specifically for the French mapping
- * (e.g. EPSG:1053 <cite>"NTF to RGF93 (1)"</cite>) using the following hard-coded parameters:
+ * (e.g. EPSG:1053 <q>NTF to RGF93 (1)</q>) using the following hard-coded parameters:
  * <ul>
  *   <li>Source ellipsoid: Clarke 1880</li>
  *   <li>Target ellipsoid: RGF93</li>
@@ -86,7 +86,7 @@ import static org.apache.sis.util.internal.Constants.DIM;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @XmlTransient
-public class FranceGeocentricInterpolation extends GeodeticOperation {
+public final class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -226,9 +226,8 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Returns the provider for the specified combination of source and target dimensions.
      */
-    // TODO: make final after removal of deprecated `MolodenskyInterpolation` subclass.
     @Override
-    GeodeticOperation redimensioned(int indexOfDim) {
+    final GeodeticOperation redimensioned(int indexOfDim) {
         return REDIMENSIONED[indexOfDim];
     }
 
@@ -263,16 +262,9 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
               EllipsoidalCS.class, true);
     }
 
-    @Deprecated(forRemoval = true)
-    FranceGeocentricInterpolation(ParameterDescriptorGroup parameters, int indexOfDim) {
-        super(Transformation.class, parameters, indexOfDim,
-              EllipsoidalCS.class, true,
-              EllipsoidalCS.class, true);
-    }
-
     /**
      * Returns {@code true} if the given path seems to be a grid published by the French mapping agency for France.
-     * In principle this <cite>"France geocentric interpolation"</cite> is designed specifically for use with the
+     * In principle this <q>France geocentric interpolation</q> is designed specifically for use with the
      * {@code "gr3df97a.txt"} grid, but in fact the Apache SIS implementation should be flexible enough for use
      * with other area.
      *
@@ -357,31 +349,17 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             // NumberFormatException, ArithmeticException, NoSuchElementException, and more.
             throw DatumShiftGridLoader.canNotLoad(HEADER, file, e);
         }
-        MathTransform tr = createGeodeticTransformation(factory,
+        MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
-                                    Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()),   // GRS 1980 ellipsoid
+                                    Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()), withHeights,  // GRS 1980 ellipsoid
                 createEllipsoid(pg, Molodensky.SRC_SEMI_MAJOR,
-                                    Molodensky.SRC_SEMI_MINOR, null),                           // Clarke 1880 (IGN) ellipsoid
-                withHeights, grid);
+                                    Molodensky.SRC_SEMI_MINOR, null), withHeights, grid);                   // Clarke 1880 (IGN) ellipsoid
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
             throw new FactoryException(e);                  // Should never happen.
         }
         return tr;
-    }
-
-    /**
-     * Creates the actual math transform. The default implementation delegates to the static method defined in
-     * {@link InterpolatedGeocentricTransform}, but the {@link MolodenskyInterpolation} subclass will rather
-     * delegate to {@link org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTransform}.
-     */
-    MathTransform createGeodeticTransformation(final MathTransformFactory factory,
-            final Ellipsoid source, final Ellipsoid target, final boolean withHeights,
-            final DatumShiftGridFile<Angle,Length> grid) throws FactoryException
-    {
-        return InterpolatedGeocentricTransform.createGeodeticTransformation(
-                factory, source, withHeights, target, withHeights, grid);
     }
 
     /**

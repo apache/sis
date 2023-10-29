@@ -196,7 +196,7 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
 
     /**
      * The error that shall be added to the main {@link #value} in order to get the
-     * <cite>"real"</cite> (actually <cite>"the most accurate that we can"</cite>) value.
+     * <q>real</q> (actually <q>the most accurate that we can</q>) value.
      */
     public final double error;
 

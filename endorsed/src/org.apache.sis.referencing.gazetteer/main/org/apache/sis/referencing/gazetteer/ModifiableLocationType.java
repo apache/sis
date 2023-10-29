@@ -217,11 +217,11 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * Sets the property used as the defining characteristic of the location type.
      *
      * <h4>Examples</h4>
-     * <cite>“local administration”</cite> for administrative areas,
-     * <cite>“built environment”</cite> for towns or properties,
-     * <cite>“access”</cite> for streets,
-     * <cite>“electoral”</cite>,
-     * <cite>“postal”</cite>.
+     * <q>local administration</q> for administrative areas,
+     * <q>built environment</q> for towns or properties,
+     * <q>access</q> for streets,
+     * <q>electoral</q>,
+     * <q>postal</q>.
      *
      * @param  value  the new theme, or {@code null} for inheriting a value from the parents.
      */
@@ -393,7 +393,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
     /**
      * Returns the parent location types (location types of which this location type is a sub-division).
      * A location type can have more than one possible parent. For example, the parent of a location type named
-     * <cite>“street”</cite> could be <cite>“locality”</cite>, <cite>“town”</cite> or <cite>“administrative area”</cite>.
+     * <q>street</q> could be <q>locality</q>, <q>town</q> or <q>administrative area</q>.
      *
      * <p>The collection returned by this method is unmodifiable. For adding or removing a parent,
      * use {@link #addParent(ModifiableLocationType)} or {@link #removeParent(ModifiableLocationType)}.</p>

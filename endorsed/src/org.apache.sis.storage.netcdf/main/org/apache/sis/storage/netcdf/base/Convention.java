@@ -319,8 +319,8 @@ public class Convention {
      *
      * In this case, even if {@link #namesOfAxisVariables(Variable)} explicitly returns {@code {"Latitude", "Longitude"}}
      * we are still unable to associate the {@code SST} variable to those axes because they have no dimension in common.
-     * However if we interpret {@code dim0} and {@code dim1} attributes as <cite>"Name of dimension 0"</cite> and
-     * <cite>"Name of dimension 1"</cite> respectively, then we can associate the same dimension <strong>names</strong>
+     * However if we interpret {@code dim0} and {@code dim1} attributes as <q>Name of dimension 0</q> and
+     * <q>Name of dimension 1</q> respectively, then we can associate the same dimension <strong>names</strong>
      * to all those variables: namely {@code "Line grids"} and {@code "Pixel grids"}. Using those names, we deduce that
      * the {@code (data_y, data_x)} dimensions in the {@code SST} variable are mapped to the {@code (grid_y, grid_x)}
      * dimensions in the localization grid.
@@ -561,7 +561,7 @@ public class Convention {
 
     /**
      * Returns an identification of default geodetic components to use if no corresponding information is found in the
-     * netCDF file. The default implementation returns <cite>"Unknown datum based upon the GRS 1980 ellipsoid"</cite>.
+     * netCDF file. The default implementation returns <q>Unknown datum based upon the GRS 1980 ellipsoid</q>.
      * Note that the GRS 1980 ellipsoid is close to WGS 84 ellipsoid.
      *
      * <h4>Maintenance note</h4>

@@ -33,7 +33,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -300,7 +299,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
         assert operation.geometryCount() == 1 && operation.maxParamCount == 2 : operation;
         if (argument == null && operation.minParamCount > 1) {
             // TODO: fetch argument name.
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, "arg1"));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, "arg1"));
         }
         final Object result = operationSameCRS(operation, null, argument);
         assert isInstance(operation, result) : result;
@@ -327,7 +326,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
         assert operation.geometryCount() == 2 && operation.maxParamCount == 3 : operation;
         if (argument == null && operation.minParamCount > 2) {
             // TODO: fetch argument name.
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, "arg2"));
+            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, "arg2"));
         }
         final Object result = operationSameCRS(operation, toSameCRS(other), argument);
         assert isInstance(operation, result) : result;

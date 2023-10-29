@@ -52,11 +52,11 @@ import static org.apache.sis.referencing.operation.provider.ObliqueStereographic
  *
  * <p>This projection involves two steps: first a conversion of <em>geodetic</em> coordinates to <em>conformal</em>
  * coordinates (i.e. latitudes and longitudes on a conformal sphere), then a spherical stereographic projection.
- * For this reason this projection method is sometimes known as <cite>"Double Stereographic"</cite>.</p>
+ * For this reason this projection method is sometimes known as <q>Double Stereographic</q>.</p>
  *
  * <h2>Related methods</h2>
- * There is another method known as <cite>"Oblique Stereographic Alternative"</cite> or sometimes just
- * <cite>"Stereographic"</cite>. That alternative uses a simplified conversion computing the conformal latitude
+ * There is another method known as <q>Oblique Stereographic Alternative</q> or sometimes just
+ * <q>Stereographic</q>. That alternative uses a simplified conversion computing the conformal latitude
  * of each point on the ellipsoid. Both methods are considered valid but produce slightly different results.
  * For this reason EPSG considers them as different projection methods.
  *
@@ -96,7 +96,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Oblique Stereographic"</cite>, also known as <cite>"Roussilhe"</cite>.</li>
+     *   <li><q>Oblique Stereographic</q>, also known as <q>Roussilhe</q>.</li>
      * </ul>
      *
      * @param  method      description of the projection parameters.

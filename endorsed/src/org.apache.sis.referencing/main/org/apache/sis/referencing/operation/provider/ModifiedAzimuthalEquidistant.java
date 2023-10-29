@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>"Modified Azimuthal Equidistant"</cite> projection (EPSG:9832).
+ * The provider for <q>Modified Azimuthal Equidistant</q> projection (EPSG:9832).
  *
  * <h2>Relationship with "Azimuthal Equidistant"</h2>
  * The <cite>Modified Azimuthal Equidistant</cite> projection is an approximation of a theoretically

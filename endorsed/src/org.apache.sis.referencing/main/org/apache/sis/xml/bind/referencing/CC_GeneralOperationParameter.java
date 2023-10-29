@@ -197,9 +197,9 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * This constraint exists in some predefined map projections.
      *
      * <h4>Example</h4>
-     * The <cite>"Latitude of natural origin"</cite> parameter of <cite>"Mercator (1SP)"</cite> projection
+     * The <q>Latitude of natural origin</q> parameter of <q>Mercator (1SP)</q> projection
      * is provided for completeness, but should never be different than zero in this particular projection
-     * (otherwise it would be a <cite>"Mercator (variant C)"</cite> projection).  But if this parameter is
+     * (otherwise it would be a <q>Mercator (variant C)</q> projection).  But if this parameter is
      * nevertheless provided, the SIS implementation will use it. From this point of view, SIS is tolerant
      * to non-zero value.
      *

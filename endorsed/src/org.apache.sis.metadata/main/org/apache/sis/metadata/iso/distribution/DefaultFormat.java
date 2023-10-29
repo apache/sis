@@ -56,7 +56,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * {@code       └─date………………………………………………………} Reference date for the cited resource.</div>
  *
  * Each {@code Format} instance should contain a {@linkplain #getFormatSpecificationCitation() reference
- * to the format specification}, for example <cite>"PNG (Portable Network Graphics) Specification"</cite>.
+ * to the format specification}, for example <q>PNG (Portable Network Graphics) Specification</q>.
  * The specification often has an abbreviation (for example "PNG") which can be stored as an
  * {@linkplain DefaultCitation#getAlternateTitles() alternate title}.
  *

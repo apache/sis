@@ -79,7 +79,7 @@ public class CoordinateOperationContext implements Serializable {
 
     /**
      * The desired accuracy in metres, or 0 for the best accuracy available.
-     * See {@link #getDesiredAccuracy()} for more details about what we mean by <cite>"best accuracy"</cite>.
+     * See {@link #getDesiredAccuracy()} for more details about what we mean by <q>best accuracy</q>.
      */
     private double desiredAccuracy;
 
@@ -94,7 +94,7 @@ public class CoordinateOperationContext implements Serializable {
      *
      * @param area      the area of interest, or {@code null} if none.
      * @param accuracy  the desired accuracy in metres, or 0 for the best accuracy available.
-     * See {@link #getDesiredAccuracy()} for more details about what we mean by <cite>"best accuracy"</cite>.
+     * See {@link #getDesiredAccuracy()} for more details about what we mean by <q>best accuracy</q>.
      */
     public CoordinateOperationContext(final Extent area, final double accuracy) {
         ArgumentChecks.ensurePositive("accuracy", accuracy);
@@ -206,7 +206,7 @@ public class CoordinateOperationContext implements Serializable {
     /**
      * Sets the desired accuracy in metres.
      * A value of 0 means to search for the most accurate operation.
-     * See {@link #getDesiredAccuracy()} for more details about what we mean by <cite>"most accurate"</cite>.
+     * See {@link #getDesiredAccuracy()} for more details about what we mean by <q>most accurate</q>.
      *
      * @param  accuracy  the desired accuracy in metres.
      */

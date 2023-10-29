@@ -181,7 +181,7 @@ public class DefaultAttributeType<V> extends FieldType {
      * @param characterizedBy  other attribute types that describes this attribute type (can be {@code null} for none).
      *                         For example if this new {@code DefaultAttributeType} describes a measurement,
      *                         then {@code characterizedBy} could holds the measurement accuracy.
-     *                         See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
+     *                         See <q>Attribute characterization</q> in class Javadoc for more information.
      *
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder
      */
@@ -296,7 +296,7 @@ public class DefaultAttributeType<V> extends FieldType {
      * The characteristics are enumerated in the {@linkplain Map#values() map values}.
      * The {@linkplain Map#keySet() map keys} are the {@code String} representations
      * of characteristics {@linkplain #getName() name}, for more convenient lookups.
-     * See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
+     * See <q>Attribute characterization</q> in class Javadoc for more information.
      *
      * <h4>Example</h4>
      * An attribute that carries a measurement (e.g. air temperature) may have another attribute that holds the

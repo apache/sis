@@ -25,7 +25,7 @@ import org.apache.sis.storage.event.StoreListener;
 
 /**
  * Provides access to geospatial data in a {@code DataStore}. The ISO 19115 specification defines resource as
- * an <cite>“identifiable asset or means that fulfills a requirement”</cite>. For example, a resource can be a
+ * an <q>identifiable asset or means that fulfills a requirement</q>. For example, a resource can be a
  * coverage of Sea Surface Temperature, or a coverage of water salinity, or the set of all buoys in a harbor,
  * or an aggregation of all the above. A resource is not necessarily digital; it can be a paper document or an
  * organization, in which case only metadata are provided. If the resource is digital, then {@code Resource}s

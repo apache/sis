@@ -371,8 +371,8 @@ public final class IdentifiedObjects extends Static {
      * {@linkplain AbstractIdentifiedObject#getAlias() alias} or
      * {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier}, in that order.
      * If the primary name seems to be the {@linkplain CharSequences#isAcronymForWords acronym} of an alias,
-     * then the alias is returned. For example if the name is <cite>"WGS 84"</cite> and an alias is
-     * <cite>"World Geodetic System 1984"</cite>, then that later alias is returned.
+     * then the alias is returned. For example if the name is <q>WGS 84</q> and an alias is
+     * <q>World Geodetic System 1984</q>, then that later alias is returned.
      *
      * <p>The name should never be missing, but this method nevertheless
      * fallbacks on identifiers as a safety against incomplete implementations.

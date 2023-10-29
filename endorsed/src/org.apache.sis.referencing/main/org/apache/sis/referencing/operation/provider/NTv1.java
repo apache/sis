@@ -29,7 +29,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for <cite>"National Transformation version 1"</cite> (EPSG:9614).
+ * The provider for <q>National Transformation version 1</q> (EPSG:9614).
  * This transform requires data that are not bundled by default with Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)

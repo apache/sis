@@ -203,7 +203,7 @@ public final class Constants extends Static {
                                NUM_COL = "num_col";
 
     /**
-     * The OGC name for <cite>"Affine parametric transformation"</cite>.
+     * The OGC name for <q>Affine parametric transformation</q>.
      *
      * @see org.apache.sis.referencing.operation.provider.Affine#NAME
      */

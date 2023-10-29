@@ -153,7 +153,7 @@ public final class DefaultDerivedCRSTest extends TestCase {
      * Note that in the particular case of {@code DerivedCRS}, WKT 1 and WKT 2 formats are very different.
      *
      * The CRS formatted by this test is a dummy CRS which should not exist in the reality.
-     * In particular, we use <cite>"Longitude rotation"</cite> (EPSG:9601) as if it was a conversion,
+     * In particular, we use <q>Longitude rotation</q> (EPSG:9601) as if it was a conversion,
      * while in reality it is a transformation. We do that only because this operation is so simple,
      * it is easy to create and test.
      */
@@ -183,7 +183,7 @@ public final class DefaultDerivedCRSTest extends TestCase {
      * Note that in the particular case of {@code DerivedCRS}, WKT 1 and WKT 2 formats are very different.
      *
      * The CRS formatted by this test is a dummy CRS which should not exist in the reality.
-     * In particular, we use <cite>"Longitude rotation"</cite> (EPSG:9601) as if it was a conversion,
+     * In particular, we use <q>Longitude rotation</q> (EPSG:9601) as if it was a conversion,
      * while in reality it is a transformation. We do that only because this operation is so simple,
      * it is easy to create and test.
      */

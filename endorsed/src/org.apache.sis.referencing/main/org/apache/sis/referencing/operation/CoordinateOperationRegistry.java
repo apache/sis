@@ -981,7 +981,7 @@ class CoordinateOperationRegistry {
      * in the target coordinates or both. If there is an ellipsoidal transform, then this method updates the
      * transforms in order to use the ellipsoidal height (it has an impact on the transformed values).
      *
-     * <p>This method requires that the EPSG factory insert explicit <cite>"Geographic3D to 2D conversion"</cite>
+     * <p>This method requires that the EPSG factory insert explicit <q>Geographic3D to 2D conversion</q>
      * operations (EPSG:9659) in the operations chain, or an equivalent operation (recognized by its matrix shape).
      * This method tries to locate and remove EPSG:9659 or equivalent operation from the operation chain in order
      * to get three-dimensional domains.</p>

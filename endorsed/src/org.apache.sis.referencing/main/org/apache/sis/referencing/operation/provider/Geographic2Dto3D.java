@@ -32,7 +32,7 @@ import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for <cite>"Geographic 2D to 3D conversion"</cite>.
+ * The provider for <q>Geographic 2D to 3D conversion</q>.
  * The default operation sets the ellipsoidal height to zero.
  *
  * <p>This operation is a SIS extension; the EPSG dataset defines only the 3D to 2D case.

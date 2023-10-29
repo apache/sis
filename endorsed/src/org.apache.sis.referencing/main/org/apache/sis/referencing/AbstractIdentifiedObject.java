@@ -84,9 +84,9 @@ import org.apache.sis.referencing.internal.Legacy;
 
 /**
  * Base class for objects identified by a name or a code. Those objects are typically
- * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. <cite>"World Geodetic System 1984"</cite>),
- * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. <cite>"WGS 84 / World Mercator"</cite>) or
- * {@linkplain org.apache.sis.referencing.operation.DefaultConversion map projection}  (e.g. <cite>"Mercator (variant A)"</cite>).
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. <q>World Geodetic System 1984</q>),
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. <q>WGS 84 / World Mercator</q>) or
+ * {@linkplain org.apache.sis.referencing.operation.DefaultConversion map projection}  (e.g. <q>Mercator (variant A)</q>).
  * Those names, or a code (e.g. {@code "EPSG:3395"}), can be used for fetching an object from a database.
  * However, it is not sufficient to know the object name. We also need to know who define that name
  * (the {@linkplain NamedIdentifier#getAuthority() authority}) since the same objects are often named differently
@@ -608,7 +608,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * Returns comments on or information about this object, including data source information.
      * If this object {@linkplain #isDeprecated() is deprecated}, then the remarks should give
-     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @return the remarks, or {@code null} if none.
      */
@@ -622,7 +622,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Returns {@code true} if this object is deprecated. Deprecated objects exist in some
      * {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like the EPSG database.
      * If this method returns {@code true}, then the {@linkplain #getRemarks() remarks} should give
-     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     * indication about the replacement (e.g. <q>superceded by …</q>).
      *
      * @return {@code true} if this object is deprecated.
      */
@@ -680,7 +680,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       This prefix appears in ESRI datum name (e.g. {@code "D_WGS_1984"}).</li>
      *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
      *       Comparisons of geodetic datum names} may ignore the prime meridian name, if any.
-     *       Example: <cite>"(Paris)"</cite> in <cite>"Nouvelle Triangulation Française (Paris)"</cite>.</li>
+     *       Example: <q>(Paris)</q> in <q>Nouvelle Triangulation Française (Paris)</q>.</li>
      * </ul>
      *
      * <h4>Future evolutions</h4>

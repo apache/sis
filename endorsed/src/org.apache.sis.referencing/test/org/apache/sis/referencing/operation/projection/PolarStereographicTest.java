@@ -95,7 +95,7 @@ public final class PolarStereographicTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests <cite>"Stereographic North Pole"</cite>. The tested point is adapted from
+     * Tests <q>Stereographic North Pole</q>. The tested point is adapted from
      * <a href="http://geotiff.maptools.org/proj_list/polar_stereographic.html">Polar Stereographic
      * from GeoTIFF projections list</a>.
      *

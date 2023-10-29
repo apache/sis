@@ -190,7 +190,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
          */
         final TableView<Category> table = new TableView<>();
         table.getColumns().add(name);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         addColumnTo(table, vocabulary.getString(Vocabulary.Keys.Colors));
         /*
          * Add contextual menu items.

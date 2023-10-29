@@ -489,7 +489,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
 
     /**
      * Adds another attribute type that describes this attribute type.
-     * See <cite>"Attribute characterization"</cite> in {@link DefaultAttributeType} Javadoc for more information.
+     * See <q>Attribute characterization</q> in {@link DefaultAttributeType} Javadoc for more information.
      *
      * <h4>Usage example</h4>
      * {@snippet lang="java" :
@@ -515,7 +515,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
 
     /**
      * Adds another attribute type that describes this attribute type, using an existing one as a template.
-     * See <cite>"Attribute characterization"</cite> in {@link DefaultAttributeType} Javadoc for more information.
+     * See <q>Attribute characterization</q> in {@link DefaultAttributeType} Javadoc for more information.
      *
      * <div class="warning"><b>Warning:</b>
      * The {@code template} argument type will be changed to {@code AttributeType} if and when such interface

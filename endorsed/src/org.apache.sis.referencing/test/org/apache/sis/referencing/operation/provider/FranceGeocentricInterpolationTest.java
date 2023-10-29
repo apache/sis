@@ -55,7 +55,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      * Precision is given by {@link #ANGULAR_TOLERANCE}.
      *
      * <blockquote><b>Source:</b>
-     * <cite>"Grille de paramètres de transformation de coordonnées GR3DF97A"</cite>
+     * <q>Grille de paramètres de transformation de coordonnées GR3DF97A</q>
      * version 1.0, April 1997 in <a href="http://www.ign.fr">http://www.ign.fr</a>
      * </blockquote>
      *

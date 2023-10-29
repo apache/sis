@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>"Lambert Azimuthal Equal Area"</cite> projection (EPSG:9820).
+ * The provider for <q>Lambert Azimuthal Equal Area</q> projection (EPSG:9820).
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

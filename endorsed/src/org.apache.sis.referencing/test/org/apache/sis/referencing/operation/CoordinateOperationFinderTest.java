@@ -313,7 +313,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests a transformation using the <cite>"Geocentric translations (geog2D domain)"</cite> method
+     * Tests a transformation using the <q>Geocentric translations (geog2D domain)</q> method
      * together with a longitude rotation and unit conversion. The CRS and sample point are taken from
      * the GR3DF97A – <cite>Grille de paramètres de transformation de coordonnées</cite> document.
      *
@@ -359,7 +359,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests a transformation using the <cite>"Geocentric translations (geocentric domain)"</cite> method,
+     * Tests a transformation using the <q>Geocentric translations (geocentric domain)</q> method,
      * together with a longitude rotation and unit conversion. The CRS and sample point are derived from
      * the GR3DF97A – <cite>Grille de paramètres de transformation de coordonnées</cite> document.
      *

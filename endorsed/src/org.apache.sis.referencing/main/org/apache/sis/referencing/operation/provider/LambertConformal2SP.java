@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Lambert Conic Conformal (2SP)"</cite> projection (EPSG:9802).
+ * The provider for <q>Lambert Conic Conformal (2SP)</q> projection (EPSG:9802).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)

@@ -84,7 +84,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
 
     /**
      * Limitation affecting the fitness for use of the resource.
-     * Example: <cite>"not to be used for navigation"</cite>.
+     * Example: <q>not to be used for navigation</q>.
      */
     @SuppressWarnings("serial")
     private Collection<InternationalString> useLimitations;
@@ -197,7 +197,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
 
     /**
      * Returns the limitation affecting the fitness for use of the resource.
-     * Example: <cite>"not to be used for navigation"</cite>.
+     * Example: <q>not to be used for navigation</q>.
      *
      * @return limitation affecting the fitness for use of the resource.
      */
@@ -209,7 +209,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
 
     /**
      * Sets the limitation affecting the fitness for use of the resource.
-     * Example: <cite>"not to be used for navigation"</cite>.
+     * Example: <q>not to be used for navigation</q>.
      *
      * @param  newValues  the new use limitations.
      */

@@ -23,7 +23,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"P6 (I = J-90°) seismic bin grid transformation"</cite> transformation (EPSG:1049).
+ * The provider for <q>P6 (I = J-90°) seismic bin grid transformation</q> transformation (EPSG:1049).
  *
  * This conversion is not yet implemented in Apache SIS, but we need to at least accept the parameters
  * for a Well Known Text (WKT) parsing test in the {@code org.apache.sis.io.wkt.WKTParserTest} class.
@@ -59,7 +59,7 @@ public final class SeismicBinGridMock extends ProviderMock {
     }
 
     /**
-     * Creates a new <cite>"Seismic bin grid transformation"</cite> operation method.
+     * Creates a new <q>Seismic bin grid transformation</q> operation method.
      */
     public SeismicBinGridMock() {
         super(PARAMETERS);

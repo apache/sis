@@ -343,7 +343,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
-     * The unit symbol is typically a string like <cite>"days since 1970-01-01T00:00:00Z"</cite>.
+     * The unit symbol is typically a string like <q>days since 1970-01-01T00:00:00Z</q>.
      *
      * @param  values  the values to convert. May contains {@code null} elements.
      * @return the converted values. May contains {@code null} elements.

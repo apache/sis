@@ -100,7 +100,7 @@ public class IdentifiedObjectFinder {
          * <h4>Example</h4>
          * If {@link IdentifiedObjectFinder#find(IdentifiedObject)} is invoked with an object equivalent to the
          * {@linkplain org.apache.sis.referencing.CommonCRS#WGS84 WGS84} geographic CRS but does not declare the
-         * {@code "4326"} identifier and does not have the <cite>"WGS 84"</cite> name, then the search based on
+         * {@code "4326"} identifier and does not have the <q>WGS 84</q> name, then the search based on
          * {@link #DECLARATION} will give no result. The {@code find(…)} method will then scan the dataset for
          * geographic CRS using equivalent datum and coordinate system. This may be a costly operation.
          *

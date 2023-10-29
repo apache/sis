@@ -288,7 +288,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * of that authority is set to {@code "OGC"}. Apache SIS does that for consistency with the namespace used
      * in URNs (for example {@code "urn:ogc:def:crs:OGC:1.3:CRS84"}).</p>
      *
-     * @return the <cite>"Web Map Service"</cite> authority.
+     * @return the <q>Web Map Service</q> authority.
      *
      * @see #getCodeSpaces()
      * @see Citations#WMS
@@ -379,7 +379,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * are quite different than the {@linkplain #getAuthority() authority} title or identifier:
      *
      * <ul>
-     *   <li><b>Authority:</b> {@code "WMS"} (for <cite>"Web Map Services"</cite>)</li>
+     *   <li><b>Authority:</b> {@code "WMS"} (for <q>Web Map Services</q>)</li>
      *   <li><b>Namespaces:</b> {@code "CRS"}, {@code "AUTO"}, {@code "AUTO2"}.
      *       The {@code "OGC"} namespace is also accepted for compatibility reason,
      *       but its scope is wider than the above-cited namespaces.</li>

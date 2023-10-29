@@ -207,7 +207,7 @@ final class ImageConverter extends Task<Statistics[]> {
         final Object mask = source.getProperty(PlanarImage.MASK_KEY);
         if (mask instanceof RenderedImage) try {
             processor.setColorizer(MASK_TRANSPARENCY);
-            return processor.visualize((RenderedImage) mask, (java.util.List) null);
+            return processor.visualize((RenderedImage) mask);
         } catch (IllegalArgumentException e) {
             /*
              * Ignore, we will not apply any mask over the thumbnail image.

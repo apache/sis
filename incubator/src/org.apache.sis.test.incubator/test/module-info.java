@@ -19,8 +19,6 @@
  * Additional dependencies needed for Apache SIS tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   1.4
  */
 module org.apache.sis.test.incubator {
     requires transitive junit;

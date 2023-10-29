@@ -33,43 +33,43 @@ import static java.util.logging.Logger.getLogger;
  */
 public final class AxisNames {
     /**
-     * The ISO 19162 <cite>"Longitude"</cite> name.
+     * The ISO 19162 <q>Longitude</q> name.
      */
     public static final String LONGITUDE = "Longitude";
 
     /**
-     * The ISO 19162 <cite>"Latitude"</cite> name.
+     * The ISO 19162 <q>Latitude</q> name.
      */
     public static final String LATITUDE = "Latitude";
 
     /**
-     * The ISO 19111 <cite>"geodetic longitude"</cite> name. Abbreviation is "λ" (lambda).
+     * The ISO 19111 <q>geodetic longitude</q> name. Abbreviation is "λ" (lambda).
      */
     public static final String GEODETIC_LONGITUDE = "Geodetic longitude";
 
     /**
-     * The ISO 19111 <cite>"geodetic latitude"</cite> name. Abbreviation is "φ" (phi).
+     * The ISO 19111 <q>geodetic latitude</q> name. Abbreviation is "φ" (phi).
      */
     public static final String GEODETIC_LATITUDE = "Geodetic latitude";
 
     /**
-     * The <cite>"planetodetic longitude"</cite> name used in astronomy.
+     * The <q>planetodetic longitude</q> name used in astronomy.
      */
     public static final String PLANETODETIC_LONGITUDE = "Planetodetic longitude";
 
     /**
-     * The <cite>"planetodetic latitude"</cite> name used in astronomy.
+     * The <q>planetodetic latitude</q> name used in astronomy.
      */
     public static final String PLANETODETIC_LATITUDE = "Planetodetic latitude";
 
     /**
-     * The ISO 19111 <cite>"spherical longitude"</cite> name, also called <cite>"azimuthal angle"</cite>.
+     * The ISO 19111 <q>spherical longitude</q> name, also called <q>azimuthal angle</q>.
      * Abbreviation used by SIS is "θ" (theta) for consistency with ISO 19111 and ISO 19162
      * <cite>Axis name and abbreviation</cite> section, but some other conventions use φ or Ω instead.
      * Direction in the EPSG database is "East", but "counterClockwise" may also be used.
      *
-     * <p>Axis name <cite>"Geocentric longitude"</cite> can also be used.
-     * In astronomy, <cite>"Planetocentric longitude"</cite> is sometimes used.</p>
+     * <p>Axis name <q>Geocentric longitude</q> can also be used.
+     * In astronomy, <q>Planetocentric longitude</q> is sometimes used.</p>
      *
      * @see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
      * @see <a href="https://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
@@ -77,73 +77,73 @@ public final class AxisNames {
     public static final String SPHERICAL_LONGITUDE = "Spherical longitude";
 
     /**
-     * The ISO 19111 <cite>"spherical latitude"</cite> name, also called <cite>"polar (zenith) angle"</cite>.
+     * The ISO 19111 <q>spherical latitude</q> name, also called <q>polar (zenith) angle</q>.
      * Abbreviation used by SIS is "Ω" (omega) for consistency with ISO 19111
      * <cite>Axis name and abbreviation</cite> section, but some other conventions use θ, Ω or Ψ instead.
      * Direction in the EPSG database is "North", but the "Up" direction may also be used with a similar
      * axis named "elevation".
      *
-     * <p>Axis name <cite>"Geocentric latitude"</cite> can also be used.
-     * In astronomy, <cite>"Planetocentric latitude"</cite> is sometimes used.</p>
+     * <p>Axis name <q>Geocentric latitude</q> can also be used.
+     * In astronomy, <q>Planetocentric latitude</q> is sometimes used.</p>
      */
     public static final String SPHERICAL_LATITUDE = "Spherical latitude";
 
     /**
-     * The ISO 19111 <cite>"ellipsoidal height"</cite> name. Abbreviation is lower case <cite>"h"</cite>.
+     * The ISO 19111 <q>ellipsoidal height</q> name. Abbreviation is lower case <q>h</q>.
      */
     public static final String ELLIPSOIDAL_HEIGHT = "Ellipsoidal height";
 
     /**
-     * The ISO 19111 <cite>"gravity-related height"</cite> name. Abbreviation is upper case <cite>"H"</cite>.
+     * The ISO 19111 <q>gravity-related height</q> name. Abbreviation is upper case <q>H</q>.
      */
     public static final String GRAVITY_RELATED_HEIGHT = "Gravity-related height";
 
     /**
-     * The ISO 19111 <cite>"depth"</cite> name.
+     * The ISO 19111 <q>depth</q> name.
      */
     public static final String DEPTH = "Depth";
 
     /**
-     * The ISO 19111 <cite>"Geocentric X"</cite> name. Abbreviation is upper case <cite>"X"</cite>.
+     * The ISO 19111 <q>Geocentric X</q> name. Abbreviation is upper case <q>X</q>.
      */
     public static final String GEOCENTRIC_X = "Geocentric X";
 
     /**
-     * The ISO 19111 <cite>"Geocentric Y"</cite> name. Abbreviation is upper case <cite>"Y"</cite>.
+     * The ISO 19111 <q>Geocentric Y</q> name. Abbreviation is upper case <q>Y</q>.
      */
     public static final String GEOCENTRIC_Y = "Geocentric Y";
 
     /**
-     * The ISO 19111 <cite>"Geocentric Z"</cite> name. Abbreviation is upper case <cite>"Z"</cite>.
+     * The ISO 19111 <q>Geocentric Z</q> name. Abbreviation is upper case <q>Z</q>.
      */
     public static final String GEOCENTRIC_Z = "Geocentric Z";
 
     /**
-     * The ISO 19111 <cite>"geocentric radius"</cite> name. Abbreviation is lower case <cite>"r"</cite>
+     * The ISO 19111 <q>geocentric radius</q> name. Abbreviation is lower case <q>r</q>
      * for consistency with ISO 19111.
      *
-     * <div class="note"><b>Note:</b>Lower case <cite>"r"</cite> is also used for non-geocentric radius
+     * <div class="note"><b>Note:</b>Lower case <q>r</q> is also used for non-geocentric radius
      * or axes named "distance" with "awayFrom" direction.</div>
      */
     public static final String GEOCENTRIC_RADIUS = "Geocentric radius";
 
     /**
-     * The ISO 19111 <cite>"easting"</cite> name. Abbreviation is upper case <cite>"E"</cite>.
+     * The ISO 19111 <q>easting</q> name. Abbreviation is upper case <q>E</q>.
      */
     public static final String EASTING = "Easting";
 
     /**
-     * The ISO 19111 <cite>"westing"</cite> name. Abbreviation is upper case <cite>"W"</cite>.
+     * The ISO 19111 <q>westing</q> name. Abbreviation is upper case <q>W</q>.
      */
     public static final String WESTING = "Westing";
 
     /**
-     * The ISO 19111 <cite>"northing"</cite> name. Abbreviation is upper case <cite>"N"</cite>.
+     * The ISO 19111 <q>northing</q> name. Abbreviation is upper case <q>N</q>.
      */
     public static final String NORTHING = "Northing";
 
     /**
-     * The ISO 19111 <cite>"southing"</cite> name. Abbreviation is upper case <cite>"S"</cite>.
+     * The ISO 19111 <q>southing</q> name. Abbreviation is upper case <q>S</q>.
      */
     public static final String SOUTHING = "Southing";
 

@@ -242,8 +242,8 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
 
     /**
      * Tests {@link EllipsoidToCentricTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
-     * The test creates <cite>"Geographic 3D to 2D conversion"</cite>, <cite>"Geographic/Geocentric conversions"</cite>
-     * and <cite>"Geocentric translation"</cite> transforms, then concatenate them.
+     * The test creates <q>Geographic 3D to 2D conversion</q>, <q>Geographic/Geocentric conversions</q>
+     * and <q>Geocentric translation</q> transforms, then concatenate them.
      *
      * <p>Because this test involves a lot of steps, this is more an integration test than a unit test:
      * a failure here may not be easy to debug.</p>

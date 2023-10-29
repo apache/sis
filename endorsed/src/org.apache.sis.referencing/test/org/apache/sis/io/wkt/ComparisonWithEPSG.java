@@ -68,7 +68,7 @@ public final class ComparisonWithEPSG extends TestCase {
 
     /**
      * Tests "Campo Inchauspe / Argentina 7" (EPSG:22197).
-     * This projection has a <cite>"Latitude of natural origin"</cite> at the south pole.
+     * This projection has a <q>Latitude of natural origin</q> at the south pole.
      *
      * @throws FactoryException if an error occurred while creating the CRS.
      *
@@ -96,7 +96,7 @@ public final class ComparisonWithEPSG extends TestCase {
 
     /**
      * Tests "Pulkovo 1942 / 3-degree Gauss-Kruger CM 180E" (EPSG:2636).
-     * This projection has a <cite>"Longitude of natural origin"</cite> at the anti-meridian.
+     * This projection has a <q>Longitude of natural origin</q> at the anti-meridian.
      *
      * @throws FactoryException if an error occurred while creating the CRS.
      *
@@ -124,7 +124,7 @@ public final class ComparisonWithEPSG extends TestCase {
 
     /**
      * Tests "Belge 1950 (Brussels) / Belge Lambert 50" (EPSG:21500).
-     * This projection has a <cite>"Latitude of false origin"</cite> at the anti-meridian.
+     * This projection has a <q>Latitude of false origin</q> at the anti-meridian.
      *
      * @throws FactoryException if an error occurred while creating the CRS.
      *

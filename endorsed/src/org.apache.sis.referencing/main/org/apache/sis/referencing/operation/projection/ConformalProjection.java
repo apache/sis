@@ -33,8 +33,8 @@ import static java.lang.Math.*;
  *
  * <p>This base class can be seen as a generalization of <cite>Lambert Conic Conformal</cite> projection,
  * which includes some other projections like Mercator and Polar Stereographic as special cases.
- * For this base class, the Mercator projection is considered as <cite>"a special limiting case of the
- * Lambert Conic Conformal map projection with the equator as the single standard parallel."</cite>
+ * For this base class, the Mercator projection is considered as <q>a special limiting case of the
+ * Lambert Conic Conformal map projection with the equator as the single standard parallel.</q>
  * (Source: §1.3.3 in IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015).
  * Indeed, those two projections have some equation in commons which are provided in this base class.</p>
  *

@@ -23,7 +23,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for <cite>"Lambert Azimuthal Equal Area (Spherical)"</cite> projection (EPSG:1027).
+ * The provider for <q>Lambert Azimuthal Equal Area (Spherical)</q> projection (EPSG:1027).
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

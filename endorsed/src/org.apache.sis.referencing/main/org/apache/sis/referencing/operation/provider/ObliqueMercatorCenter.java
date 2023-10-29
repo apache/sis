@@ -29,7 +29,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
- * The provider for <cite>"Hotine Oblique Mercator (variant B)"</cite> projection (EPSG:9815).
+ * The provider for <q>Hotine Oblique Mercator (variant B)</q> projection (EPSG:9815).
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -44,7 +44,7 @@ public final class ObliqueMercatorCenter extends ObliqueMercator {
     private static final long serialVersionUID = 1404490143062736127L;
 
     /**
-     * The {@value} EPSG identifier for <cite>"Hotine Oblique Mercator (variant B)"</cite>.
+     * The {@value} EPSG identifier for <q>Hotine Oblique Mercator (variant B)</q>.
      * Should be preferred to the name when available.
      */
     public static final String IDENTIFIER = "9815";

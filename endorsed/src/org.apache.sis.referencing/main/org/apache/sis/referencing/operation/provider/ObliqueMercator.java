@@ -27,7 +27,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Hotine Oblique Mercator (variant A)"</cite> projection (EPSG:9812).
+ * The provider for <q>Hotine Oblique Mercator (variant A)</q> projection (EPSG:9812).
  * Also the parent class for all variants.
  *
  * @author  Rueben Schulz (UBC)
@@ -43,7 +43,7 @@ public class ObliqueMercator extends AbstractMercator {
     private static final long serialVersionUID = 9100327311220773612L;
 
     /**
-     * The {@value} EPSG identifier for <cite>"Hotine Oblique Mercator (variant A)"</cite>.
+     * The {@value} EPSG identifier for <q>Hotine Oblique Mercator (variant A)</q>.
      * Should be preferred to the name when available.
      * The {@code IDENTIFIER_OF_BASE} name is for avoiding confusion with
      * the {@code IDENTIFIER} name used in subclasses.

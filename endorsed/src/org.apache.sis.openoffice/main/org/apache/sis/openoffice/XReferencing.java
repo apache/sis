@@ -85,8 +85,8 @@ public interface XReferencing extends XInterface {
 
     /**
      * Returns the axis name and units for the specified dimension in a coordinate reference system or coordinate system.
-     * This method returns a short axis name as used in Well Known Text (WKT) format, for example <cite>"Latitude"</cite>
-     * instead of <cite>"Geodetic latitude"</cite>.
+     * This method returns a short axis name as used in Well Known Text (WKT) format, for example <q>Latitude</q>
+     * instead of <q>Geodetic latitude</q>.
      *
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @param  dimension   the dimension (1, 2, …).

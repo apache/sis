@@ -27,7 +27,7 @@ import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for <cite>"Geographic2D offsets"</cite> (EPSG:9619).
+ * The provider for <q>Geographic2D offsets</q> (EPSG:9619).
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

@@ -204,18 +204,6 @@ final class Visualization extends ResampledImage {
             }
         }
 
-        @Deprecated(since="1.4", forRemoval=true)
-        Builder(final Rectangle bounds, final RenderedImage source, final MathTransform toSource,
-                final List<SampleDimension> sampleDimensions)
-        {
-            this.bounds   = bounds;
-            this.source   = source;
-            this.toSource = toSource;
-            if (sampleDimensions != null) {
-                this.sampleDimensions = sampleDimensions.toArray(SampleDimension[]::new);
-            }
-        }
-
         /**
          * Returns an image where all sample values are indices of colors in an {@link IndexColorModel}.
          * If the source image stores sample values as unsigned bytes or short integers, then those values

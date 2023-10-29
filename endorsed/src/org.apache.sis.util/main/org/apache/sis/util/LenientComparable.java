@@ -72,8 +72,8 @@ package org.apache.sis.util;
  *            because there is no GeoAPI interfaces for the various kind of math transforms.</li>
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Objects must be of the same class,
  *           but the parameter values can be different if they are different way to formulate the same transform.
- *           For example, a <cite>"Mercator (2SP)"</cite> projection on a sphere with a <cite>standard parallel</cite>
- *           value of 60° produces the same results than a <cite>"Mercator (1SP)"</cite> projection on the same sphere
+ *           For example, a <q>Mercator (2SP)</q> projection on a sphere with a <cite>standard parallel</cite>
+ *           value of 60° produces the same results than a <q>Mercator (1SP)</q> projection on the same sphere
  *           with a <cite>scale factor</cite> value of 0.5.</li>
  *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)

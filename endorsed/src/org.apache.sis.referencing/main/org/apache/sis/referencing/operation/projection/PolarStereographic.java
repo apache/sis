@@ -51,9 +51,9 @@ import static org.apache.sis.referencing.util.Formulas.fastHypot;
  * This is a special case of {@link ObliqueStereographic} when the projection origin is at a pole.
  *
  * <p>EPSG defines three variants for this projection, <cite>A</cite>, <cite>B</cite> and <cite>C</cite>,
- * which differ by the way the parameters are specified. The <cite>"Polar Stereographic (variant B)"</cite>
- * projection includes a <cite>"Latitude of standard parallel"</cite> parameter where is effective the scale factor
- * (normally 1). The <cite>"Polar Stereographic (variant A)"</cite> forces its <cite>"Latitude of natural origin"</cite>
+ * which differ by the way the parameters are specified. The <q>Polar Stereographic (variant B)</q>
+ * projection includes a <q>Latitude of standard parallel</q> parameter where is effective the scale factor
+ * (normally 1). The <q>Polar Stereographic (variant A)</q> forces its <q>Latitude of natural origin</q>
  * parameter to ±90°, depending on the hemisphere.</p>
  *
  * @author  Gerald Evenden (USGS)
@@ -81,19 +81,19 @@ public class PolarStereographic extends ConformalProjection {
      * <p>The default case is {@link #B}.</p>
      */
     private enum Variant implements ProjectionVariant {
-        /** The <cite>"Polar Stereographic (Variant A)"</cite> projection. */
+        /** The <q>Polar Stereographic (Variant A)</q> projection. */
         A(".*\\bvariant\\s*A\\b.*",  PolarStereographicA.IDENTIFIER),
 
-        /** The <cite>"Polar Stereographic (Variant B)"</cite> projection. */
+        /** The <q>Polar Stereographic (Variant B)</q> projection. */
         B(".*\\bvariant\\s*B\\b.*",  PolarStereographicB.IDENTIFIER),
 
-        /** The <cite>"Polar Stereographic (Variant C)"</cite> projection. */
+        /** The <q>Polar Stereographic (Variant C)</q> projection. */
         C(".*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER),
 
-        /** <cite>"Stereographic North Pole"</cite> projection (ESRI). */
+        /** <q>Stereographic North Pole</q> projection (ESRI). */
         NORTH(".*\\bNorth\\b.*", null),
 
-        /** <cite>"Stereographic South Pole"</cite> projection (ESRI). */
+        /** <q>Stereographic South Pole</q> projection (ESRI). */
         SOUTH(".*\\bSouth\\b.*", null);
 
         /** Name pattern for this variant.    */ private final Pattern operationName;
@@ -120,11 +120,11 @@ public class PolarStereographic extends ConformalProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Polar Stereographic (Variant A)"</cite> (EPSG:9810).</li>
-     *   <li><cite>"Polar Stereographic (Variant B)"</cite> (EPSG:9829).</li>
-     *   <li><cite>"Polar Stereographic (Variant C)"</cite> (EPSG:9830).</li>
-     *   <li><cite>"Stereographic North Pole"</cite> (ESRI).</li>
-     *   <li><cite>"Stereographic South Pole"</cite> (ESRI).</li>
+     *   <li><q>Polar Stereographic (Variant A)</q> (EPSG:9810).</li>
+     *   <li><q>Polar Stereographic (Variant B)</q> (EPSG:9829).</li>
+     *   <li><q>Polar Stereographic (Variant C)</q> (EPSG:9830).</li>
+     *   <li><q>Stereographic North Pole</q> (ESRI).</li>
+     *   <li><q>Stereographic South Pole</q> (ESRI).</li>
      * </ul>
      *
      * @param method      description of the projection parameters.

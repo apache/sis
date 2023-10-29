@@ -29,7 +29,7 @@ import static org.apache.sis.referencing.operation.provider.AbstractProvider.bui
 
 
 /**
- * The provider for <cite>"Orthographic"</cite> projection (EPSG:9840).
+ * The provider for <q>Orthographic</q> projection (EPSG:9840).
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)

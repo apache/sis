@@ -654,7 +654,7 @@ public final class UnitFormatTest extends TestCase {
     /**
      * Tests parsing of miscellaneous symbols, followed by formatting.
      * This test uses some units defined by World Meteorological Organisation (WMO).
-     * The lines with <cite>"Too aggressive simplification bug (SIS-378)"</cite> comment are actually bugs,
+     * The lines with <q>Too aggressive simplification bug (SIS-378)</q> comment are actually bugs,
      * but they are tested anyway (despite the bogus "expected" value) for tracking progresses on SIS-378.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-378">SIS-378</a>

@@ -43,7 +43,7 @@ import org.apache.sis.system.Configuration;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public final class Logging extends Static {
@@ -83,22 +83,6 @@ public final class Logging extends Static {
             name = Modules.CLASSNAME_PREFIX + name.substring(Modules.INTERNAL_CLASSNAME_PREFIX.length());
         }
         return Logger.getLogger(name);
-    }
-
-    /**
-     * Logs the given record to the logger associated to the given class.
-     *
-     * @deprecated Replaced by {@code completeAndLog(null, record, classe, method)} for encouraging
-     * the use of static {@link Logger} constants. Also the new name makes clear that the record is
-     * modified.
-     *
-     * @param  classe  the class to report as the source of the logging message.
-     * @param  method  the method to report as the source of the logging message.
-     * @param  record  the record to log.
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public static void log(final Class<?> classe, final String method, final LogRecord record) {
-        completeAndLog(null, classe, method, record);
     }
 
     /**

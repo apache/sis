@@ -28,7 +28,7 @@ import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for <cite>"Abridged Molodensky transformation"</cite> (EPSG:9605).
+ * The provider for <q>Abridged Molodensky transformation</q> (EPSG:9605).
  * This provider constructs transforms between two geographic reference systems without passing though a geocentric one.
  * This class nevertheless extends {@link GeocentricAffineBetweenGeographic} because it is an approximation of
  * {@link GeocentricTranslation3D}.
@@ -37,8 +37,8 @@ import org.apache.sis.parameter.Parameters;
  * But remaining parameters are specified in different ways depending on the authority:</p>
  *
  * <ul>
- *   <li>EPSG defines <cite>"Semi-major axis length difference"</cite>
- *       and <cite>"Flattening difference"</cite> parameters.</li>
+ *   <li>EPSG defines <q>Semi-major axis length difference</q>
+ *       and <q>Flattening difference</q> parameters.</li>
  *   <li>OGC rather defines "{@code src_semi_major}", "{@code src_semi_minor}",
  *       "{@code tgt_semi_major}", "{@code tgt_semi_minor}" and "{@code dim}" parameters.</li>
  * </ul>

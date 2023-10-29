@@ -42,11 +42,11 @@ public final class ArgumentChecksTest extends TestCase {
      */
     @Test
     public void testEnsureNonNullElement() {
-        NullArgumentException e = assertThrows(NullArgumentException.class, () -> {
+        NullPointerException e = assertThrows(NullPointerException.class, () -> {
             ArgumentChecks.ensureNonNullElement("axes", 2, null);
         });
         assertTrue(e.getMessage().contains("axes[2]"));
-        e = assertThrows(NullArgumentException.class, () -> {
+        e = assertThrows(NullPointerException.class, () -> {
             ArgumentChecks.ensureNonNullElement("axes[#].unit", 2, null);
         });
         assertTrue(e.getMessage().contains("axes[2].unit"));

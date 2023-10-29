@@ -24,7 +24,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Lambert Conic Conformal (2SP Michigan)"</cite> projection (EPSG:1051).
+ * The provider for <q>Lambert Conic Conformal (2SP Michigan)</q> projection (EPSG:1051).
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

@@ -82,8 +82,8 @@ import org.apache.sis.util.Characters;
  * is that φ is mapped to <var>U</var> and θ is mapped to <var>V</var>, regardless of their meaning.
  *
  * <h2>Replacement of names</h2>
- * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to <cite>"Geodetic longitude"</cite>
- * and <cite>"Geodetic latitude"</cite>. But ISO 19162:2015 §7.5.3(ii) said that the <cite>"Geodetic"</cite> part in
+ * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to <q>Geodetic longitude</q>
+ * and <q>Geodetic latitude</q>. But ISO 19162:2015 §7.5.3(ii) said that the <q>Geodetic</q> part in
  * those names shall be omitted at WKT formatting time.
  * The {@link #toShortAxisName toShortAxisName(…)} and {@link #toLongAxisName toLongAxisName(…)}
  * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
@@ -121,7 +121,7 @@ public abstract class Transliterator implements Serializable {
             AxisDirection.GEOCENTRIC_Z, AxisNames.GEOCENTRIC_Z);
 
     /**
-     * A transliterator compliant with ISO 19162 on a <cite>"best effort"</cite> basis.
+     * A transliterator compliant with ISO 19162 on a <q>best effort</q> basis.
      * All methods perform the default implementation documented in this {@code Transliterator} class.
      */
     public static final Transliterator DEFAULT = new Default();
@@ -183,12 +183,12 @@ public abstract class Transliterator implements Serializable {
 
     /**
      * Returns the axis name to format in WKT, or {@code null} if none. This method performs the mapping
-     * between the names of axes in memory (designated by <cite>"long axis names"</cite> in this class)
-     * and the names to format in the WKT (designated by <cite>"short axis names"</cite>).
+     * between the names of axes in memory (designated by <q>long axis names</q> in this class)
+     * and the names to format in the WKT (designated by <q>short axis names</q>).
      *
      * <div class="note"><b>Note:</b>
-     * the <cite>"long axis names"</cite> are defined by ISO 19111 — <cite>referencing by coordinates</cite>
-     * while the <cite>"short axis names"</cite> are defined by ISO 19162 — <cite>Well-known text representation
+     * the <q>long axis names</q> are defined by ISO 19111 — <cite>referencing by coordinates</cite>
+     * while the <q>short axis names</q> are defined by ISO 19162 — <cite>Well-known text representation
      * of coordinate reference systems</cite>.</div>
      *
      * This method can return {@code null} if the name should be omitted.
@@ -196,8 +196,8 @@ public abstract class Transliterator implements Serializable {
      *
      * <p>The default implementation performs at least the following replacements:</p>
      * <ul>
-     *   <li>Replace <cite>“Geodetic latitude”</cite> (case insensitive) by <cite>“Latitude”</cite>.</li>
-     *   <li>Replace <cite>“Geodetic longitude”</cite> (case insensitive) by <cite>“Longitude”</cite>.</li>
+     *   <li>Replace <q>Geodetic latitude</q> (case insensitive) by <q>Latitude</q>.</li>
+     *   <li>Replace <q>Geodetic longitude</q> (case insensitive) by <q>Longitude</q>.</li>
      *   <li>Return {@code null} if the axis direction is {@link AxisDirection#GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
      *       or {@code GEOCENTRIC_Z} and the name is the same than the axis direction (ignoring case).</li>
      * </ul>
@@ -241,18 +241,18 @@ public abstract class Transliterator implements Serializable {
      * This method is the converse of {@link #toShortAxisName(CoordinateSystem, AxisDirection, String)}.
      * The default implementation performs at least the following replacements:
      * <ul>
-     *   <li>Replace <cite>“Lat”</cite> or <cite>“Latitude”</cite>
-     *       (case insensitive) by <cite>“Geodetic latitude”</cite> or <cite>“Spherical latitude”</cite>,
+     *   <li>Replace <q>Lat</q> or <q>Latitude</q>
+     *       (case insensitive) by <q>Geodetic latitude</q> or <q>Spherical latitude</q>,
      *       depending on whether the axis is part of an ellipsoidal or spherical CS respectively.</li>
-     *   <li>Replace <cite>“Lon”</cite>, <cite>“Long”</cite> or <cite>“Longitude”</cite>
-     *       (case insensitive) by <cite>“Geodetic longitude”</cite> or <cite>“Spherical longitude”</cite>,
+     *   <li>Replace <q>Lon</q>, <q>Long</q> or <q>Longitude</q>
+     *       (case insensitive) by <q>Geodetic longitude</q> or <q>Spherical longitude</q>,
      *       depending on whether the axis is part of an ellipsoidal or spherical CS respectively.</li>
-     *   <li>Return <cite>“Geocentric X”</cite>, <cite>“Geocentric Y”</cite> and <cite>“Geocentric Z”</cite>
+     *   <li>Return <q>Geocentric X</q>, <q>Geocentric Y</q> and <q>Geocentric Z</q>
      *       for {@link AxisDirection#GEOCENTRIC_X}, {@link AxisDirection#GEOCENTRIC_Y GEOCENTRIC_Y}
      *       and {@link AxisDirection#GEOCENTRIC_Z GEOCENTRIC_Z} respectively in a Cartesian CS,
      *       if the given axis name is only an abbreviation.</li>
      *   <li>Use unique camel-case names for axis names defined by ISO 19111 and ISO 19162. For example, this method
-     *       replaces <cite>“<b>e</b>llipsoidal height”</cite> by <cite>“<b>E</b>llipsoidal height”</cite>.</li>
+     *       replaces <q><b>e</b>llipsoidal height</q> by <q><b>E</b>llipsoidal height</q>.</li>
      * </ul>
      *
      * <h4>Usage note</h4>

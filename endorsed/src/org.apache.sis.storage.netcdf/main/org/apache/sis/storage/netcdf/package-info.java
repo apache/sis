@@ -22,18 +22,18 @@
  *
  * <h2>Note on the definition of terms</h2>
  * The UCAR library sometimes uses the same words than the ISO/OGC standards for different things.
- * In particular the words <cite>"domain"</cite> and <cite>"range"</cite> can be applied to arbitrary functions,
+ * In particular the words <q>domain</q> and <q>range</q> can be applied to arbitrary functions,
  * and the UCAR library chooses to apply it to the function that converts grid indices to geodetic coordinates.
  * This is a different usage than ISO 19123 which uses the <cite>domain</cite> and <cite>range</cite> words for
  * the coverage function. More specifically:
  *
  * <ul>
- *   <li>UCAR <cite>"coordinate system"</cite> is actually a mix of <cite>coordinate system</cite>,
+ *   <li>UCAR <q>coordinate system</q> is actually a mix of <cite>coordinate system</cite>,
  *       <cite>coordinate reference system</cite> and <cite>grid geometry</cite> in OGC sense.</li>
- *   <li>UCAR coordinate system <cite>"domain"</cite> is not equivalent to ISO 19123 coverage domain,
+ *   <li>UCAR coordinate system <q>domain</q> is not equivalent to ISO 19123 coverage domain,
  *       but is rather related to <cite>grid envelope</cite>.</li>
- *   <li>ISO 19123 coverage <cite>domain</cite> is related to UCAR coordinate system <cite>"range"</cite>.</li>
- *   <li>ISO 19123 coverage <cite>range</cite> is not equivalent to UCAR <cite>"range"</cite>,
+ *   <li>ISO 19123 coverage <cite>domain</cite> is related to UCAR coordinate system <q>range</q>.</li>
+ *   <li>ISO 19123 coverage <cite>range</cite> is not equivalent to UCAR <q>range</q>,
  *       but is rather related to the netCDF variable's minimum and maximum values.</li>
  * </ul>
  *

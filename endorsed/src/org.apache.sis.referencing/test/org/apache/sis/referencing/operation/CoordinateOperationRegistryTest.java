@@ -59,9 +59,9 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * <p>This class tests the following operations:</p>
  * <ul>
- *   <li><cite>"NTF (Paris) to WGS 84 (1)"</cite> operation (EPSG:8094), which implies a longitude rotation
+ *   <li><q>NTF (Paris) to WGS 84 (1)</q> operation (EPSG:8094), which implies a longitude rotation
  *       followed by a geocentric translation in the geographic domain.</li>
- *   <li><cite>"Martinique 1938 to RGAF09 (1)"</cite> operation (EPSG:5491), which implies a datum shift
+ *   <li><q>Martinique 1938 to RGAF09 (1)</q> operation (EPSG:5491), which implies a datum shift
  *       that does not go through WGS84. Furthermore, since the EPSG database defines (λ,φ) axis order in
  *       addition to the usual (φ,λ) order for the target CRS, this tests allows us to verify we can find
  *       this operation despite different axis order.</li>
@@ -163,7 +163,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     }
 
     /**
-     * Tests <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation with source and target CRS conform to EPSG definitions.
+     * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with source and target CRS conform to EPSG definitions.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.
@@ -199,7 +199,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     }
 
     /**
-     * Tests <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation with normalized source and target CRS.
+     * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with normalized source and target CRS.
      * {@link CoordinateOperationRegistry} should be able to find the operation despite the difference
      * in axis order an units.
      *
@@ -232,7 +232,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     }
 
     /**
-     * Tests the inverse of <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation, also with different axis order.
+     * Tests the inverse of <q>NTF (Paris) to WGS 84 (1)</q> operation, also with different axis order.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.
@@ -262,7 +262,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     }
 
     /**
-     * Tests <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation with three-dimensional source and target CRS.
+     * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with three-dimensional source and target CRS.
      * {@link CoordinateOperationRegistry} should be able to find the operation despite the difference in
      * number of dimensions.
      *
@@ -298,7 +298,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     }
 
     /**
-     * Tests <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation with three-dimensional source and target CRS
+     * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with three-dimensional source and target CRS
      * having different axis order and units than the ones declared in the EPSG dataset.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
@@ -334,7 +334,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     }
 
     /**
-     * Verifies a coordinate operation which is expected to be <cite>"NTF (Paris) to WGS 84 (1)"</cite> (EPSG:8094).
+     * Verifies a coordinate operation which is expected to be <q>NTF (Paris) to WGS 84 (1)</q> (EPSG:8094).
      *
      * @param  domain  either {@code "geog2D domain"} or either {@code "geog3D domain"}.
      * @param  isEPSG  {@code true} if the coordinate operation is expected to contain EPSG identifiers.
@@ -389,8 +389,8 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     }
 
     /**
-     * Tests <cite>"Martinique 1938 to RGAF09 (1)"</cite> operation with a target CRS fixed to EPSG:7086
-     * instead of EPSG:5489. Both are <cite>"RGAF09"</cite>, but the former use (longitude, latitude) axis
+     * Tests <q>Martinique 1938 to RGAF09 (1)</q> operation with a target CRS fixed to EPSG:7086
+     * instead of EPSG:5489. Both are <q>RGAF09</q>, but the former use (longitude, latitude) axis
      * order instead of the usual (latitude, longitude) order. The source CRS stay fixed to EPSG:4625.
      *
      * @throws FactoryException if an error occurred while creating a CRS or operation.

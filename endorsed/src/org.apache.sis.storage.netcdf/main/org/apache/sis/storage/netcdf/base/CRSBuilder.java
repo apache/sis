@@ -103,7 +103,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
 
     /**
      * Name of the datum on which the CRS is presumed to be based, or {@code ""}. This is used
-     * for building a datum name like <cite>"Unknown datum presumably based on GRS 1980"</cite>.
+     * for building a datum name like <q>Unknown datum presumably based on GRS 1980</q>.
      */
     private final String datumBase;
 
@@ -543,7 +543,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
     /**
      * Creates the datum for the coordinate reference system to build. The datum are generally not specified in netCDF files.
-     * To make that clearer, this method builds datum with names like <cite>"Unknown datum presumably based on GRS 1980"</cite>.
+     * To make that clearer, this method builds datum with names like <q>Unknown datum presumably based on GRS 1980</q>.
      * The newly created datum is assigned to the {@link #datum} field.
      *
      * @param  factory     the factory to use for creating the datum.
@@ -613,7 +613,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /**
-         * Creates a {@link GeodeticDatum} for <cite>"Unknown datum presumably based on GRS 1980"</cite>.
+         * Creates a {@link GeodeticDatum} for <q>Unknown datum presumably based on GRS 1980</q>.
          * This method is invoked only if {@link #setPredefinedComponents(Decoder)} failed to create a datum.
          */
         @Override final void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
@@ -891,7 +891,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /**
-         * Creates a {@link VerticalDatum} for <cite>"Unknown datum based on Mean Sea Level"</cite>.
+         * Creates a {@link VerticalDatum} for <q>Unknown datum based on Mean Sea Level</q>.
          */
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             datum = factory.createVerticalDatum(properties, VerticalDatumType.GEOIDAL);
@@ -954,7 +954,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /**
-         * Creates a {@link TemporalDatum} for <cite>"Unknown datum based on …"</cite>.
+         * Creates a {@link TemporalDatum} for <q>Unknown datum based on …</q>.
          * This method may left the datum to {@code null} if the epoch is unknown.
          * In such case, {@link #createCRS createCRS(…)} will create an engineering CRS instead.
          */
@@ -1024,7 +1024,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /**
-         * Creates a {@link VerticalDatum} for <cite>"Unknown datum based on affine coordinate system"</cite>.
+         * Creates a {@link VerticalDatum} for <q>Unknown datum based on affine coordinate system</q>.
          */
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             datum = factory.createEngineeringDatum(properties);

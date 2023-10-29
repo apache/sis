@@ -30,7 +30,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Satellite-Tracking"</cite> projections.
+ * The provider for <q>Satellite-Tracking</q> projections.
  * We are not aware of authoritative source for parameter definitions, except the Snyder book.
  * See {@link org.apache.sis.referencing.operation.projection.SatelliteTracking here for more
  * details}.

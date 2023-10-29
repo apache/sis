@@ -28,11 +28,11 @@
  * factors.</p>
  *
  * <p>A side effect of this isolation layer is also to adapt netCDF vocabulary to Apache SIS one.
- * For example, what netCDF calls <cite>"coordinate system"</cite> is actually a mix of what OGC/ISO
- * specifications call <cite>"coordinate system"</cite>, <cite>"coordinate reference system"</cite>
- * and <cite>"grid geometry"</cite>. The netCDF coordinate system <cite>"range"</cite> is closer to
- * ISO 19123 <cite>"domain"</cite>, the netCDF coordinate system <cite>"domain"</cite> is closer to
- * ISO 19123 <cite>"grid envelope"</cite> and the ISO 19123 <cite>"range"</cite> is rather related
+ * For example, what netCDF calls <q>coordinate system</q> is actually a mix of what OGC/ISO
+ * specifications call <q>coordinate system</q>, <q>coordinate reference system</q>
+ * and <q>grid geometry</q>. The netCDF coordinate system <q>range</q> is closer to
+ * ISO 19123 <q>domain</q>, the netCDF coordinate system <q>domain</q> is closer to
+ * ISO 19123 <q>grid envelope</q> and the ISO 19123 <q>range</q> is rather related
  * to the netCDF variable minimum and maximum values. Trying to use OGC/ISO and netCDF objects in
  * the same code appears to be very confusing. This isolation layer allows our code to use a more
  * consistent vocabulary (more similar to the rest of Apache SIS).</p>

@@ -265,7 +265,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
     /**
      * Other attributes that describes this attribute. For example if this attribute carries a measurement,
      * then a characteristic of this attribute could be the measurement accuracy.
-     * See <cite>"Attribute characterization"</cite> in {@link DefaultAttributeType} Javadoc for more information.
+     * See <q>Attribute characterization</q> in {@link DefaultAttributeType} Javadoc for more information.
      *
      * <p>The map returned by this method contains only the characteristics explicitly defined for this attribute.
      * If the map contains no characteristic for a given name, a {@linkplain DefaultAttributeType#getDefaultValue()

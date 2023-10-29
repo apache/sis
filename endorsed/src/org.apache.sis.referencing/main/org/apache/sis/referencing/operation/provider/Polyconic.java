@@ -26,7 +26,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>"American Polyconic"</cite> projection (EPSG:9818).
+ * The provider for <q>American Polyconic</q> projection (EPSG:9818).
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
