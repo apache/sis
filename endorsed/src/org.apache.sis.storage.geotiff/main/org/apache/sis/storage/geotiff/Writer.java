@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Deque;
 import java.util.Queue;
 import java.util.Set;
+import java.util.zip.Deflater;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -48,6 +49,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.geotiff.writer.TagValue;
 import org.apache.sis.storage.geotiff.writer.TileMatrix;
 import org.apache.sis.storage.geotiff.writer.GeoEncoder;
@@ -366,6 +368,18 @@ final class Writer extends IOBase implements Flushable {
         final Fraction xres = new Fraction(1, 1);       // TODO
         final Fraction yres = xres;
         /*
+         * Compression.
+         */
+        final Compression compression;
+        final int compressionLevel;
+        if (store.compression != null) {
+            compressionLevel = store.compression.level;
+            compression = (compressionLevel != 0) ? store.compression.method : Compression.NONE;
+        } else {
+            compression = Compression.DEFLATE;              // Default value documented in `Compression` Javadoc.
+            compressionLevel = Deflater.DEFAULT_COMPRESSION;
+        }
+        /*
          * If the image has any unsupported feature, the exception should have been thrown before this point.
          * Now start writing the entries. The entries in an IFD must be sorted in ascending order by tag code.
          */
@@ -380,7 +394,7 @@ final class Writer extends IOBase implements Flushable {
         writeTag((short) TAG_IMAGE_WIDTH,                (short) TIFFTag.TIFF_LONG,  image.visibleBands.getWidth());
         writeTag((short) TAG_IMAGE_LENGTH,               (short) TIFFTag.TIFF_LONG,  image.visibleBands.getHeight());
         writeTag((short) TAG_BITS_PER_SAMPLE,            (short) TIFFTag.TIFF_SHORT, bitsPerSample);
-        writeTag((short) TAG_COMPRESSION,                (short) TIFFTag.TIFF_SHORT, COMPRESSION_NONE);
+        writeTag((short) TAG_COMPRESSION,                (short) TIFFTag.TIFF_SHORT, compression.code);
         writeTag((short) TAG_PHOTOMETRIC_INTERPRETATION, (short) TIFFTag.TIFF_SHORT, colorInterpretation);
         writeTag((short) TAG_DOCUMENT_NAME,              /* TIFF_ASCII */            mf.series);
         writeTag((short) TAG_IMAGE_DESCRIPTION,          /* TIFF_ASCII */            mf.title);
@@ -399,7 +413,7 @@ final class Writer extends IOBase implements Flushable {
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
             writeColorPalette((IndexColorModel) image.visibleBands.getColorModel(), 1L << bitsPerSample[0]);
         }
-        final var tiling = new TileMatrix(image.visibleBands, numPlanes, bitsPerSample, offsetIFD);
+        final var tiling = new TileMatrix(image.visibleBands, numPlanes, bitsPerSample, offsetIFD, compression, compressionLevel);
         writeTag((short) TAG_TILE_WIDTH,  (short) TIFFTag.TIFF_LONG, tiling.tileWidth);
         writeTag((short) TAG_TILE_LENGTH, (short) TIFFTag.TIFF_LONG, tiling.tileHeight);
         tiling.offsetsTag = writeTag((short) TAG_TILE_OFFSETS, tiling.offsets);

@@ -121,7 +121,7 @@ public enum Compression {
     /**
      * The TIFF code for this compression.
      */
-    final int code;
+    public final int code;
 
     /**
      * Creates a new compression enumeration.

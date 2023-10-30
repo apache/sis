@@ -146,6 +146,7 @@ public final class WriterTest extends TestCase {
         var d = new ChannelDataOutput("TIFF", output, ByteBuffer.allocate(random.nextInt(128) + 20).order(order));
         var c = new StorageConnector(d);
         c.setOption(GeoTiffOption.OPTION_KEY, options);
+        c.setOption(Compression.OPTION_KEY, Compression.NONE);
         store = new GeoTiffStore(null, c);
         data  = output.toBuffer().order(order);
     }

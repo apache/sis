@@ -104,6 +104,11 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     private volatile Writer writer;
 
     /**
+     * The compression to apply when writing tiles, or {@code null} if unspecified.
+     */
+    final Compression compression;
+
+    /**
      * The locale to use for formatting metadata. This is not necessarily the same as {@link #getLocale()},
      * which is about formatting error messages. A null value means "unlocalized", which is usually English.
      */
@@ -240,10 +245,11 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
 
-        dataLocale = connector.getOption(OptionKey.LOCALE);
-        timezone   = connector.getOption(OptionKey.TIMEZONE);
-        location   = connector.getStorageAs(URI.class);
-        path       = connector.getStorageAs(Path.class);
+        compression = connector.getOption(Compression.OPTION_KEY);
+        dataLocale  = connector.getOption(OptionKey.LOCALE);
+        timezone    = connector.getOption(OptionKey.TIMEZONE);
+        location    = connector.getStorageAs(URI.class);
+        path        = connector.getStorageAs(Path.class);
         try {
             if (URIDataStore.Provider.isWritable(connector, true)) {
                 ChannelDataOutput output = connector.commit(ChannelDataOutput.class, Constants.GEOTIFF);
@@ -322,6 +328,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 final Set<GeoTiffOption> options = w.getOptions();
                 if (!options.isEmpty()) {
                     param.parameter(GeoTiffStoreProvider.OPTIONS).setValue(options.toArray(GeoTiffOption[]::new));
+                }
+                if (compression != null) {
+                    param.parameter(GeoTiffStoreProvider.COMPRESSION).setValue(compression);
                 }
             }
         }

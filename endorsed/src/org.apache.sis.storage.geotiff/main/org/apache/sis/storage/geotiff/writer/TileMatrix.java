@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff.writer;
 
 import java.util.Arrays;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -36,6 +37,9 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.HyperRectangleWriter;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.Resources;
 
 
 /**
@@ -96,21 +100,34 @@ public final class TileMatrix {
     public TagValue offsetsTag, lengthsTag;
 
     /**
+     * The compression to use for writing tiles.
+     */
+    private final Compression compression;
+
+    /**
+     * The compression level, or -1 for default.
+     */
+    private final int compressionLevel;
+
+    /**
      * Creates a new set of information about tiles to write.
      *
-     * @param image          the image to write.
-     * @param numBands       the number of bands.
-     * @param bitsPerSample  number of bits per sample to write.
-     * @param isPlanar       whether the planar configuration is to store bands in separated planes.
-     * @param offsetIFD      offset in {@link ChannelDataOutput} where the IFD starts.
+     * @param image             the image to write.
+     * @param numPlanes         the number of banks (plane in TIFF terminology).
+     * @param bitsPerSample     number of bits per sample to write.
+     * @param offsetIFD         offset in {@link ChannelDataOutput} where the IFD starts.
+     * @param compression       the compression method to apply.
+     * @param compressionLevel  compression level (0-9), or -1 for the default.
      */
     public TileMatrix(final RenderedImage image, final int numPlanes, final int[] bitsPerSample,
-                      final long offsetIFD)
+                      final long offsetIFD, final Compression compression, final int compressionLevel)
     {
         final int pixelSize, numArrays;
-        this.offsetIFD = offsetIFD;
-        this.numPlanes = numPlanes;
-        this.image     = image;
+        this.offsetIFD        = offsetIFD;
+        this.numPlanes        = numPlanes;
+        this.image            = image;
+        this.compression      = compression;
+        this.compressionLevel = compressionLevel;
         type       = DataType.forBands(image);
         tileWidth  = image.getTileWidth();
         tileHeight = image.getTileHeight();
@@ -142,27 +159,56 @@ public final class TileMatrix {
     }
 
     /**
+     * Creates the data output stream to use for writing compressed data.
+     *
+     * @param  output  where to write compressed bytes.
+     * @throws DataStoreException if the compression method is unsupported.
+     * @throws IOException if an error occurred while creating the data channel.
+     * @return the data output for compressing data, or {@code output} if uncompressed.
+     */
+    private ChannelDataOutput createCompressionChannel(final ChannelDataOutput output)
+            throws DataStoreException, IOException
+    {
+        final CompressionChannel channel;
+        boolean isDirect = false;           // `true` if using a native library which accepts NIO buffers.
+        switch (compression) {
+            case NONE:    return output;
+            case DEFLATE: channel = new ZIP(output, compressionLevel); isDirect = true; break;
+            default: throw new DataStoreException(Resources.forLocale(null)
+                    .getString(Resources.Keys.UnsupportedCompressionMethod_1, compression));
+        }
+        final int capacity = CompressionChannel.BUFFER_SIZE;
+        ByteBuffer buffer = isDirect ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
+        return new ChannelDataOutput(output.filename, channel, buffer.order(output.buffer.order()));
+    }
+
+    /**
      * Writes all tiles of the image.
      * Caller shall invoke {@link #writeOffsetsAndLengths(ChannelDataOutput)} after this method.
      * This invocation is not done by this method for allowing the caller to control when to write data.
      *
      * @param  output  where to write the tiles data.
+     * @throws DataStoreException if the compression method is unsupported.
      * @throws IOException if an error occurred while writing to the given output.
      */
-    public void writeRasters(final ChannelDataOutput output) throws IOException {
+    public void writeRasters(final ChannelDataOutput output) throws DataStoreException, IOException {
+        final ChannelDataOutput compress = createCompressionChannel(output);
+        final CompressionChannel cc = (compress != output) ? (CompressionChannel) compress.channel : null;
+
         SampleModel sm = null;
         int[] bankIndices = null;
         HyperRectangleWriter rect = null;
         final int minTileX = image.getMinTileX();
         final int minTileY = image.getMinTileY();
         int planeIndex = 0;
-        for (int i=0; i < offsets.length; i++) {
+        while (planeIndex < offsets.length) {
             /*
              * In current implementation, we iterate from left to right then top to bottom.
              * But a future version could use Hilbert iterator (for example).
              */
-            int tileX = i % numXTiles;
-            int tileY = i / numXTiles;
+            final int tileIndex = planeIndex / numPlanes;
+            int tileX = tileIndex % numXTiles;
+            int tileY = tileIndex / numXTiles;
             tileX += minTileX;
             tileY += minTileY;
             final Raster tile = image.getTile(tileX, tileY);
@@ -186,25 +232,29 @@ public final class TileMatrix {
             if (rect == null) {
                 throw new UnsupportedOperationException();      // TODO: reformat using a recycled Raster.
             }
-            final long position = output.getStreamPosition();
             final DataBuffer buffer = tile.getDataBuffer();
             final int[] bufferOffsets = buffer.getOffsets();
-            for (int j=0; j < numPlanes; j++) {
-                final int b = bankIndices[j];
-                final int offset = bufferOffsets[b];
+            for (int j=0; j<numPlanes; j++) {
+                final int  b        = bankIndices[j];
+                final int  offset   = bufferOffsets[b];
+                final long position = output.getStreamPosition();
                 switch (type) {
-                    case BYTE:   rect.write(output, ((DataBufferByte)   buffer).getData(b), offset); break;
-                    case USHORT: rect.write(output, ((DataBufferUShort) buffer).getData(b), offset); break;
-                    case SHORT:  rect.write(output, ((DataBufferShort)  buffer).getData(b), offset); break;
-                    case INT:    rect.write(output, ((DataBufferInt)    buffer).getData(b), offset); break;
-                    case FLOAT:  rect.write(output, ((DataBufferFloat)  buffer).getData(b), offset); break;
-                    case DOUBLE: rect.write(output, ((DataBufferDouble) buffer).getData(b), offset); break;
+                    case BYTE:   rect.write(compress, ((DataBufferByte)   buffer).getData(b), offset); break;
+                    case USHORT: rect.write(compress, ((DataBufferUShort) buffer).getData(b), offset); break;
+                    case SHORT:  rect.write(compress, ((DataBufferShort)  buffer).getData(b), offset); break;
+                    case INT:    rect.write(compress, ((DataBufferInt)    buffer).getData(b), offset); break;
+                    case FLOAT:  rect.write(compress, ((DataBufferFloat)  buffer).getData(b), offset); break;
+                    case DOUBLE: rect.write(compress, ((DataBufferDouble) buffer).getData(b), offset); break;
                 }
+                if (cc != null) {
+                    cc.finish(compress);
+                }
+                offsets[planeIndex] = position;
+                lengths[planeIndex] = Math.toIntExact(Math.subtractExact(output.getStreamPosition(), position));
+                planeIndex++;
             }
-            offsets[planeIndex] = position;
-            lengths[planeIndex] = Math.toIntExact(Math.subtractExact(output.getStreamPosition(), position));
-            planeIndex++;
         }
+        if (cc != null) cc.close();
         if (planeIndex != offsets.length) {
             throw new AssertionError();                 // Should never happen.
         }
