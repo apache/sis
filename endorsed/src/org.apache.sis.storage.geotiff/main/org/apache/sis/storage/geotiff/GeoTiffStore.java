@@ -253,7 +253,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         try {
             if (URIDataStore.Provider.isWritable(connector, true)) {
                 ChannelDataOutput output = connector.commit(ChannelDataOutput.class, Constants.GEOTIFF);
-                writer = new Writer(this, output, connector.getOption(GeoTiffOption.OPTION_KEY));
+                writer = new Writer(this, output, connector.getOption(FormatModifier.OPTION_KEY));
             } else {
                 ChannelDataInput input = connector.commit(ChannelDataInput.class, Constants.GEOTIFF);
                 reader = new Reader(this, input);
@@ -264,15 +264,15 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the options (BigTIFF, COG…) of this data store.
+     * Returns the modifiers (BigTIFF, COG…) of this data store.
      *
-     * @return options of this data store.
+     * @return format modifiers of this data store.
      *
      * @since 1.5
      */
-    public Set<GeoTiffOption> getOptions() {
-        final Writer w = writer; if (w != null) return w.getOptions();
-        final Reader r = reader; if (r != null) return r.getOptions();
+    public Set<FormatModifier> getModifiers() {
+        final Writer w = writer; if (w != null) return w.getModifiers();
+        final Reader r = reader; if (r != null) return r.getModifiers();
         return Set.of();
     }
 
@@ -325,9 +325,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         if (param != null) {
             final Writer w = writer;
             if (w != null) {
-                final Set<GeoTiffOption> options = w.getOptions();
-                if (!options.isEmpty()) {
-                    param.parameter(GeoTiffStoreProvider.OPTIONS).setValue(options.toArray(GeoTiffOption[]::new));
+                final Set<FormatModifier> modifiers = w.getModifiers();
+                if (!modifiers.isEmpty()) {
+                    param.parameter(GeoTiffStoreProvider.MODIFIERS).setValue(modifiers.toArray(FormatModifier[]::new));
                 }
                 if (compression != null) {
                     param.parameter(GeoTiffStoreProvider.COMPRESSION).setValue(compression);

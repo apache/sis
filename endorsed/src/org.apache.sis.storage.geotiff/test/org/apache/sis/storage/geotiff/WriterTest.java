@@ -125,7 +125,7 @@ public final class WriterTest extends TestCase {
      * @throws DataStoreException should never happen since we control the output class.
      */
     private void initialize(final DataType type, final ByteOrder order, final boolean banded, final int numBands,
-                            final int numTileX, final int numTileY, final GeoTiffOption... options)
+                            final int numTileX, final int numTileY, final FormatModifier... options)
             throws IOException, DataStoreException
     {
         final var random = TestUtilities.createRandomNumberGenerator();
@@ -145,7 +145,7 @@ public final class WriterTest extends TestCase {
         output = new ByteArrayChannel(new byte[image.getWidth() * image.getHeight() * numBands * type.bytes() + 800], false);
         var d = new ChannelDataOutput("TIFF", output, ByteBuffer.allocate(random.nextInt(128) + 20).order(order));
         var c = new StorageConnector(d);
-        c.setOption(GeoTiffOption.OPTION_KEY, options);
+        c.setOption(FormatModifier.OPTION_KEY, options);
         c.setOption(Compression.OPTION_KEY, Compression.NONE);
         store = new GeoTiffStore(null, c);
         data  = output.toBuffer().order(order);
@@ -199,7 +199,7 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testUntiledBigTIFF() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, GeoTiffOption.BIG_TIFF);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, FormatModifier.BIG_TIFF);
         writeImage();
         verifyHeader(true, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
@@ -272,17 +272,17 @@ public final class WriterTest extends TestCase {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ByteBuffer data = this.data;
         if (isBigTIFF) {
-            assertEquals(Set.of(GeoTiffOption.BIG_TIFF),  store.getOptions());
-            assertEquals(endianness,                      data.getShort());
-            assertEquals(Writer.BIG_TIFF,                 data.getShort());
-            assertEquals(Long.BYTES,                      data.getShort());     // Byte size of offsets.
-            assertEquals(0,                               data.getShort());     // Constant.
-            assertEquals(data.position() + Long.BYTES,    data.getLong());      // Offset of the first IFD.
+            assertEquals(Set.of(FormatModifier.BIG_TIFF),  store.getModifiers());
+            assertEquals(endianness,                       data.getShort());
+            assertEquals(Writer.BIG_TIFF,                  data.getShort());
+            assertEquals(Long.BYTES,                       data.getShort());     // Byte size of offsets.
+            assertEquals(0,                                data.getShort());     // Constant.
+            assertEquals(data.position() + Long.BYTES,     data.getLong());      // Offset of the first IFD.
         } else {
-            assertEquals(Set.of(),                        store.getOptions());
-            assertEquals(endianness,                      data.getShort());
-            assertEquals(Writer.CLASSIC,                  data.getShort());
-            assertEquals(data.position() + Integer.BYTES, data.getInt());       // Offset of the first IFD.
+            assertEquals(Set.of(),                         store.getModifiers());
+            assertEquals(endianness,                       data.getShort());
+            assertEquals(Writer.CLASSIC,                   data.getShort());
+            assertEquals(data.position() + Integer.BYTES,  data.getInt());       // Offset of the first IFD.
         }
     }
 
@@ -308,7 +308,7 @@ public final class WriterTest extends TestCase {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ByteBuffer data     = this.data;
         final boolean isTiled     = true;
-        final boolean isBigTIFF   = store.getOptions().contains(GeoTiffOption.BIG_TIFF);
+        final boolean isBigTIFF   = store.getModifiers().contains(FormatModifier.BIG_TIFF);
         final boolean isBigEndian = ByteOrder.BIG_ENDIAN.equals(data.order());
         assertEquals(tagCount, isBigTIFF ? data.getLong() : data.getShort());
         /*

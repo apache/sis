@@ -197,11 +197,11 @@ final class Reader extends IOBase {
     }
 
     /**
-     * {@return the options (BigTIFF, COG…) used by this reader}.
+     * {@return the modifiers (BigTIFF, COG…) used by this reader}.
      */
     @Override
-    public final Set<GeoTiffOption> getOptions() {
-        return (intSizeExpansion != 0) ? Set.of(GeoTiffOption.BIG_TIFF) : Set.of();
+    public final Set<FormatModifier> getModifiers() {
+        return (intSizeExpansion != 0) ? Set.of(FormatModifier.BIG_TIFF) : Set.of();
     }
 
     /**

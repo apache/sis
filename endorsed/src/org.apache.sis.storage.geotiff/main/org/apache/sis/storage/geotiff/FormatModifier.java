@@ -17,27 +17,40 @@
 package org.apache.sis.storage.geotiff;
 
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.io.stream.InternalOptionKey;
 
 
 /**
  * Characteristics of the GeoTIFF file to write.
- * The options can control, for example, the maximal size and number of images that can be stored in a TIFF file.
- * See {@link #OPTION_KEY} for an usage example.
+ * The modifiers can control, for example, the maximal size and number of images that can be stored in a TIFF file.
+ *
+ * <p>The modifiers can be specified as an option when opening the data store.
+ * For example for writing a BigTIFF file, the following code can be used:</p>
+ *
+ * {@snippet lang="java" :
+ *     var file = Path.of("my_output_file.tiff");
+ *     var connector = new StorageConnector(file);
+ *     var modifiers = new FormatModifier[] {FormatModifier.BIG_TIFF};
+ *     connector.setOption(FormatModifier.OPTION_KEY, modifiers);
+ *     try (GeoTiffStore ds = new GeoTiffStore(null, connector)) {
+ *         // Write data here.
+ *     }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  *
- * @see GeoTiffStore#getOptions()
+ * @see GeoTiffStore#getModifiers()
  *
  * @since 1.5
  */
-public enum GeoTiffOption {
+public enum FormatModifier {
     /**
      * The Big TIFF extension (non-standard).
-     * When this option is absent (which is the default), the standard TIFF format as defined by Adobe is used.
+     * When this modifier is absent (which is the default), the standard TIFF format as defined by Adobe is used.
      * That standard uses the addressable space of 32-bits integers, which allows a maximal file size of about 4 GB.
-     * When the {@code BIG_TIFF} option is present, the addressable space of 64-bits integers is used.
+     * When the {@code BIG_TIFF} modifier is present, the addressable space of 64-bits integers is used.
      * The BigTIFF format is non-standard and files written with this option may not be read by all TIFF readers.
      */
     BIG_TIFF;
@@ -45,16 +58,10 @@ public enum GeoTiffOption {
     // TODO: COG, SPARSE.
 
     /**
-     * The key for declaring GeoTIFF options at store creation time.
-     * For writing a BigTIFF file, the following code can be used:
+     * The key for declaring GeoTIFF format modifiers at store creation time.
+     * See class Javadoc for usage example.
      *
-     * {@snippet lang="java" :
-     *     var file = Path.of("my_output_file.tiff");
-     *     var connector = new StorageConnector(file);
-     *     var options = new GeoTiffOption[] {GeoTiffOption.BIG_TIFF};
-     *     connector.setOption(GeoTiffOption.OPTION_KEY, options);
-     *     DataStore ds = DataStores.open(c);
-     *     }
+     * @see StorageConnector#setOption(OptionKey, Object)
      */
-    public static final OptionKey<GeoTiffOption[]> OPTION_KEY = new InternalOptionKey<>("TIFF_OPTIONS", GeoTiffOption[].class);
+    public static final OptionKey<FormatModifier[]> OPTION_KEY = new InternalOptionKey<>("TIFF_MODIFIERS", FormatModifier[].class);
 }

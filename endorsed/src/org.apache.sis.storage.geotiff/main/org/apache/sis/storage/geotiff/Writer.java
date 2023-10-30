@@ -166,15 +166,15 @@ final class Writer extends IOBase implements Flushable {
      *
      * @param  store    the store writing data.
      * @param  output   where to write the bytes.
-     * @param  options  the options (BigTIFF, COG…), or {@code null} if none.
+     * @param  options  the format modifiers (BigTIFF, COG…), or {@code null} if none.
      * @throws IOException if an error occurred while writing the first bytes to the stream.
      */
-    Writer(final GeoTiffStore store, final ChannelDataOutput output, final GeoTiffOption[] options)
+    Writer(final GeoTiffStore store, final ChannelDataOutput output, final FormatModifier[] options)
             throws IOException, DataStoreException
     {
         super(store);
         this.output = output;
-        isBigTIFF   = ArraysExt.contains(options, GeoTiffOption.BIG_TIFF);
+        isBigTIFF   = ArraysExt.contains(options, FormatModifier.BIG_TIFF);
         /*
          * Write the TIFF file header before first IFD. Stream position matter and must start at zero.
          * Note that it does not necessarily mean that the stream has no bytes before current position.
@@ -233,11 +233,11 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * {@return the options (BigTIFF, COG…) used by this writer}.
+     * {@return the modifiers (BigTIFF, COG…) used by this writer}.
      */
     @Override
-    public final Set<GeoTiffOption> getOptions() {
-        return isBigTIFF ? Set.of(GeoTiffOption.BIG_TIFF) : Set.of();
+    public final Set<FormatModifier> getModifiers() {
+        return isBigTIFF ? Set.of(FormatModifier.BIG_TIFF) : Set.of();
     }
 
     /**

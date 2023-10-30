@@ -41,6 +41,7 @@ import org.apache.sis.util.ArgumentChecks;
  *     try (GeoTiffStore ds = new GeoTiffStore(null, connector)) {
  *         // Write data here.
  *     }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
