@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.shapefile.dbf;
 
 /**
- * Shapefile store.
+ * A DBF record is an array of field values.
  *
- * @author  Travis L. Pinney
- * @author  Marc Le Bihan
+ * @author Johann Sorel (Geomatys)
  */
-module org.apache.sis.storage.shapefile {
-    requires java.sql;
-    requires esri.geometry.api;
-    requires transitive org.apache.sis.storage;
+public final class DBFRecord {
 
-    exports org.apache.sis.storage.shapefile;
-    exports org.apache.sis.storage.shapefile.cpg;
-    exports org.apache.sis.storage.shapefile.shp;
-    exports org.apache.sis.storage.shapefile.dbf;
+    public static final DBFRecord DELETED = new DBFRecord();
+
+    public Object[] fields;
+
+    public DBFRecord() {
+    }
+
 }
