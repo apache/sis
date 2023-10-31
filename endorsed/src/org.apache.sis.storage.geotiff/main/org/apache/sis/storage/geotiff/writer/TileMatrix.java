@@ -150,6 +150,15 @@ public final class TileMatrix {
     }
 
     /**
+     * {@return whether to use strips instead of tiles}.
+     * This is {@code true} if image rows are not separated in tiles.
+     * The purpose of using strips is to avoid the restriction that tile size must be multiple of 16 bytes.
+     */
+    public boolean useStrips() {
+        return numXTiles == 1;
+    }
+
+    /**
      * Rewrites the offsets and lengths arrays in the IFD.
      * This method shall be invoked after all tiles have been written.
      *
