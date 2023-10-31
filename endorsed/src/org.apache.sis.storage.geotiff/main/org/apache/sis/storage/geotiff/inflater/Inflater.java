@@ -221,7 +221,7 @@ public abstract class Inflater implements Closeable {
                 channel = inflater;
                 break;
             }
-            case HORIZONTAL: {
+            case HORIZONTAL_DIFFERENCING: {
                 if (sourceWidth == 1) {
                     channel = inflater;     // Horizontal predictor is no-op if image width is 1 pixel.
                     break;

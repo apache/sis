@@ -91,87 +91,147 @@ public final class HyperRectangleWriter {
     }
 
     /**
-     * Creates a new writer for raster data described by the given sample model and strides.
-     * If the given {@code region} is non-null, it specifies a subset of the data to write.
-     */
-    private static HyperRectangleWriter of(final SampleModel sm, final Rectangle region,
-            final int subX, final int pixelStride, final int scanlineStride)
-    {
-        final int[]  subsampling = {subX, 1};
-        final long[] sourceSize  = {scanlineStride, sm.getHeight()};
-        final long[] regionLower = new long[2];
-        final long[] regionUpper = new long[2];
-        if (region != null) {
-            regionUpper[0] = (regionLower[0] = region.x) + region.width;
-            regionUpper[1] = (regionLower[1] = region.y) + region.height;
-        } else {
-            regionUpper[0] = sm.getWidth();
-            regionUpper[1] = sm.getHeight();
-        }
-        regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
-        regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
-        return new HyperRectangleWriter(new Region(sourceSize, regionLower, regionUpper, subsampling));
-    }
-
-    /**
-     * Creates a new writer for raster data described by the given sample model.
-     * This method supports only the writing of either a single band, or all bands
-     * in the order they appear in the array.
+     * A builder for {@code HyperRectangleWriter} created from a {@code SampleModel}.
      *
-     * @param  sm      the sample model of the rasters to write.
-     * @param  region  subset to write, or {@code null} if none.
-     * @return writer, or {@code null} if the given sample model is not supported.
+     * @author  Martin Desruisseaux (Geomatys)
      */
-    public static HyperRectangleWriter of(final ComponentSampleModel sm, final Rectangle region) {
-        final int pixelStride = sm.getPixelStride();
-        final int[] d = sm.getBandOffsets();
-        final int subX;
-        if (d.length == pixelStride && ArraysExt.isRange(0, d)) {
-            subX = 1;
-        } else if (d.length == 1) {
-            subX = pixelStride;
-        } else {
+    public static final class Builder {
+        /**
+         * Number of elements (not necessarily bytes) between a pixel and the next pixel.
+         *
+         * @see #pixelStride()
+         */
+        private int pixelStride;
+
+        /**
+         * Number of elements (not necessarily bytes) between a row and the next row.
+         *
+         * @see #scanlineStride()
+         */
+        private int scanlineStride;
+
+        /**
+         * Subregion to write, or {@code null} for writing the whole raster.
+         */
+        private Rectangle region;
+
+        /**
+         * Creates a new builder.
+         */
+        public Builder() {
+        }
+
+        /**
+         * Specifies the region to write.
+         * This method retains the given rectangle by reference, it is not copied.
+         *
+         * @param  aoi  the region to write, or {@code null} for writing the whole raster.
+         * @return {@code this} for chained call.
+         */
+        public Builder region(final Rectangle aoi) {
+            region = aoi;
+            return this;
+        }
+
+        /**
+         * Creates a new writer for raster data described by the given sample model and strides.
+         * If the {@link #region} is non-null, it specifies a subset of the data to write.
+         */
+        private HyperRectangleWriter create(final SampleModel sm, final int subX) {
+            final int[]  subsampling = {subX, 1};
+            final long[] sourceSize  = {scanlineStride, sm.getHeight()};
+            final long[] regionLower = new long[2];
+            final long[] regionUpper = new long[2];
+            if (region != null) {
+                regionUpper[0] = (regionLower[0] = region.x) + region.width;
+                regionUpper[1] = (regionLower[1] = region.y) + region.height;
+            } else {
+                regionUpper[0] = sm.getWidth();
+                regionUpper[1] = sm.getHeight();
+            }
+            regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
+            regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
+            return new HyperRectangleWriter(new Region(sourceSize, regionLower, regionUpper, subsampling));
+        }
+
+        /**
+         * Creates a new writer for raster data described by the given sample model.
+         * This method supports only the writing of either a single band, or all bands
+         * in the order they appear in the array.
+         *
+         * @param  sm  the sample model of the rasters to write.
+         * @return writer, or {@code null} if the given sample model is not supported.
+         */
+        public HyperRectangleWriter create(final ComponentSampleModel sm) {
+            pixelStride    = sm.getPixelStride();
+            scanlineStride = sm.getScanlineStride();
+            final int[] d  = sm.getBandOffsets();
+            final int subX;
+            if (d.length == pixelStride && ArraysExt.isRange(0, d)) {
+                subX = 1;
+            } else if (d.length == 1) {
+                subX = pixelStride;
+            } else {
+                return null;
+            }
+            return create(sm, subX);
+        }
+
+        /**
+         * Creates a new writer for raster data described by the given sample model.
+         * This method supports only the writing of a single band using all bits.
+         *
+         * @param  sm  the sample model of the rasters to write.
+         * @return writer, or {@code null} if the given sample model is not supported.
+         */
+        public HyperRectangleWriter create(final SinglePixelPackedSampleModel sm) {
+            pixelStride    = 1;
+            scanlineStride = sm.getScanlineStride();
+            final int[] d  = sm.getBitMasks();
+            if (d.length == 1) {
+                final long mask = (1L << DataBuffer.getDataTypeSize(sm.getDataType())) - 1;
+                if ((d[0] & mask) == mask) {
+                    return create(sm, 1);
+                }
+            }
             return null;
         }
-        return of(sm, region, subX, pixelStride, sm.getScanlineStride());
-    }
 
-    /**
-     * Creates a new writer for raster data described by the given sample model.
-     * This method supports only the writing of a single band using all bits.
-     *
-     * @param  sm      the sample model of the rasters to write.
-     * @param  region  subset to write, or {@code null} if none.
-     * @return writer, or {@code null} if the given sample model is not supported.
-     */
-    public static HyperRectangleWriter of(final SinglePixelPackedSampleModel sm, final Rectangle region) {
-        final int[] d = sm.getBitMasks();
-        if (d.length == 1) {
-            final long mask = (1L << DataBuffer.getDataTypeSize(sm.getDataType())) - 1;
-            if ((d[0] & mask) == mask) {
-                return of(sm, region, 1, 1, sm.getScanlineStride());
+        /**
+         * Creates a new writer for raster data described by the given sample model.
+         * This method supports only the writing of a single band using all bits.
+         *
+         * @param  sm  the sample model of the rasters to write.
+         * @return writer, or {@code null} if the given sample model is not supported.
+         */
+        public HyperRectangleWriter create(final MultiPixelPackedSampleModel sm) {
+            pixelStride    = 1;
+            scanlineStride = sm.getScanlineStride();
+            final int[] d  = sm.getSampleSize();
+            if (d.length == 1) {
+                final int size = DataBuffer.getDataTypeSize(sm.getDataType());
+                if (d[0] == size && sm.getPixelBitStride() == size) {
+                    return create(sm, 1);
+                }
             }
+            return null;
         }
-        return null;
-    }
 
-    /**
-     * Creates a new writer for raster data described by the given sample model.
-     * This method supports only the writing of a single band using all bits.
-     *
-     * @param  sm      the sample model of the rasters to write.
-     * @param  region  subset to write, or {@code null} if none.
-     * @return writer, or {@code null} if the given sample model is not supported.
-     */
-    public static HyperRectangleWriter of(final MultiPixelPackedSampleModel sm, final Rectangle region) {
-        final int[] d = sm.getSampleSize();
-        if (d.length == 1) {
-            final int size = DataBuffer.getDataTypeSize(sm.getDataType());
-            if (d[0] == size && sm.getPixelBitStride() == size) {
-                return of(sm, region, 1, 1, sm.getScanlineStride());
-            }
+        /**
+         * {@return the number of elements (not necessarily bytes) between a pixel and the next pixel}.
+         * This information is valid only after a {@code create(…)} method has been invoked.
+         */
+        public int pixelStride() {
+            return pixelStride;
         }
-        return null;
+
+        /**
+         * {@return the number of elements (not necessarily bytes) between a row and the next row}.
+         * This information is valid only after a {@code create(…)} method has been invoked.
+         */
+        public int scanlineStride() {
+            return scanlineStride;
+        }
     }
 
     /**

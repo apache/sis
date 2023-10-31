@@ -20,10 +20,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.image.DataType;
 import org.apache.sis.pending.jdk.JDK17;
+import org.apache.sis.storage.geotiff.base.Predictor;
 
 
 /**
- * Implementation of {@link org.apache.sis.storage.geotiff.internal.Predictor#HORIZONTAL}.
+ * Implementation of {@link Predictor#HORIZONTAL_DIFFERENCING}.
  * Current implementation works only on 8, 16, 32 or 64-bits samples.
  * Values packed on 4, 2 or 1 bits are not yet supported.
  *
@@ -98,7 +99,6 @@ abstract class HorizontalPredictor extends PredictorChannel {
      * @param  dataType     primitive type used for storing data elements in the bank.
      * @param  pixelStride  number of sample values per pixel in the source image.
      * @param  width        number of pixels in the source image.
-     * @param  sampleSize   number of bytes in a sample value.
      * @return the predictor, or {@code null} if the given type is unsupported.
      */
     static HorizontalPredictor create(final CompressionChannel input, final DataType dataType,

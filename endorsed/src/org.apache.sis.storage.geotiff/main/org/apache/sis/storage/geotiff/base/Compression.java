@@ -30,6 +30,10 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  *
  * The main exception is {@code CCITT}, which has different name in WCS query and response.
  *
+ * <p>This enumeration contains a relatively large number of compressions in order to put a name
+ * on the numerical codes that the reader may find. However the Apache SIS reader and writer do
+ * not support all those compressions. This enumeration is not put in public API for that reason.</p>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */

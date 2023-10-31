@@ -17,44 +17,34 @@
 package org.apache.sis.storage.geotiff.writer;
 
 import java.io.IOException;
-import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.io.stream.ChannelDataOutput;
+import org.apache.sis.storage.geotiff.base.Predictor;
 
 
 /**
- * Deflater using a temporary buffer where to compress data before writing to the channel.
- * This class does not need to care about subsampling.
+ * Implementation of a {@link Predictor} to be executed before compression.
+ * A predictor is a mathematical operator that is applied to the image data
+ * before an encoding scheme is applied, in order to improve compression.
  *
- * <p>The {@link #close()} method shall be invoked when this channel is no longer used.</p>
+ * <p>Note that this channel may modify in-place the content of the buffer
+ * given in calls to {@link #write(ByteBuffer)}. That buffer should contain
+ * only temporary data, typically copied from a raster data buffer.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class CompressionChannel extends PixelChannel {
+abstract class PredictorChannel extends PixelChannel {
     /**
-     * Desired size of the temporary buffer where to compress data.
+     * The channel where to write data.
      */
-    static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE / 2;
+    protected final PixelChannel output;
 
     /**
-     * The destination where to write compressed data.
-     */
-    protected final ChannelDataOutput output;
-
-    /**
-     * Creates a new channel which will compress data to the given output.
+     * Creates a predictor.
      *
-     * @param  output  the destination of compressed data.
+     * @param  output  the channel that compress data.
      */
-    protected CompressionChannel(final ChannelDataOutput output) {
+    protected PredictorChannel(final PixelChannel output) {
         this.output = output;
-    }
-
-    /**
-     * Tells whether this channel is still open.
-     */
-    @Override
-    public final boolean isOpen() {
-        return output.channel.isOpen();
     }
 
     /**
@@ -65,17 +55,23 @@ abstract class CompressionChannel extends PixelChannel {
      */
     @Override
     public void finish(final ChannelDataOutput owner) throws IOException {
-        owner.flush();
-        owner.clear();
+        output.finish(owner);
     }
 
     /**
-     * Releases resources used by this channel, but <strong>without</strong> closing the {@linkplain #output} channel.
-     * The {@linkplain #output} channel is not closed by this operation because it will typically be needed again for
-     * compressing other tiles.
+     * Tells whether this channel is still open.
      */
     @Override
-    public void close() {
-        // Do NOT close `output`.
+    public final boolean isOpen() {
+        return output.isOpen();
+    }
+
+    /**
+     * Closes {@link #output}. Note that it will <strong>not</strong> closes the channel wrapped by {@link #output}
+     * because that channel will typically be needed again for compressing other tiles.
+     */
+    @Override
+    public final void close() throws IOException {
+        output.close();
     }
 }

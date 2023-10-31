@@ -105,8 +105,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * The compression to apply when writing tiles, or {@code null} if unspecified.
+     *
+     * @see #getCompression()
      */
-    final Compression compression;
+    private final Compression compression;
 
     /**
      * The locale to use for formatting metadata. This is not necessarily the same as {@link #getLocale()},
@@ -264,19 +266,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the modifiers (BigTIFF, COG…) of this data store.
-     *
-     * @return format modifiers of this data store.
-     *
-     * @since 1.5
-     */
-    public Set<FormatModifier> getModifiers() {
-        final Writer w = writer; if (w != null) return w.getModifiers();
-        final Reader r = reader; if (r != null) return r.getModifiers();
-        return Set.of();
-    }
-
-    /**
      * Returns the namespace to use in identifier of components, or {@code null} if none.
      * This method must be invoked inside a block synchronized on {@code this}.
      */
@@ -335,6 +324,32 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             }
         }
         return Optional.ofNullable(param);
+    }
+
+    /**
+     * Returns the modifiers (BigTIFF, COG…) of this data store.
+     *
+     * @return format modifiers of this data store.
+     *
+     * @since 1.5
+     */
+    public Set<FormatModifier> getModifiers() {
+        final Writer w = writer; if (w != null) return w.getModifiers();
+        final Reader r = reader; if (r != null) return r.getModifiers();
+        return Set.of();
+    }
+
+    /**
+     * Returns the compression used when writing tiles.
+     * This is not necessarily the compression of images to be read.
+     * For the compression of existing images, see {@linkplain #getMetadata() the metadata}.
+     *
+     * @return the compression to use for writing new images, or empty if unspecified.
+     *
+     * @since 1.5
+     */
+    public Optional<Compression> getCompression() {
+        return Optional.ofNullable(compression);
     }
 
     /**

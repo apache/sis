@@ -39,6 +39,7 @@ import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Resources;
 
 
@@ -110,6 +111,11 @@ public final class TileMatrix {
     private final int compressionLevel;
 
     /**
+     * The predictor to apply before to compress data.
+     */
+    private final Predictor predictor;
+
+    /**
      * Creates a new set of information about tiles to write.
      *
      * @param image             the image to write.
@@ -118,9 +124,11 @@ public final class TileMatrix {
      * @param offsetIFD         offset in {@link ChannelDataOutput} where the IFD starts.
      * @param compression       the compression method to apply.
      * @param compressionLevel  compression level (0-9), or -1 for the default.
+     * @param predictor         the predictor to apply before to compress data.
      */
     public TileMatrix(final RenderedImage image, final int numPlanes, final int[] bitsPerSample,
-                      final long offsetIFD, final Compression compression, final int compressionLevel)
+                      final long offsetIFD, final Compression compression, final int compressionLevel,
+                      final Predictor predictor)
     {
         final int pixelSize, numArrays;
         this.offsetIFD        = offsetIFD;
@@ -128,6 +136,8 @@ public final class TileMatrix {
         this.image            = image;
         this.compression      = compression;
         this.compressionLevel = compressionLevel;
+        this.predictor        = predictor;
+
         type       = DataType.forBands(image);
         tileWidth  = image.getTileWidth();
         tileHeight = image.getTileHeight();
@@ -166,20 +176,38 @@ public final class TileMatrix {
      * @throws IOException if an error occurred while creating the data channel.
      * @return the data output for compressing data, or {@code output} if uncompressed.
      */
-    private ChannelDataOutput createCompressionChannel(final ChannelDataOutput output)
+    private ChannelDataOutput createCompressionChannel(final ChannelDataOutput output,
+            final int pixelStride, final int scanlineStride)
             throws DataStoreException, IOException
     {
-        final CompressionChannel channel;
+        if (compressionLevel == 0) {
+            return output;
+        }
+        PixelChannel channel;
         boolean isDirect = false;           // `true` if using a native library which accepts NIO buffers.
         switch (compression) {
             case NONE:    return output;
             case DEFLATE: channel = new ZIP(output, compressionLevel); isDirect = true; break;
-            default: throw new DataStoreException(Resources.forLocale(null)
-                    .getString(Resources.Keys.UnsupportedCompressionMethod_1, compression));
+            default: throw unsupported(Resources.Keys.UnsupportedCompressionMethod_1, compression);
+        }
+        switch (predictor) {
+            case NONE: break;
+            case HORIZONTAL_DIFFERENCING: {
+                channel = HorizontalPredictor.create(channel, type, pixelStride, scanlineStride);
+                break;
+            }
+            default: throw unsupported(Resources.Keys.UnsupportedPredictor_1, predictor);
         }
         final int capacity = CompressionChannel.BUFFER_SIZE;
         ByteBuffer buffer = isDirect ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
         return new ChannelDataOutput(output.filename, channel, buffer.order(output.buffer.order()));
+    }
+
+    /**
+     * Creates an exception for an unsupported configuration.
+     */
+    private static DataStoreException unsupported(final short key, final Enum<?> value) {
+        return new DataStoreException(Resources.forLocale(null).getString(key, value));
     }
 
     /**
@@ -192,12 +220,11 @@ public final class TileMatrix {
      * @throws IOException if an error occurred while writing to the given output.
      */
     public void writeRasters(final ChannelDataOutput output) throws DataStoreException, IOException {
-        final ChannelDataOutput compress = createCompressionChannel(output);
-        final CompressionChannel cc = (compress != output) ? (CompressionChannel) compress.channel : null;
-
-        SampleModel sm = null;
-        int[] bankIndices = null;
-        HyperRectangleWriter rect = null;
+        ChannelDataOutput compress = null;
+        PixelChannel      cc       = null;
+        SampleModel       sm       = null;
+        int[] bankIndices          = null;
+        HyperRectangleWriter rect  = null;
         final int minTileX = image.getMinTileX();
         final int minTileY = image.getMinTileY();
         int planeIndex = 0;
@@ -214,19 +241,23 @@ public final class TileMatrix {
             final Raster tile = image.getTile(tileX, tileY);
             if (sm != (sm = tile.getSampleModel())) {
                 rect = null;
-                final var region = new Rectangle(tileWidth, tileHeight);
+                final var builder = new HyperRectangleWriter.Builder().region(new Rectangle(tileWidth, tileHeight));
                 if (sm instanceof ComponentSampleModel) {
                     final var csm = (ComponentSampleModel) sm;
-                    rect = HyperRectangleWriter.of(csm, region);
+                    rect = builder.create(csm);
                     bankIndices = csm.getBankIndices();
                 } else if (sm instanceof SinglePixelPackedSampleModel) {
                     final var csm = (SinglePixelPackedSampleModel) sm;
-                    rect = HyperRectangleWriter.of(csm, region);
+                    rect = builder.create(csm);
                     bankIndices = new int[1];
                 } else if (sm instanceof MultiPixelPackedSampleModel) {
                     final var csm = (MultiPixelPackedSampleModel) sm;
-                    rect = HyperRectangleWriter.of(csm, region);
+                    rect = builder.create(csm);
                     bankIndices = new int[1];
+                }
+                if (compress == null) {
+                    compress = createCompressionChannel(output, builder.pixelStride(), builder.scanlineStride());
+                    if (compress != output) cc = (PixelChannel) compress.channel;
                 }
             }
             if (rect == null) {
@@ -239,6 +270,7 @@ public final class TileMatrix {
                 final int  offset   = bufferOffsets[b];
                 final long position = output.getStreamPosition();
                 switch (type) {
+                    default:     throw new AssertionError(type);
                     case BYTE:   rect.write(compress, ((DataBufferByte)   buffer).getData(b), offset); break;
                     case USHORT: rect.write(compress, ((DataBufferUShort) buffer).getData(b), offset); break;
                     case SHORT:  rect.write(compress, ((DataBufferShort)  buffer).getData(b), offset); break;
