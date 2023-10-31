@@ -30,9 +30,6 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
 import java.awt.image.SampleModel;
-import java.awt.image.ComponentSampleModel;
-import java.awt.image.MultiPixelPackedSampleModel;
-import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.image.DataType;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.io.stream.ChannelDataOutput;
@@ -219,6 +216,7 @@ public final class TileMatrix {
      * @throws DataStoreException if the compression method is unsupported.
      * @throws IOException if an error occurred while writing to the given output.
      */
+    @SuppressWarnings("null")
     public void writeRasters(final ChannelDataOutput output) throws DataStoreException, IOException {
         ChannelDataOutput compress = null;
         PixelChannel      cc       = null;
@@ -227,41 +225,27 @@ public final class TileMatrix {
         HyperRectangleWriter rect  = null;
         final int minTileX = image.getMinTileX();
         final int minTileY = image.getMinTileY();
-        int planeIndex = 0;
-        while (planeIndex < offsets.length) {
+        for (int tileIndex = 0; tileIndex < numTiles; tileIndex++) {
             /*
              * In current implementation, we iterate from left to right then top to bottom.
              * But a future version could use Hilbert iterator (for example).
              */
-            final int tileIndex = planeIndex / numPlanes;
             int tileX = tileIndex % numXTiles;
             int tileY = tileIndex / numXTiles;
             tileX += minTileX;
             tileY += minTileY;
             final Raster tile = image.getTile(tileX, tileY);
             if (sm != (sm = tile.getSampleModel())) {
-                rect = null;
                 final var builder = new HyperRectangleWriter.Builder().region(new Rectangle(tileWidth, tileHeight));
-                if (sm instanceof ComponentSampleModel) {
-                    final var csm = (ComponentSampleModel) sm;
-                    rect = builder.create(csm);
-                    bankIndices = csm.getBankIndices();
-                } else if (sm instanceof SinglePixelPackedSampleModel) {
-                    final var csm = (SinglePixelPackedSampleModel) sm;
-                    rect = builder.create(csm);
-                    bankIndices = new int[1];
-                } else if (sm instanceof MultiPixelPackedSampleModel) {
-                    final var csm = (MultiPixelPackedSampleModel) sm;
-                    rect = builder.create(csm);
-                    bankIndices = new int[1];
+                rect = builder.create(sm);
+                if (rect == null) {
+                    throw new UnsupportedOperationException();      // TODO: reformat using a recycled Raster.
                 }
+                bankIndices = builder.bankIndices();
                 if (compress == null) {
                     compress = createCompressionChannel(output, builder.pixelStride(), builder.scanlineStride());
                     if (compress != output) cc = (PixelChannel) compress.channel;
                 }
-            }
-            if (rect == null) {
-                throw new UnsupportedOperationException();      // TODO: reformat using a recycled Raster.
             }
             final DataBuffer buffer = tile.getDataBuffer();
             final int[] bufferOffsets = buffer.getOffsets();
@@ -281,14 +265,11 @@ public final class TileMatrix {
                 if (cc != null) {
                     cc.finish(compress);
                 }
+                final int planeIndex = tileIndex + j*numTiles;
                 offsets[planeIndex] = position;
                 lengths[planeIndex] = Math.toIntExact(Math.subtractExact(output.getStreamPosition(), position));
-                planeIndex++;
             }
         }
         if (cc != null) cc.close();
-        if (planeIndex != offsets.length) {
-            throw new AssertionError();                 // Should never happen.
-        }
     }
 }

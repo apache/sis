@@ -111,6 +111,15 @@ public final class HyperRectangleWriter {
         private int scanlineStride;
 
         /**
+         * The indices of all banks to write with {@code HyperRectangleWriter}.
+         * A length greater than one means that the {@link HyperRectangleWriter} instance
+         * created by this builder will need to be invoked repetitively for each bank.
+         *
+         * @see bankIndices()
+         */
+        private int[] bankIndices;
+
+        /**
          * Subregion to write, or {@code null} for writing the whole raster.
          */
         private Rectangle region;
@@ -159,20 +168,43 @@ public final class HyperRectangleWriter {
          * This method supports only the writing of either a single band, or all bands
          * in the order they appear in the array.
          *
+         * <p>The returned writer will need to be applied repetitively for each bank
+         * if {@link #bankIndices()} returns an array with a length greater than one.</p>
+         *
          * @param  sm  the sample model of the rasters to write.
          * @return writer, or {@code null} if the given sample model is not supported.
          */
         public HyperRectangleWriter create(final ComponentSampleModel sm) {
             pixelStride    = sm.getPixelStride();
             scanlineStride = sm.getScanlineStride();
+            bankIndices    = sm.getBankIndices();
             final int[] d  = sm.getBandOffsets();
             final int subX;
-            if (d.length == pixelStride && ArraysExt.isRange(0, d)) {
-                subX = 1;
-            } else if (d.length == 1) {
-                subX = pixelStride;
+            if (ArraysExt.allEquals(bankIndices, bankIndices[0])) {
+                /*
+                 * PixelInterleavedSampleModel (at least conceptually, no matter the actual type).
+                 * The returned `HyperRectangleWriter` instance will write all sample values in a
+                 * single call to a `write(…)` method, no matter the actual number of bands.
+                 */
+                bankIndices = ArraysExt.resize(bankIndices, 1);
+                if (d.length == pixelStride && ArraysExt.isRange(0, d)) {
+                    subX = 1;
+                } else if (d.length == 1) {
+                    subX = pixelStride;
+                } else {
+                    return null;
+                }
             } else {
-                return null;
+                /*
+                 * BandedSampleModel (at least conceptually, no matter the actual type).
+                 * The returned `HyperRectangleWriter` instance will need to be used
+                 * repetitively by the caller.
+                 */
+                if (ArraysExt.allEquals(d, 0)) {
+                    subX = 1;
+                } else {
+                    return null;
+                }
             }
             return create(sm, subX);
         }
@@ -185,6 +217,7 @@ public final class HyperRectangleWriter {
          * @return writer, or {@code null} if the given sample model is not supported.
          */
         public HyperRectangleWriter create(final SinglePixelPackedSampleModel sm) {
+            bankIndices    = new int[1];   // Length is NOT the number of bands.
             pixelStride    = 1;
             scanlineStride = sm.getScanlineStride();
             final int[] d  = sm.getBitMasks();
@@ -205,6 +238,7 @@ public final class HyperRectangleWriter {
          * @return writer, or {@code null} if the given sample model is not supported.
          */
         public HyperRectangleWriter create(final MultiPixelPackedSampleModel sm) {
+            bankIndices    = new int[1];   // Length is NOT the number of bands.
             pixelStride    = 1;
             scanlineStride = sm.getScanlineStride();
             final int[] d  = sm.getSampleSize();
@@ -214,6 +248,21 @@ public final class HyperRectangleWriter {
                     return create(sm, 1);
                 }
             }
+            return null;
+        }
+
+        /**
+         * Creates a new writer for raster data described by the given sample model.
+         * The returned writer will need to be applied repetitively for each bank
+         * if {@link #bankIndices()} returns an array with a length greater than one.
+         *
+         * @param  sm  the sample model of the rasters to write.
+         * @return writer, or {@code null} if the given sample model is not supported.
+         */
+        public HyperRectangleWriter create(final SampleModel sm) {
+            if (sm instanceof ComponentSampleModel)         return create((ComponentSampleModel)         sm);
+            if (sm instanceof SinglePixelPackedSampleModel) return create((SinglePixelPackedSampleModel) sm);
+            if (sm instanceof MultiPixelPackedSampleModel)  return create((MultiPixelPackedSampleModel)  sm);
             return null;
         }
 
@@ -231,6 +280,19 @@ public final class HyperRectangleWriter {
          */
         public int scanlineStride() {
             return scanlineStride;
+        }
+
+        /**
+         * Returns the indices of all banks to write with {@code HyperRectangleWriter}.
+         * This is not necessarily the bank indices of all bands, because the writer may be
+         * able to write all bands contiguously in a single call to a {@code write(…)} method.
+         * This information is valid only after a {@code create(…)} method has been invoked.
+         *
+         * @return indices of all banks to write with {@code HyperRectangleWriter}.
+         */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        public int[] bankIndices() {
+            return bankIndices;
         }
     }
 
