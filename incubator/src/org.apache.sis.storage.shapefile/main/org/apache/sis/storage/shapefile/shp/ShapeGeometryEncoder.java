@@ -35,11 +35,12 @@ import org.locationtech.jts.algorithm.RayCrossingCounter;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class ShapeGeometryEncoder {
+public abstract class ShapeGeometryEncoder<T extends Geometry> {
 
     private static final GeometryFactory GF = new GeometryFactory();
 
     protected final int shapeType;
+    protected final Class<T> geometryClass;
     protected final int dimension;
     protected final int measures;
     protected final int nbOrdinates;
@@ -77,8 +78,9 @@ public abstract class ShapeGeometryEncoder {
      * @param dimension number of dimensions in processed geometries.
      * @param measures number of measures in processed geometries.
      */
-    protected ShapeGeometryEncoder(int shapeType, int dimension, int measures) {
+    protected ShapeGeometryEncoder(int shapeType, Class<T> geometryClass, int dimension, int measures) {
         this.shapeType = shapeType;
+        this.geometryClass = geometryClass;
         this.dimension = dimension;
         this.measures = measures;
         this.nbOrdinates = dimension + measures;
@@ -89,6 +91,13 @@ public abstract class ShapeGeometryEncoder {
      */
     public int getShapeType() {
         return shapeType;
+    }
+    
+    /**
+     * @return geometry class handled by this encoder
+     */
+    public Class<T> getValueClass() {
+        return geometryClass;
     }
 
     /**
@@ -297,12 +306,12 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class Null extends ShapeGeometryEncoder {
+    private static class Null extends ShapeGeometryEncoder<Geometry> {
 
         private static final Null INSTANCE = new Null();
 
         private Null() {
-            super(ShapeType.VALUE_NULL, 2,0);
+            super(ShapeType.VALUE_NULL, Geometry.class, 2, 0);
         }
 
         @Override
@@ -320,12 +329,12 @@ public abstract class ShapeGeometryEncoder {
 
     }
 
-    private static class PointXY extends ShapeGeometryEncoder {
+    private static class PointXY extends ShapeGeometryEncoder<Point> {
 
         private static final PointXY INSTANCE = new PointXY();
 
         private PointXY() {
-            super(ShapeType.VALUE_POINT, 2,0);
+            super(ShapeType.VALUE_POINT, Point.class, 2,0);
         }
 
         @Override
@@ -352,11 +361,11 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class PointXYM extends ShapeGeometryEncoder {
+    private static class PointXYM extends ShapeGeometryEncoder<Point> {
 
         private static final PointXYM INSTANCE = new PointXYM();
         private PointXYM() {
-            super(ShapeType.VALUE_POINT_M, 2,1);
+            super(ShapeType.VALUE_POINT_M, Point.class, 2, 1);
         }
 
         @Override
@@ -386,12 +395,12 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class PointXYZM extends ShapeGeometryEncoder {
+    private static class PointXYZM extends ShapeGeometryEncoder<Point> {
 
         private static final PointXYZM INSTANCE = new PointXYZM();
 
         private PointXYZM() {
-            super(ShapeType.VALUE_POINT_ZM, 3,1);
+            super(ShapeType.VALUE_POINT_ZM, Point.class, 3, 1);
         }
 
         @Override
@@ -424,11 +433,11 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class MultiPointXY extends ShapeGeometryEncoder {
+    private static class MultiPointXY extends ShapeGeometryEncoder<MultiPoint> {
 
         private static final MultiPointXY INSTANCE = new MultiPointXY();
         private MultiPointXY() {
-            super(ShapeType.VALUE_MULTIPOINT, 2,0);
+            super(ShapeType.VALUE_MULTIPOINT, MultiPoint.class, 2, 0);
         }
 
         @Override
@@ -460,12 +469,12 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class MultiPointXYM extends ShapeGeometryEncoder {
+    private static class MultiPointXYM extends ShapeGeometryEncoder<MultiPoint> {
 
         private static final MultiPointXYM INSTANCE = new MultiPointXYM();
 
         private MultiPointXYM() {
-            super(ShapeType.VALUE_MULTIPOINT_M, 2,1);
+            super(ShapeType.VALUE_MULTIPOINT_M, MultiPoint.class, 2, 1);
         }
 
         @Override
@@ -511,12 +520,12 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class MultiPointXYZM extends ShapeGeometryEncoder {
+    private static class MultiPointXYZM extends ShapeGeometryEncoder<MultiPoint> {
 
         private static final MultiPointXYZM INSTANCE = new MultiPointXYZM();
 
         private MultiPointXYZM() {
-            super(ShapeType.VALUE_MULTIPOINT_ZM, 3,1);
+            super(ShapeType.VALUE_MULTIPOINT_ZM, MultiPoint.class, 3, 1);
         }
 
         @Override
@@ -572,14 +581,14 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class Polyline extends ShapeGeometryEncoder {
+    private static class Polyline extends ShapeGeometryEncoder<MultiLineString> {
 
         private static final Polyline INSTANCE = new Polyline(ShapeType.VALUE_POLYLINE, 2, 0);
         private static final Polyline INSTANCE_M = new Polyline(ShapeType.VALUE_POLYLINE_M, 3, 0);
         private static final Polyline INSTANCE_ZM = new Polyline(ShapeType.VALUE_POLYLINE_ZM, 3, 1);
 
         private Polyline(int shapeType, int dimension, int measures) {
-            super(shapeType, dimension, measures);
+            super(shapeType, MultiLineString.class, dimension, measures);
         }
 
         @Override
@@ -604,14 +613,14 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class Polygon extends ShapeGeometryEncoder {
+    private static class Polygon extends ShapeGeometryEncoder<MultiPolygon> {
 
         private static final Polygon INSTANCE = new Polygon(ShapeType.VALUE_POLYGON, 2, 0);
         private static final Polygon INSTANCE_M = new Polygon(ShapeType.VALUE_POLYGON_M, 3, 0);
         private static final Polygon INSTANCE_ZM = new Polygon(ShapeType.VALUE_POLYGON_ZM, 3, 1);
 
         private Polygon(int shapeType, int dimension, int measures) {
-            super(shapeType, dimension, measures);
+            super(shapeType, MultiPolygon.class, dimension, measures);
         }
 
         @Override
@@ -641,12 +650,12 @@ public abstract class ShapeGeometryEncoder {
         }
     }
 
-    private static class MultiPatch extends ShapeGeometryEncoder {
+    private static class MultiPatch extends ShapeGeometryEncoder<MultiPolygon> {
 
         private static final MultiPatch INSTANCE = new MultiPatch();
 
         private MultiPatch() {
-            super(ShapeType.VALUE_MULTIPATCH_ZM, 3, 1);
+            super(ShapeType.VALUE_MULTIPATCH_ZM, MultiPolygon.class, 3, 1);
         }
 
         @Override
