@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff.writer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import org.apache.sis.io.stream.ChannelDataOutput;
 
@@ -41,6 +42,13 @@ abstract class PixelChannel implements WritableByteChannel {
      */
     protected PixelChannel() {
     }
+
+    /**
+     * Creates a buffer to use with this compression channel.
+     * The buffer size, and whether the buffer should be direct or not,
+     * depends on the decompression implementation.
+     */
+    abstract ByteBuffer createBuffer();
 
     /**
      * Writes any pending data and reset the deflater for the next tile to compress.

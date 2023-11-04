@@ -17,6 +17,7 @@
 package org.apache.sis.io.stream;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
@@ -97,6 +98,14 @@ public final class HyperRectangleWriter {
      */
     public static final class Builder {
         /**
+         * Number of elements (not necessarily bytes) contained in this hyper-rectangle.
+         * The number of bytes to write will be this length multiplied by element size.
+         *
+         * @see #length()
+         */
+        private long length;
+
+        /**
          * Number of elements (not necessarily bytes) between a pixel and the next pixel.
          *
          * @see #pixelStride()
@@ -160,7 +169,9 @@ public final class HyperRectangleWriter {
             }
             regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
             regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
-            return new HyperRectangleWriter(new Region(sourceSize, regionLower, regionUpper, subsampling));
+            var subset = new Region(sourceSize, regionLower, regionUpper, subsampling);
+            length = subset.length;
+            return new HyperRectangleWriter(subset);
         }
 
         /**
@@ -267,6 +278,15 @@ public final class HyperRectangleWriter {
         }
 
         /**
+         * {@return the total number of elements contained in the hyper-rectangle}.
+         * The number of bytes to write will be this length multiplied by element size.
+         * This information is valid only after a {@code create(…)} method has been invoked.
+         */
+        public long length() {
+            return length;
+        }
+
+        /**
          * {@return the number of elements (not necessarily bytes) between a pixel and the next pixel}.
          * This information is valid only after a {@code create(…)} method has been invoked.
          */
@@ -332,18 +352,54 @@ public final class HyperRectangleWriter {
     }
 
     /**
+     * Returns a suggested value for the {@code direct} argument of {@code write(…, byte[], …)}.
+     * The suggestion is based on whether the output buffer is direct or not.
+     *
+     * @param  output  the output which will be given in argument to the {@code write(…)} methods.
+     * @return suggested value for the {@code direct} boolean argument.
+     */
+    public boolean suggestDirect(final ChannelDataOutput output) {
+        // Really ! because we want to use the direct buffer if it exists.
+        return !output.buffer.isDirect() && output.buffer.capacity() <= contiguousDataLength;
+    }
+
+    /**
      * Writes an hyper-rectangle with the shape described at construction time.
+     * If the {@code direct} argument is {@code true}, then this method writes
+     * directly in the {@link ChannelDataOutput#channel} without copying bytes
+     * to the {@link ChannelDataOutput#buffer}.
+     *
+     * <p>Note that the direct mode is not necessarily faster.
+     * If the destination is a NIO channel, Java may perform internally a copy to a direct buffer.
+     * If the {@code output} buffer is already {@linkplain ByteBuffer#isDirect() direct}, it may be
+     * more efficient to set the {@code direct} argument to {@code false} for using that buffer.</p>
      *
      * @param  output  where to write data.
      * @param  data    data of the hyper-rectangle.
      * @param  offset  offset to add to array index.
      * @throws IOException if an error occurred while writing the data.
      */
-    public void write(final ChannelDataOutput output, final byte[] data, int offset) throws IOException {
+    public void write(final ChannelDataOutput output, final byte[] data, int offset, final boolean direct) throws IOException {
         offset = startAt(offset);
         final int[] count = count();
-        do output.write(data, offset, contiguousDataLength);
-        while ((offset = next(offset, count)) >= 0);
+        if (direct) {
+            final ByteBuffer buffer = ByteBuffer.wrap(data, offset, contiguousDataLength);
+            offset = 0;
+            output.flush();
+            do {
+                buffer.limit(offset + contiguousDataLength).position(offset);
+                do {
+                    final int n = output.channel.write(buffer);
+                    output.moveBufferForward(n);
+                    if (n == 0) {
+                        output.onEmptyTransfer();
+                    }
+                } while (buffer.hasRemaining());
+            } while ((offset = next(offset, count)) >= 0);
+        } else {
+            do output.write(data, offset, contiguousDataLength);
+            while ((offset = next(offset, count)) >= 0);
+        }
     }
 
     /**

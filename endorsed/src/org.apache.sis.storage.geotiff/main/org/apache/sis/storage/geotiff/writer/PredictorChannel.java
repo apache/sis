@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff.writer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.storage.geotiff.base.Predictor;
 
@@ -45,6 +46,14 @@ abstract class PredictorChannel extends PixelChannel {
      */
     protected PredictorChannel(final PixelChannel output) {
         this.output = output;
+    }
+
+    /**
+     * Creates a buffer to use with this compression channel.
+     */
+    @Override
+    final ByteBuffer createBuffer() {
+        return output.createBuffer();
     }
 
     /**

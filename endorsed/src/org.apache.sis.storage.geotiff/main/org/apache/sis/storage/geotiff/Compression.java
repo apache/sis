@@ -66,10 +66,30 @@ public final class Compression implements Serializable {
     /**
      * Deflate compression (like ZIP format) with a default compression level and a default predictor.
      * This is the compression used by default by the Apache SIS GeoTIFF writer.
+     *
+     * <h4>Predictors</h4>
+     * The compression ratio can <em>sometime</em> be improved by the use of a predictor.
+     * For example instead of specifying {@code DEFLATE} directly to the {@link StorageConnector} options,
+     * the following can be specified:
+     *
+     * {@snippet lang="java" :
+     *     Compression.DEFLATE.withPreductor(BaselineTIFFTagSet.PREDICTOR_HORIZONTAL_DIFFERENCING);
+     *     }
+     *
+     * Whether the use of predictor improves or not the compression ratio depends on the image content.
+     * Predictors can help a lot on "smooth" images, but can also be counter-productive on heterogeneous images.
+     * The current Apache SIS version uses no predictor by default, but a future SIS version may try to detect
+     * automatically whether a predictor should be used. If a deterministic predictor is desired,
+     * then {@link #withPredictor(int)} should be invoked explicitly.
+     *
+     * @todo Compute Shannon Entropy with and without predictor on a few sample rows
+     *       for deciding automatically which predictor to use.
+     *
+     * @see #withPredictor(int)
      */
     public static final Compression DEFLATE = new Compression(
             org.apache.sis.storage.geotiff.base.Compression.DEFLATE,
-            Deflater.DEFAULT_COMPRESSION, Predictor.HORIZONTAL_DIFFERENCING);
+            Deflater.DEFAULT_COMPRESSION, Predictor.NONE);
 
     /**
      * The key for declaring the compression at store creation time.
@@ -110,8 +130,9 @@ public final class Compression implements Serializable {
     /**
      * Returns an instance with the specified compression level.
      * The value can range from {@value Deflater#BEST_SPEED} to {@value Deflater#BEST_COMPRESSION} inclusive.
-     * A value of {@value Deflater#NO_COMPRESSION} means no compression.
+     * A value of {@value Deflater#NO_COMPRESSION} returns {@link #NONE}.
      * A value of {@value Deflater#DEFAULT_COMPRESSION} resets the default compression.
+     * This method does nothing if this compression does not support compression levels.
      *
      * @param  value  the new compression level (0-9), or -1 for the default compression.
      * @return a compression of the specified level.
@@ -122,7 +143,13 @@ public final class Compression implements Serializable {
      * @see Deflater#NO_COMPRESSION
      */
     public Compression withLevel(final int value) {
-        if (value == level) return this;
+        if (value == Deflater.NO_COMPRESSION) {
+            // Required by `TileMatrix.writeRasters(…)` assumption that `level == 0` implies no predictor.
+            return NONE;
+        }
+        if (value == level || !method.supportLevels()) {
+            return this;
+        }
         ArgumentChecks.ensureBetween("level", Deflater.DEFAULT_COMPRESSION, Deflater.BEST_COMPRESSION, value);
         return new Compression(method, (byte) value, predictor);
     }
@@ -140,13 +167,10 @@ public final class Compression implements Serializable {
     /**
      * Returns an instance with the specified predictor. A predictor is a mathematical
      * operator that is applied to the image data before an encoding scheme is applied.
-     * Predictors can improve the result of some compression algorithms.
+     * Predictors sometime improve the result of some compression algorithms such as {@link #DEFLATE}.
      *
      * <p>The given predictor may be ignored if it is unsupported by this compression.
      * For example invoking this method on {@link #NONE} has no effect.</p>
-     *
-     * <p>The constants defined in this {@code Compression} class are already defined
-     * with suitable predictors. This method usually do not need to be invoked.</p>
      *
      * @param  value  one of the {@code PREDICTOR_*} constants in {@link BaselineTIFFTagSet}.
      * @return a compression using the specified predictor.
@@ -155,11 +179,10 @@ public final class Compression implements Serializable {
      * @see BaselineTIFFTagSet#PREDICTOR_NONE
      * @see BaselineTIFFTagSet#PREDICTOR_HORIZONTAL_DIFFERENCING
      */
-    public Compression withPredictor(final int value) {
-        if (value == predictor.code || !usePredictor()) {
-            return this;
-        }
-        return new Compression(method, level, Predictor.supported(value));
+    public Compression withPredictor(int value) {
+        // `NONE` is required by `TileMatrix.writeRasters(…)` assumption that `level == 0` implies no predictor.
+        final Predictor p = usePredictor() ? Predictor.supported(value) : Predictor.NONE;
+        return p.equals(predictor) ? this : new Compression(method, level, p);
     }
 
     /**
@@ -176,7 +199,7 @@ public final class Compression implements Serializable {
      * {@return whether the compression method may use predictor}.
      */
     final boolean usePredictor() {
-        return !org.apache.sis.storage.geotiff.base.Compression.NONE.equals(method);
+        return level != 0;
     }
 
     /**

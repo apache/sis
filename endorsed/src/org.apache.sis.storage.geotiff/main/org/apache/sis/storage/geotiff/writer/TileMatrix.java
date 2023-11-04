@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff.writer;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.awt.Rectangle;
@@ -175,41 +176,6 @@ public final class TileMatrix {
     }
 
     /**
-     * Creates the data output stream to use for writing compressed data.
-     *
-     * @param  output  where to write compressed bytes.
-     * @throws DataStoreException if the compression method is unsupported.
-     * @throws IOException if an error occurred while creating the data channel.
-     * @return the data output for compressing data, or {@code output} if uncompressed.
-     */
-    private ChannelDataOutput createCompressionChannel(final ChannelDataOutput output,
-            final int pixelStride, final int scanlineStride)
-            throws DataStoreException, IOException
-    {
-        if (compressionLevel == 0) {
-            return output;
-        }
-        PixelChannel channel;
-        boolean isDirect = false;           // `true` if using a native library which accepts NIO buffers.
-        switch (compression) {
-            case NONE:    return output;
-            case DEFLATE: channel = new ZIP(output, compressionLevel); isDirect = true; break;
-            default: throw unsupported(Resources.Keys.UnsupportedCompressionMethod_1, compression);
-        }
-        switch (predictor) {
-            case NONE: break;
-            case HORIZONTAL_DIFFERENCING: {
-                channel = HorizontalPredictor.create(channel, type, pixelStride, scanlineStride);
-                break;
-            }
-            default: throw unsupported(Resources.Keys.UnsupportedPredictor_1, predictor);
-        }
-        final int capacity = CompressionChannel.BUFFER_SIZE;
-        ByteBuffer buffer = isDirect ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
-        return new ChannelDataOutput(output.filename, channel, buffer.order(output.buffer.order()));
-    }
-
-    /**
      * Creates an exception for an unsupported configuration.
      */
     private static DataStoreException unsupported(final short key, final Enum<?> value) {
@@ -227,11 +193,12 @@ public final class TileMatrix {
      */
     @SuppressWarnings("null")
     public void writeRasters(final ChannelDataOutput output) throws DataStoreException, IOException {
-        ChannelDataOutput compress = null;
-        PixelChannel      cc       = null;
-        SampleModel       sm       = null;
-        int[] bankIndices          = null;
-        HyperRectangleWriter rect  = null;
+        ChannelDataOutput    compOutput  = null;
+        PixelChannel         compressor  = null;
+        SampleModel          sampleModel = null;
+        int[]                bankIndices = null;
+        HyperRectangleWriter rect        = null;
+        boolean              direct      = false;
         final int minTileX = image.getMinTileX();
         final int minTileY = image.getMinTileY();
         for (int tileIndex = 0; tileIndex < numTiles; tileIndex++) {
@@ -244,16 +211,51 @@ public final class TileMatrix {
             tileX += minTileX;
             tileY += minTileY;
             final Raster tile = image.getTile(tileX, tileY);
-            if (sm != (sm = tile.getSampleModel())) {
+            if (!Objects.equals(sampleModel, sampleModel = tile.getSampleModel())) {
+                if (compressor != null) {
+                    compressor.close();
+                    compressor = null;
+                }
+                /*
+                 * Creates the `rect` object which will be used for writing a subset of the raster data.
+                 * This object depends on the sample model, but is usually created only once because all
+                 * tiles should share the same sample model.
+                 */
                 final var builder = new HyperRectangleWriter.Builder().region(new Rectangle(tileWidth, tileHeight));
-                rect = builder.create(sm);
+                rect = builder.create(sampleModel);
                 if (rect == null) {
                     throw new UnsupportedOperationException();      // TODO: reformat using a recycled Raster.
                 }
                 bankIndices = builder.bankIndices();
-                if (compress == null) {
-                    compress = createCompressionChannel(output, builder.pixelStride(), builder.scanlineStride());
-                    if (compress != output) cc = (PixelChannel) compress.channel;
+                /*
+                 * Creates the data output to use for writing compressed data. The compressor will need an
+                 * intermediate buffer, unless the `direct` flag is true, in which case we will bypass the
+                 * buffer and send data directly from the raster to the `compressor` channel. Such direct
+                 * mode allows to send large blocks of data without being constrained by the buffer size.
+                 * It is possible only for bytes (not integers of floats) and only if the compressor does
+                 * not modify the data (i.e. no predictor is used).
+                 */
+                if (compressionLevel != 0) {
+                    final long length = Math.multiplyExact(builder.length(), type.bytes());
+                    switch (compression) {
+                        case DEFLATE: compressor = new ZIP(output, length, compressionLevel); break;
+                        default: throw unsupported(Resources.Keys.UnsupportedCompressionMethod_1, compression);
+                    }
+                    switch (predictor) {
+                        default: throw unsupported(Resources.Keys.UnsupportedPredictor_1, predictor);
+                        case NONE: direct = type.equals(DataType.BYTE); break;
+                        case HORIZONTAL_DIFFERENCING: {
+                            compressor = HorizontalPredictor.create(compressor, type, builder.pixelStride(), builder.scanlineStride());
+                            direct = false;     // Because the predictor will write in the buffer, so it must be a copy of the data.
+                            break;
+                        }
+                    }
+                    ByteBuffer buffer = direct ? ByteBuffer.allocate(0) : compressor.createBuffer();
+                    compOutput = new ChannelDataOutput(output.filename, compressor, buffer.order(output.buffer.order()));
+                } else {
+                    compOutput = output;
+                    direct = rect.suggestDirect(output);                // Will be ignored if data type is not byte.
+                    assert predictor == Predictor.NONE : predictor;     // Assumption documented in `Compression` class.
                 }
             }
             final DataBuffer buffer = tile.getDataBuffer();
@@ -264,21 +266,23 @@ public final class TileMatrix {
                 final long position = output.getStreamPosition();
                 switch (type) {
                     default:     throw new AssertionError(type);
-                    case BYTE:   rect.write(compress, ((DataBufferByte)   buffer).getData(b), offset); break;
-                    case USHORT: rect.write(compress, ((DataBufferUShort) buffer).getData(b), offset); break;
-                    case SHORT:  rect.write(compress, ((DataBufferShort)  buffer).getData(b), offset); break;
-                    case INT:    rect.write(compress, ((DataBufferInt)    buffer).getData(b), offset); break;
-                    case FLOAT:  rect.write(compress, ((DataBufferFloat)  buffer).getData(b), offset); break;
-                    case DOUBLE: rect.write(compress, ((DataBufferDouble) buffer).getData(b), offset); break;
+                    case BYTE:   rect.write(compOutput, ((DataBufferByte)   buffer).getData(b), offset, direct); break;
+                    case USHORT: rect.write(compOutput, ((DataBufferUShort) buffer).getData(b), offset); break;
+                    case SHORT:  rect.write(compOutput, ((DataBufferShort)  buffer).getData(b), offset); break;
+                    case INT:    rect.write(compOutput, ((DataBufferInt)    buffer).getData(b), offset); break;
+                    case FLOAT:  rect.write(compOutput, ((DataBufferFloat)  buffer).getData(b), offset); break;
+                    case DOUBLE: rect.write(compOutput, ((DataBufferDouble) buffer).getData(b), offset); break;
                 }
-                if (cc != null) {
-                    cc.finish(compress);
+                if (compressor != null) {
+                    compressor.finish(compOutput);
                 }
                 final int planeIndex = tileIndex + j*numTiles;
                 offsets[planeIndex] = position;
                 lengths[planeIndex] = Math.toIntExact(Math.subtractExact(output.getStreamPosition(), position));
             }
         }
-        if (cc != null) cc.close();
+        if (compressor != null) {
+            compressor.close();
+        }
     }
 }

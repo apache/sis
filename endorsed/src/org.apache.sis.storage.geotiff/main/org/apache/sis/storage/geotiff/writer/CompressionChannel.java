@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff.writer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.io.stream.ChannelDataOutput;
 
@@ -31,22 +32,48 @@ import org.apache.sis.io.stream.ChannelDataOutput;
  */
 abstract class CompressionChannel extends PixelChannel {
     /**
-     * Desired size of the temporary buffer where to compress data.
-     */
-    static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE / 2;
-
-    /**
      * The destination where to write compressed data.
      */
     protected final ChannelDataOutput output;
 
     /**
+     * Number of bytes to be compressed.
+     */
+    protected final long length;
+
+    /**
      * Creates a new channel which will compress data to the given output.
      *
      * @param  output  the destination of compressed data.
+     * @param  length  number of bytes to be compressed.
      */
-    protected CompressionChannel(final ChannelDataOutput output) {
+    protected CompressionChannel(final ChannelDataOutput output, final long length) {
         this.output = output;
+        this.length = length;
+    }
+
+    /**
+     * {@return a proposed buffer capacity}.
+     * This is an helper method for {@link #createBuffer()} implementations.
+     */
+    final int bufferCapacity() {
+        /*
+         * Size of compressed data should be less than `length`, but we do not try to do a better
+         * estimation because the length will usually be limited by the maximal value below anyway.
+         * Those minimal and maximal capacity values are arbitrary.
+         */
+        return Math.max((int) Math.min(length, StorageConnector.DEFAULT_BUFFER_SIZE / 2), 1024);
+    }
+
+    /**
+     * Creates a buffer to use with this compression channel.
+     * The default implementation creates a buffer on heap,
+     * which is suitable for decompression implemented in Java.
+     * Decompression implemented by native libraries may prefer direct buffer.
+     */
+    @Override
+    ByteBuffer createBuffer() {
+        return ByteBuffer.allocate(bufferCapacity());
     }
 
     /**

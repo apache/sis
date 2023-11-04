@@ -142,7 +142,7 @@ public enum Compression {
      */
     public static Compression valueOf(final int code) {
         switch (code) {
-            case 32946:                 // Fall through
+            case COMPRESSION_DEFLATE:   // Fall through
             case COMPRESSION_ZLIB:      return DEFLATE;
             case COMPRESSION_OLD_JPEG:  // "old-style" JPEG, later overriden in Technical Notes 2.
             case COMPRESSION_JPEG:      return JPEG;
@@ -168,6 +168,13 @@ public enum Compression {
      * @return whether the compression may use a native library.
      */
     public final boolean useNativeLibrary() {
+        return this == DEFLATE;
+    }
+
+    /**
+     * {@return whether the compression can be configured with different levels}.
+     */
+    public final boolean supportLevels() {
         return this == DEFLATE;
     }
 }
