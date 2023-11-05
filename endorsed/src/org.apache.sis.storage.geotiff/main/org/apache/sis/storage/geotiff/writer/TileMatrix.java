@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.DataBuffer;
@@ -211,22 +210,23 @@ public final class TileMatrix {
             tileX += minTileX;
             tileY += minTileY;
             final Raster tile = image.getTile(tileX, tileY);
+            /*
+             * Creates the `rect` object which will be used for writing a subset of the raster data.
+             * This object depends not only on the sample model, but also on the raster coordinates.
+             * However the compressor depends on properties that change only with the sample model,
+             * so `compressor` is usually created only once and shared by all tiles.
+             */
+            final var builder = new HyperRectangleWriter.Builder();
+            rect = builder.create(tile);
+            if (rect == null) {
+                throw new UnsupportedOperationException();      // TODO: reformat using a recycled Raster.
+            }
+            bankIndices = builder.bankIndices();
             if (!Objects.equals(sampleModel, sampleModel = tile.getSampleModel())) {
                 if (compressor != null) {
                     compressor.close();
                     compressor = null;
                 }
-                /*
-                 * Creates the `rect` object which will be used for writing a subset of the raster data.
-                 * This object depends on the sample model, but is usually created only once because all
-                 * tiles should share the same sample model.
-                 */
-                final var builder = new HyperRectangleWriter.Builder().region(new Rectangle(tileWidth, tileHeight));
-                rect = builder.create(sampleModel);
-                if (rect == null) {
-                    throw new UnsupportedOperationException();      // TODO: reformat using a recycled Raster.
-                }
-                bankIndices = builder.bankIndices();
                 /*
                  * Creates the data output to use for writing compressed data. The compressor will need an
                  * intermediate buffer, unless the `direct` flag is true, in which case we will bypass the
@@ -258,6 +258,9 @@ public final class TileMatrix {
                     assert predictor == Predictor.NONE : predictor;     // Assumption documented in `Compression` class.
                 }
             }
+            /*
+             * Compress and write sample values.
+             */
             final DataBuffer buffer = tile.getDataBuffer();
             final int[] bufferOffsets = buffer.getOffsets();
             for (int j=0; j<numPlanes; j++) {

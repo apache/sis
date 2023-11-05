@@ -19,6 +19,7 @@ package org.apache.sis.io.stream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.awt.Rectangle;
+import java.awt.image.Raster;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.ComponentSampleModel;
@@ -92,7 +93,9 @@ public final class HyperRectangleWriter {
     }
 
     /**
-     * A builder for {@code HyperRectangleWriter} created from a {@code SampleModel}.
+     * A builder for {@code HyperRectangleWriter} created from a {@code Raster} or a {@code SampleModel}.
+     * Each builder shall be used only once. For creating more {@code HyperRectangleWriter} instances,
+     * new builders shall be created.
      *
      * @author  Martin Desruisseaux (Geomatys)
      */
@@ -130,8 +133,20 @@ public final class HyperRectangleWriter {
 
         /**
          * Subregion to write, or {@code null} for writing the whole raster.
+         *
+         * @see #region(Rectangle)
          */
         private Rectangle region;
+
+        /**
+         * The translation from the coordinate system of the {@link SampleModel} to that of the {@link Raster}.
+         * To convert a pixel's coordinate from the {@link Raster} coordinate system to the {@link SampleModel}
+         * coordinate system, this value must be subtracted.
+         *
+         * @see Raster#getSampleModelTranslateX()
+         * @see Raster#getSampleModelTranslateY()
+         */
+        private int sampleModelTranslateX, sampleModelTranslateY;
 
         /**
          * Creates a new builder.
@@ -141,6 +156,9 @@ public final class HyperRectangleWriter {
 
         /**
          * Specifies the region to write.
+         * The rectangle is in the coordinate system of the object specified to the {@code create(…)} method:
+         * {@link Raster} coordinates if the {@link #create(Raster)} method is invoked, or
+         * {@link SampleModel} coordinates if the {@link #create(SampleModel)} method is invoked.
          * This method retains the given rectangle by reference, it is not copied.
          *
          * @param  aoi  the region to write, or {@code null} for writing the whole raster.
@@ -158,15 +176,17 @@ public final class HyperRectangleWriter {
         private HyperRectangleWriter create(final SampleModel sm, final int subX) {
             final int[]  subsampling = {subX, 1};
             final long[] sourceSize  = {scanlineStride, sm.getHeight()};
-            final long[] regionLower = new long[2];
-            final long[] regionUpper = new long[2];
-            if (region != null) {
-                regionUpper[0] = (regionLower[0] = region.x) + region.width;
-                regionUpper[1] = (regionLower[1] = region.y) + region.height;
-            } else {
-                regionUpper[0] = sm.getWidth();
-                regionUpper[1] = sm.getHeight();
+            if (region == null) {
+                region = new Rectangle(sm.getWidth(), sm.getHeight());
             }
+            final long[] regionLower = new long[] {
+                region.x - (long) sampleModelTranslateX,
+                region.y - (long) sampleModelTranslateY
+            };
+            final long[] regionUpper = new long[] {
+                regionLower[0] + region.width,
+                regionLower[1] + region.height
+            };
             regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
             regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
             var subset = new Region(sourceSize, regionLower, regionUpper, subsampling);
@@ -278,6 +298,22 @@ public final class HyperRectangleWriter {
         }
 
         /**
+         * Creates a new writer for data of the specified raster.
+         * The returned writer will need to be applied repetitively for each bank
+         * if {@link #bankIndices()} returns an array with a length greater than one.
+         *
+         * @param  raster  the rasters to write.
+         * @return writer, or {@code null} if the given raster uses an unsupported sample model.
+         */
+        public HyperRectangleWriter create(final Raster raster) {
+            final Rectangle bounds = raster.getBounds();
+            region = (region != null) ? bounds.intersection(region) : bounds;
+            sampleModelTranslateX = raster.getSampleModelTranslateX();
+            sampleModelTranslateY = raster.getSampleModelTranslateY();
+            return create(raster.getSampleModel());
+        }
+
+        /**
          * {@return the total number of elements contained in the hyper-rectangle}.
          * The number of bytes to write will be this length multiplied by element size.
          * This information is valid only after a {@code create(…)} method has been invoked.
@@ -383,8 +419,7 @@ public final class HyperRectangleWriter {
         offset = startAt(offset);
         final int[] count = count();
         if (direct) {
-            final ByteBuffer buffer = ByteBuffer.wrap(data, offset, contiguousDataLength);
-            offset = 0;
+            final ByteBuffer buffer = ByteBuffer.wrap(data);
             output.flush();
             do {
                 buffer.limit(offset + contiguousDataLength).position(offset);
