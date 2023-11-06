@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.ReadableByteChannel;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageOutputStream;
 
@@ -66,6 +67,19 @@ public class ChannelImageOutputStream extends OutputStream implements ImageOutpu
     {
         input  = new ChannelImageInputStream(filename, channel, buffer, true);
         output = new ChannelDataOutput(filename, channel, buffer);
+    }
+
+    /**
+     * Creates a new input/output stream wrapping the given output data channel.
+     *
+     * @param  output  the object to use for writing to the channel.
+     * @throws ClassCastException if the output channel is not readable.
+     * @throws IOException if the stream cannot be created.
+     */
+    public ChannelImageOutputStream(final ChannelDataOutput output) throws IOException {
+        this.output = output;
+        input = new ChannelImageInputStream(output.filename, (ReadableByteChannel) output.channel, output.buffer, true);
+        writing = true;
     }
 
     /**

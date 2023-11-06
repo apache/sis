@@ -22,16 +22,16 @@ import org.opengis.geometry.DirectPosition;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 
 import static java.lang.Double.NaN;
-import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.referencing.Assertions.assertContains;
 import static org.apache.sis.referencing.Assertions.assertDisjoint;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
 /**

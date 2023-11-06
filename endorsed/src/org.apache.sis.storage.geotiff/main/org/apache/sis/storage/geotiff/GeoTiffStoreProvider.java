@@ -74,18 +74,24 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.geotiff");
 
     /**
-     * Name of the parameter for specifying the options (BigTIFF, COG…).
+     * Name of the parameter for specifying the format modifiers (BigTIFF, COG…).
      */
-    static final String OPTIONS = "options";
+    static final String MODIFIERS = "modifiers";
+
+    /**
+     * Name of the parameter for specifying the compression.
+     */
+    static final String COMPRESSION = "compression";
 
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
     private static final ParameterDescriptorGroup OPEN_DESCRIPTOR;
     static {
-        final var builder = new ParameterBuilder();
-        final var options = builder.addName(OPTIONS).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Options)).create(GeoTiffOption[].class, null);
-        OPEN_DESCRIPTOR = builder.addName(Constants.GEOTIFF).createGroup(URIDataStore.Provider.LOCATION_PARAM, options);
+        final var builder     = new ParameterBuilder();
+        final var modifiers   = builder.addName(MODIFIERS).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Options)).create(FormatModifier[].class, null);
+        final var compression = builder.addName(COMPRESSION).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Compression)).create(Compression.class, null);
+        OPEN_DESCRIPTOR = builder.addName(Constants.GEOTIFF).createGroup(URIDataStore.Provider.LOCATION_PARAM, modifiers, compression);
     }
 
     /**

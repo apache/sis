@@ -24,7 +24,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.DirectPosition1D;
@@ -32,9 +31,10 @@ import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMapEquals;

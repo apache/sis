@@ -37,6 +37,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.ReadOnlyStorageException;
@@ -105,12 +106,12 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * Minimal number of tags which will be written. This amount is for grayscale images with no metadata
-     * and no statistics. For RGB images, there is one more tag. For color maps, there is two more tags.
-     * This number is only a hint for avoiding the need to update this information if the number appears
-     * to be right.
+     * Common number of tags which will be written. This amount is for tiled grayscale images with no metadata
+     * and no statistics. For stripped images, there is one less tag. For RGB images, there is one more tag.
+     * For color maps, there is two more tags. This number is only a hint for avoiding the need to update
+     * this information if the number appears to be right.
      */
-    static final int MINIMAL_NUMBER_OF_TAGS = 16;
+    static final int COMMON_NUMBER_OF_TAGS = 16;
 
     /**
      * The processor to use for transforming the image before to write it.
@@ -164,15 +165,15 @@ final class Writer extends IOBase implements Flushable {
      *
      * @param  store    the store writing data.
      * @param  output   where to write the bytes.
-     * @param  options  the options (BigTIFF, COG…), or {@code null} if none.
+     * @param  options  the format modifiers (BigTIFF, COG…), or {@code null} if none.
      * @throws IOException if an error occurred while writing the first bytes to the stream.
      */
-    Writer(final GeoTiffStore store, final ChannelDataOutput output, final GeoTiffOption[] options)
+    Writer(final GeoTiffStore store, final ChannelDataOutput output, final FormatModifier[] options)
             throws IOException, DataStoreException
     {
         super(store);
         this.output = output;
-        isBigTIFF   = ArraysExt.contains(options, GeoTiffOption.BIG_TIFF);
+        isBigTIFF   = ArraysExt.contains(options, FormatModifier.BIG_TIFF);
         /*
          * Write the TIFF file header before first IFD. Stream position matter and must start at zero.
          * Note that it does not necessarily mean that the stream has no bytes before current position.
@@ -231,11 +232,11 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * {@return the options (BigTIFF, COG…) used by this writer}.
+     * {@return the modifiers (BigTIFF, COG…) used by this writer}.
      */
     @Override
-    public final Set<GeoTiffOption> getOptions() {
-        return isBigTIFF ? Set.of(GeoTiffOption.BIG_TIFF) : Set.of();
+    public final Set<FormatModifier> getModifiers() {
+        return isBigTIFF ? Set.of(FormatModifier.BIG_TIFF) : Set.of();
     }
 
     /**
@@ -316,6 +317,11 @@ final class Writer extends IOBase implements Flushable {
     private TileMatrix writeImageFileDirectory(final ReformattedImage image, final GridGeometry grid, final Metadata metadata,
             final boolean overview) throws IOException, DataStoreException
     {
+        final SampleModel sm = image.visibleBands.getSampleModel();
+        Compression compression = store.getCompression().orElse(Compression.DEFLATE);
+        if (!ImageUtilities.isIntegerType(sm)) {
+            compression = compression.withPredictor(PREDICTOR_NONE);
+        }
         /*
          * Extract all image properties and metadata that we will need to encode in the Image File Directory.
          * It allows us to know if we will be able to encode the image before we start writing in the stream,
@@ -323,12 +329,12 @@ final class Writer extends IOBase implements Flushable {
          * because the tags need to be written in increasing code order, which causes ColorModel-related tags
          * (for example) to be interleaved with other aspects.
          */
-        numberOfTags = MINIMAL_NUMBER_OF_TAGS;      // Only a guess at this stage. Real number computed later.
+        numberOfTags = COMMON_NUMBER_OF_TAGS;       // Only a guess at this stage. Real number computed later.
+        if (compression.usePredictor()) numberOfTags++;
         final int colorInterpretation = image.getColorInterpretation();
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
             numberOfTags++;
         }
-        final SampleModel sm      = image.visibleBands.getSampleModel();
         final int   sampleFormat  = image.getSampleFormat();
         final int[] bitsPerSample = sm.getSampleSize();
         final int   numBands      = sm.getNumBands();
@@ -375,17 +381,23 @@ final class Writer extends IOBase implements Flushable {
         final UpdatableWrite<?> tagCountWriter =
                 isBigTIFF ? UpdatableWrite.of(output, (long)  numberOfTags)
                           : UpdatableWrite.of(output, (short) numberOfTags);
+
+        final var tiling = new TileMatrix(image.visibleBands, numPlanes, bitsPerSample, offsetIFD,
+                                          compression.method, compression.level, compression.predictor);
         numberOfTags = 0;
         writeTag((short) TAG_NEW_SUBFILE_TYPE,           (short) TIFFTag.TIFF_LONG,  overview ? 1 : 0);
         writeTag((short) TAG_IMAGE_WIDTH,                (short) TIFFTag.TIFF_LONG,  image.visibleBands.getWidth());
         writeTag((short) TAG_IMAGE_LENGTH,               (short) TIFFTag.TIFF_LONG,  image.visibleBands.getHeight());
         writeTag((short) TAG_BITS_PER_SAMPLE,            (short) TIFFTag.TIFF_SHORT, bitsPerSample);
-        writeTag((short) TAG_COMPRESSION,                (short) TIFFTag.TIFF_SHORT, COMPRESSION_NONE);
+        writeTag((short) TAG_COMPRESSION,                (short) TIFFTag.TIFF_SHORT, compression.method.code);
         writeTag((short) TAG_PHOTOMETRIC_INTERPRETATION, (short) TIFFTag.TIFF_SHORT, colorInterpretation);
         writeTag((short) TAG_DOCUMENT_NAME,              /* TIFF_ASCII */            mf.series);
         writeTag((short) TAG_IMAGE_DESCRIPTION,          /* TIFF_ASCII */            mf.title);
         writeTag((short) TAG_MODEL,                      /* TIFF_ASCII */            mf.instrument);
+        writeTag((short) TAG_STRIP_OFFSETS,              /* TIFF_LONG  */            tiling, true);
         writeTag((short) TAG_SAMPLES_PER_PIXEL,          (short) TIFFTag.TIFF_SHORT, numBands);
+        writeTag((short) TAG_ROWS_PER_STRIP,             /* TIFF_LONG  */            tiling, true);
+        writeTag((short) TAG_STRIP_BYTE_COUNTS,          /* TIFF_LONG  */            tiling, true);
         writeTag((short) TAG_MIN_SAMPLE_VALUE,           /* TIFF_SHORT */            shortStats[0]);
         writeTag((short) TAG_MAX_SAMPLE_VALUE,           /* TIFF_SHORT */            shortStats[1]);
         writeTag((short) TAG_X_RESOLUTION,               /* TIFF_RATIONAL */         xres);
@@ -396,17 +408,19 @@ final class Writer extends IOBase implements Flushable {
         writeTag((short) TAG_DATE_TIME,                  /* TIFF_ASCII */            mf.creationDate);
         writeTag((short) TAG_ARTIST,                     /* TIFF_ASCII */            mf.party);
         writeTag((short) TAG_HOST_COMPUTER,              /* TIFF_ASCII */            mf.procedure);
+        if (compression.usePredictor()) {
+            writeTag((short) TAG_PREDICTOR, (short) TIFFTag.TIFF_SHORT, compression.predictor.code);
+        }
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
             writeColorPalette((IndexColorModel) image.visibleBands.getColorModel(), 1L << bitsPerSample[0]);
         }
-        final var tiling = new TileMatrix(image.visibleBands, numPlanes, bitsPerSample, offsetIFD);
-        writeTag((short) TAG_TILE_WIDTH,  (short) TIFFTag.TIFF_LONG, tiling.tileWidth);
-        writeTag((short) TAG_TILE_LENGTH, (short) TIFFTag.TIFF_LONG, tiling.tileHeight);
-        tiling.offsetsTag = writeTag((short) TAG_TILE_OFFSETS, tiling.offsets);
-        tiling.lengthsTag = writeTag((short) TAG_TILE_BYTE_COUNTS, (short) TIFFTag.TIFF_LONG, tiling.lengths);
-        writeTag((short) TAG_SAMPLE_FORMAT,      (short) TIFFTag.TIFF_SHORT, sampleFormat);
-        writeTag((short) TAG_S_MIN_SAMPLE_VALUE, (short) TIFFTag.TIFF_FLOAT, statistics[0]);
-        writeTag((short) TAG_S_MAX_SAMPLE_VALUE, (short) TIFFTag.TIFF_FLOAT, statistics[1]);
+        writeTag((short) TAG_TILE_WIDTH,                 /* TIFF_LONG */             tiling, false);
+        writeTag((short) TAG_TILE_LENGTH,                /* TIFF_LONG */             tiling, false);
+        writeTag((short) TAG_TILE_OFFSETS,               /* TIFF_LONG */             tiling, false);
+        writeTag((short) TAG_TILE_BYTE_COUNTS,           /* TIFF_LONG */             tiling, false);
+        writeTag((short) TAG_SAMPLE_FORMAT,              (short) TIFFTag.TIFF_SHORT, sampleFormat);
+        writeTag((short) TAG_S_MIN_SAMPLE_VALUE,         (short) TIFFTag.TIFF_FLOAT, statistics[0]);
+        writeTag((short) TAG_S_MAX_SAMPLE_VALUE,         (short) TIFFTag.TIFF_FLOAT, statistics[1]);
         if (geoKeys != null) {
             writeTag((short) TAG_MODEL_TRANSFORMATION, (short) TIFFTag.TIFF_DOUBLE, geoKeys.modelTransformation());
             writeTag((short) TAG_GEO_KEY_DIRECTORY,    /* TIFF_SHORT */             geoKeys.keyDirectory());
@@ -425,6 +439,28 @@ final class Writer extends IOBase implements Flushable {
             if (offset != null) deferredWrites.add(offset);
         }
         return tiling;
+    }
+
+    /**
+     * Writes a tag related to the location of the data. We use a separated method instead of
+     * inlining this code inside the {@code writeImageFileDirectory(…)} method for readability.
+     * It allows us to keep {@code writeImageFileDirectory(…)} formatted more like a table.
+     */
+    private void writeTag(final short tag, final TileMatrix tiling, final boolean useStrips) throws IOException {
+        if (tiling.useStrips() == useStrips) {
+            final int value;
+            switch (tag) {
+                case TAG_TILE_WIDTH:        value = tiling.tileWidth;  break;
+                case TAG_TILE_LENGTH:
+                case TAG_ROWS_PER_STRIP:    value = tiling.tileHeight; break;
+                case TAG_TILE_OFFSETS:
+                case TAG_STRIP_OFFSETS:     tiling.offsetsTag = writeTag(tag, tiling.offsets); return;
+                case TAG_TILE_BYTE_COUNTS:
+                case TAG_STRIP_BYTE_COUNTS: tiling.lengthsTag = writeTag(tag, (short) TIFFTag.TIFF_LONG, tiling.lengths); return;
+                default: throw new AssertionError(tag);
+            }
+            writeTag(tag, (short) TIFFTag.TIFF_LONG, value);
+        }
     }
 
     /**

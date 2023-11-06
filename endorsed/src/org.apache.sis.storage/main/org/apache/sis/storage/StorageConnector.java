@@ -67,6 +67,7 @@ import org.apache.sis.io.stream.ChannelData;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.ChannelImageInputStream;
+import org.apache.sis.io.stream.ChannelImageOutputStream;
 import org.apache.sis.io.stream.InputStreamAdapter;
 import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.io.stream.InternalOptionKey;
@@ -119,24 +120,40 @@ public class StorageConnector implements Serializable {
      * The default size (in bytes) of {@link ByteBuffer}s created by storage connectors.
      * Those buffers are typically created when the specified storage object is a
      * {@link File}, {@link Path}, {@link URL} or {@link URI}.
-     * The default buffer size is arbitrary and may change in any future Apache SIS version.
      *
-     * <p>Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.</p>
+     * <p>The default buffer size is arbitrary and may change in any future Apache SIS version.
+     * The current value is {@value}. Users can override this value by providing a pre-allocated
+     * buffer with {@link OptionKey#BYTE_BUFFER}.</p>
      *
      * @see OptionKey#BYTE_BUFFER
      *
      * @since 1.4
      */
     @Configuration
-    public static final int DEFAULT_BUFFER_SIZE = 16 * 1024;
+    public static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
     /**
-     * The read-ahead limit for mark operations.
-     * We try to allow as many bytes as contained in buffers of default size.
-     * For increasing the chances to meet that goal, this size should be the
-     * same than {@link BufferedInputStream} default buffer size.
+     * The read-ahead limit for mark operations before probing input streams.
+     * When the storage is an {@link InputStream} or a {@link Reader}, the {@link #getStorageAs(Class)} method
+     * marks the current position with this "read ahead limit" value for resetting the stream to its original
+     * position if the caller does not recognize the stream content.
+     * Implementations of the {@link DataStoreProvider#probeContent(StorageConnector)} method should avoid
+     * reading more bytes or characters from an {@code InputStream} or from a {@code Reader} than this value.
+     *
+     * <p>The read ahead limit is arbitrary and may change in any future Apache SIS version.
+     * However it is guaranteed to be smaller than or equal to {@link #DEFAULT_BUFFER_SIZE}.
+     * The current value is {@value}.</p>
+     *
+     * <div class="note"><b>Note for maintainer:</b>
+     * this value should not be greater than the {@link BufferedInputStream} default buffer size.</div>
+     *
+     * @see InputStream#mark(int)
+     * @see Reader#mark(int)
+     *
+     * @since 1.5
      */
-    static final int READ_AHEAD_LIMIT = 8 * 1024;
+    @Configuration
+    public static final int READ_AHEAD_LIMIT = 8 * 1024;
 
     /**
      * The minimal size of the {@link ByteBuffer} to be created. This size is used only
@@ -208,6 +225,7 @@ public class StorageConnector implements Serializable {
         add(DataInput.class,         StorageConnector::createDataInput);
         add(DataOutput.class,        StorageConnector::createDataOutput);
         add(ImageInputStream.class,  StorageConnector::createImageInputStream);
+        add(ImageOutputStream.class, StorageConnector::createImageOutputStream);
         add(InputStream.class,       StorageConnector::createInputStream);
         add(OutputStream.class,      StorageConnector::createOutputStream);
         add(Reader.class,            StorageConnector::createReader);
@@ -389,7 +407,6 @@ public class StorageConnector implements Serializable {
          * @param  cascade     bitwise combination of {@link #CASCADE_ON_CLOSE}, {@link #CASCADE_ON_RESET}
          *                     or {@link #CLEAR_ON_RESET}.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         Coupled(final Coupled wrapperFor, final byte cascade) {
             this.wrapperFor = wrapperFor;
             this.cascade    = cascade;
@@ -521,6 +538,8 @@ public class StorageConnector implements Serializable {
                  * which should cause the block below (with a call to `rewind()`) to be executed.
                  */
                 ((ChannelData) view).seek(0);
+            } else if (view instanceof ChannelImageOutputStream) {
+                ((ChannelImageOutputStream) view).output().seek(0);
             } else if (view instanceof Channel) {
                 /*
                  * Searches for a ChannelDataInput wrapping the channel, because it contains the original position
@@ -718,7 +737,6 @@ public class StorageConnector implements Serializable {
      *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link Path},
      *           {@link File}, {@link URL}, {@link URI} or {@link CharSequence} types,
      *           returns the string representation of their path.</li>
-     *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
@@ -727,7 +745,6 @@ public class StorageConnector implements Serializable {
      *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link Path},
      *           {@link File}, {@link URL}, {@link URI} or {@link CharSequence} types and
      *           that type can be converted to the requested type, returned the conversion result.</li>
-     *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
@@ -735,35 +752,29 @@ public class StorageConnector implements Serializable {
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object can be obtained as described in bullet 2 of the
      *           {@code DataInput} section below, then this method returns the associated byte buffer.</li>
-     *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link DataInput}:
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@code DataInput}
-     *           (including the {@link ImageInputStream} and {@link javax.imageio.stream.ImageOutputStream} types),
+     *           (including the {@link ImageInputStream} and {@link ImageOutputStream} types),
      *           then it is returned unchanged.</li>
-     *
      *       <li>Otherwise if the input is an instance of {@link ByteBuffer}, then an {@link ImageInputStream}
      *           backed by a read-only view of that buffer is created when first needed and returned.
      *           The properties (position, mark, limit) of the original buffer are unmodified.</li>
-     *
      *       <li>Otherwise if the input is an instance of {@link Path}, {@link File},
      *           {@link URI}, {@link URL}, {@link CharSequence}, {@link InputStream} or
-     *           {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
+     *           {@link ReadableByteChannel}, then an {@link ImageInputStream} backed by a
      *           {@link ByteBuffer} is created when first needed and returned.</li>
-     *
      *       <li>Otherwise if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
      *           then this value is cached and returned.</li>
-     *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link ImageInputStream}:
      *     <ul>
      *       <li>If the above {@code DataInput} can be created and casted to {@code ImageInputStream}, returns it.</li>
-     *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
@@ -771,10 +782,8 @@ public class StorageConnector implements Serializable {
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link InputStream},
      *           then it is returned unchanged.</li>
-     *
      *       <li>Otherwise if the above {@code ImageInputStream} can be created,
      *           returns a wrapper around that stream.</li>
-     *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
@@ -786,7 +795,31 @@ public class StorageConnector implements Serializable {
      *       <li>Otherwise if the above {@code InputStream} can be created, returns an {@link InputStreamReader}
      *           using the encoding specified by {@link OptionKey#ENCODING} if any, or using the system default
      *           encoding otherwise.</li>
-     *
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link DataOutput}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@code DataOutput}
+     *           (including the {@link ImageOutputStream} type), then it is returned unchanged.</li>
+     *       <li>Otherwise if the output is an instance of {@link Path}, {@link File},
+     *           {@link URI}, {@link URL}, {@link CharSequence}, {@link OutputStream} or
+     *           {@link WritableByteChannel}, then an {@link ImageInputStream} backed by a
+     *           {@link ByteBuffer} is created when first needed and returned.</li>
+     *       <li>Otherwise if {@link ImageIO#createImageOutputStream(Object)} returns a non-null value,
+     *           then this value is cached and returned.</li>
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link ImageOutputStream}:
+     *     <ul>
+     *       <li>If the above {@code DataOutput} can be created and casted to {@code ImageOutputStream}, returns it.</li>
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link OutputStream}:
+     *     <ul>
+     *       <li>If the above {@code DataOutput} can be created and casted to {@code OutputStream}, returns it.</li>
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
@@ -794,10 +827,8 @@ public class StorageConnector implements Serializable {
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link Connection},
      *           then it is returned unchanged.</li>
-     *
      *       <li>Otherwise if the storage is an instance of {@link DataSource}, then a connection is obtained
      *           when first needed and returned.</li>
-     *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
@@ -805,7 +836,6 @@ public class StorageConnector implements Serializable {
      *     <ul>
      *       <li>If the storage given at construction time is already an instance of the requested type,
      *           returns it <i>as-is</i>.</li>
-     *
      *       <li>Otherwise this method throws {@link IllegalArgumentException}.</li>
      *     </ul>
      *   </li>
@@ -1109,6 +1139,11 @@ public class StorageConnector implements Serializable {
         } else if (wasProbingAbsentFile()) {
             return null;                            // Do not cache, for allowing file creation later.
         } else {
+            /*
+             * This block is executed for storages of unknown type, when `ChannelFactory` has no branch for that type.
+             * The Image I/O plugin mechanism allows users to create streams from arbitrary objets, so we delegate to
+             * it in last resort.
+             */
             reset();
             try {
                 asDataInput = ImageIO.createImageInputStream(storage);
@@ -1118,14 +1153,9 @@ public class StorageConnector implements Serializable {
             addView(DataInput.class, asDataInput, null, (byte) (CASCADE_ON_RESET | CASCADE_ON_CLOSE));
             /*
              * Note: Java Image I/O wrappers for Input/OutputStream do NOT close the underlying streams.
-             * This is a complication for us. We could mitigate the problem by subclassing the standard
-             * FileCacheImageInputStream and related classes, but we don't do that for now because this
-             * code should never be executed for InputStream storage. Instead, getChannelDataInput(true)
-             * should have created a ChannelImageInputStream or ChannelDataInput.
-             *
-             * In Apache SIS, ImageInputStream is used only by WorldFileStore. That store has its own
-             * mechanism for closing the stream used by ImageInputStream. It gives an extra safety in
-             * case the above paragraph does not hold.
+             * This is a complication for us. However in Apache SIS, `ImageInputStream` is used only
+             * by WorldFileStore. That store has its own mechanism for closing the underlying stream.
+             * So the problem described above would hopefully not occur in practice.
              */
         }
         return asDataInput;
@@ -1478,9 +1508,14 @@ public class StorageConnector implements Serializable {
         final DataOutput asDataOutput;
         if (out != null) {
             asDataOutput = out;
-            c = getView(ChannelDataOutput.class);   // Refresh because may have been added by createChannelDataInput().
+            c = getView(ChannelDataOutput.class);   // Refresh because may have been added by createChannelDataOutput().
             views.put(DataOutput.class, c);         // Share the same `Coupled` instance.
         } else {
+            /*
+             * This block is executed for storages of unknown type, when `ChannelFactory` has no branch for that type.
+             * The Image I/O plugin mechanism allows users to create streams from arbitrary objets, so we delegate to
+             * it in last resort.
+             */
             reset();
             try {
                 asDataOutput = ImageIO.createImageOutputStream(storage);
@@ -1490,14 +1525,38 @@ public class StorageConnector implements Serializable {
             addView(DataOutput.class, asDataOutput, null, (byte) (CASCADE_ON_RESET | CASCADE_ON_CLOSE));
             /*
              * Note: Java Image I/O wrappers for Input/OutputStream do NOT close the underlying streams.
-             * This is a complication for us. We could mitigate the problem by subclassing the standard
-             * FileCacheImageOutputStream and related classes, but we don't do that for now. A possible
-             * future evolution would be to complete ChannelImageOutputStream implementation instead.
-             *
-             * In Apache SIS, ImageOutputStream is used only by WorldFileStore. That store has its own
-             * mechanism for closing the stream used by ImageOutputStream. So the problem described in
-             * above paragraph would hopefully not occur in practice.
+             * This is a complication for us. However in Apache SIS, `ImageOutputStream` is used only
+             * by WorldFileStore. That store has its own mechanism for closing the underlying stream.
+             * So the problem described above would hopefully not occur in practice.
              */
+        }
+        return asDataOutput;
+    }
+
+    /**
+     * Creates an {@link ImageOutputStream} from the {@link DataOutput} if possible. This method casts
+     * {@code DataOutput} if such cast is allowed, or upgrades {@link ChannelDataOutput} implementation.
+     *
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
+     *
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
+     */
+    private ImageOutputStream createImageOutputStream() throws IOException, DataStoreException {
+        final ImageOutputStream asDataOutput;
+        DataOutput output = getStorageAs(DataOutput.class);
+        if (output instanceof ImageOutputStream) {
+            asDataOutput = (ImageOutputStream) output;
+            Coupled c = views.get(DataOutput.class);
+            views.put(ImageOutputStream.class, c);          // Share the same `Coupled` instance.
+        } else {
+            final ChannelDataOutput c = getStorageAs(ChannelDataOutput.class);
+            if (c != null && c.channel instanceof ReadableByteChannel) {
+                asDataOutput = new ChannelImageOutputStream(c);
+            } else {
+                asDataOutput = null;                        // Remember that there is no view.
+            }
+            addView(ImageOutputStream.class, asDataOutput, ChannelDataOutput.class, (byte) 0);
         }
         return asDataOutput;
     }

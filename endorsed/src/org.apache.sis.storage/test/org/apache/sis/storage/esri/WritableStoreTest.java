@@ -33,11 +33,11 @@ import org.apache.sis.storage.ResourceAlreadyExistsException;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 

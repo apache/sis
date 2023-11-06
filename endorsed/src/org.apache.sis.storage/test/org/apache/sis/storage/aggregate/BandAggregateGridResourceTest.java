@@ -34,11 +34,11 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.base.MemoryGridResource;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 

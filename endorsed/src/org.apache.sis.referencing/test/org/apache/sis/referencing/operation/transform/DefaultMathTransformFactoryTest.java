@@ -35,19 +35,19 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.cs.HardCodedCS;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

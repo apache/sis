@@ -27,8 +27,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
-import org.apache.sis.referencing.datum.HardCodedDatum;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
@@ -36,6 +34,8 @@ import org.junit.Test;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
+import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

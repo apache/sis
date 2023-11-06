@@ -30,6 +30,10 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  *
  * The main exception is {@code CCITT}, which has different name in WCS query and response.
  *
+ * <p>This enumeration contains a relatively large number of compressions in order to put a name
+ * on the numerical codes that the reader may find. However the Apache SIS reader and writer do
+ * not support all those compressions. This enumeration is not put in public API for that reason.</p>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -121,7 +125,7 @@ public enum Compression {
     /**
      * The TIFF code for this compression.
      */
-    final int code;
+    public final int code;
 
     /**
      * Creates a new compression enumeration.
@@ -138,7 +142,7 @@ public enum Compression {
      */
     public static Compression valueOf(final int code) {
         switch (code) {
-            case 32946:                 // Fall through
+            case COMPRESSION_DEFLATE:   // Fall through
             case COMPRESSION_ZLIB:      return DEFLATE;
             case COMPRESSION_OLD_JPEG:  // "old-style" JPEG, later overriden in Technical Notes 2.
             case COMPRESSION_JPEG:      return JPEG;
@@ -164,6 +168,13 @@ public enum Compression {
      * @return whether the compression may use a native library.
      */
     public final boolean useNativeLibrary() {
+        return this == DEFLATE;
+    }
+
+    /**
+     * {@return whether the compression can be configured with different levels}.
+     */
+    public final boolean supportLevels() {
         return this == DEFLATE;
     }
 }

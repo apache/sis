@@ -27,11 +27,13 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.gui.map.StatusBar;
-import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.image.WritablePixelIterator;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+
+// Test dependencies
+import org.apache.sis.image.TiledImageMock;
 
 
 /**

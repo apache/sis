@@ -45,9 +45,9 @@ public abstract class FirstKeywordPeek {
 
     /**
      * The read-ahead limit when reading a text from a {@link Reader}.
-     * Should be no more than {@code StorageConnector.DEFAULT_BUFFER_SIZE / 2}.
+     * Should not be greater than {@code StorageConnector.READ_AHEAD_LIMIT / 2}.
      */
-    static final int READ_AHEAD_LIMIT = 2048;
+    static final int READ_AHEAD_LIMIT = StorageConnector.READ_AHEAD_LIMIT / 4;
 
     /**
      * The comment character to ignore.

@@ -916,4 +916,14 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
          * (see ChannelDataInput.yield(…) for code example). For now it is not needed.
          */
     }
+
+    /**
+     * Clears the buffer and set the position to 0.
+     * This method does not read or write any byte.
+     */
+    public final void clear() {
+        buffer.clear().limit(0);
+        bufferOffset = 0;
+        bitPosition  = 0;
+    }
 }

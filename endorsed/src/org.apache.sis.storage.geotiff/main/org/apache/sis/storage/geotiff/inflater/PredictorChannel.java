@@ -25,6 +25,8 @@ import org.apache.sis.pending.jdk.JDK17;
 
 /**
  * Implementation of a {@link Predictor} to be executed after decompression.
+ * A predictor is a mathematical operator that is applied to the image data
+ * before an encoding scheme is applied, in order to improve compression.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

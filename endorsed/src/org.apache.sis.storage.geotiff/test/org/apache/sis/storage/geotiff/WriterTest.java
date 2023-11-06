@@ -44,16 +44,15 @@ import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.DataType;
 
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
-
 // Test dependencies
-import org.apache.sis.referencing.operation.HardCodedConversions;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.image.TiledImageMock;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.image.TiledImageMock;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -126,7 +125,7 @@ public final class WriterTest extends TestCase {
      * @throws DataStoreException should never happen since we control the output class.
      */
     private void initialize(final DataType type, final ByteOrder order, final boolean banded, final int numBands,
-                            final int numTileX, final int numTileY, final GeoTiffOption... options)
+                            final int numTileX, final int numTileY, final FormatModifier... options)
             throws IOException, DataStoreException
     {
         final var random = TestUtilities.createRandomNumberGenerator();
@@ -146,7 +145,8 @@ public final class WriterTest extends TestCase {
         output = new ByteArrayChannel(new byte[image.getWidth() * image.getHeight() * numBands * type.bytes() + 800], false);
         var d = new ChannelDataOutput("TIFF", output, ByteBuffer.allocate(random.nextInt(128) + 20).order(order));
         var c = new StorageConnector(d);
-        c.setOption(GeoTiffOption.OPTION_KEY, options);
+        c.setOption(FormatModifier.OPTION_KEY, options);
+        c.setOption(Compression.OPTION_KEY, Compression.NONE);
         store = new GeoTiffStore(null, c);
         data  = output.toBuffer().order(order);
     }
@@ -185,8 +185,9 @@ public final class WriterTest extends TestCase {
         initialize(DataType.BYTE, ByteOrder.BIG_ENDIAN, false, 1, 1, 1);
         writeImage();
         verifyHeader(false, IOBase.BIG_ENDIAN);
-        verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
-                                 new short[] {Byte.SIZE});
+        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,              // One less tag because stripped layout.
+                                 PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
+                                 new short[] {Byte.SIZE}, false);
         verifySampleValues(1);
         store.close();
     }
@@ -199,11 +200,12 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testUntiledBigTIFF() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, GeoTiffOption.BIG_TIFF);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, FormatModifier.BIG_TIFF);
         writeImage();
         verifyHeader(true, IOBase.LITTLE_ENDIAN);
-        verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
-                                 new short[] {Byte.SIZE});
+        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.
+                                 PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
+                                 new short[] {Byte.SIZE}, false);
         verifySampleValues(1);
         store.close();
     }
@@ -220,8 +222,9 @@ public final class WriterTest extends TestCase {
         initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 3, 4);
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
-        verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
-                                 new short[] {Byte.SIZE});
+        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS,
+                                 PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
+                                 new short[] {Byte.SIZE}, true);
         verifySampleValues(1);
         store.close();
     }
@@ -238,8 +241,9 @@ public final class WriterTest extends TestCase {
         image.setColorModel(ColorModelFactory.createRGB(image.getSampleModel()));
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
-        verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS, PHOTOMETRIC_INTERPRETATION_RGB,
-                                 new short[] {Byte.SIZE, Byte.SIZE, Byte.SIZE});
+        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.
+                                 PHOTOMETRIC_INTERPRETATION_RGB,
+                                 new short[] {Byte.SIZE, Byte.SIZE, Byte.SIZE}, false);
         verifySampleValues(3);
         store.close();
     }
@@ -256,8 +260,8 @@ public final class WriterTest extends TestCase {
         createGridGeometry();
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
-        verifyImageFileDirectory(Writer.MINIMAL_NUMBER_OF_TAGS + 3,                     // GeoTIFF adds 3 tags.
-                PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, new short[] {Byte.SIZE});
+        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS + 3 - 1,              // 3 more for RGB, 1 less for strips.
+                PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, new short[] {Byte.SIZE}, false);
         verifySampleValues(1);
         store.close();
     }
@@ -272,17 +276,17 @@ public final class WriterTest extends TestCase {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ByteBuffer data = this.data;
         if (isBigTIFF) {
-            assertEquals(Set.of(GeoTiffOption.BIG_TIFF),  store.getOptions());
-            assertEquals(endianness,                      data.getShort());
-            assertEquals(Writer.BIG_TIFF,                 data.getShort());
-            assertEquals(Long.BYTES,                      data.getShort());     // Byte size of offsets.
-            assertEquals(0,                               data.getShort());     // Constant.
-            assertEquals(data.position() + Long.BYTES,    data.getLong());      // Offset of the first IFD.
+            assertEquals(Set.of(FormatModifier.BIG_TIFF),  store.getModifiers());
+            assertEquals(endianness,                       data.getShort());
+            assertEquals(Writer.BIG_TIFF,                  data.getShort());
+            assertEquals(Long.BYTES,                       data.getShort());     // Byte size of offsets.
+            assertEquals(0,                                data.getShort());     // Constant.
+            assertEquals(data.position() + Long.BYTES,     data.getLong());      // Offset of the first IFD.
         } else {
-            assertEquals(Set.of(),                        store.getOptions());
-            assertEquals(endianness,                      data.getShort());
-            assertEquals(Writer.CLASSIC,                  data.getShort());
-            assertEquals(data.position() + Integer.BYTES, data.getInt());       // Offset of the first IFD.
+            assertEquals(Set.of(),                         store.getModifiers());
+            assertEquals(endianness,                       data.getShort());
+            assertEquals(Writer.CLASSIC,                   data.getShort());
+            assertEquals(data.position() + Integer.BYTES,  data.getInt());       // Offset of the first IFD.
         }
     }
 
@@ -303,12 +307,12 @@ public final class WriterTest extends TestCase {
      * @param tagCount        expected number of tags.
      * @param interpretation  one of {@code PHOTOMETRIC_INTERPRETATION_} constants.
      * @param bitsPerSample   expected number of bits per sample. The array length is the number of bands.
+     * @param isTiled         whether the image uses tiles instead of strips.
      */
-    private void verifyImageFileDirectory(int tagCount, final int interpretation, final short[] bitsPerSample) {
+    private void verifyImageFileDirectory(int tagCount, final int interpretation, final short[] bitsPerSample, final boolean isTiled) {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ByteBuffer data     = this.data;
-        final boolean isTiled     = true;
-        final boolean isBigTIFF   = store.getOptions().contains(GeoTiffOption.BIG_TIFF);
+        final boolean isBigTIFF   = store.getModifiers().contains(FormatModifier.BIG_TIFF);
         final boolean isBigEndian = ByteOrder.BIG_ENDIAN.equals(data.order());
         assertEquals(tagCount, isBigTIFF ? data.getLong() : data.getShort());
         /*
@@ -349,9 +353,13 @@ public final class WriterTest extends TestCase {
                 case TAG_SAMPLES_PER_PIXEL:          expected = (short) bitsPerSample.length; break;
                 case TAG_RESOLUTION_UNIT:            expected = (short) RESOLUTION_UNIT_NONE; break;
                 case TAG_TILE_WIDTH:                 expected = TILE_WIDTH;                   break;
-                case TAG_TILE_LENGTH:                expected = TILE_HEIGHT;                  break;
+                case TAG_TILE_LENGTH:
+                case TAG_ROWS_PER_STRIP:             expected = TILE_HEIGHT;                  break;
+                case TAG_STRIP_BYTE_COUNTS:
                 case TAG_TILE_BYTE_COUNTS:           expected = expectedTileByteCounts();     break;
+                case TAG_STRIP_OFFSETS:
                 case TAG_TILE_OFFSETS: {
+                    assertNull(tileOffsets);
                     tileOffsets = getIntegers(value, count, isBigTIFF ? Writer.TIFF_ULONG : TIFFTag.TIFF_LONG);
                     continue;
                 }

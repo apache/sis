@@ -127,6 +127,7 @@ module org.apache.sis.util {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
+            org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.cql,                         // In the "incubator" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.cloud.aws,

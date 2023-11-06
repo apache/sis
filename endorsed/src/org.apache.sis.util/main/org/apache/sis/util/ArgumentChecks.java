@@ -652,11 +652,11 @@ public final class ArgumentChecks extends Static {
      * This method performs the same check than {@link #ensureBetween(String, int, int, int)
      * ensureBetween(…)}, but the error message is different in case of failure.
      *
-     * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  named  whether to use {@code name} as the name of a collection or array argument.
-     * @param  min    the minimal size (inclusive), or 0 if none.
-     * @param  max    the maximal size (inclusive), or {@link Integer#MAX_VALUE} if none.
-     * @param  count  the number of user-specified arguments, collection size or array length to be checked.
+     * @param  name       the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  collection {@code true} if {@code name} is a collection, or {@code false} for a variable argument list.
+     * @param  min        the minimal size (inclusive), or 0 if none.
+     * @param  max        the maximal size (inclusive), or {@link Integer#MAX_VALUE} if none.
+     * @param  count      the number of user-specified arguments, collection size or array length to be checked.
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
      * @see #ensureBetween(String, int, int, int)
@@ -664,20 +664,20 @@ public final class ArgumentChecks extends Static {
      *
      * @since 1.4
      */
-    public static void ensureCountBetween(final String name, final boolean named, final int min, final int max, final int count)
-            throws IllegalArgumentException
+    public static void ensureCountBetween(final String name, final boolean collection,
+            final int min, final int max, final int count) throws IllegalArgumentException
     {
         final String message;
         if (count < min) {
             if (count == 0) {
                 message = Errors.format(Errors.Keys.EmptyArgument_1, name);
             } else {
-                message = named ? Errors.format(Errors.Keys.TooFewCollectionElements_3, name, min, count)
-                                : Errors.format(Errors.Keys.TooFewArguments_2, min, count);
+                message = collection ? Errors.format(Errors.Keys.TooFewCollectionElements_3, name, min, count)
+                                     : Errors.format(Errors.Keys.TooFewArguments_2, min, count);
             }
         } else if (count > max) {
-            message = named ? Errors.format(Errors.Keys.TooManyCollectionElements_3, name, max, count)
-                            : Errors.format(Errors.Keys.TooManyArguments_2, max, count);
+            message = collection ? Errors.format(Errors.Keys.TooManyCollectionElements_3, name, max, count)
+                                 : Errors.format(Errors.Keys.TooManyArguments_2, max, count);
         } else {
             return;
         }

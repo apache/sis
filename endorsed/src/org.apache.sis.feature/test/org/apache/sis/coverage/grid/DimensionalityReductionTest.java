@@ -26,13 +26,13 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 

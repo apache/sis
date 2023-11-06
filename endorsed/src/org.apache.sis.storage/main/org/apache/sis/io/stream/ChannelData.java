@@ -504,6 +504,10 @@ public abstract class ChannelData implements Markable {
      * @throws IOException if the implementation chooses to stop the process.
      */
     protected void onEmptyTransfer() throws IOException {
+        if (buffer.capacity() == 0) {
+            // For avoiding never-ending loop.
+            throw new IOException(Errors.format(Errors.Keys.Uninitialized_1, "buffer"));
+        }
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {
