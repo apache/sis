@@ -241,7 +241,7 @@ final class Store extends URIDataStore implements FeatureSet {
         Foliation       foliation   = null;
         try {
             final List<String> elements = new ArrayList<>();
-            source.mark(RewindableLineReader.BUFFER_SIZE);
+            source.mark(StorageConnector.READ_AHEAD_LIMIT);
             String line;
             while ((line = source.readLine()) != null) {
                 line = line.trim();
@@ -287,7 +287,7 @@ final class Store extends URIDataStore implements FeatureSet {
                     }
                 }
                 elements.clear();
-                source.mark(RewindableLineReader.BUFFER_SIZE);
+                source.mark(StorageConnector.READ_AHEAD_LIMIT);
             }
             source.reset();                 // Restore position to the first line after the header.
         } catch (IOException e) {
@@ -328,7 +328,7 @@ final class Store extends URIDataStore implements FeatureSet {
                     final char c = line.charAt(0);
                     if (c != COMMENT && c != METADATA) break;
                 }
-                source.mark(RewindableLineReader.BUFFER_SIZE);
+                source.mark(StorageConnector.READ_AHEAD_LIMIT);
             }
             source.reset();         // Restore position to the first line after the header.
         }

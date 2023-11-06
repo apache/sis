@@ -32,6 +32,14 @@ import org.apache.sis.io.stream.ChannelDataOutput;
  */
 abstract class CompressionChannel extends PixelChannel {
     /**
+     * Size of the buffer where to temporarily copy data to compress. The buffer should be
+     * large enough for allowing compression algorithms and predictors to work comfortably
+     * (potentially modifying the buffer content in-place). But a too large value may also
+     * be counter-productive, maybe because it causes more frequent CPU cache invalidation.
+     */
+    private static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE / 2;
+
+    /**
      * The destination where to write compressed data.
      */
     protected final ChannelDataOutput output;
@@ -62,7 +70,7 @@ abstract class CompressionChannel extends PixelChannel {
          * estimation because the length will usually be limited by the maximal value below anyway.
          * Those minimal and maximal capacity values are arbitrary.
          */
-        return Math.max((int) Math.min(length, StorageConnector.DEFAULT_BUFFER_SIZE / 2), 1024);
+        return Math.max((int) Math.min(length, BUFFER_SIZE), 1024);
     }
 
     /**

@@ -60,8 +60,11 @@ import static org.apache.sis.storage.base.StoreUtilities.LOGGER;
 public abstract class FileCacheByteChannel extends ByteRangeChannel {
     /**
      * Size of the transfer buffer, in number of bytes.
+     * This value does not need to be as large as {@link StorageConnector#DEFAULT_BUFFER_SIZE}
+     * because the buffer will be used only for transferring data, with no computation done on
+     * the content.
      */
-    private static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE;
+    private static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE / 4;
 
     /**
      * Threshold for implementing a change of position by closing current connection and opening a new one.

@@ -120,24 +120,40 @@ public class StorageConnector implements Serializable {
      * The default size (in bytes) of {@link ByteBuffer}s created by storage connectors.
      * Those buffers are typically created when the specified storage object is a
      * {@link File}, {@link Path}, {@link URL} or {@link URI}.
-     * The default buffer size is arbitrary and may change in any future Apache SIS version.
      *
-     * <p>Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.</p>
+     * <p>The default buffer size is arbitrary and may change in any future Apache SIS version.
+     * The current value is {@value}. Users can override this value by providing a pre-allocated
+     * buffer with {@link OptionKey#BYTE_BUFFER}.</p>
      *
      * @see OptionKey#BYTE_BUFFER
      *
      * @since 1.4
      */
     @Configuration
-    public static final int DEFAULT_BUFFER_SIZE = 16 * 1024;
+    public static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
     /**
-     * The read-ahead limit for mark operations.
-     * We try to allow as many bytes as contained in buffers of default size.
-     * For increasing the chances to meet that goal, this size should be the
-     * same than {@link BufferedInputStream} default buffer size.
+     * The read-ahead limit for mark operations before probing input streams.
+     * When the storage is an {@link InputStream} or a {@link Reader}, the {@link #getStorageAs(Class)} method
+     * marks the current position with this "read ahead limit" value for resetting the stream to its original
+     * position if the caller does not recognize the stream content.
+     * Implementations of the {@link DataStoreProvider#probeContent(StorageConnector)} method should avoid
+     * reading more bytes or characters from an {@code InputStream} or from a {@code Reader} than this value.
+     *
+     * <p>The read ahead limit is arbitrary and may change in any future Apache SIS version.
+     * However it is guaranteed to be smaller than or equal to {@link #DEFAULT_BUFFER_SIZE}.
+     * The current value is {@value}.</p>
+     *
+     * <div class="note"><b>Note for maintainer:</b>
+     * this value should not be greater than the {@link BufferedInputStream} default buffer size.</div>
+     *
+     * @see InputStream#mark(int)
+     * @see Reader#mark(int)
+     *
+     * @since 1.5
      */
-    static final int READ_AHEAD_LIMIT = 8 * 1024;
+    @Configuration
+    public static final int READ_AHEAD_LIMIT = 8 * 1024;
 
     /**
      * The minimal size of the {@link ByteBuffer} to be created. This size is used only
