@@ -18,28 +18,28 @@ package org.apache.sis.storage.shapefile;
 
 import java.net.URI;
 import java.nio.file.Path;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
-import static org.apache.sis.storage.DataStoreProvider.LOCATION;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
+
 
 /**
  * Shapefile format datastore provider.
- * 
+ *
  * @author Johann Sorel (Geomatys)
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
  */
 public final class ShapefileProvider extends DataStoreProvider {
 
     public static final String NAME = "Shapefile";
-    
+
     public static final String MIME_TYPE = "application/x-shapefile";
-    
+
     /**
      * URI to the shp file.
      */
@@ -47,14 +47,14 @@ public final class ShapefileProvider extends DataStoreProvider {
             .addName(LOCATION)
             .setRequired(true)
             .create(URI.class, null);
-    
+
     public static final ParameterDescriptorGroup PARAMETERS_DESCRIPTOR =
             new ParameterBuilder().addName(NAME).addName("ShapefileParameters").createGroup(
                 PATH);
-    
-    public ShapefileProvider() {        
+
+    public ShapefileProvider() {
     }
-    
+
     @Override
     public String getShortName() {
         return NAME;
@@ -79,5 +79,4 @@ public final class ShapefileProvider extends DataStoreProvider {
         final Path path = connector.getStorageAs(Path.class);
         return new ShapefileStore(path);
     }
-    
 }

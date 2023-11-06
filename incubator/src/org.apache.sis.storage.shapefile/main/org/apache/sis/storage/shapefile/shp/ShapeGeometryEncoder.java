@@ -29,6 +29,7 @@ import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.algorithm.RayCrossingCounter;
 
+
 /**
  * Encoders and decoders for shape types.
  * This class should be kept separate because I might be used in ESRI geodatabase format.
@@ -92,7 +93,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
     public int getShapeType() {
         return shapeType;
     }
-    
+
     /**
      * @return geometry class handled by this encoder
      */
@@ -673,5 +674,4 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
-
 }

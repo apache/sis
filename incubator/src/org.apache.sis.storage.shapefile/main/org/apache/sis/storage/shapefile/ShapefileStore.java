@@ -36,6 +36,12 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -62,18 +68,15 @@ import org.apache.sis.storage.shapefile.shp.ShapeHeader;
 import org.apache.sis.storage.shapefile.shp.ShapeReader;
 import org.apache.sis.storage.shapefile.shp.ShapeRecord;
 import org.apache.sis.util.collection.BackingStoreException;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+
 
 /**
  * Shapefile datastore.
- * 
+ *
  * @author Johann Sorel (Geomatys)
  */
 public final class ShapefileStore extends DataStore implements FeatureSet {
@@ -85,10 +88,10 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
     /**
      * Internal class to inherit AbstractFeatureSet.
      */
-    private final AsFeatureSet featureSetView = new AsFeatureSet();    
+    private final AsFeatureSet featureSetView = new AsFeatureSet();
     private FeatureType type;
     private Charset charset;
-    
+
     /**
      * Lock to control read and write operations.
      */

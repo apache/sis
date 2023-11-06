@@ -22,6 +22,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import java.io.EOFException;
 import java.io.IOException;
 
+
 /**
  * Seekable shx index file reader.
  *

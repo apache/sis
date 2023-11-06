@@ -24,13 +24,14 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.shapefile.shp.ShapeIOTest;
 import org.junit.Test;
 import org.locationtech.jts.geom.Point;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
+
 
 /**
  *
@@ -50,12 +51,12 @@ public class ShapefileStoreTest {
         assertNotNull(type.getProperty("sis:identifier"));
         assertNotNull(type.getProperty("sis:envelope"));
         assertNotNull(type.getProperty("sis:geometry"));
-        final AttributeType geomProp = (AttributeType) type.getProperty("geometry");
-        final AttributeType idProp = (AttributeType) type.getProperty("id");
-        final AttributeType textProp = (AttributeType) type.getProperty("text");
-        final AttributeType integerProp = (AttributeType) type.getProperty("integer");
-        final AttributeType floatProp = (AttributeType) type.getProperty("float");
-        final AttributeType dateProp = (AttributeType) type.getProperty("date");
+        final var geomProp    = (AttributeType) type.getProperty("geometry");
+        final var idProp      = (AttributeType) type.getProperty("id");
+        final var textProp    = (AttributeType) type.getProperty("text");
+        final var integerProp = (AttributeType) type.getProperty("integer");
+        final var floatProp   = (AttributeType) type.getProperty("float");
+        final var dateProp    = (AttributeType) type.getProperty("date");
         assertEquals(Point.class, geomProp.getValueClass());
         assertEquals(Long.class, idProp.getValueClass());
         assertEquals(String.class, textProp.getValueClass());
@@ -83,10 +84,7 @@ public class ShapefileStoreTest {
             assertEquals(LocalDate.of(2023, 10, 28), feature2.getPropertyValue("date"));
             Point pt2 = (Point) feature2.getPropertyValue("geometry");
 
-            
             assertFalse(iterator.hasNext());
         }
-
     }
-
 }
