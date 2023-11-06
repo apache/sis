@@ -19,7 +19,6 @@ package org.apache.sis.feature.internal;
 import java.util.Map;
 import com.esri.core.geometry.Point;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FeatureOperations;
@@ -28,6 +27,7 @@ import org.apache.sis.util.iso.Names;
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 

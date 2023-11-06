@@ -235,6 +235,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Commands = 31;
 
         /**
+         * Compression
+         */
+        public static final short Compression = 273;
+
+        /**
          * Configuration
          */
         public static final short Configuration = 246;

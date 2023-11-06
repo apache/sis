@@ -25,7 +25,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.measure.Range;
@@ -34,6 +33,7 @@ import org.apache.sis.measure.Range;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

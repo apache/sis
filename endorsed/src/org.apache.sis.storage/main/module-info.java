@@ -65,6 +65,7 @@ module org.apache.sis.storage {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
+            org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.cloud.aws,
             org.apache.sis.gui;                         // In the "optional" sub-project.
 

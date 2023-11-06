@@ -26,7 +26,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 
@@ -36,6 +35,7 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.referencing.cs.HardCodedCS;
 
 import static org.junit.Assert.*;
 

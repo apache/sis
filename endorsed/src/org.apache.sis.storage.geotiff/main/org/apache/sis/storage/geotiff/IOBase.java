@@ -59,11 +59,11 @@ abstract class IOBase implements Closeable {
     }
 
     /**
-     * {@return the options (BigTIFF, COG…) used by this reader or writer}.
+     * {@return the modifiers (BigTIFF, COG…) used by this reader or writer}.
      *
-     * @see GeoTiffStore#getOptions()
+     * @see GeoTiffStore#getModifiers()
      */
-    public abstract Set<GeoTiffOption> getOptions();
+    public abstract Set<FormatModifier> getModifiers();
 
     /**
      * {@return the resources to use for formatting error messages}.

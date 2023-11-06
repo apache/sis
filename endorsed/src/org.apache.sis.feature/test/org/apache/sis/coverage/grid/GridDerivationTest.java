@@ -35,8 +35,6 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -44,9 +42,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertBetween;

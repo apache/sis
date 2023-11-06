@@ -30,11 +30,11 @@ import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;

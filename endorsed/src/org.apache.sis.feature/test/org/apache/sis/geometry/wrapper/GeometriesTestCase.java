@@ -24,13 +24,13 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.math.Vector;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static java.lang.Double.NaN;
 import static org.junit.Assert.*;

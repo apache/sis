@@ -24,10 +24,10 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
-import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
 /**

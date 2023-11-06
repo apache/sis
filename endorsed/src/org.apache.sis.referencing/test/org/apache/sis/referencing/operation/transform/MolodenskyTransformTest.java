@@ -28,13 +28,13 @@ import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.referencing.datum.HardCodedDatum;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;

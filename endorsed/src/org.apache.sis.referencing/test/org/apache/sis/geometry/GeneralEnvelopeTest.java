@@ -22,13 +22,13 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Range;
 import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static java.lang.Double.NaN;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;

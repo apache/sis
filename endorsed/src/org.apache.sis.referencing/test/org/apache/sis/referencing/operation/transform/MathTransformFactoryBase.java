@@ -28,6 +28,8 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+
+// Test dependencies
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 

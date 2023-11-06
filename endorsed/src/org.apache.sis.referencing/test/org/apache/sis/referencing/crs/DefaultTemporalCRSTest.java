@@ -21,12 +21,12 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
-import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.cs.HardCodedCS;
 
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;

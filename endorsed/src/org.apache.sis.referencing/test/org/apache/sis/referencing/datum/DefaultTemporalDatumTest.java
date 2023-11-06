@@ -23,11 +23,11 @@ import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.xml.test.TestCase;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 import static org.junit.Assert.*;

@@ -32,7 +32,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.j2d.ShapeUtilitiesExt;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.math.StatisticsFormat;
@@ -46,6 +45,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.widget.VisualCheck;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 import static java.lang.StrictMath.*;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;

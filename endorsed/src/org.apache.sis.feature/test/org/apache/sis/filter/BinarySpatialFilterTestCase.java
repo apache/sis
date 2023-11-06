@@ -31,12 +31,12 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.operation.HardCodedConversions;
 
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

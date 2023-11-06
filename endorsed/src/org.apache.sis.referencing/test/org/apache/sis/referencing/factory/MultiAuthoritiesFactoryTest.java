@@ -36,9 +36,6 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.util.FactoryException;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.referencing.cs.HardCodedCS;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -49,6 +46,9 @@ import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;

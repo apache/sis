@@ -229,25 +229,20 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             final ByteBuffer source = input.buffer;
-            for (int i = chunksPerRow; --i > 0;) {      // (chunksPerRow - 1) iterations.
-                int n = elementsPerChunk;
-                input.ensureBufferContains(n);
-                do bank.put(source.get());              // Number of iterations should be low (often 1).
-                while (--n != 0);
-                if (skipAfterChunks != null) {
+            for (int i = chunksPerRow; --i >= 0;) {
+                input.ensureBufferContains(elementsPerChunk);
+                final int limit = source.limit();
+                source.limit(source.position() + elementsPerChunk);
+                bank.put(source);
+                source.limit(limit);
+                /*
+                 * It is important to not skip `skipAfterChunks` sample values on the last iteration.
+                 * OTherwise EOF could be thrown if the last pixel is in the last* column of the tile.
+                 */
+                if (i != 0 && skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            /*
-             * Read the last chunk that was not read in above `for` loop, but without skipping `skipAfterChunks`
-             * sample values after. This is necessary for avoiding EOF if the last pixel to read is in the last
-             * column of the tile. The `elementsPerChunk` value here may be large if `chunksPerRow` is 1.
-             */
-            input.ensureBufferContains(elementsPerChunk);
-            final int limit = source.limit();
-            source.limit(source.position() + elementsPerChunk);
-            bank.put(source);
-            source.limit(limit);
         }
     }
 
@@ -275,19 +270,15 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             final ByteBuffer source = input.buffer;
-            for (int i = chunksPerRow; --i > 0;) {
-                int n = elementsPerChunk;
-                input.ensureBufferContains(n * Short.BYTES);
-                do bank.put(source.getShort());
-                while (--n != 0);
-                if (skipAfterChunks != null) {
+            final int n = elementsPerChunk * Short.BYTES;
+            for (int i = chunksPerRow; --i >= 0;) {
+                input.ensureBufferContains(n);
+                bank.put(source.asShortBuffer().limit(elementsPerChunk));
+                source.position(source.position() + n);
+                if (i != 0 && skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            final int n = elementsPerChunk * Short.BYTES;
-            input.ensureBufferContains(n);
-            bank.put(source.asShortBuffer().limit(elementsPerChunk));
-            source.position(source.position() + n);
         }
     }
 
@@ -315,19 +306,15 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             final ByteBuffer source = input.buffer;
-            for (int i = chunksPerRow; --i > 0;) {
-                int n = elementsPerChunk;
-                input.ensureBufferContains(n * Integer.BYTES);
-                do bank.put(source.getInt());
-                while (--n != 0);
-                if (skipAfterChunks != null) {
+            final int n = elementsPerChunk * Integer.BYTES;
+            for (int i = chunksPerRow; --i >= 0;) {
+                input.ensureBufferContains(n);
+                bank.put(source.asIntBuffer().limit(elementsPerChunk));
+                source.position(source.position() + n);
+                if (i != 0 && skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            final int n = elementsPerChunk * Integer.BYTES;
-            input.ensureBufferContains(n);
-            bank.put(source.asIntBuffer().limit(elementsPerChunk));
-            source.position(source.position() + n);
         }
     }
 
@@ -355,19 +342,15 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             final ByteBuffer source = input.buffer;
-            for (int i = chunksPerRow; --i > 0;) {
-                int n = elementsPerChunk;
-                input.ensureBufferContains(n * Float.BYTES);
-                do bank.put(source.getFloat());
-                while (--n != 0);
-                if (skipAfterChunks != null) {
+            final int n = elementsPerChunk * Float.BYTES;
+            for (int i = chunksPerRow; --i >= 0;) {
+                input.ensureBufferContains(n);
+                bank.put(source.asFloatBuffer().limit(elementsPerChunk));
+                source.position(source.position() + n);
+                if (i != 0 && skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            final int n = elementsPerChunk * Float.BYTES;
-            input.ensureBufferContains(n);
-            bank.put(source.asFloatBuffer().limit(elementsPerChunk));
-            source.position(source.position() + n);
         }
     }
 
@@ -395,19 +378,15 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             final ByteBuffer source = input.buffer;
-            for (int i = chunksPerRow; --i > 0;) {
-                int n = elementsPerChunk;
-                input.ensureBufferContains(n * Double.BYTES);
-                do bank.put(source.getDouble());
-                while (--n != 0);
-                if (skipAfterChunks != null) {
+            final int n = elementsPerChunk * Double.BYTES;
+            for (int i = chunksPerRow; --i >= 0;) {
+                input.ensureBufferContains(n);
+                bank.put(source.asDoubleBuffer().limit(elementsPerChunk));
+                source.position(source.position() + n);
+                if (i != 0 && skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            final int n = elementsPerChunk * Double.BYTES;
-            input.ensureBufferContains(n);
-            bank.put(source.asDoubleBuffer().limit(elementsPerChunk));
-            source.position(source.position() + n);
         }
     }
 }

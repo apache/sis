@@ -26,7 +26,6 @@ import org.opengis.referencing.operation.Projection;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.util.GeodeticObjectBuilder;
 import org.apache.sis.util.ComparisonMode;
@@ -45,6 +44,7 @@ import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
+import org.apache.sis.referencing.cs.HardCodedCS;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;

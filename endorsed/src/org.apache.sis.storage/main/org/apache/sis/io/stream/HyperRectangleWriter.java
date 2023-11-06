@@ -17,7 +17,9 @@
 package org.apache.sis.io.stream;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.awt.Rectangle;
+import java.awt.image.Raster;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.ComponentSampleModel;
@@ -91,87 +93,263 @@ public final class HyperRectangleWriter {
     }
 
     /**
-     * Creates a new writer for raster data described by the given sample model and strides.
-     * If the given {@code region} is non-null, it specifies a subset of the data to write.
-     */
-    private static HyperRectangleWriter of(final SampleModel sm, final Rectangle region,
-            final int subX, final int pixelStride, final int scanlineStride)
-    {
-        final int[]  subsampling = {subX, 1};
-        final long[] sourceSize  = {scanlineStride, sm.getHeight()};
-        final long[] regionLower = new long[2];
-        final long[] regionUpper = new long[2];
-        if (region != null) {
-            regionUpper[0] = (regionLower[0] = region.x) + region.width;
-            regionUpper[1] = (regionLower[1] = region.y) + region.height;
-        } else {
-            regionUpper[0] = sm.getWidth();
-            regionUpper[1] = sm.getHeight();
-        }
-        regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
-        regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
-        return new HyperRectangleWriter(new Region(sourceSize, regionLower, regionUpper, subsampling));
-    }
-
-    /**
-     * Creates a new writer for raster data described by the given sample model.
-     * This method supports only the writing of either a single band, or all bands
-     * in the order they appear in the array.
+     * A builder for {@code HyperRectangleWriter} created from a {@code Raster} or a {@code SampleModel}.
+     * Each builder shall be used only once. For creating more {@code HyperRectangleWriter} instances,
+     * new builders shall be created.
      *
-     * @param  sm      the sample model of the rasters to write.
-     * @param  region  subset to write, or {@code null} if none.
-     * @return writer, or {@code null} if the given sample model is not supported.
+     * @author  Martin Desruisseaux (Geomatys)
      */
-    public static HyperRectangleWriter of(final ComponentSampleModel sm, final Rectangle region) {
-        final int pixelStride = sm.getPixelStride();
-        final int[] d = sm.getBandOffsets();
-        final int subX;
-        if (d.length == pixelStride && ArraysExt.isRange(0, d)) {
-            subX = 1;
-        } else if (d.length == 1) {
-            subX = pixelStride;
-        } else {
+    public static final class Builder {
+        /**
+         * Number of elements (not necessarily bytes) contained in this hyper-rectangle.
+         * The number of bytes to write will be this length multiplied by element size.
+         *
+         * @see #length()
+         */
+        private long length;
+
+        /**
+         * Number of elements (not necessarily bytes) between a pixel and the next pixel.
+         *
+         * @see #pixelStride()
+         */
+        private int pixelStride;
+
+        /**
+         * Number of elements (not necessarily bytes) between a row and the next row.
+         *
+         * @see #scanlineStride()
+         */
+        private int scanlineStride;
+
+        /**
+         * The indices of all banks to write with {@code HyperRectangleWriter}.
+         * A length greater than one means that the {@link HyperRectangleWriter} instance
+         * created by this builder will need to be invoked repetitively for each bank.
+         *
+         * @see bankIndices()
+         */
+        private int[] bankIndices;
+
+        /**
+         * Subregion to write, or {@code null} for writing the whole raster.
+         *
+         * @see #region(Rectangle)
+         */
+        private Rectangle region;
+
+        /**
+         * The translation from the coordinate system of the {@link SampleModel} to that of the {@link Raster}.
+         * To convert a pixel's coordinate from the {@link Raster} coordinate system to the {@link SampleModel}
+         * coordinate system, this value must be subtracted.
+         *
+         * @see Raster#getSampleModelTranslateX()
+         * @see Raster#getSampleModelTranslateY()
+         */
+        private int sampleModelTranslateX, sampleModelTranslateY;
+
+        /**
+         * Creates a new builder.
+         */
+        public Builder() {
+        }
+
+        /**
+         * Specifies the region to write.
+         * The rectangle is in the coordinate system of the object specified to the {@code create(…)} method:
+         * {@link Raster} coordinates if the {@link #create(Raster)} method is invoked, or
+         * {@link SampleModel} coordinates if the {@link #create(SampleModel)} method is invoked.
+         * This method retains the given rectangle by reference, it is not copied.
+         *
+         * @param  aoi  the region to write, or {@code null} for writing the whole raster.
+         * @return {@code this} for chained call.
+         */
+        public Builder region(final Rectangle aoi) {
+            region = aoi;
+            return this;
+        }
+
+        /**
+         * Creates a new writer for raster data described by the given sample model and strides.
+         * If the {@link #region} is non-null, it specifies a subset of the data to write.
+         */
+        private HyperRectangleWriter create(final SampleModel sm, final int subX) {
+            final int[]  subsampling = {subX, 1};
+            final long[] sourceSize  = {scanlineStride, sm.getHeight()};
+            if (region == null) {
+                region = new Rectangle(sm.getWidth(), sm.getHeight());
+            }
+            final long[] regionLower = new long[] {
+                region.x - (long) sampleModelTranslateX,
+                region.y - (long) sampleModelTranslateY
+            };
+            final long[] regionUpper = new long[] {
+                regionLower[0] + region.width,
+                regionLower[1] + region.height
+            };
+            regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
+            regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
+            var subset = new Region(sourceSize, regionLower, regionUpper, subsampling);
+            length = subset.length;
+            return new HyperRectangleWriter(subset);
+        }
+
+        /**
+         * Creates a new writer for raster data described by the given sample model.
+         * This method supports only the writing of either a single band, or all bands
+         * in the order they appear in the array.
+         *
+         * <p>The returned writer will need to be applied repetitively for each bank
+         * if {@link #bankIndices()} returns an array with a length greater than one.</p>
+         *
+         * @param  sm  the sample model of the rasters to write.
+         * @return writer, or {@code null} if the given sample model is not supported.
+         */
+        public HyperRectangleWriter create(final ComponentSampleModel sm) {
+            pixelStride    = sm.getPixelStride();
+            scanlineStride = sm.getScanlineStride();
+            bankIndices    = sm.getBankIndices();
+            final int[] d  = sm.getBandOffsets();
+            final int subX;
+            if (ArraysExt.allEquals(bankIndices, bankIndices[0])) {
+                /*
+                 * PixelInterleavedSampleModel (at least conceptually, no matter the actual type).
+                 * The returned `HyperRectangleWriter` instance will write all sample values in a
+                 * single call to a `write(…)` method, no matter the actual number of bands.
+                 */
+                bankIndices = ArraysExt.resize(bankIndices, 1);
+                if (d.length == pixelStride && ArraysExt.isRange(0, d)) {
+                    subX = 1;
+                } else if (d.length == 1) {
+                    subX = pixelStride;
+                } else {
+                    return null;
+                }
+            } else {
+                /*
+                 * BandedSampleModel (at least conceptually, no matter the actual type).
+                 * The returned `HyperRectangleWriter` instance will need to be used
+                 * repetitively by the caller.
+                 */
+                if (ArraysExt.allEquals(d, 0)) {
+                    subX = 1;
+                } else {
+                    return null;
+                }
+            }
+            return create(sm, subX);
+        }
+
+        /**
+         * Creates a new writer for raster data described by the given sample model.
+         * This method supports only the writing of a single band using all bits.
+         *
+         * @param  sm  the sample model of the rasters to write.
+         * @return writer, or {@code null} if the given sample model is not supported.
+         */
+        public HyperRectangleWriter create(final SinglePixelPackedSampleModel sm) {
+            bankIndices    = new int[1];   // Length is NOT the number of bands.
+            pixelStride    = 1;
+            scanlineStride = sm.getScanlineStride();
+            final int[] d  = sm.getBitMasks();
+            if (d.length == 1) {
+                final long mask = (1L << DataBuffer.getDataTypeSize(sm.getDataType())) - 1;
+                if ((d[0] & mask) == mask) {
+                    return create(sm, 1);
+                }
+            }
             return null;
         }
-        return of(sm, region, subX, pixelStride, sm.getScanlineStride());
-    }
 
-    /**
-     * Creates a new writer for raster data described by the given sample model.
-     * This method supports only the writing of a single band using all bits.
-     *
-     * @param  sm      the sample model of the rasters to write.
-     * @param  region  subset to write, or {@code null} if none.
-     * @return writer, or {@code null} if the given sample model is not supported.
-     */
-    public static HyperRectangleWriter of(final SinglePixelPackedSampleModel sm, final Rectangle region) {
-        final int[] d = sm.getBitMasks();
-        if (d.length == 1) {
-            final long mask = (1L << DataBuffer.getDataTypeSize(sm.getDataType())) - 1;
-            if ((d[0] & mask) == mask) {
-                return of(sm, region, 1, 1, sm.getScanlineStride());
+        /**
+         * Creates a new writer for raster data described by the given sample model.
+         * This method supports only the writing of a single band using all bits.
+         *
+         * @param  sm  the sample model of the rasters to write.
+         * @return writer, or {@code null} if the given sample model is not supported.
+         */
+        public HyperRectangleWriter create(final MultiPixelPackedSampleModel sm) {
+            bankIndices    = new int[1];   // Length is NOT the number of bands.
+            pixelStride    = 1;
+            scanlineStride = sm.getScanlineStride();
+            final int[] d  = sm.getSampleSize();
+            if (d.length == 1) {
+                final int size = DataBuffer.getDataTypeSize(sm.getDataType());
+                if (d[0] == size && sm.getPixelBitStride() == size) {
+                    return create(sm, 1);
+                }
             }
+            return null;
         }
-        return null;
-    }
 
-    /**
-     * Creates a new writer for raster data described by the given sample model.
-     * This method supports only the writing of a single band using all bits.
-     *
-     * @param  sm      the sample model of the rasters to write.
-     * @param  region  subset to write, or {@code null} if none.
-     * @return writer, or {@code null} if the given sample model is not supported.
-     */
-    public static HyperRectangleWriter of(final MultiPixelPackedSampleModel sm, final Rectangle region) {
-        final int[] d = sm.getSampleSize();
-        if (d.length == 1) {
-            final int size = DataBuffer.getDataTypeSize(sm.getDataType());
-            if (d[0] == size && sm.getPixelBitStride() == size) {
-                return of(sm, region, 1, 1, sm.getScanlineStride());
-            }
+        /**
+         * Creates a new writer for raster data described by the given sample model.
+         * The returned writer will need to be applied repetitively for each bank
+         * if {@link #bankIndices()} returns an array with a length greater than one.
+         *
+         * @param  sm  the sample model of the rasters to write.
+         * @return writer, or {@code null} if the given sample model is not supported.
+         */
+        public HyperRectangleWriter create(final SampleModel sm) {
+            if (sm instanceof ComponentSampleModel)         return create((ComponentSampleModel)         sm);
+            if (sm instanceof SinglePixelPackedSampleModel) return create((SinglePixelPackedSampleModel) sm);
+            if (sm instanceof MultiPixelPackedSampleModel)  return create((MultiPixelPackedSampleModel)  sm);
+            return null;
         }
-        return null;
+
+        /**
+         * Creates a new writer for data of the specified raster.
+         * The returned writer will need to be applied repetitively for each bank
+         * if {@link #bankIndices()} returns an array with a length greater than one.
+         *
+         * @param  raster  the rasters to write.
+         * @return writer, or {@code null} if the given raster uses an unsupported sample model.
+         */
+        public HyperRectangleWriter create(final Raster raster) {
+            final Rectangle bounds = raster.getBounds();
+            region = (region != null) ? bounds.intersection(region) : bounds;
+            sampleModelTranslateX = raster.getSampleModelTranslateX();
+            sampleModelTranslateY = raster.getSampleModelTranslateY();
+            return create(raster.getSampleModel());
+        }
+
+        /**
+         * {@return the total number of elements contained in the hyper-rectangle}.
+         * The number of bytes to write will be this length multiplied by element size.
+         * This information is valid only after a {@code create(…)} method has been invoked.
+         */
+        public long length() {
+            return length;
+        }
+
+        /**
+         * {@return the number of elements (not necessarily bytes) between a pixel and the next pixel}.
+         * This information is valid only after a {@code create(…)} method has been invoked.
+         */
+        public int pixelStride() {
+            return pixelStride;
+        }
+
+        /**
+         * {@return the number of elements (not necessarily bytes) between a row and the next row}.
+         * This information is valid only after a {@code create(…)} method has been invoked.
+         */
+        public int scanlineStride() {
+            return scanlineStride;
+        }
+
+        /**
+         * Returns the indices of all banks to write with {@code HyperRectangleWriter}.
+         * This is not necessarily the bank indices of all bands, because the writer may be
+         * able to write all bands contiguously in a single call to a {@code write(…)} method.
+         * This information is valid only after a {@code create(…)} method has been invoked.
+         *
+         * @return indices of all banks to write with {@code HyperRectangleWriter}.
+         */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        public int[] bankIndices() {
+            return bankIndices;
+        }
     }
 
     /**
@@ -210,18 +388,53 @@ public final class HyperRectangleWriter {
     }
 
     /**
+     * Returns a suggested value for the {@code direct} argument of {@code write(…, byte[], …)}.
+     * The suggestion is based on whether the output buffer is direct or not.
+     *
+     * @param  output  the output which will be given in argument to the {@code write(…)} methods.
+     * @return suggested value for the {@code direct} boolean argument.
+     */
+    public boolean suggestDirect(final ChannelDataOutput output) {
+        // Really ! because we want to use the direct buffer if it exists.
+        return !output.buffer.isDirect() && output.buffer.capacity() <= contiguousDataLength;
+    }
+
+    /**
      * Writes an hyper-rectangle with the shape described at construction time.
+     * If the {@code direct} argument is {@code true}, then this method writes
+     * directly in the {@link ChannelDataOutput#channel} without copying bytes
+     * to the {@link ChannelDataOutput#buffer}.
+     *
+     * <p>Note that the direct mode is not necessarily faster.
+     * If the destination is a NIO channel, Java may perform internally a copy to a direct buffer.
+     * If the {@code output} buffer is already {@linkplain ByteBuffer#isDirect() direct}, it may be
+     * more efficient to set the {@code direct} argument to {@code false} for using that buffer.</p>
      *
      * @param  output  where to write data.
      * @param  data    data of the hyper-rectangle.
      * @param  offset  offset to add to array index.
      * @throws IOException if an error occurred while writing the data.
      */
-    public void write(final ChannelDataOutput output, final byte[] data, int offset) throws IOException {
+    public void write(final ChannelDataOutput output, final byte[] data, int offset, final boolean direct) throws IOException {
         offset = startAt(offset);
         final int[] count = count();
-        do output.write(data, offset, contiguousDataLength);
-        while ((offset = next(offset, count)) >= 0);
+        if (direct) {
+            final ByteBuffer buffer = ByteBuffer.wrap(data);
+            output.flush();
+            do {
+                buffer.limit(offset + contiguousDataLength).position(offset);
+                do {
+                    final int n = output.channel.write(buffer);
+                    output.moveBufferForward(n);
+                    if (n == 0) {
+                        output.onEmptyTransfer();
+                    }
+                } while (buffer.hasRemaining());
+            } while ((offset = next(offset, count)) >= 0);
+        } else {
+            do output.write(data, offset, contiguousDataLength);
+            while ((offset = next(offset, count)) >= 0);
+        }
     }
 
     /**

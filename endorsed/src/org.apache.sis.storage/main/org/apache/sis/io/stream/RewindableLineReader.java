@@ -45,7 +45,7 @@ public final class RewindableLineReader extends LineNumberReader {
      * This is also the maximal "read ahead limit" that can be passed to {@link #mark(int)}
      * without causing buffer reallocation.
      */
-    public static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE / 2;
+    private static final int BUFFER_SIZE = StorageConnector.READ_AHEAD_LIMIT;
 
     /**
      * The input stream, or {@code null} if this reader cannot rewind anymore.

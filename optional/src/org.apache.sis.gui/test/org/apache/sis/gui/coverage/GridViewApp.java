@@ -22,8 +22,10 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.gui.internal.BackgroundThreads;
+
+// Test dependencies
+import org.apache.sis.image.TiledImageMock;
 
 
 /**

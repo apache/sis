@@ -29,6 +29,8 @@ import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+
+// Test dependencies
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
 

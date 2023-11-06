@@ -16,11 +16,10 @@
  */
 package org.apache.sis.referencing.util;
 
-import org.apache.sis.referencing.cs.HardCodedCS;
-
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.cs.HardCodedCS;
 
 import static org.junit.Assert.*;
 
