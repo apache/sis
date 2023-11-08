@@ -16,10 +16,12 @@
  */
 package org.apache.sis.storage.shapefile.shp;
 
+import java.awt.geom.Rectangle2D;
 import org.apache.sis.io.stream.ChannelDataInput;
 
 import java.io.EOFException;
 import java.io.IOException;
+import org.apache.sis.geometry.Envelope2D;
 
 /**
  * Seekable shape file reader.
@@ -31,9 +33,11 @@ public final class ShapeReader implements AutoCloseable{
     private final ChannelDataInput channel;
     private final ShapeHeader header;
     private final ShapeGeometryEncoder geomParser;
+    private final Rectangle2D.Double filter;
 
-    public ShapeReader(ChannelDataInput channel) throws IOException {
+    public ShapeReader(ChannelDataInput channel, Rectangle2D.Double filter) throws IOException {
         this.channel = channel;
+        this.filter = filter;
         header = new ShapeHeader();
         header.read(channel);
         geomParser = ShapeGeometryEncoder.getEncoder(header.shapeType);
@@ -48,10 +52,10 @@ public final class ShapeReader implements AutoCloseable{
     }
 
     public ShapeRecord next() throws IOException {
+        final ShapeRecord record = new ShapeRecord();
         try {
-            final ShapeRecord record = new ShapeRecord();
-            record.read(channel);
-            record.parseGeometry(geomParser);
+            //read until we find a record matching the filter or EOF exception
+            while (!record.read(channel, geomParser, filter)) {}
             return record;
         } catch (EOFException ex) {
             //no more records

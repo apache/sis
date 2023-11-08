@@ -33,12 +33,19 @@ public final class DBFReader implements AutoCloseable {
 
     private final ChannelDataInput channel;
     private final DBFHeader header;
+    private final int[] fieldsToRead;
     private int nbRead = 0;
 
-    public DBFReader(ChannelDataInput channel, Charset charset) throws IOException {
+    /**
+     * @param channel to read from
+     * @param charset text encoding
+     * @param fieldsToRead fields index in the header to decode, other fields will be skipped. must be in increment order.
+     */
+    public DBFReader(ChannelDataInput channel, Charset charset, int[] fieldsToRead) throws IOException {
         this.channel = channel;
         this.header = new DBFHeader();
         this.header.read(channel, charset);
+        this.fieldsToRead = fieldsToRead;
     }
 
     public DBFHeader getHeader() {
@@ -71,9 +78,25 @@ public final class DBFReader implements AutoCloseable {
 
         final DBFRecord record = new DBFRecord();
         record.fields = new Object[header.fields.length];
-        for (int i = 0; i < header.fields.length; i++) {
-            record.fields[i] = header.fields[i].getEncoder().read(channel);
+        if (fieldsToRead == null) {
+            //read all fields
+            record.fields = new Object[header.fields.length];
+            for (int i = 0; i < header.fields.length; i++) {
+                record.fields[i] = header.fields[i].getEncoder().read(channel);
+            }
+        } else {
+            //read only selected fields
+            record.fields = new Object[fieldsToRead.length];
+            for (int i = 0,k = 0; i < header.fields.length; i++) {
+                if (k < fieldsToRead.length && fieldsToRead[k] == i) {
+                    record.fields[k++] = header.fields[i].getEncoder().read(channel);
+                } else {
+                    //skip this field
+                    channel.skipBytes(header.fields[i].fieldLength);
+                }
+            }
         }
+
         return record;
     }
 

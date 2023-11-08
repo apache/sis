@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -26,7 +27,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -54,6 +57,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.UnsupportedQueryException;
@@ -72,6 +76,9 @@ import org.apache.sis.util.collection.BackingStoreException;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.filter.Expression;
+import org.opengis.filter.Filter;
+import org.opengis.filter.SpatialOperatorName;
 
 
 /**
@@ -88,8 +95,7 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
     /**
      * Internal class to inherit AbstractFeatureSet.
      */
-    private final AsFeatureSet featureSetView = new AsFeatureSet();
-    private FeatureType type;
+    private final AsFeatureSet featureSetView = new AsFeatureSet(null, null);
     private Charset charset;
 
     /**
@@ -149,8 +155,19 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
 
     private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
 
-        private AsFeatureSet() {
+        private final Rectangle2D.Double filter;
+        private final Set<String> dbfProperties;
+        private int[] dbfPropertiesIndex;
+        private FeatureType type;
+
+        /**
+         * @param filter optional shape filter, must be in data CRS
+         * @param properties dbf properties to read, null for all properties
+         */
+        private AsFeatureSet(Rectangle2D.Double filter, Set<String> properties) {
             super(null);
+            this.filter = filter;
+            this.dbfProperties = properties;
         }
 
         @Override
@@ -165,7 +182,7 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
 
                 //read shp header to obtain geometry type
                 final Class geometryClass;
-                try (final ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(shpPath))) {
+                try (final ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(shpPath), filter)) {
                     final ShapeHeader header = reader.getHeader();
                     geometryClass = ShapeGeometryEncoder.getEncoder(header.shapeType).getValueClass();
                 } catch (IOException ex) {
@@ -204,10 +221,25 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                 //read dbf for attributes
                 final Path dbfFile = files.getDbf(false);
                 if (dbfFile != null) {
-                    try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset)) {
+                    try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset, null)) {
                         final DBFHeader header = reader.getHeader();
                         boolean hasId = false;
-                        for (DBFField field : header.fields) {
+
+                        if (dbfProperties == null) {
+                            dbfPropertiesIndex = new int[header.fields.length];
+                        } else {
+                            dbfPropertiesIndex = new int[dbfProperties.size()];
+                        }
+
+                        for (int i = 0,idx=0; i < header.fields.length; i++) {
+                            final DBFField field = header.fields[i];
+                            if (dbfProperties != null && !dbfProperties.contains(field.fieldName)) {
+                                //skip unwanted fields
+                                continue;
+                            }
+                            dbfPropertiesIndex[idx] = i;
+                            idx++;
+
                             final AttributeTypeBuilder atb = ftb.addAttribute(field.getEncoder().getValueClass()).setName(field.fieldName);
                             //no official but 'id' field is common
                             if (!hasId && "id".equalsIgnoreCase(field.fieldName) || "identifier".equalsIgnoreCase(field.fieldName)) {
@@ -233,8 +265,8 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
             final ShapeReader shpreader;
             final DBFReader dbfreader;
             try {
-                shpreader = new ShapeReader(ShpFiles.openReadChannel(files.shpFile));
-                dbfreader = new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset);
+                shpreader = new ShapeReader(ShpFiles.openReadChannel(files.shpFile), filter);
+                dbfreader = new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset, dbfPropertiesIndex);
             } catch (IOException ex) {
                 throw new DataStoreException("Faild to open shp and dbf files.", ex);
             }
@@ -246,10 +278,12 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                     try {
                         final ShapeRecord shpRecord = shpreader.next();
                         if (shpRecord == null) return false;
+                        //move dbf to record offset, some shp record might have been skipped because of filter
+                        dbfreader.moveToOffset(header.headerSize + (shpRecord.recordNumber-1) * header.recordSize);
                         final DBFRecord dbfRecord = dbfreader.next();
                         final Feature next = type.newInstance();
                         next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
-                        for (int i = 0; i < header.fields.length; i++) {
+                        for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                             next.setPropertyValue(header.fields[i].fieldName, dbfRecord.fields[i]);
                         }
                         action.accept(next);
@@ -273,6 +307,19 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
             });
 
         }
+
+        @Override
+        public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
+            //try to optimise the query for common cases
+            if (query instanceof FeatureQuery) {
+                final FeatureQuery fq = (FeatureQuery) query;
+                //todo
+            }
+
+            return super.subset(query);
+        }
+
+
 
         @Override
         public void updateType(FeatureType newType) throws DataStoreException {

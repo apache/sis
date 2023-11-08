@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.DataStoreException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.locationtech.jts.geom.Point;
 
@@ -87,4 +88,29 @@ public class ShapefileStoreTest {
             assertFalse(iterator.hasNext());
         }
     }
+
+    /**
+     * TODO not implemented yet.
+     */
+    @Ignore
+    @Test
+    public void testEnvelopeFilter() throws URISyntaxException, DataStoreException {
+        final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/point.shp");
+        final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()));
+
+        try (Stream<Feature> stream = store.features(false)) {
+            Iterator<Feature> iterator = stream.iterator();
+            assertTrue(iterator.hasNext());
+            Feature feature = iterator.next();
+            assertEquals(2L, feature.getPropertyValue("id"));
+            assertEquals("text2", feature.getPropertyValue("text"));
+            assertEquals(40L, feature.getPropertyValue("integer"));
+            assertEquals(60.0, feature.getPropertyValue("float"));
+            assertEquals(LocalDate.of(2023, 10, 28), feature.getPropertyValue("date"));
+            Point pt2 = (Point) feature.getPropertyValue("geometry");
+
+            assertFalse(iterator.hasNext());
+        }
+    }
+
 }

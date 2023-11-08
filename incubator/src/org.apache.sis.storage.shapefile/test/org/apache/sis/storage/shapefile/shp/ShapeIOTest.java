@@ -30,7 +30,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.io.stream.ChannelDataOutput;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.LineString;
@@ -78,7 +80,7 @@ public class ShapeIOTest {
         final ChannelDataOutput cdo = openWrite(tempFile);
 
         try {
-            try (ShapeReader reader = new ShapeReader(cdi);
+            try (ShapeReader reader = new ShapeReader(cdi, null);
                  ShapeWriter writer = new ShapeWriter(cdo)) {
 
                 writer.write(reader.getHeader());
@@ -105,9 +107,8 @@ public class ShapeIOTest {
     @Test
     public void testPoint() throws Exception {
         final String path = "/org/apache/sis/storage/shapefile/point.shp";
-        final ChannelDataInput cdi = openRead(path);
 
-        try (ShapeReader reader = new ShapeReader(cdi)) {
+        try (ShapeReader reader = new ShapeReader(openRead(path), null)) {
             final ShapeRecord record1 = reader.next();
             assertEquals(2, record1.bbox.getDimension());
             assertEquals(-38.5, record1.bbox.getMinimum(0), 0.1);
@@ -134,6 +135,16 @@ public class ShapeIOTest {
             assertNull(reader.next());
         }
 
+        //test filter, envelope contains record 2
+        final Envelope2D filter = new Envelope2D(CommonCRS.WGS84.normalizedGeographic(), 2, 42, 1, 1);
+        try (ShapeReader reader = new ShapeReader(openRead(path), filter)) {
+            final ShapeRecord record = reader.next();
+            assertEquals(2, record.recordNumber);
+
+            //no more records
+            assertNull(reader.next());
+        }
+
         testReadAndWrite(path);
     }
 
@@ -143,9 +154,8 @@ public class ShapeIOTest {
     @Test
     public void testMultiPoint() throws Exception {
         final String path = "/org/apache/sis/storage/shapefile/multipoint.shp";
-        final ChannelDataInput cdi = openRead(path);
 
-        try (ShapeReader reader = new ShapeReader(cdi)) {
+        try (ShapeReader reader = new ShapeReader(openRead(path), null)) {
             final ShapeRecord record1 = reader.next();
             assertEquals(2, record1.bbox.getDimension());
             assertEquals(-38.0, record1.bbox.getMinimum(0), 0.1);
@@ -182,6 +192,16 @@ public class ShapeIOTest {
             assertNull(reader.next());
         }
 
+        //test filter, envelope inside record 2
+        final Envelope2D filter = new Envelope2D(CommonCRS.WGS84.normalizedGeographic(), 4, 15, 1, 1);
+        try (ShapeReader reader = new ShapeReader(openRead(path), filter)) {
+            final ShapeRecord record = reader.next();
+            assertEquals(2, record.recordNumber);
+
+            //no more records
+            assertNull(reader.next());
+        }
+
         testReadAndWrite(path);
     }
 
@@ -191,9 +211,8 @@ public class ShapeIOTest {
     @Test
     public void testPolyline() throws Exception {
         final String path = "/org/apache/sis/storage/shapefile/polyline.shp";
-        final ChannelDataInput cdi = openRead(path);
 
-        try (ShapeReader reader = new ShapeReader(cdi)) {
+        try (ShapeReader reader = new ShapeReader(openRead(path), null)) {
 
             //first record has a single 3 points line
             final ShapeRecord record1 = reader.next();
@@ -241,6 +260,16 @@ public class ShapeIOTest {
             assertNull(reader.next());
         }
 
+        //test filter, envelope intersects record 2
+        final Envelope2D filter = new Envelope2D(CommonCRS.WGS84.normalizedGeographic(), 0, 6, 1, 1);
+        try (ShapeReader reader = new ShapeReader(openRead(path), filter)) {
+            final ShapeRecord record = reader.next();
+            assertEquals(2, record.recordNumber);
+
+            //no more records
+            assertNull(reader.next());
+        }
+
         testReadAndWrite(path);
     }
 
@@ -251,9 +280,8 @@ public class ShapeIOTest {
     @Test
     public void testPolygon() throws Exception {
         final String path = "/org/apache/sis/storage/shapefile/polygon.shp";
-        final ChannelDataInput cdi = openRead(path);
 
-        try (ShapeReader reader = new ShapeReader(cdi)) {
+        try (ShapeReader reader = new ShapeReader(openRead(path), null)) {
             final ShapeRecord record1 = reader.next();
             assertEquals(2, record1.bbox.getDimension());
             assertEquals(-43.8, record1.bbox.getMinimum(0), 0.1);
@@ -309,6 +337,16 @@ public class ShapeIOTest {
             assertEquals(7.9, inner2.getY(2), 0.1);
             assertEquals(6.9, inner2.getX(3), 0.1);
             assertEquals(13.1, inner2.getY(3), 0.1);
+
+            //no more records
+            assertNull(reader.next());
+        }
+
+        //test filter, envelope intersects record 1
+        final Envelope2D filter = new Envelope2D(CommonCRS.WGS84.normalizedGeographic(), -35, 5, 1, 1);
+        try (ShapeReader reader = new ShapeReader(openRead(path), filter)) {
+            final ShapeRecord record = reader.next();
+            assertEquals(1, record.recordNumber);
 
             //no more records
             assertNull(reader.next());

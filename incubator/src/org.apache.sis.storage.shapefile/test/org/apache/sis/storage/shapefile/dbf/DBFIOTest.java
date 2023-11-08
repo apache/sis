@@ -45,7 +45,7 @@ public class DBFIOTest {
         final String path = "/org/apache/sis/storage/shapefile/point.dbf";
         final ChannelDataInput cdi = openRead(path);
 
-        try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8)) {
+        try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8, null)) {
             final DBFHeader header = reader.getHeader();
             assertEquals(123, header.year);
             assertEquals(10, header.month);
@@ -98,7 +98,29 @@ public class DBFIOTest {
             //no more records
             assertNull(reader.next());
         }
-
     }
 
+    /**
+     * Test reading only selected fields.
+     */
+    @Test
+    public void readSelectionTest() throws DataStoreException, IOException {
+        final String path = "/org/apache/sis/storage/shapefile/point.dbf";
+        final ChannelDataInput cdi = openRead(path);
+
+        try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8, new int[]{1,3})) {
+            final DBFHeader header = reader.getHeader();
+
+            final DBFRecord record1 = reader.next();
+            assertEquals("text1", record1.fields[0]);
+            assertEquals(20.0, record1.fields[1]);
+
+            final DBFRecord record2 = reader.next();
+            assertEquals("text2", record2.fields[0]);
+            assertEquals(60.0, record2.fields[1]);
+
+            //no more records
+            assertNull(reader.next());
+        }
+    }
 }
