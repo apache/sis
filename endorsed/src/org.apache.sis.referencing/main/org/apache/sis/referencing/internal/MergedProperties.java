@@ -22,8 +22,8 @@ import org.apache.sis.util.internal.AbstractMap;
 
 
 /**
- * A map which first looks for values in a user supplied map, then looks in a default map if no value where found
- * in the user supplied one. This map is for {@link org.apache.sis.referencing.factory.GeodeticObjectFactory} and
+ * A map which first looks for values in a user supplied map, then looks in a default map if no value was found
+ * in the user supplied map. This map is for {@link org.apache.sis.referencing.factory.GeodeticObjectFactory} and
  * other SIS factories internal usage only.
  *
  * @author  Martin Desruisseaux (Geomatys)

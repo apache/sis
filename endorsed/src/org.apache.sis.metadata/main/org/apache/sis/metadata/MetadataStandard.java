@@ -482,7 +482,7 @@ public class MetadataStandard implements Serializable {
      * <p>This method ignores dependencies. Fallback on metadata standard dependencies shall be done by the caller.</p>
      *
      * @param  key  the standard interface or the implementation class.
-     * @return the single interface, or {@code null} if none where found.
+     * @return the single interface, or {@code null} if none was found.
      */
     private Class<?> findInterface(final CacheKey key) {
         assert key.isValid() : key;

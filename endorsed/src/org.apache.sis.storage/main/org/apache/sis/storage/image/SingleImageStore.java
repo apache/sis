@@ -28,6 +28,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.Query;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -75,8 +76,10 @@ final class SingleImageStore extends WorldFileStore implements GridCoverageResou
      */
     final WorldFileResource delegate() throws DataStoreException {
         WorldFileResource r = delegate;
-        if (r == null) {
+        if (r == null) try {
             delegate = r = ((Components) components()).get(MAIN_IMAGE);
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(DataStoreException.class);
         }
         return r;
     }
