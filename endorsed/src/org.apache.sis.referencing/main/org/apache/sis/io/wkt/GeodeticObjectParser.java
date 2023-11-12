@@ -96,6 +96,14 @@ import static java.util.Collections.singletonMap;
  * @author  Johann Sorel (Geomatys)
  */
 class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
+    /*
+     * Force class initialization of `AxisDirections` in order to have
+     * its constants added to the list of know `AxisDirection` values.
+     */
+    static {
+        AxisDirections.AWAY_FROM.toString();
+    }
+
     /**
      * The names of the 7 parameters in a {@code TOWGS84[…]} element.
      * Those names are derived from the <cite>Well Known Text</cite> (WKT) version 1 specification.
