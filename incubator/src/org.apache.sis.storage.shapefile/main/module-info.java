@@ -30,4 +30,7 @@ module org.apache.sis.storage.shapefile {
     exports org.apache.sis.storage.shapefile.cpg;
     exports org.apache.sis.storage.shapefile.shp;
     exports org.apache.sis.storage.shapefile.dbf;
+
+    provides org.apache.sis.storage.DataStoreProvider
+            with org.apache.sis.storage.shapefile.ShapefileProvider;
 }

@@ -22,8 +22,13 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.stream.Stream;
+import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.referencing.CommonCRS;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureQuery;
+import org.apache.sis.storage.FeatureSet;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.locationtech.jts.geom.Point;
@@ -32,6 +37,7 @@ import org.locationtech.jts.geom.Point;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.filter.FilterFactory;
 
 
 /**
@@ -90,15 +96,26 @@ public class ShapefileStoreTest {
     }
 
     /**
-     * TODO not implemented yet.
+     * Test optimized envelope filter.
      */
-    @Ignore
     @Test
     public void testEnvelopeFilter() throws URISyntaxException, DataStoreException {
         final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/point.shp");
         final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()));
 
-        try (Stream<Feature> stream = store.features(false)) {
+        final FilterFactory<Feature, Object, Object> ff = DefaultFilterFactory.forFeatures();
+
+        final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        env.setRange(0, 2, 3);
+        env.setRange(1, 42, 43);
+
+        final FeatureQuery query = new FeatureQuery();
+        query.setSelection(ff.bbox(ff.property("geometry"), env));
+        FeatureSet featureset = store.subset(query);
+        //ensure we obtained an optimized version
+        assertEquals("org.apache.sis.storage.shapefile.ShapefileStore$AsFeatureSet", featureset.getClass().getName());
+
+        try (Stream<Feature> stream = featureset.features(false)) {
             Iterator<Feature> iterator = stream.iterator();
             assertTrue(iterator.hasNext());
             Feature feature = iterator.next();
@@ -113,4 +130,34 @@ public class ShapefileStoreTest {
         }
     }
 
+    /**
+     * Test optimized field selection.
+     */
+    @Test
+    public void testFieldFilter() throws URISyntaxException, DataStoreException {
+        final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/point.shp");
+        final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()));
+
+
+        final FeatureQuery query = new FeatureQuery();
+        query.setProjection("text", "float");
+        FeatureSet featureset = store.subset(query);
+        //ensure we obtained an optimized version
+        assertEquals("org.apache.sis.storage.shapefile.ShapefileStore$AsFeatureSet", featureset.getClass().getName());
+
+        try (Stream<Feature> stream = featureset.features(false)) {
+            Iterator<Feature> iterator = stream.iterator();
+            assertTrue(iterator.hasNext());
+            Feature feature1 = iterator.next();
+            assertEquals("text1", feature1.getPropertyValue("text"));
+            assertEquals(20.0, feature1.getPropertyValue("float"));
+
+            assertTrue(iterator.hasNext());
+            Feature feature2 = iterator.next();
+            assertEquals("text2", feature2.getPropertyValue("text"));
+            assertEquals(60.0, feature2.getPropertyValue("float"));
+
+            assertFalse(iterator.hasNext());
+        }
+    }
 }
