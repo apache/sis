@@ -22,6 +22,7 @@ val geoapiVersion = "4.0-SNAPSHOT"
  * They are directory names relative to this file.
  */
 include("geoapi")
+include("parent")
 include("endorsed")
 include("incubator")
 if (System.getenv("PATH_TO_FX") != null) {
