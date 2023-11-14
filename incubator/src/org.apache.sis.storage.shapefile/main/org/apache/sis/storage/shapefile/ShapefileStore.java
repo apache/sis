@@ -28,11 +28,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -61,6 +63,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.FunctionNames;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
@@ -176,8 +179,14 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
 
         private final Rectangle2D.Double filter;
         private final Set<String> dbfProperties;
-        private int[] dbfPropertiesIndex;
         private final boolean readShp;
+
+        /**
+         * Extracted informations
+         */
+        private int[] dbfPropertiesIndex;
+        private ShapeHeader shpHeader;
+        private DBFHeader dbfHeader;
         /**
          * Name of the field used as identifier, may be null.
          */
@@ -211,6 +220,7 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                     final Class geometryClass;
                     try (final ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(shpPath), filter)) {
                         final ShapeHeader header = reader.getHeader();
+                        this.shpHeader = header;
                         geometryClass = ShapeGeometryEncoder.getEncoder(header.shapeType).getValueClass();
                     } catch (IOException ex) {
                         throw new DataStoreException("Failed to parse shape file header.", ex);
@@ -250,6 +260,7 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                 if (dbfFile != null) {
                     try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset, null)) {
                         final DBFHeader header = reader.getHeader();
+                        this.dbfHeader = header;
                         boolean hasId = false;
 
                         if (dbfProperties == null) {
@@ -258,7 +269,8 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                             dbfPropertiesIndex = new int[dbfProperties.size()];
                         }
 
-                        for (int i = 0,idx=0; i < header.fields.length; i++) {
+                        int idx=0;
+                        for (int i = 0; i < header.fields.length; i++) {
                             final DBFField field = header.fields[i];
                             if (dbfProperties != null && !dbfProperties.contains(field.fieldName)) {
                                 //skip unwanted fields
@@ -275,6 +287,9 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                                 hasId = true;
                             }
                         }
+                        //the properties collection may have contain other names, for links or geometry, trim those
+                        dbfPropertiesIndex = Arrays.copyOf(dbfPropertiesIndex, idx);
+
                     } catch (IOException ex) {
                         throw new DataStoreException("Failed to parse dbf file header.", ex);
                     }
@@ -285,6 +300,31 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                 type = ftb.build();
             }
             return type;
+        }
+
+        @Override
+        public Optional<Envelope> getEnvelope() throws DataStoreException {
+            getType();//force loading headers
+            if (shpHeader != null && filter == null) {
+                final GeneralEnvelope env = new GeneralEnvelope(crs);
+                env.setRange(0, shpHeader.bbox.getMinimum(0), shpHeader.bbox.getMaximum(0));
+                env.setRange(1, shpHeader.bbox.getMinimum(1), shpHeader.bbox.getMaximum(1));
+                return Optional.of(env);
+            }
+            return super.getEnvelope();
+        }
+
+        @Override
+        public OptionalLong getFeatureCount() {
+            try {
+                getType();//force loading headers
+                if (dbfHeader != null && filter == null) {
+                    return OptionalLong.of(dbfHeader.nbRecord);
+                }
+            } catch (DataStoreException ex) {
+                //do nothing
+            }
+            return super.getFeatureCount();
         }
 
         @Override
@@ -442,7 +482,7 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                     }
                 }
 
-                FeatureSet fs = new AsFeatureSet(area, readShp, properties);
+                final AsFeatureSet fs = new AsFeatureSet(area, readShp, properties);
                 //see if there are elements we could not handle
                 final FeatureQuery subQuery = new FeatureQuery();
                 boolean needSubProcessing = false;
@@ -471,13 +511,15 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                     subQuery.setProjection(projection);
                 }
 
-                return needSubProcessing ? fs.subset(subQuery) : fs;
+                return needSubProcessing ? fs.parentSubSet(subQuery) : fs;
             }
 
             return super.subset(query);
         }
 
-
+        private FeatureSet parentSubSet(Query query) throws DataStoreException {
+            return super.subset(query);
+        }
 
         @Override
         public void updateType(FeatureType newType) throws DataStoreException {
@@ -612,7 +654,7 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
             boolean rebuildAnd = false;
             List<Filter<?>> lst = (List<Filter<?>>) ((LogicalOperator<?>)filter).getOperands();
             Envelope bbox = null;
-            for (int i = 0, n = lst.size(); i < n; i++) {
+            for (int i = 0; i < lst.size(); i++) {
                 final Filter<?> f = lst.get(i);
                 final Entry<Envelope, Filter> split = extractBbox(f);
                 Envelope cdtBbox = split.getKey();
@@ -644,6 +686,8 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
             if (rebuildAnd) {
                 if (lst.isEmpty()) {
                     filter = null;
+                } else if (lst.size() == 1) {
+                    filter = lst.get(0);
                 } else {
                     filter = DefaultFilterFactory.forFeatures().and((List)lst);
                 }

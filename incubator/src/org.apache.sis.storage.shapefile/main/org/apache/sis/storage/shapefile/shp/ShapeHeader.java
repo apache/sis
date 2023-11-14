@@ -26,7 +26,6 @@ import java.nio.ByteOrder;
 
 /**
  * Shapefile header.
- *
  * @author Johann Sorel (Geomatys)
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
  */
@@ -42,7 +41,7 @@ public final class ShapeHeader {
     public static final int SIGNATURE = 9994;
 
     /**
-     * File size.
+     * File size, in bytes.
      */
     public int fileLength;
     /**
@@ -69,7 +68,7 @@ public final class ShapeHeader {
         }
         //skip unused datas
         channel.skipBytes(5*4);
-        fileLength = channel.readInt();
+        fileLength = channel.readInt() * 2; //in 16bits words
 
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         final int version = channel.readInt();
@@ -95,7 +94,7 @@ public final class ShapeHeader {
         channel.buffer.order(ByteOrder.BIG_ENDIAN);
         channel.writeInt(SIGNATURE);
         channel.write(new byte[5*4]);
-        channel.writeInt(fileLength);
+        channel.writeInt(fileLength/2);
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         channel.writeInt(1000);
         channel.writeInt(shapeType);

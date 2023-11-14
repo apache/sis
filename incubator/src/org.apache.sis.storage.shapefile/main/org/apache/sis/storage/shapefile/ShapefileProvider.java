@@ -36,7 +36,7 @@ import org.apache.sis.storage.StorageConnector;
  */
 public final class ShapefileProvider extends DataStoreProvider {
 
-    public static final String NAME = "Shapefile";
+    public static final String NAME = "esri shapefile";
 
     public static final String MIME_TYPE = "application/x-shapefile";
 
@@ -49,7 +49,7 @@ public final class ShapefileProvider extends DataStoreProvider {
             .create(URI.class, null);
 
     public static final ParameterDescriptorGroup PARAMETERS_DESCRIPTOR =
-            new ParameterBuilder().addName(NAME).addName("ShapefileParameters").createGroup(
+            new ParameterBuilder().addName(NAME).addName("EsriShapefileParameters").createGroup(
                 PATH);
 
     public ShapefileProvider() {
