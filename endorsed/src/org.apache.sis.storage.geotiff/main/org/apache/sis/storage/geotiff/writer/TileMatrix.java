@@ -192,12 +192,10 @@ public final class TileMatrix {
      */
     @SuppressWarnings("null")
     public void writeRasters(final ChannelDataOutput output) throws DataStoreException, IOException {
-        ChannelDataOutput    compOutput  = null;
-        PixelChannel         compressor  = null;
-        SampleModel          sampleModel = null;
-        int[]                bankIndices = null;
-        HyperRectangleWriter rect        = null;
-        boolean              direct      = false;
+        ChannelDataOutput compOutput  = null;
+        PixelChannel      compressor  = null;
+        SampleModel       sampleModel = null;
+        boolean           direct      = false;
         final int minTileX = image.getMinTileX();
         final int minTileY = image.getMinTileY();
         for (int tileIndex = 0; tileIndex < numTiles; tileIndex++) {
@@ -217,12 +215,14 @@ public final class TileMatrix {
              * so `compressor` is usually created only once and shared by all tiles.
              */
             final var builder = new HyperRectangleWriter.Builder();
-            rect = builder.create(tile);
+            final HyperRectangleWriter rect = builder.create(tile);
             if (rect == null) {
                 throw new UnsupportedOperationException();      // TODO: reformat using a recycled Raster.
             }
-            bankIndices = builder.bankIndices();
+            final int[] bankIndices = builder.bankIndices();
+            final int[] bankOffsets = builder.bankOffsets();
             if (!Objects.equals(sampleModel, sampleModel = tile.getSampleModel())) {
+                direct = type.equals(DataType.BYTE) && rect.suggestDirect(output);
                 if (compressor != null) {
                     compressor.close();
                     compressor = null;
@@ -243,7 +243,7 @@ public final class TileMatrix {
                     }
                     switch (predictor) {
                         default: throw unsupported(Resources.Keys.UnsupportedPredictor_1, predictor);
-                        case NONE: direct = type.equals(DataType.BYTE); break;
+                        case NONE: break;
                         case HORIZONTAL_DIFFERENCING: {
                             compressor = HorizontalPredictor.create(compressor, type, builder.pixelStride(), builder.scanlineStride());
                             direct = false;     // Because the predictor will write in the buffer, so it must be a copy of the data.
@@ -254,7 +254,6 @@ public final class TileMatrix {
                     compOutput = new ChannelDataOutput(output.filename, compressor, buffer.order(output.buffer.order()));
                 } else {
                     compOutput = output;
-                    direct = rect.suggestDirect(output);                // Will be ignored if data type is not byte.
                     assert predictor == Predictor.NONE : predictor;     // Assumption documented in `Compression` class.
                 }
             }
@@ -265,7 +264,7 @@ public final class TileMatrix {
             final int[] bufferOffsets = buffer.getOffsets();
             for (int j=0; j<numPlanes; j++) {
                 final int  b        = bankIndices[j];
-                final int  offset   = bufferOffsets[b];
+                final int  offset   = bankOffsets[j] + bufferOffsets[b];
                 final long position = output.getStreamPosition();
                 switch (type) {
                     default:     throw new AssertionError(type);
