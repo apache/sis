@@ -1063,7 +1063,7 @@ public class Errors extends IndexedResourceBundle {
         public static final short UnsupportedType_1 = 163;
 
         /**
-         * XPath “{0}” is not supported.
+         * XPath “{0}” is not recognized. The current implementation supports only simple paths.
          */
         public static final short UnsupportedXPath_1 = 195;
 
