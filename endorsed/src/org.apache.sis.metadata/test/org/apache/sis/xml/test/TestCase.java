@@ -176,6 +176,18 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
+     * Marshals the given object and ensures that the result is equal to the given string.
+     * This convenience method uses a default set of attributes to ignore.
+     *
+     * @param  expected  the expected XML.
+     * @param  object    the object to marshal.
+     * @throws JAXBException if an error occurred during marshalling.
+     */
+    protected final void assertMarshalEquals(final String expected, final Object object) throws JAXBException {
+        assertXmlEquals(expected, marshal(object), "xmlns:*");
+    }
+
+    /**
      * Marshals the given object and ensures that the result is equal to the content of the given stream.
      * The stream should be opened by a call to {@link Class#getResourceAsStream(String)} from the module
      * that contains the resource, and the stream will be closed by this method.

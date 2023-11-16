@@ -23,6 +23,8 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.xml.NilReason;
+import org.apache.sis.xml.bind.gco.GO_Boolean;
 
 
 /**
@@ -48,13 +50,13 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "DQ_ConformanceResult_Type", propOrder = {
     "specification",
     "explanation",
-    "pass"
+    "result"
 })
 @XmlRootElement(name = "DQ_ConformanceResult")
 public class DefaultConformanceResult extends AbstractResult implements ConformanceResult {
@@ -77,12 +79,13 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Indication of the conformance result.
-     *
-     * <p>The field is directly annotated here, because the getter method is called {@link #pass()},
-     * and JAXB does not recognize it. The method should have been called getPass() or isPass().</p>
      */
-    @XmlElement(name = "pass", required = true)
     private Boolean pass;
+
+    /**
+     * If no result is provided, the reason why.
+     */
+    private NilReason nilReason;
 
     /**
      * Constructs an initially empty conformance result.
@@ -121,6 +124,9 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
             specification = object.getSpecification();
             explanation   = object.getExplanation();
             pass          = object.pass();
+            if (object instanceof DefaultConformanceResult) {
+                nilReason = ((DefaultConformanceResult) object).getNilReason();
+            }
         }
     }
 
@@ -193,6 +199,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Returns an indication of the conformance result.
+     * If this method returns {@code null}, then {@link #getNilReason()} gives the reason why.
      *
      * @return indication of the conformance result, or {@code null}.
      */
@@ -209,5 +216,68 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     public void setPass(final Boolean newValue) {
         checkWritePermission(pass);
         pass = newValue;
+    }
+
+    /**
+     * Returns the reason why the result is missing.
+     * This value is non-null only if {@link #pass()} is null.
+     *
+     * @return the reason why the result is missing, or {@code null} if the result is not missing.
+     *
+     * @see NilReason#forObject(Object)
+     *
+     * @since 1.5
+     */
+    public NilReason getNilReason() {
+        return (pass != null) ? null : (nilReason != null) ? nilReason : NilReason.UNKNOWN;
+    }
+
+    /**
+     * Sets the reason why the result is missing.
+     * Invoking this method with a non-null value sets {@link #pass()} to {@code null}.
+     *
+     * @param  newValue  the reason why the result is missing, or {@code null} if the result is not missing.
+     *
+     * @since 1.5
+     */
+    public void setNilReason(final NilReason newValue) {
+        checkWritePermission(nilReason);
+        if ((nilReason = newValue) != null) {
+            pass = null;
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB for fetching the value to marshal.
+     *
+     * @return the value to marshal.
+     */
+    @XmlElement(name = "pass", required = true)
+    private GO_Boolean getResult() {
+        return new GO_Boolean(pass(), getNilReason());
+    }
+
+    /**
+     * Invoked by JAXB for setting the value.
+     *
+     * @param  result  the value.
+     */
+    private void setResult(final GO_Boolean result) {
+        setPass(result.getElement());
+        setNilReason(result.parseNilReason());
     }
 }

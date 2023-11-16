@@ -19,6 +19,7 @@ package org.apache.sis.xml.bind.gco;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
+import org.apache.sis.xml.NilReason;
 
 
 /**
@@ -36,6 +37,16 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      * Empty constructor used only by JAXB.
      */
     public GO_Boolean() {
+    }
+
+    /**
+     * Builds a wrapper for the specified value, which may be nil.
+     *
+     * @param  value      the value to wrap.
+     * @param  nilReason  if the value is nil, the reason why.
+     */
+    public GO_Boolean(final Boolean value, final NilReason nilReason) {
+        super(value, nilReason);
     }
 
     /**

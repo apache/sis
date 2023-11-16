@@ -24,7 +24,7 @@ import java.time.temporal.Temporal;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -52,7 +52,7 @@ public final class DefaultEvaluationMethodTest extends TestCase {
         /*
          * dates = []
          */
-        assertTrue("isEmpty()", dates.isEmpty());
+        assertTrue(dates.isEmpty(), "isEmpty()");
         assertCanNotGet(dates, 2);
         assertCanNotGet(dates, 1);
         assertCanNotGet(dates, 0);
@@ -62,7 +62,7 @@ public final class DefaultEvaluationMethodTest extends TestCase {
         assertCanNotAdd(dates, 2, now);
         assertCanNotAdd(dates, 1, now);
         dates.add(0, now);
-        assertEquals("size()", 1, dates.size());
+        assertEquals(1, dates.size(), "size()");
         assertCanNotGet(dates, 2);
         assertCanNotGet(dates, 1);
         assertEquals(now, dates.get(0));
@@ -71,7 +71,7 @@ public final class DefaultEvaluationMethodTest extends TestCase {
          */
         assertCanNotAdd(dates, 2, later);
         dates.add(1, later);
-        assertEquals("size()", 2, dates.size());
+        assertEquals(2, dates.size(), "size()");
         assertCanNotGet(dates, 2);
         assertEquals(later, dates.get(1));
         assertEquals(now,   dates.get(0));
@@ -79,7 +79,7 @@ public final class DefaultEvaluationMethodTest extends TestCase {
          * dates = [later]
          */
         assertEquals(now, dates.remove(0));
-        assertEquals("size()", 1, dates.size());
+        assertEquals(1, dates.size(), "size()");
         assertCanNotGet(dates, 2);
         assertCanNotGet(dates, 1);
         assertEquals(later, dates.get(0));
@@ -87,7 +87,7 @@ public final class DefaultEvaluationMethodTest extends TestCase {
          * dates = [now, later]
          */
         dates.add(0, now);
-        assertEquals("size()", 2, dates.size());
+        assertEquals(2, dates.size(), "size()");
         assertCanNotGet(dates, 2);
         assertEquals(later, dates.get(1));
         assertEquals(now,   dates.get(0));

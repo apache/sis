@@ -142,6 +142,22 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
+     * Builds a {@code PropertyType} wrapper for an instance of a primitive wrapper.
+     * Those property types are handled in a different way because final classes
+     * cannot implement the {@link NilObject} interface.
+     *
+     * @param  value      the primitive type wrapper.
+     * @param  nilReason  if the value is nil, the reason why.
+     */
+    protected PropertyType(final BoundType value, final NilReason nilReason) {
+        if (nilReason != null) {
+            reference = nilReason.toString();
+        } else {
+            metadata = value;
+        }
+    }
+
+    /**
      * Builds a {@code PropertyType} wrapper for an instance of a final class.
      * This constructor checks for nil reasons only if {@code check} is {@code true}.
      *
@@ -286,6 +302,23 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             xlink.setType(XLink.Type.SIMPLE);           // The "simple" type is fixed in the "gco" schema.
         }
         return xlink;
+    }
+
+    /**
+     * The reason why a mandatory attribute if left unspecified, as a parsed object.
+     *
+     * @return the nil reason, or {@code null} if none.
+     */
+    public final NilReason parseNilReason() {
+        final String reason = getNilReason();
+        if (reason == null) {
+            return null;
+        } else try {
+            return NilReason.valueOf(reason);
+        } catch (URISyntaxException e) {
+            Context.warningOccured(Context.current(), getClass(), "parseNilReason", e, true);
+            return NilReason.OTHER;
+        }
     }
 
     /**
