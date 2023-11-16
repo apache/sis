@@ -75,11 +75,11 @@ public final class ExpressionReadingTest extends CQLTestCase {
 
     @Test
     public void testValueReference3() throws CQLException {
-        final String cql = "ùth{e_$uglY^_pr@perté";
+        final String cql = "ùthe_$uglY^_pr@perté";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof ValueReference);
         final ValueReference expression = (ValueReference) obj;
-        assertEquals("ùth{e_$uglY^_pr@perté", expression.getXPath());
+        assertEquals("ùthe_$uglY^_pr@perté", expression.getXPath());
     }
 
     @Test

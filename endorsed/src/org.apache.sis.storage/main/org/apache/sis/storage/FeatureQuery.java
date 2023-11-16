@@ -779,7 +779,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                     name = valueType.getProperty(xpath).getName();
                     if (name == null || !names.add(name.toString())) {
                         name = null;
-                        xpath = xpath.substring(xpath.lastIndexOf(XPath.SEPARATOR) + 1);  // Works also if '/' is not found.
+                        xpath = new XPath(xpath).tip;
                         if (!(xpath.isEmpty() || names.contains(xpath))) {
                             text = xpath;
                         }
