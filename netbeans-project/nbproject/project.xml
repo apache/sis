@@ -27,5 +27,8 @@
                 <root id="incubator.test.dir" pathref="incubator.test.dir.path"/>
             </test-roots>
         </data>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>genericity</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>

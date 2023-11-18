@@ -19,21 +19,22 @@
  * Root package for various metadata implementations.
  *
  * <h2>Foreword</h2>
- * Many metadata standards exist, including <cite>Dublin core</cite>, <cite>ISO 19115</cite> and the Image I/O
- * metadata defined in {@link javax.imageio.metadata}. The SIS implementation focuses on ISO 19115 (including
- * its ISO 19115-2 extension), but the classes are designed in a way that allow the usage of different standards.
+ * Many metadata standards exist, including Dublin core, ISO 19115
+ * and the Image I/O metadata defined in {@link javax.imageio.metadata} package.
+ * The SIS implementation focuses on the ISO 19115 series of standards,
+ * but the classes are designed in a way that allow the usage of different standards.
  * This genericity goal should be keep in mind in the discussion below.
  *
  * <h2>How Metadata are defined</h2>
- * A metadata standard is defined by a set of Java interfaces belonging to a specific package and its sub-packages.
- * For example, the ISO 19115 standard is defined by the <a href="http://www.geoapi.org">GeoAPI</a> interfaces
+ * A metadata standard is reified by a set of Java interfaces belonging to a specific package and its sub-packages.
+ * For example, the ISO 19115 standard is reified by the <a href="http://www.geoapi.org">GeoAPI</a> interfaces
  * defined in the {@link org.opengis.metadata} package and sub-packages. That standard is identified in SIS by the
  * {@link org.apache.sis.metadata.MetadataStandard#ISO_19115} constant. Other standards are defined as well,
  * for example the {@link org.apache.sis.metadata.MetadataStandard#ISO_19123} constant stands for the standards
  * defined by the interfaces in the {@link org.opengis.coverage} package and sub-packages.
  *
- * <p>For each interface, the collection of declared getter methods defines its <cite>properties</cite>
- * (or <cite>attributes</cite>). If a {@link org.opengis.annotation.UML} annotation is attached to the getter method,
+ * <p>For each interface, the collection of declared getter methods defines its <dfn>properties</dfn>
+ * (or <dfn>attributes</dfn>). If a {@link org.opengis.annotation.UML} annotation is attached to the getter method,
  * the identifier declared in that annotation is taken as the property name. This is typically the name defined by the
  * International Standard from which the interface is derived. Otherwise (if there is no {@code UML} annotation)
  * the property name is inferred from the method name like what the <cite>Java Beans</cite> framework does.</p>
@@ -48,7 +49,7 @@
  * <ul class="verbose">
  *   <li>The {@code Abstract} prefix means that the class is abstract in the sense of the implemented standard.
  *       It it not necessarily abstract in the sense of Java. Because incomplete metadata are common in practice,
- *       sometimes we wish to instantiate an "abstract" class despite the lack of knowledge about the exact sub-type.</li>
+ *       sometimes we wish to instantiate an "abstract" class because of the lack of knowledge about the exact sub-type.</li>
  *   <li>The properties are determined by the getter methods declared in the interfaces.
  *       Getter methods declared in the implementation classes are ignored.</li>
  *   <li>Setter methods, if any, can be declared in the implementation classes without the need for declarations
@@ -66,10 +67,10 @@
  *
  * <p>In addition, the metadata modules provide support methods for handling the metadata objects through Java Reflection.
  * This is an approach similar to <cite>Java Beans</cite>, in that users are encouraged to use directly the API of
- * <cite>Plain Old Java</cite> objects (actually interfaces) every time their type is known at compile time,
+ * Plain Old Java objects (actually interfaces) every time their type is known at compile time,
  * and fallback on the reflection technic when the type is known only at runtime.</p>
  *
- * <p>Using Java reflection, a metadata can be viewed in many different ways:</p>
+ * <p>Using Java reflection, a metadata can be viewed in different ways:</p>
  * <ul class="verbose">
  *   <li><b>As a {@link java.util.Map}</b><br>
  *       The {@link org.apache.sis.metadata.MetadataStandard} class provides various methods returning a view
@@ -119,7 +120,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 package org.apache.sis.metadata;

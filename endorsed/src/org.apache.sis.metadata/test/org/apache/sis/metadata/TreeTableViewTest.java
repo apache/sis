@@ -16,12 +16,20 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Locale;
+import java.util.Iterator;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import org.opengis.annotation.Obligation;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.xml.NilReason;
 
 // Test dependencies
 import org.junit.Test;
@@ -29,7 +37,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.TestUtilities.toTreeStructure;
 import static org.apache.sis.test.TestUtilities.formatMetadata;
@@ -86,8 +94,77 @@ public final class TreeTableViewTest extends TestCase {
     @Test
     public void testToString() {
         final TreeTableView metadata = create(ValueExistencePolicy.COMPACT);
+        assertFalse(metadata.getColumns().contains(MetadataColumn.NIL_REASON));
         assertMultilinesEquals(EXPECTED, formatMetadata(metadata));                             // Locale-independent
         assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString()));     // Locale-dependent.
+    }
+
+    /**
+     * Verifies most columns in the tree table. All nil reasons are null.
+     */
+    @Test
+    public void testGetValues() {
+        final TreeTableView metadata = create(ValueExistencePolicy.NON_NULL);
+        assertTrue(metadata.getColumns().contains(MetadataColumn.NIL_REASON));
+        verify(metadata.getRoot(), "Some title", null);
+    }
+
+    /**
+     * Verifies columns in the tree table with some non-null nil reasons.
+     */
+    @Test
+    public void testNilReasons() {
+        final TreeTableView metadata = create(ValueExistencePolicy.NON_NULL);
+        assertTrue(metadata.getColumns().contains(MetadataColumn.NIL_REASON));
+        final var citation = (DefaultCitation) metadata.getRoot().getUserObject();
+        citation.setTitle(NilReason.TEMPLATE.createNilObject(InternationalString.class));
+        verify(metadata.getRoot(), null, NilReason.TEMPLATE);
+    }
+
+    /**
+     * Verifies the values of the given root node and some of its children.
+     *
+     * @param  node     root node to verify.
+     * @param  title    expected citation title, or {@code null} if it is expected to be missing.
+     * @param  titleNR  if the title is missing, the expected reason why.
+     */
+    private void verify(TreeTableView.Node node, final String title, final NilReason titleNR) {
+        assertEquals("CI_Citation",  node.getValue(TableColumn.IDENTIFIER));
+        assertNull  (                node.getValue(TableColumn.INDEX));
+        assertEquals("Citation",     node.getValue(TableColumn.NAME));
+        assertEquals(Citation.class, node.getValue(TableColumn.TYPE));
+        assertNull  (                node.getValue(TableColumn.OBLIGATION));
+        assertNull  (                node.getValue(TableColumn.VALUE));
+        assertNull  (                node.getValue(MetadataColumn.NIL_REASON));
+
+        Iterator<TreeTable.Node> it = node.getChildren().iterator();
+        node = it.next();
+        assertEquals("title",                      node.getValue(TableColumn.IDENTIFIER));
+        assertNull  (                              node.getValue(TableColumn.INDEX));
+        assertEquals("Title",                      node.getValue(TableColumn.NAME));
+        assertEquals(InternationalString.class,    node.getValue(TableColumn.TYPE));
+        assertEquals(Obligation.MANDATORY,         node.getValue(TableColumn.OBLIGATION));
+        assertI18nEq(title,                        node.getValue(TableColumn.VALUE));
+        assertEquals(titleNR,                      node.getValue(MetadataColumn.NIL_REASON));
+
+        node = it.next();
+        assertEquals("alternateTitle",              node.getValue(TableColumn.IDENTIFIER));
+        assertEquals(0,                             node.getValue(TableColumn.INDEX));
+        assertI18nEq("Alternate title (1 of 2)",    node.getValue(TableColumn.NAME));
+        assertEquals(InternationalString.class,     node.getValue(TableColumn.TYPE));
+        assertEquals(Obligation.OPTIONAL,           node.getValue(TableColumn.OBLIGATION));
+        assertI18nEq("First alternate title",       node.getValue(TableColumn.VALUE));
+        assertNull  (                               node.getValue(MetadataColumn.NIL_REASON));
+    }
+
+    /**
+     * Verifies the value of the given international string in English.
+     */
+    private static void assertI18nEq(final String expected, Object text) {
+        if (text instanceof InternationalString) {
+            text = ((InternationalString) text).toString(Locale.ENGLISH);
+        }
+        assertEquals(expected, text);
     }
 
     /**

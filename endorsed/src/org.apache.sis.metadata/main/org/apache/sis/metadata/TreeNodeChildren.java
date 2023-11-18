@@ -66,18 +66,17 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * This is typically an {@link AbstractMetadata} instance, but not necessarily.
      * Any type for which {@link MetadataStandard#isMetadata(Class)} returns {@code true} is okay.
      *
-     * <p>This field is a snapshot of the {@linkplain #parent} {@link TreeNode#getUserObject()} at
-     * creation time. This collection does not track changes in the reference returned by the above-cited
-     * {@code getUserObject()}. In other words, changes in the {@code metadata} object will be reflected
-     * in this collection, but if {@code parent.getUserObject()} returns a reference to another object,
-     * this change will not be reflected in this collection.
+     * <p>This field is a snapshot of the {@linkplain #parent} {@link TreeNode#getUserObject()} at creation time.
+     * This collection does not track changes in the reference returned by the above-cited {@code getUserObject()}.
+     * In other words, changes in the {@code metadata} object will be reflected in this collection,
+     * but if {@code parent.getUserObject()} returns a reference to another object,
+     * then this change will not be reflected in this collection.
      */
     final Object metadata;
 
     /**
-     * The accessor to use for accessing the property names, types and values of the
-     * {@link #metadata} object. This is given at construction time and shall be the
-     * same than the following code:
+     * The accessor to use for accessing the property names, types and values of the {@link #metadata} object.
+     * This is given at construction time and shall be the same than the following code:
      *
      * {@snippet lang="java" :
      *     accessor = parent.table.standard.getAccessor(metadata.getClass(), true);
@@ -121,7 +120,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * is done on a <cite>best effort basis</cite> only, since we cannot not track the changes which
      * are done independently in the {@linkplain #metadata} object.
      */
-    int modCount;
+    private int modCount;
 
     /**
      * Creates a collection of children for the specified metadata.
@@ -200,8 +199,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * This method sets the property to {@code null}. This is not strictly correct for collections,
      * since we should rather set the property to an empty collection. However, this approach would
      * force us to check if the expected collection type is actually a list, a set or any other type.
-     * Passing null avoid the type check and is safe at least with SIS implementation. We may revisit
-     * later if this appears to be a problem with other implementations.
+     * Passing null avoid the type check and is safe at least with SIS implementation.
+     * We may revisit later if this appears to be a problem with other implementations.
      *
      * @param  index  the index in the accessor (<em>not</em> the index in this collection).
      */
@@ -374,8 +373,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
         /**
          * The value of the node to be returned by the {@link #next()} method. This value is computed
-         * ahead of time by {@link #hasNext()} since we need that information in order to determine
-         * if the value needs to be skipped or not.
+         * ahead of time by {@link #hasNext()} because we need that information in order to determine
+         * if the value should be skipped or not.
          *
          * <h4>Implementation note</h4>
          * Actually we don't really need to keep this value, since it is not used outside the {@link #hasNext()}
@@ -383,6 +382,12 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * {@link TreeNode#cachedValue} field.
          */
         private Object nextValue;
+
+        /**
+         * The node returned by the last call to {@link #next()}. This is used for clearing the
+         * {@link TreeNode#cachedValue} field when the iterator moves to the next element.
+         */
+        private TreeNode current;
 
         /**
          * If the call to {@link #next()} found a collection, the iterator over the elements in that collection.
@@ -417,8 +422,15 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
         /**
          * Throws {@link ConcurrentModificationException} if an unexpected change has been detected.
+         * Also opportunistically clears the cached value of the previous node, since this method is
+         * invoked either before moving to the next node or for removing the current node.
          */
-        final void checkConcurrentModification() {
+        private void checkConcurrentModification() {
+            if (current != null) {
+                current.canUseCache = false;
+                current.cachedValue = null;
+                current = null;
+            }
             if (modCountCheck != modCount) {
                 throw new ConcurrentModificationException();
             }
@@ -438,7 +450,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
             }
             /*
              * If we were iterating over the elements of a sub-collection, move to the next element
-             * in that iteration. We do not check for 'isSkipped(value)' here because null or empty
+             * in that iteration. We do not check for `isSkipped(value)` here because null or empty
              * elements in collections are probably mistakes, and we want to see them.
              */
             if (subIterator != null) {
@@ -477,8 +489,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
                             /*
                              * If the property is a collection, unconditionally get the first element
                              * even if absent (null) in order to comply with the ValueExistencePolicy.
-                             * if we were expected to ignore empty collections, 'isSkipped(nextValue)'
-                             * would have returned 'true'.
+                             * if we were expected to ignore empty collections, `isSkipped(nextValue)`
+                             * would have returned `true`.
                              */
                             subIndex = 0;
                             if (subIterator.hasNext()) {
@@ -486,7 +498,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
                             } else {
                                 nextValue = null;
                                 /*
-                                 * Do not set 'childIterator' to null, since the above 'nextValue'
+                                 * Do not set `childIterator` to null, because the above `nextValue`
                                  * is considered as part of the child iteration.
                                  */
                             }
@@ -502,26 +514,28 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
         /**
          * Returns the node for the metadata property at the current {@link #nextInAccessor}.
-         * The value of this property is initially {@link #nextValue}, but this may change at
-         * any time if the user modifies the underlying metadata object.
+         * The value in `TableColumn.VALUE` is initially set to {@link #nextValue},
+         * but may change later if the user modifies the underlying metadata object.
          */
         @Override
         public TreeTable.Node next() {
             if (hasNext()) {
                 final TreeNode.Element node = childAt(nextInAccessor, subIndex);
-                node.cachedValue = nextValue;
+                node.canUseCache   = true;
+                node.cachedValue   = nextValue;
                 previousInAccessor = nextInAccessor;
                 if (subIterator == null) {
                     /*
                      * If we are iterating over the elements in a collection, the PropertyAccessor index
-                     * still the same and will be incremented by 'hasNext()' only when the iteration is
+                     * still the same and will be incremented by `hasNext()` only when the iteration is
                      * over. Otherwise (not iterating in a collection), move to the next property. The
-                     * 'hasNext()' method will determine later if this property is non-empty, or if we
+                     * `hasNext()` method will determine later if this property is non-empty, or if we
                      * need to move forward again.
                      */
                     nextInAccessor++;
                 }
                 isNextVerified = false;
+                current = node;
                 return (node.decorator == null) ? node : node.decorator.apply(node);
             }
             throw new NoSuchElementException();
@@ -530,8 +544,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         /**
          * Clears the element returned by the last call to {@link #next()}.
          * Whether the cleared element is considered removed or not depends
-         * on the value policy and on the element type. With the default
-         * {@code NON_EMPTY} policy, the effect is a removal.
+         * on the value policy and on the element type.
+         * With the default {@code NON_EMPTY} policy, the effect is a removal.
          */
         @Override
         public void remove() {

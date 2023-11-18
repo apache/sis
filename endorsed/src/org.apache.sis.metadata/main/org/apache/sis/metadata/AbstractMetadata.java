@@ -69,7 +69,7 @@ import org.apache.sis.util.collection.TreeTable;
  * use a single lock for the whole metadata tree (including children).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see MetadataStandard
  *
@@ -150,13 +150,10 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     }
 
     /**
-     * Returns a view of the property values in a {@link Map}. The map is backed by this metadata
-     * object, so changes in the underlying metadata object are immediately reflected in the map
-     * and conversely.
-     *
-     * <h4>Supported operations</h4>
-     * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
-     * remove(…)} operations if the underlying metadata object contains setter methods.
+     * Returns a view of the property values in a {@link Map}. The map is backed by this metadata object,
+     * so changes in the underlying metadata object are immediately reflected in the map and conversely.
+     * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object) remove(…)}
+     * operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      *
      * <h4>Keys and values</h4>
@@ -179,9 +176,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * The default implementation is equivalent to the following:
      *
      * {@snippet lang="java" :
-     *     return getStandard().asValueMap(this, null,
-     *             KeyNamePolicy.JAVABEANS_PROPERTY,
-     *             ValueExistencePolicy.NON_EMPTY);
+     *     return getStandard().asValueMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
      *     }
      *
      * @return a view of this metadata object as a map.
@@ -197,7 +192,11 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * The tree table is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
-     * <p>The returned {@code TreeTable} instance contains the following columns:</p>
+     * <p>The returned {@code TreeTable} instance contains the columns listed below.
+     * The {@code (IDENTIFIER, INDEX)} pair of columns can be used as a primary key for uniquely identifying
+     * a node in a list of children. That uniqueness is guaranteed only for the children of a given node.
+     * The same keys may appear in the children of any other nodes.</p>
+     *
      * <ul class="verbose">
      *   <li>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
      *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
@@ -209,12 +208,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example, in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and another node with index 1 for the second element.
-     *
-     *       <div class="note"><b>Note:</b>
-     *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
-     *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
-     *       the same keys may appear in the children of any other nodes.</div></li>
+     *       for the first element and another node with index 1 for the second element.</li>
      *
      *   <li>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
@@ -223,6 +217,9 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      *   <li>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
      *       The base type of the value (usually an interface).</li>
+     *
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#OBLIGATION}<br>
+     *       Whether the property is mandatory, optional or conditional.</li>
      *
      *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying

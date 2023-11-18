@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import org.opengis.annotation.UML;
+import org.opengis.annotation.Obligation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Classes;
@@ -516,6 +517,22 @@ class PropertyAccessor {
             }
         }
         return index;
+    }
+
+    /**
+     * Returns whether the property at the given index is mandatory, optional or conditional.
+     *
+     * @param  index  the index of the property for which to get the obligation.
+     * @return the obligation at the given index, or {@code null} if none or if the index is out of bounds.
+     */
+    final Obligation obligation(final int index) {
+        if (index >= 0 && index < names.length) {
+            final UML uml = getters[index].getAnnotation(UML.class);
+            if (uml != null) {
+                return uml.obligation();
+            }
+        }
+        return null;
     }
 
     /**

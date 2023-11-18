@@ -23,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.function.Predicate;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -38,12 +39,14 @@ import org.apache.sis.system.Semaphores;
  * The tree table is made of the following columns:
  *
  * <ul>
- *   <li>{@link TableColumn#IDENTIFIER} - the property identifier as defined by the UML (if any).</li>
- *   <li>{@link TableColumn#INDEX}      - the index in the collection, or null if the property is not a collection.</li>
- *   <li>{@link TableColumn#NAME}       - the human-readable property name, inferred from the identifier and index.</li>
- *   <li>{@link TableColumn#TYPE}       - the base interface of property values.</li>
- *   <li>{@link TableColumn#VALUE}      - the property value.</li>
- *   <li>{@link TableColumn#REMARKS}    - remarks on the property value.</li>
+ *   <li>{@link MetadataColumn#IDENTIFIER} - the property identifier as defined by the UML (if any).</li>
+ *   <li>{@link MetadataColumn#INDEX}      - the index in the collection, or null if the property is not a collection.</li>
+ *   <li>{@link MetadataColumn#NAME}       - the human-readable property name, inferred from the identifier and index.</li>
+ *   <li>{@link MetadataColumn#TYPE}       - the base interface of property values.</li>
+ *   <li>{@link MetadataColumn#OBLIGATION} - whether the property is mandatory, optional or conditional.</li>
+ *   <li>{@link MetadataColumn#VALUE}      - the property value.</li>
+ *   <li>{@link MetadataColumn#NIL_REASON} - if the property is mandatory and nevertheless absent, the reason why.</li>
+ *   <li>{@link MetadataColumn#REMARKS}    - remarks on the property value.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -56,15 +59,25 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
 
     /**
      * The columns to be returned by {@link #getColumns()}.
+     * The filtered columns are the columns without the nil reason.
+     * The latter column is useless if {@link ValueExistencePolicy} is excluding nil values.
      */
-    static final List<TableColumn<?>> COLUMNS = UnmodifiableArrayList.wrap(new TableColumn<?>[] {
-        TableColumn.IDENTIFIER,
-        TableColumn.INDEX,
-        TableColumn.NAME,
-        TableColumn.TYPE,
-        TableColumn.VALUE,
-        TableColumn.REMARKS
-    });
+    private static final List<TableColumn<?>> COLUMNS, FILTERED_COLUMNS;
+    static {
+        var columns = new TableColumn<?>[] {
+            MetadataColumn.IDENTIFIER,
+            MetadataColumn.INDEX,
+            MetadataColumn.NAME,
+            MetadataColumn.TYPE,
+            MetadataColumn.OBLIGATION,
+            MetadataColumn.VALUE,
+            MetadataColumn.NIL_REASON,
+            MetadataColumn.REMARKS
+        };
+        COLUMNS = UnmodifiableArrayList.wrap(columns);
+        columns = ArraysExt.remove(columns, 6, 1);
+        FILTERED_COLUMNS = UnmodifiableArrayList.wrap(columns);
+    }
 
     /**
      * The root of the metadata tree.
@@ -100,12 +113,12 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
     }
 
     /**
-     * Returns the columns included in this tree table.
+     * {@return the columns included in this tree table}.
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the returned collection is unmodifiable.
     public List<TableColumn<?>> getColumns() {
-        return COLUMNS;                                 // Unmodifiable
+        return valuePolicy.acceptNilValues() ? COLUMNS : FILTERED_COLUMNS;
     }
 
     /**
