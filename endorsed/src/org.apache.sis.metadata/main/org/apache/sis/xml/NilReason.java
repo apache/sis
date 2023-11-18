@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml;
 
+import java.util.Date;
 import java.util.Map;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -55,7 +56,7 @@ import org.apache.sis.math.MathFunctions;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see NilObject
  *
@@ -427,7 +428,7 @@ public final class NilReason implements Serializable {
      *             {@code 0} or {@code false}, in this preference order, depending on the method return type.</li>
      *       </ul>
      *   </li>
-     *   <li>One of {@link Float}, {@link Double} or {@link String} types.
+     *   <li>One of {@link Float}, {@link Double}, {@link String}, {@link URI} or {@link Date} types.
      *       In such case, this method returns an instance which will be recognized as "nil" by the XML marshaller.</li>
      * </ul>
      *
@@ -445,25 +446,21 @@ public final class NilReason implements Serializable {
      * @return an {@link NilObject} of the given type.
      */
     @SuppressWarnings("unchecked")
-    public synchronized <T> T createNilObject(final Class<T> type) {
+    public <T> T createNilObject(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
         /*
          * Check for existing instance in the cache before to create a new object. Returning a unique
          * instance is mandatory for the types handled by `createNilInstance(Class)`. Since we have
          * to cache those values anyway, we opportunistically extend the caching to other types too.
-         *
-         * Implementation note: we have two synchronizations here: one lock on `this` because of the
-         * `synchronized` statement in this method signature, and another lock in `WeakValueHashMap`.
-         * The second lock may seem useless since we already hold a lock on `this`. But it is actually
-         * needed because the garbage-collected entries are removed from the map in a background thread
-         * (see ReferenceQueueConsumer), which is synchronized on the map itself. It is better to keep
-         * the synchronization on the map shorter than the snychronization on `this` because a single
-         * ReferenceQueueConsumer thread is shared by all the SIS library.
          */
-        if (nilObjects == null) {
-            nilObjects = new WeakValueHashMap<>((Class) Class.class);
+        Map<Class<?>, Object> instances;
+        synchronized (this) {
+            instances = nilObjects;
+            if (instances == null) {
+                nilObjects = instances = new WeakValueHashMap<>((Class) Class.class);
+            }
         }
-        Object object = nilObjects.get(type);
+        Object object = instances.get(type);
         if (object == null) {
             /*
              * If no object has been previously created, check for the usual case where the requested type
@@ -490,9 +487,8 @@ public final class NilReason implements Serializable {
                  */
                 object = createNilInstance(type);
             }
-            if (nilObjects.put(type, object) != null) {
-                throw new AssertionError(type);                                 // Should never happen.
-            }
+            final Object current = instances.putIfAbsent(type, object);
+            if (current != null) object = current;
         }
         return type.cast(object);
     }
@@ -502,12 +498,6 @@ public final class NilReason implements Serializable {
      *
      * <p><b>Reminder:</b> If more special cases are added, do not forget to update the {@link #forObject(Object)}
      * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
-     *
-     * <h4>Implementation note</h4>
-     * There is no special case for {@link Character} because Java {@code char}s are not really full Unicode characters.
-     * They are parts of UTF-16 encoding instead. If there is a need to represent a single Unicode character, we should
-     * probably still use a {@link String} where the string contain 1 or 2 Java characters. This may also facilitate the
-     * encoding in the XML files, since many files use another encoding than UTF-16 anyway.
      *
      * @throws IllegalArgumentException if the given type is not a supported type.
      *
@@ -519,7 +509,11 @@ public final class NilReason implements Serializable {
         if (type == Float  .class) return Float .valueOf(MathFunctions.toNanFloat(ordinal()));
         final Object object;
         if (type == String .class) {
-            object = new String("");         // REALLY need a new instance.
+            object = new String("");                // REALLY need a new instance.
+        } else if (type == URI.class) {
+            object = URI.create("");                // Really need a new instance.
+        } else if (type == Date.class) {
+            object = new NilDate(this);
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
@@ -534,7 +528,8 @@ public final class NilReason implements Serializable {
      * <ul>
      *   <li>If the given object implements the {@link NilObject} interface, then this method delegates
      *       to the {@link NilObject#getNilReason()} method.</li>
-     *   <li>Otherwise if the given object is one of the {@link Float}, {@link Double} or {@link String} instances
+     *   <li>Otherwise if the given object is one of the {@link Float}, {@link Double}, {@link String},
+     *       {@link URI} or {@link Date} instances
      *       returned by {@link #createNilObject(Class)}, then this method returns the associated reason.</li>
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
@@ -560,7 +555,7 @@ public final class NilReason implements Serializable {
                 if (value.isNaN()) {
                     return forNumber(value);
                 }
-            } else if (object instanceof String) {
+            } else if (object instanceof String || object instanceof URI) {
                 return (NilReason) FinalClassExtensions.property(object);
             }
         }
