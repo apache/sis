@@ -16,9 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Map;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.Citation;
 
@@ -51,32 +48,10 @@ final class InformationMap extends PropertyMap<ExtendedElementInformation> {
     }
 
     /**
-     * Returns the information to which the specified key is mapped,
-     * or {@code null} if this map contains no mapping for the key.
+     * Returns the information for the property at the specified index.
      */
     @Override
-    public ExtendedElementInformation get(final Object key) {
-        if (key instanceof String) {
-            return accessor.information(standard, accessor.indexOf((String) key, false));
-        }
-        return null;
-    }
-
-    /**
-     * Returns an iterator over the entries contained in this map.
-     */
-    @Override
-    final Iterator<Map.Entry<String,ExtendedElementInformation>> iterator() {
-        return new Iter() {
-            @Override
-            public Map.Entry<String,ExtendedElementInformation> next() {
-                final ExtendedElementInformation value = accessor.information(standard, index);
-                if (value == null) {
-                    // PropertyAccessor.information(int) never return null if the index is valid.
-                    throw new NoSuchElementException();
-                }
-                return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);
-            }
-        };
+    final ExtendedElementInformation getReflectively(final int index) {
+        return accessor.information(standard, index);
     }
 }

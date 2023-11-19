@@ -896,6 +896,41 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
+     * Returns the reasons for all missing values of mandatory properties.
+     * The map is backed by the metadata object using Java reflection, so changes in the
+     * underlying metadata object are immediately reflected in the map and conversely.
+     * Nil reasons are determined by calls to {@link NilReason#forObject(Object)},
+     * potentially completed by an internal storage for
+     * {@linkplain NilReason#isSupported(Class) unsupported value types}.
+     *
+     * <h4>Mandatory and optional properties</h4>
+     * If a {@linkplain org.opengis.annotation.Obligation#MANDATORY mandatory} property has no value,
+     * then the property will have an entry in the map even if the associated {@link NilReason} is null.
+     * By contrast, {@linkplain org.opengis.annotation.Obligation#OPTIONAL optional} properties have
+     * entries in the map only if they have a non-null {@link NilReason}.
+     *
+     * <h4>Supported operations</h4>
+     * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
+     * remove(…)} operations if the underlying metadata object contains setter methods.
+     * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
+     *
+     * @param  metadata     the metadata object to view as a map.
+     * @param  baseType     base type of the metadata of interest, or {@code null} if unspecified.
+     * @param  keyPolicy    determines the string representation of map keys.
+     * @return a map view over the metadata object.
+     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
+     *
+     * @since 1.5
+     */
+    public Map<String,NilReason> asNilReasonMap(final Object metadata, final Class<?> baseType,
+            final KeyNamePolicy keyPolicy) throws ClassCastException
+    {
+        ensureNonNull("metadata",  metadata);
+        ensureNonNull("keyPolicy", keyPolicy);
+        return new NilReasonMap(metadata, getAccessor(new CacheKey(metadata.getClass(), baseType), true), keyPolicy);
+    }
+
+    /**
      * Returns the specified metadata object as a tree table.
      * The tree table is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the tree table and conversely.

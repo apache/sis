@@ -17,7 +17,9 @@
 package org.apache.sis.metadata;
 
 import java.util.Map;
+import java.util.HashMap;
 import jakarta.xml.bind.annotation.XmlTransient;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -77,6 +79,14 @@ import org.apache.sis.util.collection.TreeTable;
  */
 @XmlTransient
 public abstract class AbstractMetadata implements LenientComparable, Emptiable {
+    /**
+     * The reasons why some mandatory properties are absent. This map is used only for values of
+     * classes that cannot be represented as instances of {@link org.apache.sis.xml.NilObject}.
+     *
+     * @see NilReasonMap
+     */
+    HashMap<Integer,NilReason> nilReasons;
+
     /**
      * Creates an initially empty metadata.
      */
@@ -331,5 +341,25 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     @Override
     public String toString() {
         return asTreeTable().toString();
+    }
+
+    /**
+     * Returns a <em>shallow</em> clone of this metadata. The properties values and the children are not cloned.
+     * This method is for internal usage by {@link ModifiableMetadata} and should usually not be invoked directly.
+     *
+     * @return a shallow clone of this metadata.
+     * @throws CloneNotSupportedException if this metadata is not cloneable.
+     *
+     * @see ModifiableMetadata#deepCopy(ModifiableMetadata.State)
+     * @see MetadataCopier
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected AbstractMetadata clone() throws CloneNotSupportedException {
+        final var clone = (AbstractMetadata) super.clone();
+        if (clone.nilReasons != null) {
+            clone.nilReasons = (HashMap<Integer,NilReason>) clone.nilReasons.clone();
+        }
+        return clone;
     }
 }
