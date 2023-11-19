@@ -17,7 +17,6 @@
 package org.apache.sis.xml;
 
 import java.net.URI;
-import java.util.Date;
 import java.net.URISyntaxException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -173,18 +172,6 @@ public final class NilReasonTest extends TestCase {
         assertInstanceOf(NilObject.class, value);
         assertSame(NilReason.MISSING, NilReason.forObject(value));
         assertSame(value, NilReason.MISSING.createNilObject(InternationalString.class), "Expected cached value.");
-    }
-
-    /**
-     * Tests {@link NilReason#createNilObject(Class)} for a date.
-     */
-    @Test
-    public void testCreateNilDate() {
-        final Date value = NilReason.TEMPLATE.createNilObject(Date.class);
-        assertEquals("", value.toString());
-        assertInstanceOf(NilObject.class, value);
-        assertSame(NilReason.TEMPLATE, NilReason.forObject(value));
-        assertSame(value, NilReason.TEMPLATE.createNilObject(Date.class), "Expected cached value.");
     }
 
     /**

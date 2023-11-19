@@ -16,8 +16,8 @@
  */
 package org.apache.sis.xml;
 
-import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.Serializable;
@@ -414,6 +414,21 @@ public final class NilReason implements Serializable {
     }
 
     /**
+     * Returns whether the given class is accepted by {@code createNilObject(Class)}.
+     * The set of accepted types is implementation-dependent and may change in any future Apache SIS version.
+     *
+     * @param  type  the class or interface to test, or {@code null}.
+     * @return {@code true} if the given type is non-null and is accepted by {@link #createNilObject(Class)}.
+     *
+     * @since 1.5
+     */
+    public static boolean isSupported(final Class<?> type) {
+        if (type == null) return false;
+        if (type.isInterface()) return !NilObjectHandler.isIgnoredInterface(type);
+        return ACCEPTED_CLASSES.contains(type);
+    }
+
+    /**
      * Returns an object of the given type which is nil for the reason represented by this instance.
      * The {@code type} argument can be one of the following cases:
      *
@@ -428,7 +443,7 @@ public final class NilReason implements Serializable {
      *             {@code 0} or {@code false}, in this preference order, depending on the method return type.</li>
      *       </ul>
      *   </li>
-     *   <li>One of {@link Float}, {@link Double}, {@link String}, {@link URI} or {@link Date} types.
+     *   <li>One of {@link Float}, {@link Double}, {@link String} or {@link URI} types.
      *       In such case, this method returns an instance which will be recognized as "nil" by the XML marshaller.</li>
      * </ul>
      *
@@ -494,10 +509,17 @@ public final class NilReason implements Serializable {
     }
 
     /**
+     * Classes that are handled in a special way by {@link #createNilInstance(Class)}.
+     */
+    private static final Set<Class<?>> ACCEPTED_CLASSES = Set.of(
+            Double.class, Float.class, String.class, URI.class);
+
+    /**
      * Returns a new {@code Float}, {@code Double} or {@code String} instance to be considered as a nil value.
      *
-     * <p><b>Reminder:</b> If more special cases are added, do not forget to update the {@link #forObject(Object)}
-     * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
+     * <p><b>Reminder:</b> If more special cases are added,
+     * do not forget to update the {@link #forObject(Object)} method and the {@link #ACCEPTED_CLASSES} set,
+     * then to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} documentation.</p>
      *
      * @throws IllegalArgumentException if the given type is not a supported type.
      *
@@ -512,8 +534,6 @@ public final class NilReason implements Serializable {
             object = new String("");                // REALLY need a new instance.
         } else if (type == URI.class) {
             object = URI.create("");                // Really need a new instance.
-        } else if (type == Date.class) {
-            object = new NilDate(this);
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
@@ -529,7 +549,7 @@ public final class NilReason implements Serializable {
      *   <li>If the given object implements the {@link NilObject} interface, then this method delegates
      *       to the {@link NilObject#getNilReason()} method.</li>
      *   <li>Otherwise if the given object is one of the {@link Float}, {@link Double}, {@link String},
-     *       {@link URI} or {@link Date} instances
+     *       or {@link URI} instances
      *       returned by {@link #createNilObject(Class)}, then this method returns the associated reason.</li>
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
