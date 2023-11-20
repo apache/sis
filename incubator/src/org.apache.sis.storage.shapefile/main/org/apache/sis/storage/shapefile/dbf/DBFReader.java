@@ -87,14 +87,14 @@ public final class DBFReader implements AutoCloseable {
             //read all fields
             record.fields = new Object[header.fields.length];
             for (int i = 0; i < header.fields.length; i++) {
-                record.fields[i] = header.fields[i].getEncoder().read(channel);
+                record.fields[i] = header.fields[i].readValue(channel);
             }
         } else {
             //read only selected fields
             record.fields = new Object[fieldsToRead.length];
             for (int i = 0,k = 0; i < header.fields.length; i++) {
                 if (k < fieldsToRead.length && fieldsToRead[k] == i) {
-                    record.fields[k++] = header.fields[i].getEncoder().read(channel);
+                    record.fields[k++] = header.fields[i].readValue(channel);
                 } else {
                     //skip this field
                     channel.skipBytes(header.fields[i].fieldLength);

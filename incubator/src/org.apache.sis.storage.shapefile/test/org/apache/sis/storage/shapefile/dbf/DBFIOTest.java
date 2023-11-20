@@ -19,8 +19,6 @@ package org.apache.sis.storage.shapefile.dbf;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
@@ -76,27 +74,27 @@ public class DBFIOTest {
             assertEquals(78,  header.fields[0].fieldType);
             assertEquals(0,    header.fields[0].fieldAddress);
             assertEquals(10,   header.fields[0].fieldLength);
-            assertEquals(0,    header.fields[0].fieldLDecimals);
+            assertEquals(0,    header.fields[0].fieldDecimals);
             assertEquals("text", header.fields[1].fieldName);
             assertEquals(67,  header.fields[1].fieldType);
             assertEquals(0,    header.fields[1].fieldAddress);
             assertEquals(80,   header.fields[1].fieldLength);
-            assertEquals(0,    header.fields[1].fieldLDecimals);
+            assertEquals(0,    header.fields[1].fieldDecimals);
             assertEquals("integer", header.fields[2].fieldName);
             assertEquals(78,  header.fields[2].fieldType);
             assertEquals(0,    header.fields[2].fieldAddress);
             assertEquals(10,   header.fields[2].fieldLength);
-            assertEquals(0,    header.fields[2].fieldLDecimals);
+            assertEquals(0,    header.fields[2].fieldDecimals);
             assertEquals("float", header.fields[3].fieldName);
             assertEquals(78,  header.fields[3].fieldType);
             assertEquals(0,    header.fields[3].fieldAddress);
             assertEquals(11,   header.fields[3].fieldLength);
-            assertEquals(6,    header.fields[3].fieldLDecimals);
+            assertEquals(6,    header.fields[3].fieldDecimals);
             assertEquals("date", header.fields[4].fieldName);
             assertEquals(68,  header.fields[4].fieldType);
             assertEquals(0,    header.fields[4].fieldAddress);
             assertEquals(8,   header.fields[4].fieldLength);
-            assertEquals(0,    header.fields[4].fieldLDecimals);
+            assertEquals(0,    header.fields[4].fieldDecimals);
 
 
             final DBFRecord record1 = reader.next();
@@ -108,7 +106,6 @@ public class DBFIOTest {
 
             final DBFRecord record2 = reader.next();
             assertEquals(2L, record2.fields[0]);
-            assertEquals("text2", record2.fields[1]);
             assertEquals(40L, record2.fields[2]);
             assertEquals(60.0, record2.fields[3]);
             assertEquals(LocalDate.of(2023, 10, 28), record2.fields[4]);

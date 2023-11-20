@@ -51,9 +51,7 @@ public final class DBFHeader {
         this.headerSize = toCopy.headerSize;
         this.recordSize = toCopy.recordSize;
         this.fields = new DBFField[toCopy.fields.length];
-        for (int i = 0; i < this.fields.length; i++) {
-            this.fields[i] = new DBFField(toCopy.fields[i]);
-        }
+        System.arraycopy(toCopy.fields, 0, this.fields, 0, this.fields.length);
     }
 
     /**
@@ -82,8 +80,7 @@ public final class DBFHeader {
         fields     = new DBFField[(headerSize - FIELD_SIZE - 1) / FIELD_SIZE];
 
         for (int i = 0; i < fields.length; i++) {
-            fields[i] = new DBFField();
-            fields[i].read(channel, charset);
+            fields[i] = DBFField.read(channel, charset);
         }
         if (channel.readByte()!= FIELD_DESCRIPTOR_TERMINATOR) {
             throw new IOException("Unvalid database III field descriptor terminator");

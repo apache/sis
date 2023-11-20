@@ -108,7 +108,7 @@ import org.opengis.util.CodeList;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ShapefileStore extends DataStore implements FeatureSet {
+public final class ShapefileStore extends DataStore implements WritableFeatureSet {
 
     private static final String GEOMETRY_NAME = "geometry";
 
@@ -175,6 +175,26 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
         return featureSetView.getEnvelope();
     }
 
+    @Override
+    public void updateType(FeatureType featureType) throws DataStoreException {
+        featureSetView.updateType(featureType);
+    }
+
+    @Override
+    public void add(Iterator<? extends Feature> iterator) throws DataStoreException {
+        featureSetView.add(iterator);
+    }
+
+    @Override
+    public void removeIf(Predicate<? super Feature> predicate) throws DataStoreException {
+        featureSetView.removeIf(predicate);
+    }
+
+    @Override
+    public void replaceIf(Predicate<? super Feature> predicate, UnaryOperator<Feature> unaryOperator) throws DataStoreException {
+        featureSetView.replaceIf(predicate, unaryOperator);
+    }
+
     private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
 
         private final Rectangle2D.Double filter;
@@ -203,6 +223,13 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
             this.readShp = readShp;
             this.filter = filter;
             this.dbfProperties = properties;
+        }
+
+        /**
+         * @return true if this view reads all data without any filter.
+         */
+        private boolean isDefaultView() {
+            return filter == null && dbfProperties == null && readShp;
         }
 
         @Override
@@ -279,7 +306,7 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                             dbfPropertiesIndex[idx] = i;
                             idx++;
 
-                            final AttributeTypeBuilder atb = ftb.addAttribute(field.getEncoder().getValueClass()).setName(field.fieldName);
+                            final AttributeTypeBuilder atb = ftb.addAttribute(field.valueClass).setName(field.fieldName);
                             //no official but 'id' field is common
                             if (!hasId && "id".equalsIgnoreCase(field.fieldName) || "identifier".equalsIgnoreCase(field.fieldName)) {
                                 idField = field.fieldName;
@@ -523,21 +550,28 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
 
         @Override
         public void updateType(FeatureType newType) throws DataStoreException {
+            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
+            if (Files.exists(shpPath)) {
+                throw new DataStoreException("Update type is possible only when files do not exist. It can be used to create a new shapefile but not to update one.");
+            }
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void add(Iterator<? extends Feature> features) throws DataStoreException {
+            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void removeIf(Predicate<? super Feature> filter) throws DataStoreException {
+            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater) throws DataStoreException {
+            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

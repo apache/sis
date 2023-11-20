@@ -160,4 +160,41 @@ public class ShapefileStoreTest {
             assertFalse(iterator.hasNext());
         }
     }
+
+    /**
+     * Test creating a new shapefile.
+     */
+    @Ignore
+    @Test
+    public void testCreate() throws URISyntaxException, DataStoreException {
+        //todo
+    }
+
+    /**
+     * Test adding features to a shapefile.
+     */
+    @Ignore
+    @Test
+    public void testAddFeatures() throws URISyntaxException, DataStoreException {
+        //todo
+    }
+
+    /**
+     * Test remove features from a shapefile.
+     */
+    @Ignore
+    @Test
+    public void testRemoveFeatures() throws URISyntaxException, DataStoreException {
+        //todo
+    }
+
+    /**
+     * Test replacing features in a shapefile.
+     */
+    @Ignore
+    @Test
+    public void testReplaceFeatures() throws URISyntaxException, DataStoreException {
+        //todo
+    }
+
 }

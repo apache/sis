@@ -45,7 +45,7 @@ public final class DBFWriter implements AutoCloseable{
     public void write(DBFRecord record) throws IOException {
         channel.writeByte(DBFReader.TAG_PRESENT);
         for (int i = 0; i < header.fields.length; i++) {
-            header.fields[i].getEncoder().write(channel, record.fields[i]);
+            header.fields[i].writeValue(channel, record.fields[i]);
         }
         writtenNbRecord++;
     }
