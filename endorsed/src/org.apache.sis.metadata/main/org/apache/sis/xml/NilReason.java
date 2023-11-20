@@ -17,7 +17,6 @@
 package org.apache.sis.xml;
 
 import java.util.Map;
-import java.util.Set;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.Serializable;
@@ -414,21 +413,6 @@ public final class NilReason implements Serializable {
     }
 
     /**
-     * Returns whether the given class is accepted by {@code createNilObject(Class)}.
-     * The set of accepted types is implementation-dependent and may change in any future Apache SIS version.
-     *
-     * @param  type  the class or interface to test, or {@code null}.
-     * @return {@code true} if the given type is non-null and is accepted by {@link #createNilObject(Class)}.
-     *
-     * @since 1.5
-     */
-    public static boolean isSupported(final Class<?> type) {
-        if (type == null) return false;
-        if (type.isInterface()) return !NilObjectHandler.isIgnoredInterface(type);
-        return ACCEPTED_CLASSES.contains(type);
-    }
-
-    /**
      * Returns an object of the given type which is nil for the reason represented by this instance.
      * The {@code type} argument can be one of the following cases:
      *
@@ -509,16 +493,10 @@ public final class NilReason implements Serializable {
     }
 
     /**
-     * Classes that are handled in a special way by {@link #createNilInstance(Class)}.
-     */
-    private static final Set<Class<?>> ACCEPTED_CLASSES = Set.of(
-            Double.class, Float.class, String.class, URI.class);
-
-    /**
      * Returns a new {@code Float}, {@code Double} or {@code String} instance to be considered as a nil value.
      *
      * <p><b>Reminder:</b> If more special cases are added,
-     * do not forget to update the {@link #forObject(Object)} method and the {@link #ACCEPTED_CLASSES} set,
+     * do not forget to update the {@link #forObject(Object)} method and the {@code NilReasonMap.AS_OBJECTS} set,
      * then to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} documentation.</p>
      *
      * @throws IllegalArgumentException if the given type is not a supported type.

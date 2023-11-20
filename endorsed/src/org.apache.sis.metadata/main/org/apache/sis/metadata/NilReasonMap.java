@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,6 +42,15 @@ import org.apache.sis.xml.NilObject;
  * @see MetadataStandard#asNilReasonMap(Object, Class, KeyNamePolicy)
  */
 final class NilReasonMap extends PropertyMap<NilReason> {
+    /**
+     * Classes of objects to represent as {@link NilObject}.
+     * Interfaces are not included in this list.
+     *
+     * @see #asNilObject(Class)
+     */
+    private static final Set<Class<?>> AS_OBJECTS = Set.of(
+            Double.class, Float.class, String.class, java.net.URI.class);
+
     /**
      * The metadata object to wrap.
      */
@@ -171,11 +181,22 @@ final class NilReasonMap extends PropertyMap<NilReason> {
             return oldReason;
         }
         final Class<?>  type      = accessor.type(index, TypeValuePolicy.PROPERTY_TYPE);
-        final Object    nilObject = NilReason.isSupported(type) ? value.createNilObject(type) : null;
+        final Object    nilObject = asNilObject(type) ? value.createNilObject(type) : null;
         final Object    oldObject = accessor.set(index, metadata, nilObject, PropertyAccessor.RETURN_PREVIOUS);
         final NilReason oldReason = NilReason.forObject(oldObject);
         final NilReason oldStored = (nilObject == null) ? nilReasons.put(index, value) : nilReasons.remove(index);
         return (oldReason != null) ? oldReason : oldStored;
+    }
+
+    /**
+     * Returns whether to handle nil instances of the given type as nil objects.
+     * The set of accepted types is implementation-dependent and may change in any future Apache SIS version.
+     *
+     * @param  type  the class or interface to test, or {@code null}.
+     * @return {@code true} if instances of the given type can be represented as nil objects.
+     */
+    private static boolean asNilObject(final Class<?> type) {
+        return type.isInterface() || AS_OBJECTS.contains(type);
     }
 
     /**
