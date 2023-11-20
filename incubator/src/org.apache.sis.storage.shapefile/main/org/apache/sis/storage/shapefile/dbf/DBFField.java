@@ -18,9 +18,9 @@ package org.apache.sis.storage.shapefile.dbf;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Date;
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.util.ArraysExt;
+import org.apache.sis.io.stream.ChannelDataOutput;
 
 
 /**
@@ -81,12 +81,24 @@ public final class DBFField {
     public static final int TYPE_OLE = 'g';
 
     public String fieldName;
-    public int fieldType;
+    public char fieldType;
     public int fieldAddress;
     public int fieldLength;
     public int fieldLDecimals;
 
     private DBFFieldEncoder encoder;
+
+    public DBFField() {
+    }
+
+    public DBFField(DBFField toCopy) {
+        this.fieldName = toCopy.fieldName;
+        this.fieldType = toCopy.fieldType;
+        this.fieldAddress = toCopy.fieldAddress;
+        this.fieldLength = toCopy.fieldLength;
+        this.fieldLDecimals = toCopy.fieldLDecimals;
+        this.encoder = toCopy.encoder;
+    }
 
     public void read(ChannelDataInput channel, Charset charset) throws IOException {
         byte[] n = channel.readBytes(11);
@@ -94,13 +106,25 @@ public final class DBFField {
         for (int i = 0; i < n.length && n[i] != 0; i++,nameSize++);
 
         fieldName      = new String(n, 0, nameSize);
-        fieldType      = Character.valueOf(((char)channel.readUnsignedByte())).toString().toLowerCase().charAt(0);
+        fieldType      = Character.valueOf(((char)channel.readUnsignedByte())).toString().charAt(0);
         fieldAddress   = channel.readInt();
         fieldLength    = channel.readUnsignedByte();
         fieldLDecimals = channel.readUnsignedByte();
         channel.skipBytes(14);
 
         encoder = DBFFieldEncoder.getEncoder(fieldType, fieldLength, fieldLDecimals, charset);
+    }
+
+    public void write(ChannelDataOutput channel) throws IOException {
+        byte[] bytes = fieldName.getBytes(StandardCharsets.US_ASCII);
+        if (bytes.length > 11) throw new IOException("Field name length must not be longer then 11 characters.");
+        channel.write(bytes);
+        channel.repeat(11 - bytes.length, (byte) 0);
+        channel.writeByte(fieldType);
+        channel.writeInt(fieldAddress);
+        channel.writeByte(fieldLength);
+        channel.writeByte(fieldLDecimals);
+        channel.repeat(14, (byte) 0);
     }
 
     public DBFFieldEncoder getEncoder() {

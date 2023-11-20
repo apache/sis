@@ -18,7 +18,10 @@ package org.apache.sis.storage.shapefile.dbf;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.Locale;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import static org.apache.sis.storage.shapefile.dbf.DBFField.*;
@@ -29,8 +32,8 @@ import static org.apache.sis.storage.shapefile.dbf.DBFField.*;
  */
 public abstract class DBFFieldEncoder {
 
-    public static DBFFieldEncoder getEncoder(int fieldType, int fieldLength, int fieldDecimals, Charset charset) {
-        switch (fieldType) {
+    public static DBFFieldEncoder getEncoder(char fieldType, int fieldLength, int fieldDecimals, Charset charset) {
+        switch (Character.toLowerCase(fieldType)) {
             case TYPE_BINARY : return new Binary(fieldLength, fieldDecimals);
             case TYPE_CHAR : return new Char(fieldLength, fieldDecimals, charset);
             case TYPE_DATE : return new Date(fieldLength, fieldDecimals);
@@ -104,7 +107,14 @@ public abstract class DBFFieldEncoder {
 
         @Override
         public void write(ChannelDataOutput channel, Object value) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            final String txt = (String) value;
+            final byte[] bytes = txt.getBytes(charset);
+            if (bytes.length >= fieldLength) {
+                channel.write(bytes, 0, fieldLength);
+            } else {
+                channel.write(bytes);
+                channel.repeat(fieldLength - bytes.length, (byte)' ');
+            }
         }
     }
 
@@ -125,7 +135,23 @@ public abstract class DBFFieldEncoder {
 
         @Override
         public void write(ChannelDataOutput channel, Object value) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            final LocalDate date = (LocalDate) value;
+            final StringBuilder sb = new StringBuilder();
+            String year = Integer.toString(date.getYear());
+            String month = Integer.toString(date.getMonthValue());
+            String day = Integer.toString(date.getDayOfMonth());
+            switch (year.length()) {
+                case 1: sb.append("000"); break;
+                case 2: sb.append("00"); break;
+                case 3: sb.append("0"); break;
+            }
+            sb.append(year);
+            if(month.length() < 2) sb.append("0");
+            sb.append(month);
+            if(day.length() < 2) sb.append("0");
+            sb.append(day);
+            channel.repeat(fieldLength - sb.length(), (byte)' ');
+            channel.write(sb.toString().getBytes(StandardCharsets.US_ASCII));
         }
     }
 
@@ -144,7 +170,13 @@ public abstract class DBFFieldEncoder {
 
         @Override
         public void write(ChannelDataOutput channel, Object value) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            final String v = ((Integer) value).toString();
+            final int length = v.length();
+            if (length > fieldLength) {
+                throw new IOException(v + " is longer then field length " + fieldLength);
+            }
+            channel.repeat(fieldLength - length, (byte)' ');
+            channel.write(v.getBytes(StandardCharsets.US_ASCII));
         }
     }
 
@@ -163,14 +195,23 @@ public abstract class DBFFieldEncoder {
 
         @Override
         public void write(ChannelDataOutput channel, Object value) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            final String v = ((Long) value).toString();
+            final int length = v.length();
+            if (length > fieldLength) {
+                throw new IOException(v + " is longer then field length " + fieldLength);
+            }
+            channel.repeat(fieldLength - length, (byte)' ');
+            channel.write(v.getBytes(StandardCharsets.US_ASCII));
         }
     }
 
     private static final class Decimal extends DBFFieldEncoder {
+        private final NumberFormat format = NumberFormat.getNumberInstance(Locale.US);
 
         public Decimal(int fieldLength, int fieldDecimals) {
             super(Double.class, fieldLength, fieldDecimals);
+            format.setMaximumFractionDigits(fieldDecimals);
+            format.setMinimumFractionDigits(fieldDecimals);
         }
 
         @Override
@@ -182,7 +223,11 @@ public abstract class DBFFieldEncoder {
 
         @Override
         public void write(ChannelDataOutput channel, Object value) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            final Number v = ((Number) value);
+            final String str =format.format(v.doubleValue());
+            final int length = str.length();
+            channel.repeat(fieldLength - length, (byte)' ');
+            channel.write(str.getBytes(StandardCharsets.US_ASCII));
         }
     }
 

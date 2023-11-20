@@ -18,6 +18,8 @@ package org.apache.sis.storage.shapefile.shp;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+
+import org.apache.sis.setup.OptionKey;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -26,10 +28,8 @@ import org.apache.sis.storage.StorageConnector;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.referencing.CommonCRS;
@@ -58,12 +58,8 @@ public class ShapeIOTest {
     }
 
     private ChannelDataOutput openWrite(Path path) throws DataStoreException, IOException {
-        if (true) {
-            //bypass a bug in StorageConnector
-            WritableByteChannel wbc = Files.newByteChannel(path, StandardOpenOption.WRITE);
-            return new ChannelDataOutput("", wbc, ByteBuffer.allocate(8000));
-        }
         final StorageConnector cnx = new StorageConnector(path);
+        cnx.setOption(OptionKey.OPEN_OPTIONS, new OpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING});
         final ChannelDataOutput cdo = cnx.getStorageAs(ChannelDataOutput.class);
         cnx.closeAllExcept(cdo);
         return cdo;
@@ -73,7 +69,7 @@ public class ShapeIOTest {
      * Open given shape file, read it and write it to another file the compare them.
      * They must be identical.
      */
-    private void testReadAndWrite(String path) throws DataStoreException, IOException, URISyntaxException, URISyntaxException {
+    private void testReadAndWrite(String path) throws DataStoreException, IOException, URISyntaxException {
         final ChannelDataInput cdi = openRead(path);
 
         final Path tempFile = Files.createTempFile("tmp", ".shp");

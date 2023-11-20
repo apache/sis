@@ -28,8 +28,9 @@ import org.apache.sis.io.stream.ChannelDataInput;
  */
 public final class DBFReader implements AutoCloseable {
 
-    private static final int TAG_PRESENT = 0x20;
-    private static final int TAG_DELETED = 0x2a;
+    static final int TAG_PRESENT = 0x20;
+    static final int TAG_DELETED = 0x2a;
+    static final int TAG_EOF = 0x1A;
 
     private final ChannelDataInput channel;
     private final DBFHeader header;
@@ -64,6 +65,8 @@ public final class DBFReader implements AutoCloseable {
     public DBFRecord next() throws IOException {
         if (nbRead >= header.nbRecord) {
             //reached records end
+            //we do not trust the EOF if we already have the expected count
+            //some writes do not have it
             return null;
         }
         nbRead++;
@@ -72,6 +75,8 @@ public final class DBFReader implements AutoCloseable {
         if (marker == TAG_DELETED) {
             channel.skipBytes(header.recordSize);
             return DBFRecord.DELETED;
+        } else if (marker == TAG_EOF) {
+            return null;
         } else if (marker != TAG_PRESENT) {
             throw new IOException("Unexpected record marker " + marker);
         }

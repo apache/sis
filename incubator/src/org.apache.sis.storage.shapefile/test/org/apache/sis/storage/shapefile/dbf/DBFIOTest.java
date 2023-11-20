@@ -17,10 +17,20 @@
 package org.apache.sis.storage.shapefile.dbf;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataOutput;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.junit.Test;
@@ -40,8 +50,16 @@ public class DBFIOTest {
         return cdi;
     }
 
+    private ChannelDataOutput openWrite(Path path) throws DataStoreException, IOException {
+        final StorageConnector cnx = new StorageConnector(path);
+        cnx.setOption(OptionKey.OPEN_OPTIONS, new OpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING});
+        final ChannelDataOutput cdo = cnx.getStorageAs(ChannelDataOutput.class);
+        cnx.closeAllExcept(cdo);
+        return cdo;
+    }
+
     @Test
-    public void readTest() throws DataStoreException, IOException {
+    public void readTest() throws DataStoreException, IOException, URISyntaxException {
         final String path = "/org/apache/sis/storage/shapefile/point.dbf";
         final ChannelDataInput cdi = openRead(path);
 
@@ -55,27 +73,27 @@ public class DBFIOTest {
             assertEquals(120, header.recordSize);
             assertEquals(5, header.fields.length);
             assertEquals("id", header.fields[0].fieldName);
-            assertEquals(110,  header.fields[0].fieldType);
+            assertEquals(78,  header.fields[0].fieldType);
             assertEquals(0,    header.fields[0].fieldAddress);
             assertEquals(10,   header.fields[0].fieldLength);
             assertEquals(0,    header.fields[0].fieldLDecimals);
             assertEquals("text", header.fields[1].fieldName);
-            assertEquals(99,  header.fields[1].fieldType);
+            assertEquals(67,  header.fields[1].fieldType);
             assertEquals(0,    header.fields[1].fieldAddress);
             assertEquals(80,   header.fields[1].fieldLength);
             assertEquals(0,    header.fields[1].fieldLDecimals);
             assertEquals("integer", header.fields[2].fieldName);
-            assertEquals(110,  header.fields[2].fieldType);
+            assertEquals(78,  header.fields[2].fieldType);
             assertEquals(0,    header.fields[2].fieldAddress);
             assertEquals(10,   header.fields[2].fieldLength);
             assertEquals(0,    header.fields[2].fieldLDecimals);
             assertEquals("float", header.fields[3].fieldName);
-            assertEquals(110,  header.fields[3].fieldType);
+            assertEquals(78,  header.fields[3].fieldType);
             assertEquals(0,    header.fields[3].fieldAddress);
             assertEquals(11,   header.fields[3].fieldLength);
             assertEquals(6,    header.fields[3].fieldLDecimals);
             assertEquals("date", header.fields[4].fieldName);
-            assertEquals(100,  header.fields[4].fieldType);
+            assertEquals(68,  header.fields[4].fieldType);
             assertEquals(0,    header.fields[4].fieldAddress);
             assertEquals(8,   header.fields[4].fieldLength);
             assertEquals(0,    header.fields[4].fieldLDecimals);
@@ -97,6 +115,43 @@ public class DBFIOTest {
 
             //no more records
             assertNull(reader.next());
+        }
+    }
+
+    @Test
+    public void writeTest() throws DataStoreException, IOException, URISyntaxException {
+        final String path = "/org/apache/sis/storage/shapefile/point.dbf";
+        testReadAndWrite(path);
+    }
+
+    /**
+     * Open given dbf, read it and write it to another file the compare them.
+     * They must be identical.
+     */
+    private void testReadAndWrite(String path) throws DataStoreException, IOException, URISyntaxException {
+        final ChannelDataInput cdi = openRead(path);
+
+        final Path tempFile = Files.createTempFile("tmp", ".dbf");
+        final ChannelDataOutput cdo = openWrite(tempFile);
+
+        try {
+            try (DBFReader reader = new DBFReader(cdi, StandardCharsets.US_ASCII, null);
+                 DBFWriter writer = new DBFWriter(cdo)) {
+
+                writer.write(reader.getHeader());
+
+                for (DBFRecord record = reader.next(); record != null; record = reader.next()) {
+                    writer.write(record);
+                }
+            }
+
+            //compare files
+            final byte[] expected = Files.readAllBytes(Paths.get(DBFIOTest.class.getResource(path).toURI()));
+            final byte[] result = Files.readAllBytes(tempFile);
+            assertArrayEquals(expected, result);
+
+        } finally {
+            Files.deleteIfExists(tempFile);
         }
     }
 

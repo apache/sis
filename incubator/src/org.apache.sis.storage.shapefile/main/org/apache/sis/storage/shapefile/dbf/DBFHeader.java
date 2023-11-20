@@ -21,6 +21,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataOutput;
 
 /**
  *
@@ -29,6 +30,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 public final class DBFHeader {
 
     private static final int FIELD_SIZE = 32;
+    private static final int FIELD_DESCRIPTOR_TERMINATOR = 0x0D;
 
     public int year;
     public int month;
@@ -37,6 +39,33 @@ public final class DBFHeader {
     public int headerSize;
     public int recordSize;
     public DBFField[] fields;
+
+    public DBFHeader() {
+    }
+
+    public DBFHeader(DBFHeader toCopy) {
+        this.year = toCopy.year;
+        this.month = toCopy.month;
+        this.day = toCopy.day;
+        this.nbRecord = toCopy.nbRecord;
+        this.headerSize = toCopy.headerSize;
+        this.recordSize = toCopy.recordSize;
+        this.fields = new DBFField[toCopy.fields.length];
+        for (int i = 0; i < this.fields.length; i++) {
+            this.fields[i] = new DBFField(toCopy.fields[i]);
+        }
+    }
+
+    /**
+     * Compute and update header size and record size.
+     */
+    public void updateSizes() {
+        headerSize = 32 + FIELD_SIZE * fields.length + 1;
+        recordSize = 1; //record state tag
+        for (DBFField field : fields) {
+            recordSize += field.fieldLength;
+        }
+    }
 
     public void read(ChannelDataInput channel, Charset charset) throws IOException {
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -56,7 +85,25 @@ public final class DBFHeader {
             fields[i] = new DBFField();
             fields[i].read(channel, charset);
         }
-        channel.skipBytes(1);
+        if (channel.readByte()!= FIELD_DESCRIPTOR_TERMINATOR) {
+            throw new IOException("Unvalid database III field descriptor terminator");
+        }
+    }
+
+    public void write(ChannelDataOutput channel) throws IOException {
+        channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
+        channel.writeByte(0x03);
+        channel.writeByte(year);
+        channel.writeByte(month);
+        channel.writeByte(day);
+        channel.writeInt(nbRecord);
+        channel.writeShort(headerSize);
+        channel.writeShort(recordSize);
+        channel.repeat(20, (byte)0);
+        for (int i = 0; i < fields.length; i++) {
+            fields[i].write(channel);
+        }
+        channel.writeByte(FIELD_DESCRIPTOR_TERMINATOR);
     }
 
     @Override
