@@ -127,7 +127,14 @@ final class NilReasonMap extends PropertyMap<NilReason> {
      */
     @Override
     final NilReason getReflectively(final int index) {
-        final Object value = accessor.get(index, metadata);
+        return getNilReason(index, accessor.get(index, metadata));
+    }
+
+    /**
+     * Returns the nil reason for the property at the specified index, using a value already read.
+     * This method can be invoked when the value is already available in a cache.
+     */
+    final NilReason getNilReason(final int index, final Object value) {
         if (value != null) {
             nilReasons.remove(index);
             return NilReason.forObject(value);

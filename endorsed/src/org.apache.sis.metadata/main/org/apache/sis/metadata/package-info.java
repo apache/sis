@@ -123,4 +123,8 @@
  * @version 1.5
  * @since   0.3
  */
+@XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.metadata;
+
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;

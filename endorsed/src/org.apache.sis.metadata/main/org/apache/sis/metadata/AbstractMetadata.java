@@ -83,6 +83,13 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * The reasons why some mandatory properties are absent. This map is used only for values of
      * classes that cannot be represented as instances of {@link org.apache.sis.xml.NilObject}.
      *
+     * <h4>Mutability</h4>
+     * We do not make this map unmodifiable when the enclosing metadata object is made unmodifiable.
+     * It should not be necessary because all {@code put(…)} operations on this map are done only after
+     * the corresponding {@code set(…)} operations on this metadata. So if the metadata is unmodifiable,
+     * an exception should have been thrown before. On the other hand, {@code remove(…)} operations may
+     * still be done for removing entries that shouldn't be there.
+     *
      * @see NilReasonMap
      */
     HashMap<Integer,NilReason> nilReasons;

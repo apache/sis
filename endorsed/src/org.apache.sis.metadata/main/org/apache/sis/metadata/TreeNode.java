@@ -277,13 +277,11 @@ class TreeNode implements Node {
      * Gets the reason why the value is missing, or {@code null} if unspecified.
      * Note that this method is expected to always return {@code null} if
      * {@link ValueExistencePolicy#acceptNilValues()} is {@code false}.
+     *
+     * @see #setNilReason(NilReason)
      */
-    private NilReason getNilReason() {
-        // Do not check `canUseCache` because it applies to TableColumn.VALUE.
-        if (cachedValue == null) {
-            cachedValue = getUserObject();
-        }
-        return NilReason.forObject(cachedValue);
+    NilReason getNilReason() {
+        return null;
     }
 
     /**
@@ -322,6 +320,15 @@ class TreeNode implements Node {
      */
     void setUserObject(final Object value) throws UnsupportedOperationException {
         throw new UnsupportedOperationException(unmodifiableCellValue(TableColumn.VALUE));
+    }
+
+    /**
+     * Sets the value to nil with a reason explaining why the value is nil.
+     *
+     * @throws UnsupportedOperationException if the metadata value is not writable.
+     */
+    void setNilReason(final NilReason value) {
+        throw new UnsupportedOperationException(unmodifiableCellValue(MetadataColumn.NIL_REASON));
     }
 
     /**
@@ -371,6 +378,14 @@ class TreeNode implements Node {
          * Note that the reference stored in this field is the same for all siblings.
          */
         private final PropertyAccessor accessor;
+
+        /**
+         * The reasons why some mandatory property values are missing.
+         * Created only if cell values in the "Nil reason" column are requested.
+         *
+         * @see #nilReasons()
+         */
+        private transient NilReasonMap nilReasons;
 
         /**
          * Index of the value in the {@link #metadata} object to be fetched with the {@link #accessor}.
@@ -493,6 +508,38 @@ class TreeNode implements Node {
         }
 
         /**
+         * Returns the map of reasons why a mandatory value is missing.
+         * The map is created only when first needed.
+         */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        private NilReasonMap nilReasons() {
+            if (nilReasons == null) {
+                nilReasons = new NilReasonMap(metadata, accessor, KeyNamePolicy.UML_IDENTIFIER);
+            }
+            return nilReasons;
+        }
+
+        /**
+         * Sets the value to nil with a reason explaining why the value is nil.
+         */
+        @Override
+        void setNilReason(final NilReason value) {
+            cachedValue = null;
+            canUseCache = false;
+            nilReasons().setReflectively(indexInData, value);
+        }
+
+        /**
+         * Gets the reason why the value is missing, or {@code null} if unspecified.
+         */
+        @Override
+        NilReason getNilReason() {
+            // Do not check `canUseCache` because it applies to TableColumn.VALUE.
+            if (cachedValue == null) cachedValue = getUserObject();
+            return nilReasons().getNilReason(indexInData, cachedValue);
+        }
+
+        /**
          * Gets whether the property is mandatory, optional or conditional, or {@code null} if unspecified.
          */
         @Override
@@ -521,6 +568,8 @@ class TreeNode implements Node {
          */
         @Override
         void setUserObject(final Object value) {
+            cachedValue = null;
+            canUseCache = false;
             accessor.set(indexInData, metadata, value, PropertyAccessor.RETURN_NULL);
         }
 
@@ -661,6 +710,8 @@ class TreeNode implements Node {
          */
         @Override
         void setUserObject(Object value) {
+            cachedValue = null;
+            canUseCache = false;
             final Collection<?> values = (Collection<?>) super.getUserObject();
             if (!(values instanceof List<?>)) {
                 // `setValue(…)` is the public method which invoked this one.
@@ -690,6 +741,28 @@ class TreeNode implements Node {
                 // Same rational than in the getUserObject() method.
                 throw new ConcurrentModificationException(e);
             }
+        }
+
+        /**
+         * Gets the reason why the value is missing, or {@code null} if unspecified.
+         * Note that this method gets the nil reason of a specific collection element.
+         * This is a bit unusual, since nil reasons usually apply to the whole property.
+         */
+        @Override
+        NilReason getNilReason() {
+            // Do not check `canUseCache` because it applies to TableColumn.VALUE.
+            if (cachedValue == null) cachedValue = getUserObject();
+            return NilReason.forObject(cachedValue);
+        }
+
+        /**
+         * Sets the value to nil with a reason explaining why the value is nil.
+         * Note that this method sets the nil reason of a specific collection element.
+         * This is a bit unusual, since nil reasons usually apply to the whole property.
+         */
+        @Override
+        void setNilReason(final NilReason value) {
+            setUserObject(value != null ? value.createNilObject(baseType) : null);
         }
 
         /**
@@ -964,12 +1037,12 @@ class TreeNode implements Node {
         ArgumentChecks.ensureNonNull("column", column);
         if (column == TableColumn.VALUE) {
             ArgumentChecks.ensureNonNull("value", value);                       // See javadoc.
-            cachedValue = null;
-            canUseCache = false;
             final TreeNodeChildren children = getCompactChildren();
             if (children == null || !(children.setParentTitle(value))) {
                 setUserObject(value);
             }
+        } else if (column == MetadataColumn.NIL_REASON) {
+            setNilReason((NilReason) value);
         } else if (table.getColumns().contains(column)) {
             throw new UnsupportedOperationException(unmodifiableCellValue(column));
         } else {

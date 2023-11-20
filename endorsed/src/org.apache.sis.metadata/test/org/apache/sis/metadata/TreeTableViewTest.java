@@ -123,6 +123,7 @@ public final class TreeTableViewTest extends TestCase {
 
     /**
      * Verifies the values of the given root node and some of its children.
+     * This method modifies the metadata for also testing some nil values.
      *
      * @param  node     root node to verify.
      * @param  title    expected citation title, or {@code null} if it is expected to be missing.
@@ -136,7 +137,10 @@ public final class TreeTableViewTest extends TestCase {
         assertNull  (                node.getValue(TableColumn.OBLIGATION));
         assertNull  (                node.getValue(TableColumn.VALUE));
         assertNull  (                node.getValue(MetadataColumn.NIL_REASON));
-
+        /*
+         * The first child of a Citation object should be the title.
+         * Verify the title value, type, obligation, etc.
+         */
         Iterator<TreeTable.Node> it = node.getChildren().iterator();
         node = it.next();
         assertEquals("title",                      node.getValue(TableColumn.IDENTIFIER));
@@ -146,7 +150,16 @@ public final class TreeTableViewTest extends TestCase {
         assertEquals(Obligation.MANDATORY,         node.getValue(TableColumn.OBLIGATION));
         assertI18nEq(title,                        node.getValue(TableColumn.VALUE));
         assertEquals(titleNR,                      node.getValue(MetadataColumn.NIL_REASON));
-
+        /*
+         * Declare the title as missing and verify that the change has been applied.
+         */
+        node.setValue(MetadataColumn.NIL_REASON, NilReason.MISSING);
+        assertEquals(NilReason.MISSING, node.getValue(MetadataColumn.NIL_REASON));
+        assertNull(node.getValue(TableColumn.VALUE));
+        /*
+         * The second child of the Citation use in this test should be an alternate title.
+         * This property is a collection with two elements. Check the first one.
+         */
         node = it.next();
         assertEquals("alternateTitle",              node.getValue(TableColumn.IDENTIFIER));
         assertEquals(0,                             node.getValue(TableColumn.INDEX));
@@ -155,6 +168,17 @@ public final class TreeTableViewTest extends TestCase {
         assertEquals(Obligation.OPTIONAL,           node.getValue(TableColumn.OBLIGATION));
         assertI18nEq("First alternate title",       node.getValue(TableColumn.VALUE));
         assertNull  (                               node.getValue(MetadataColumn.NIL_REASON));
+        /*
+         * Set the first element to nil, then check that the second element has not been impacted.
+         * Contrarily to the previous test, this test modifies a collection elements instead of the
+         * property as a whole.
+         */
+        node.setValue(MetadataColumn.NIL_REASON, NilReason.INAPPLICABLE);
+        assertEquals(NilReason.INAPPLICABLE, node.getValue(MetadataColumn.NIL_REASON));
+        assertNull(node.getValue(TableColumn.VALUE));
+        node = it.next();
+        assertI18nEq("Second alternate title", node.getValue(TableColumn.VALUE));
+        assertNull(node.getValue(MetadataColumn.NIL_REASON));
     }
 
     /**
