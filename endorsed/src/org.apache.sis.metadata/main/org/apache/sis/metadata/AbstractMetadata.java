@@ -90,10 +90,15 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * an exception should have been thrown before. On the other hand, {@code remove(…)} operations may
      * still be done for removing entries that shouldn't be there.
      *
+     * <h4>Serialization</h4>
+     * This field must be declared transient for preventing JAXB to inherit it in subclasses annotated
+     * with {@code @XmlAccessorType(XmlAccessType.FIELD)}. Furthermore, serializing the integer values
+     * would be unstable. We should serialize property names instead.
+     *
      * @see NilReasonMap
      * @see #nilReasons()
      */
-    HashMap<Integer,NilReason> nilReasons;
+    transient HashMap<Integer,NilReason> nilReasons;
 
     /**
      * Creates an initially empty metadata.
