@@ -242,16 +242,18 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
 
 
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                  ////////
-    ////////                               XML support with JAXB                              ////////
-    ////////                                                                                  ////////
-    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
-    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
-    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
-    ////////        (GML) support is not needed.                                              ////////
-    ////////                                                                                  ////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
 
     /**
      * Constructs a new object in which every attributes are set to a null value.
