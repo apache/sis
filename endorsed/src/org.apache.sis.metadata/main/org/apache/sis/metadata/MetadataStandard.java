@@ -920,6 +920,8 @@ public class MetadataStandard implements Serializable {
      * @return a map view over the metadata object.
      * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
      *
+     * @see AbstractMetadata#nilReasons()
+     *
      * @since 1.5
      */
     public Map<String,NilReason> asNilReasonMap(final Object metadata, final Class<?> baseType,

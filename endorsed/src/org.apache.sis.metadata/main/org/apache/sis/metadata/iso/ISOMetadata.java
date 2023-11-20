@@ -59,7 +59,7 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefin
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlTransient
@@ -90,6 +90,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     protected ISOMetadata(final Object object) {
+        super(object);
         if (object instanceof IdentifiedObject) {
             if (object instanceof ISOMetadata && Containers.isNullOrEmpty(((ISOMetadata) object).identifiers)) {
                 /*

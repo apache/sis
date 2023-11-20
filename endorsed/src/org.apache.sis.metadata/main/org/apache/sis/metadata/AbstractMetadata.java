@@ -91,6 +91,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * still be done for removing entries that shouldn't be there.
      *
      * @see NilReasonMap
+     * @see #nilReasons()
      */
     HashMap<Integer,NilReason> nilReasons;
 
@@ -98,6 +99,24 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Creates an initially empty metadata.
      */
     protected AbstractMetadata() {
+    }
+
+    /**
+     * Creates an initially empty metadata with nil reasons copied from the given object.
+     * The given object should be a metadata of the same class.
+     *
+     * @param  source  the metadata from which to copy nil reasons, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    @SuppressWarnings("unchecked")
+    protected AbstractMetadata(final Object source) {
+        if (source instanceof AbstractMetadata) {
+            nilReasons = ((AbstractMetadata) source).nilReasons;
+            if (nilReasons != null) {
+                nilReasons = (HashMap<Integer,NilReason>) nilReasons.clone();
+            }
+        }
     }
 
     /**
@@ -202,6 +221,34 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      */
     public Map<String,Object> asMap() {
         return getStandard().asValueMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+    }
+
+    /**
+     * Returns a view of the reasons why some properties are missing.
+     * The map is backed by the metadata object using Java reflection, so changes in the
+     * underlying metadata object are immediately reflected in the map and conversely.
+     *
+     * <h4>Mandatory and optional properties</h4>
+     * If a {@linkplain org.opengis.annotation.Obligation#MANDATORY mandatory} property has no value,
+     * then the property will have an entry in the map even if the associated {@link NilReason} is null.
+     * By contrast, {@linkplain org.opengis.annotation.Obligation#OPTIONAL optional} properties have
+     * entries in the map only if they have a non-null {@link NilReason}.
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation is equivalent to the following:
+     *
+     * {@snippet lang="java" :
+     *     return getStandard().asNilReasonMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY);
+     *     }
+     *
+     * @return a view of the reasons why some properties are missing.
+     *
+     * @see MetadataStandard#asNilReasonMap(Object, Class, KeyNamePolicy)
+     *
+     * @since 1.5
+     */
+    public Map<String,NilReason> nilReasons() {
+        return getStandard().asNilReasonMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY);
     }
 
     /**

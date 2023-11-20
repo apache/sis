@@ -62,7 +62,7 @@ public final class DefaultConformanceResultTest extends TestCase {
     public void testXML() throws JAXBException {
         final var result = new DefaultConformanceResult();
         result.setPass(true);
-        assertNull(result.getNilReason());
+        assertNull(result.nilReasons().get("pass"));
         testXML(result,
                 "<mdq:DQ_ConformanceResult xmlns:mdq=\"" + Namespaces.MDQ + '"'
                                        + " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
@@ -83,7 +83,7 @@ public final class DefaultConformanceResultTest extends TestCase {
     @Test
     public void testUnknownReason() throws JAXBException {
         final var result = new DefaultConformanceResult();
-        assertEquals(NilReason.UNKNOWN, result.getNilReason());
+        assertNull(result.nilReasons().put("pass", NilReason.UNKNOWN));
         testXML(result,
                 "<mdq:DQ_ConformanceResult xmlns:mdq=\"" + Namespaces.MDQ + '"'
                                        + " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
@@ -103,7 +103,7 @@ public final class DefaultConformanceResultTest extends TestCase {
     public void testTemplateReason() throws JAXBException {
         final var result = new DefaultConformanceResult();
         result.setPass(true);
-        result.setNilReason(NilReason.TEMPLATE);
+        result.nilReasons().put("pass", NilReason.TEMPLATE);
         assertNull(result.pass());
         testXML(result,
                 "<mdq:DQ_ConformanceResult xmlns:mdq=\"" + Namespaces.MDQ + '"'

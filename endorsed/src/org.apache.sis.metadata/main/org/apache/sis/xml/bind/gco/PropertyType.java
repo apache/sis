@@ -30,10 +30,11 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
-import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.metadata.AbstractMetadata;
+import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -142,14 +143,22 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * Builds a {@code PropertyType} wrapper for an instance of a primitive wrapper.
+     * Builds a {@code PropertyType} wrapper for an instance of a value object.
      * Those property types are handled in a different way because final classes
      * cannot implement the {@link NilObject} interface.
      *
-     * @param  value      the primitive type wrapper.
-     * @param  nilReason  if the value is nil, the reason why.
+     * @param  owner     the metadata providing the value object.
+     * @param  property  UML identifier of the property for which a value is provided.
+     * @param  value     the property value, or {@code null} if none.
      */
-    protected PropertyType(final BoundType value, final NilReason nilReason) {
+    protected PropertyType(final AbstractMetadata owner, final String property, final BoundType value) {
+        final NilReason nilReason;
+        if (value != null) {
+            nilReason = NilReason.forObject(value);
+        } else {
+            // May cause a `HashMap` to be created, so invoke only if necessary.
+            nilReason = owner.nilReasons().get(property);
+        }
         if (nilReason != null) {
             reference = nilReason.toString();
         } else {
@@ -305,19 +314,20 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * The reason why a mandatory attribute if left unspecified, as a parsed object.
+     * Stores the reason why a mandatory attribute is left unspecified.
+     * The reason is stored in the property of the given name in the given metadata.
+     * If there is no nil reason, then this method does nothing.
      *
-     * @return the nil reason, or {@code null} if none.
+     * @param  owner     the metadata where to store the nil reason.
+     * @param  property  UML identifier of the property where to store the nil reason.
      */
-    public final NilReason parseNilReason() {
+    public final void getNilReason(final AbstractMetadata owner, final String property) {
         final String reason = getNilReason();
-        if (reason == null) {
-            return null;
-        } else try {
-            return NilReason.valueOf(reason);
+        if (reason != null) try {
+            final NilReason nilReason = NilReason.valueOf(reason);
+            owner.nilReasons().put(property, nilReason);
         } catch (URISyntaxException e) {
-            Context.warningOccured(Context.current(), getClass(), "parseNilReason", e, true);
-            return NilReason.OTHER;
+            Context.warningOccured(Context.current(), getClass(), "getNilReason", e, true);
         }
     }
 

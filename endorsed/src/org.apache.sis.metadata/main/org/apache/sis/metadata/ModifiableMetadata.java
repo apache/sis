@@ -87,7 +87,7 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefin
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlTransient
@@ -137,6 +137,18 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * The initial state is {@link State#EDITABLE}.
      */
     protected ModifiableMetadata() {
+    }
+
+    /**
+     * Creates an initially empty metadata with nil reasons copied from the given object.
+     * The given object should be a metadata of the same class.
+     *
+     * @param  source  the metadata from which to copy nil reasons, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    protected ModifiableMetadata(final Object source) {
+        super(source);
     }
 
     /**

@@ -19,7 +19,7 @@ package org.apache.sis.xml.bind.gco;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
-import org.apache.sis.xml.NilReason;
+import org.apache.sis.metadata.AbstractMetadata;
 
 
 /**
@@ -42,11 +42,12 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
     /**
      * Builds a wrapper for the specified value, which may be nil.
      *
-     * @param  value      the value to wrap.
-     * @param  nilReason  if the value is nil, the reason why.
+     * @param  owner     the metadata providing the value object.
+     * @param  property  UML identifier of the property for which a value is provided.
+     * @param  value     the property value, or {@code null} if none.
      */
-    public GO_Boolean(final Boolean value, final NilReason nilReason) {
-        super(value, nilReason);
+    public GO_Boolean(final AbstractMetadata owner, final String property, final Boolean value) {
+        super(owner, property, value);
     }
 
     /**

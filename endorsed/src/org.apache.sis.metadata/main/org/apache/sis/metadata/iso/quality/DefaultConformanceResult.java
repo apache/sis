@@ -23,7 +23,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.gco.GO_Boolean;
 
 
@@ -83,11 +82,6 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     private Boolean pass;
 
     /**
-     * If no result is provided, the reason why.
-     */
-    private NilReason nilReason;
-
-    /**
      * Constructs an initially empty conformance result.
      */
     public DefaultConformanceResult() {
@@ -124,9 +118,6 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
             specification = object.getSpecification();
             explanation   = object.getExplanation();
             pass          = object.pass();
-            if (object instanceof DefaultConformanceResult) {
-                nilReason = ((DefaultConformanceResult) object).getNilReason();
-            }
         }
     }
 
@@ -218,35 +209,6 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
         pass = newValue;
     }
 
-    /**
-     * Returns the reason why the result is missing.
-     * This value is non-null only if {@link #pass()} is null.
-     *
-     * @return the reason why the result is missing, or {@code null} if the result is not missing.
-     *
-     * @see NilReason#forObject(Object)
-     *
-     * @since 1.5
-     */
-    public NilReason getNilReason() {
-        return (pass != null) ? null : (nilReason != null) ? nilReason : NilReason.UNKNOWN;
-    }
-
-    /**
-     * Sets the reason why the result is missing.
-     * Invoking this method with a non-null value sets {@link #pass()} to {@code null}.
-     *
-     * @param  newValue  the reason why the result is missing, or {@code null} if the result is not missing.
-     *
-     * @since 1.5
-     */
-    public void setNilReason(final NilReason newValue) {
-        checkWritePermission(nilReason);
-        if ((nilReason = newValue) != null) {
-            pass = null;
-        }
-    }
-
 
 
 
@@ -268,7 +230,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      */
     @XmlElement(name = "pass", required = true)
     private GO_Boolean getResult() {
-        return new GO_Boolean(pass(), getNilReason());
+        return new GO_Boolean(this, "pass", pass());
     }
 
     /**
@@ -278,6 +240,6 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      */
     private void setResult(final GO_Boolean result) {
         setPass(result.getElement());
-        setNilReason(result.parseNilReason());
+        result.getNilReason(this, "pass");
     }
 }
