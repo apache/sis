@@ -212,29 +212,33 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
 
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                  ////////
-    ////////                               XML support with JAXB                              ////////
-    ////////                                                                                  ////////
-    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
-    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
-    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
-    ////////        (GML) support is not needed.                                              ////////
-    ////////                                                                                  ////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
 
     /**
      * Invoked by JAXB for fetching the value to marshal.
+     * This property is handled in a special way for allowing nil reason.
      *
      * @return the value to marshal.
      */
     @XmlElement(name = "pass", required = true)
     private GO_Boolean getResult() {
-        return new GO_Boolean(this, "pass", pass());
+        return new GO_Boolean(this, "pass", pass(), true);
     }
 
     /**
      * Invoked by JAXB for setting the value.
+     * This property is handled in a special way for allowing nil reason.
      *
      * @param  result  the value.
      */

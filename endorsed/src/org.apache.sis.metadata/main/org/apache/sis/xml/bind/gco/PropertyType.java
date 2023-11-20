@@ -147,17 +147,21 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Those property types are handled in a different way because final classes
      * cannot implement the {@link NilObject} interface.
      *
-     * @param  owner     the metadata providing the value object.
-     * @param  property  UML identifier of the property for which a value is provided.
-     * @param  value     the property value, or {@code null} if none.
+     * @param  owner      the metadata providing the value object.
+     * @param  property   UML identifier of the property for which a value is provided.
+     * @param  value      the property value, or {@code null} if none.
+     * @param  mandatory  whether a value is mandatory.
      */
-    protected PropertyType(final AbstractMetadata owner, final String property, final BoundType value) {
-        final NilReason nilReason;
+    protected PropertyType(final AbstractMetadata owner, final String property, final BoundType value, final boolean mandatory) {
+        NilReason nilReason;
         if (value != null) {
             nilReason = NilReason.forObject(value);
         } else {
             // May cause a `HashMap` to be created, so invoke only if necessary.
             nilReason = owner.nilReasons().get(property);
+        }
+        if (mandatory && value == null && nilReason == null) {
+            nilReason = NilReason.UNKNOWN;
         }
         if (nilReason != null) {
             reference = nilReason.toString();

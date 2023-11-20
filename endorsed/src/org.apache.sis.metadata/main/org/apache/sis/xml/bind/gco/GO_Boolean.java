@@ -42,12 +42,13 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
     /**
      * Builds a wrapper for the specified value, which may be nil.
      *
-     * @param  owner     the metadata providing the value object.
-     * @param  property  UML identifier of the property for which a value is provided.
-     * @param  value     the property value, or {@code null} if none.
+     * @param  owner      the metadata providing the value object.
+     * @param  property   UML identifier of the property for which a value is provided.
+     * @param  value      the property value, or {@code null} if none.
+     * @param  mandatory  whether a value is mandatory.
      */
-    public GO_Boolean(final AbstractMetadata owner, final String property, final Boolean value) {
-        super(owner, property, value);
+    public GO_Boolean(AbstractMetadata owner, String property, Boolean value, boolean mandatory) {
+        super(owner, property, value, mandatory);
     }
 
     /**

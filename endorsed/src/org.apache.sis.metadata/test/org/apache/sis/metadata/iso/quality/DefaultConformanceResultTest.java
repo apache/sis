@@ -77,13 +77,14 @@ public final class DefaultConformanceResultTest extends TestCase {
 
     /**
      * Tests (un)marshalling of an XML document with a result missing for an unknown reason.
+     * At marshaling time, the nil reason of mandatory properties should default to {@link NilReason#UNKNOWN}.
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
     public void testUnknownReason() throws JAXBException {
         final var result = new DefaultConformanceResult();
-        assertNull(result.nilReasons().put("pass", NilReason.UNKNOWN));
+        assertNull(result.nilReasons().get("pass"));
         testXML(result,
                 "<mdq:DQ_ConformanceResult xmlns:mdq=\"" + Namespaces.MDQ + '"'
                                        + " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
