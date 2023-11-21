@@ -24,5 +24,5 @@ java --module-path "%BASE_DIR%\lib;%BASE_DIR%\lib\app\org.apache.sis.console.jar
      -Djava.util.logging.config.class=org.apache.sis.util.logging.Initializer^
      -Djava.util.logging.config.file="%BASE_DIR%\conf\logging.properties"^
      -Dderby.stream.error.file="%BASE_DIR%\log\derby.log"^
-     %JAVA_OPTS% --module org.apache.sis.console/org.apache.sis.console.Command^
+     --module org.apache.sis.console/org.apache.sis.console.Command^
      %SIS_OPTS% %*
