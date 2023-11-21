@@ -56,7 +56,7 @@
  * and Management Using JMX Technology</a> page.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 package org.apache.sis.console;

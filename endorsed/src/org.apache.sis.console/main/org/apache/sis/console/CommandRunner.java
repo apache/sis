@@ -347,4 +347,14 @@ abstract class CommandRunner {
      * @throws Exception if an error occurred while executing the sub-command.
      */
     public abstract int run() throws Exception;
+
+    /**
+     * Invoked before to exit the JVM for flushing and pending information to the output streams.
+     * The default information flushed {@link #out} and {@link #err} in that order.
+     * Subclasses may override if there is more things to flush.
+     */
+    protected void flush() {
+        out.flush();
+        err.flush();
+    }
 }

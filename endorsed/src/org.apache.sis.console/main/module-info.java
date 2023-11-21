@@ -20,7 +20,7 @@
  * An introduction is available in the <a href="https://sis.apache.org/command-line.html">Apache SIS web site</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 module org.apache.sis.console {
