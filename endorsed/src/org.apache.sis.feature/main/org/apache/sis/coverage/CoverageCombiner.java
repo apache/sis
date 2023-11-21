@@ -164,9 +164,9 @@ public class CoverageCombiner {
      * @param  image     the image from which to get the conversion.
      * @param  coverage  the coverage to use as a fallback if the information is not provided with the image.
      * @param  slice     identification of the slice to read in the coverage.
-     * @return information about conversion from pixel to "real world" coordinates.
+     * @return information about conversion from pixel coordinates to "real world" coordinates.
      */
-    private static GridGeometry getGridGeometry(final RenderedImage image,
+    private static GridGeometry getImageGeometry(final RenderedImage image,
             final GridCoverage coverage, final GridExtent slice)
     {
         final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
@@ -340,8 +340,8 @@ next:   for (;;) {
                         sourceSlice = processor.convert(sourceSlice, sourceRanges[j], converters, combiner.getBandType());
                     }
                     MathTransform toSource =
-                            getGridGeometry(targetSlice, destination, targetSliceExtent).createTransformTo(
-                            getGridGeometry(sourceSlice, source,      sourceSliceExtent), PixelInCell.CELL_CENTER);
+                            getImageGeometry(targetSlice, destination, targetSliceExtent).createTransformTo(
+                            getImageGeometry(sourceSlice, source,      sourceSliceExtent), PixelInCell.CELL_CENTER);
                     combiner.resample(sourceSlice, null, toSource);
                 }
             } else {
