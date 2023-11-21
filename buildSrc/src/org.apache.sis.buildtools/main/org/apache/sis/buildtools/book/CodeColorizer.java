@@ -70,7 +70,7 @@ public final class CodeColorizer {
      * The specifier of an identifier.
      */
     private enum Specifier {
-        OGC("OGC"), GEOAPI("GeoAPI"), SIS("SIS"), XML_PREFIX(null);
+        OGC("OGC"), GEOAPI("API"), SIS("SIS"), XML_PREFIX(null);
 
         /** The value to put in the {@code class} attribute of {@code <code>} or other elements, or {@code null} if none. */
         final String style;

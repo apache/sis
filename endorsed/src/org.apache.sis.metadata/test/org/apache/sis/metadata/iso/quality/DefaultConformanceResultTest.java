@@ -77,7 +77,7 @@ public final class DefaultConformanceResultTest extends TestCase {
 
     /**
      * Tests (un)marshalling of an XML document with a result missing for an unknown reason.
-     * At marshaling time, the nil reason of mandatory properties should default to {@link NilReason#UNKNOWN}.
+     * At marshalling time, the nil reason of mandatory properties should default to {@link NilReason#UNKNOWN}.
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */

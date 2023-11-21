@@ -154,7 +154,7 @@ public final class SolverTest extends TestCase {
         assertEqualsElements(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a scale factor to NaN. The translation term for the corresponding
-         * dimension become unknown, so it most become NaN in the inverse matrix.
+         * dimension become unknown, so it must become NaN in the inverse matrix.
          */
         matrix = Matrices.create(5, 5, new double[] {
             20,  0,   0,   0, -3000,
