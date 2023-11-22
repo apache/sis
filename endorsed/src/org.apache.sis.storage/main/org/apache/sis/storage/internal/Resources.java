@@ -276,6 +276,12 @@ public class Resources extends IndexedResourceBundle {
         public static final short IllegalOutputTypeForWriter_2 = 9;
 
         /**
+         * The aggregate “{0}” does not accept resources of type ‘{2}’. An instance of ‘{1}’ was
+         * expected.
+         */
+        public static final short IllegalResourceTypeForAggregate_3 = 80;
+
+        /**
          * All coverages must have the same grid geometry.
          */
         public static final short IncompatibleGridGeometry = 72;

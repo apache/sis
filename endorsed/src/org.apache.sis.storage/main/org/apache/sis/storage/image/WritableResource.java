@@ -23,7 +23,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableGridCoverageResource;
-import org.apache.sis.storage.internal.WritableResourceSupport;
+import org.apache.sis.storage.base.WritableGridCoverageSupport;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.event.StoreListeners;
 
@@ -53,8 +53,8 @@ final class WritableResource extends WorldFileResource implements WritableGridCo
      */
     @Override
     public void write(GridCoverage coverage, final Option... options) throws DataStoreException {
-        final WritableResourceSupport h = new WritableResourceSupport(this, options);   // Does argument validation.
-        final WritableStore store = (WritableStore) store();
+        final var h = new WritableGridCoverageSupport(this, options);       // Does argument validation.
+        final var store = (WritableStore) store();
         try {
             synchronized (store) {
                 if (getImageIndex() != WorldFileStore.MAIN_IMAGE || (store.isMultiImages() != 0 && !h.replace(null))) {
