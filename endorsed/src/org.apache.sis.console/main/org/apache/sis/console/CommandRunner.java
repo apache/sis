@@ -249,6 +249,22 @@ abstract class CommandRunner {
     }
 
     /**
+     * Return the value of a mandatory option.
+     *
+     * @param  option  the option to fetch.
+     * @return the option value, never {@code null}.
+     * @throws InvalidOptionException if the option is missing.
+     */
+    final String getMandatoryOption(final Option option) throws InvalidOptionException {
+        final String value = options.get(option);
+        if (value == null) {
+            final String name = option.label();
+            throw new InvalidOptionException(Errors.format(Errors.Keys.MissingValueForOption_1, name), name);
+        }
+        return value;
+    }
+
+    /**
      * Checks if the user-provided {@linkplain #options} contains mutually exclusive options.
      * If an inconsistency is found, then this method prints an error message to {@link #err}
      * and returns {@code true}.

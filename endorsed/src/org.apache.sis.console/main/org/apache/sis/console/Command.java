@@ -157,6 +157,7 @@ public final class Command {
                 case "crs":        command = new CRSCommand       (commandIndex, args); break;
                 case "identifier": command = new IdentifierCommand(commandIndex, args); break;
                 case "transform":  command = new TransformCommand (commandIndex, args); break;
+                case "translate":  command = new TranslateCommand (commandIndex, args); break;
                 default: throw new InvalidCommandException(Errors.format(
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
