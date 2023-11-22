@@ -100,6 +100,8 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
             locationAsPath = (Path) storage;
         } else if (storage instanceof File) {
             locationAsPath = ((File) storage).toPath();
+        } else if (storage instanceof CharSequence) {
+            locationAsPath = connector.getStorageAs(Path.class);
         }
         locationIsPath = (locationAsPath != null);
     }
