@@ -392,7 +392,8 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             final ShapeRecord shpRecord = shpreader.next();
                             if (shpRecord == null) return false;
                             //move dbf to record offset, some shp record might have been skipped because of filter
-                            dbfreader.moveToOffset(header.headerSize + (shpRecord.recordNumber-1) * header.recordSize);
+                            long offset = (long)header.headerSize + ((long)(shpRecord.recordNumber-1)) * ((long)header.recordSize);
+                            dbfreader.moveToOffset(offset);
                             final DBFRecord dbfRecord = dbfreader.next();
                             final Feature next = type.newInstance();
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
