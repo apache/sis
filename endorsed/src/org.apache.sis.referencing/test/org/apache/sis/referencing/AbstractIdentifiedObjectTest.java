@@ -24,16 +24,15 @@ import java.util.Locale;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.referencing.Code;
+import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 

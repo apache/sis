@@ -21,7 +21,6 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

@@ -25,10 +25,9 @@ import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.junit.Test;
 import org.junit.Ignore;
+import static org.junit.Assert.*;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.test.DependsOn;
-
-import static org.junit.Assert.*;
 
 
 /**

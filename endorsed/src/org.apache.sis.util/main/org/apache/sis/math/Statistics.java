@@ -20,18 +20,17 @@ import java.util.Objects;
 import java.io.Serializable;
 import java.util.function.LongConsumer;
 import java.util.function.DoubleConsumer;
+import static java.lang.Math.*;
+import static java.lang.Double.NaN;
+import static java.lang.Double.isNaN;
+import static java.lang.Double.isFinite;
+import static java.lang.Double.doubleToLongBits;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.DoubleDouble;
-
-import static java.lang.Math.*;
-import static java.lang.Double.NaN;
-import static java.lang.Double.isNaN;
-import static java.lang.Double.isFinite;
-import static java.lang.Double.doubleToLongBits;
 
 
 /**

@@ -18,16 +18,15 @@ package org.apache.sis.xml;
 
 import java.util.Locale;
 import java.nio.charset.StandardCharsets;
-
-// Test dependencies
-import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-
 import static org.apache.sis.measure.Units.METRE;
 import static org.apache.sis.measure.Units.DEGREE;
 import static org.apache.sis.measure.Units.RADIAN;
+
+// Test dependencies
+import org.junit.Test;
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 
 
 /**

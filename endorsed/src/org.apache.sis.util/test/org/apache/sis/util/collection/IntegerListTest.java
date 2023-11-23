@@ -26,14 +26,13 @@ import java.util.ConcurrentModificationException;
 import java.util.PrimitiveIterator;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
+import static java.lang.StrictMath.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-
-import static java.lang.StrictMath.*;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.Assertions.assertParallelStreamEquals;
 import static org.apache.sis.test.Assertions.assertSequentialStreamEquals;

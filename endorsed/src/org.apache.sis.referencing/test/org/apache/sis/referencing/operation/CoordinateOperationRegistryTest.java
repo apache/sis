@@ -34,18 +34,17 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

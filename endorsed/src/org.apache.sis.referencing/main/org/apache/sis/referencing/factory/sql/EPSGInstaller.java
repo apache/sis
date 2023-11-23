@@ -35,7 +35,6 @@ import org.apache.sis.system.Fallback;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.setup.InstallationResources;
-
 import static org.apache.sis.util.internal.Constants.EPSG;
 
 

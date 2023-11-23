@@ -38,7 +38,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

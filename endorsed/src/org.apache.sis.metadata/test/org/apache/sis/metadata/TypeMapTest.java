@@ -19,6 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Date;
+import static java.util.AbstractMap.SimpleEntry;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -35,11 +36,9 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static java.util.AbstractMap.SimpleEntry;
-import static org.junit.Assert.*;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;

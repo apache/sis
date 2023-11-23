@@ -38,9 +38,8 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.test.ProjectDirectories;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.ProjectDirectories;
 
 
 /**

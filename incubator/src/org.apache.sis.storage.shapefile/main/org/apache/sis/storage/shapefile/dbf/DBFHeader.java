@@ -19,9 +19,9 @@ package org.apache.sis.storage.shapefile.dbf;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
-
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
+
 
 /**
  *

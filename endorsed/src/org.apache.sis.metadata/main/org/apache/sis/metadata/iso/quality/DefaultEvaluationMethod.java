@@ -33,7 +33,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 

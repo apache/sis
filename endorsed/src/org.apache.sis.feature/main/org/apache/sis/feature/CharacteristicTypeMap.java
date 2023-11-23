@@ -25,7 +25,6 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

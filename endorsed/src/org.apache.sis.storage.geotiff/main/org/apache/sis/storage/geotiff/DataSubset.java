@@ -27,6 +27,10 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
 import java.awt.image.Raster;
+import static java.lang.Math.subtractExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.multiplyFull;
+import static java.lang.Math.toIntExact;
 import org.opengis.util.GenericName;
 import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStoreException;
@@ -46,11 +50,6 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.reader.ReversedBitsChannel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
-
-import static java.lang.Math.subtractExact;
-import static java.lang.Math.multiplyExact;
-import static java.lang.Math.multiplyFull;
-import static java.lang.Math.toIntExact;
 import static org.apache.sis.util.internal.Numerics.ceilDiv;
 
 

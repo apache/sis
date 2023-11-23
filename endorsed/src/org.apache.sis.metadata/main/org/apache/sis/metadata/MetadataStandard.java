@@ -41,7 +41,6 @@ import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.xml.NilReason;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 

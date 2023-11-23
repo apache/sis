@@ -26,9 +26,8 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 // Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 
 
 /**

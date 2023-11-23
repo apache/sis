@@ -20,10 +20,9 @@ import java.util.Random;
 
 // Test dependencies
 import org.junit.*;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

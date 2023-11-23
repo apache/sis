@@ -36,11 +36,10 @@ import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.sql.feature.TableReference;
 
 // Test dependencies
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.metadata.sql.TestDatabase;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.metadata.sql.TestDatabase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

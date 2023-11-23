@@ -34,10 +34,9 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 
 
 /**

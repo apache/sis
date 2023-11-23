@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.awt.Dimension;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
+import static java.lang.Math.round;
 import javax.measure.IncommensurableException;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
@@ -39,8 +40,6 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.internal.SampleDimensions;
-
-import static java.lang.Math.round;
 import static org.apache.sis.util.internal.Numerics.saturatingAdd;
 import static org.apache.sis.util.internal.Numerics.saturatingSubtract;
 

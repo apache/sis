@@ -17,14 +17,13 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Optional;
+import static java.lang.Math.*;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.geometry.Envelope2D;
-
-import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
 
 

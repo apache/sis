@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Random;
+import static java.lang.Double.isNaN;
+import static java.lang.StrictMath.*;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
@@ -32,11 +34,8 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 // Test dependencies
-import org.apache.sis.test.TestUtilities;
-
-import static java.lang.Double.isNaN;
-import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.referencing.ParameterizedTransformTest;

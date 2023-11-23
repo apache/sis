@@ -24,15 +24,14 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import org.apache.sis.image.PlanarImage;
-import org.apache.sis.util.ArgumentChecks;
-
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
+import org.apache.sis.image.PlanarImage;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**

@@ -46,7 +46,6 @@ import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
-
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
 import static org.apache.sis.util.internal.CollectionsExt.snapshot;

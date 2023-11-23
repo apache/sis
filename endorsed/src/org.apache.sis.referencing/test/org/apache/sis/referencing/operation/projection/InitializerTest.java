@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import static java.lang.StrictMath.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.OperationMethod;
@@ -26,10 +27,8 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.Test;
-import org.opengis.test.TestCase;
-
-import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
+import org.opengis.test.TestCase;
 
 
 /**

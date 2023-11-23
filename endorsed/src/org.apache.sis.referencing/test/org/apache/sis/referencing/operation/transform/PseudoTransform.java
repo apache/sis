@@ -17,13 +17,12 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Optional;
+import static java.lang.StrictMath.*;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.GeneralEnvelope;
-
-import static java.lang.StrictMath.*;
 
 
 /**

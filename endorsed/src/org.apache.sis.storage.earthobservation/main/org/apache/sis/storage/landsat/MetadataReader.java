@@ -67,7 +67,6 @@ import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Strings;
-
 import static org.apache.sis.util.internal.CollectionsExt.singletonOrNull;
 
 

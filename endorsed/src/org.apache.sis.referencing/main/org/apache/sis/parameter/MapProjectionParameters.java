@@ -22,6 +22,7 @@ import javax.measure.Unit;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.util.ArraysExt;
@@ -29,8 +30,6 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
-
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.metadata.iso.citation.Citations.NETCDF;
 
 

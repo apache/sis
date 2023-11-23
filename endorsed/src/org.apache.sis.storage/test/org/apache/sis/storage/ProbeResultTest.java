@@ -16,12 +16,12 @@
  */
 package org.apache.sis.storage;
 
+import static org.apache.sis.storage.ProbeResult.*;
+
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.storage.ProbeResult.*;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

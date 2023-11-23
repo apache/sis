@@ -43,7 +43,6 @@ import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.Utilities.deepEquals;
 
 

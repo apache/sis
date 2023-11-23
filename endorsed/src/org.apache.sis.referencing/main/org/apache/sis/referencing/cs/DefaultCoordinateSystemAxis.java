@@ -19,6 +19,9 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
+import static java.lang.Double.doubleToLongBits;
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -54,10 +57,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.FormattableObject;
-
-import static java.lang.Double.doubleToLongBits;
-import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.collection.Containers.property;
 

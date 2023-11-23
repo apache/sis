@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import javax.imageio.plugins.tiff.TIFFTag;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.io.stream.ByteArrayChannel;
 import org.apache.sis.io.stream.ChannelDataOutput;
@@ -46,14 +47,12 @@ import org.apache.sis.image.DataType;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 /**

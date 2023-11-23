@@ -53,22 +53,21 @@ import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.measure.Units;
+import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
+import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
+import static org.apache.sis.referencing.util.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
 
 // Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
-import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
-import static org.apache.sis.referencing.util.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

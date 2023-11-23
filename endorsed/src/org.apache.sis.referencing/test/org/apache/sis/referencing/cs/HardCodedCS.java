@@ -18,9 +18,8 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.measure.Units;
-
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import org.apache.sis.measure.Units;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
 

@@ -28,17 +28,16 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.junit.Assert.*;
-import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 

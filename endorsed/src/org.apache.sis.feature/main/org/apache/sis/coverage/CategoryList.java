@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.AbstractList;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import static java.lang.Double.isNaN;
+import static java.lang.Double.doubleToRawLongBits;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -32,9 +34,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
-
-import static java.lang.Double.isNaN;
-import static java.lang.Double.doubleToRawLongBits;
 
 
 /**

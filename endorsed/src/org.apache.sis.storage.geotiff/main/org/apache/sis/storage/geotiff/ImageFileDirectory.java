@@ -29,6 +29,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.GenericName;
@@ -62,9 +64,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
-
-import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 
 /**

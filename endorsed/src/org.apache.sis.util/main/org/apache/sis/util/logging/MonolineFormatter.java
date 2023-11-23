@@ -42,7 +42,6 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.AutoMessageFormat;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
-
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 

@@ -31,6 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.internal.CollectionsExt;
 
+// Test dependencies
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 

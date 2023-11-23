@@ -20,13 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.text.AttributedCharacterIterator;
-import org.apache.sis.util.internal.SimpleCharacterIterator;
-
-// Test dependencies
-import org.junit.Test;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
-
 import static java.lang.StrictMath.min;
 import static java.lang.StrictMath.max;
 import static java.text.NumberFormat.Field.INTEGER;
@@ -34,8 +27,14 @@ import static java.text.NumberFormat.Field.FRACTION;
 import static java.text.NumberFormat.Field.DECIMAL_SEPARATOR;
 import static java.text.AttributedCharacterIterator.DONE;
 import static java.text.AttributedCharacterIterator.Attribute;
+import org.apache.sis.util.internal.SimpleCharacterIterator;
 import static org.apache.sis.measure.AngleFormat.Field.*;
+
+// Test dependencies
+import org.junit.Test;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOnMethod;
 
 
 /**

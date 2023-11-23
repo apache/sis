@@ -34,7 +34,6 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.storage.internal.Resources;
-
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
 

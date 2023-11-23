@@ -57,7 +57,6 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Utilities.deepEquals;
 

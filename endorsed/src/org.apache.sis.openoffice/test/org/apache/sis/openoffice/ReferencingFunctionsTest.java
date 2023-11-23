@@ -24,11 +24,10 @@ import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 
 
 /**

@@ -17,18 +17,17 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Map;
+import static java.lang.Double.NaN;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-
-import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 

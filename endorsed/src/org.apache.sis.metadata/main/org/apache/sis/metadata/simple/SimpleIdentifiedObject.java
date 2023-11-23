@@ -27,7 +27,6 @@ import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Constants;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 

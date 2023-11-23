@@ -21,10 +21,9 @@ import java.net.URL;
 import java.net.URISyntaxException;
 
 // Test dependencies
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
+import org.apache.sis.test.TestCase;
 
 
 /**

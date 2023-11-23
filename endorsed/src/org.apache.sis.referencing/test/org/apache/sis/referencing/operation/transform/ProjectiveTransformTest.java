@@ -40,10 +40,9 @@ import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.junit.Assert.*;
 import org.opengis.test.Assert;
 import org.opengis.test.referencing.AffineTransformTest;
-
-import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 
 

@@ -31,12 +31,11 @@ import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

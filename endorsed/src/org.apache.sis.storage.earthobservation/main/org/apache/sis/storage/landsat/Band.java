@@ -39,7 +39,6 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Vocabulary;
-
 import static org.apache.sis.util.internal.CollectionsExt.first;
 
 

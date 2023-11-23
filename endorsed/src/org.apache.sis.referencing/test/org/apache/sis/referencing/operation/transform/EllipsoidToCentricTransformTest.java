@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Iterator;
+import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -31,13 +32,11 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-
-import static java.lang.StrictMath.toRadians;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

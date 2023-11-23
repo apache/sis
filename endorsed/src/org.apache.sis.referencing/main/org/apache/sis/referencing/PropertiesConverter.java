@@ -17,12 +17,11 @@
 package org.apache.sis.referencing;
 
 import java.util.Map;
-import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.converter.SurjectiveConverter;
-
 import static org.opengis.metadata.Identifier.CODE_KEY;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.converter.SurjectiveConverter;
 
 
 /**

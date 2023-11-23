@@ -50,6 +50,7 @@ import java.util.concurrent.CountDownLatch;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

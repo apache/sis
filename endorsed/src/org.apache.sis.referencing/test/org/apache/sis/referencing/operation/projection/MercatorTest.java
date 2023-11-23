@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import static java.lang.Double.*;
+import static java.lang.StrictMath.*;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -29,17 +31,14 @@ import org.apache.sis.referencing.operation.provider.MillerCylindrical;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.parameter.Parameters;
+import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
-
-import static java.lang.Double.*;
-import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertBetween;
-import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.apache.sis.referencing.operation.provider.MercatorSpherical;

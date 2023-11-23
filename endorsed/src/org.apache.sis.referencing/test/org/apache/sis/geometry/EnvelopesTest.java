@@ -34,7 +34,6 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
@@ -42,13 +41,13 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.opengis.test.Validators.validate;
+import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 

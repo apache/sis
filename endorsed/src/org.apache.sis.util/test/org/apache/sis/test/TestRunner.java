@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.io.PrintWriter;
 import org.apache.sis.util.ArraysExt;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Test dependencies
 import org.junit.Test;
@@ -38,9 +40,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-
-import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 
 /**

@@ -18,6 +18,9 @@ package org.apache.sis.geometry;
 
 import java.util.Objects;
 import java.awt.geom.Rectangle2D;
+import static java.lang.Double.NaN;
+import static java.lang.Double.isNaN;
+import static java.lang.Double.doubleToLongBits;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -28,10 +31,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
-
-import static java.lang.Double.NaN;
-import static java.lang.Double.isNaN;
-import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.math.MathFunctions.isSameSign;
 import static org.apache.sis.math.MathFunctions.isPositive;
 import static org.apache.sis.math.MathFunctions.isNegative;

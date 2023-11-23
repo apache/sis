@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
-
 import static org.apache.sis.util.CharSequences.*;
 
 

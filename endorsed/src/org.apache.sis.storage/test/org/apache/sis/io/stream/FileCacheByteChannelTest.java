@@ -26,10 +26,9 @@ import java.nio.ByteBuffer;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-
-import static org.junit.Assert.*;
 
 
 /**

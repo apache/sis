@@ -27,10 +27,11 @@ import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import static java.lang.StrictMath.floorDiv;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.internal.Strings;
 
-import static java.lang.StrictMath.floorDiv;
+// Test dependencies
 import static org.junit.Assert.*;
 
 

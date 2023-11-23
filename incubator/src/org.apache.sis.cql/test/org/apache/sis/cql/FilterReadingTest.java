@@ -42,7 +42,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import static org.opengis.test.Assert.*;
 
 

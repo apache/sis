@@ -25,15 +25,14 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.measure.Units;
+import static org.apache.sis.referencing.util.ReferencingUtilities.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
-
-import static org.apache.sis.referencing.util.ReferencingUtilities.*;
-import static org.junit.Assert.*;
 
 
 /**

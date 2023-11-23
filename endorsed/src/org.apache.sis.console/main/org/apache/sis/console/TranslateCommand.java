@@ -29,8 +29,8 @@ import org.apache.sis.storage.WritableGridCoverageResource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

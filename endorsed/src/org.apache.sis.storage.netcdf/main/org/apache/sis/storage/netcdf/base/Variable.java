@@ -48,7 +48,6 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.storage.base.StoreUtilities.ALLOW_LAST_RESORT_STATISTICS;
 
 

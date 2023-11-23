@@ -29,6 +29,7 @@ import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
+import static java.lang.Math.multiplyExact;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
@@ -48,8 +49,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.image.DataType;
-
-import static java.lang.Math.multiplyExact;
 import static org.apache.sis.util.internal.Numerics.ceilDiv;
 import static org.apache.sis.util.internal.Numerics.wholeDiv;
 

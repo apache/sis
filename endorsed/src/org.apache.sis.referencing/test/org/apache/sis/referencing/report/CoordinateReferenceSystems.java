@@ -58,9 +58,8 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
-import org.opengis.test.report.AuthorityCodesReport;
-
 import static org.junit.Assert.*;
+import org.opengis.test.report.AuthorityCodesReport;
 
 
 /**

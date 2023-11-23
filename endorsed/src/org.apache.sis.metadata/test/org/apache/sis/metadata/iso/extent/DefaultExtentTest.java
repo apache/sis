@@ -25,13 +25,12 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilObject;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.metadata.xml.TestUsingFile;
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOn;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.date;
 

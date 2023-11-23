@@ -16,13 +16,13 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
-// Test dependencies
-import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-
 import static java.lang.Double.NaN;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
+
+// Test dependencies
+import org.junit.Test;
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;

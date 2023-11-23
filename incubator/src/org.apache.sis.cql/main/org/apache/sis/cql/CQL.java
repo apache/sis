@@ -63,7 +63,6 @@ import org.apache.sis.cql.internal.CQLParser.FilterContext;
 import org.apache.sis.cql.internal.CQLParser.FilterGeometryContext;
 import org.apache.sis.cql.internal.CQLParser.FilterTermContext;
 import org.apache.sis.util.internal.StandardDateFormat;
-
 import static org.apache.sis.cql.internal.CQLParser.*;
 
 

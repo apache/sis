@@ -24,10 +24,9 @@ import org.apache.sis.xml.bind.Context;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 
 
 /**

@@ -27,17 +27,16 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.AttributedCharacterIterator;
-
-// Test dependencies
-import org.junit.Test;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-
 import static java.lang.StrictMath.*;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
+
+// Test dependencies
+import org.junit.Test;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 
 
 /**

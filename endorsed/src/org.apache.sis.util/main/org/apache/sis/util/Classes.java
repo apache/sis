@@ -33,7 +33,6 @@ import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
-
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 import static org.apache.sis.system.Modules.INTERNAL_CLASSNAME_PREFIX;
 

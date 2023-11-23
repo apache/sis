@@ -32,6 +32,11 @@ import java.awt.image.WritableRaster;
 import java.awt.image.ImagingOpException;
 import java.awt.image.RasterFormatException;
 import java.awt.image.Raster;
+import static java.lang.Math.addExact;
+import static java.lang.Math.subtractExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.incrementExact;
+import static java.lang.Math.toIntExact;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -52,12 +57,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
-
-import static java.lang.Math.addExact;
-import static java.lang.Math.subtractExact;
-import static java.lang.Math.multiplyExact;
-import static java.lang.Math.incrementExact;
-import static java.lang.Math.toIntExact;
 import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 

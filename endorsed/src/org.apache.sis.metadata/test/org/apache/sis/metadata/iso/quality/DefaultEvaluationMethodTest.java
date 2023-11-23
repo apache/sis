@@ -22,9 +22,8 @@ import java.time.temporal.Temporal;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

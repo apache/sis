@@ -17,7 +17,6 @@
 package org.apache.sis.xml.util;
 
 import org.apache.sis.util.Version;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 

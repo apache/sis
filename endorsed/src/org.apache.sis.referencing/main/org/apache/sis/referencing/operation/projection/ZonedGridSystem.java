@@ -19,6 +19,8 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.io.Serializable;
+import static java.lang.Math.PI;
+import static java.lang.Math.floor;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -39,9 +41,6 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Numerics;
-
-import static java.lang.Math.PI;
-import static java.lang.Math.floor;
 import static org.apache.sis.referencing.operation.provider.TransverseMercator.*;
 import static org.apache.sis.referencing.operation.provider.ZonedTransverseMercator.*;
 

@@ -28,14 +28,13 @@ import java.util.Date;
 import java.util.Locale;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
+import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 import org.apache.sis.xml.bind.Context;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.xml.test.TestCase;
-
-import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 import static org.junit.Assert.*;
+import org.apache.sis.xml.test.TestCase;
 
 
 /**

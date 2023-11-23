@@ -28,17 +28,16 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.xml.util.LegacyNamespaces;
+import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 // Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.mock.MetadataMock;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.apache.sis.util.internal.StandardDateFormat.UTC;
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

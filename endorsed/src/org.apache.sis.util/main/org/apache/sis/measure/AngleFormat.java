@@ -27,14 +27,13 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.AttributedCharacterIterator;
+import static java.lang.Double.NaN;
+import static java.lang.Double.isNaN;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.LocalizedParseException;
-
-import static java.lang.Double.NaN;
-import static java.lang.Double.isNaN;
 import static org.apache.sis.math.MathFunctions.pow10;
 import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;

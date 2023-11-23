@@ -42,7 +42,6 @@ import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.After;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;

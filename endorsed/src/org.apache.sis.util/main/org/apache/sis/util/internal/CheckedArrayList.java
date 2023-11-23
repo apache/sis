@@ -25,7 +25,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

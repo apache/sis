@@ -40,7 +40,6 @@ import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.bind.metadata.replace.QualityParameter;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameter;
 import org.apache.sis.referencing.IdentifiedObjects;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
 

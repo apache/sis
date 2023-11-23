@@ -52,7 +52,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Angle;
-
 import static org.apache.sis.util.ArgumentChecks.*;
 
 

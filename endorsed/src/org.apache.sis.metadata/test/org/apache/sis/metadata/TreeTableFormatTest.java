@@ -27,16 +27,15 @@ import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
+import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 // Specific to the geoapi-4.0 branch:

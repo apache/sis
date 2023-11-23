@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import static java.lang.StrictMath.*;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -33,16 +34,14 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
-
-// Test dependencies
-import org.opengis.test.Validators;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.referencing.Assertions;
 import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 
-import static java.lang.StrictMath.*;
+// Test dependencies
 import static org.junit.Assert.*;
+import org.opengis.test.Validators;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.referencing.Assertions;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.Factory;

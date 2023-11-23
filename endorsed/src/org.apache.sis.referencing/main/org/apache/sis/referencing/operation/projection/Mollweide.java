@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
 import java.util.regex.Pattern;
+import static java.lang.Math.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
@@ -29,8 +30,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.internal.Resources;
-
-import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.SQRT_2;
 import static org.apache.sis.referencing.operation.provider.Mollweide.*;
 

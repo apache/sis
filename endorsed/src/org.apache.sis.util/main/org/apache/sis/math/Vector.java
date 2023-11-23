@@ -24,6 +24,7 @@ import java.util.RandomAccess;
 import java.util.StringJoiner;
 import java.util.Optional;
 import java.util.function.IntSupplier;
+import static java.util.logging.Logger.getLogger;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -32,8 +33,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.system.Loggers;
-
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
 

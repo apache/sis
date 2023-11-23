@@ -18,14 +18,13 @@ package org.apache.sis.util.collection;
 
 import java.util.Locale;
 import org.opengis.util.InternationalString;
+import static org.apache.sis.util.collection.TableColumn.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.test.SerializableTableColumn;
-
-import static org.junit.Assert.*;
-import static org.apache.sis.util.collection.TableColumn.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

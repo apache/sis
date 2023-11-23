@@ -27,9 +27,8 @@ import org.apache.sis.coverage.grid.j2d.RasterFactory;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 
 
 /**

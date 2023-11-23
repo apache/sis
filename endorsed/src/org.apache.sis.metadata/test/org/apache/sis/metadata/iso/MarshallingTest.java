@@ -64,9 +64,8 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
-import org.junit.Test;
 import org.apache.sis.metadata.xml.TestUsingFile;
-
+import org.junit.Test;
 import static org.junit.Assert.*;
 
 

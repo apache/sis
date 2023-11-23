@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
+import static java.util.logging.Logger.getLogger;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
@@ -68,8 +69,6 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

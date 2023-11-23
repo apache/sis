@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.TypeName;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

@@ -17,17 +17,16 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.AxesConvention;
 
 // Test dependencies
-import org.apache.sis.referencing.cs.HardCodedAxes;
-import org.apache.sis.referencing.cs.AxesConvention;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.junit.Assert.*;
 
 
 /**

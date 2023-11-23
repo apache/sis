@@ -23,13 +23,12 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.factory.TestFactorySource;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.referencing.factory.TestFactorySource;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 
 
 /**

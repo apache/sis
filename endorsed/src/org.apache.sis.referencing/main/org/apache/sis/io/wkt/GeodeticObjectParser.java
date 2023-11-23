@@ -32,6 +32,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import static java.util.Collections.singletonMap;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
@@ -81,8 +82,6 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
-
-import static java.util.Collections.singletonMap;
 
 
 /**

@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Arrays;
 import java.util.Objects;
 import java.io.Serializable;
+import static java.lang.Math.abs;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -35,8 +36,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.internal.Resources;
-
-import static java.lang.Math.abs;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
 

@@ -40,6 +40,8 @@ import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.nio.file.Path;
 import java.nio.charset.Charset;
+import static java.lang.System.getProperty;
+import static java.util.logging.Logger.getLogger;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
@@ -56,9 +58,6 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Shutdown;
 import org.apache.sis.system.DataDirectory;
-
-import static java.lang.System.getProperty;
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;

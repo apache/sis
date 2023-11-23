@@ -25,9 +25,8 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.xml.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 

@@ -28,11 +28,10 @@ import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.xml.test.TestCase;
-import org.apache.sis.referencing.cs.HardCodedCS;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.xml.test.TestCase;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 

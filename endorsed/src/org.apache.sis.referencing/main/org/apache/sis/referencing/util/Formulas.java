@@ -16,14 +16,13 @@
  */
 package org.apache.sis.referencing.util;
 
+import static java.lang.Math.*;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
-
-import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 

@@ -22,11 +22,10 @@ import java.net.URISyntaxException;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 
 

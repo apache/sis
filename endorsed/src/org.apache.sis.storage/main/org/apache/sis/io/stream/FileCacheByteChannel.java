@@ -38,7 +38,6 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.RangeSet;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.storage.base.StoreUtilities.LOGGER;
 
 

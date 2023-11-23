@@ -37,7 +37,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

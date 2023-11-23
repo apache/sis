@@ -25,11 +25,10 @@ import org.apache.sis.geometry.Envelope2D;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-
-import static org.junit.Assert.*;
 
 
 /**

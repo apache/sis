@@ -26,10 +26,9 @@ import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-import static org.junit.Assert.*;
 
 
 /**

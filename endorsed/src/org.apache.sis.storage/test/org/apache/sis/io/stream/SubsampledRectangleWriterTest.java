@@ -25,10 +25,9 @@ import java.util.function.ToDoubleFunction;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 
 /**

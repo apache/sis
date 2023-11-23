@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.junit.After;
 import org.junit.Test;
-
 import static org.opengis.test.Assert.assertInstanceOf;
 
 

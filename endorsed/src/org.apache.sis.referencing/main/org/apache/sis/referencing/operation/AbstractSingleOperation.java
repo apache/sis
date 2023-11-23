@@ -52,7 +52,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.Containers;
-
 import static org.apache.sis.util.Utilities.deepEquals;
 
 

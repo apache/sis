@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.sql;
 
+import static java.util.Collections.singleton;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
@@ -26,8 +27,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.NilReason;
-
-import static java.util.Collections.singleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.ControlledVocabulary;

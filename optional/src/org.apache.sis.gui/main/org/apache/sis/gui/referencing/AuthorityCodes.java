@@ -44,7 +44,6 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.gui.internal.BackgroundThreads;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

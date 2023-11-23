@@ -43,7 +43,6 @@ import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 

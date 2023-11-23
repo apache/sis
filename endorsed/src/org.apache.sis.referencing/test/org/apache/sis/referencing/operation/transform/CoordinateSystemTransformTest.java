@@ -33,11 +33,10 @@ import org.apache.sis.util.ArraysExt;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;
-
-import static org.junit.Assert.*;
 
 
 /**

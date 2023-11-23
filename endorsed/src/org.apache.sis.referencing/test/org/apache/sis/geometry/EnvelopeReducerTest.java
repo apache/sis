@@ -23,7 +23,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 

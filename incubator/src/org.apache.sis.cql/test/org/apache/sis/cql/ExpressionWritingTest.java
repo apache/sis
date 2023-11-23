@@ -28,7 +28,6 @@ import org.opengis.filter.Expression;
 import org.opengis.feature.Feature;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 

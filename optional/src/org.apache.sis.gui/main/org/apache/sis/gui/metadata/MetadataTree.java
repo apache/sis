@@ -54,7 +54,6 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

@@ -67,7 +67,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.resources.Vocabulary;
-
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
 

@@ -18,13 +18,12 @@ package org.apache.sis.metadata.iso.content;
 
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.util.Version;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.xml.test.TestCase;
-
-import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 import static org.junit.Assert.*;
+import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the geoapi-4.0 branch:

@@ -36,6 +36,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
+import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.ImmutableIdentifier;
@@ -49,8 +50,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
-
-import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 
 
 /**

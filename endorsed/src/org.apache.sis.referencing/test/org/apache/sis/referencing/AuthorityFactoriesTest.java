@@ -36,12 +36,11 @@ import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
 
 

@@ -37,7 +37,6 @@ import org.eclipse.yasson.YassonConfig;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 

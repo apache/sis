@@ -34,9 +34,8 @@ import org.apache.sis.pending.temporal.DefaultTemporalFactory;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.apache.sis.xml.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.format;

@@ -39,7 +39,6 @@ import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

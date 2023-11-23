@@ -20,9 +20,8 @@ import java.io.IOException;
 
 // Test dependencies
 import org.junit.Before;
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOn;
 
 
 /**

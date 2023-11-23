@@ -31,12 +31,10 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Objects;
-
 import static org.apache.sis.util.Utilities.deepEquals;
 
 

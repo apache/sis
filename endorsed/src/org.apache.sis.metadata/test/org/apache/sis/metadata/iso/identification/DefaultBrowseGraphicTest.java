@@ -22,6 +22,7 @@ import java.io.StringReader;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import javax.xml.transform.stream.StreamSource;
+import static java.util.logging.Logger.getLogger;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.identification.BrowseGraphic;
@@ -32,11 +33,9 @@ import org.apache.sis.xml.XML;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
-
-import static java.util.logging.Logger.getLogger;
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 

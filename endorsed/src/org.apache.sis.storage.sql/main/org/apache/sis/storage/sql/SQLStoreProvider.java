@@ -42,7 +42,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.ArgumentChecks;
-
 import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
 
 

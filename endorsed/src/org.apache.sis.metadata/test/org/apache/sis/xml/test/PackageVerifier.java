@@ -40,13 +40,12 @@ import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.geoapi.SchemaException;
 import org.opengis.geoapi.SchemaInformation;
+import static org.opengis.geoapi.SchemaInformation.ROOT_NAMESPACE;
+import static org.opengis.geoapi.SchemaInformation.SCHEMA_ROOT_URL;
 import org.apache.sis.util.Classes;
 import org.apache.sis.system.Modules;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
-
-import static org.opengis.geoapi.SchemaInformation.ROOT_NAMESPACE;
-import static org.opengis.geoapi.SchemaInformation.SCHEMA_ROOT_URL;
 import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
 
 

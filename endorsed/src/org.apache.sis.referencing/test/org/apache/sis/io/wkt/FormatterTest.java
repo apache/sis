@@ -25,11 +25,10 @@ import org.apache.sis.util.internal.X364;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.VerticalCRSMock;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 

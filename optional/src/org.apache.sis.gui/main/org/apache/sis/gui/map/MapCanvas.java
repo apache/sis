@@ -88,7 +88,6 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;
 

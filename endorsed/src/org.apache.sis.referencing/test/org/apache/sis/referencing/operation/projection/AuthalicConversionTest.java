@@ -17,19 +17,18 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Random;
+import static java.lang.StrictMath.*;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea;
 import org.apache.sis.util.internal.Constants;
+import static org.apache.sis.math.MathFunctions.atanh;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
-
-import static java.lang.StrictMath.*;
-import static org.apache.sis.math.MathFunctions.atanh;
-import static org.junit.Assert.assertEquals;
 
 
 /**

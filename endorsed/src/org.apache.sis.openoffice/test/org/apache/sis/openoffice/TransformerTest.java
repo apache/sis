@@ -25,11 +25,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestCase;
 
 
 /**

@@ -37,7 +37,6 @@ import org.apache.sis.xml.bind.NonMarshalledAuthority;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
 import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;

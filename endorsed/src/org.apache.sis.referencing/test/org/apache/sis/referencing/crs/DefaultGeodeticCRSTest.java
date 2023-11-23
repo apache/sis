@@ -22,11 +22,10 @@ import org.apache.sis.referencing.GeodeticObjectVerifier;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.junit.Assert.*;
 
 
 /**

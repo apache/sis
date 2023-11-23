@@ -42,7 +42,6 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
-
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;

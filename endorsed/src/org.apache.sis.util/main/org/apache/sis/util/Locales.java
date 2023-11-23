@@ -28,7 +28,6 @@ import java.util.IllformedLocaleException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 import static org.apache.sis.util.resources.IndexedResourceBundle.LOGGER;

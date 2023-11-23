@@ -27,13 +27,12 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Vocabulary;
+import static org.apache.sis.util.internal.Numerics.COMPARISON_THRESHOLD;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.util.internal.Numerics.COMPARISON_THRESHOLD;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 
 
 /**

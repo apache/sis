@@ -26,7 +26,6 @@ import org.opengis.metadata.content.ImagingCondition;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.measure.ValueRange;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensureInRange;
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 

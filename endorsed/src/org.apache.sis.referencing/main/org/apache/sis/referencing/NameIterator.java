@@ -24,7 +24,6 @@ import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.referencing.util.NilReferencingObject;
-
 import static org.apache.sis.util.internal.Strings.appendUnicodeIdentifier;
 
 // Specific to the geoapi-4.0 branch:

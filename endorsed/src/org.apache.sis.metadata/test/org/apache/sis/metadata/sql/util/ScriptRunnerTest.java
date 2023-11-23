@@ -21,11 +21,10 @@ import java.sql.SQLException;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.metadata.sql.TestDatabase;
-
-import static org.junit.Assert.*;
 
 
 /**

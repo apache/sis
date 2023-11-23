@@ -30,9 +30,8 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Test dependencies
-import org.apache.sis.xml.test.DocumentComparator;
-
 import static org.junit.Assert.*;
+import org.apache.sis.xml.test.DocumentComparator;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

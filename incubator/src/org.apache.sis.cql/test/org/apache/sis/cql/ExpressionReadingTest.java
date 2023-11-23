@@ -39,7 +39,6 @@ import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 

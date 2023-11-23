@@ -20,12 +20,6 @@ import java.util.Map;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
-
-// Test dependencies
-import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-
 import static org.apache.sis.util.internal.Constants.SEMI_MAJOR;
 import static org.apache.sis.util.internal.Constants.SEMI_MINOR;
 import static org.apache.sis.util.internal.Constants.EARTH_RADIUS;
@@ -35,7 +29,12 @@ import static org.apache.sis.util.internal.Constants.CENTRAL_MERIDIAN;
 import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL;
 import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL_1;
 import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL_2;
+
+// Test dependencies
+import org.junit.Test;
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 
 
 /**

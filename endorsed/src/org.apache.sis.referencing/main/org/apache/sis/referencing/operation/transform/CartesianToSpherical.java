@@ -19,11 +19,10 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import static java.lang.Math.*;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
-
-import static java.lang.Math.*;
 
 
 /**

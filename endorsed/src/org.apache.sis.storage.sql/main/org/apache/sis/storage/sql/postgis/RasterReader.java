@@ -55,7 +55,6 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.storage.sql.postgis.Band.OPPOSITE_SIGN;
 
 

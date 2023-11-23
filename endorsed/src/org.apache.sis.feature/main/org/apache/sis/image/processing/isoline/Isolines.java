@@ -33,7 +33,6 @@ import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
-
 import static org.apache.sis.image.processing.isoline.Tracer.UPPER_LEFT;
 import static org.apache.sis.image.processing.isoline.Tracer.UPPER_RIGHT;
 import static org.apache.sis.image.processing.isoline.Tracer.LOWER_RIGHT;

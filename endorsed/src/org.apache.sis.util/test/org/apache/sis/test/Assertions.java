@@ -39,6 +39,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Static;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

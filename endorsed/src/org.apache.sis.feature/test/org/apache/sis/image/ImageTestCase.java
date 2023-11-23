@@ -25,14 +25,13 @@ import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.ImagingOpException;
+import static java.lang.StrictMath.round;
 
 // Test dependencies
 import org.junit.AfterClass;
+import static org.junit.Assert.assertNotNull;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestConfiguration;
-
-import static java.lang.StrictMath.round;
-import static org.junit.Assert.assertNotNull;
 
 
 /**

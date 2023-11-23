@@ -79,7 +79,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
