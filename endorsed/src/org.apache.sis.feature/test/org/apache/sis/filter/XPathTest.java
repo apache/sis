@@ -38,9 +38,9 @@ public final class XPathTest extends TestCase {
     }
 
     /**
-     * Splits a x-path and verifies the result.
+     * Splits a XPath and verifies the result.
      *
-     * @param xpath       the x-path to parse.
+     * @param xpath       the XPath to parse.
      * @param isAbsolute  expected value if {@link XPath#isAbsolute}.
      * @param path        expected value if {@link XPath#path}. Can be null.
      * @param tip         expected value if {@link XPath#tip}.
@@ -67,12 +67,12 @@ public final class XPathTest extends TestCase {
     }
 
     /**
-     * Tests with a x-path containing an URL as the property namespace.
+     * Tests with a XPath containing an URL as the property namespace.
      */
     @Test
     public void testQualifiedName() {
-        split("Q{http://example.com/foo/bar}property",       false, new String[] {"http://example.com/foo/bar"}, "property");
-        split("Q{http://example.com/foo/bar}property/child", false, new String[] {"http://example.com/foo/bar",  "property"}, "child");
-        split("/Q{http://example.com/foo/bar}property",      true,  new String[] {"http://example.com/foo/bar"}, "property");
+        split("Q{http://example.com/foo/bar}property",       false, null,         "http://example.com/foo/bar:property");
+        split("/Q{http://example.com/foo/bar}property",      true,  null,         "http://example.com/foo/bar:property");
+        split("Q{http://example.com/foo/bar}property/child", false, new String[] {"http://example.com/foo/bar:property"}, "child");
     }
 }

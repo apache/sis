@@ -716,7 +716,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * <ul>
      *   <li>If the expression is an instance of {@link ValueReference}, the name of the
-     *       property referenced by the {@linkplain ValueReference#getXPath() x-path}.</li>
+     *       property referenced by the {@linkplain ValueReference#getXPath() XPath}.</li>
      *   <li>Otherwise the localized string "Unnamed #1" with increasing numbers.</li>
      * </ul>
      *

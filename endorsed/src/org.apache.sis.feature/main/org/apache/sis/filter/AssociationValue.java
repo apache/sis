@@ -39,7 +39,7 @@ import org.opengis.filter.ValueReference;
 
 /**
  * Expression whose value is computed by retrieving the value indicated by the provided path.
- * This is used for value reference given by x-path such as "a/b/c". The last element of the path
+ * This is used for value reference given by XPath such as "a/b/c". The last element of the path
  * (the tip) is evaluated by a {@link PropertyValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)

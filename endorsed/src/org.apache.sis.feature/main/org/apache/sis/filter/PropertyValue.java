@@ -74,7 +74,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
     protected final boolean isVirtual;
 
     /**
-     * The prefix in a x-path for considering a property as virtual.
+     * The prefix in a XPath for considering a property as virtual.
      */
     static final String VIRTUAL_PREFIX = "/*/";
 
