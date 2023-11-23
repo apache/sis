@@ -870,6 +870,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short NearestNeighbor = 232;
 
         /**
+         * Nil reason
+         */
+        public static final short NilReason = 274;
+
+        /**
          * No data
          */
         public static final short Nodata = 140;

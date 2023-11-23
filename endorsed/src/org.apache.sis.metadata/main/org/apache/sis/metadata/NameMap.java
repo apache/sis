@@ -16,10 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Map;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 
 /**
  * Map of property names for a given implementation class. This map is read-only.
@@ -32,7 +28,7 @@ final class NameMap extends PropertyMap<String> {
     /**
      * Determines the string representation of values in this map.
      */
-    final KeyNamePolicy valuePolicy;
+    private final KeyNamePolicy valuePolicy;
 
     /**
      * Creates a name map for the specified accessor.
@@ -47,32 +43,10 @@ final class NameMap extends PropertyMap<String> {
     }
 
     /**
-     * Returns the value to which the specified key is mapped, or {@code null}
-     * if this map contains no mapping for the key.
+     * Returns the name for the property at the specified index.
      */
     @Override
-    public String get(final Object key) {
-        if (key instanceof String) {
-            return accessor.name(accessor.indexOf((String) key, false), valuePolicy);
-        }
-        return null;
-    }
-
-    /**
-     * Returns an iterator over the entries contained in this map.
-     */
-    @Override
-    final Iterator<Map.Entry<String,String>> iterator() {
-        return new Iter() {
-            @Override
-            public Map.Entry<String,String> next() {
-                final String value = accessor.name(index, valuePolicy);
-                if (value == null) {
-                    // PropertyAccessor.name(int) never return null if the index is valid.
-                    throw new NoSuchElementException();
-                }
-                return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);
-            }
-        };
+    final String getReflectively(final int index) {
+        return accessor.name(index, valuePolicy);
     }
 }

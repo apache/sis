@@ -18,6 +18,15 @@
 /**
  * Command line interface for Apache SIS.
  * See {@link org.apache.sis.console.Command} for the list of supported commands.
+ * See the <a href="https://sis.apache.org/command-line.html">Apache SIS web site</a> for usage examples.
+ *
+ * <h2>Debugging</h2>
+ * For debugging an application launched on the command-line by the {@code bin/sis} shell script,
+ * the following environment variable can be set:
+ *
+ * {@snippet lang="shell" :
+ *   export JDK_JAVA_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
+ *   }
  *
  * <h2>SIS installation on remote machines</h2>
  * Some sub-commands can operate on SIS installation on remote machines, provided that Apache SIS
@@ -47,7 +56,7 @@
  * and Management Using JMX Technology</a> page.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 package org.apache.sis.console;

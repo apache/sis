@@ -16,11 +16,13 @@
  */
 package org.apache.sis.storage.shapefile.shp;
 
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
@@ -115,9 +117,23 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         return measures;
     }
 
-    public abstract void decode(ChannelDataInput ds, ShapeRecord record) throws IOException;
+    /**
+     * Decode geometry and store it in ShapeRecord.
+     *
+     * @param channel to read from
+     * @param record to read into
+     * @param filter optional filter envelope to stop geometry decoding as soon as possible
+     * @return true if geometry pass the filter
+     */
+    public abstract boolean decode(ChannelDataInput channel, ShapeRecord record, Rectangle2D.Double filter) throws IOException;
 
-    public abstract void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException;
+    /**
+     * Encode geometry.
+     *
+     * @param channel to write into
+     * @param shape geometry to encode
+     */
+    public abstract void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException;
 
     /**
      * Compute the encoded size of a geometry.
@@ -126,26 +142,56 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
      */
     public abstract int getEncodedLength(Geometry geom);
 
-    protected void readBBox2D(ChannelDataInput ds, ShapeRecord shape) throws IOException {
+    /**
+     * Read 2D Bounding box from channel.
+     *
+     * @param channel to read from
+     * @param shape to write into
+     * @param filter optional filter envelope to stop geometry decoding as soon as possible
+     * @return true if filter match or is null
+     */
+    protected boolean readBBox2D(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+        final double minX = channel.readDouble();
+        if (filter != null && minX > (filter.x + filter.width)) return false;
+        final double minY = channel.readDouble();
+        if (filter != null && minY > (filter.y + filter.height)) return false;
+        final double maxX = channel.readDouble();
+        if (filter != null && maxX < filter.x) return false;
+        final double maxY = channel.readDouble();
+        if (filter != null && maxY < filter.y) return false;
         shape.bbox = new GeneralEnvelope(getDimension());
-        shape.bbox.getLowerCorner().setOrdinate(0, ds.readDouble());
-        shape.bbox.getLowerCorner().setOrdinate(1, ds.readDouble());
-        shape.bbox.getUpperCorner().setOrdinate(0, ds.readDouble());
-        shape.bbox.getUpperCorner().setOrdinate(1, ds.readDouble());
+        shape.bbox.getLowerCorner().setOrdinate(0, minX);
+        shape.bbox.getLowerCorner().setOrdinate(1, minY);
+        shape.bbox.getUpperCorner().setOrdinate(0, maxX);
+        shape.bbox.getUpperCorner().setOrdinate(1, maxY);
+        return true;
     }
 
-    protected void writeBBox2D(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
-        ds.writeDouble(shape.bbox.getMinimum(0));
-        ds.writeDouble(shape.bbox.getMinimum(1));
-        ds.writeDouble(shape.bbox.getMaximum(0));
-        ds.writeDouble(shape.bbox.getMaximum(1));
+    /**
+     * Write 2D Bounding box.
+     *
+     * @param channel to write into
+     * @param shape to read from
+     */
+    protected void writeBBox2D(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
+        channel.writeDouble(shape.bbox.getMinimum(0));
+        channel.writeDouble(shape.bbox.getMinimum(1));
+        channel.writeDouble(shape.bbox.getMaximum(0));
+        channel.writeDouble(shape.bbox.getMaximum(1));
     }
 
-    protected LineString[] readLines(ChannelDataInput ds, ShapeRecord shape, boolean asRing) throws IOException {
-        readBBox2D(ds, shape);
-        final int numParts = ds.readInt();
-        final int numPoints = ds.readInt();
-        final int[] offsets = ds.readInts(numParts);
+    /**
+     * @param channel to read from
+     * @param shape to write into
+     * @param filter optional filter envelope to stop geometry decoding as soon as possible
+     * @param asRing true to produce LinearRing instead of LineString
+     * @return null if filter do no match
+     */
+    protected LineString[] readLines(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter, boolean asRing) throws IOException {
+        if (!readBBox2D(channel, shape, filter)) return null;
+        final int numParts = channel.readInt();
+        final int numPoints = channel.readInt();
+        final int[] offsets = channel.readInts(numParts);
 
         final LineString[] lines = new LineString[numParts];
 
@@ -154,37 +200,37 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             final int nbValues = (i == numParts - 1) ? numPoints - offsets[i] : offsets[i + 1] - offsets[i];
             final double[] values;
             if (nbOrdinates == 2) {
-                values = ds.readDoubles(nbValues * 2);
+                values = channel.readDoubles(nbValues * 2);
             } else {
-                values = ds.readDoubles(nbValues * nbOrdinates);
+                values = channel.readDoubles(nbValues * nbOrdinates);
                 for (int k = 0; k < nbValues; k++) {
-                    values[k * nbOrdinates  ] = ds.readDouble();
-                    values[k * nbOrdinates + 1] = ds.readDouble();
+                    values[k * nbOrdinates  ] = channel.readDouble();
+                    values[k * nbOrdinates + 1] = channel.readDouble();
                 }
             }
             final PackedCoordinateSequence.Double pc = new PackedCoordinateSequence.Double(values, getDimension(), getMeasures());
             lines[i] = asRing ? GF.createLinearRing(pc) : GF.createLineString(pc);
         }
         //Z and M
-        if (nbOrdinates >= 3)  readLineOrdinates(ds, shape, lines, 2);
-        if (nbOrdinates == 4)  readLineOrdinates(ds, shape, lines, 3);
+        if (nbOrdinates >= 3)  readLineOrdinates(channel, shape, lines, 2);
+        if (nbOrdinates == 4)  readLineOrdinates(channel, shape, lines, 3);
         return lines;
     }
 
-    protected void readLineOrdinates(ChannelDataInput ds, ShapeRecord shape, LineString[] lines, int ordinateIndex) throws IOException {
+    protected void readLineOrdinates(ChannelDataInput channel, ShapeRecord shape, LineString[] lines, int ordinateIndex) throws IOException {
         final int nbDim = getDimension() + getMeasures();
-        shape.bbox.setRange(ordinateIndex, ds.readDouble(), ds.readDouble());
+        shape.bbox.setRange(ordinateIndex, channel.readDouble(), channel.readDouble());
         for (LineString line : lines) {
             final double[] values = ((PackedCoordinateSequence.Double) line.getCoordinateSequence()).getRawCoordinates();
             final int nbValues = values.length / nbDim;
             for (int k = 0; k < nbValues; k++) {
-                values[k * nbDim + ordinateIndex] = ds.readDouble();
+                values[k * nbDim + ordinateIndex] = channel.readDouble();
             }
         }
     }
 
-    protected void writeLines(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
-        writeBBox2D(ds, shape);
+    protected void writeLines(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
+        writeBBox2D(channel, shape);
         final List<LineString> lines = extractRings(shape.geometry);
         final int nbLines = lines.size();
         final int[] offsets = new int[nbLines];
@@ -195,32 +241,32 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             offsets[i] = nbPts;
             nbPts += line.getCoordinateSequence().size();
         }
-        ds.writeInt(nbLines);
-        ds.writeInt(nbPts);
-        ds.writeInts(offsets);
+        channel.writeInt(nbLines);
+        channel.writeInt(nbPts);
+        channel.writeInts(offsets);
 
         //second loop write points
         for (int i = 0; i < nbLines; i++) {
             final LineString line = lines.get(i);
             final CoordinateSequence cs = line.getCoordinateSequence();
             for (int k = 0, kn =cs.size(); k < kn; k++) {
-                ds.writeDouble(cs.getX(k));
-                ds.writeDouble(cs.getY(k));
+                channel.writeDouble(cs.getX(k));
+                channel.writeDouble(cs.getY(k));
             }
         }
 
         //Z and M
-        if (nbOrdinates >= 3)  writeLineOrdinates(ds, shape, lines, 2);
-        if (nbOrdinates == 4)  writeLineOrdinates(ds, shape, lines, 3);
+        if (nbOrdinates >= 3)  writeLineOrdinates(channel, shape, lines, 2);
+        if (nbOrdinates == 4)  writeLineOrdinates(channel, shape, lines, 3);
     }
 
-    protected void writeLineOrdinates(ChannelDataOutput ds, ShapeRecord shape,List<LineString> lines, int ordinateIndex) throws IOException {
-        ds.writeDouble(shape.bbox.getMinimum(ordinateIndex));
-        ds.writeDouble(shape.bbox.getMaximum(ordinateIndex));
+    protected void writeLineOrdinates(ChannelDataOutput channel, ShapeRecord shape,List<LineString> lines, int ordinateIndex) throws IOException {
+        channel.writeDouble(shape.bbox.getMinimum(ordinateIndex));
+        channel.writeDouble(shape.bbox.getMaximum(ordinateIndex));
         for (LineString line : lines) {
             final CoordinateSequence cs = line.getCoordinateSequence();
             for (int k = 0, kn =cs.size(); k < kn; k++) {
-                ds.writeDouble(cs.getOrdinate(k, ordinateIndex));
+                channel.writeDouble(cs.getOrdinate(k, ordinateIndex));
             }
         }
     }
@@ -250,6 +296,11 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
     }
 
+    /**
+     * Create a MultiPolygon from given set of rings.
+     * @param rings to create MultiPolygon from
+     * @return created MultiPolygon
+     */
     protected MultiPolygon rebuild(List<LinearRing> rings) {
 
         final int nbRing = rings.size();
@@ -321,11 +372,12 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            return true;
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
         }
 
     }
@@ -339,21 +391,24 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            final double x = channel.readDouble();
+            if (filter != null && (x < filter.x || x > (filter.x + filter.width)) ) return false;
+            final double y = channel.readDouble();
+            if (filter != null && (y < filter.y || y > (filter.y + filter.height)) ) return false;
             shape.bbox = new GeneralEnvelope(2);
-            final double x = ds.readDouble();
-            final double y = ds.readDouble();
             shape.bbox.setRange(0, x, x);
             shape.bbox.setRange(1, y, y);
             shape.geometry = GF.createPoint(new CoordinateXY(x, y));
+            return true;
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
             final Point pt = (Point) shape.geometry;
             final Coordinate coord = pt.getCoordinate();
-            ds.writeDouble(coord.getX());
-            ds.writeDouble(coord.getY());
+            channel.writeDouble(coord.getX());
+            channel.writeDouble(coord.getY());
         }
 
         @Override
@@ -370,24 +425,27 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            final double x = channel.readDouble();
+            if (filter != null && (x < filter.x || x > (filter.x + filter.width)) ) return false;
+            final double y = channel.readDouble();
+            if (filter != null && (y < filter.y || y > (filter.y + filter.height)) ) return false;
+            final double z = channel.readDouble();
             shape.bbox = new GeneralEnvelope(3);
-            final double x = ds.readDouble();
-            final double y = ds.readDouble();
-            final double z = ds.readDouble();
             shape.bbox.setRange(0, x, x);
             shape.bbox.setRange(1, y, y);
             shape.bbox.setRange(2, z, z);
             shape.geometry = GF.createPoint(new CoordinateXYM(x, y, z));
+            return true;
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
             final Point pt = (Point) shape.geometry;
             final Coordinate coord = pt.getCoordinate();
-            ds.writeDouble(coord.getX());
-            ds.writeDouble(coord.getY());
-            ds.writeDouble(coord.getM());
+            channel.writeDouble(coord.getX());
+            channel.writeDouble(coord.getY());
+            channel.writeDouble(coord.getM());
         }
 
         @Override
@@ -405,27 +463,30 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            final double x = channel.readDouble();
+            if (filter != null && (x < filter.x || x > (filter.x + filter.width)) ) return false;
+            final double y = channel.readDouble();
+            if (filter != null && (y < filter.y || y > (filter.y + filter.height)) ) return false;
+            final double z = channel.readDouble();
+            final double m = channel.readDouble();
             shape.bbox = new GeneralEnvelope(4);
-            final double x = ds.readDouble();
-            final double y = ds.readDouble();
-            final double z = ds.readDouble();
-            final double m = ds.readDouble();
             shape.bbox.setRange(0, x, x);
             shape.bbox.setRange(1, y, y);
             shape.bbox.setRange(2, z, z);
             shape.bbox.setRange(3, m, m);
             shape.geometry = GF.createPoint(new CoordinateXYZM(x, y, z, m));
+            return true;
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
             final Point pt = (Point) shape.geometry;
             final Coordinate coord = pt.getCoordinate();
-            ds.writeDouble(coord.getX());
-            ds.writeDouble(coord.getY());
-            ds.writeDouble(coord.getZ());
-            ds.writeDouble(coord.getM());
+            channel.writeDouble(coord.getX());
+            channel.writeDouble(coord.getY());
+            channel.writeDouble(coord.getZ());
+            channel.writeDouble(coord.getM());
         }
 
         @Override
@@ -442,23 +503,24 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
-            readBBox2D(ds, shape);
-            int nbPt = ds.readInt();
-            final double[] coords = ds.readDoubles(nbPt * 2);
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            if (!readBBox2D(channel, shape, filter)) return false;
+            int nbPt = channel.readInt();
+            final double[] coords = channel.readDoubles(nbPt * 2);
             shape.geometry = GF.createMultiPoint(new PackedCoordinateSequence.Double(coords,2,0));
+            return true;
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
-            writeBBox2D(ds, shape);
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
+            writeBBox2D(channel, shape);
             final MultiPoint geometry = (MultiPoint) shape.geometry;
             final int nbPts = geometry.getNumGeometries();
-            ds.writeInt(nbPts);
+            channel.writeInt(nbPts);
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                ds.writeDouble(pt.getX());
-                ds.writeDouble(pt.getY());
+                channel.writeDouble(pt.getX());
+                channel.writeDouble(pt.getY());
             }
         }
 
@@ -479,37 +541,38 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
-            readBBox2D(ds, shape);
-            int nbPt = ds.readInt();
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            if (!readBBox2D(channel, shape, filter)) return false;
+            int nbPt = channel.readInt();
             final double[] coords = new double[nbPt * 3];
             for (int i = 0; i < nbPt; i++) {
-                coords[i * 3    ] = ds.readDouble();
-                coords[i * 3 + 1] = ds.readDouble();
+                coords[i * 3    ] = channel.readDouble();
+                coords[i * 3 + 1] = channel.readDouble();
             }
-            shape.bbox.setRange(2, ds.readDouble(), ds.readDouble());
+            shape.bbox.setRange(2, channel.readDouble(), channel.readDouble());
             for (int i = 0; i < nbPt; i++) {
-                coords[i * 3 + 2] = ds.readDouble();
+                coords[i * 3 + 2] = channel.readDouble();
             }
             shape.geometry = GF.createMultiPoint(new PackedCoordinateSequence.Double(coords, 2, 1));
+            return true;
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
-            writeBBox2D(ds, shape);
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
+            writeBBox2D(channel, shape);
             final MultiPoint geometry = (MultiPoint) shape.geometry;
             final int nbPts = geometry.getNumGeometries();
-            ds.writeInt(nbPts);
+            channel.writeInt(nbPts);
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                ds.writeDouble(pt.getX());
-                ds.writeDouble(pt.getY());
+                channel.writeDouble(pt.getX());
+                channel.writeDouble(pt.getY());
             }
-            ds.writeDouble(shape.bbox.getMinimum(2));
-            ds.writeDouble(shape.bbox.getMaximum(2));
+            channel.writeDouble(shape.bbox.getMinimum(2));
+            channel.writeDouble(shape.bbox.getMaximum(2));
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                ds.writeDouble(pt.getCoordinate().getM());
+                channel.writeDouble(pt.getCoordinate().getM());
             }
         }
 
@@ -530,47 +593,48 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
-            readBBox2D(ds, shape);
-            int nbPt = ds.readInt();
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            if (!readBBox2D(channel, shape, filter)) return false;
+            int nbPt = channel.readInt();
             final double[] coords = new double[nbPt * 4];
             for (int i = 0; i < nbPt; i++) {
-                coords[i * 4    ] = ds.readDouble();
-                coords[i * 4 + 1] = ds.readDouble();
+                coords[i * 4    ] = channel.readDouble();
+                coords[i * 4 + 1] = channel.readDouble();
             }
-            shape.bbox.setRange(2, ds.readDouble(), ds.readDouble());
+            shape.bbox.setRange(2, channel.readDouble(), channel.readDouble());
             for (int i = 0; i < nbPt; i++) {
-                coords[i * 4 + 2] = ds.readDouble();
+                coords[i * 4 + 2] = channel.readDouble();
             }
-            shape.bbox.setRange(3, ds.readDouble(), ds.readDouble());
+            shape.bbox.setRange(3, channel.readDouble(), channel.readDouble());
             for (int i = 0; i < nbPt; i++) {
-                coords[i * 4 + 3] = ds.readDouble();
+                coords[i * 4 + 3] = channel.readDouble();
             }
             shape.geometry = GF.createMultiPoint(new PackedCoordinateSequence.Double(coords, 3, 1));
+            return true;
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
-            writeBBox2D(ds, shape);
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
+            writeBBox2D(channel, shape);
             final MultiPoint geometry = (MultiPoint) shape.geometry;
             final int nbPts = geometry.getNumGeometries();
-            ds.writeInt(nbPts);
+            channel.writeInt(nbPts);
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                ds.writeDouble(pt.getX());
-                ds.writeDouble(pt.getY());
+                channel.writeDouble(pt.getX());
+                channel.writeDouble(pt.getY());
             }
-            ds.writeDouble(shape.bbox.getMinimum(2));
-            ds.writeDouble(shape.bbox.getMaximum(2));
+            channel.writeDouble(shape.bbox.getMinimum(2));
+            channel.writeDouble(shape.bbox.getMaximum(2));
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                ds.writeDouble(pt.getCoordinate().getZ());
+                channel.writeDouble(pt.getCoordinate().getZ());
             }
-            ds.writeDouble(shape.bbox.getMinimum(3));
-            ds.writeDouble(shape.bbox.getMaximum(3));
+            channel.writeDouble(shape.bbox.getMinimum(3));
+            channel.writeDouble(shape.bbox.getMaximum(3));
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                ds.writeDouble(pt.getCoordinate().getM());
+                channel.writeDouble(pt.getCoordinate().getM());
             }
         }
 
@@ -593,13 +657,16 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
-            shape.geometry = GF.createMultiLineString(readLines(ds, shape, false));
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            final LineString[] lines = readLines(channel, shape, filter, false);
+            if (lines == null) return false;
+            shape.geometry = GF.createMultiLineString(lines);
+            return true;
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
-            writeLines(ds, shape);
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
+            writeLines(channel, shape);
         }
 
         @Override
@@ -625,9 +692,11 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
-            final LineString[] rings = readLines(ds, shape, true);
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
+            final LineString[] rings = readLines(channel, shape, filter, true);
+            if (rings == null) return false;
             shape.geometry = rebuild(Stream.of(rings).map(LinearRing.class::cast).collect(Collectors.toList()));
+            return true;
         }
 
         @Override
@@ -660,12 +729,12 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         @Override
-        public void decode(ChannelDataInput ds, ShapeRecord shape) throws IOException {
+        public boolean decode(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public void encode(ChannelDataOutput ds, ShapeRecord shape) throws IOException {
+        public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

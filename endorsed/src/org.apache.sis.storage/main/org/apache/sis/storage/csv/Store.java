@@ -43,7 +43,6 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FoliationRepresentation;
@@ -639,11 +638,7 @@ final class Store extends URIDataStore implements FeatureSet {
             }
             builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.ALL);
             builder.addResourceScope(ScopeCode.FEATURE, null);
-            try {
-                builder.addExtent(envelope);
-            } catch (TransformException e) {
-                throw new DataStoreReferencingException(getLocale(), StoreProvider.NAME, getDisplayName(), source).initCause(e);
-            }
+            builder.addExtent(envelope, listeners);
             builder.addFeatureType(featureType, -1);
             addTitleOrIdentifier(builder);
             builder.setISOStandards(false);

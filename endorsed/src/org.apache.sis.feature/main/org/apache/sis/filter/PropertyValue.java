@@ -74,7 +74,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
     protected final boolean isVirtual;
 
     /**
-     * The prefix in a x-path for considering a property as virtual.
+     * The prefix in a XPath for considering a property as virtual.
      */
     static final String VIRTUAL_PREFIX = "/*/";
 
@@ -102,38 +102,32 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
      * @throws IllegalArgumentException if the given XPath is not supported.
      */
     @SuppressWarnings("unchecked")
-    static <V> ValueReference<AbstractFeature,V> create(String xpath, final Class<V> type) {
+    static <V> ValueReference<AbstractFeature,V> create(final String xpath, final Class<V> type) {
+        final var parsed = new XPath(xpath);
+        List<String> path = parsed.path;
         boolean isVirtual = false;
-        List<String> path = XPath.split(xpath);
-split:  if (path != null) {
+        if (parsed.isAbsolute) {
             /*
              * If the XPath is like "/∗/property" where the root "/" is the feature instance,
              * we interpret that as meaning "property of a feature of any type", which means
              * to relax the restriction about the set of allowed properties.
              */
-            final String head = path.get(0);                // List and items in the list are guaranteed non-empty.
-            isVirtual = head.equals("/*");
-            if (isVirtual || head.charAt(0) != XPath.SEPARATOR) {
-                final int offset = isVirtual ? 1 : 0;       // Skip the "/*/" component at index 0.
-                final int last = path.size() - 1;
-                if (last >= offset) {
-                    xpath = path.get(last);
-                    path  = path.subList(offset, last);
-                    break split;                            // Accept the path as valid.
-                }
+            isVirtual = (path != null) && path.get(0).equals("*");
+            if (!isVirtual) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedXPath_1, xpath));
             }
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedXPath_1, xpath));
+            path.remove(0);
+            if (path.isEmpty()) {
+                path = null;
+            }
         }
-        /*
-         * At this point, `xpath` is the tip of the path (i.e. prefixes have been removed).
-         */
         final PropertyValue<V> tip;
         if (type != Object.class) {
-            tip = new Converted<>(type, xpath, isVirtual);
+            tip = new Converted<>(type, parsed.tip, isVirtual);
         } else {
-            tip = (PropertyValue<V>) new AsObject(xpath, isVirtual);
+            tip = (PropertyValue<V>) new AsObject(parsed.tip, isVirtual);
         }
-        return (path == null || path.isEmpty()) ? tip : new AssociationValue<>(path, tip);
+        return (path != null) ? new AssociationValue<>(path, tip) : tip;
     }
 
     /**

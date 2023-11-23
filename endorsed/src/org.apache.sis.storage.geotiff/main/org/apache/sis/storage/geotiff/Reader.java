@@ -395,6 +395,14 @@ final class Reader extends IOBase {
     }
 
     /**
+     * Returns the number of images currently in the cache. This is not necessarily
+     * the total number of images in the TIFF file, unless {@link #endOfFile} is true.
+     */
+    final int getImageCacheSize() {
+        return images.size();
+    }
+
+    /**
      * Returns the potentially pyramided <cite>Image File Directories</cite> (IFDs) at the given index.
      * If the pyramid has already been initialized, then it is returned.
      * Otherwise this method initializes the pyramid now and returns it.

@@ -16,11 +16,17 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Optional;
 import java.util.Collection;
 import java.util.function.Predicate;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.image.DataStoreFilter;
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 
 
 /**
@@ -30,7 +36,7 @@ import org.apache.sis.storage.image.DataStoreFilter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 public final class DataStores extends Static {
@@ -121,5 +127,57 @@ public final class DataStores extends Static {
             preferred = new DataStoreFilter(preferredFormat, true);
         }
         return DataStoreRegistry.INSTANCE.open(storage, Capability.WRITE, preferred);
+    }
+
+    /**
+     * Reads immediately the first grid coverage found in the given storage.
+     * This is a convenience method searching for the first instance of {@link GridCoverageResource}.
+     * If the given storage contains two or more such instances, all resources after the first one are ignored.
+     *
+     * <p>The Area Of Interest (AOI) is an optional argument for reducing the amount of data to load.
+     * It can be expressed using an arbitrary Coordinate Reference System (CRS), as transformations will be applied as needed.
+     * If the AOI does not specify a CRS, then the AOI is assumed to be in the CRS of the grid coverage to read.
+     * The returned grid coverage will not necessarily cover exactly the specified AOI.
+     * It may be smaller if the coverage does not cover the full AOI,
+     * or it may be larger for loading an integer number of tiles.</p>
+     *
+     * <p>On return, the grid coverage (possibly intersected with the AOI) has been fully loaded in memory.
+     * If lower memory consumption is desired, for example because the coverage is very large, then deferred
+     * tile loading should be used. The latter approach requires that the caller use {@link DataStore} directly,
+     * because the store needs to be open as long as the {@link GridCoverage} is used.
+     * See {@link RasterLoadingStrategy} for more details.</p>
+     *
+     * @param  storage  the input object as a URL, file, image input stream, <i>etc.</i>.
+     * @param  aoi      spatiotemporal region of interest, or {@code null} for reading the whole coverage.
+     * @return the first grid coverage found in the given storage, or an empty value if none was found.
+     * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for the given storage object.
+     * @throws DataStoreException if an error occurred while opening the storage or reading the grid coverage.
+     * @throws DisjointExtentException if the given envelope does not intersect any resource extent.
+     *
+     * @since 1.5
+     */
+    public static Optional<GridCoverage> readGridCoverage(final Object storage, final Envelope aoi)
+            throws UnsupportedStorageException, DataStoreException
+    {
+        final GridGeometry domain = (aoi == null) ? null : new GridGeometry(aoi);
+        try (DataStore ds = open(storage)) {
+            final GridCoverageResource gc;
+search:     if (ds instanceof GridCoverageResource) {
+                gc = (GridCoverageResource) ds;
+            } else {
+                if (ds instanceof Aggregate) {
+                    for (final Resource r : ((Aggregate) ds).components()) {
+                        if (r instanceof GridCoverageResource) {
+                            gc = (GridCoverageResource) r;
+                            break search;
+                        }
+                    }
+                }
+                return Optional.empty();
+            }
+            return Optional.of(gc.read(domain, null));
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(DataStoreException.class);
+        }
     }
 }

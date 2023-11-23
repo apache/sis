@@ -27,6 +27,7 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.UnknownNameException;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -416,6 +417,7 @@ public final class Names extends Static {
      *
      * @since 0.5
      */
+    @OptionalCandidate
     public static Class<?> toClass(final TypeName type) throws UnknownNameException {
         if (type == null) {
             return null;

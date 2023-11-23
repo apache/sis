@@ -20,6 +20,7 @@ import java.util.Map;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
+import org.opengis.annotation.Obligation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
@@ -91,7 +92,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * The constants defined in this class use a similar approach for providing serialization support.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @param <V>  base type of all values in the column identified by this instance.
  *
@@ -99,7 +100,7 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 public class TableColumn<V> implements CheckedContainer<V> {
     /**
-     * Frequently-used constant for a column of object names.
+     * Predefined constant for a column of object names.
      * The column {@linkplain #getHeader() header} is <q>Name</q> (eventually localized) and
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
@@ -108,7 +109,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
             CharSequence.class, Vocabulary.Keys.Name);
 
     /**
-     * Frequently-used constant for a column of object identifiers.
+     * Predefined constant for a column of object identifiers.
      * The column {@linkplain #getHeader() header} is <q>Identifier</q> (eventually localized)
      * and the column elements are instances of {@link String}.
      */
@@ -116,7 +117,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
             String.class, Vocabulary.Keys.Identifier);
 
     /**
-     * Frequently-used constant for a column of index values.
+     * Predefined constant for a column of index values.
      * The column {@linkplain #getHeader() header} is <q>Index</q> (eventually localized)
      * and the column elements are instances of {@link Integer}.
      */
@@ -124,7 +125,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
             Integer.class, Vocabulary.Keys.Index);
 
     /**
-     * Frequently-used constant for a column of object types.
+     * Predefined constant for a column of object types.
      * The column {@linkplain #getHeader() header} is <q>Type</q> (eventually localized).
      */
     @SuppressWarnings("unchecked")
@@ -132,7 +133,17 @@ public class TableColumn<V> implements CheckedContainer<V> {
             (Class) Class.class, Vocabulary.Keys.Type);
 
     /**
-     * Frequently-used constant for a column of object values.
+     * Predefined constant for a column of obligation (mandatory, optional, conditional).
+     * The column {@linkplain #getHeader() header} is <q>Obligation</q> (eventually localized)
+     * and the column elements are instances of {@link Obligation}.
+     *
+     * @since 1.5
+     */
+    public static final TableColumn<Obligation> OBLIGATION = new Constant<>("OBLIGATION",
+            Obligation.class, Vocabulary.Keys.Obligation);
+
+    /**
+     * Predefined constant for a column of object values.
      * The column {@linkplain #getHeader() header} is <q>Value</q> (eventually localized) and
      * the column elements can be instance of any kind of objects.
      *
@@ -143,7 +154,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
             Object.class, Vocabulary.Keys.Value);
 
     /**
-     * Frequently-used constant for a column of object textual values.
+     * Predefined constant for a column of object textual values.
      * The column {@linkplain #getHeader() header} is <q>Value</q> (eventually localized) and
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
@@ -152,14 +163,14 @@ public class TableColumn<V> implements CheckedContainer<V> {
             CharSequence.class, Vocabulary.Keys.Value);
 
     /**
-     * Frequently-used constant for a column of object numerical values.
+     * Predefined constant for a column of object numerical values.
      * The column {@linkplain #getHeader() header} is <q>Value</q> (eventually localized).
      */
     public static final TableColumn<Number> VALUE_AS_NUMBER = new Constant<>("VALUE_AS_NUMBER",
             Number.class, Vocabulary.Keys.Value);
 
     /**
-     * Frequently-used constant for a column of remarks.
+     * Predefined constant for a column of remarks.
      * The column {@linkplain #getHeader() header} is <q>Remarks</q> (eventually localized) and
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.

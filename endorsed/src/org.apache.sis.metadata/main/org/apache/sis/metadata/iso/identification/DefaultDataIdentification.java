@@ -345,16 +345,18 @@ public class DefaultDataIdentification extends AbstractIdentification implements
 
 
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                  ////////
-    ////////                               XML support with JAXB                              ////////
-    ////////                                                                                  ////////
-    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
-    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
-    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
-    ////////        (GML) support is not needed.                                              ////////
-    ////////                                                                                  ////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
 
     /**
      * Gets the default locale for this record (used in ISO 19115-3 format).

@@ -59,7 +59,7 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefin
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlTransient
@@ -90,6 +90,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     protected ISOMetadata(final Object object) {
+        super(object);
         if (object instanceof IdentifiedObject) {
             if (object instanceof ISOMetadata && Containers.isNullOrEmpty(((ISOMetadata) object).identifiers)) {
                 /*
@@ -220,7 +221,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     // --------------------------------------------------------------------------------------
 
     /**
-     * {@inheritDoc}
+     * @hidden
      */
     @Override
     public boolean transitionTo(final State target) {
@@ -248,16 +249,18 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
 
 
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                  ////////
-    ////////                               XML support with JAXB                              ////////
-    ////////                                                                                  ////////
-    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
-    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
-    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
-    ////////        (GML) support is not needed.                                              ////////
-    ////////                                                                                  ////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
 
     /**
      * Returns an identifier unique for the XML document, or {@code null} if none.

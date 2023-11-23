@@ -1931,7 +1931,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                     final double upper = envelope.getUpper(i);
                     final double delta = (resolution != null) ? resolution[i] : Double.NaN;
                     nf.setMinimumFractionDigits(Numerics.fractionDigitsForDelta(delta));
-                    nf.setMaximumFractionDigits(Numerics.suggestFractionDigits(lower, upper));
+                    nf.setMaximumFractionDigits(Numerics.suggestFractionDigits(lower, upper) - 1);    // The -1 is for rounding errors.
                     final CoordinateSystemAxis axis = (cs != null) ? cs.getAxis(i) : null;
                     final String name = (axis != null) ? axis.getName().getCode() : vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
                     table.append(name).append(": ").nextColumn();

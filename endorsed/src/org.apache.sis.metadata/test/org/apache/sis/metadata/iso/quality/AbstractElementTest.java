@@ -26,7 +26,7 @@ import java.util.Collection;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**

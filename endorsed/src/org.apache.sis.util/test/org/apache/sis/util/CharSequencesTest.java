@@ -549,6 +549,7 @@ public final class CharSequencesTest extends TestCase {
     public void testToken() {
         assertEquals("Id4", token("..Id4  56B..", 2));
         assertEquals("56",  token("..Id4  56B..", 6));
+        assertEquals("-from",  token("away-from", 4));
     }
 
     /**

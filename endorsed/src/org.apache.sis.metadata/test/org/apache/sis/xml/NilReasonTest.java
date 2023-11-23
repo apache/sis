@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -27,8 +28,7 @@ import org.apache.sis.util.ArraysExt;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -85,10 +85,10 @@ public final class NilReasonTest extends TestCase {
         assertSame(NilReason.OTHER, NilReason.valueOf("other"));
         final NilReason other = NilReason.valueOf("other:myReason");
         assertSame(other, NilReason.valueOf("  OTHER : myReason "));
-        assertNotSame("Expected a new instance.", NilReason.OTHER, other);
-        assertFalse  ("NilReason.equals(Object)", NilReason.OTHER.equals(other));
-        assertEquals ("NilReason.getOtherExplanation()", "myReason", other.getOtherExplanation());
-        assertNull   ("NilReason.getURI()", other.getURI());
+        assertNotSame  (NilReason.OTHER, other, "Expected a new instance.");
+        assertNotEquals(NilReason.OTHER, other);
+        assertEquals("myReason", other.getOtherExplanation());
+        assertNull(other.getURI(), "NilReason.getURI()");
 
         final NilReason[] reasons = NilReason.values();
         assertTrue(ArraysExt.contains(reasons, NilReason.TEMPLATE));
@@ -105,8 +105,8 @@ public final class NilReasonTest extends TestCase {
     public void testValueOfURI() throws URISyntaxException {
         final NilReason other = NilReason.valueOf("http://www.nilreasons.org");
         assertSame(other, NilReason.valueOf("  http://www.nilreasons.org  "));
-        assertNull  ("NilReason.getOtherExplanation()", other.getOtherExplanation());
-        assertEquals("NilReason.getURI()", "http://www.nilreasons.org", String.valueOf(other.getURI()));
+        assertNull(other.getOtherExplanation());
+        assertEquals("http://www.nilreasons.org", String.valueOf(other.getURI()));
 
         final NilReason[] reasons = NilReason.values();
         assertTrue(ArraysExt.contains(reasons, NilReason.TEMPLATE));
@@ -124,10 +124,10 @@ public final class NilReasonTest extends TestCase {
         final Float value = NilReason.MISSING.createNilObject(Float.class);
         assertEquals (nan, value);
         assertNotSame(nan, value);
-        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
-        assertNull("NilReason.forObject(…)", NilReason.forObject(nan));
-        assertNull("NilReason.forObject(…)", NilReason.forObject(0f));
-        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Float.class));
+        assertSame(NilReason.MISSING, NilReason.forObject(value));
+        assertNull(NilReason.forObject(nan));
+        assertNull(NilReason.forObject(0f));
+        assertSame(value, NilReason.MISSING.createNilObject(Float.class), "Expected cached value.");
     }
 
     /**
@@ -140,10 +140,10 @@ public final class NilReasonTest extends TestCase {
         final Double value = NilReason.TEMPLATE.createNilObject(Double.class);
         assertEquals (nan, value);
         assertNotSame(nan, value);
-        assertSame("NilReason.forObject(…)", NilReason.TEMPLATE, NilReason.forObject(value));
-        assertNull("NilReason.forObject(…)", NilReason.forObject(nan));
-        assertNull("NilReason.forObject(…)", NilReason.forObject(0.0));
-        assertSame("Expected cached value.", value, NilReason.TEMPLATE.createNilObject(Double.class));
+        assertSame(NilReason.TEMPLATE, NilReason.forObject(value));
+        assertNull(NilReason.forObject(nan));
+        assertNull(NilReason.forObject(0.0));
+        assertSame(value, NilReason.TEMPLATE.createNilObject(Double.class), "Expected cached value.");
     }
 
     /**
@@ -155,10 +155,10 @@ public final class NilReasonTest extends TestCase {
         final String value = NilReason.MISSING.createNilObject(String.class);
         assertEquals ("", value);
         assertNotSame("", value);
-        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
-        assertNull("NilReason.forObject(…)", NilReason.forObject(""));
-        assertNull("NilReason.forObject(…)", NilReason.forObject("null"));
-        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(String.class));
+        assertSame(NilReason.MISSING, NilReason.forObject(value));
+        assertNull(NilReason.forObject(""));
+        assertNull(NilReason.forObject("null"));
+        assertSame(value, NilReason.MISSING.createNilObject(String.class), "Expected cached value.");
     }
 
     /**
@@ -169,9 +169,20 @@ public final class NilReasonTest extends TestCase {
     public void testCreateNilInternationalString() {
         final InternationalString value = NilReason.MISSING.createNilObject(InternationalString.class);
         assertEquals("", value.toString());
-        assertInstanceOf("Unexpected impl.", NilObject.class, value);
-        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
-        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(InternationalString.class));
+        assertInstanceOf(NilObject.class, value);
+        assertSame(NilReason.MISSING, NilReason.forObject(value));
+        assertSame(value, NilReason.MISSING.createNilObject(InternationalString.class), "Expected cached value.");
+    }
+
+    /**
+     * Tests {@link NilReason#createNilObject(Class)} for an URI.
+     */
+    @Test
+    public void testCreateNilURI() {
+        final URI value = NilReason.MISSING.createNilObject(URI.class);
+        assertEquals("", value.toString());
+        assertSame(NilReason.MISSING, NilReason.forObject(value));
+        assertSame(value, NilReason.MISSING.createNilObject(URI.class), "Expected cached value.");
     }
 
     /**
@@ -180,12 +191,12 @@ public final class NilReasonTest extends TestCase {
     @Test
     public void testCreateNilObject() {
         final Citation citation = NilReason.TEMPLATE.createNilObject(Citation.class);
-        assertInstanceOf("Unexpected proxy.", NilObject.class, citation);
+        assertInstanceOf(NilObject.class, citation);
         assertNull(citation.getTitle());
         assertTrue(citation.getDates().isEmpty());
-        assertEquals("NilObject.toString()", "Citation[template]", citation.toString());
-        assertSame("NilReason.forObject(…)", NilReason.TEMPLATE, NilReason.forObject(citation));
-        assertSame("Expected cached value.", citation, NilReason.TEMPLATE.createNilObject(Citation.class));
+        assertEquals("Citation[template]", citation.toString());
+        assertSame(NilReason.TEMPLATE, NilReason.forObject(citation));
+        assertSame(citation, NilReason.TEMPLATE.createNilObject(Citation.class), "Expected cached value.");
     }
 
     /**
@@ -196,12 +207,12 @@ public final class NilReasonTest extends TestCase {
         final Citation e1 = NilReason.TEMPLATE.createNilObject(Citation.class);
         final Citation e2 = NilReason.MISSING .createNilObject(Citation.class);
         final Citation e3 = NilReason.TEMPLATE.createNilObject(Citation.class);
-        assertEquals("NilObject.hashCode()", e1.hashCode(), e3.hashCode());
-        assertFalse ("NilObject.hashCode()", e1.hashCode() == e2.hashCode());
-        assertEquals("NilObject.equals(Object)", e1, e3);
-        assertFalse ("NilObject.equals(Object)", e1.equals(e2));
+        assertEquals(e1.hashCode(), e3.hashCode());
+        assertFalse (e1.hashCode() == e2.hashCode());
+        assertEquals(e1, e3);
+        assertFalse (e1.equals(e2));
 
-        assertInstanceOf("e1", LenientComparable.class, e1);
+        assertInstanceOf(LenientComparable.class, e1);
         final LenientComparable c = (LenientComparable) e1;
         assertTrue (c.equals(e3, ComparisonMode.STRICT));
         assertFalse(c.equals(e2, ComparisonMode.STRICT));

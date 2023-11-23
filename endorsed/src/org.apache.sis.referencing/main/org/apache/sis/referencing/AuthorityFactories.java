@@ -64,7 +64,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
 
     /**
      * The unique system-wide authority factory instance that contains all factories found on the module path,
-     * plus the EPSG factory. The {@link EPSGFactoryProxy} most be excluded from this list, since the EPSG
+     * plus the EPSG factory. The {@link EPSGFactoryProxy} must be excluded from this list, since the EPSG
      * factory is handled in a special way.
      */
     static final MultiAuthoritiesFactory ALL = new MultiAuthoritiesFactory(

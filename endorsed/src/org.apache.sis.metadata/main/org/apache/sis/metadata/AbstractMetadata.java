@@ -17,7 +17,9 @@
 package org.apache.sis.metadata;
 
 import java.util.Map;
+import java.util.HashMap;
 import jakarta.xml.bind.annotation.XmlTransient;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -69,7 +71,7 @@ import org.apache.sis.util.collection.TreeTable;
  * use a single lock for the whole metadata tree (including children).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see MetadataStandard
  *
@@ -78,9 +80,48 @@ import org.apache.sis.util.collection.TreeTable;
 @XmlTransient
 public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     /**
+     * The reasons why some mandatory properties are absent. This map is used only for values of
+     * classes that cannot be represented as instances of {@link org.apache.sis.xml.NilObject}.
+     *
+     * <h4>Mutability</h4>
+     * We do not make this map unmodifiable when the enclosing metadata object is made unmodifiable.
+     * It should not be necessary because all {@code put(…)} operations on this map are done only after
+     * the corresponding {@code set(…)} operations on this metadata. So if the metadata is unmodifiable,
+     * an exception should have been thrown before. On the other hand, {@code remove(…)} operations may
+     * still be done for removing entries that shouldn't be there.
+     *
+     * <h4>Serialization</h4>
+     * This field must be declared transient for preventing JAXB to inherit it in subclasses annotated
+     * with {@code @XmlAccessorType(XmlAccessType.FIELD)}. Furthermore, serializing the integer values
+     * would be unstable. We should serialize property names instead.
+     *
+     * @see NilReasonMap
+     * @see #nilReasons()
+     */
+    transient HashMap<Integer,NilReason> nilReasons;
+
+    /**
      * Creates an initially empty metadata.
      */
     protected AbstractMetadata() {
+    }
+
+    /**
+     * Creates an initially empty metadata with nil reasons copied from the given object.
+     * The given object should be a metadata of the same class.
+     *
+     * @param  source  the metadata from which to copy nil reasons, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    @SuppressWarnings("unchecked")
+    protected AbstractMetadata(final Object source) {
+        if (source instanceof AbstractMetadata) {
+            nilReasons = ((AbstractMetadata) source).nilReasons;
+            if (nilReasons != null) {
+                nilReasons = (HashMap<Integer,NilReason>) nilReasons.clone();
+            }
+        }
     }
 
     /**
@@ -150,13 +191,10 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     }
 
     /**
-     * Returns a view of the property values in a {@link Map}. The map is backed by this metadata
-     * object, so changes in the underlying metadata object are immediately reflected in the map
-     * and conversely.
-     *
-     * <h4>Supported operations</h4>
-     * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
-     * remove(…)} operations if the underlying metadata object contains setter methods.
+     * Returns a view of the property values in a {@link Map}. The map is backed by this metadata object,
+     * so changes in the underlying metadata object are immediately reflected in the map and conversely.
+     * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object) remove(…)}
+     * operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      *
      * <h4>Keys and values</h4>
@@ -179,9 +217,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * The default implementation is equivalent to the following:
      *
      * {@snippet lang="java" :
-     *     return getStandard().asValueMap(this, null,
-     *             KeyNamePolicy.JAVABEANS_PROPERTY,
-     *             ValueExistencePolicy.NON_EMPTY);
+     *     return getStandard().asValueMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
      *     }
      *
      * @return a view of this metadata object as a map.
@@ -193,11 +229,43 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     }
 
     /**
+     * Returns a view of the reasons why some properties are missing.
+     * The map is backed by the metadata object using Java reflection, so changes in the
+     * underlying metadata object are immediately reflected in the map and conversely.
+     *
+     * <h4>Mandatory and optional properties</h4>
+     * If a {@linkplain org.opengis.annotation.Obligation#MANDATORY mandatory} property has no value,
+     * then the property will have an entry in the map even if the associated {@link NilReason} is null.
+     * By contrast, {@linkplain org.opengis.annotation.Obligation#OPTIONAL optional} properties have
+     * entries in the map only if they have a non-null {@link NilReason}.
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation is equivalent to the following:
+     *
+     * {@snippet lang="java" :
+     *     return getStandard().asNilReasonMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY);
+     *     }
+     *
+     * @return a view of the reasons why some properties are missing.
+     *
+     * @see MetadataStandard#asNilReasonMap(Object, Class, KeyNamePolicy)
+     *
+     * @since 1.5
+     */
+    public Map<String,NilReason> nilReasons() {
+        return getStandard().asNilReasonMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY);
+    }
+
+    /**
      * Returns the property types and values as a tree table.
      * The tree table is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
-     * <p>The returned {@code TreeTable} instance contains the following columns:</p>
+     * <p>The returned {@code TreeTable} instance contains the columns listed below.
+     * The {@code (IDENTIFIER, INDEX)} pair of columns can be used as a primary key for uniquely identifying
+     * a node in a list of children. That uniqueness is guaranteed only for the children of a given node.
+     * The same keys may appear in the children of any other nodes.</p>
+     *
      * <ul class="verbose">
      *   <li>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
      *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
@@ -209,12 +277,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example, in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and another node with index 1 for the second element.
-     *
-     *       <div class="note"><b>Note:</b>
-     *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
-     *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
-     *       the same keys may appear in the children of any other nodes.</div></li>
+     *       for the first element and another node with index 1 for the second element.</li>
      *
      *   <li>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
@@ -223,6 +286,9 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      *   <li>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
      *       The base type of the value (usually an interface).</li>
+     *
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#OBLIGATION}<br>
+     *       Whether the property is mandatory, optional or conditional.</li>
      *
      *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying
@@ -334,5 +400,25 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     @Override
     public String toString() {
         return asTreeTable().toString();
+    }
+
+    /**
+     * Returns a <em>shallow</em> clone of this metadata. The properties values and the children are not cloned.
+     * This method is for internal usage by {@link ModifiableMetadata} and should usually not be invoked directly.
+     *
+     * @return a shallow clone of this metadata.
+     * @throws CloneNotSupportedException if this metadata is not cloneable.
+     *
+     * @see ModifiableMetadata#deepCopy(ModifiableMetadata.State)
+     * @see MetadataCopier
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected AbstractMetadata clone() throws CloneNotSupportedException {
+        final var clone = (AbstractMetadata) super.clone();
+        if (clone.nilReasons != null) {
+            clone.nilReasons = (HashMap<Integer,NilReason>) clone.nilReasons.clone();
+        }
+        return clone;
     }
 }

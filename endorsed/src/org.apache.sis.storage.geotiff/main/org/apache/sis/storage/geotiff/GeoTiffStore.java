@@ -50,6 +50,7 @@ import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.GridResourceWrapper;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
@@ -513,13 +514,15 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     private Writer writer() throws DataStoreException, IOException {
         assert Thread.holdsLock(this);
+        final Reader r = reader;
         Writer w = writer;
         if (w == null) {
-            final Reader r = reader;
             if (r == null) {
                 throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.WRITE);
             }
             writer = w = new Writer(r);
+        } else if (r != null) {
+            w.moveAfterExisting(r);
         }
         return w;
     }
@@ -677,15 +680,17 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @param  image     the image to encode.
      * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata  title, author and other information, or {@code null} if none.
+     * @return the effectively added resource. Using this resource may cause data to be reloaded.
      * @throws ReadOnlyStorageException if this data store is read-only.
      * @throws DataStoreException if the given {@code image} has a property which is not supported by this writer,
      *         or if an error occurred while writing to the output stream.
      *
      * @since 1.5
      */
-    public synchronized void append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
+    public synchronized GridCoverageResource append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws DataStoreException
     {
+        final int index;
         try {
             @SuppressWarnings("LocalVariableHidesMemberVariable") final Writer writer = writer();
             @SuppressWarnings("LocalVariableHidesMemberVariable") final Reader reader = this.reader;
@@ -700,12 +705,34 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             if (reader != null) {
                 reader.offsetOfWrittenIFD(offsetIFD);
             }
+            index = writer.imageIndex++;
         } catch (IOException e) {
             throw new DataStoreException(errors().getString(Errors.Keys.CanNotWriteFile_2, Constants.GEOTIFF, getDisplayName()), e);
         }
         if (components != null) {
             components.incrementSize(1);
         }
+        /*
+         * Returns a thin wrapper with only a reference to this store and the image index.
+         * The actual loading of the effectively added resource will be done only if requested.
+         */
+        return new GridResourceWrapper() {
+            /** The lock to use for synchronization purposes. */
+            @Override protected Object getSynchronizationLock() {
+                return GeoTiffStore.this;
+            }
+
+            /** Loads the effectively added resource when first requested. */
+            @Override protected GridCoverageResource createSource() throws DataStoreException {
+                try {
+                    synchronized (GeoTiffStore.this) {
+                        return reader().getImage(index);
+                    }
+                } catch (IOException e) {
+                    throw new DataStoreException(errorIO(e));
+                }
+            }
+        };
     }
 
     /**
@@ -715,6 +742,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @param  coverage  the grid coverage to encode.
      * @param  metadata  title, author and other information, or {@code null} if none.
+     * @return the effectively added resource. Using this resource may cause data to be reloaded.
      * @throws SubspaceNotSpecifiedException if the given grid coverage is not a two-dimensional slice.
      * @throws ReadOnlyStorageException if this data store is read-only.
      * @throws DataStoreException if the given {@code image} has a property which is not supported by this writer,
@@ -722,8 +750,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @since 1.5
      */
-    public void append(final GridCoverage coverage, final Metadata metadata) throws DataStoreException {
-        append(coverage.render(null), coverage.getGridGeometry(), metadata);
+    public GridCoverageResource append(final GridCoverage coverage, final Metadata metadata) throws DataStoreException {
+        return append(coverage.render(null), coverage.getGridGeometry(), metadata);
     }
 
     /**

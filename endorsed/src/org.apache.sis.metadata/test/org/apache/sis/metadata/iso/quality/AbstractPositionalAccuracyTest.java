@@ -21,6 +21,7 @@ import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.quality.Result;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.quality.ConformanceResult;
 
 // Test dependencies
 import org.junit.Test;
@@ -28,7 +29,7 @@ import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -102,7 +103,7 @@ public final class AbstractPositionalAccuracyTest extends TestUsingFile {
          */
         final Result result = getSingleton(metadata.getResults());
         assertInstanceOf("Wrong value for <gmd:result>", DefaultConformanceResult.class, result);
-        assertEquals("result.pass", Boolean.TRUE, ((DefaultConformanceResult) result).pass());
+        assertEquals(Boolean.TRUE, ((ConformanceResult) result).pass(), "result.pass");
         /*
          * Marshalling: ensure that we didn't lost any information.
          */

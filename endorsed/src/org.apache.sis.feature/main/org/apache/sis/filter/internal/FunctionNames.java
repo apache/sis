@@ -27,6 +27,18 @@ import org.apache.sis.filter.sqlmm.SQLMM;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class FunctionNames extends Static {
+    /** Value of {@code NullOperator.getOperatorType()}. */
+    public static final String PROPERTY_IS_NULL = "PROPERTY_IS_NULL";
+
+    /** Value of {@code NilOperator.getOperatorType()}. */
+    public static final String PROPERTY_IS_NIL = "PROPERTY_IS_NIL";
+
+    /** Value of {@code LikeOperator.getOperatorType()}. */
+    public static final String PROPERTY_IS_LIKE = "PROPERTY_IS_LIKE";
+
+    /** Value of {@link org.opengis.filter.BetweenComparisonOperator#getOperatorType()}. */
+    public static final String PROPERTY_IS_BETWEEN = "PROPERTY_IS_BETWEEN";
+
     /** Value of {@code Literal.getFunctionName()}. */
     public static final String Literal = "Literal";
 

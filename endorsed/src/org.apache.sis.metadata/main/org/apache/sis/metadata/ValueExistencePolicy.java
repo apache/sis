@@ -45,6 +45,11 @@ import org.apache.sis.xml.NilReason;
  * @since 0.3
  */
 public enum ValueExistencePolicy {
+    /*
+     * Implementation note: enumeration order matter.
+     * The `acceptNilValues()` method relies on it.
+     */
+
     /**
      * Includes all entries in the map, including those having a null value or an empty collection.
      */
@@ -179,6 +184,13 @@ public enum ValueExistencePolicy {
             return false;
         }
     };
+
+    /**
+     * {@return whether this policy accepts nil values}.
+     */
+    final boolean acceptNilValues() {
+        return ordinal() < NON_NIL.ordinal();
+    }
 
     /**
      * Returns {@code true} if the given value shall be skipped for this policy.

@@ -21,7 +21,8 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A command-line option.
+ * All command-line options allowed by the SIS command line. The name used on the command-line
+ * is the lower-cases variant of the enumeration name, except for a few cases with camel cases.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -35,6 +36,11 @@ enum Option {
      * The Coordinate Reference System of input data.
      */
     TARGET_CRS(true),
+
+    /**
+     * The file to write.
+     */
+    OUTPUT(true),
 
     /**
      * The output format. Examples: {@code "xml"}, {@code "text"}.

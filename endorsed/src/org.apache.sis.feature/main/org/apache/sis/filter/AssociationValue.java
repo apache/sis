@@ -21,10 +21,10 @@ import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.StringJoiner;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.filter.internal.XPath;
 import org.apache.sis.math.FunctionProperty;
 
 // Specific to the main branch:
@@ -39,7 +39,7 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 /**
  * Expression whose value is computed by retrieving the value indicated by the provided path.
- * This is used for value reference given by x-path such as "a/b/c". The last element of the path
+ * This is used for value reference given by XPath such as "a/b/c". The last element of the path
  * (the tip) is evaluated by a {@link PropertyValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -129,9 +129,11 @@ final class AssociationValue<V> extends LeafExpression<AbstractFeature, V>
      */
     @Override
     public final String getXPath() {
-        final StringJoiner sb = new StringJoiner("/", accessor.isVirtual ? PropertyValue.VIRTUAL_PREFIX : "", "");
-        for (final String p : path) sb.add(p);
-        return sb.add(accessor.name).toString();
+        String s = new XPath(path, accessor.name).toString();
+        if (accessor.isVirtual) {
+            s = PropertyValue.VIRTUAL_PREFIX.concat(s);
+        }
+        return s;
     }
 
     /**

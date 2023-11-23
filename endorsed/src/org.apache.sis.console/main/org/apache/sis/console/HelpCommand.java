@@ -39,7 +39,8 @@ final class HelpCommand extends CommandRunner {
         "metadata",
         "crs",
         "identifier",
-        "transform"
+        "transform",
+        "translate"
     };
 
     /**

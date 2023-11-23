@@ -2083,6 +2083,8 @@ cmp:    while (ia < lga) {
      *       {@linkplain Character#isUnicodeIdentifierStart(int) Unicode identifier start},
      *       then any following characters that are
      *       {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier part}.</li>
+     *   <li>If <var>c</var> is a dash punctuation of a connector punctuation, then all following punctuation
+     *       characters of the same type followed by all characters that are Unicode identifier part.</li>
      *   <li>Otherwise any character for which {@link Character#getType(int)} returns
      *       the same value than for <var>c</var>.</li>
      * </ul>
@@ -2110,6 +2112,7 @@ cmp:    while (ia < lga) {
         while (isWhitespace(c));
         /*
          * Advance over all characters "of the same type".
+         * If the character are dash or connector punctuation, also include the next characters.
          */
         if (isUnicodeIdentifierStart(c)) {
             while (upper<length && isUnicodeIdentifierPart(c = codePointAt(text, upper))) {
@@ -2119,6 +2122,11 @@ cmp:    while (ia < lga) {
             final int type = getType(codePointAt(text, fromIndex));
             while (upper<length && getType(c = codePointAt(text, upper)) == type) {
                 upper += charCount(c);
+            }
+            if (type == Character.DASH_PUNCTUATION || type == Character.CONNECTOR_PUNCTUATION) {
+                while (upper<length && isUnicodeIdentifierPart(c = codePointAt(text, upper))) {
+                    upper += charCount(c);
+                }
             }
         }
         return text.subSequence(fromIndex, upper);

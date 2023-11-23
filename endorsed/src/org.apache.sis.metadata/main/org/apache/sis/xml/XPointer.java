@@ -21,7 +21,7 @@ import static org.apache.sis.util.internal.DefinitionURI.regionMatches;
 
 
 /**
- * Parsers of pointers in x-paths, adapted to the syntax found in GML documents.
+ * Parsers of pointers in XPaths, adapted to the syntax found in GML documents.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

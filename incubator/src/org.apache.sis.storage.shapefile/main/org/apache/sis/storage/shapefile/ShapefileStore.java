@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -25,8 +26,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -34,17 +44,28 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.filter.Optimization;
+import org.apache.sis.filter.internal.FunctionNames;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
@@ -54,6 +75,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.UnsupportedQueryException;
@@ -63,15 +85,35 @@ import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
 import org.apache.sis.storage.shapefile.dbf.DBFReader;
 import org.apache.sis.storage.shapefile.dbf.DBFRecord;
+import org.apache.sis.storage.shapefile.dbf.DBFWriter;
 import org.apache.sis.storage.shapefile.shp.ShapeGeometryEncoder;
 import org.apache.sis.storage.shapefile.shp.ShapeHeader;
 import org.apache.sis.storage.shapefile.shp.ShapeReader;
 import org.apache.sis.storage.shapefile.shp.ShapeRecord;
+import org.apache.sis.storage.shapefile.shp.ShapeType;
+import org.apache.sis.storage.shapefile.shp.ShapeWriter;
+import org.apache.sis.storage.shapefile.shx.IndexWriter;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.filter.Expression;
+import org.apache.sis.filter.Filter;
+import org.apache.sis.pending.geoapi.filter.Literal;
+import org.apache.sis.pending.geoapi.filter.LogicalOperator;
+import org.apache.sis.pending.geoapi.filter.LogicalOperatorName;
+import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
+import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
 /**
@@ -79,17 +121,17 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ShapefileStore extends DataStore implements FeatureSet {
+public final class ShapefileStore extends DataStore implements WritableFeatureSet {
 
     private static final String GEOMETRY_NAME = "geometry";
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.shapefile");
 
     private final Path shpPath;
     private final ShpFiles files;
     /**
      * Internal class to inherit AbstractFeatureSet.
      */
-    private final AsFeatureSet featureSetView = new AsFeatureSet();
-    private DefaultFeatureType type;
+    private final AsFeatureSet featureSetView = new AsFeatureSet(null, true, null);
     private Charset charset;
 
     /**
@@ -147,10 +189,61 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
         return featureSetView.getEnvelope();
     }
 
+    @Override
+    public void updateType(DefaultFeatureType featureType) throws DataStoreException {
+        featureSetView.updateType(featureType);
+    }
+
+    @Override
+    public void add(Iterator<? extends AbstractFeature> iterator) throws DataStoreException {
+        featureSetView.add(iterator);
+    }
+
+    @Override
+    public void removeIf(Predicate<? super AbstractFeature> predicate) throws DataStoreException {
+        featureSetView.removeIf(predicate);
+    }
+
+    @Override
+    public void replaceIf(Predicate<? super AbstractFeature> predicate, UnaryOperator<AbstractFeature> unaryOperator) throws DataStoreException {
+        featureSetView.replaceIf(predicate, unaryOperator);
+    }
+
     private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
 
-        private AsFeatureSet() {
+        private final Rectangle2D.Double filter;
+        private final Set<String> dbfProperties;
+        private final boolean readShp;
+
+        /**
+         * Extracted informations
+         */
+        private int[] dbfPropertiesIndex;
+        private ShapeHeader shpHeader;
+        private DBFHeader dbfHeader;
+        /**
+         * Name of the field used as identifier, may be null.
+         */
+        private String idField;
+        private CoordinateReferenceSystem crs;
+        private DefaultFeatureType type;
+
+        /**
+         * @param filter optional shape filter, must be in data CRS
+         * @param properties dbf properties to read, null for all properties
+         */
+        private AsFeatureSet(Rectangle2D.Double filter, boolean readShp, Set<String> properties) {
             super(null);
+            this.readShp = readShp;
+            this.filter = filter;
+            this.dbfProperties = properties;
+        }
+
+        /**
+         * @return true if this view reads all data without any filter.
+         */
+        private boolean isDefaultView() {
+            return filter == null && dbfProperties == null && readShp;
         }
 
         @Override
@@ -163,31 +256,33 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                 final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
                 ftb.setName(files.baseName);
 
-                //read shp header to obtain geometry type
-                final Class geometryClass;
-                try (final ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(shpPath))) {
-                    final ShapeHeader header = reader.getHeader();
-                    geometryClass = ShapeGeometryEncoder.getEncoder(header.shapeType).getValueClass();
-                } catch (IOException ex) {
-                    throw new DataStoreException("Failed to parse shape file header.", ex);
-                }
-
-                //read prj file for projection
-                final Path prjFile = files.getPrj(false);
-                final CoordinateReferenceSystem crs;
-                if (prjFile != null) {
-                    try {
-                        crs = CRS.fromWKT(Files.readString(prjFile, StandardCharsets.UTF_8));
-                    } catch (IOException | FactoryException ex) {
-                        throw new DataStoreException("Failed to parse prj file.", ex);
+                if (readShp) {
+                    //read shp header to obtain geometry type
+                    final Class geometryClass;
+                    try (final ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(shpPath), filter)) {
+                        final ShapeHeader header = reader.getHeader();
+                        this.shpHeader = header;
+                        geometryClass = ShapeGeometryEncoder.getEncoder(header.shapeType).getValueClass();
+                    } catch (IOException ex) {
+                        throw new DataStoreException("Failed to parse shape file header.", ex);
                     }
-                } else {
-                    //shapefile often do not have a .prj, mostly those are in CRS:84.
-                    //we do not raise an error otherwise we would not be able to read a lot of data.
-                    crs = CommonCRS.WGS84.normalizedGeographic();
-                }
 
-                ftb.addAttribute(geometryClass).setName(GEOMETRY_NAME).setCRS(crs).addRole(AttributeRole.DEFAULT_GEOMETRY);
+                    //read prj file for projection
+                    final Path prjFile = files.getPrj(false);
+                    if (prjFile != null) {
+                        try {
+                            crs = CRS.fromWKT(Files.readString(prjFile, StandardCharsets.UTF_8));
+                        } catch (IOException | FactoryException ex) {
+                            throw new DataStoreException("Failed to parse prj file.", ex);
+                        }
+                    } else {
+                        //shapefile often do not have a .prj, mostly those are in CRS:84.
+                        //we do not raise an error otherwise we would not be able to read a lot of data.
+                        crs = CommonCRS.WGS84.normalizedGeographic();
+                    }
+
+                    ftb.addAttribute(geometryClass).setName(GEOMETRY_NAME).setCRS(crs).addRole(AttributeRole.DEFAULT_GEOMETRY);
+                }
 
                 //read cpg for dbf file charset
                 final Path cpgFile = files.getCpg(false);
@@ -204,17 +299,38 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
                 //read dbf for attributes
                 final Path dbfFile = files.getDbf(false);
                 if (dbfFile != null) {
-                    try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset)) {
+                    try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset, null)) {
                         final DBFHeader header = reader.getHeader();
+                        this.dbfHeader = header;
                         boolean hasId = false;
-                        for (DBFField field : header.fields) {
-                            final AttributeTypeBuilder atb = ftb.addAttribute(field.getEncoder().getValueClass()).setName(field.fieldName);
+
+                        if (dbfProperties == null) {
+                            dbfPropertiesIndex = new int[header.fields.length];
+                        } else {
+                            dbfPropertiesIndex = new int[dbfProperties.size()];
+                        }
+
+                        int idx=0;
+                        for (int i = 0; i < header.fields.length; i++) {
+                            final DBFField field = header.fields[i];
+                            if (dbfProperties != null && !dbfProperties.contains(field.fieldName)) {
+                                //skip unwanted fields
+                                continue;
+                            }
+                            dbfPropertiesIndex[idx] = i;
+                            idx++;
+
+                            final AttributeTypeBuilder atb = ftb.addAttribute(field.valueClass).setName(field.fieldName);
                             //no official but 'id' field is common
                             if (!hasId && "id".equalsIgnoreCase(field.fieldName) || "identifier".equalsIgnoreCase(field.fieldName)) {
+                                idField = field.fieldName;
                                 atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
                                 hasId = true;
                             }
                         }
+                        //the properties collection may have contain other names, for links or geometry, trim those
+                        dbfPropertiesIndex = Arrays.copyOf(dbfPropertiesIndex, idx);
+
                     } catch (IOException ex) {
                         throw new DataStoreException("Failed to parse dbf file header.", ex);
                     }
@@ -228,44 +344,114 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
         }
 
         @Override
+        public Optional<Envelope> getEnvelope() throws DataStoreException {
+            getType();//force loading headers
+            if (shpHeader != null && filter == null) {
+                final GeneralEnvelope env = new GeneralEnvelope(crs);
+                env.setRange(0, shpHeader.bbox.getMinimum(0), shpHeader.bbox.getMaximum(0));
+                env.setRange(1, shpHeader.bbox.getMinimum(1), shpHeader.bbox.getMaximum(1));
+                return Optional.of(env);
+            }
+            return super.getEnvelope();
+        }
+
+        @Override
+        public OptionalLong getFeatureCount() {
+            try {
+                getType();//force loading headers
+                if (dbfHeader != null && filter == null) {
+                    return OptionalLong.of(dbfHeader.nbRecord);
+                }
+            } catch (DataStoreException ex) {
+                //do nothing
+            }
+            return super.getFeatureCount();
+        }
+
+        @Override
         public Stream<AbstractFeature> features(boolean parallel) throws DataStoreException {
             final DefaultFeatureType type = getType();
             final ShapeReader shpreader;
             final DBFReader dbfreader;
             try {
-                shpreader = new ShapeReader(ShpFiles.openReadChannel(files.shpFile));
-                dbfreader = new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset);
+                shpreader = readShp ? new ShapeReader(ShpFiles.openReadChannel(files.shpFile), filter) : null;
+                dbfreader = (dbfPropertiesIndex.length > 0) ? new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset, dbfPropertiesIndex) : null;
             } catch (IOException ex) {
                 throw new DataStoreException("Faild to open shp and dbf files.", ex);
             }
-            final DBFHeader header = dbfreader.getHeader();
 
-            final Spliterator spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
-                @Override
-                public boolean tryAdvance(Consumer action) {
-                    try {
-                        final ShapeRecord shpRecord = shpreader.next();
-                        if (shpRecord == null) return false;
-                        final DBFRecord dbfRecord = dbfreader.next();
-                        final AbstractFeature next = type.newInstance();
-                        next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
-                        for (int i = 0; i < header.fields.length; i++) {
-                            next.setPropertyValue(header.fields[i].fieldName, dbfRecord.fields[i]);
+            final Spliterator spliterator;
+            if (readShp && dbfPropertiesIndex.length > 0) {
+                //read both shp and dbf
+                final DBFHeader header = dbfreader.getHeader();
+
+                spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
+                    @Override
+                    public boolean tryAdvance(Consumer action) {
+                        try {
+                            final ShapeRecord shpRecord = shpreader.next();
+                            if (shpRecord == null) return false;
+                            //move dbf to record offset, some shp record might have been skipped because of filter
+                            dbfreader.moveToOffset(header.headerSize + (shpRecord.recordNumber-1) * header.recordSize);
+                            final DBFRecord dbfRecord = dbfreader.next();
+                            final AbstractFeature next = type.newInstance();
+                            next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
+                            for (int i = 0; i < dbfPropertiesIndex.length; i++) {
+                                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord.fields[i]);
+                            }
+                            action.accept(next);
+                            return true;
+                        } catch (IOException ex) {
+                            throw new BackingStoreException(ex.getMessage(), ex);
                         }
-                        action.accept(next);
-                        return true;
-                    } catch (IOException ex) {
-                        throw new BackingStoreException(ex.getMessage(), ex);
                     }
-                }
-            };
+                };
+            } else if (readShp) {
+                //read only the shp
+                spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
+                    @Override
+                    public boolean tryAdvance(Consumer action) {
+                        try {
+                            final ShapeRecord shpRecord = shpreader.next();
+                            if (shpRecord == null) return false;
+                            final AbstractFeature next = type.newInstance();
+                            next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
+                            action.accept(next);
+                            return true;
+                        } catch (IOException ex) {
+                            throw new BackingStoreException(ex.getMessage(), ex);
+                        }
+                    }
+                };
+            } else {
+                //read only dbf
+                final DBFHeader header = dbfreader.getHeader();
+                spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
+                    @Override
+                    public boolean tryAdvance(Consumer action) {
+                        try {
+                            final DBFRecord dbfRecord = dbfreader.next();
+                            if (dbfRecord == null) return false;
+                            final AbstractFeature next = type.newInstance();
+                            for (int i = 0; i < dbfPropertiesIndex.length; i++) {
+                                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord.fields[i]);
+                            }
+                            action.accept(next);
+                            return true;
+                        } catch (IOException ex) {
+                            throw new BackingStoreException(ex.getMessage(), ex);
+                        }
+                    }
+                };
+            }
+
             final Stream<AbstractFeature> stream = StreamSupport.stream(spliterator, false);
             return stream.onClose(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        shpreader.close();
-                        dbfreader.close();
+                        if (shpreader != null) shpreader.close();
+                        if (dbfreader != null) dbfreader.close();
                     } catch (IOException ex) {
                         throw new BackingStoreException(ex.getMessage(), ex);
                     }
@@ -275,22 +461,211 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
         }
 
         @Override
+        public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
+            //try to optimise the query for common cases
+            opti:
+            if (query instanceof FeatureQuery) {
+                final FeatureQuery fq = (FeatureQuery) query;
+                FeatureQuery.NamedExpression[] projection = fq.getProjection();
+                Filter<? super AbstractFeature> selection = fq.getSelection();
+
+                if (selection == null && projection == null) {
+                    //no optimisation
+                    break opti;
+                }
+
+                //force loading
+                final DefaultFeatureType type = getType();
+
+                //extract bbox
+                Envelope bbox = null;
+                if (selection != null) {
+                    //run optimizations
+                    final Optimization optimization = new Optimization();
+                    optimization.setFeatureType(type);
+                    selection = optimization.apply(selection);
+                    final Entry<Envelope, Filter> split = extractBbox(selection);
+                    bbox = split.getKey();
+                    selection = split.getValue();
+                }
+
+                //extract field names
+                boolean simpleSelection = true; //true if there are no alias and all expressions are ValueReference
+                Set<String> properties = null;
+                if (projection != null) {
+                    properties = new HashSet<>();
+                    if (selection!=null) ListingPropertyVisitor.VISITOR.visit((Filter) selection, properties);
+                    for (FeatureQuery.NamedExpression ne : projection) {
+                        ListingPropertyVisitor.VISITOR.visit((Expression) ne.expression, properties);
+                        simpleSelection &= (ne.alias == null);
+                        simpleSelection &= (ne.expression.getFunctionName().tip().toString().equals(FunctionNames.ValueReference));
+                    }
+
+                    //if link fields are referenced, add target fields
+                    if (properties.contains(AttributeConvention.IDENTIFIER)) simpleSelection &= !properties.add(idField);
+                    if (properties.contains(AttributeConvention.GEOMETRY)) simpleSelection &= !properties.add(GEOMETRY_NAME);
+                    if (properties.contains(AttributeConvention.ENVELOPE)) simpleSelection &= !properties.add(GEOMETRY_NAME);
+                }
+
+                final boolean readShp = projection == null || properties.contains(GEOMETRY_NAME);
+                Rectangle2D.Double area = null;
+                if (bbox != null) {
+                    try {
+                        bbox = Envelopes.transform(bbox, crs);
+                    } catch (TransformException ex) {
+                        throw new DataStoreException("Failed to transform bbox filter", ex);
+                    }
+                    area = new Rectangle2D.Double(bbox.getMinimum(0), bbox.getMinimum(1), bbox.getSpan(0), bbox.getSpan(1));
+
+                    //combine this area with the one we already have since this is a subset
+                    if (filter != null) {
+                        area = (Rectangle2D.Double) area.createIntersection(filter);
+                    }
+                }
+
+                final AsFeatureSet fs = new AsFeatureSet(area, readShp, properties);
+                //see if there are elements we could not handle
+                final FeatureQuery subQuery = new FeatureQuery();
+                boolean needSubProcessing = false;
+                if (fq.getLimit().isPresent()){
+                    needSubProcessing = true;
+                    subQuery.setLimit(fq.getLimit().getAsLong());
+                }
+                if (fq.getLinearResolution() != null) {
+                    needSubProcessing = true;
+                    subQuery.setLinearResolution(fq.getLinearResolution());
+                }
+                if (fq.getOffset() != 0) {
+                    needSubProcessing = true;
+                    subQuery.setOffset(fq.getOffset());
+                }
+                /* Unsupported on the main branch.
+                if (fq.getSortBy() != null) {
+                    needSubProcessing = true;
+                    subQuery.setSortBy(fq.getSortBy());
+                }
+                */
+                if (selection != null) {
+                    needSubProcessing = true;
+                    subQuery.setSelection(selection);
+                }
+                if (!simpleSelection) {
+                    needSubProcessing = true;
+                    subQuery.setProjection(projection);
+                }
+
+                return needSubProcessing ? fs.parentSubSet(subQuery) : fs;
+            }
+
+            return super.subset(query);
+        }
+
+        private FeatureSet parentSubSet(Query query) throws DataStoreException {
+            return super.subset(query);
+        }
+
+        @Override
         public void updateType(DefaultFeatureType newType) throws DataStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            if (true) throw new UnsupportedOperationException("Not supported yet.");
+
+            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
+            if (Files.exists(shpPath)) {
+                throw new DataStoreException("Update type is possible only when files do not exist. It can be used to create a new shapefile but not to update one.");
+            }
+
+            final ShapeHeader shpHeader = new ShapeHeader();
+            final DBFHeader dbfHeader = new DBFHeader();
+            Charset charset = StandardCharsets.UTF_8;
+            CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
+
+            for (AbstractIdentifiedType pt : newType.getProperties(true)) {
+                if (pt instanceof DefaultAttributeType) {
+                    final DefaultAttributeType at = (DefaultAttributeType) pt;
+                    final Class valueClass = at.getValueClass();
+                    if (Geometry.class.isAssignableFrom(valueClass)) {
+                        if (shpHeader.shapeType != 0) {
+                            throw new DataStoreException("Shapefile format can only contain one geometry");
+                        }
+                        if (Point.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POINT;
+                        else if (MultiPoint.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_MULTIPOINT;
+                        else if (LineString.class.isAssignableFrom(valueClass) || MultiLineString.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POLYLINE;
+                        else if (Polygon.class.isAssignableFrom(valueClass) || MultiPolygon.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POLYGON;
+                        else throw new DataStoreException("Unsupported geometry type " + valueClass);
+
+                        Object cdt = at.characteristics().get(AttributeConvention.CRS_CHARACTERISTIC);
+                        if (cdt instanceof CoordinateReferenceSystem) {
+                            crs = (CoordinateReferenceSystem) cdt;
+                        }
+
+                    } else if (String.class.isAssignableFrom(valueClass)) {
+
+                    } else if (Integer.class.isAssignableFrom(valueClass)) {
+
+                    } else if (Long.class.isAssignableFrom(valueClass)) {
+
+                    } else if (Float.class.isAssignableFrom(valueClass)) {
+
+                    } else if (Double.class.isAssignableFrom(valueClass)) {
+
+                    } else if (LocalDate.class.isAssignableFrom(valueClass)) {
+
+                    } else {
+                        LOGGER.log(Level.WARNING, "Shapefile writing, field {0} is not supported", pt.getName());
+                    }
+                } else {
+                    LOGGER.log(Level.WARNING, "Shapefile writing, field {0} is not supported", pt.getName());
+                }
+            }
+
+            //write shapefile
+            try (ShapeWriter writer = new ShapeWriter(ShpFiles.openWriteChannel(files.shpFile))) {
+                writer.write(shpHeader);
+            } catch (IOException ex){
+                throw new DataStoreException("Failed to create shapefile (shp).", ex);
+            }
+
+            //write shx
+            try (IndexWriter writer = new IndexWriter(ShpFiles.openWriteChannel(files.shxFile))) {
+                writer.write(shpHeader);
+            } catch (IOException ex){
+                throw new DataStoreException("Failed to create shapefile (shx).", ex);
+            }
+
+            //write dbf
+            try (DBFWriter writer = new DBFWriter(ShpFiles.openWriteChannel(files.dbfFile))) {
+                writer.write(dbfHeader);
+            } catch (IOException ex){
+                throw new DataStoreException("Failed to create shapefile (dbf).", ex);
+            }
+
+            //write cpg
+            try {
+                CpgFiles.write(charset, files.cpgFile);
+            } catch (IOException ex) {
+                throw new DataStoreException("Failed to create shapefile (cpg).", ex);
+            }
+
+            //write prj
+            //todo
+
+
         }
 
         @Override
         public void add(Iterator<? extends AbstractFeature> features) throws DataStoreException {
+            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void removeIf(Predicate<? super AbstractFeature> filter) throws DataStoreException {
+            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void replaceIf(Predicate<? super AbstractFeature> filter, UnaryOperator<AbstractFeature> updater) throws DataStoreException {
+            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
@@ -381,5 +756,99 @@ public final class ShapefileStore extends DataStore implements FeatureSet {
             return new ChannelDataOutput(path.getFileName().toString(), wbc, ByteBuffer.allocate(8000));
         }
     }
+
+
+    /**
+     * Will only split bbox with direct value reference to the geometry.
+     *
+     * @param filter to split, not null
+     * @return entry with key is a BBox filter and value what remains of the filter.
+     *        each filter can be null but not both.
+     */
+    private static Entry<Envelope,Filter> extractBbox(Filter<?> filter) {
+
+        final Enum operatorType = filter.getOperatorType();
+
+        if (SpatialOperatorName.BBOX.equals(operatorType)) {
+            Envelope env = isDirectBbox(filter);
+            if (env != null) {
+                return new AbstractMap.SimpleImmutableEntry<>(env, null);
+            } else {
+                return new AbstractMap.SimpleImmutableEntry<>(null, filter);
+            }
+
+        } else if (LogicalOperatorName.AND.equals(operatorType)) {
+
+            boolean rebuildAnd = false;
+            List<Filter<?>> lst = (List<Filter<?>>) ((LogicalOperator<?>)filter).getOperands();
+            Envelope bbox = null;
+            for (int i = 0; i < lst.size(); i++) {
+                final Filter<?> f = lst.get(i);
+                final Entry<Envelope, Filter> split = extractBbox(f);
+                Envelope cdtBbox = split.getKey();
+                Filter cdtOther = split.getValue();
+                if (cdtBbox != null) {
+                    if (bbox == null) {
+                        bbox = cdtBbox;
+                    } else {
+                        throw new RuntimeException("Combine bbox");
+                    }
+
+                    //see if we need to rebuild the AND filter
+                    if (cdtOther != f) {
+                        if (!rebuildAnd) {
+                            rebuildAnd = true;
+                            lst = new ArrayList<>(lst);
+                        }
+                        //replace in list
+                        if (cdtOther != null) {
+                            lst.set(i, cdtOther);
+                        } else {
+                            lst.remove(i);
+                            i--;
+                        }
+                    }
+                }
+            }
+
+            if (rebuildAnd) {
+                if (lst.isEmpty()) {
+                    filter = null;
+                } else if (lst.size() == 1) {
+                    filter = lst.get(0);
+                } else {
+                    filter = DefaultFilterFactory.forFeatures().and((List)lst);
+                }
+            }
+
+            return new AbstractMap.SimpleImmutableEntry<>(bbox, filter);
+        } else {
+            //can do nothing
+            return new AbstractMap.SimpleImmutableEntry<>(null, filter);
+        }
+    }
+
+    /**
+     * Returns envelope if the other expression is a direct value reference.
+     * @param bbox
+     * @return filter envelope
+     */
+    private static Envelope isDirectBbox(Filter<?> bbox) {
+        Envelope env = null;
+        for (Expression exp : bbox.getExpressions()) {
+            if (exp instanceof ValueReference) {
+                final ValueReference<Object,?> expression = (ValueReference<Object,?>) exp;
+                final String propName = expression.getXPath();
+                if ( !(GEOMETRY_NAME.equals(propName) || AttributeConvention.GEOMETRY.equals(propName))) {
+                    return null;
+                }
+            } else if (exp instanceof Literal) {
+                Object value = ((Literal) exp).getValue();
+                env = Geometries.wrap(value).get().getEnvelope();
+            }
+        }
+        return env;
+    }
+
 
 }

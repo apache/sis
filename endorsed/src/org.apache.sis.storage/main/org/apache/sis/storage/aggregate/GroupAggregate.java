@@ -321,11 +321,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     protected Metadata createMetadata() throws DataStoreException {
         final MetadataBuilder builder = new MetadataBuilder();
         builder.addTitle(name);
-        try {
-            builder.addExtent(envelope);
-        } catch (TransformException e) {
-            listeners.warning(e);
-        }
+        builder.addExtent(envelope, listeners);
         if (sampleDimensions != null) {
             for (final SampleDimension band : sampleDimensions) {
                 builder.addNewBand(band);

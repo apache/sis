@@ -85,6 +85,11 @@ public final class Assembler {
     };
 
     /**
+     * Whether to generate localized versions.
+     */
+    private static final boolean LOCALIZE = false;
+
+    /**
      * The directory of all input files to process.
      */
     private final File inputDirectory;
@@ -554,10 +559,9 @@ public final class Assembler {
         }
         Assembler assembler = new Assembler(input);
         assembler.run(new File(target, "en/developer-guide.html"));
-        /*
-         * Localized versions.
-         */
-        assembler = new Assembler(new File(source, "fr/developer-guide/index.html"));
-        assembler.run(new File(target, "fr/developer-guide.html"));
+        if (LOCALIZE) {
+            assembler = new Assembler(new File(source, "fr/developer-guide/index.html"));
+            assembler.run(new File(target, "fr/developer-guide.html"));
+        }
     }
 }

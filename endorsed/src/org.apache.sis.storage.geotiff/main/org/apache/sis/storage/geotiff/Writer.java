@@ -134,6 +134,12 @@ final class Writer extends IOBase implements Flushable {
     private final boolean isBigTIFF;
 
     /**
+     * Index of the image to write. This information is not needed by the writer, but is
+     * needed by {@link WritableStore} for determining the "effectively added resource".
+     */
+    int imageIndex;
+
+    /**
      * Offset where to write the next image, or {@code null} if writing a mandatory image (the first one).
      * If null, the IFD offset is assumed already written and the {@linkplain #output} already at that position.
      * Otherwise the value at the specified offset should be zero and will be updated if a new image is appended.
@@ -209,8 +215,18 @@ final class Writer extends IOBase implements Flushable {
         } catch (ClassCastException e) {
             throw new ReadOnlyStorageException(store.readOrWriteOnly(0), e);
         }
+        moveAfterExisting(reader);
+    }
+
+    /**
+     * Prepares the writer to write after the last images.
+     *
+     * @param  reader  the reader of images.
+     */
+    final void moveAfterExisting(final Reader reader) throws IOException, DataStoreException {
         Class<? extends Number> type = isBigTIFF ? Long.class : Integer.class;
         nextIFD = UpdatableWrite.ofZeroAt(reader.offsetOfWritableIFD(), type);
+        imageIndex = reader.getImageCacheSize();
     }
 
     /**

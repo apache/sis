@@ -55,7 +55,7 @@ import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @param  <R>  the type of resources (e.g. {@link AbstractFeature}) to use as inputs.
  * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
@@ -191,6 +191,18 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
          * <p>The desired type of property values can be specified. For example if the property values should be numbers,
          * then {@code type} can be <code>{@linkplain Number}.class</code>. If property values can be of any type with no
          * conversion desired, then {@code type} should be {@code Object.class}.</p>
+         *
+         * <h4>Supported XPath syntax</h4>
+         * If the given {@code xpath} contains the "/" character, then all path components before the last one
+         * are interpreted as associations to follow. For example if the XPath is {@code "client/name"}, then
+         * the {@code ValueReference} applied on feature <var>F</var> will first search for an association
+         * named {@code "client"} to feature <var>C</var>, then search for a property named {@code "name"}
+         * in feature <var>C</var>.
+         *
+         * <p>The given {@code xpath} may contain scoped names.
+         * For example {@code "foo:client"} is the name {@code "client"} in scope {@code "foo"}.
+         * If the scope is an URL, then it needs to be enclosed inside {@code "Q{…}"}.
+         * Example: {@code "Q{http://www.foo.com/bar}client"}.</p>
          *
          * @param  <V>    the type of the values to be fetched (compile-time value of {@code type}).
          * @param  xpath  the path to the property whose value will be returned by the {@code apply(R)} method.

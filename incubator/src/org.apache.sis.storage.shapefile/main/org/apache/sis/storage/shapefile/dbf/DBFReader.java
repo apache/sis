@@ -28,17 +28,25 @@ import org.apache.sis.io.stream.ChannelDataInput;
  */
 public final class DBFReader implements AutoCloseable {
 
-    private static final int TAG_PRESENT = 0x20;
-    private static final int TAG_DELETED = 0x2a;
+    static final int TAG_PRESENT = 0x20;
+    static final int TAG_DELETED = 0x2a;
+    static final int TAG_EOF = 0x1A;
 
     private final ChannelDataInput channel;
     private final DBFHeader header;
+    private final int[] fieldsToRead;
     private int nbRead = 0;
 
-    public DBFReader(ChannelDataInput channel, Charset charset) throws IOException {
+    /**
+     * @param channel to read from
+     * @param charset text encoding
+     * @param fieldsToRead fields index in the header to decode, other fields will be skipped. must be in increment order.
+     */
+    public DBFReader(ChannelDataInput channel, Charset charset, int[] fieldsToRead) throws IOException {
         this.channel = channel;
         this.header = new DBFHeader();
         this.header.read(channel, charset);
+        this.fieldsToRead = fieldsToRead;
     }
 
     public DBFHeader getHeader() {
@@ -57,6 +65,8 @@ public final class DBFReader implements AutoCloseable {
     public DBFRecord next() throws IOException {
         if (nbRead >= header.nbRecord) {
             //reached records end
+            //we do not trust the EOF if we already have the expected count
+            //some writes do not have it
             return null;
         }
         nbRead++;
@@ -65,15 +75,33 @@ public final class DBFReader implements AutoCloseable {
         if (marker == TAG_DELETED) {
             channel.skipBytes(header.recordSize);
             return DBFRecord.DELETED;
+        } else if (marker == TAG_EOF) {
+            return null;
         } else if (marker != TAG_PRESENT) {
             throw new IOException("Unexpected record marker " + marker);
         }
 
         final DBFRecord record = new DBFRecord();
         record.fields = new Object[header.fields.length];
-        for (int i = 0; i < header.fields.length; i++) {
-            record.fields[i] = header.fields[i].getEncoder().read(channel);
+        if (fieldsToRead == null) {
+            //read all fields
+            record.fields = new Object[header.fields.length];
+            for (int i = 0; i < header.fields.length; i++) {
+                record.fields[i] = header.fields[i].readValue(channel);
+            }
+        } else {
+            //read only selected fields
+            record.fields = new Object[fieldsToRead.length];
+            for (int i = 0,k = 0; i < header.fields.length; i++) {
+                if (k < fieldsToRead.length && fieldsToRead[k] == i) {
+                    record.fields[k++] = header.fields[i].readValue(channel);
+                } else {
+                    //skip this field
+                    channel.skipBytes(header.fields[i].fieldLength);
+                }
+            }
         }
+
         return record;
     }
 

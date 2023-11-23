@@ -187,6 +187,7 @@ module org.apache.sis.metadata {
     opens org.apache.sis.metadata.iso.citation       to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens org.apache.sis.metadata.iso.constraint     to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens org.apache.sis.metadata.iso.identification to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens org.apache.sis.metadata.iso.spatial        to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens org.apache.sis.metadata.iso.quality        to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens org.apache.sis.metadata.iso.lineage        to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens org.apache.sis.metadata.iso.content        to jakarta.xml.bind, org.glassfish.jaxb.runtime;

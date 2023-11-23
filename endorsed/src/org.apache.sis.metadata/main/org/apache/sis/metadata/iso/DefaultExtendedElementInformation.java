@@ -627,16 +627,18 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
 
 
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                  ////////
-    ////////                               XML support with JAXB                              ////////
-    ////////                                                                                  ////////
-    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
-    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
-    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
-    ////////        (GML) support is not needed.                                              ////////
-    ////////                                                                                  ////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
 
     /**
      * Returns the maximum occurrence as a string, since it is the way that ISO 19115 represents
