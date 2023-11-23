@@ -133,24 +133,22 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         "com.esri",                 // Optional dependency
         null,                       // All other packages.
         "javax.measure",
-        "org.opengis",
-        "org.apache.sis",
         "org.junit",
-        "org.opengis.test",
-        "org.apache.sis.test"
+        "org.opengis",
+        "org.apache.sis"
     };
 
     /**
-     * Classes or packages of test dependencies. The first time that one of those elements is found,
+     * Classes or packages of test dependencies. This list needs to contain only the cases
+     * that are not covered by the heuristic rules encoded in {@code isTestElement(String)}.
+     * The first time that one of those elements is found,
      * a "// Test dependencies" header comment will be added.
+     *
+     * @see Source#isTestElement(String)
      */
     private static final String[] TEST_ELEMENTS = {
         "org.junit",
         "org.opengis.test",
-        "org.apache.sis.test",
-        "org.apache.sis.util.test",
-        "org.apache.sis.xml.test",
-        "org.apache.sis.storage.test",
         "org.apache.sis.image.TiledImageMock",
         "org.apache.sis.metadata.sql.TestDatabase",
         "org.apache.sis.referencing.cs.HardCodedAxes",
@@ -158,7 +156,9 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         "org.apache.sis.referencing.crs.HardCodedCRS",
         "org.apache.sis.referencing.datum.HardCodedDatum",
         "org.apache.sis.referencing.operation.HardCodedConversions",
-        "org.apache.sis.metadata.iso.citation.HardCodedCitations"
+        "org.apache.sis.metadata.iso.citation.HardCodedCitations",
+        "org.apache.sis.metadata.sql.TestDatabase",
+        "org.apache.sis.storage.gpx.TestData"
     };
 
     /**
@@ -270,7 +270,8 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         Source(final List<String> lines, final Integer bitmask) {
             imports = new LinkedHashMap<>();
             comments = new HashMap<>();
-            final var elements = new ArrayList<String>();
+            final var main = new ArrayList<String>();
+            final var test = new ArrayList<String>();
             final int size = lines.size();
             for (int i=0; i<size; i++) {
                 String line = lines.get(i).trim();
@@ -281,7 +282,11 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                 } else if (line.startsWith(IMPORT)) {
                     int s = line.indexOf(';');
                     final String element = line.substring(IMPORT.length(), s).trim();
-                    elements.add(element);
+                    if (isTestElement(element)) {
+                        test.add(element);
+                    } else {
+                        main.add(element);
+                    }
                     if (++s < line.length()) {
                         final String comment = line.substring(s).trim();
                         if (!comment.isEmpty()) {
@@ -294,8 +299,12 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                     break;
                 }
             }
-            elements.sort(Source::compareImports);
-            for (final String element : sort(elements)) {
+            main.sort(Source::compareImports);
+            test.sort(Source::compareImports);
+            for (final String element : sort(main)) {
+                imports.put(element, bitmask);
+            }
+            for (final String element : sort(test)) {
                 imports.put(element, bitmask);
             }
         }
@@ -386,26 +395,18 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
          * @return a rank to give to the specified package.
          */
         private static int order(String element) {
-            int base = 0;
             if (element.startsWith(STATIC)) {
                 element = element.substring(STATIC.length()).trim();
-                base = 1000;                    // Arbitrary offset for sorting static imports last.
-            }
-            if (element.startsWith("org.apache.sis")) {
-                if (element.contains("Assert") || element.contains("Test") || element.contains("mock")) {
-                    element = "org.apache.sis.test";
-                }
-                // TODO: we should move above classes in a test package instead.
             }
             int fallback = IMPORT_ORDER.length;
             for (int i=fallback; --i >= 0;) {
                 final String c = IMPORT_ORDER[i];
                 if (c == null) fallback = i;
                 else if (element.startsWith(c)) {
-                    return i + base;
+                    return i;
                 }
             }
-            return fallback + base;
+            return fallback;
         }
 
         /**
@@ -436,7 +437,17 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
          * @param  element  name of the class or package to filter.
          * @return whether the specified class or package is for tests.
          */
-        private static boolean isTestElement(final String element) {
+        private static boolean isTestElement(String element) {
+            if (element.startsWith(STATIC)) {
+                element = element.substring(STATIC.length()).trim();
+            }
+            if (element.startsWith("org.apache.sis")) {
+                if (element.contains(".test.") || element.endsWith("Test") ||
+                        (element.contains("Assert") && !element.contains("ArgumentCheckByAssertion")))
+                {
+                    return true;
+                }
+            }
             for (final String c : TEST_ELEMENTS) {
                 if (element.startsWith(c)) {
                     return true;
@@ -467,8 +478,6 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
             boolean needSeparator = true;       // Whether to write a line separator before next line.
             boolean needHeader    = false;      // Whether to write a comment like "// Specific to main branch:".
             boolean isTestImports = false;      // Whether at least one import of a test class was found.
-            boolean staticImports = false;      // Whether we are writing static imports or ordinary imports.
-            boolean isStaticValid = false;      // Whether the `staticImports` flag is valid.
             final var buffer = new StringBuilder(80);
             int bitmask = (1 << branchNames.length) - 1;
             while (bitmask > 0) {
@@ -499,11 +508,10 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                             isTestImports = true;       // For preventing another separator for tests.
                             needSeparator = false;
                             needHeader    = false;
-                            isStaticValid = false;
                         }
                         /*
-                         * Write a empty line separator if we are moving from a group of ordinary
-                         * imports to a group of static imports, then add the import statement.
+                         * Write a empty line separator if we are moving to another
+                         * group of imports, then add the import statement.
                          */
                         final String element = entry.getKey();
                         if (!isTestImports && isTestElement(element)) {
@@ -511,14 +519,10 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                             isTestImports = true;
                             dest.add("");
                             dest.add("// Test dependencies");
-                        } else {
-                            needSeparator |= (staticImports != (staticImports = element.startsWith(STATIC)) && isStaticValid);
-                            if (needSeparator) {
-                                needSeparator = false;
-                                dest.add("");
-                            }
+                        } else if (needSeparator) {
+                            needSeparator = false;
+                            dest.add("");
                         }
-                        isStaticValid = true;
                         buffer.append(IMPORT).append(element).append(';');
                         final String comment = comments.remove(element);
                         if (comment != null) {
