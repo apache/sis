@@ -25,7 +25,6 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.ArgumentChecks.*;
 
 

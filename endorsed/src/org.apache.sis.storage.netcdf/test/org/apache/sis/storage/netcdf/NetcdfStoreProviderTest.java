@@ -26,15 +26,14 @@ import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.TestCase;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoder;
-import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
 import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
+import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.apache.sis.storage.netcdf.base.TestData;

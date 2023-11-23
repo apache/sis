@@ -17,15 +17,14 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
+import static java.lang.Double.NaN;
 
 // Test dependencies
 import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
-
-import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;

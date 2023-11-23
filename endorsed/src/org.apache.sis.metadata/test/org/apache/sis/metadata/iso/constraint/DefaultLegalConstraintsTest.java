@@ -21,13 +21,12 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
+import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.xml.test.TestCase;
-
-import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 import static org.junit.Assert.*;
+import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 

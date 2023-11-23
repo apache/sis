@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
+import static java.lang.StrictMath.*;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -47,10 +48,8 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.internal.Constants;
 
 // Test dependencies
-import org.apache.sis.test.TestUtilities;
-
-import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 // Specific to the main branch:

@@ -44,13 +44,11 @@ import org.apache.sis.metadata.iso.legacy.DateToTemporal;
 import org.apache.sis.metadata.iso.legacy.TemporalToDate;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.util.LegacyNamespaces;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Specific to the main branch:
 import org.opengis.metadata.quality.TemporalAccuracy;
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.UNSPECIFIED;
 

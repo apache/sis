@@ -18,10 +18,9 @@ package org.apache.sis.util;
 
 import java.util.Arrays;
 import java.nio.CharBuffer;
+import static java.lang.Character.*;
 import org.opengis.metadata.citation.Citation;      // For javadoc
 import org.opengis.referencing.IdentifiedObject;    // For javadoc
-
-import static java.lang.Character.*;
 
 
 /**

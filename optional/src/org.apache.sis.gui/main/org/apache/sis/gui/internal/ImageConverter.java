@@ -42,7 +42,6 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

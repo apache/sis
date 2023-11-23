@@ -18,17 +18,16 @@ package org.apache.sis.math;
 
 import java.util.Random;
 import java.math.BigDecimal;
+import static java.lang.Double.*;
+import static org.apache.sis.math.DecimalFunctions.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
-
-import static java.lang.Double.*;
-import static org.apache.sis.math.DecimalFunctions.*;
-import static org.junit.Assert.*;
 
 
 /**

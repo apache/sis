@@ -21,15 +21,14 @@ import java.math.RoundingMode;
 import java.text.ParseException;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.util.DefaultInternationalString;
+import static org.apache.sis.util.collection.TableColumn.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-
-import static org.apache.sis.util.collection.TableColumn.*;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 

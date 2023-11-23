@@ -16,13 +16,13 @@
  */
 package org.apache.sis.util;
 
+import static org.apache.sis.util.Characters.*;
+
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.util.Characters.*;
-import static org.junit.Assert.*;
 
 
 /**

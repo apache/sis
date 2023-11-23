@@ -40,7 +40,6 @@ import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakValueHashMap;
-
 import static org.apache.sis.storage.base.TiledGridCoverage.X_DIMENSION;
 import static org.apache.sis.storage.base.TiledGridCoverage.Y_DIMENSION;
 

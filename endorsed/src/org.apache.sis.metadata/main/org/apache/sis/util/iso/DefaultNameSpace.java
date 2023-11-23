@@ -32,7 +32,6 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.collection.WeakValueHashMap;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

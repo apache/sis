@@ -33,7 +33,6 @@ import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

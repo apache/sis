@@ -37,7 +37,6 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.ArgumentChecks.*;
 
 // Specific to the main and geoapi-3.1 branches:

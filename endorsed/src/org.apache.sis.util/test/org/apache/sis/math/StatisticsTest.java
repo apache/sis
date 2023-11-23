@@ -18,15 +18,14 @@ package org.apache.sis.math;
 
 import java.util.Random;
 import java.io.IOException;
-
-// Test dependencies
-import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static java.lang.StrictMath.*;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
+
+// Test dependencies
+import org.junit.Test;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

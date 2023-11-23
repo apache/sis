@@ -36,7 +36,6 @@ import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 // Specific to the main branch:
 import org.opengis.metadata.content.Band;
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

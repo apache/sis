@@ -40,10 +40,9 @@ import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 

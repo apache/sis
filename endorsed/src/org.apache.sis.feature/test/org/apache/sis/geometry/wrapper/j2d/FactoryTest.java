@@ -17,11 +17,10 @@
 package org.apache.sis.geometry.wrapper.j2d;
 
 import java.awt.geom.Path2D;
+import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.geometry.wrapper.GeometriesTestCase;
-
 import static org.opengis.test.Assert.assertInstanceOf;
 
 

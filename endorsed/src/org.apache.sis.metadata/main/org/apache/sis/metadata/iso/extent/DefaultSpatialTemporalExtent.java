@@ -28,12 +28,10 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.internal.ReferencingServices;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

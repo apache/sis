@@ -29,7 +29,6 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
-
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 // Specific to the main branch:

@@ -30,10 +30,9 @@ import org.apache.sis.util.iso.Names;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;

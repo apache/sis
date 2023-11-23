@@ -41,10 +41,9 @@ import org.opengis.metadata.identification.CharacterSet;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-import org.apache.sis.xml.bind.metadata.code.MD_CharacterSetCode;
-
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+import org.apache.sis.xml.bind.metadata.code.MD_CharacterSetCode;
 
 
 /**

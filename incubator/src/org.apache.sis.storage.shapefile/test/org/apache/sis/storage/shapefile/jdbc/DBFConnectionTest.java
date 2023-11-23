@@ -22,7 +22,6 @@ import org.apache.sis.storage.shapefile.jdbc.connection.DBFConnection;
 
 // Test dependencies
 import org.junit.*;
-
 import static org.junit.Assert.*;
 
 

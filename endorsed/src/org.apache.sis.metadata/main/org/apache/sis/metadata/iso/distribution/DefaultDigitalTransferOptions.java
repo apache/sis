@@ -34,12 +34,10 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gts.TM_PeriodDuration;
 import org.apache.sis.util.internal.CollectionsExt;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

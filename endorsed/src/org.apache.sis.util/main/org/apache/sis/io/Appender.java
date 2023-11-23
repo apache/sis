@@ -19,7 +19,6 @@ package org.apache.sis.io;
 import java.io.IOException;
 import java.io.CharConversionException;
 import org.apache.sis.util.ArgumentChecks;
-
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 

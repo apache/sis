@@ -34,12 +34,11 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 // Test dependencies
 import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 

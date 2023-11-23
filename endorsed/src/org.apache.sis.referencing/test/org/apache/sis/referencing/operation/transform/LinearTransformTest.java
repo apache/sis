@@ -23,9 +23,8 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.junit.Ignore;

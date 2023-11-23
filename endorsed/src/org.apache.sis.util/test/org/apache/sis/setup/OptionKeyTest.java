@@ -18,13 +18,12 @@ package org.apache.sis.setup;
 
 import java.util.Map;
 import org.apache.sis.util.collection.CheckedContainer;
+import static org.apache.sis.setup.OptionKey.*;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.setup.OptionKey.*;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 

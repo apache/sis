@@ -54,7 +54,6 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
 
 

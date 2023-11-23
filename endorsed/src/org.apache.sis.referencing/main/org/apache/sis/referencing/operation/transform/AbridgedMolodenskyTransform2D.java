@@ -18,9 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import org.opengis.referencing.datum.Ellipsoid;
-
 import static java.lang.Math.*;
+import org.opengis.referencing.datum.Ellipsoid;
 
 
 /**

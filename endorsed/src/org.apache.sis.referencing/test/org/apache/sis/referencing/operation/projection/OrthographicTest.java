@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import static java.lang.StrictMath.*;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.provider.MapProjection;
@@ -24,8 +25,6 @@ import org.apache.sis.parameter.Parameters;
 // Test dependencies
 import org.junit.*;
 import org.apache.sis.test.DependsOn;
-
-import static java.lang.StrictMath.*;
 
 
 /**

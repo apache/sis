@@ -28,9 +28,8 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assume.assumeNotNull;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 

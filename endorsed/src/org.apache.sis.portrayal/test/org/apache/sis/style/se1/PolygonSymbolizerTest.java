@@ -20,7 +20,6 @@ import java.awt.Color;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 // Specific to the main branch:

@@ -22,15 +22,14 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.iso.DefaultNameFactory;
+import static org.apache.sis.referencing.IdentifiedObjects.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-import static org.apache.sis.referencing.IdentifiedObjects.*;
-import static org.junit.Assert.*;
 
 
 /**

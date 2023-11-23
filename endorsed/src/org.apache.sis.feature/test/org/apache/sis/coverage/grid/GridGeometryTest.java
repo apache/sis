@@ -35,12 +35,11 @@ import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 // Specific to the main branch:

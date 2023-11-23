@@ -43,7 +43,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
-
 import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
 
 

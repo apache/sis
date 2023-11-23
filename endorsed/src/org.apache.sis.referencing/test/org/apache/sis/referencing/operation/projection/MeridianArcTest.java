@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Random;
+import static java.lang.StrictMath.*;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
@@ -25,12 +26,10 @@ import org.apache.sis.referencing.internal.Resources;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-
-import static java.lang.StrictMath.*;
-import static org.junit.Assert.assertEquals;
 
 
 /**

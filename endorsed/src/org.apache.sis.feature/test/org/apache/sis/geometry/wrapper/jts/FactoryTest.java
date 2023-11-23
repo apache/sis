@@ -18,11 +18,10 @@ package org.apache.sis.geometry.wrapper.jts;
 
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.MultiLineString;
+import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.geometry.wrapper.GeometriesTestCase;
-
 import static org.junit.Assert.*;
 
 

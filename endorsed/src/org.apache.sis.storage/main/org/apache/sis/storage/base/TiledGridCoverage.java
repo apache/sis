@@ -26,6 +26,14 @@ import java.awt.image.SampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
+import static java.lang.Math.addExact;
+import static java.lang.Math.subtractExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.multiplyFull;
+import static java.lang.Math.incrementExact;
+import static java.lang.Math.decrementExact;
+import static java.lang.Math.toIntExact;
+import static java.lang.Math.floorDiv;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -38,15 +46,6 @@ import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
-
-import static java.lang.Math.addExact;
-import static java.lang.Math.subtractExact;
-import static java.lang.Math.multiplyExact;
-import static java.lang.Math.multiplyFull;
-import static java.lang.Math.incrementExact;
-import static java.lang.Math.decrementExact;
-import static java.lang.Math.toIntExact;
-import static java.lang.Math.floorDiv;
 import static org.apache.sis.util.internal.Numerics.ceilDiv;
 
 // Specific to the main branch:

@@ -26,11 +26,10 @@ import org.opengis.util.FactoryException;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 
 
 /**

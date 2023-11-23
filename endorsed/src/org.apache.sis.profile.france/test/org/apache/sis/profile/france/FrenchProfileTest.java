@@ -29,10 +29,9 @@ import org.apache.sis.xml.bind.fra.DirectReferenceSystem;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the main and geoapi-3.1 branches:

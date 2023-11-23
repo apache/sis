@@ -23,13 +23,13 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.NADCON;
 import org.apache.sis.referencing.operation.provider.NTv2;
-import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
-import org.apache.sis.referencing.operation.provider.NADCONTest;
-import org.apache.sis.referencing.operation.provider.NTv2Test;
 import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
 import org.junit.Test;
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
+import org.apache.sis.referencing.operation.provider.NADCONTest;
+import org.apache.sis.referencing.operation.provider.NTv2Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 

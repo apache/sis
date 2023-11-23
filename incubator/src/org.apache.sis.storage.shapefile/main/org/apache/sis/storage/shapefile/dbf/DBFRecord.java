@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.shapefile.dbf;
 
+
 /**
  * A DBF record is an array of field values.
  *

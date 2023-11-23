@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import org.apache.sis.util.collection.CheckedContainer;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

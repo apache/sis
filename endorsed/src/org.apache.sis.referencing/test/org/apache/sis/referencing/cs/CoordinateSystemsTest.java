@@ -18,6 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.Locale;
+import static java.lang.Double.NaN;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.referencing.operation.Matrix;
@@ -27,22 +28,20 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.VerticalCS;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.ElevationAngle;
+import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
+import static org.apache.sis.referencing.cs.CoordinateSystems.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static java.lang.Double.NaN;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
-import static org.apache.sis.referencing.cs.CoordinateSystems.*;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 // Specific to the main branch:

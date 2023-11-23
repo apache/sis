@@ -38,7 +38,6 @@ import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-
 import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
 
 

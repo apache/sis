@@ -16,22 +16,21 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import static java.lang.Double.NaN;
+import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.Assertions;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.provider.Equirectangular;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
+import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
 import org.junit.Test;
-
-import static java.lang.Double.NaN;
-import static java.lang.StrictMath.toRadians;
-import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
+import org.apache.sis.referencing.Assertions;
 
 
 /**

@@ -29,15 +29,14 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
+import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 

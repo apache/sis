@@ -21,7 +21,6 @@ import jakarta.xml.bind.JAXBException;
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.xml.test.TestCase;
-
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;

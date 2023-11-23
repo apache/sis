@@ -22,14 +22,13 @@ import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.storage.IncompatibleResourceException;
-
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 
 /**

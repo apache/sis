@@ -32,7 +32,6 @@ import org.apache.sis.system.Threads;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

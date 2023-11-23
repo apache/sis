@@ -18,12 +18,11 @@ package org.apache.sis.referencing.cs;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-
 import static org.apache.sis.referencing.cs.HardCodedCS.*;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

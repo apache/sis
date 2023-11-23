@@ -24,9 +24,8 @@ import org.apache.sis.storage.StorageConnector;
 // Test dependencies
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.apache.sis.storage.test.CoverageReadConsistency;
-
 import static org.junit.Assert.assertNotNull;
+import org.apache.sis.storage.test.CoverageReadConsistency;
 
 
 /**

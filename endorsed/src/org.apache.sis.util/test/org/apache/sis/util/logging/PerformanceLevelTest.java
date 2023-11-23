@@ -17,14 +17,13 @@
 package org.apache.sis.util.logging;
 
 import java.util.concurrent.TimeUnit;
+import static java.util.logging.Level.FINE;
+import static org.apache.sis.util.logging.PerformanceLevel.*;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
-import static java.util.logging.Level.FINE;
-import static org.apache.sis.util.logging.PerformanceLevel.*;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 
 
 /**

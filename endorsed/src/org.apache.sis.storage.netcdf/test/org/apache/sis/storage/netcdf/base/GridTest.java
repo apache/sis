@@ -23,11 +23,10 @@ import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

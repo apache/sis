@@ -98,7 +98,6 @@ import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

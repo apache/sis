@@ -18,6 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
+import static java.util.Collections.singletonMap;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -25,8 +26,6 @@ import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
 

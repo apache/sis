@@ -31,16 +31,15 @@ import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
+import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
+import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
-import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
-import static org.junit.Assert.*;
 
 
 /**

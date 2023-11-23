@@ -21,7 +21,6 @@ import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
-
 import static org.apache.sis.geometry.wrapper.GeometryType.*;
 
 // Specific to the main branch:

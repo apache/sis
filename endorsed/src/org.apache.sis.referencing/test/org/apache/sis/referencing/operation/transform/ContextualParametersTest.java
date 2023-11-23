@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import static java.lang.StrictMath.PI;
+import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -26,14 +28,11 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroupTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static java.lang.StrictMath.PI;
-import static java.lang.StrictMath.toRadians;
-import static org.junit.Assert.*;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;

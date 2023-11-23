@@ -24,7 +24,6 @@ import org.apache.sis.util.StringBuilders;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 

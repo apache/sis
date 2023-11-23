@@ -32,7 +32,6 @@ import org.apache.sis.xml.bind.gco.GO_Temporal;
 // Specific to the main branch:
 import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.UNSPECIFIED;
 

@@ -16,12 +16,11 @@
  */
 package org.apache.sis.referencing.util;
 
+import static java.lang.Long.numberOfTrailingZeros;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.internal.Numerics;
-
-import static java.lang.Long.numberOfTrailingZeros;
 
 
 /**

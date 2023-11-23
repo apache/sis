@@ -23,6 +23,9 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.function.IntFunction;
 import java.io.IOException;
+import static java.lang.Math.addExact;
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Vocabulary;
@@ -37,10 +40,6 @@ import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.reader.Type;
 import org.apache.sis.storage.geotiff.reader.GeoKeysLoader;
 import org.apache.sis.storage.geotiff.reader.XMLMetadata;
-
-import static java.lang.Math.addExact;
-import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 
 /**

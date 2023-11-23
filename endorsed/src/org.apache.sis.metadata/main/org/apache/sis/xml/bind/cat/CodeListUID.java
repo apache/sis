@@ -24,7 +24,6 @@ import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.Context;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 // Specific to the main branch:

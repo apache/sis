@@ -17,7 +17,10 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
+import static java.lang.Double.NaN;
 import Jama.Matrix;
+import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertEqualsJAMA;
+import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertEqualsElements;
 
 // Test dependencies
 import org.junit.Test;
@@ -25,10 +28,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-
-import static java.lang.Double.NaN;
-import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertEqualsJAMA;
-import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertEqualsElements;
 
 
 /**

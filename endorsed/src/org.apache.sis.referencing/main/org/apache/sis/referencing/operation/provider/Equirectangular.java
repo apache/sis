@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.provider;
 
 import java.awt.geom.AffineTransform;
+import static java.lang.Math.*;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -37,8 +38,6 @@ import org.apache.sis.referencing.util.j2d.ParameterizedAffine;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.util.internal.Constants;
-
-import static java.lang.Math.*;
 
 
 /**

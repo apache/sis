@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 // Specific to the main branch:
 import java.util.Random;
-
 import static org.junit.Assume.*;
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 

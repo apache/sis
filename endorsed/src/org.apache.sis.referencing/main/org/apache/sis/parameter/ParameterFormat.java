@@ -55,7 +55,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.X364;
-
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Specific to the main and geoapi-3.1 branches:

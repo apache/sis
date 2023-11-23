@@ -50,7 +50,6 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.wkt.Formatter;
-
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;

@@ -36,11 +36,10 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.Namespace;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import static javax.xml.stream.XMLStreamConstants.*;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.util.LegacyNamespaces;
-
-import static javax.xml.stream.XMLStreamConstants.*;
 
 
 /**

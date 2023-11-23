@@ -32,7 +32,6 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.UNSPECIFIED;
 

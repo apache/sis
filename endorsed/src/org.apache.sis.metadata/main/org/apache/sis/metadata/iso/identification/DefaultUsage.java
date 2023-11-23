@@ -28,7 +28,6 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
 import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;
 
@@ -37,7 +36,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

@@ -24,6 +24,7 @@ import java.awt.geom.PathIterator;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.Static;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 // Specific to the main branch:

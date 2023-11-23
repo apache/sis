@@ -20,9 +20,8 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.CubicCurve2D;
-import org.opengis.referencing.operation.TransformException;
-
 import static java.lang.Math.abs;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**

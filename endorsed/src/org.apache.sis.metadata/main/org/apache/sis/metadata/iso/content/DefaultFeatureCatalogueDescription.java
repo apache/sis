@@ -32,12 +32,10 @@ import org.apache.sis.xml.bind.lan.PT_Locale;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;

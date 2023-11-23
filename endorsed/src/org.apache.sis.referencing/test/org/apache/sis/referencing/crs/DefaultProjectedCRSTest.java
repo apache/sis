@@ -39,14 +39,13 @@ import org.apache.sis.measure.Units;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.Rule;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 

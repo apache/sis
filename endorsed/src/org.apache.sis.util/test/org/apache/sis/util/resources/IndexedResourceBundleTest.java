@@ -28,10 +28,9 @@ import org.opengis.util.InternationalString;
 // Test dependencies
 import org.junit.Test;
 import org.junit.After;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

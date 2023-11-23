@@ -42,14 +42,13 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.UnmodifiableMetadataException;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.metadata.xml.TestUsingFile;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 

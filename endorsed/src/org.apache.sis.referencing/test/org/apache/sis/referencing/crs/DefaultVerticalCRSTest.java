@@ -22,7 +22,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 

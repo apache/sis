@@ -27,11 +27,10 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the main branch:

@@ -32,14 +32,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.ImagingOpException;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.image.ErrorHandler;
-import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.system.CommonExecutor;
-import org.apache.sis.util.internal.Strings;
-
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.incrementExact;
@@ -47,6 +39,13 @@ import static java.lang.Math.decrementExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.image.ErrorHandler;
+import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.system.CommonExecutor;
+import org.apache.sis.util.internal.Strings;
 
 
 /**

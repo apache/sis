@@ -35,7 +35,6 @@ import org.apache.sis.xml.bind.metadata.MD_Scope;
 // Specific to the main branch:
 import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

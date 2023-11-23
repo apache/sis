@@ -42,7 +42,6 @@ import org.apache.sis.test.DependsOn;
 // Specific to the main branch:
 import org.junit.Ignore;
 import org.opengis.test.referencing.TransformTestCase;
-
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 

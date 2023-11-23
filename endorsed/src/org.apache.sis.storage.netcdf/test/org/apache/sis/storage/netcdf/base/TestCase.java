@@ -35,7 +35,6 @@ import org.apache.sis.storage.event.StoreListeners;
 
 // Test dependencies
 import org.junit.AfterClass;
-
 import static org.junit.Assert.*;
 
 

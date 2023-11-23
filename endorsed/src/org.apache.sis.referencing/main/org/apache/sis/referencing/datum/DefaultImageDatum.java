@@ -30,7 +30,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the main branch:

@@ -30,7 +30,6 @@ import org.apache.sis.xml.Namespaces;
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

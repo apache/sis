@@ -20,18 +20,17 @@ import java.util.Random;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.lang.reflect.Field;
+import static java.lang.StrictMath.*;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-
-import static java.lang.StrictMath.*;
-import static org.junit.Assert.*;
 
 
 /**

@@ -88,7 +88,6 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.GeoCodes;
 import org.apache.sis.storage.geotiff.base.GeoKeys;
 import org.apache.sis.storage.geotiff.base.UnitKey;
-
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
 

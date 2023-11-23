@@ -16,13 +16,13 @@
  */
 package org.apache.sis.geometry;
 
+import static java.lang.Double.NaN;
+
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOn;
-
-import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
+import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 

@@ -20,10 +20,10 @@ import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Grid;
-import org.apache.sis.storage.netcdf.base.GridTest;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
+import org.apache.sis.storage.netcdf.base.GridTest;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:

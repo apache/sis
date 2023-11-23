@@ -18,7 +18,6 @@ package org.apache.sis.style.se1;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 

@@ -28,7 +28,6 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.DefaultNameSpace;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 

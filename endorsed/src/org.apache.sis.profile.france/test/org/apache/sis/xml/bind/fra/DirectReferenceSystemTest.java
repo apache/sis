@@ -27,11 +27,10 @@ import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
-
-import static org.junit.Assert.*;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;

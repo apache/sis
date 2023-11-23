@@ -18,11 +18,10 @@ package org.apache.sis.referencing.crs;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.ValidatorContainer;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.crs.HardCodedCRS.*;
 

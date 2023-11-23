@@ -29,7 +29,6 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.xml.bind.gco.UnitAdapter;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -37,7 +36,6 @@ import org.opengis.metadata.content.PolarizationOrientation;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

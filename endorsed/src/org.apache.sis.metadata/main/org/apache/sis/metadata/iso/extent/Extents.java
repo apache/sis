@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
+import static java.lang.Math.*;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -64,8 +65,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-
-import static java.lang.Math.*;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;

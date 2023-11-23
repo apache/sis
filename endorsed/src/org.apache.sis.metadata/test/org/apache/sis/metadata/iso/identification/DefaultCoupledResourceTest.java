@@ -26,11 +26,10 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.xml.bind.metadata.replace.ServiceParameterTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;

@@ -26,10 +26,9 @@ import org.apache.sis.feature.DefaultFeatureType;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertPartyNameEquals;
 import static org.apache.sis.test.TestUtilities.date;

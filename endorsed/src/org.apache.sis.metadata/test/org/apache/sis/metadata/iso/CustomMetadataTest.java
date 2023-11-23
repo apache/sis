@@ -37,9 +37,8 @@ import org.apache.sis.xml.XML;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.xml.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.xml.test.TestCase;
 
 // Specific to the main branch:
 import org.opengis.metadata.citation.ResponsibleParty;

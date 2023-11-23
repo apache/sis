@@ -37,10 +37,9 @@ import org.apache.sis.util.iso.Types;
 // Specific to the main branch:
 import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**

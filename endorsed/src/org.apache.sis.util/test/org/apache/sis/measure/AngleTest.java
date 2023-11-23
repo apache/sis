@@ -17,15 +17,14 @@
 package org.apache.sis.measure;
 
 import java.util.Locale;
+import static java.lang.Double.NaN;
+import static java.lang.Double.doubleToLongBits;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-
-import static java.lang.Double.NaN;
-import static java.lang.Double.doubleToLongBits;
-import static org.junit.Assert.*;
 
 
 /**

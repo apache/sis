@@ -19,7 +19,6 @@ package org.apache.sis.storage.netcdf.base;
 // Specific to the main branch:
 import java.net.URL;
 import java.io.InputStream;
-
 import static org.junit.Assume.*;
 
 

@@ -24,10 +24,9 @@ import org.apache.sis.geometry.Envelope2D;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 

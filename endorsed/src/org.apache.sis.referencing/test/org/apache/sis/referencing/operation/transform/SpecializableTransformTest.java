@@ -26,9 +26,8 @@ import org.apache.sis.geometry.Envelope2D;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOnMethod;
 
 
 /**

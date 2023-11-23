@@ -115,7 +115,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;

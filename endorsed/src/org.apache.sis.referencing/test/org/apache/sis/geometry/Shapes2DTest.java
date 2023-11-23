@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
 import org.apache.sis.test.DependsOn;
-
 import static org.apache.sis.referencing.Assertions.assertRectangleEquals;
 
 

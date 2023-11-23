@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import static java.lang.Math.*;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -37,8 +38,6 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
-
-import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
 import static org.apache.sis.math.MathFunctions.atanh;
 import static org.apache.sis.referencing.operation.provider.TransverseMercator.*;

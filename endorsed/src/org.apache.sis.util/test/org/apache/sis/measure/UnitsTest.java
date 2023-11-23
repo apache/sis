@@ -21,15 +21,14 @@ import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
 import javax.measure.quantity.*;
 import javax.measure.quantity.Angle;
+import static org.apache.sis.measure.SexagesimalConverter.*;
+import static org.apache.sis.measure.Units.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.measure.SexagesimalConverter.*;
-import static org.apache.sis.measure.Units.*;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

@@ -17,14 +17,13 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import static java.lang.Math.*;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
-
-import static java.lang.Math.*;
 import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.*;
 
 

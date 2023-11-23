@@ -21,10 +21,9 @@ import java.util.Optional;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;

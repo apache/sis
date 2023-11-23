@@ -32,11 +32,10 @@ import org.apache.sis.xml.Namespaces;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
-import org.apache.sis.xml.bind.metadata.code.DCPList;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
+import org.apache.sis.xml.bind.metadata.code.DCPList;
 
 
 /**

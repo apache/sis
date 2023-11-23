@@ -29,7 +29,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.UnknownNameException;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

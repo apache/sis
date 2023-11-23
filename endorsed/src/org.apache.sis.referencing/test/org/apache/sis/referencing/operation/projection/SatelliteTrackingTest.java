@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
+import static java.lang.StrictMath.sin;
+import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
@@ -28,9 +30,6 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 // Test dependencies
 import org.junit.Test;
-
-import static java.lang.StrictMath.sin;
-import static java.lang.StrictMath.toRadians;
 import static org.junit.Assert.assertTrue;
 
 

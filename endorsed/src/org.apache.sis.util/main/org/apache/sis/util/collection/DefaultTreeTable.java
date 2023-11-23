@@ -28,7 +28,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Cloner;
 import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 

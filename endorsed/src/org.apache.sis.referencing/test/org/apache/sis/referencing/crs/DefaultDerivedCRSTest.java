@@ -27,20 +27,19 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.referencing.operation.DefaultConversionTest;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
+import org.apache.sis.referencing.operation.DefaultConversionTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 

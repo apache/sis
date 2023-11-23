@@ -42,7 +42,6 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 

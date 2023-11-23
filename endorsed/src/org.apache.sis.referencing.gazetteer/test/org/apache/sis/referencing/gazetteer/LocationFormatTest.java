@@ -25,7 +25,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.junit.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 

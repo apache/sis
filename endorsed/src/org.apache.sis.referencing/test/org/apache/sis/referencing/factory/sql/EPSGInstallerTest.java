@@ -41,13 +41,12 @@ import org.apache.sis.metadata.sql.util.Reflection;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.sql.TestDatabase;
-
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 
 /**

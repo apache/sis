@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.sis.system.DataDirectory;
 
+// Test dependencies
 import static org.junit.Assume.assumeTrue;
 
 

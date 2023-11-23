@@ -48,7 +48,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
-
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 // Specific to the main branch:

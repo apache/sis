@@ -21,14 +21,13 @@ import java.awt.image.Raster;
 import java.awt.image.DataBufferInt;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-
-import static org.junit.Assert.*;
 
 
 /**

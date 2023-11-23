@@ -67,7 +67,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;

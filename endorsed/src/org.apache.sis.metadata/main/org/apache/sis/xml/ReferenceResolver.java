@@ -25,7 +25,6 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gcx.Anchor;
-
 import static org.apache.sis.util.ArgumentChecks.*;
 
 

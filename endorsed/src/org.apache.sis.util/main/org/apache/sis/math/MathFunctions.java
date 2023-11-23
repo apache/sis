@@ -17,12 +17,6 @@
 package org.apache.sis.math;
 
 import java.util.Arrays;
-import org.apache.sis.util.Static;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.DoubleDouble;
-
 import static java.lang.Math.PI;
 import static java.lang.Math.min;
 import static java.lang.Math.abs;
@@ -39,6 +33,11 @@ import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.doubleToRawLongBits;
+import org.apache.sis.util.Static;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.DoubleDouble;
 import static org.apache.sis.util.internal.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.util.internal.Numerics.SIGNIFICAND_SIZE;
 

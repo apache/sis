@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
 import java.text.NumberFormat;
+import static java.util.logging.Logger.getLogger;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.metadata.Metadata;
@@ -73,8 +74,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.DefaultObjectDomain;

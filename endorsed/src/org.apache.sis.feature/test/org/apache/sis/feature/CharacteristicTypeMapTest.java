@@ -19,14 +19,13 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.AbstractMap.SimpleEntry;
 import org.apache.sis.util.iso.Names;
+import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

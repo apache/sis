@@ -30,7 +30,6 @@ import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
-
 import static org.apache.sis.util.internal.Numerics.ceilDiv;
 
 

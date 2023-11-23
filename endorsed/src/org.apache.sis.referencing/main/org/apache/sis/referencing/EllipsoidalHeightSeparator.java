@@ -38,7 +38,6 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-
 import static org.apache.sis.referencing.util.ReferencingUtilities.getPropertiesForModifiedCRS;
 
 

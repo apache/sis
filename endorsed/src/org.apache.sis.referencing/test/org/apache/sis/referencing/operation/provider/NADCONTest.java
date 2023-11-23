@@ -32,7 +32,6 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 

@@ -24,6 +24,7 @@ import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

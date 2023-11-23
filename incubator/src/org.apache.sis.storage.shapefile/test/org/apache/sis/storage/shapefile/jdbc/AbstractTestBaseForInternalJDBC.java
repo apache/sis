@@ -26,10 +26,9 @@ import java.util.logging.Logger;
 
 // Test dependencies
 import org.junit.Before;
-import org.apache.sis.storage.shapefile.ShapeFileTest;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import org.apache.sis.storage.shapefile.ShapeFileTest;
 
 
 /**

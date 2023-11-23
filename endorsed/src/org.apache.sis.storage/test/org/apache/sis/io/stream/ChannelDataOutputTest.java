@@ -25,9 +25,8 @@ import javax.imageio.stream.ImageOutputStream;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.DependsOnMethod;
 
 
 /**

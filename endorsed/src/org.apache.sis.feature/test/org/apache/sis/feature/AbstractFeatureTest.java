@@ -21,9 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 // Test dependencies
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOn;
 
 
 /**

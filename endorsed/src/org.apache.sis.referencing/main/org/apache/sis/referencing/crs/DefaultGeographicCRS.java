@@ -33,7 +33,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.internal.Constants.CRS;
 import static org.apache.sis.util.internal.Constants.EPSG;
 import static org.apache.sis.util.internal.Constants.CRS27;

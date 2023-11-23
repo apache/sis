@@ -26,11 +26,10 @@ import java.io.ObjectStreamException;
 import java.nio.charset.Charset;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
+import static java.util.logging.Logger.getLogger;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**

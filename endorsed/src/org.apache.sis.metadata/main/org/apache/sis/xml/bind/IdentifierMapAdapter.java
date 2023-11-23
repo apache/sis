@@ -34,7 +34,6 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.SetOfUnknownSize;
-
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 

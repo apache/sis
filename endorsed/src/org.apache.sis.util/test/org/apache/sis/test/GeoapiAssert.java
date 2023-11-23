@@ -24,7 +24,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

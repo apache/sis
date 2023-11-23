@@ -18,11 +18,10 @@ package org.apache.sis.util.internal;
 
 import java.util.Map;
 import java.util.TreeMap;
+import static java.util.logging.Logger.getLogger;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
-
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 

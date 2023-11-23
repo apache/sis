@@ -39,18 +39,17 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 

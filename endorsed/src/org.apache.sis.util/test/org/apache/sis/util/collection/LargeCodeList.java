@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import org.opengis.util.CodeList;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

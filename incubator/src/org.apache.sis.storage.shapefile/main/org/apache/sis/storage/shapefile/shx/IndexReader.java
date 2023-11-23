@@ -16,11 +16,10 @@
  */
 package org.apache.sis.storage.shapefile.shx;
 
-import org.apache.sis.storage.shapefile.shp.*;
-import org.apache.sis.io.stream.ChannelDataInput;
-
 import java.io.EOFException;
 import java.io.IOException;
+import org.apache.sis.storage.shapefile.shp.*;
+import org.apache.sis.io.stream.ChannelDataInput;
 
 
 /**

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import static java.lang.Double.NaN;
+import static java.lang.StrictMath.*;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.MapProjection;
@@ -25,9 +27,6 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.Test;
-
-import static java.lang.Double.NaN;
-import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 
 

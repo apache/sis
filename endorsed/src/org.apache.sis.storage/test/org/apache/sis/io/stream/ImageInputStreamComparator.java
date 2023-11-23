@@ -22,6 +22,7 @@ import java.nio.ByteOrder;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

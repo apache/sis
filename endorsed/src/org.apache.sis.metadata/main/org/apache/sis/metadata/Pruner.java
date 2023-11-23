@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.Collection;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.internal.CollectionsExt;
-
 import static org.apache.sis.metadata.ValueExistencePolicy.*;
 
 // Specific to the main branch:

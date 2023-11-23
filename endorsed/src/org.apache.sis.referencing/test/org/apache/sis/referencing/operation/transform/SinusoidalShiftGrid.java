@@ -25,6 +25,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

@@ -19,6 +19,7 @@ package org.apache.sis.io.stream;
 import java.util.Random;
 import java.io.InputStream;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

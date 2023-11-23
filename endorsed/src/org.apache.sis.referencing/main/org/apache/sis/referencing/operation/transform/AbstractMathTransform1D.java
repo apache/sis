@@ -23,7 +23,6 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
-
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 

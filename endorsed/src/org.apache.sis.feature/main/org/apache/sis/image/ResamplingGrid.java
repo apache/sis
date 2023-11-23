@@ -21,6 +21,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ImagingOpException;
+import static java.lang.Math.abs;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
@@ -32,8 +33,6 @@ import org.apache.sis.system.Configuration;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
-
-import static java.lang.Math.abs;
 
 
 /**

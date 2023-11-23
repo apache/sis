@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
 import java.util.regex.Pattern;
+import static java.lang.Math.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.OperationMethod;
@@ -31,8 +32,6 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters.Matri
 import org.apache.sis.referencing.operation.provider.ObliqueMercatorTwoPoints;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Workaround;
-
-import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
 import static org.apache.sis.referencing.util.Formulas.fastHypot;
 import static org.apache.sis.referencing.operation.provider.ObliqueMercatorCenter.*;

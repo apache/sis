@@ -37,7 +37,6 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.internal.CollectionsExt;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -47,7 +46,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;

@@ -24,16 +24,15 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.factory.TestFactorySource;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.referencing.factory.TestFactorySource;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assume.assumeNotNull;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 
 
 /**

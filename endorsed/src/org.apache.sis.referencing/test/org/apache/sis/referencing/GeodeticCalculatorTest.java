@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import static java.lang.StrictMath.*;
 import net.sf.geographiclib.Geodesic;
 import net.sf.geographiclib.GeodesicData;
 import org.opengis.geometry.DirectPosition;
@@ -37,21 +38,19 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Units;
+import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertBetween;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.widget.VisualCheck;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-import static java.lang.StrictMath.*;
-import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertBetween;
-import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

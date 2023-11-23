@@ -48,7 +48,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.xml.bind.TypeRegistration;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

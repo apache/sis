@@ -23,10 +23,9 @@ import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-
-import static org.junit.Assert.*;
 
 // Specific to the main branch:
 import org.apache.sis.storage.netcdf.base.TestData;

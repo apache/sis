@@ -32,6 +32,8 @@ import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.IndexColorModel;
 import javax.imageio.plugins.tiff.TIFFTag;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
@@ -53,9 +55,6 @@ import org.apache.sis.storage.geotiff.writer.TagValue;
 import org.apache.sis.storage.geotiff.writer.TileMatrix;
 import org.apache.sis.storage.geotiff.writer.GeoEncoder;
 import org.apache.sis.storage.geotiff.writer.ReformattedImage;
-
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
-import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 
 
 /**

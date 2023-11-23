@@ -26,10 +26,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**

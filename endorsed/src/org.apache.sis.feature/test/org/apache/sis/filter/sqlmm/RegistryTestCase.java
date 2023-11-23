@@ -36,12 +36,11 @@ import org.apache.sis.math.Vector;
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.After;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;

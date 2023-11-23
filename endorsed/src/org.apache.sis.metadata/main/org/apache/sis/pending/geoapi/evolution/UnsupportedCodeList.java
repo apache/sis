@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.ArrayList;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
-
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

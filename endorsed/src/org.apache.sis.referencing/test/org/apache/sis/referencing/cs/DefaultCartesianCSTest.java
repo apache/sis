@@ -21,18 +21,17 @@ import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;

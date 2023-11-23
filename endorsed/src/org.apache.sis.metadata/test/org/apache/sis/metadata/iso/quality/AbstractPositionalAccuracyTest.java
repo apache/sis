@@ -20,17 +20,16 @@ import java.util.Locale;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.quality.Result;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.ConformanceResult;
+import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
-import org.apache.sis.metadata.xml.TestUsingFile;
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
+import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

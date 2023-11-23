@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.time.Instant;
+import static java.util.Collections.singletonMap;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.metadata.Identifier;
@@ -53,6 +54,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
@@ -85,9 +87,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
-
-import static java.util.Collections.singletonMap;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 

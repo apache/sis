@@ -16,9 +16,10 @@
  */
 package org.apache.sis.storage.shapefile.shx;
 
+import java.io.IOException;
 import org.apache.sis.storage.shapefile.shp.ShapeHeader;
 import org.apache.sis.io.stream.ChannelDataOutput;
-import java.io.IOException;
+
 
 /**
  * Shape file writer.

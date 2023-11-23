@@ -38,7 +38,6 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.util.internal.CollectionsExt;
-
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -47,7 +46,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 // Specific to the main branch:
 import org.opengis.metadata.quality.Scope;
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 

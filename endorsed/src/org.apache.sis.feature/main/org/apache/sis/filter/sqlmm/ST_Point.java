@@ -18,13 +18,12 @@ package org.apache.sis.filter.sqlmm;
 
 import java.util.List;
 import java.nio.ByteBuffer;
+import static java.lang.Double.isNaN;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
-
-import static java.lang.Double.isNaN;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;

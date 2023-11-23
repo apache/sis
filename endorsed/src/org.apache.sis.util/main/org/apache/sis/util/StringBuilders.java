@@ -17,9 +17,8 @@
 package org.apache.sis.util;
 
 import java.text.Normalizer;
-import org.apache.sis.util.resources.Errors;
-
 import static java.lang.Character.*;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
