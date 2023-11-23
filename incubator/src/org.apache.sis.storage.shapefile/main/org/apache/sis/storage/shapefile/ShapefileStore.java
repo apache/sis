@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.sis.feature.Features;
 
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.opengis.geometry.Envelope;
@@ -83,15 +85,28 @@ import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
 import org.apache.sis.storage.shapefile.dbf.DBFReader;
 import org.apache.sis.storage.shapefile.dbf.DBFRecord;
+import org.apache.sis.storage.shapefile.dbf.DBFWriter;
 import org.apache.sis.storage.shapefile.shp.ShapeGeometryEncoder;
 import org.apache.sis.storage.shapefile.shp.ShapeHeader;
 import org.apache.sis.storage.shapefile.shp.ShapeReader;
 import org.apache.sis.storage.shapefile.shp.ShapeRecord;
+import org.apache.sis.storage.shapefile.shp.ShapeType;
+import org.apache.sis.storage.shapefile.shp.ShapeWriter;
+import org.apache.sis.storage.shapefile.shx.IndexWriter;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.AttributeType;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
@@ -111,6 +126,7 @@ import org.opengis.util.CodeList;
 public final class ShapefileStore extends DataStore implements WritableFeatureSet {
 
     private static final String GEOMETRY_NAME = "geometry";
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.shapefile");
 
     private final Path shpPath;
     private final ShpFiles files;
@@ -550,11 +566,89 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
         @Override
         public void updateType(FeatureType newType) throws DataStoreException {
+            if (true) throw new UnsupportedOperationException("Not supported yet.");
+
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             if (Files.exists(shpPath)) {
                 throw new DataStoreException("Update type is possible only when files do not exist. It can be used to create a new shapefile but not to update one.");
             }
-            throw new UnsupportedOperationException("Not supported yet.");
+
+            final ShapeHeader shpHeader = new ShapeHeader();
+            final DBFHeader dbfHeader = new DBFHeader();
+            Charset charset = StandardCharsets.UTF_8;
+            CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
+
+            for (PropertyType pt : newType.getProperties(true)) {
+                if (pt instanceof AttributeType) {
+                    final AttributeType at = (AttributeType) pt;
+                    final Class valueClass = at.getValueClass();
+                    if (Geometry.class.isAssignableFrom(valueClass)) {
+                        if (shpHeader.shapeType != 0) {
+                            throw new DataStoreException("Shapefile format can only contain one geometry");
+                        }
+                        if (Point.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POINT;
+                        else if (MultiPoint.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_MULTIPOINT;
+                        else if (LineString.class.isAssignableFrom(valueClass) || MultiLineString.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POLYLINE;
+                        else if (Polygon.class.isAssignableFrom(valueClass) || MultiPolygon.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POLYGON;
+                        else throw new DataStoreException("Unsupported geometry type " + valueClass);
+
+                        Object cdt = at.characteristics().get(AttributeConvention.CRS_CHARACTERISTIC);
+                        if (cdt instanceof CoordinateReferenceSystem) {
+                            crs = (CoordinateReferenceSystem) cdt;
+                        }
+
+                    } else if (String.class.isAssignableFrom(valueClass)) {
+
+                    } else if (Integer.class.isAssignableFrom(valueClass)) {
+
+                    } else if (Long.class.isAssignableFrom(valueClass)) {
+
+                    } else if (Float.class.isAssignableFrom(valueClass)) {
+
+                    } else if (Double.class.isAssignableFrom(valueClass)) {
+
+                    } else if (LocalDate.class.isAssignableFrom(valueClass)) {
+
+                    } else {
+                        LOGGER.log(Level.WARNING, "Shapefile writing, field {0} is not supported", pt.getName());
+                    }
+                } else {
+                    LOGGER.log(Level.WARNING, "Shapefile writing, field {0} is not supported", pt.getName());
+                }
+            }
+
+            //write shapefile
+            try (ShapeWriter writer = new ShapeWriter(ShpFiles.openWriteChannel(files.shpFile))) {
+                writer.write(shpHeader);
+            } catch (IOException ex){
+                throw new DataStoreException("Failed to create shapefile (shp).", ex);
+            }
+
+            //write shx
+            try (IndexWriter writer = new IndexWriter(ShpFiles.openWriteChannel(files.shxFile))) {
+                writer.write(shpHeader);
+            } catch (IOException ex){
+                throw new DataStoreException("Failed to create shapefile (shx).", ex);
+            }
+
+            //write dbf
+            try (DBFWriter writer = new DBFWriter(ShpFiles.openWriteChannel(files.dbfFile))) {
+                writer.write(dbfHeader);
+            } catch (IOException ex){
+                throw new DataStoreException("Failed to create shapefile (dbf).", ex);
+            }
+
+            //write cpg
+            try {
+                CpgFiles.write(charset, files.cpgFile);
+            } catch (IOException ex) {
+                throw new DataStoreException("Failed to create shapefile (cpg).", ex);
+            }
+
+            //write prj
+            //todo
+
+
         }
 
         @Override

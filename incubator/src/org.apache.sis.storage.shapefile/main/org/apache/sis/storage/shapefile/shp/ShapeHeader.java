@@ -52,8 +52,17 @@ public final class ShapeHeader {
      * Shapefile bounding box without CRS.
      * Ordinates are in X,Y,Z,M order.
      */
-    public Envelope bbox;
+    public ImmutableEnvelope bbox;
 
+    public ShapeHeader() {
+
+    }
+
+    public ShapeHeader(ShapeHeader toCopy) {
+        this.fileLength = toCopy.fileLength;
+        this.shapeType = toCopy.shapeType;
+        this.bbox = toCopy.bbox;
+    }
     /**
      * Read shapefile header.
      * @param channel input channel, not null
