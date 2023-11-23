@@ -60,8 +60,12 @@ import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.iso.Names;
+import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.iso.*;
@@ -77,6 +81,7 @@ import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.metadata.internal.Merger;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.AbstractGridCoverageResource;
@@ -86,10 +91,6 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.metadata.internal.Merger;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.iso.Names;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -819,7 +820,7 @@ public class MetadataBuilder {
      * This is used for default implementation of {@link AbstractResource#createMetadata()}.
      *
      * @param  resource   the resource for which to add metadata.
-     * @param  listeners  the listeners to notify in case of warning.
+     * @param  listeners  the listeners to notify in case of warning, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
@@ -833,7 +834,7 @@ public class MetadataBuilder {
      * This is used for default implementation of {@link AbstractFeatureSet#createMetadata()}.
      *
      * @param  resource   the resource for which to add metadata.
-     * @param  listeners  the listeners to notify in case of warning.
+     * @param  listeners  the listeners to notify in case of warning, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     public final void addDefaultMetadata(final AbstractFeatureSet resource, final StoreListeners listeners) throws DataStoreException {
@@ -846,7 +847,7 @@ public class MetadataBuilder {
      * This is used for default implementation of {@link AbstractGridCoverageResource#createMetadata()}.
      *
      * @param  resource   the resource for which to add metadata.
-     * @param  listeners  the listeners to notify in case of warning.
+     * @param  listeners  the listeners to notify in case of warning, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     public final void addDefaultMetadata(final AbstractGridCoverageResource resource, final StoreListeners listeners) throws DataStoreException {
@@ -1855,7 +1856,7 @@ parse:      for (int i = 0; i < length;) {
      * </ul>
      *
      * @param  envelope   the extent to add in the metadata, or {@code null} for no-operation.
-     * @param  listeners  the listeners to notify in case of warning.
+     * @param  listeners  the listeners to notify in case of warning, or {@code null} if none.
      */
     public final void addExtent(final Envelope envelope, final StoreListeners listeners) {
         if (envelope != null) {
@@ -1865,7 +1866,11 @@ parse:      for (int i = 0; i < length;) {
                 if (crs != null) try {
                     extent().addElements(envelope);
                 } catch (TransformException | UnsupportedOperationException e) {
-                    listeners.warning(e);
+                    if (listeners != null) {
+                        listeners.warning(e);
+                    } else {
+                        Logging.recoverableException(StoreUtilities.LOGGER, null, null, e);
+                    }
                 }
                 // Future version could add as a geometry in unspecified CRS.
             }
