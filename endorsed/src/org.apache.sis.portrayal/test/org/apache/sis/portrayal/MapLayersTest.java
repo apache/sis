@@ -23,9 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.map.ListChangeEvent;
 import org.apache.sis.measure.NumberRange;
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 
 
 /**

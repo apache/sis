@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import static java.lang.Math.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
@@ -31,8 +32,6 @@ import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Workaround;
-
-import static java.lang.Math.*;
 import static org.apache.sis.referencing.util.Formulas.fastHypot;
 import static org.apache.sis.referencing.operation.provider.ObliqueStereographic.*;
 

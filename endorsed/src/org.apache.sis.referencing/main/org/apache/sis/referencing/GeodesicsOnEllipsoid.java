@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing;
 
+import static java.lang.Math.*;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -23,8 +24,6 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.Debug;
-
-import static java.lang.Math.*;
 
 
 /**

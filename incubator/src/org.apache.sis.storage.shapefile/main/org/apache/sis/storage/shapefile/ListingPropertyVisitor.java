@@ -17,11 +17,11 @@
 package org.apache.sis.storage.shapefile;
 
 import java.util.Collection;
-import org.opengis.util.CodeList;
 import org.apache.sis.filter.internal.FunctionNames;
 import org.apache.sis.filter.internal.Visitor;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.CodeList;
 import org.opengis.filter.BetweenComparisonOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;

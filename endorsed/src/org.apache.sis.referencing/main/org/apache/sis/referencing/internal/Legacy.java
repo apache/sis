@@ -21,14 +21,13 @@ import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 
 
 /**

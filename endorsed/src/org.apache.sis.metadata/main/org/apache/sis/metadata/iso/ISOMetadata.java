@@ -40,7 +40,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.collection.Containers;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 

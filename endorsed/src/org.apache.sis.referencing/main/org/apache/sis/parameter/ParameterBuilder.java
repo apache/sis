@@ -24,7 +24,6 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.referencing.Builder;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

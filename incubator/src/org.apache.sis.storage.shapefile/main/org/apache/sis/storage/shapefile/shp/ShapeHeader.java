@@ -16,13 +16,14 @@
  */
 package org.apache.sis.storage.shapefile.shp;
 
+import java.io.IOException;
+import java.nio.ByteOrder;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
-import org.opengis.geometry.Envelope;
-import java.io.IOException;
-import java.nio.ByteOrder;
+
 
 /**
  * Shapefile header.

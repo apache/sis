@@ -18,16 +18,15 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
 import java.util.Random;
+import static java.lang.StrictMath.*;
 import org.opengis.referencing.operation.TransformException;
+import static org.apache.sis.referencing.operation.transform.IterationStrategy.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-
-import static java.lang.StrictMath.*;
-import static org.apache.sis.referencing.operation.transform.IterationStrategy.*;
-import static org.junit.Assert.*;
 
 
 /**

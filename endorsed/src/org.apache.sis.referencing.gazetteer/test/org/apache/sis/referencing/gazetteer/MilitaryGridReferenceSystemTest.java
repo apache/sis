@@ -37,17 +37,16 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.measure.Quantities;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.measure.Units.ARC_MINUTE;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
-import static org.apache.sis.measure.Units.ARC_MINUTE;
-import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.gazetteer.Location;

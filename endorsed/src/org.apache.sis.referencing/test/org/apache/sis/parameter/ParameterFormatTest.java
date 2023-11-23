@@ -25,18 +25,17 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.measure.Units;
+import static org.apache.sis.metadata.iso.citation.Citations.OGC;
+import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.metadata.iso.citation.Citations.OGC;
-import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 

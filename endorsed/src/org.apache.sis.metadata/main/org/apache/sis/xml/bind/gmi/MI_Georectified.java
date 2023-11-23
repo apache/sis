@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.spatial.Georectified;
 import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
 import org.apache.sis.xml.Namespaces;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 

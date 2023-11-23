@@ -17,14 +17,14 @@
 package org.apache.sis.storage.shapefile.shp;
 
 import java.awt.geom.Rectangle2D;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.io.stream.ChannelDataOutput;
-import org.locationtech.jts.geom.Geometry;
-
 import java.io.IOException;
 import java.nio.ByteOrder;
+import org.locationtech.jts.geom.Geometry;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataOutput;
+
 
 /**
  * @author Johann Sorel (Geomatys)

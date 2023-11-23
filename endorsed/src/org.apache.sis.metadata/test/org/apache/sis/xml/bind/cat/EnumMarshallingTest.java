@@ -25,9 +25,8 @@ import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.xml.test.TestCase;
-
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 

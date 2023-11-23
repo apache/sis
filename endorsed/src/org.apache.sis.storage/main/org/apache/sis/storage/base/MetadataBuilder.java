@@ -92,7 +92,6 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.measure.Units;
-
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

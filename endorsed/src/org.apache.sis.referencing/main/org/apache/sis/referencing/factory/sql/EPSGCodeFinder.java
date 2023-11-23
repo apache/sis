@@ -52,7 +52,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.metadata.internal.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 

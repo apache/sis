@@ -73,7 +73,6 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

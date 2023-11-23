@@ -24,10 +24,9 @@ import org.opengis.filter.capability.IdCapabilities;
 import org.opengis.filter.capability.ScalarCapabilities;
 import org.opengis.filter.capability.AvailableFunction;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-
-import static org.junit.Assert.*;
 
 
 /**

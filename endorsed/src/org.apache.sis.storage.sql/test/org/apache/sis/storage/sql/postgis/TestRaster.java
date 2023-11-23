@@ -32,6 +32,7 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

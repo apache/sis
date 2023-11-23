@@ -21,11 +21,10 @@ import java.util.IllformedLocaleException;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-
-import static org.junit.Assert.*;
 
 
 /**

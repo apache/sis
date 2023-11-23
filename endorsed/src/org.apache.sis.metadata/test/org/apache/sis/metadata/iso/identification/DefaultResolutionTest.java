@@ -21,18 +21,17 @@ import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.Context;
+import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
 
 // Test dependencies
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
-import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
 
 
 /**

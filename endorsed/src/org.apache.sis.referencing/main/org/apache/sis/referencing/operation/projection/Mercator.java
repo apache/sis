@@ -19,6 +19,8 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import static java.lang.Math.*;
+import static java.lang.Double.*;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -43,9 +45,6 @@ import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
-
-import static java.lang.Math.*;
-import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
 
 

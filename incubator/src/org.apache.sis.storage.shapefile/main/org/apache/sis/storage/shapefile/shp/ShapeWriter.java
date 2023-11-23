@@ -16,11 +16,11 @@
  */
 package org.apache.sis.storage.shapefile.shp;
 
-import org.apache.sis.io.stream.ChannelDataOutput;
-
 import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
+
 
 /**
  * Shape file writer.

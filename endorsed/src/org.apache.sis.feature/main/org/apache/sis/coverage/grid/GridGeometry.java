@@ -81,7 +81,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-
 import static org.apache.sis.referencing.CRS.findOperation;
 
 

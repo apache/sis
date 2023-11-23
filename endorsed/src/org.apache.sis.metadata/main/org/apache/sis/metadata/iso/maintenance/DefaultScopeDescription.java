@@ -31,7 +31,6 @@ import org.apache.sis.xml.bind.Context;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Messages;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Specific to the main and geoapi-3.1 branches:

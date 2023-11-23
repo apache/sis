@@ -25,10 +25,9 @@ import java.awt.geom.CubicCurve2D;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.TestCase;
 
 
 /**

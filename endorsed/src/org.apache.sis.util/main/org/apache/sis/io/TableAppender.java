@@ -28,7 +28,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.X364;
-
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 

@@ -18,6 +18,8 @@ package org.apache.sis.storage.geotiff.writer;
 
 import java.util.List;
 import java.util.EnumMap;
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.TAG_GEO_ASCII_PARAMS;
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.TAG_GEO_DOUBLE_PARAMS;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -65,9 +67,6 @@ import org.apache.sis.storage.geotiff.base.GeoCodes;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.metadata.iso.citation.Citations;
-
-import static javax.imageio.plugins.tiff.GeoTIFFTagSet.TAG_GEO_ASCII_PARAMS;
-import static javax.imageio.plugins.tiff.GeoTIFFTagSet.TAG_GEO_DOUBLE_PARAMS;
 
 
 /**

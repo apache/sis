@@ -37,7 +37,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.internal.Constants;
-
 import static org.apache.sis.geometry.wrapper.Geometries.LOGGER;
 
 

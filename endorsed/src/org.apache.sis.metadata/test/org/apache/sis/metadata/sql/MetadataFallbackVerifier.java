@@ -23,11 +23,10 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.simple.CitationConstant;
 import org.apache.sis.metadata.iso.citation.Citations;
+import static org.apache.sis.util.internal.CollectionsExt.first;
 
 // Test dependencies
 import org.junit.Test;
-
-import static org.apache.sis.util.internal.CollectionsExt.first;
 import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

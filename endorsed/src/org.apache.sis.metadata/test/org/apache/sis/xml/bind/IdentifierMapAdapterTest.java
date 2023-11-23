@@ -21,13 +21,12 @@ import java.util.List;
 import java.util.ArrayList;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import static org.apache.sis.xml.IdentifierSpace.*;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.xml.IdentifierSpace.*;
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

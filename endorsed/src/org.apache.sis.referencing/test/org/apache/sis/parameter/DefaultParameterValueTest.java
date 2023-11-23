@@ -16,6 +16,7 @@
  */
 package org.apache.sis.parameter;
 
+import static java.lang.StrictMath.*;
 import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.VerticalDatumType;
@@ -28,13 +29,11 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static java.lang.StrictMath.*;
-import static org.junit.Assert.*;
-import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 

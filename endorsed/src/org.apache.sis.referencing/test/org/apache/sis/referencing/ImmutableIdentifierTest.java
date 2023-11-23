@@ -30,11 +30,10 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;

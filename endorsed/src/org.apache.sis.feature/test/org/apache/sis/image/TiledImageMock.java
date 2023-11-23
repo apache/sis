@@ -41,6 +41,7 @@ import org.apache.sis.coverage.grid.j2d.WritableTiledImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Numerics;
 
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 
 

@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.content.CoverageDescription;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.xml.Namespaces;
-
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 

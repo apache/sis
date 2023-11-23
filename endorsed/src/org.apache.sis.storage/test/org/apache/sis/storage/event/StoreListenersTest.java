@@ -23,10 +23,9 @@ import org.apache.sis.storage.DataStoreMock;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 
 
 /**

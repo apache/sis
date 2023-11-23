@@ -33,12 +33,11 @@ import org.apache.sis.math.StatisticsFormat;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

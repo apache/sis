@@ -18,17 +18,16 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.HashMap;
+import static java.util.AbstractMap.SimpleEntry;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
+import static org.apache.sis.metadata.KeyNamePolicy.*;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static java.util.AbstractMap.SimpleEntry;
-import static org.apache.sis.metadata.KeyNamePolicy.*;
-import static org.junit.Assert.*;
 
 
 /**

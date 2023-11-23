@@ -28,12 +28,11 @@ import org.apache.sis.util.UnconvertibleObjectException;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.*;
 import org.apache.sis.test.PlatformDependent;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

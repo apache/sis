@@ -38,11 +38,10 @@ import java.util.function.ObjIntConsumer;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.DatatypeConfigurationException;
+import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;
 import org.apache.sis.xml.bind.Context;
-
-import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 
 
 /**

@@ -17,23 +17,11 @@
 package org.apache.sis.storage.shapefile.shp;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-
-import org.apache.sis.setup.OptionKey;
-import org.junit.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.StorageConnector;
-
-import java.net.URL;
 import java.nio.ByteBuffer;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.*;
-
-import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.io.stream.ChannelDataOutput;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.storage.DataStoreException;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
@@ -41,6 +29,18 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.ChannelDataOutput;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
+import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 /**
  * @author Johann Sorel (Geomatys)

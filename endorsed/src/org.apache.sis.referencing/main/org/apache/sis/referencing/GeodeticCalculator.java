@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.NumberFormat;
+import static java.lang.Math.*;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.quantity.Length;
@@ -55,8 +56,6 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.TableAppender;
-
-import static java.lang.Math.*;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.LATITUDE_OF_ORIGIN;
 import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.LONGITUDE_OF_ORIGIN;

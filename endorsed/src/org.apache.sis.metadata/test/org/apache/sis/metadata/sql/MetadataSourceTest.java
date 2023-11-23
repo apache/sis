@@ -29,11 +29,10 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
-
-import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.apache.sis.test.TestUtilities.getSingleton;

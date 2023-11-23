@@ -24,6 +24,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import static java.lang.Math.*;
+import static java.awt.geom.AffineTransform.*;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -32,9 +34,6 @@ import org.apache.sis.referencing.util.j2d.IntervalRectangle;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
-
-import static java.lang.Math.*;
-import static java.awt.geom.AffineTransform.*;
 
 
 /**

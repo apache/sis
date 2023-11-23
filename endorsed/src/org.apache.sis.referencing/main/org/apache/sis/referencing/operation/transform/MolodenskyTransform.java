@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
+import static java.lang.Math.*;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -38,8 +39,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.Numerics;
-
-import static java.lang.Math.*;
 
 
 /**

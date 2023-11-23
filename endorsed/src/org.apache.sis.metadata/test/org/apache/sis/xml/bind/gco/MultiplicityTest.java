@@ -24,14 +24,13 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.XML;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.apache.sis.metadata.xml.TestUsingFile;
-import org.apache.sis.test.mock.FeatureAttributeMock;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.mock.FeatureAttributeMock;
 
 
 /**

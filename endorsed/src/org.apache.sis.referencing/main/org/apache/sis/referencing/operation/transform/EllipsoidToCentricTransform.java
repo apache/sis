@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import static java.lang.Math.*;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -56,8 +57,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.metadata.iso.citation.Citations;
-
-import static java.lang.Math.*;
 import static org.apache.sis.referencing.operation.provider.MapProjection.SEMI_MAJOR;
 import static org.apache.sis.referencing.operation.provider.MapProjection.SEMI_MINOR;
 import static org.apache.sis.referencing.operation.provider.MapProjection.ECCENTRICITY;

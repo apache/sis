@@ -22,7 +22,6 @@ import javax.measure.quantity.Angle;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.math.MathFunctions;
-
 import static org.apache.sis.math.MathFunctions.truncate;
 
 

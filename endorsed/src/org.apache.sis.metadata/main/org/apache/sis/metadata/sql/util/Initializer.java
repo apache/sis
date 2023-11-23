@@ -45,7 +45,6 @@ import org.apache.sis.system.Shutdown;
 import org.apache.sis.system.Reflect;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.util.internal.MetadataServices.EMBEDDED;
 
 

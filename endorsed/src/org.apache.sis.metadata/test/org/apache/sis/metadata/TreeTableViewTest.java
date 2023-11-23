@@ -33,11 +33,10 @@ import org.apache.sis.xml.NilReason;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.TestUtilities.toTreeStructure;
 import static org.apache.sis.test.TestUtilities.formatMetadata;

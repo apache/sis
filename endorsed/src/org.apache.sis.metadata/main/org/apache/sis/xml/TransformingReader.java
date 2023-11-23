@@ -32,9 +32,8 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
-import org.apache.sis.util.collection.BackingStoreException;
-
 import static javax.xml.stream.XMLStreamConstants.*;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**

@@ -23,9 +23,8 @@ import org.opengis.filter.Expression;
 import org.opengis.filter.FilterFactory;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 
 
 /**

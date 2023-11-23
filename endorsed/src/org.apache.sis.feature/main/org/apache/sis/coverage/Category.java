@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Comparator;
 import java.util.function.DoubleToIntFunction;
 import java.io.Serializable;
+import static java.lang.Double.doubleToRawLongBits;
 import javax.measure.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -33,8 +34,6 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Types;
-
-import static java.lang.Double.doubleToRawLongBits;
 
 
 /**

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
 import java.io.Serializable;
+import static java.lang.Math.*;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -40,8 +41,6 @@ import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-
-import static java.lang.Math.*;
 
 
 /**

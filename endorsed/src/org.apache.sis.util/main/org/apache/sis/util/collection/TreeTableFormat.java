@@ -44,7 +44,6 @@ import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.util.internal.PropertyFormat;
 import org.apache.sis.util.internal.LocalizedParseException;
 import org.apache.sis.util.internal.TreeFormatCustomization;
-
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 

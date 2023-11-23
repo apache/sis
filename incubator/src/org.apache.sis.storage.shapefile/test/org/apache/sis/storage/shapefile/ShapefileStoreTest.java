@@ -22,16 +22,18 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.stream.Stream;
+import org.locationtech.jts.geom.Point;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CommonCRS;
-import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
+
+// Test dependencies
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.locationtech.jts.geom.Point;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;

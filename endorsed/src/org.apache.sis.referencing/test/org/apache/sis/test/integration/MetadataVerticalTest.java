@@ -44,17 +44,15 @@ import org.apache.sis.xml.NilReason;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.nio.charset.StandardCharsets;
-
 import static org.opengis.test.Assert.assertIdentifierEquals;
 
 

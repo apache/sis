@@ -43,10 +43,9 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 import org.junit.Ignore;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.referencing.ObjectFactoryTest;
 import org.apache.sis.test.DependsOn;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 

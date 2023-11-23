@@ -37,11 +37,10 @@ import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.junit.Test;
-import org.opengis.test.dataset.TestData;
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assert.*;
+import org.opengis.test.dataset.TestData;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.DependsOn;
 
 
 /**

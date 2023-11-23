@@ -32,21 +32,20 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
-
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

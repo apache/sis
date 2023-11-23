@@ -23,12 +23,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.PathIterator;
-import org.apache.sis.util.Static;
-
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.hypot;
 import static java.lang.Double.isInfinite;
+import org.apache.sis.util.Static;
 
 
 /**

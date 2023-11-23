@@ -19,6 +19,7 @@ package org.apache.sis.geometry.wrapper;
 import java.util.List;
 import java.util.EnumSet;
 import java.util.Iterator;
+import static java.lang.Double.NaN;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.Envelope2D;
@@ -28,12 +29,10 @@ import org.apache.sis.math.Vector;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
 
 
 /**

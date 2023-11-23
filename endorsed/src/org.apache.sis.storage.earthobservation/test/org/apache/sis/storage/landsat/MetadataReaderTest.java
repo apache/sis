@@ -20,9 +20,8 @@ import java.util.regex.Matcher;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.io.BufferedReader;
@@ -45,7 +44,6 @@ import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.opengis.test.dataset.ContentVerifier;
-
 import static org.apache.sis.test.TestUtilities.date;
 
 

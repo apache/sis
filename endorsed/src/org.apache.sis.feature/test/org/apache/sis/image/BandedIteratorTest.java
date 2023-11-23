@@ -22,6 +22,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

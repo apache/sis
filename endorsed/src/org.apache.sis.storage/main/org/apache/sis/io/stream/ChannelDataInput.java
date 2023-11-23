@@ -36,7 +36,6 @@ import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.util.resources.Errors;
-
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
 

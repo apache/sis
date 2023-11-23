@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import static java.lang.Math.*;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
@@ -32,8 +33,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-
-import static java.lang.Math.*;
 import static org.apache.sis.referencing.operation.provider.AlbersEqualArea.*;
 
 

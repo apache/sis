@@ -36,11 +36,10 @@ import org.apache.sis.util.collection.TreeTable;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the main and geoapi-3.1 branches:

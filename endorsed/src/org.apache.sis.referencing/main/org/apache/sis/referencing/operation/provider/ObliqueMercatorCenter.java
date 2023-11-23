@@ -21,7 +21,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
-
 import static org.apache.sis.referencing.IdentifiedObjects.getIdentifier;
 
 // Specific to the main and geoapi-3.1 branches:

@@ -30,6 +30,8 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.PolarCS;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Numerics;
@@ -37,9 +39,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.measure.Units;
-
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 
 
 /*

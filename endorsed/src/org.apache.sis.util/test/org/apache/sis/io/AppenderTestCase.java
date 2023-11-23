@@ -20,10 +20,9 @@ import java.io.IOException;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 

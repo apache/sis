@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Random;
 import java.util.Iterator;
+import static java.lang.Double.NaN;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
@@ -32,15 +33,13 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.datum.HardCodedDatum;
-
-import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;

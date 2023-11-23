@@ -30,7 +30,6 @@ import org.apache.sis.util.iso.Names;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 

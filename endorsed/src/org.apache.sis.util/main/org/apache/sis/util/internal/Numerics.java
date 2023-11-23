@@ -20,6 +20,10 @@ import java.text.Format;
 import java.text.DecimalFormat;
 import java.math.BigInteger;
 import java.util.function.BiFunction;
+import static java.lang.Math.min;
+import static java.lang.Math.max;
+import static java.lang.Math.abs;
+import static java.lang.Math.ulp;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
@@ -29,11 +33,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.system.Configuration;
-
-import static java.lang.Math.min;
-import static java.lang.Math.max;
-import static java.lang.Math.abs;
-import static java.lang.Math.ulp;
 
 
 /**

@@ -26,13 +26,12 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.function.BiPredicate;
-
-// Test dependencies
-import org.apache.sis.metadata.sql.TestDatabase;
 import org.apache.sis.metadata.sql.util.Dialect;
 import org.apache.sis.storage.sql.TestOnAllDatabases;
 
+// Test dependencies
 import static org.junit.Assert.*;
+import org.apache.sis.metadata.sql.TestDatabase;
 
 
 /**

@@ -33,10 +33,9 @@ import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import org.apache.sis.test.TestCase;
 
 
 /**

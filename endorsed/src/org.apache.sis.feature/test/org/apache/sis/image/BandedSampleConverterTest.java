@@ -25,7 +25,6 @@ import org.apache.sis.coverage.grid.j2d.ImageLayout;
 // Test dependencies
 import org.junit.Test;
 import org.apache.sis.test.TestUtilities;
-
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 

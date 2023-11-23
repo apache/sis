@@ -23,18 +23,17 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import java.util.function.DoubleUnaryOperator;
+import static java.util.logging.Logger.getLogger;
 import org.apache.sis.system.Modules;
 import org.apache.sis.math.Statistics;
 
 // Test dependencies
 import org.junit.Rule;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
-
-import static java.util.logging.Logger.getLogger;
-import static org.junit.Assert.*;
 
 
 /**

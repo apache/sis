@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_COMPRESSION;
 import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -36,8 +37,6 @@ import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.math.Vector;
-
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_COMPRESSION;
 
 
 /**

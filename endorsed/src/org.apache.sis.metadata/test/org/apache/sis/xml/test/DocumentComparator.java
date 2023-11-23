@@ -33,6 +33,7 @@ import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import static java.lang.StrictMath.*;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -46,9 +47,9 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.util.LegacyNamespaces;
-
-import static java.lang.StrictMath.*;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
+
+// Test dependencies
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 

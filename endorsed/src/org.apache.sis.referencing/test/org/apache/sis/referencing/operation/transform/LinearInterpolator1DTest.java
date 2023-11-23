@@ -23,10 +23,9 @@ import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.DependsOnMethod;
-
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
+import org.apache.sis.test.DependsOnMethod;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.referencing.TransformTestCase;

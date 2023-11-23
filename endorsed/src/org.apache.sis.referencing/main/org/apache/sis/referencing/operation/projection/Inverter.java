@@ -16,10 +16,9 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import static java.lang.Math.abs;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-
-import static java.lang.Math.abs;
 
 
 /**

@@ -27,6 +27,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

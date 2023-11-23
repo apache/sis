@@ -64,7 +64,6 @@ import org.apache.sis.gui.internal.RecentChoices;
 import org.apache.sis.gui.internal.io.OptionalDataDownloader;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

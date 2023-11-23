@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
+import static java.lang.Math.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.OperationMethod;
@@ -28,8 +29,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection.ParameterRole;
-
-import static java.lang.Math.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

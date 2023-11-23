@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Objects;
+import static java.lang.Double.doubleToLongBits;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
@@ -34,8 +35,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.metadata.internal.ReferencingServices;
-
-import static java.lang.Double.doubleToLongBits;
 
 
 /**

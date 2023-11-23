@@ -22,11 +22,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.apache.sis.storage.test.CoverageReadConsistency;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-
 import static org.junit.Assert.assertNotNull;
+import org.apache.sis.storage.test.CoverageReadConsistency;
 
 
 /**

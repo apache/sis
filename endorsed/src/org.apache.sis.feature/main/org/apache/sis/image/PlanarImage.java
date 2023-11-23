@@ -27,6 +27,7 @@ import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
 import java.util.Vector;
 import java.util.function.DoubleUnaryOperator;
+import static java.lang.Math.multiplyFull;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
@@ -38,8 +39,6 @@ import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.TileOpExecutor;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
-
-import static java.lang.Math.multiplyFull;
 
 
 /**

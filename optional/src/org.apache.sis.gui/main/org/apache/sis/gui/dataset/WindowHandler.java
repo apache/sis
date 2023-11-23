@@ -43,7 +43,6 @@ import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.PrivateAccess;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

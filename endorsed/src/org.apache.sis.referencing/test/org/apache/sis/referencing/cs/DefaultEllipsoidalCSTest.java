@@ -26,12 +26,11 @@ import org.apache.sis.referencing.GeodeticObjectVerifier;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;

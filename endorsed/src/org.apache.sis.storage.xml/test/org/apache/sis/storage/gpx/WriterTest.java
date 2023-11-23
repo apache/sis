@@ -33,12 +33,11 @@ import org.apache.sis.storage.gps.Fix;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

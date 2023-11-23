@@ -19,6 +19,7 @@ package org.apache.sis.test.widget;
 import java.util.Enumeration;
 import javax.swing.tree.TreeNode;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 

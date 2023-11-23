@@ -20,6 +20,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

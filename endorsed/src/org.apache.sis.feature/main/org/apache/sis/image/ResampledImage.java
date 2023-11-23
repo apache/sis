@@ -48,7 +48,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-
 import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
 
 

@@ -39,7 +39,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.portrayal.TransformChangeEvent;
 import org.apache.sis.portrayal.CanvasFollower;
 import org.apache.sis.util.logging.Logging;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 

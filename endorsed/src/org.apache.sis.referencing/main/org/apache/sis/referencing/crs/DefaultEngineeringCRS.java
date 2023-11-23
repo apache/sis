@@ -30,7 +30,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 

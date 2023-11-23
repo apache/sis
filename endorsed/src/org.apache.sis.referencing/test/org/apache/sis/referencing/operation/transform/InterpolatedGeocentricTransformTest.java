@@ -23,11 +23,11 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
-import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
-import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 
 // Test dependencies
 import org.junit.Test;
+import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
+import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.datum.HardCodedDatum;

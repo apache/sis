@@ -29,16 +29,15 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
+import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.mock.VerticalCRSMock;
-
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
-import static org.junit.Assert.*;
 
 
 /**

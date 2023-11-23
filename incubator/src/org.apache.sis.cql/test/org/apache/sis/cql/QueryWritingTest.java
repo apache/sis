@@ -20,7 +20,6 @@ package org.apache.sis.cql;
 import java.util.Arrays;
 import org.opengis.filter.SortOrder;
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
 

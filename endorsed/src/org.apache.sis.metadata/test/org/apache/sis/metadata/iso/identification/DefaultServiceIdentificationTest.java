@@ -25,13 +25,12 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.xml.NilReason;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.metadata.xml.TestUsingFile;
-import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assert.*;
+import org.apache.sis.test.DependsOn;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 

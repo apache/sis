@@ -41,11 +41,10 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.extent.Extents;
 
 // Test dependencies
+import static org.junit.Assert.*;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
-
-import static org.junit.Assert.*;
 
 
 /**

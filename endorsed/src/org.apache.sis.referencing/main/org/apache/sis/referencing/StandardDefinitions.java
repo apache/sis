@@ -40,6 +40,11 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterValueGroup;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
+import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
+import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
+import static org.opengis.referencing.datum.Datum.DOMAIN_OF_VALIDITY_KEY;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.internal.AxisNames;
@@ -68,12 +73,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
-
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
-import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
-import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
-import static org.opengis.referencing.datum.Datum.DOMAIN_OF_VALIDITY_KEY;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 

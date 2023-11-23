@@ -19,17 +19,16 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

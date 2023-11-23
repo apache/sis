@@ -22,7 +22,6 @@ import org.apache.sis.storage.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;

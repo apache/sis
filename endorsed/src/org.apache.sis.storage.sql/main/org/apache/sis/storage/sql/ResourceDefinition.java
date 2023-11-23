@@ -24,7 +24,6 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.DefaultNameFactory;
-
 import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
 
 

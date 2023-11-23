@@ -30,7 +30,6 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.junit.Test;
 import org.junit.Ignore;
-
 import static org.junit.Assert.*;
 
 

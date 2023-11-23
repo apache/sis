@@ -17,21 +17,20 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Random;
+import static java.lang.Double.*;
+import static java.lang.StrictMath.*;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
+import static org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.TOLERANCE;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
-
-import static java.lang.Double.*;
-import static java.lang.StrictMath.*;
-import static org.junit.Assert.*;
-import static org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.TOLERANCE;
 
 
 /**

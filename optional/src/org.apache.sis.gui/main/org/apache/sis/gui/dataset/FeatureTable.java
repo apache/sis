@@ -44,7 +44,6 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.gui.internal.IdentityValueFactory;
 import org.apache.sis.gui.internal.ExceptionReporter;
-
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

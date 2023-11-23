@@ -26,10 +26,9 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

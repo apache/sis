@@ -26,6 +26,7 @@ import org.apache.sis.metadata.sql.util.Initializer;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
+// Test dependencies
 import static org.junit.Assume.*;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertBetween;

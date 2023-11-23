@@ -24,6 +24,11 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.WritableRaster;
+import static java.lang.Math.floorDiv;
+import static java.lang.Math.addExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.multiplyFull;
+import static java.lang.Math.incrementExact;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -37,12 +42,6 @@ import org.apache.sis.io.stream.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.ArraysExt;
-
-import static java.lang.Math.floorDiv;
-import static java.lang.Math.addExact;
-import static java.lang.Math.multiplyExact;
-import static java.lang.Math.multiplyFull;
-import static java.lang.Math.incrementExact;
 import static org.apache.sis.util.internal.Numerics.ceilDiv;
 import static org.apache.sis.util.internal.Numerics.wholeDiv;
 

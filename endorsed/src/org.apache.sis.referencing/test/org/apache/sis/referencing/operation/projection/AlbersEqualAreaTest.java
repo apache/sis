@@ -16,19 +16,18 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import static java.lang.StrictMath.*;
+import static java.lang.Double.NaN;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
-
-import static java.lang.StrictMath.*;
-import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.ToleranceModifier;

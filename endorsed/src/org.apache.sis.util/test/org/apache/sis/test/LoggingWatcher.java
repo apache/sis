@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
+// Test dependencies
 import static org.junit.Assert.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

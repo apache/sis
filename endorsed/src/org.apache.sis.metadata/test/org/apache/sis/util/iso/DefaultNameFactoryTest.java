@@ -23,10 +23,9 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.opengis.test.util.NameTest;
 import org.apache.sis.test.DependsOn;
-
-import static org.junit.Assert.*;
 
 
 /**

@@ -21,14 +21,13 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.NilObject;
+import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.util.SimpleInternationalString;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

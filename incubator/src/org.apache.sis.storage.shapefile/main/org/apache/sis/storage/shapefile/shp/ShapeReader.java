@@ -17,12 +17,12 @@
 package org.apache.sis.storage.shapefile.shp;
 
 import java.awt.geom.Rectangle2D;
-import org.apache.sis.io.stream.ChannelDataInput;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Objects;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.geometry.Envelope2D;
+
 
 /**
  * Seekable shape file reader.

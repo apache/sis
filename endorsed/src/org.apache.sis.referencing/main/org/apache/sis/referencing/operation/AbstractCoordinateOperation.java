@@ -71,7 +71,6 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.Loggers;
-
 import static org.apache.sis.util.Utilities.deepEquals;
 
 

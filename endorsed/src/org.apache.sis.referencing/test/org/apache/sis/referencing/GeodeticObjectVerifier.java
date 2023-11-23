@@ -34,6 +34,7 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.measure.Units;
 
+// Test dependencies
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 

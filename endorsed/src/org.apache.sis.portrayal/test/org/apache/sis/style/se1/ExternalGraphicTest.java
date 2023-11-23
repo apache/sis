@@ -22,7 +22,6 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 

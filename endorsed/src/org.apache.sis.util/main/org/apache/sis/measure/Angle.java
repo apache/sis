@@ -23,6 +23,7 @@ import java.util.FormattableFlags;
 import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
+import static java.lang.Double.doubleToLongBits;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.geometry.DirectPosition;
@@ -33,8 +34,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
-
-import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.math.MathFunctions.isNegative;
 
 

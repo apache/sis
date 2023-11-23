@@ -57,7 +57,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Vocabulary;
-
 import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 

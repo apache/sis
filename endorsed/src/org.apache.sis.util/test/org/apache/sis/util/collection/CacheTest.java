@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import static java.lang.StrictMath.*;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.util.CharSequences;
@@ -32,14 +33,12 @@ import org.apache.sis.util.internal.StandardDateFormat;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.Performance;
-
-import static java.lang.StrictMath.*;
-import static org.junit.Assert.*;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 
 

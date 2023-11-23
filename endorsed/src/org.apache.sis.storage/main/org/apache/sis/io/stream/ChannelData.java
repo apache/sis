@@ -22,7 +22,6 @@ import java.nio.channels.Channel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.internal.Resources;
-
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
 

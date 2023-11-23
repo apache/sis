@@ -27,11 +27,10 @@ import org.opengis.referencing.operation.MathTransform;
 
 // Test dependencies
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.image.processing.isoline.IsolinesTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-
-import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

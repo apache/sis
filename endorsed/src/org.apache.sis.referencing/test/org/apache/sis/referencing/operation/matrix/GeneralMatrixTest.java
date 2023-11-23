@@ -21,7 +21,6 @@ import org.apache.sis.util.internal.DoubleDouble;
 
 // Test dependencies
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 

@@ -32,12 +32,11 @@ import org.apache.sis.xml.Namespaces;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
-
-import static org.junit.Assert.*;
 
 
 /**

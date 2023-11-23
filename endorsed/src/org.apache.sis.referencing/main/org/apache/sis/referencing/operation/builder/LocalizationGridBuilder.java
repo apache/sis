@@ -49,7 +49,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Vector;
-
 import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_DIMENSION;
 
 

@@ -26,6 +26,7 @@ import java.awt.image.BandedSampleModel;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageTypeSpecifier;
+import static java.lang.Math.toIntExact;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.image.ImageProcessor;
@@ -49,8 +50,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Names;
-
-import static java.lang.Math.toIntExact;
 
 
 /**

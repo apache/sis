@@ -20,9 +20,8 @@ import org.apache.sis.filter.internal.XPath;
 
 // Test dependencies
 import org.junit.Test;
-import org.apache.sis.test.TestCase;
-
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 
 
 /**
