@@ -42,7 +42,10 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see GridCoverageResource#setLoadingStrategy(RasterLoadingStrategy)
+ *
+ * @since 1.1
  */
 public enum RasterLoadingStrategy {
     /**

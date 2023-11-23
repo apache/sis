@@ -92,7 +92,7 @@ public class RegionOfInterest implements LenientComparable, Serializable {
      * The target space is specified by a {@code GridGeometry}.
      *
      * <h4>Limitations</h4>
-     * In current implementation, the grid geometry most be two-dimensional.
+     * In current implementation, the grid geometry must be two-dimensional.
      * This restriction will be relaxed progressively in future versions.
      *
      * @param  target  two-dimensional grid geometry of the target image.

@@ -22,6 +22,7 @@ val geoapiVersion = "3.1-SNAPSHOT"
  * They are directory names relative to this file.
  */
 include("geoapi")
+include("parent")
 include("endorsed")
 include("incubator")
 if (System.getenv("PATH_TO_FX") != null) {
@@ -61,7 +62,7 @@ dependencyResolutionManagement {
             library("geoapi",        "org.opengis",            "geoapi-pending")      .version {strictly(geoapiVersion)}
             library("units",         "javax.measure",          "unit-api")            .version {strictly("[2.1, 3.0[");  prefer("2.1.3")}
             library("jaxb.api",      "jakarta.xml.bind",       "jakarta.xml.bind-api").version {strictly("[4.0, 5.0[");  prefer("4.0.1")}
-            library("jaxb.impl",     "org.glassfish.jaxb",     "jaxb-runtime")        .version {strictly("[4.0, 5.0[");  prefer("4.0.3")}
+            library("jaxb.impl",     "org.glassfish.jaxb",     "jaxb-runtime")        .version {strictly("[4.0, 5.0[");  prefer("4.0.4")}
             library("yasson",        "org.eclipse",            "yasson")              .version {strictly("[3.0, 4.0[");  prefer("3.0.3")}
             library("jts.core",      "org.locationtech.jts",   "jts-core")            .version {strictly("[1.15, 2.0["); prefer("1.19.0")}
             library("esri.geometry", "com.esri.geometry",      "esri-geometry-api")   .version {strictly("[2.0, 3.0[");  prefer("2.2.4")}
@@ -72,9 +73,9 @@ dependencyResolutionManagement {
         create("tests") {
             library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}
             library("junit4",        "junit",                  "junit")                  .version {strictly("4.13.2")}
-            library("junit5",        "org.junit.jupiter",      "junit-jupiter-api")      .version {strictly("5.9.3")}
-            library("junit",         "org.junit.vintage",      "junit-vintage-engine")   .version {strictly("5.9.3")}
-            library("junitLauncher", "org.junit.platform",     "junit-platform-launcher").version {strictly("1.9.3")}
+            library("junit5",        "org.junit.jupiter",      "junit-jupiter-api")      .version {strictly("5.10.1")}
+            library("junit",         "org.junit.vintage",      "junit-vintage-engine")   .version {strictly("5.10.1")}
+            library("junitLauncher", "org.junit.platform",     "junit-platform-launcher").version {strictly("1.10.1")}
             library("jama",          "gov.nist.math",          "jama")                   .version {strictly("1.0.3")}
             library("geographiclib", "net.sf.geographiclib",   "GeographicLib-Java")     .version {strictly("2.0")}
             library("slf4j",         "org.slf4j",              "slf4j-jdk14").version {

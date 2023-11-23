@@ -30,10 +30,11 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
-import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.metadata.AbstractMetadata;
+import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -139,6 +140,34 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Empty constructor for subclasses only.
      */
     protected PropertyType() {
+    }
+
+    /**
+     * Builds a {@code PropertyType} wrapper for an instance of a value object.
+     * Those property types are handled in a different way because final classes
+     * cannot implement the {@link NilObject} interface.
+     *
+     * @param  owner      the metadata providing the value object.
+     * @param  property   UML identifier of the property for which a value is provided.
+     * @param  value      the property value, or {@code null} if none.
+     * @param  mandatory  whether a value is mandatory.
+     */
+    protected PropertyType(final AbstractMetadata owner, final String property, final BoundType value, final boolean mandatory) {
+        NilReason nilReason;
+        if (value != null) {
+            nilReason = NilReason.forObject(value);
+        } else {
+            // May cause a `HashMap` to be created, so invoke only if necessary.
+            nilReason = owner.nilReasons().get(property);
+        }
+        if (mandatory && value == null && nilReason == null) {
+            nilReason = NilReason.UNKNOWN;
+        }
+        if (nilReason != null) {
+            reference = nilReason.toString();
+        } else {
+            metadata = value;
+        }
     }
 
     /**
@@ -286,6 +315,24 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             xlink.setType(XLink.Type.SIMPLE);           // The "simple" type is fixed in the "gco" schema.
         }
         return xlink;
+    }
+
+    /**
+     * Stores the reason why a mandatory attribute is left unspecified.
+     * The reason is stored in the property of the given name in the given metadata.
+     * If there is no nil reason, then this method does nothing.
+     *
+     * @param  owner     the metadata where to store the nil reason.
+     * @param  property  UML identifier of the property where to store the nil reason.
+     */
+    public final void getNilReason(final AbstractMetadata owner, final String property) {
+        final String reason = getNilReason();
+        if (reason != null) try {
+            final NilReason nilReason = NilReason.valueOf(reason);
+            owner.nilReasons().put(property, nilReason);
+        } catch (URISyntaxException e) {
+            Context.warningOccured(Context.current(), getClass(), "getNilReason", e, true);
+        }
     }
 
     /**

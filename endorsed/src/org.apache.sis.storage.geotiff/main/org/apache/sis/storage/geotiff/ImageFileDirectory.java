@@ -1406,10 +1406,8 @@ final class ImageFileDirectory extends DataCube {
          */
         if (referencing != null) {
             final GridGeometry gridGeometry = getGridGeometry();
-            if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) try {
-                metadata.addExtent(gridGeometry.getEnvelope());
-            } catch (TransformException e) {
-                listeners.warning(e);
+            if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
+                metadata.addExtent(gridGeometry.getEnvelope(), listeners);
             }
             referencing.completeMetadata(gridGeometry, metadata);
         }

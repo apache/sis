@@ -37,7 +37,7 @@
  *   <li><p>If using Derby, copy {@code derby.war} into the {@code $CATALINA_HOME/webapps} directory
  *     and specify the directory where the Derby databases are located:</p>
  *     {@snippet lang="shell" :
- *       export JAVA_OPTS=-Dderby.system.home=$SIS_DATA/Databases
+ *       export JDK_JAVA_OPTIONS=-Dderby.system.home=$SIS_DATA/Databases
  *       }
  *   </li>
  *

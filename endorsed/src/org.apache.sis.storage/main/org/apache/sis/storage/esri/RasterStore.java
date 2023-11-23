@@ -33,7 +33,6 @@ import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -175,11 +174,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         builder.addResourceScope(ScopeCode.COVERAGE, null);
         builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.METADATA);
         builder.addSpatialRepresentation(null, gridGeometry, true);
-        try {
-            builder.addExtent(gridGeometry.getEnvelope());
-        } catch (TransformException e) {
-            listeners.warning(e);
-        }
+        builder.addExtent(gridGeometry.getEnvelope(), listeners);
         /*
          * Do not invoke `getSampleDimensions()` because computing sample dimensions without statistics
          * may cause the loading of the full image. Even if `GridCoverage.getSampleDimensions()` exists

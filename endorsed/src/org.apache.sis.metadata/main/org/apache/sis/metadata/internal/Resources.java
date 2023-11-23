@@ -79,7 +79,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short ExpectedInterface_2 = 5;
 
         /**
-         * Enregistrement multilignes
+         * Multiline record
          */
         public static final short MultilineRecord = 9;
 

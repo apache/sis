@@ -16,10 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Map;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 
 /**
  * Map of property indices for a given implementation class. This map is read-only.
@@ -40,33 +36,10 @@ final class IndexMap extends PropertyMap<Integer> {
     }
 
     /**
-     * Returns the value to which the specified key is mapped, or {@code null}
-     * if this map contains no mapping for the key.
+     * Returns the index for the property at the specified index.
      */
     @Override
-    public Integer get(final Object key) {
-        if (key instanceof String) {
-            final int i = accessor.indexOf((String) key, false);
-            if (i >= 0) return i;
-        }
-        return null;
-    }
-
-    /**
-     * Returns an iterator over the entries contained in this map.
-     */
-    @Override
-    final Iterator<Map.Entry<String,Integer>> iterator() {
-        return new Iter() {
-            @Override
-            public Map.Entry<String,Integer> next() {
-                final int i = index++;
-                final String name = accessor.name(i, keyPolicy);
-                if (name != null) {
-                    return new SimpleImmutableEntry<>(name, i);
-                }
-                throw new NoSuchElementException();
-            }
-        };
+    final Integer getReflectively(final int index) {
+        return (index >= 0) ? index : null;
     }
 }

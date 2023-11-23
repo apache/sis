@@ -25,6 +25,7 @@ import org.opengis.metadata.spatial.GCPCollection;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.xml.bind.gco.GO_Integer;
 
 
 /**
@@ -49,7 +50,7 @@ import org.apache.sis.metadata.TitleProperty;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultGCP
  *
@@ -57,7 +58,7 @@ import org.apache.sis.metadata.TitleProperty;
  */
 @TitleProperty(name = "collectionName")
 @XmlType(name = "MI_GCPCollection_Type", propOrder = {
-    "collectionIdentification",
+    "identification",
     "collectionName",
     "coordinateReferenceSystem",
     "GCPs"
@@ -148,7 +149,6 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      * @return the identifier, or {@code null}.
      */
     @Override
-    @XmlElement(name = "collectionIdentification", required = true)
     public Integer getCollectionIdentification() {
         return collectionIdentification;
     }
@@ -223,5 +223,43 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      */
     public void setGCPs(final Collection<? extends GCP> newValues) {
         GCPs = writeCollection(newValues, GCPs, GCP.class);
+    }
+
+
+
+
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
+
+    /**
+     * Invoked by JAXB for fetching the value to marshal.
+     * This property is handled in a special way for allowing nil reason.
+     *
+     * @return the value to marshal.
+     */
+    @XmlElement(name = "collectionIdentification", required = true)
+    private GO_Integer getIdentification() {
+        return new GO_Integer(this, "collectionIdentification", getCollectionIdentification(), true);
+    }
+
+    /**
+     * Invoked by JAXB for setting the value.
+     * This property is handled in a special way for allowing nil reason.
+     *
+     * @param  result  the value.
+     */
+    private void setIdentification(final GO_Integer result) {
+        setCollectionIdentification(result.getElement());
+        result.getNilReason(this, "collectionIdentification");
     }
 }

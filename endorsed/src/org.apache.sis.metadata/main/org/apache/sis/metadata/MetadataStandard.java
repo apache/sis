@@ -32,13 +32,15 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.metadata.simple.SimpleCitation;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.xml.NilReason;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -89,7 +91,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * by a large amount of {@link ModifiableMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see AbstractMetadata
  *
@@ -482,7 +484,7 @@ public class MetadataStandard implements Serializable {
      * <p>This method ignores dependencies. Fallback on metadata standard dependencies shall be done by the caller.</p>
      *
      * @param  key  the standard interface or the implementation class.
-     * @return the single interface, or {@code null} if none where found.
+     * @return the single interface, or {@code null} if none was found.
      */
     private Class<?> findInterface(final CacheKey key) {
         assert key.isValid() : key;
@@ -894,42 +896,86 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
+     * Returns the reasons for all missing values of mandatory properties.
+     * The map is backed by the metadata object using Java reflection, so changes in the
+     * underlying metadata object are immediately reflected in the map and conversely.
+     * Nil reasons are determined by calls to {@link NilReason#forObject(Object)},
+     * potentially completed by an internal storage for
+     * {@linkplain NilReason#isSupported(Class) unsupported value types}.
+     *
+     * <h4>Mandatory and optional properties</h4>
+     * If a {@linkplain org.opengis.annotation.Obligation#MANDATORY mandatory} property has no value,
+     * then the property will have an entry in the map even if the associated {@link NilReason} is null.
+     * By contrast, {@linkplain org.opengis.annotation.Obligation#OPTIONAL optional} properties have
+     * entries in the map only if they have a non-null {@link NilReason}.
+     *
+     * <h4>Supported operations</h4>
+     * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
+     * remove(…)} operations if the underlying metadata object contains setter methods.
+     * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
+     *
+     * @param  metadata     the metadata object to view as a map.
+     * @param  baseType     base type of the metadata of interest, or {@code null} if unspecified.
+     * @param  keyPolicy    determines the string representation of map keys.
+     * @return a map view over the metadata object.
+     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
+     *
+     * @see AbstractMetadata#nilReasons()
+     *
+     * @since 1.5
+     */
+    public Map<String,NilReason> asNilReasonMap(final Object metadata, final Class<?> baseType,
+            final KeyNamePolicy keyPolicy) throws ClassCastException
+    {
+        ensureNonNull("metadata",  metadata);
+        ensureNonNull("keyPolicy", keyPolicy);
+        return new NilReasonMap(metadata, getAccessor(new CacheKey(metadata.getClass(), baseType), true), keyPolicy);
+    }
+
+    /**
      * Returns the specified metadata object as a tree table.
      * The tree table is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
-     * <p>The returned {@code TreeTable} instance contains the following columns:</p>
+     * <p>The returned {@code TreeTable} instance contains the columns listed below.
+     * The {@code (IDENTIFIER, INDEX)} pair of columns can be used as a primary key for uniquely identifying
+     * a node in a list of children. That uniqueness is guaranteed only for the children of a given node.
+     * The same keys may appear in the children of any other nodes.</p>
+     *
      * <ul class="verbose">
-     *   <li>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
+     *   <li>{@link TableColumn#IDENTIFIER}<br>
      *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
      *       or the Java Beans property name otherwise, of a metadata property. For example
      *       in a tree table view of {@link org.apache.sis.metadata.iso.citation.DefaultCitation},
      *       there is a node having the {@code "title"} identifier.</li>
      *
-     *   <li>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
+     *   <li>{@link TableColumn#INDEX}<br>
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example, in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and another node with index 1 for the second element.
+     *       for the first element and another node with index 1 for the second element.</li>
      *
-     *       <div class="note"><b>Note:</b>
-     *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
-     *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
-     *       the same keys may appear in the children of any other nodes.</div></li>
-     *
-     *   <li>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
+     *   <li>{@link TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
      *       This is the column shown in the default {@link #toString()} implementation and
      *       may be localizable.</li>
      *
-     *   <li>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
+     *   <li>{@link TableColumn#TYPE}<br>
      *       The base type of the value (usually an interface).</li>
      *
-     *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
+     *   <li>{@link TableColumn#OBLIGATION}<br>
+     *       Whether the property is mandatory, optional or conditional.</li>
+     *
+     *   <li>{@link TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying
      *       metadata class have a setter method for the property represented by the node.</li>
      *
-     *   <li>{@link org.apache.sis.util.collection.TableColumn#REMARKS}<br>
+     *   <li>{@code NIL_REASON}<br>
+     *       If the property is mandatory and nevertheless absent, the reason why.
+     *       This column is included only if {@code valuePolicy} accepts nil values.
+     *       Values are instances of {@link NilReason}.</li>
+     *
+     *   <li>{@link TableColumn#REMARKS}<br>
      *       Remarks or warning on the property value. This is rarely present.
      *       It is provided when the value may look surprising, for example the longitude values
      *       in a geographic bounding box crossing the anti-meridian.</li>

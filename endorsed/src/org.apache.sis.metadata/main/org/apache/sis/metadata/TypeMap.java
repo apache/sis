@@ -16,10 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Map;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 
 /**
  * Map of property valuePolicy for a given implementation class. This map is read-only.
@@ -32,7 +28,7 @@ final class TypeMap extends PropertyMap<Class<?>> {
     /**
      * The kind of values in this map.
      */
-    final TypeValuePolicy valuePolicy;
+    private final TypeValuePolicy valuePolicy;
 
     /**
      * Creates a type map for the specified accessor.
@@ -47,31 +43,10 @@ final class TypeMap extends PropertyMap<Class<?>> {
     }
 
     /**
-     * Returns the value to which the specified key is mapped, or {@code null}
-     * if this map contains no mapping for the key.
+     * Returns the type for the property at the specified index.
      */
     @Override
-    public Class<?> get(final Object key) {
-        if (key instanceof String) {
-            return accessor.type(accessor.indexOf((String) key, false), valuePolicy);
-        }
-        return null;
-    }
-
-    /**
-     * Returns an iterator over the entries contained in this map.
-     */
-    @Override
-    final Iterator<Map.Entry<String,Class<?>>> iterator() {
-        return new Iter() {
-            @Override
-            public Map.Entry<String,Class<?>> next() {
-                if (index >= accessor.count()) {
-                    throw new NoSuchElementException();
-                }
-                final Class<?> value = accessor.type(index, valuePolicy);
-                return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);
-            }
-        };
+    final Class<?> getReflectively(final int index) {
+        return accessor.type(index, valuePolicy);
     }
 }

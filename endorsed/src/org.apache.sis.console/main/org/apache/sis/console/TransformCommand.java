@@ -162,11 +162,7 @@ final class TransformCommand extends FormattedOutputCommand {
      * @throws FactoryException if the operation failed for another reason.
      */
     private CoordinateReferenceSystem fetchCRS(final Option option) throws InvalidOptionException, FactoryException, DataStoreException {
-        final String identifier = options.get(option);
-        if (identifier == null) {
-            final String name = option.label();
-            throw new InvalidOptionException(Errors.format(Errors.Keys.MissingValueForOption_1, name), name);
-        }
+        final String identifier = getMandatoryOption(option);
         if (CodeType.guess(identifier).isCRS) try {
             return CRS.forCode(identifier);
         } catch (NoSuchAuthorityCodeException e) {

@@ -40,7 +40,7 @@
  * @author  Guilhem Legal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlSchema(location="https://schemas.isotc211.org/19157/-2/mdq/1.0/mdq.xsd",
@@ -68,7 +68,6 @@
     @XmlJavaTypeAdapter(DQM_Parameter.class),
     @XmlJavaTypeAdapter(DQM_SourceReference.class),
     @XmlJavaTypeAdapter(DQM_ValueStructure.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class),
     @XmlJavaTypeAdapter(GO_Temporal.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),

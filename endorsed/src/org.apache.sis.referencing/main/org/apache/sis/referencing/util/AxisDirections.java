@@ -94,6 +94,14 @@ public final class AxisDirections extends Static {
     public static final AxisDirection STARBOARD = AxisDirection.valueOf("STARBOARD");
 
     /**
+     * Port direction.
+     * For an observer at the centre of the object this will be towards its left.
+     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
+     */
+    @UML(identifier="port", obligation=CONDITIONAL, specification=ISO_19162)
+    public static final AxisDirection PORT = AxisDirection.valueOf("PORT");
+
+    /**
      * Direction of geographic angles (bearing).
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      */

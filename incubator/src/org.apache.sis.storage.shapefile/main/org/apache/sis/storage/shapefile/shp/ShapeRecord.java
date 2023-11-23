@@ -16,14 +16,15 @@
  */
 package org.apache.sis.storage.shapefile.shp;
 
+import java.awt.geom.Rectangle2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import org.apache.sis.geometry.Envelope2D;
 
 /**
  * @author Johann Sorel (Geomatys)
@@ -45,20 +46,33 @@ public final class ShapeRecord {
 
     /**
      * Read this shape record.
+     *
      * @param channel input channel, not null
+     * @param io geometry decoder, if null gemetry content will be stored in content array, otherwise geometry will be parsed
+     * @param filter optional filter envelope to stop geometry decoding as soon as possible
+     * @return true if geometry pass the filter or if there is no filter
      * @throws IOException if an error occurred while reading.
      */
-    public void read(final ChannelDataInput channel) throws IOException {
+    public boolean read(final ChannelDataInput channel, ShapeGeometryEncoder io, Rectangle2D.Double filter) throws IOException {
+        if (io == null && filter != null) throw new IllegalArgumentException("filter must be null if encoder is null");
+
         channel.buffer.order(ByteOrder.BIG_ENDIAN);
         recordNumber = channel.readInt();
-        content = channel.readBytes(channel.readInt() * 2); // x2 because size is in 16bit words
-    }
-
-    public void parseGeometry(ShapeGeometryEncoder io) throws IOException {
-        final ChannelDataInput di = new ChannelDataInput("", ByteBuffer.wrap(content));
-        di.buffer.order(ByteOrder.LITTLE_ENDIAN);
-        int shapeType = di.readInt();
-        io.decode(di,this);
+        final int byteSize = channel.readInt() * 2; // x2 because size is in 16bit words
+        final long position = channel.getStreamPosition();
+        channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
+        final int shapeType = channel.readInt();
+        if (io == null) {
+            content = channel.readBytes(byteSize);
+            return true;
+        } else {
+            final boolean match = io.decode(channel,this, filter);
+            if (!match) {
+                //move to record end
+                channel.seek(position + byteSize);
+            }
+            return match;
+        }
     }
 
     /**

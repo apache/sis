@@ -34,7 +34,7 @@
  *
  * Then the command can be used as below on Unix systems:
  *
- * <pre>java -classpath main/build/classes/java/main org.apache.sis.buildtools.book.Assembler site</pre>
+ * <pre>java -classpath main/buildSrc/build/libs/buildSrc.jar org.apache.sis.buildtools.book.Assembler site</pre>
  *
  * <h2>Future evolution</h2>
  * We may replace (at least partially) this tools by some more advanced open-source alternatives.

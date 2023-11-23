@@ -87,7 +87,7 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefin
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlTransient
@@ -126,9 +126,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * Whether this metadata has been made unmodifiable, as one of {@link #EDITABLE}, {@link #FREEZING}
      * {@link #COMPLETABLE} or {@link #FINAL} values.
      *
-     * <p>This field is not yet serialized because we are not sure to keep this information as a byte in
-     * the future. We could for example use an {@code int} and use remaining bits for caching hash-code
-     * value of final metadata.</p>
+     * <h4>Serialization</h4>
+     * This field must be declared transient for preventing JAXB to inherit it in subclasses annotated
+     * with {@code @XmlAccessorType(XmlAccessType.FIELD)}. Furthermore, serializing the byte value would
+     * not be future-proof.
      */
     private transient byte state;
 
@@ -137,6 +138,18 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * The initial state is {@link State#EDITABLE}.
      */
     protected ModifiableMetadata() {
+    }
+
+    /**
+     * Creates an initially empty metadata with nil reasons copied from the given object.
+     * The given object should be a metadata of the same class.
+     *
+     * @param  source  the metadata from which to copy nil reasons, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    protected ModifiableMetadata(final Object source) {
+        super(source);
     }
 
     /**

@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import org.opengis.annotation.UML;
+import org.opengis.annotation.Obligation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Classes;
@@ -237,8 +238,8 @@ class PropertyAccessor {
         this.type           = type;
         this.implementation = implementation;
         this.getters        = getGetters(type, implementation, standardImpl);
-        int allCount = getters.length;
-        int standardCount = allCount;
+        int allCount        = getters.length;
+        int standardCount   = allCount;
         if (allCount != 0 && getters[allCount-1] == EXTRA_GETTER) {
             if (!EXTRA_GETTER.getDeclaringClass().isAssignableFrom(implementation)) {
                 allCount--;                                 // The extra getter method does not exist.
@@ -310,7 +311,7 @@ class PropertyAccessor {
                  * be a parent type.
                  *
                  * It is a necessary condition that the type returned by the getter is assignable
-                 * to the type expected by the setter.  This contract is required by the 'FINAL'
+                 * to the type expected by the setter.  This contract is required by the `FINAL`
                  * state among others.
                  */
                 try {
@@ -329,7 +330,7 @@ class PropertyAccessor {
                     } catch (NoSuchMethodException ignore) {
                         /*
                          * There is no setter, which may be normal. At this stage
-                         * the 'setter' variable should still have the null value.
+                         * the `setter` variable should still have the null value.
                          */
                     }
                 }
@@ -516,6 +517,22 @@ class PropertyAccessor {
             }
         }
         return index;
+    }
+
+    /**
+     * Returns whether the property at the given index is mandatory, optional or conditional.
+     *
+     * @param  index  the index of the property for which to get the obligation.
+     * @return the obligation at the given index, or {@code null} if none or if the index is out of bounds.
+     */
+    final Obligation obligation(final int index) {
+        if (index >= 0 && index < names.length) {
+            final UML uml = getters[index].getAnnotation(UML.class);
+            if (uml != null) {
+                return uml.obligation();
+            }
+        }
+        return null;
     }
 
     /**
@@ -751,7 +768,7 @@ class PropertyAccessor {
             }
         } catch (IllegalAccessException e) {
             /*
-             * Should never happen since 'getters' should contain only public methods.
+             * Should never happen since `getters` should contain only public methods.
              */
             throw new AssertionError(method.toString(), e);
         } catch (InvocationTargetException e) {
@@ -850,7 +867,7 @@ class PropertyAccessor {
                 }
                 /*
                  * Converts the new value to a type acceptable for the setter method (if possible).
-                 * If the new value is a singleton while the expected type is a collection, then the 'convert'
+                 * If the new value is a singleton while the expected type is a collection, then the `convert`
                  * method added the singleton in the existing collection, which may result in no change if the
                  * collection is a Set and the new value already exists in that Set. If we detect that there is
                  * no change, then we don't need to invoke the setter method. Note that we conservatively assume
@@ -862,7 +879,7 @@ class PropertyAccessor {
                     changed = (mode == RETURN_NULL) || (mode == IGNORE_READ_ONLY) || (newValues[0] != oldValue);
                     if (changed && mode == APPEND && !isNullOrEmpty(oldValue)) {
                         /*
-                         * If 'convert' did not added the value in a collection and if a value already
+                         * If `convert` did not added the value in a collection and if a value already
                          * exists, do not modify the existing value. Exit now with "no change" status.
                          */
                         return null;
@@ -904,7 +921,7 @@ class PropertyAccessor {
         try {
             setter.invoke(metadata, newValues);
         } catch (IllegalAccessException e) {
-            // Should never happen since 'setters' should contain only public methods.
+            // Should never happen since `setters` should contain only public methods.
             throw new AssertionError(e);
         } catch (InvocationTargetException e) {
             final Throwable cause = e.getTargetException();
@@ -1036,11 +1053,11 @@ class PropertyAccessor {
             }
             /*
              * We now have objects of the appropriate type. If we have a singleton to be added
-             * in an existing collection, add it now. In that case the 'newValue' should refer
-             * to the 'addTo' collection. We rely on the ModifiableMetadata.writeCollection(…)
+             * in an existing collection, add it now. In that case the `newValue` should refer
+             * to the `addTo` collection. We rely on the ModifiableMetadata.writeCollection(…)
              * optimization for detecting that the new collection is the same instance than
              * the old one so there is nothing to do. We could exit from the method, but let
-             * it continues in case the user override the 'setFoo(…)' method.
+             * it continues in case the user override the `setFoo(…)` method.
              */
             if (addTo != null) {
                 /*
@@ -1131,7 +1148,7 @@ class PropertyAccessor {
             return count();
         }
         int count = 0;
-        // Use 'standardCount' instead of 'allCount' for ignoring deprecated methods.
+        // Use `standardCount` instead of `allCount` for ignoring deprecated methods.
         for (int i=0; i<standardCount; i++) {
             final Object value = get(getters[i], metadata);
             if (!valuePolicy.isSkipped(value)) {
@@ -1146,7 +1163,7 @@ class PropertyAccessor {
                     case COUNT_DEEP: {
                         /*
                          * Count always at least one element because if the user wanted to skip null or empty
-                         * collections, then 'valuePolicy.isSkipped(value)' above would have returned 'true'.
+                         * collections, then `valuePolicy.isSkipped(value)` above would have returned `true`.
                          */
                         count += isCollectionOrMap(i) ? Math.max(CollectionsExt.size(value), 1) : 1;
                         break;

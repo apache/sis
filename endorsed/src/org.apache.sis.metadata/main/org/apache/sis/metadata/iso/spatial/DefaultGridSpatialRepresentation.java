@@ -26,6 +26,7 @@ import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.Georectified;
 import org.opengis.metadata.spatial.Georeferenceable;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
+import org.apache.sis.xml.bind.gco.GO_Integer;
 import org.apache.sis.measure.ValueRange;
 
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
@@ -55,11 +56,11 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositi
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "MD_GridSpatialRepresentation_Type", propOrder = {
-    "numberOfDimensions",
+    "dimensions",
     "axisDimensionProperties",
     "cellGeometry",
     "transformationParameterAvailable"
@@ -190,7 +191,6 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      */
     @Override
     @ValueRange(minimum = 0)
-    @XmlElement(name = "numberOfDimensions", required = true)
     public Integer getNumberOfDimensions() {
         return numberOfDimensions;
     }
@@ -279,5 +279,43 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
         } else {
             booleans &= ~TRANSFORMATION_MASK;
         }
+    }
+
+
+
+
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
+
+    /**
+     * Invoked by JAXB for fetching the value to marshal.
+     * This property is handled in a special way for allowing nil reason.
+     *
+     * @return the value to marshal.
+     */
+    @XmlElement(name = "numberOfDimensions", required = true)
+    private GO_Integer getDimensions() {
+        return new GO_Integer(this, "numberOfDimensions", getNumberOfDimensions(), true);
+    }
+
+    /**
+     * Invoked by JAXB for setting the value.
+     * This property is handled in a special way for allowing nil reason.
+     *
+     * @param  result  the value.
+     */
+    private void setDimensions(final GO_Integer result) {
+        setNumberOfDimensions(result.getElement());
+        result.getNilReason(this, "numberOfDimensions");
     }
 }

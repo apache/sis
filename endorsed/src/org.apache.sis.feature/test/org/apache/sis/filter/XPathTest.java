@@ -22,7 +22,7 @@ import org.apache.sis.filter.internal.XPath;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -38,13 +38,41 @@ public final class XPathTest extends TestCase {
     }
 
     /**
-     * Tests {@link XPath#split(String)}.
+     * Splits a XPath and verifies the result.
+     *
+     * @param xpath       the XPath to parse.
+     * @param isAbsolute  expected value if {@link XPath#isAbsolute}.
+     * @param path        expected value if {@link XPath#path}. Can be null.
+     * @param tip         expected value if {@link XPath#tip}.
+     */
+    private static void split(final String xpath, final boolean isAbsolute, final String[] path, final String tip) {
+        final var p = new XPath(xpath);
+        assertEquals(isAbsolute, p.isAbsolute, "isAbsolute");
+        assertArrayEquals(path, (p.path != null) ? p.path.toArray() : null, "path");
+        assertEquals(tip, p.tip, "tip");
+        assertEquals(xpath.replace(" ", ""), p.toString(), "toString()");
+    }
+
+    /**
+     * Tests {@link XPath#XPath(String)}.
      */
     @Test
     public void testSplit() {
-        assertNull(XPath.split("property"));
-        assertArrayEquals(new String[] {"/property"},                    XPath.split("/property").toArray());
-        assertArrayEquals(new String[] {"Feature", "property", "child"}, XPath.split("Feature/property/child").toArray());
-        assertArrayEquals(new String[] {"/Feature", "property"},         XPath.split("/Feature/property").toArray());
+        split("property", false, null, "property");
+        split("/property", true, null, "property");
+        split("Feature/property/child",         false, new String[] {"Feature",  "property"}, "child");
+        split("/Feature/property",              true,  new String[] {"Feature"}, "property");
+        split("  Feature  / property / child ", false, new String[] {"Feature",  "property"}, "child");
+        split("  / Feature /  property ",       true,  new String[] {"Feature"}, "property");
+    }
+
+    /**
+     * Tests with a XPath containing an URL as the property namespace.
+     */
+    @Test
+    public void testQualifiedName() {
+        split("Q{http://example.com/foo/bar}property",       false, null,         "http://example.com/foo/bar:property");
+        split("/Q{http://example.com/foo/bar}property",      true,  null,         "http://example.com/foo/bar:property");
+        split("Q{http://example.com/foo/bar}property/child", false, new String[] {"http://example.com/foo/bar:property"}, "child");
     }
 }

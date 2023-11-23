@@ -72,7 +72,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * at the Java Virtual Machine startup time. See {@linkplain org.apache.sis.console package javadoc} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.5
  * @since   0.3
  */
 public final class Command {
@@ -157,6 +157,7 @@ public final class Command {
                 case "crs":        command = new CRSCommand       (commandIndex, args); break;
                 case "identifier": command = new IdentifierCommand(commandIndex, args); break;
                 case "transform":  command = new TransformCommand (commandIndex, args); break;
+                case "translate":  command = new TranslateCommand (commandIndex, args); break;
                 default: throw new InvalidCommandException(Errors.format(
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
@@ -278,6 +279,7 @@ public final class Command {
         } catch (Exception e) {
             status = exitCodeFor(e);
         }
+        c.command.flush();
         if (status != 0) {
             System.exit(status);
         }

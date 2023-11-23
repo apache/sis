@@ -36,7 +36,6 @@ import javax.imageio.stream.ImageInputStream;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.Resource;
@@ -46,7 +45,6 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.internal.Resources;
@@ -539,15 +537,13 @@ loop:   for (int convention=0;; convention++) {
             builder.addResourceScope(ScopeCode.COVERAGE, null);
             builder.addSpatialRepresentation(null, getGridGeometry(MAIN_IMAGE), true);
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
-                builder.addExtent(gridGeometry.getEnvelope());
+                builder.addExtent(gridGeometry.getEnvelope(), listeners);
             }
             addTitleOrIdentifier(builder);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();
         } catch (IOException e) {
             throw new DataStoreException(e);
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
         }
         return metadata;
     }

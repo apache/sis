@@ -23,6 +23,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.apache.sis.xml.bind.gco.GO_Integer;
 import org.apache.sis.xml.bind.gco.GO_Measure;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.TitleProperty;
@@ -55,13 +56,13 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositi
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @TitleProperty(name = "dimensionName")
 @XmlType(name = "MD_Dimension_Type", propOrder = {
     "dimensionName",
-    "dimensionSize",
+    "size",
     "resolution",
     "dimensionTitle",
     "dimensionDescription"
@@ -200,7 +201,6 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      */
     @Override
     @ValueRange(minimum = 0)
-    @XmlElement(name = "dimensionSize", required = true)
     public Integer getDimensionSize() {
         return dimensionSize;
     }
@@ -297,5 +297,43 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     public void setDimensionDescription(final InternationalString newValue) {
         checkWritePermission(dimensionDescription);
         dimensionDescription = newValue;
+    }
+
+
+
+
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
+
+    /**
+     * Invoked by JAXB for fetching the value to marshal.
+     * This property is handled in a special way for allowing nil reason.
+     *
+     * @return the value to marshal.
+     */
+    @XmlElement(name = "dimensionSize", required = true)
+    private GO_Integer getSize() {
+        return new GO_Integer(this, "dimensionSize", getDimensionSize(), true);
+    }
+
+    /**
+     * Invoked by JAXB for setting the value.
+     * This property is handled in a special way for allowing nil reason.
+     *
+     * @param  result  the value.
+     */
+    private void setSize(final GO_Integer result) {
+        setDimensionSize(result.getElement());
+        result.getNilReason(this, "dimensionSize");
     }
 }

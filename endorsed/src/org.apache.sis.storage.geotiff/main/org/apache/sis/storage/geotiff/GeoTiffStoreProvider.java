@@ -53,7 +53,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  */
 @StoreMetadata(formatName    = Constants.GEOTIFF,
                fileSuffixes  = {"tiff", "tif"},
-               capabilities  = {Capability.READ, Capability.WRITE},
+               capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
                resourceTypes = {Aggregate.class, GridCoverageResource.class})
 public class GeoTiffStoreProvider extends DataStoreProvider {
     /**
@@ -162,6 +162,9 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
+        if (URIDataStore.Provider.isWritable(connector, false)) {
+            return new WritableStore(this, connector);
+        }
         return new GeoTiffStore(this, connector);
     }
 

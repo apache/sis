@@ -24,7 +24,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * An empty {@link InternationalString} which is nil for the given reason.
+ * An empty {@code InternationalString} which is nil for the given reason.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

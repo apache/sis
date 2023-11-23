@@ -716,7 +716,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * <ul>
      *   <li>If the expression is an instance of {@link ValueReference}, the name of the
-     *       property referenced by the {@linkplain ValueReference#getXPath() x-path}.</li>
+     *       property referenced by the {@linkplain ValueReference#getXPath() XPath}.</li>
      *   <li>Otherwise the localized string "Unnamed #1" with increasing numbers.</li>
      * </ul>
      *
@@ -779,7 +779,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                     name = valueType.getProperty(xpath).getName();
                     if (name == null || !names.add(name.toString())) {
                         name = null;
-                        xpath = xpath.substring(xpath.lastIndexOf(XPath.SEPARATOR) + 1);  // Works also if '/' is not found.
+                        xpath = new XPath(xpath).tip;
                         if (!(xpath.isEmpty() || names.contains(xpath))) {
                             text = xpath;
                         }

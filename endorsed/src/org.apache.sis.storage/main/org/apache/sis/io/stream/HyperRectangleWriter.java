@@ -37,7 +37,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class HyperRectangleWriter {
+public class HyperRectangleWriter {
     /**
      * Index of the first value to use in the array given to write methods.
      */
@@ -46,7 +46,7 @@ public final class HyperRectangleWriter {
     /**
      * Number of elements that can be written in a single I/O operation.
      */
-    private final int contiguousDataLength;
+    final int contiguousDataLength;
 
     /**
      * Number of elements to write in each dimension after the contiguous dimensions, in reverse order.
@@ -127,9 +127,16 @@ public final class HyperRectangleWriter {
          * A length greater than one means that the {@link HyperRectangleWriter} instance
          * created by this builder will need to be invoked repetitively for each bank.
          *
-         * @see bankIndices()
+         * @see #bankIndices()
          */
         private int[] bankIndices;
+
+        /**
+         * The offset to add to each bank. This is in addition of offsets declared in {@link DataBuffer#getOffsets()}.
+         *
+         * @see #bankOffsets()
+         */
+        private int[] bankOffsets;
 
         /**
          * Subregion to write, or {@code null} for writing the whole raster.
@@ -171,10 +178,13 @@ public final class HyperRectangleWriter {
 
         /**
          * Creates a new writer for raster data described by the given sample model and strides.
-         * If the {@link #region} is non-null, it specifies a subset of the data to write.
+         * The {@link #pixelStride} and {@link #scanlineStride} fields must be set before this method is invoked.
+         *
+         * @param  sm           the sample model of the rasters to write.
+         * @param  bandOffsets  bands to read, or {@code null} for all of them in same order.
+         * @return writer for rasters using the specified sample model.
          */
-        private HyperRectangleWriter create(final SampleModel sm, final int subX) {
-            final int[]  subsampling = {subX, 1};
+        private HyperRectangleWriter create(final SampleModel sm, final int[] bandOffsets) {
             final long[] sourceSize  = {scanlineStride, sm.getHeight()};
             if (region == null) {
                 region = new Rectangle(sm.getWidth(), sm.getHeight());
@@ -189,55 +199,47 @@ public final class HyperRectangleWriter {
             };
             regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
             regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
-            var subset = new Region(sourceSize, regionLower, regionUpper, subsampling);
+            var subset = new Region(sourceSize, regionLower, regionUpper, new int[] {1,1});
             length = subset.length;
-            return new HyperRectangleWriter(subset);
+            if (bandOffsets == null || (bandOffsets.length == pixelStride && ArraysExt.isRange(0, bandOffsets))) {
+                return new HyperRectangleWriter(subset);
+            } else {
+                return new SubsampledRectangleWriter(subset, bandOffsets, pixelStride);
+            }
         }
 
         /**
          * Creates a new writer for raster data described by the given sample model.
-         * This method supports only the writing of either a single band, or all bands
-         * in the order they appear in the array.
-         *
-         * <p>The returned writer will need to be applied repetitively for each bank
-         * if {@link #bankIndices()} returns an array with a length greater than one.</p>
+         * The returned writer will need to be applied repetitively for each bank
+         * if {@link #bankIndices()} returns an array with a length greater than one.
          *
          * @param  sm  the sample model of the rasters to write.
          * @return writer, or {@code null} if the given sample model is not supported.
          */
         public HyperRectangleWriter create(final ComponentSampleModel sm) {
+            int[] bandOffsets;
             pixelStride    = sm.getPixelStride();
             scanlineStride = sm.getScanlineStride();
             bankIndices    = sm.getBankIndices();
-            final int[] d  = sm.getBandOffsets();
-            final int subX;
+            bandOffsets    = sm.getBandOffsets();
             if (ArraysExt.allEquals(bankIndices, bankIndices[0])) {
                 /*
                  * PixelInterleavedSampleModel (at least conceptually, no matter the actual type).
-                 * The returned `HyperRectangleWriter` instance will write all sample values in a
-                 * single call to a `write(…)` method, no matter the actual number of bands.
+                 * The returned `HyperRectangleWriter` instance may write all sample values in a
+                 * single call to a `write(…)` method, even if there is many bands.
                  */
                 bankIndices = ArraysExt.resize(bankIndices, 1);
-                if (d.length == pixelStride && ArraysExt.isRange(0, d)) {
-                    subX = 1;
-                } else if (d.length == 1) {
-                    subX = pixelStride;
-                } else {
-                    return null;
-                }
+                bankOffsets = new int[1];
             } else {
                 /*
                  * BandedSampleModel (at least conceptually, no matter the actual type).
                  * The returned `HyperRectangleWriter` instance will need to be used
                  * repetitively by the caller.
                  */
-                if (ArraysExt.allEquals(d, 0)) {
-                    subX = 1;
-                } else {
-                    return null;
-                }
+                bankOffsets = bandOffsets;
+                bandOffsets = null;
             }
-            return create(sm, subX);
+            return create(sm, bandOffsets);
         }
 
         /**
@@ -249,13 +251,14 @@ public final class HyperRectangleWriter {
          */
         public HyperRectangleWriter create(final SinglePixelPackedSampleModel sm) {
             bankIndices    = new int[1];   // Length is NOT the number of bands.
+            bankOffsets    = bankIndices;
             pixelStride    = 1;
             scanlineStride = sm.getScanlineStride();
             final int[] d  = sm.getBitMasks();
             if (d.length == 1) {
                 final long mask = (1L << DataBuffer.getDataTypeSize(sm.getDataType())) - 1;
                 if ((d[0] & mask) == mask) {
-                    return create(sm, 1);
+                    return create(sm, null);
                 }
             }
             return null;
@@ -270,13 +273,14 @@ public final class HyperRectangleWriter {
          */
         public HyperRectangleWriter create(final MultiPixelPackedSampleModel sm) {
             bankIndices    = new int[1];   // Length is NOT the number of bands.
+            bankOffsets    = bankIndices;
             pixelStride    = 1;
             scanlineStride = sm.getScanlineStride();
             final int[] d  = sm.getSampleSize();
             if (d.length == 1) {
                 final int size = DataBuffer.getDataTypeSize(sm.getDataType());
                 if (d[0] == size && sm.getPixelBitStride() == size) {
-                    return create(sm, 1);
+                    return create(sm, null);
                 }
             }
             return null;
@@ -350,6 +354,17 @@ public final class HyperRectangleWriter {
         public int[] bankIndices() {
             return bankIndices;
         }
+
+        /**
+         * Returns the offset to add to each bank to write with {@code HyperRectangleWriter}.
+         * This is in addition of offsets declared in {@link DataBuffer#getOffsets()}.
+         *
+         * @return offsets of all banks to write with {@code HyperRectangleWriter}.
+         */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        public int[] bankOffsets() {
+            return bankOffsets;
+        }
     }
 
     /**
@@ -358,7 +373,7 @@ public final class HyperRectangleWriter {
      * @param  offset  offset supplied by the useR.
      * @return offset to use.
      */
-    private int startAt(final int offset) {
+    final int startAt(final int offset) {
         return Math.addExact(startAt, offset);
     }
 
@@ -367,7 +382,7 @@ public final class HyperRectangleWriter {
      *
      * @return number of I/O operations to apply.
      */
-    private int[] count() {
+    final int[] count() {
         return remaining.clone();
     }
 
@@ -377,7 +392,7 @@ public final class HyperRectangleWriter {
      * @param  count  array of counters to update in-place.
      * @return next offset, or -1 if the iteration is finished.
      */
-    private int next(int offset, final int[] count) {
+    final int next(int offset, final int[] count) {
         for (int i = count.length; --i >= 0;) {
             if (--count[i] >= 0) {
                 return offset + strides[i];
@@ -412,7 +427,8 @@ public final class HyperRectangleWriter {
      *
      * @param  output  where to write data.
      * @param  data    data of the hyper-rectangle.
-     * @param  offset  offset to add to array index.
+     * @param  offset  index of the first data element to write.
+     * @param  direct  whether to write directly to the channel if possible.
      * @throws IOException if an error occurred while writing the data.
      */
     public void write(final ChannelDataOutput output, final byte[] data, int offset, final boolean direct) throws IOException {
@@ -442,7 +458,7 @@ public final class HyperRectangleWriter {
      *
      * @param  output  where to write data.
      * @param  data    data of the hyper-rectangle.
-     * @param  offset  offset to add to array index.
+     * @param  offset  index of the first data element to write.
      * @throws IOException if an error occurred while writing the data.
      */
     public void write(final ChannelDataOutput output, final short[] data, int offset) throws IOException {
@@ -457,7 +473,7 @@ public final class HyperRectangleWriter {
      *
      * @param  output  where to write data.
      * @param  data    data of the hyper-rectangle.
-     * @param  offset  offset to add to array index.
+     * @param  offset  index of the first data element to write.
      * @throws IOException if an error occurred while writing the data.
      */
     public void write(final ChannelDataOutput output, final int[] data, int offset) throws IOException {
@@ -472,7 +488,7 @@ public final class HyperRectangleWriter {
      *
      * @param  output  where to write data.
      * @param  data    data of the hyper-rectangle.
-     * @param  offset  offset to add to array index.
+     * @param  offset  index of the first data element to write.
      * @throws IOException if an error occurred while writing the data.
      */
     public void write(final ChannelDataOutput output, final long[] data, int offset) throws IOException {
@@ -487,7 +503,7 @@ public final class HyperRectangleWriter {
      *
      * @param  output  where to write data.
      * @param  data    data of the hyper-rectangle.
-     * @param  offset  offset to add to array index.
+     * @param  offset  index of the first data element to write.
      * @throws IOException if an error occurred while writing the data.
      */
     public void write(final ChannelDataOutput output, final float[] data, int offset) throws IOException {
@@ -502,7 +518,7 @@ public final class HyperRectangleWriter {
      *
      * @param  output  where to write data.
      * @param  data    data of the hyper-rectangle.
-     * @param  offset  offset to add to array index.
+     * @param  offset  index of the first data element to write.
      * @throws IOException if an error occurred while writing the data.
      */
     public void write(final ChannelDataOutput output, final double[] data, int offset) throws IOException {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.internal;
+package org.apache.sis.storage.base;
 
 import java.util.Locale;
 import java.io.IOException;
@@ -34,6 +34,7 @@ import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.ResourceAlreadyExistsException;
 import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.WritableGridCoverageResource;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
@@ -52,11 +53,11 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class WritableResourceSupport implements Localized {
+public final class WritableGridCoverageSupport implements Localized {
     /**
      * The resource where to write.
      */
-    private final GridCoverageResource resource;
+    private final GridCoverageResource target;
 
     /**
      * {@code true} if the {@link WritableGridCoverageResource.CommonOption.REPLACE} option has been specified.
@@ -73,11 +74,11 @@ public final class WritableResourceSupport implements Localized {
     /**
      * Creates a new helper class for the given options.
      *
-     * @param  resource  the resource where to write.
-     * @param  options   configuration of the write operation.
+     * @param  target   the resource where to write.
+     * @param  options  configuration of the write operation.
      */
-    public WritableResourceSupport(final GridCoverageResource resource, final WritableGridCoverageResource.Option[] options) {
-        this.resource = resource;
+    public WritableGridCoverageSupport(final GridCoverageResource target, final WritableGridCoverageResource.Option[] options) {
+        this.target = target;
         ArgumentChecks.ensureNonNull("options", options);
         for (final WritableGridCoverageResource.Option option : options) {
             replace |= WritableGridCoverageResource.CommonOption.REPLACE.equals(option);
@@ -91,13 +92,11 @@ public final class WritableResourceSupport implements Localized {
     }
 
     /**
-     * Returns the locale used by the resource for error messages, or {@code null} if unknown.
-     *
-     * @return the locale used by the resource for error messages, or {@code null} if unknown.
+     * {@return the locale used by the target resource for error messages, or {@code null} if unknown}.
      */
     @Override
     public final Locale getLocale() {
-        return (resource instanceof Localized) ? ((Localized) resource).getLocale() : null;
+        return (target instanceof Localized) ? ((Localized) target).getLocale() : null;
     }
 
     /**
@@ -144,7 +143,7 @@ public final class WritableResourceSupport implements Localized {
         } else if (replace || isEmpty(input)) {
             return true;
         } else {
-            Object identifier = resource.getIdentifier().orElse(null);
+            Object identifier = target.getIdentifier().orElse(null);
             if (identifier == null && input != null) identifier = input.filename;
             throw new ResourceAlreadyExistsException(Resources.forLocale(getLocale())
                     .getString(Resources.Keys.ResourceAlreadyExists_1, identifier));
@@ -175,7 +174,7 @@ public final class WritableResourceSupport implements Localized {
      * @throws DataStoreException if an error occurred while reading or updating the coverage.
      */
     public final GridCoverage update(final GridCoverage coverage) throws DataStoreException {
-        final GridCoverage existing = resource.read(null, null);
+        final GridCoverage existing = target.read(null, null);
         final CoverageCombiner combiner = new CoverageCombiner(existing);
         try {
             if (!combiner.acceptAll(coverage)) {
@@ -217,8 +216,8 @@ public final class WritableResourceSupport implements Localized {
      * @throws DataStoreException if an error occurred while preparing the error message.
      */
     public final String canNotWrite() throws DataStoreException {
-        Object identifier = resource.getIdentifier().orElse(null);
-        if (identifier == null) identifier = Classes.getShortClassName(resource);
+        Object identifier = target.getIdentifier().orElse(null);
+        if (identifier == null) identifier = Classes.getShortClassName(target);
         return Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotWriteResource_1, identifier);
     }
 

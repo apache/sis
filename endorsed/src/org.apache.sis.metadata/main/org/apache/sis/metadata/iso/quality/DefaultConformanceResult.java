@@ -23,6 +23,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.xml.bind.gco.GO_Boolean;
 
 
 /**
@@ -48,13 +49,13 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "DQ_ConformanceResult_Type", propOrder = {
     "specification",
     "explanation",
-    "pass"
+    "result"
 })
 @XmlRootElement(name = "DQ_ConformanceResult")
 public class DefaultConformanceResult extends AbstractResult implements ConformanceResult {
@@ -77,11 +78,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Indication of the conformance result.
-     *
-     * <p>The field is directly annotated here, because the getter method is called {@link #pass()},
-     * and JAXB does not recognize it. The method should have been called getPass() or isPass().</p>
      */
-    @XmlElement(name = "pass", required = true)
     private Boolean pass;
 
     /**
@@ -193,6 +190,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Returns an indication of the conformance result.
+     * If this method returns {@code null}, then {@link #getNilReason()} gives the reason why.
      *
      * @return indication of the conformance result, or {@code null}.
      */
@@ -209,5 +207,43 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     public void setPass(final Boolean newValue) {
         checkWritePermission(pass);
         pass = newValue;
+    }
+
+
+
+
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                  ┃
+     ┃                               XML support with JAXB                              ┃
+     ┃                                                                                  ┃
+     ┃        The following methods are invoked by JAXB using reflection (even if       ┃
+     ┃        they are private) or are helpers for other methods invoked by JAXB.       ┃
+     ┃        Those methods can be safely removed if Geographic Markup Language         ┃
+     ┃        (GML) support is not needed.                                              ┃
+     ┃                                                                                  ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
+
+    /**
+     * Invoked by JAXB for fetching the value to marshal.
+     * This property is handled in a special way for allowing nil reason.
+     *
+     * @return the value to marshal.
+     */
+    @XmlElement(name = "pass", required = true)
+    private GO_Boolean getResult() {
+        return new GO_Boolean(this, "pass", pass(), true);
+    }
+
+    /**
+     * Invoked by JAXB for setting the value.
+     * This property is handled in a special way for allowing nil reason.
+     *
+     * @param  result  the value.
+     */
+    private void setResult(final GO_Boolean result) {
+        setPass(result.getElement());
+        result.getNilReason(this, "pass");
     }
 }

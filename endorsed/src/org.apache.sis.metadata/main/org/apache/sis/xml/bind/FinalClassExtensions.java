@@ -58,7 +58,7 @@ public final class FinalClassExtensions {
      * does not provides any map implementation which is both an {@code IdentityHashMap} and a {@code WeakHashMap}.
      *
      * For now we do not use weak references. This means that if a user creates a custom {@code NilReason} by a call
-     * to {@link NilReason#valueOf(String)} and if (s)he uses that nil reason for a primitive type, then that custom
+     * to {@link NilReason#valueOf(String)} and if (s)he uses that nil reason for a final class, then that custom
      * {@code NilReason} instance and its sentinel values will never be garbage-collected.
      * We presume that such cases will be rare enough for not being an issue in practice.
      *

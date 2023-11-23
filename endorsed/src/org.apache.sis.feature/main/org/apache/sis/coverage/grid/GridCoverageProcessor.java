@@ -39,6 +39,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.Colorizer;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.internal.SampleDimensions;
@@ -76,7 +77,7 @@ import org.apache.sis.measure.NumberRange;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.image.ImageProcessor
  *
@@ -327,6 +328,22 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
+     * Returns information about conversion from pixel coordinates to "real world" coordinates.
+     * This is taken from {@link PlanarImage#GRID_GEOMETRY_KEY} if available, or computed otherwise.
+     *
+     * @param  image     the image from which to get the conversion.
+     * @param  coverage  the coverage to use as a fallback if the information is not provided with the image.
+     * @return information about conversion from pixel coordinates to "real world" coordinates.
+     */
+    private static GridGeometry getImageGeometry(final RenderedImage image, final GridCoverage coverage) {
+        final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
+        if (value instanceof GridGeometry) {
+            return (GridGeometry) value;
+        }
+        return new ImageRenderer(coverage, null).getImageGeometry(GridCoverage2D.BIDIMENSIONAL);
+    }
+
+    /**
      * Applies a mask defined by a region of interest (ROI). If {@code maskInside} is {@code true},
      * then all pixels inside the given ROI are set to the {@linkplain #getFillValues() fill values}.
      * If {@code maskInside} is {@code false}, then the mask is reversed:
@@ -353,8 +370,8 @@ public class GridCoverageProcessor implements Cloneable {
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("mask", mask);
-        final Shape roi = mask.toShape2D(source.getGridGeometry());
         RenderedImage data = source.render(null);
+        final Shape roi = mask.toShape2D(getImageGeometry(data, source));
         data = imageProcessor.mask(data, roi, maskInside);
         return new GridCoverage2D(source, data);
     }

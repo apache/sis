@@ -33,7 +33,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.WritableGridCoverageResource;
 import org.apache.sis.storage.IncompatibleResourceException;
-import org.apache.sis.storage.internal.WritableResourceSupport;
+import org.apache.sis.storage.base.WritableGridCoverageSupport;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -114,7 +114,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
      */
     private static SequenceType getAffineCoefficients(
             final Map<String,Object> header, final GridGeometry gg,
-            final WritableResourceSupport h) throws DataStoreException
+            final WritableGridCoverageSupport h) throws DataStoreException
     {
         String xll = XLLCORNER;
         String yll = YLLCORNER;
@@ -190,7 +190,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
      */
     @Override
     public synchronized void write(GridCoverage coverage, final Option... options) throws DataStoreException {
-        final WritableResourceSupport h = new WritableResourceSupport(this, options);   // Does argument validation.
+        final var h = new WritableGridCoverageSupport(this, options);       // Does argument validation.
         final int band = 0;                                 // May become configurable in a future version.
         try {
             /*

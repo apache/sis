@@ -325,11 +325,11 @@ public class ValueConverter {
         value = Strings.trimOrNull(value);
         if (value != null) try {
             /*
-             * First, check for X-Paths like below:
+             * First, check for XPaths like below:
              *
              *     http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
              *
-             * Technically the 'm' value in the X-Path is not necessarily a unit symbol.
+             * Technically the 'm' value in the XPath is not necessarily a unit symbol.
              * It is rather a reference to a definition like below:
              *
              * <uomItem>
