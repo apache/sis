@@ -48,13 +48,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.sis.feature.Features;
 
-import org.apache.sis.geometry.wrapper.Geometries;
+import org.opengis.util.CodeList;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.builder.AttributeRole;
@@ -66,6 +66,7 @@ import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.FunctionNames;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
@@ -101,12 +102,12 @@ import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.feature.AttributeType;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
@@ -114,8 +115,6 @@ import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.CodeList;
 
 
 /**

@@ -17,8 +17,11 @@
 package org.apache.sis.storage.shapefile;
 
 import java.util.Collection;
+import org.opengis.util.CodeList;
 import org.apache.sis.filter.internal.FunctionNames;
 import org.apache.sis.filter.internal.Visitor;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.BetweenComparisonOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
@@ -26,7 +29,7 @@ import org.opengis.filter.ValueReference;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.LikeOperator;
 import org.opengis.filter.LogicalOperator;
-import org.opengis.util.CodeList;
+
 
 /**
  * Expression visitor that returns a list of all Feature attributs requiered by this expression.
