@@ -76,7 +76,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
     /**
      * The prefix in a XPath for considering a property as virtual.
      */
-    static final String VIRTUAL_PREFIX = "/*/";
+    private static final String VIRTUAL_PREFIX = "/*/";
 
     /**
      * Creates a new expression retrieving values from a property of the given name.
@@ -142,11 +142,23 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
     }
 
     /**
-     * Returns the name of the property whose value will be returned by the {@link #apply(Object)} method.
+     * Returns the XPath to the property whose value will be returned by the {@link #apply(Object)} method.
+     *
+     * @return XPath to the property.
      */
     @Override
     public final String getXPath() {
-        return isVirtual ? VIRTUAL_PREFIX.concat(name) : name;
+        return getXPath(null);
+    }
+
+    /**
+     * Returns the XPath to the property, prefixed by the given path.
+     *
+     * @param  path  the path to append as a prefix.
+     * @return XPath to the property.
+     */
+    final String getXPath(final String[] path) {
+        return XPath.toString(isVirtual ? VIRTUAL_PREFIX : null, path, name);
     }
 
     /**

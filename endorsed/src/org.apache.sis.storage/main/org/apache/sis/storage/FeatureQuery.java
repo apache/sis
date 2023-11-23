@@ -84,7 +84,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 public class FeatureQuery extends Query implements Cloneable, Serializable {
@@ -767,21 +767,20 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                  * from the source feature (the Apache SIS implementation does just that). If the name is set,
                  * then we assume that it is correct. Otherwise we take the tip of the XPath.
                  */
-                CharSequence text = null;
+                String tip = null;
                 if (expression instanceof ValueReference<?,?>) {
-                    String xpath = ((ValueReference<?,?>) expression).getXPath().trim();
+                    tip = XPath.toPropertyName(((ValueReference<?,?>) expression).getXPath());
                     /*
-                     * Before to take the tip, take the existing `GenericName` instance from the property.
-                     * It should be equivalent, except that it may be a `ScopedName` instead of `LocalName`.
+                     * Take the existing `GenericName` instance from the property. It should be equivalent to
+                     * creating a name from the tip, except that it may be a `ScopedName` instead of `LocalName`.
                      * We do not take `resultType.getName()` because the latter is different if the property
                      * is itself a link to another property (in which case `resultType` is the final target).
                      */
-                    name = valueType.getProperty(xpath).getName();
+                    name = valueType.getProperty(tip).getName();
                     if (name == null || !names.add(name.toString())) {
                         name = null;
-                        xpath = new XPath(xpath).tip;
-                        if (!(xpath.isEmpty() || names.contains(xpath))) {
-                            text = xpath;
+                        if (tip.isEmpty() || names.contains(tip)) {
+                            tip = null;
                         }
                     }
                 }
@@ -792,6 +791,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                  * providing localized names only if explicitly requested.
                  */
                 if (name == null) {
+                    CharSequence text = tip;
                     if (text == null) do {
                         text = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed_1, ++unnamedNumber);
                     } while (!names.add(text.toString()));

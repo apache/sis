@@ -74,4 +74,24 @@ public final class XPathTest extends TestCase {
         split("/Q{http://example.com/foo/bar}property",      true,  null,         "http://example.com/foo/bar:property");
         split("Q{http://example.com/foo/bar}property/child", false, new String[] {"http://example.com/foo/bar:property"}, "child");
     }
+
+    /**
+     * Tests {@link XPath#toString(String)}.
+     */
+    @Test
+    public void testToString() {
+        assertEquals("Q{http://example.com/foo/bar}property",
+                XPath.toString(null, null, "http://example.com/foo/bar:property"));
+        assertEquals("/*/Q{http://example.com/foo/bar}property/child",
+                XPath.toString("/*/", new String[] {"http://example.com/foo/bar:property"}, "child"));
+    }
+
+    /**
+     * Tests {@link XPath#toPropertyName(String)}.
+     */
+    @Test
+    public void testToPropertyName() {
+        assertEquals("http://example.com/foo/bar:property",
+                XPath.toPropertyName("Q{http://example.com/foo/bar}property"));
+    }
 }

@@ -400,6 +400,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short PropertyAlreadyExists_2 = 58;
 
         /**
+         * Property name “{0}” is invalid because names cannot be XPath.
+         */
+        public static final short PropertyNameCannotBeXPath_1 = 89;
+
+        /**
          * No property named “{1}” has been found in “{0}” feature.
          */
         public static final short PropertyNotFound_2 = 59;
