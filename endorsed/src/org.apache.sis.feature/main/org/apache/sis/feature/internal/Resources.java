@@ -369,6 +369,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short NotASingleton_1 = 53;
 
         /**
+         * Not a slice. Dimension “{0}” has {1} cells.
+         */
+        public static final short NotASlice_2 = 90;
+
+        /**
          * The specified dimensions are not in strictly ascending order.
          */
         public static final short NotStrictlyOrderedDimensions = 54;

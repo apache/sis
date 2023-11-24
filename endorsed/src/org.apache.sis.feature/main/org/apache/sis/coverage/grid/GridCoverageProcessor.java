@@ -591,7 +591,7 @@ public class GridCoverageProcessor implements Cloneable {
                 throw e;
             }
         } catch (FactoryException e) {
-            throw new TransformException(e);
+            throw new TransformException(e.getMessage(), e);
         }
         return resampled.forConvertedValues(isConverted);
     }
@@ -617,6 +617,32 @@ public class GridCoverageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         return resample(source, new GridGeometry(null, PixelInCell.CELL_CENTER, null, target));
+    }
+
+    /**
+     * Appends the specified grid dimensions after the dimensions of the given source coverage.
+     * This method is typically invoked for adding a vertical or temporal axis to a two-dimensional coverage.
+     * The grid extent must have a size of one cell in all the specified additional dimensions.
+     *
+     * @param  source    the source on which to append dimensions.
+     * @param  dimToAdd  the dimensions to append. The grid extent size must be 1 cell in all dimensions.
+     * @return a coverage with the specified dimensions added.
+     * @throws IllegalGridGeometryException if a dimension has more than one grid cell, or concatenation
+     *         would result in duplicated {@linkplain GridExtent#getAxisType(int) grid axis types},
+     *         or the compound CRS cannot be created.
+     *
+     * @since 1.5
+     */
+    public GridCoverage appendDimensions(final GridCoverage source, final GridGeometry dimToAdd) {
+        ArgumentChecks.ensureNonNull("source",   source);
+        ArgumentChecks.ensureNonNull("dimToAdd", dimToAdd);
+        try {
+            return DimensionAppender.create(source, dimToAdd);
+        } catch (IllegalGridGeometryException e) {
+            throw e;
+        } catch (FactoryException | IllegalArgumentException e) {
+            throw new IllegalGridGeometryException(e.getMessage(), e);
+        }
     }
 
     /**
