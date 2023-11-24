@@ -91,7 +91,7 @@ import org.opengis.coverage.grid.GridCoordinates;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.0
  */
 public class GridExtent implements GridEnvelope, LenientComparable, Serializable {
@@ -352,6 +352,33 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         }
         types = validateAxisTypes(axisTypes);
         validateCoordinates();
+    }
+
+    /**
+     * Creates a new grid extent as the concatenation of the two specified grid extent.
+     * The number of dimensions of the new extent is the sum of the number of dimensions
+     * of the two specified extents. The dimensions of the lower extent are first,
+     * followed by the dimensions of the upper extent.
+     *
+     * @param  lower  the grid extent providing the lowest dimensions.
+     * @param  upper  the grid extent providing the highest dimensions.
+     * @throws IllegalArgumentException if the concatenation results in duplicated {@linkplain #getAxisType(int) axis types}.
+     *
+     * @since 1.5
+     */
+    public GridExtent(final GridExtent lower, final GridExtent upper) {
+        final int d1  = lower.getDimension();
+        final int d2  = upper.getDimension();
+        final int dim = d1 + d2;
+        final var axisTypes = new DimensionNameType[dim];
+        if (lower.types != null) System.arraycopy(lower.types, 0, axisTypes,  0, d1);
+        if (upper.types != null) System.arraycopy(upper.types, 0, axisTypes, d1, d2);
+        types = validateAxisTypes(axisTypes);
+        coordinates = allocate(dim);
+        System.arraycopy(lower.coordinates,  0, coordinates,      0, d1);
+        System.arraycopy(upper.coordinates,  0, coordinates,     d1, d2);
+        System.arraycopy(lower.coordinates, d1, coordinates, dim,    d1);
+        System.arraycopy(upper.coordinates, d2, coordinates, dim+d1, d2);
     }
 
     /**

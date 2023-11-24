@@ -748,6 +748,66 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Creates a new grid geometry as the concatenation of the two specified grid geometries.
+     * The number of dimensions of the new grid geometry is the sum of the number of dimensions
+     * of the two specified grid geometries. The dimensions of the lower grid geometry are first,
+     * followed by the dimensions of the upper grid geometry.
+     *
+     * @param  lower  the grid geometry providing the lowest dimensions.
+     * @param  upper  the grid geometry providing the highest dimensions.
+     * @throws IncompleteGridGeometryException if a property presents in one grid geometry is absent in the other.
+     * @throws IllegalArgumentException if the concatenation results in duplicated
+     *         {@linkplain GridExtent#getAxisType(int) grid axis types}.
+     * @throws FactoryException if the geodetic factory failed to create the compound CRS.
+     *
+     * @see #selectDimensions(int...)
+     *
+     * @since 1.5
+     */
+    public GridGeometry(final GridGeometry lower, final GridGeometry upper) throws FactoryException {
+        /*
+         * Concatenate the extents first because they perform a check for axis duplication.
+         * We set the extent to null only if both `lower` and `upper` have a null extent.
+         * Otherwise, invoke `getExtent()` for causing an `IncompleteGridGeometryException`
+         * to be thrown if only one grid geometry has an extent.
+         */
+        extent = (lower.extent == null && upper.extent == null) ? null
+               : new GridExtent(lower.getExtent(), upper.getExtent());
+        /*
+         * Concatenate the "grid to CRS" transforms and derived information
+         * (resolutions and non-linearity).
+         */
+        if (lower.gridToCRS == null && upper.gridToCRS == null) {
+            gridToCRS   = null;
+            cornerToCRS = null;
+        } else {
+            gridToCRS   = compound(lower, upper, PixelInCell.CELL_CENTER);
+            cornerToCRS = compound(lower, upper, PixelInCell.CELL_CORNER);
+        }
+        nonLinears = lower.nonLinears | (upper.nonLinears << lower.getDimension());
+        resolution = (lower.resolution == null && upper.resolution == null) ? null
+                   : ArraysExt.concatenate(lower.getResolution(true), upper.getResolution(true));
+        /*
+         * The check for presence/absence of envelope is more complex because an envelope
+         * may be considered missing, but still be non-null in order to store the CRS.
+         */
+        if (lower.envelope == null && upper.envelope == null) {
+            envelope = null;
+        } else {
+            Envelope e1 = lower.envelope; if (e1 == null) e1 = lower.getEnvelope();
+            Envelope e2 = upper.envelope; if (e2 == null) e2 = upper.getEnvelope();
+            envelope = ImmutableEnvelope.castOrCopy(Envelopes.compound(e1, e2));
+        }
+    }
+
+    /**
+     * Aggregates the dimensions of the "grid to CRS" transforms of the given grid geometries.
+     */
+    private static MathTransform compound(final GridGeometry lower, final GridGeometry upper, final PixelInCell anchor) {
+        return MathTransforms.compound(lower.getGridToCRS(anchor), upper.getGridToCRS(anchor));
+    }
+
+    /**
      * Converts a "grid to CRS" transform from "cell corner" convention to "cell center" convention.
      * This is a helper method for use of {@link #GridGeometry(GridExtent, MathTransform, MathTransform,
      * ImmutableEnvelope, double[], long)} constructor.
@@ -1542,7 +1602,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
      *
      * <p>This method performs a <cite>dimensionality reduction</cite>.
-     * This method cannot be used for changing dimension order.</p>
+     * This method cannot be used for changing dimension order.
+     * The converse operation is the {@linkplain #GridGeometry(GridGeometry, GridGeometry) concatenation}.</p>
      *
      * @param  indices  the grid (not CRS) dimensions to select, in strictly increasing order.
      * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.

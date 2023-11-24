@@ -37,7 +37,8 @@ import org.apache.sis.util.internal.Numerics;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.DisplayName;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMapEquals;
@@ -77,10 +78,10 @@ public final class GridExtentTest extends TestCase {
      * Verifies the low and high values in the specified dimension of the given extent
      */
     static void assertExtentEquals(final GridExtent extent, final int dimension, final int low, final int high) {
-        assertEquals("low",    low,  extent.getLow (dimension));
-        assertEquals("high",   high, extent.getHigh(dimension));
-        assertEquals("size",   high - low + 1, extent.getSize(dimension));
-        assertEquals("median", Numerics.ceilDiv(high + low, 2), extent.getMedian(dimension));
+        assertEquals(low,  extent.getLow (dimension), "low");
+        assertEquals(high, extent.getHigh(dimension), "high");
+        assertEquals(high - low + 1, extent.getSize(dimension), "size");
+        assertEquals(Numerics.ceilDiv(high + low, 2), extent.getMedian(dimension), "median");
     }
 
     /**
@@ -185,7 +186,7 @@ public final class GridExtentTest extends TestCase {
         GridExtent extent = new GridExtent(new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW},
                                            new long[] {100, 200}, new long[] {500, 800}, true);
         extent = extent.insertDimension(offset, DimensionNameType.TIME, 40, 50, false);
-        assertEquals("dimension", 3, extent.getDimension());
+        assertEquals(3, extent.getDimension(), "dimension");
         assertExtentEquals(extent, 0,        100, 500);
         assertExtentEquals(extent, rowIndex, 200, 800);
         assertExtentEquals(extent, offset,    40,  49);
@@ -201,14 +202,14 @@ public final class GridExtentTest extends TestCase {
     public void testSelectDimensions() {
         final GridExtent extent = create3D();
         GridExtent reduced = extent.selectDimensions(0, 1);
-        assertEquals("dimension", 2, reduced.getDimension());
+        assertEquals(2, reduced.getDimension(), "dimension");
         assertExtentEquals(reduced, 0, 100, 499);
         assertExtentEquals(reduced, 1, 200, 799);
         assertEquals(DimensionNameType.COLUMN, reduced.getAxisType(0).get());
         assertEquals(DimensionNameType.ROW,    reduced.getAxisType(1).get());
 
         reduced = extent.selectDimensions(2);
-        assertEquals("dimension", 1, reduced.getDimension());
+        assertEquals(1, reduced.getDimension(), "dimension");
         assertExtentEquals(reduced, 0, 40, 49);
         assertEquals(DimensionNameType.TIME, reduced.getAxisType(0).get());
     }
@@ -294,12 +295,8 @@ public final class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 2, 40,  46);
         assertSame(extent.intersect(domain), extent);
         final GridExtent disjoint = domain.translate(0, 1000);
-        try {
-            extent.intersect(disjoint);
-            fail("Expected DisjointExtentException.");
-        } catch (DisjointExtentException e) {
-            assertNotNull(e.getMessage());
-        }
+        String message = assertThrows(DisjointExtentException.class, () -> extent.intersect(disjoint)).getMessage();
+        assertNotNull(message);
     }
 
     /**
@@ -325,12 +322,30 @@ public final class GridExtentTest extends TestCase {
         final GridExtent other = new GridExtent(
                 new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.TRACK, DimensionNameType.TIME},
                 new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
-        try {
-            domain.intersect(other);
-            fail("Should not be allowed");
-        } catch (IllegalArgumentException e) {
-            assertNotNull(e.getMessage());
-        }
+
+        String message = assertThrows(IllegalArgumentException.class, () -> domain.intersect(other)).getMessage();
+        assertNotNull(message);
+    }
+
+    /**
+     * Tests {@link GridExtent#GridExtent(GridExtent, GridExtent)}.
+     */
+    @Test
+    public void testConcatenate() {
+        final GridExtent domain = create3D();
+        final GridExtent other = new GridExtent(
+                new DimensionNameType[] {DimensionNameType.VERTICAL},
+                new long[] {-4}, new long[] {17}, true);
+        final GridExtent extent = new GridExtent(domain, other);
+
+        assertArrayEquals(new DimensionNameType[] {
+            DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME, DimensionNameType.VERTICAL
+        }, extent.getAxisTypes());
+
+        assertArrayEquals(new long[] {
+            100, 200, 40, -4,
+            499, 799, 49, 17
+        }, extent.getCoordinates());
     }
 
     /**
@@ -341,7 +356,7 @@ public final class GridExtentTest extends TestCase {
         final GeneralDirectPosition slicePoint = new GeneralDirectPosition(226.7, 47.2);
         final GridExtent extent = create3D();
         final GridExtent slice  = extent.slice(slicePoint, new int[] {1, 2});
-        assertEquals("dimension", 3, slice.getDimension());
+        assertEquals(3, slice.getDimension(), "dimension");
         assertExtentEquals(slice, 0, 100, 499);
         assertExtentEquals(slice, 1, 227, 227);
         assertExtentEquals(slice, 2,  47,  47);
@@ -352,13 +367,8 @@ public final class GridExtentTest extends TestCase {
          * change in future SIS version).
          */
         slicePoint.setOrdinate(0, 900);
-        try {
-            extent.slice(slicePoint, new int[] {1, 2});
-            fail("Expected PointOutsideCoverageException");
-        } catch (PointOutsideCoverageException e) {
-            final String message = e.getLocalizedMessage();
-            assertTrue(message, message.contains("(900, 47)"));     // See above comment.
-        }
+        String message = assertThrows(PointOutsideCoverageException.class, () -> extent.slice(slicePoint, new int[] {1, 2})).getLocalizedMessage();
+        assertTrue(message.contains("(900, 47)"), message);         // See above comment.
     }
 
     /**
@@ -372,12 +382,8 @@ public final class GridExtentTest extends TestCase {
         assertSubspaceEquals(extent, 0,  2  );
         assertSubspaceEquals(extent, 0,1,2  );
         assertSubspaceEquals(extent, 0,1,2,3);
-        try {
-            extent.getSubspaceDimensions(1);
-            fail("Should not reduce to 1 dimension.");
-        } catch (SubspaceNotSpecifiedException e) {
-            assertNotNull(e.getMessage());
-        }
+        String message = assertThrows(SubspaceNotSpecifiedException.class, () -> extent.getSubspaceDimensions(1)).getMessage();
+        assertNotNull(message);
     }
 
     /**
@@ -508,11 +514,12 @@ public final class GridExtentTest extends TestCase {
      * Verifies that a translation of zero cell results in the same {@link GridExtent} instance.
      */
     @Test
-    public void empty_translation_returns_same_extent_instance() {
+    @DisplayName("Empty translation returns same extent instance")
+    public void testZeroTranslation() {
         final GridExtent extent = new GridExtent(10, 10);
-        assertSame("Same instance returned in case of no-op", extent, extent.translate());
-        assertSame("Same instance returned in case of no-op", extent, extent.translate(0));
-        assertSame("Same instance returned in case of no-op", extent, extent.translate(0, 0));
+        assertSame(extent, extent.translate());
+        assertSame(extent, extent.translate(0));
+        assertSame(extent, extent.translate(0, 0));
     }
 
     /**
@@ -520,26 +527,27 @@ public final class GridExtentTest extends TestCase {
      * than the extent number of dimensions. No translation shall be applied in missing dimensions.
      */
     @Test
-    public void translating_only_first_dimensions_leave_others_untouched() {
+    @DisplayName("Translating only first dimensions leave others untouched")
+    public void testTranslateOneDimension() {
         final GridExtent base = new GridExtent(null, new long[] {
             0, 0, 0,
             2, 2, 2
         });
         final GridExtent translatedByX = base.translate(1);
-        assertArrayEquals("Lower corner", new long[] {1, 0, 0}, translatedByX.getLow() .getCoordinateValues());
-        assertArrayEquals("Upper corner", new long[] {3, 2, 2}, translatedByX.getHigh().getCoordinateValues());
+        assertArrayEquals(new long[] {1, 0, 0}, translatedByX.getLow() .getCoordinateValues(), "Lower corner");
+        assertArrayEquals(new long[] {3, 2, 2}, translatedByX.getHigh().getCoordinateValues(), "Upper corner");
 
         final GridExtent translatedByY = base.translate(0, -1);
-        assertArrayEquals("Lower corner", new long[] {0, -1, 0}, translatedByY.getLow() .getCoordinateValues());
-        assertArrayEquals("Upper corner", new long[] {2,  1, 2}, translatedByY.getHigh().getCoordinateValues());
+        assertArrayEquals(new long[] {0, -1, 0}, translatedByY.getLow() .getCoordinateValues(), "Lower corner");
+        assertArrayEquals(new long[] {2,  1, 2}, translatedByY.getHigh().getCoordinateValues(), "Upper corner");
 
         final GridExtent translatedByXAndY = base.translate(-1, 4);
-        assertArrayEquals("Lower corner", new long[] {-1, 4, 0}, translatedByXAndY.getLow() .getCoordinateValues());
-        assertArrayEquals("Upper corner", new long[] { 1, 6, 2}, translatedByXAndY.getHigh().getCoordinateValues());
+        assertArrayEquals(new long[] {-1, 4, 0}, translatedByXAndY.getLow() .getCoordinateValues(), "Lower corner");
+        assertArrayEquals(new long[] { 1, 6, 2}, translatedByXAndY.getHigh().getCoordinateValues(), "Upper corner");
 
         // Paranoiac check: ensure that base extent has been left untouched.
-        assertArrayEquals("Base lower corner", new long[] {0, 0, 0}, base.getLow() .getCoordinateValues());
-        assertArrayEquals("Base lower corner", new long[] {2, 2, 2}, base.getHigh().getCoordinateValues());
+        assertArrayEquals(new long[] {0, 0, 0}, base.getLow() .getCoordinateValues(), "Base lower corner");
+        assertArrayEquals(new long[] {2, 2, 2}, base.getHigh().getCoordinateValues(), "Base lower corner");
     }
 
     /**
@@ -547,17 +555,18 @@ public final class GridExtentTest extends TestCase {
      * when the given vector is long enough.
      */
     @Test
-    public void translating_all_dimensions() {
+    @DisplayName("Translating all dimensions")
+    public void testTranslateAllDimensions() {
         final GridExtent base = new GridExtent(null, new long[] {
             -1, -1, -2, 10,
              2,  2,  2, 20
         });
         final GridExtent translated = base.translate(-2, 1, 1, 100);
-        assertArrayEquals("Lower corner", new long[] {-3, 0, -1, 110}, translated.getLow() .getCoordinateValues());
-        assertArrayEquals("Upper corner", new long[] { 0, 3,  3, 120}, translated.getHigh().getCoordinateValues());
+        assertArrayEquals(new long[] {-3, 0, -1, 110}, translated.getLow() .getCoordinateValues(), "Lower corner");
+        assertArrayEquals(new long[] { 0, 3,  3, 120}, translated.getHigh().getCoordinateValues(), "Upper corner");
 
         // Paranoiac check: ensure that base extent has been left untouched.
-        assertArrayEquals("Base lower corner", new long[] {-1, -1, -2, 10}, base.getLow() .getCoordinateValues());
-        assertArrayEquals("Base lower corner", new long[] { 2,  2,  2, 20}, base.getHigh().getCoordinateValues());
+        assertArrayEquals(new long[] {-1, -1, -2, 10}, base.getLow() .getCoordinateValues(), "Base lower corner");
+        assertArrayEquals(new long[] { 2,  2,  2, 20}, base.getHigh().getCoordinateValues(), "Base lower corner");
     }
 }

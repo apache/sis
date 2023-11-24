@@ -67,7 +67,7 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see Arrays
  *
@@ -1215,6 +1215,24 @@ public final class ArraysExt extends Static {
         if (a1 == null || a1.length == 0) return a2;
         if (a2 == null || a2.length == 0) return a1;
         final int[] copy = Arrays.copyOf(a1, a1.length + a2.length);
+        System.arraycopy(a2, 0, copy, a1.length, a2.length);
+        return copy;
+    }
+
+    /**
+     * Returns the concatenation of the given arrays.
+     * If any of the supplied arrays is null or empty, then the other array is returned directly (not copied).
+     *
+     * @param  a1  the first array to concatenate, or {@code null}.
+     * @param  a2  the second array to concatenate, or {@code null}.
+     * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
+     *
+     * @since 1.5
+     */
+    public static double[] concatenate(final double[] a1, final double[] a2) {
+        if (a1 == null || a1.length == 0) return a2;
+        if (a2 == null || a2.length == 0) return a1;
+        final double[] copy = Arrays.copyOf(a1, a1.length + a2.length);
         System.arraycopy(a2, 0, copy, a1.length, a2.length);
         return copy;
     }
