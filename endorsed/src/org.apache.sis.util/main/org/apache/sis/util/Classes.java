@@ -34,7 +34,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
-import static org.apache.sis.system.Modules.INTERNAL_CLASSNAME_PREFIX;
 
 
 /**
@@ -55,7 +54,7 @@ import static org.apache.sis.system.Modules.INTERNAL_CLASSNAME_PREFIX;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.5
  * @since   0.3
  */
 public final class Classes extends Static {
@@ -385,7 +384,7 @@ public final class Classes extends Static {
             }
         }
         for (Class<? super T> candidate = type; candidate != null; candidate = candidate.getSuperclass()) {
-            if (Modifier.isPublic(candidate.getModifiers()) && !candidate.getName().startsWith(INTERNAL_CLASSNAME_PREFIX)) {
+            if (isPublic(candidate)) {
                 return candidate;
             }
         }
@@ -856,5 +855,18 @@ cmp:    for (final Class<?> c : c1) {
                method.getParameterCount() == 0 &&
               !method.isSynthetic() &&
               !ArraysExt.contains(EXCLUDES, method.getName());
+    }
+
+    /**
+     * Returns {@code true} if the given class is non-null, public and exported.
+     *
+     * @param  type  the class to test, or {@code null}.
+     * @return whether the given class is part of public API.
+     *
+     * @since 1.5
+     */
+    public static boolean isPublic(final Class<?> type) {
+        return (type != null) && Modifier.isPublic(type.getModifiers())
+                && type.getModule().isExported(type.getPackageName());
     }
 }
