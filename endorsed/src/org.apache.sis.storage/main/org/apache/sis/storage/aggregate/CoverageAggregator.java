@@ -101,9 +101,10 @@ import org.apache.sis.util.collection.BackingStoreException;
  * and no more addition are in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.3
  */
+@SuppressWarnings("exports")    // There is no public method using `GroupBySample`.
 public final class CoverageAggregator extends Group<GroupBySample> {
     /**
      * The listeners of the parent resource (typically a {@link DataStore}), or {@code null} if none.
@@ -327,7 +328,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.4
      */
     public void addRangeAggregate(final GridCoverageResource... sources) throws DataStoreException {
-        addRangeAggregate(sources, (int[][]) null);
+        addRangeAggregate(sources, null);
     }
 
     /**
@@ -466,13 +467,5 @@ public final class CoverageAggregator extends Group<GroupBySample> {
             ((AggregatedResource) result).setIdentifier(identifier);
         }
         return result;
-    }
-
-    /**
-     * @deprecated Replaced by {@link #build(GenericName)}.
-     */
-    @Deprecated
-    public Resource build() {
-        return build(null);
     }
 }
