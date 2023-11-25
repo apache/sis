@@ -64,6 +64,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -1586,8 +1587,8 @@ final class ImageFileDirectory extends DataCube {
     @Override
     final long getNumTiles() {
         return Math.multiplyExact(
-                Numerics.ceilDiv(imageWidth,  tileWidth),
-                Numerics.ceilDiv(imageHeight, tileHeight));
+                JDK18.ceilDiv(imageWidth,  tileWidth),
+                JDK18.ceilDiv(imageHeight, tileHeight));
     }
 
     /**

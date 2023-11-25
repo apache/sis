@@ -24,8 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.system.CommonExecutor;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.image.PixelIterator;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -170,8 +170,8 @@ public abstract class TiledProcess<R> {
         final int ymin = data.getMinY();
         final int xmax = Math.addExact(xmin, width);
         final int ymax = Math.addExact(ymin, height);
-        final int xinc = Numerics.ceilDiv(width,  numTileX);
-        final int yinc = Numerics.ceilDiv(height, numTileY);
+        final int xinc = JDK18.ceilDiv(width,  numTileX);
+        final int yinc = JDK18.ceilDiv(height, numTileY);
         final Rectangle subArea = new Rectangle(Math.addExact(xinc, overlapX),
                                                 Math.addExact(yinc, overlapY));
         int count = 0;

@@ -31,13 +31,13 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
 import java.awt.image.SampleModel;
 import org.apache.sis.image.DataType;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Resources;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -138,7 +138,7 @@ public final class TileMatrix {
         type       = DataType.forBands(image);
         tileWidth  = image.getTileWidth();
         tileHeight = image.getTileHeight();
-        pixelSize  = (bitsPerSample != null) ? Numerics.ceilDiv(Arrays.stream(bitsPerSample).sum(), Byte.SIZE) : 1;
+        pixelSize  = (bitsPerSample != null) ? JDK18.ceilDiv(Arrays.stream(bitsPerSample).sum(), Byte.SIZE) : 1;
         tileSize   = tileWidth * tileHeight * pixelSize;        // Overflow is not really a problem for our usage.
         numXTiles  = image.getNumXTiles();
         numYTiles  = image.getNumYTiles();

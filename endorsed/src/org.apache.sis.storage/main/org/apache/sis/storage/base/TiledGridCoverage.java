@@ -46,7 +46,7 @@ import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.internal.Numerics.ceilDiv;
+import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;

@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.pending.jdk.JDK18;
 
 // Test dependencies
 import org.junit.Test;
@@ -81,7 +81,7 @@ public final class GridExtentTest extends TestCase {
         assertEquals(low,  extent.getLow (dimension), "low");
         assertEquals(high, extent.getHigh(dimension), "high");
         assertEquals(high - low + 1, extent.getSize(dimension), "size");
-        assertEquals(Numerics.ceilDiv(high + low, 2), extent.getMedian(dimension), "median");
+        assertEquals(JDK18.ceilDiv(high + low, 2), extent.getMedian(dimension), "median");
     }
 
     /**

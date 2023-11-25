@@ -20,7 +20,7 @@ import java.util.Random;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.*;
 import static org.apache.sis.util.ArraysExt.isSorted;
-import static org.apache.sis.util.internal.Numerics.SIGNIFICAND_SIZE;
+import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 // Test dependencies
 import org.junit.Test;
@@ -144,22 +144,22 @@ public final class MathFunctionsTest extends TestCase {
          *   getExponent(MIN_NORMAL / 8)  ==  MIN_EXPONENT - 3
          *   etc.
          */
-        for (int i=0; i<=SIGNIFICAND_SIZE; i++) {
+        for (int i=0; i<DOUBLE_PRECISION; i++) {
             assertEquals(MIN_EXPONENT - i, getExponent(MIN_NORMAL / (1L << i)));
         }
         assertEquals(MIN_EXPONENT - 1,                    getExponent(StrictMath.nextDown(MIN_NORMAL)));
-        assertEquals(MIN_EXPONENT - SIGNIFICAND_SIZE,     getExponent(MIN_VALUE));
-        assertEquals(MIN_EXPONENT - SIGNIFICAND_SIZE - 1, getExponent(0));
+        assertEquals(MIN_EXPONENT - DOUBLE_PRECISION + 1, getExponent(MIN_VALUE));
+        assertEquals(MIN_EXPONENT - DOUBLE_PRECISION,     getExponent(0));
         /*
          * Tests consistency with scalb, as documented in MathFunctions.getExponent(double) javadoc.
          */
-        for (int i = MIN_EXPONENT - SIGNIFICAND_SIZE - 1; i <= MAX_EXPONENT + 1; i++) {
+        for (int i = MIN_EXPONENT - DOUBLE_PRECISION; i <= MAX_EXPONENT + 1; i++) {
             assertEquals(i, getExponent(StrictMath.scalb(1.0, i)));
         }
         /*
          * Tests consistency with log10, as documented in MathFunctions.getExponent(double) javadoc.
          */
-        for (int i = MIN_EXPONENT - SIGNIFICAND_SIZE; i <= MAX_EXPONENT; i++) {
+        for (int i = MIN_EXPONENT - (DOUBLE_PRECISION - 1); i <= MAX_EXPONENT; i++) {
             assertEquals(StrictMath.floor(StrictMath.log10(StrictMath.scalb(1.0, i))),
                          StrictMath.floor(LOG10_2 * i /* i = getExponent(value) */), STRICT);
         }
