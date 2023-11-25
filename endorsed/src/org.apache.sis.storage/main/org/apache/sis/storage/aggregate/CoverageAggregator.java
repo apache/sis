@@ -27,8 +27,17 @@ import java.util.IdentityHashMap;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.time.Instant;
+import java.time.Duration;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.image.Colorizer;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
@@ -36,13 +45,16 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
-import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.internal.Numerics;
 
 
 /**
@@ -204,6 +216,63 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
+     * Adds the given coverage augmented with the specified grid dimensions.
+     * The {@code dimToAdd} argument contains typically vertical or temporal axes to add to a two-dimensional coverage.
+     * All additional dimensions in {@code dimToAdd} must have a grid extent size of one cell.
+     *
+     * @param  coverage  coverage to add.
+     * @param  dimToAdd  the dimensions to append. The grid extent size must be 1 cell in all dimensions.
+     * @throws IllegalGridGeometryException if a dimension has more than one grid cell, or concatenation
+     *         would result in duplicated {@linkplain GridExtent#getAxisType(int) grid axis types},
+     *         or the compound CRS cannot be created.
+     *
+     * @see GridCoverageProcessor#appendDimensions(GridCoverage, GridGeometry)
+     *
+     * @since 1.5
+     */
+    public void add(GridCoverage coverage, GridGeometry dimToAdd) {
+        add(processor().appendDimensions(coverage, dimToAdd));
+    }
+
+    /**
+     * Adds the given coverage augmented with a single grid dimension.
+     * The additional dimension is typically a vertical axis to add to a two-dimensional coverage.
+     *
+     * @param  coverage  coverage to add.
+     * @param  lower     lower coordinate value of the slice, in units of the CRS.
+     * @param  span      size of the slice, in units of the CRS.
+     * @param  crs       one-dimensional coordinate reference system of the slice, or {@code null} if unknown.
+     * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
+     *
+     * @see GridCoverageProcessor#appendDimension(GridCoverage, double, double, CoordinateReferenceSystem)
+     *
+     * @since 1.5
+     */
+    public void add(GridCoverage coverage, double lower, double span, CoordinateReferenceSystem crs) {
+        add(processor().appendDimension(coverage, lower, span, crs));
+    }
+
+    /**
+     * Adds the given coverage augmented with a single temporal grid dimension.
+     * This method is provided for convenience, but should be used carefully.
+     * Slice coordinates computed from calendars tend to produce slices at irregular intervals
+     * or with heterogeneous spans, which result in coverages that cannot be aggregated by this
+     * {@code CoverageAggregator} class.
+     *
+     * @param  source  the source on which to append a temporal dimension.
+     * @param  lower   start time of the slice.
+     * @param  span    duration of the slice.
+     * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
+     *
+     * @see GridCoverageProcessor#appendDimension(GridCoverage, Instant, Duration)
+     *
+     * @since 1.5
+     */
+    public void add(GridCoverage coverage, Instant lower, Duration span) {
+        add(processor().appendDimension(coverage, lower, span));
+    }
+
+    /**
      * Adds the given resource. This method can be invoked from any thread.
      * This method does <em>not</em> recursively decomposes an {@link Aggregate} into its component.
      * If such decomposition is desired, see {@link #addComponents(Aggregate)} instead.
@@ -223,6 +292,84 @@ public final class CoverageAggregator extends Group<GroupBySample> {
         synchronized (slices) {
             slices.add(slice);
         }
+    }
+
+    /**
+     * Adds the given resource augmented with the specified grid dimensions.
+     * The {@code dimToAdd} argument contains typically vertical or temporal axes to add to a two-dimensional resource.
+     * All additional dimensions in {@code dimToAdd} must have a grid extent size of one cell.
+     *
+     * @param  resource  resource to add.
+     * @param  dimToAdd  the dimensions to append. The grid extent size must be 1 cell in all dimensions.
+     * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
+     * @throws DataStoreException if the resource cannot be used.
+     *
+     * @since 1.5
+     */
+    public void add(GridCoverageResource resource, GridGeometry dimToAdd) throws DataStoreException {
+        add(DimensionAppender.create(processor(), resource, dimToAdd));
+    }
+
+    /**
+     * Adds the given resource augmented with a single grid dimension.
+     * The additional dimension is typically a vertical axis to add to a two-dimensional resource.
+     *
+     * @param  resource  resource to add.
+     * @param  lower     lower coordinate value of the slice, in units of the CRS.
+     * @param  span      size of the slice, in units of the CRS.
+     * @param  crs       one-dimensional coordinate reference system of the slice, or {@code null} if unknown.
+     * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
+     * @throws DataStoreException if the resource cannot be used.
+     *
+     * @since 1.5
+     */
+    public void add(final GridCoverageResource resource, final double lower, final double span,
+            final CoordinateReferenceSystem crs) throws DataStoreException
+    {
+        /*
+         * This code currently duplicates `GridCoverageProcessor.appendDimension(..., double, double, CRS)`,
+         * but a future version may use the state of this `CoverageAggregator`, for example making a better
+         * effort to align the resources on the same "gridToCRS" transform.
+         */
+        final long index   = Numerics.roundAndClamp(lower / span);
+        final var  indices = new long[] {index};
+        final var  names   = new DimensionNameType[] {
+            GridExtent.typeFromAxis(crs.getCoordinateSystem().getAxis(0)).orElse(null)
+        };
+        final GridExtent extent = new GridExtent(names, indices, indices, true);
+        final MathTransform gridToCRS = MathTransforms.linear(span, Math.fma(index, -span, lower));
+        add(resource, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
+    }
+
+    /**
+     * Adds the given resource augmented with a single temporal grid dimension.
+     * This method is provided for convenience, but should be used carefully.
+     * Slice coordinates computed from calendars tend to produce slices at irregular intervals
+     * or with heterogeneous spans, which result in coverages that cannot be aggregated by this
+     * {@code CoverageAggregator} class.
+     *
+     * @param  resource  resource to add.
+     * @param  lower     start time of the slice.
+     * @param  span      duration of the slice.
+     * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
+     * @throws DataStoreException if the resource cannot be used.
+     *
+     * @since 1.5
+     */
+    public void add(final GridCoverageResource resource, final Instant lower, final Duration span) throws DataStoreException {
+        /*
+         * This code currently duplicates `GridCoverageProcessor.appendDimension(..., double, double, CRS)`,
+         * but a future version may use the state of this `CoverageAggregator`, for example making a better
+         * effort to align the resources on the same "gridToCRS" transform.
+         */
+        final DefaultTemporalCRS crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
+        double scale  = crs.toValue(span);
+        double offset = crs.toValue(lower);
+        long   index  = Numerics.roundAndClamp(offset / scale);             // See comment in above method.
+        offset = crs.toValue(lower.minus(span.multipliedBy(index)));
+        final GridExtent extent = new GridExtent(DimensionNameType.TIME, index, index, true);
+        final MathTransform gridToCRS = MathTransforms.linear(scale, offset);
+        add(resource, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
     }
 
     /**

@@ -35,6 +35,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
@@ -404,6 +405,20 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         System.arraycopy(upper.coordinates,  0, coordinates,     d1, d2);
         System.arraycopy(lower.coordinates, d1, coordinates, dim,    d1);
         System.arraycopy(upper.coordinates, d2, coordinates, dim+d1, d2);
+    }
+
+    /**
+     * Suggests a grid dimension name for the given coordinate system axis.
+     * Note that grid axes are not necessarily in the same order than CRS axes.
+     * This method may be used when the caller knows which CRS axis will be associated to a grid axis.
+     *
+     * @param  axis  the coordinate system axis for which to get a suggested grid dimension name.
+     * @return suggested grid dimension for the given CRS axis.
+     *
+     * @since 1.5
+     */
+    public static Optional<DimensionNameType> typeFromAxis(final CoordinateSystemAxis axis) {
+        return Optional.ofNullable(AXIS_DIRECTIONS.get(AxisDirections.absolute(axis.getDirection())));
     }
 
     /**

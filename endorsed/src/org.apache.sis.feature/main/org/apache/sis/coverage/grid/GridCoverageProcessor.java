@@ -660,7 +660,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  source  the source on which to append a dimension.
      * @param  lower   lower coordinate value of the slice, in units of the CRS.
      * @param  span    size of the slice, in units of the CRS.
-     * @param  crs     coordinate reference system of the slice, or {@code null} if unknown.
+     * @param  crs     one-dimensional coordinate reference system of the slice, or {@code null} if unknown.
      * @return a coverage with the specified dimension added.
      * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
      *
