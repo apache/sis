@@ -32,6 +32,7 @@ import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -666,7 +667,7 @@ public class GridCoverageProcessor implements Cloneable {
      *
      * @since 1.5
      */
-    public GridCoverage appendDimension(final GridCoverage source, double lower, final double span, final CoordinateReferenceSystem crs) {
+    public GridCoverage appendDimension(final GridCoverage source, double lower, final double span, final SingleCRS crs) {
         /*
          * Choose a cell index such as the translation term in the matrix will be as close as possible to zero.
          * Reducing the magnitude of additions with IEEE 754 arithmetic can help to reduce rounding errors.

@@ -31,7 +31,7 @@ import java.time.Instant;
 import java.time.Duration;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.spatial.DimensionNameType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -244,11 +244,11 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @param  crs       one-dimensional coordinate reference system of the slice, or {@code null} if unknown.
      * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
      *
-     * @see GridCoverageProcessor#appendDimension(GridCoverage, double, double, CoordinateReferenceSystem)
+     * @see GridCoverageProcessor#appendDimension(GridCoverage, double, double, SingleCRS)
      *
      * @since 1.5
      */
-    public void add(GridCoverage coverage, double lower, double span, CoordinateReferenceSystem crs) {
+    public void add(GridCoverage coverage, double lower, double span, SingleCRS crs) {
         add(processor().appendDimension(coverage, lower, span, crs));
     }
 
@@ -323,8 +323,8 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *
      * @since 1.5
      */
-    public void add(final GridCoverageResource resource, final double lower, final double span,
-            final CoordinateReferenceSystem crs) throws DataStoreException
+    public void add(final GridCoverageResource resource, final double lower, final double span, final SingleCRS crs)
+            throws DataStoreException
     {
         /*
          * This code currently duplicates `GridCoverageProcessor.appendDimension(..., double, double, CRS)`,
