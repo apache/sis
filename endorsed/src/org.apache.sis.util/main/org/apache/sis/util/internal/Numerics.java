@@ -132,6 +132,8 @@ public final class Numerics extends Static {
 
     /**
      * Maximal integer value which is convertible to {@code double} type without lost of precision digits.
+     *
+     * @see #clampForDouble(long)
      */
     public static final long MAX_INTEGER_CONVERTIBLE_TO_DOUBLE = 1L << DOUBLE_PRECISION;
 
@@ -265,6 +267,18 @@ public final class Numerics extends Static {
         final long result = x - y;
         if (((x ^ y) & (x ^ result)) >= 0) return result;
         return (result < x) ? Long.MAX_VALUE : Long.MIN_VALUE;
+    }
+
+    /**
+     * Returns the value rounded to nearest integer and clamped to a range
+     * that can be converted to {@code double} without precision lost.
+     *
+     * @param  value  the value to round and clamp.
+     * @return the value clamped to the range convertible to {@code double} without precision lost.
+     */
+    public static long roundAndClamp(final double value) {
+        return Math.max(-MAX_INTEGER_CONVERTIBLE_TO_DOUBLE,
+               Math.min(+MAX_INTEGER_CONVERTIBLE_TO_DOUBLE, Math.round(value)));
     }
 
     /**

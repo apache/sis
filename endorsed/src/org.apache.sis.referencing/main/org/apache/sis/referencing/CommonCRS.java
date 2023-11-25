@@ -1535,6 +1535,8 @@ public enum CommonCRS {
          * to the proleptic Gregorian calendar for every dates. For parsing and formatting of Julian days,
          * the {@link java.text.SimpleDateFormat} class is closer to the common practice (but not ISO 8601
          * compliant).</p>
+         *
+         * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
         JULIAN(Vocabulary.Keys.Julian, -2440588L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2,
                "JulianDate", true),
@@ -1543,6 +1545,9 @@ public enum CommonCRS {
          * Time measured as days since November 17, 1858 at 00:00 UTC.
          * A <cite>Modified Julian day</cite> (MJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code MJD = JD − 2400000.5}.
+         * This variant was introduced by the Smithsonian Astrophysical Observatory (Massachusetts) in 1955.
+         *
+         * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
         MODIFIED_JULIAN(Vocabulary.Keys.ModifiedJulian, -40587L * MILLISECONDS_PER_DAY,
                         "ModifiedJulianDate", false),
@@ -1552,6 +1557,9 @@ public enum CommonCRS {
          * This epoch was introduced by NASA for the space program.
          * A <cite>Truncated Julian day</cite> (TJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code TJD = JD − 2440000.5}.
+         * This variant was introduced by National Aeronautics and Space Administration (NASA) in 1979.
+         *
+         * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
         TRUNCATED_JULIAN(Vocabulary.Keys.TruncatedJulian, -587L * MILLISECONDS_PER_DAY,
                          "TruncatedJulianDate", true),
@@ -1560,6 +1568,9 @@ public enum CommonCRS {
          * Time measured as days since December 31, 1899 at 12:00 UTC.
          * A <cite>Dublin Julian day</cite> (DJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code DJD = JD − 2415020}.
+         * This variant was introduced by the International Astronomical Union (IAU) in 1955.
+         *
+         * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
         DUBLIN_JULIAN(Vocabulary.Keys.DublinJulian, -25568L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2,
                       "DublinJulian", false),

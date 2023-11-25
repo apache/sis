@@ -21,7 +21,6 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
@@ -50,6 +49,23 @@ final class DimensionAppender extends GridCoverage {
 
     /**
      * Creates a new dimension appender for the given grid coverage.
+     * This constructor does not verify the grid geometry validity.
+     * It is caller's responsibility to verify that the size is 1 cell.
+     *
+     * @param  source    the source grid coverage for which to append extra dimensions.
+     * @param  dimToAdd  the dimensions to add to the source grid coverage.
+     * @throws FactoryException if the compound CRS cannot be created.
+     * @throws IllegalArgumentException if the concatenation results in duplicated
+     *         {@linkplain GridExtent#getAxisType(int) grid axis types}.
+     */
+    private DimensionAppender(final GridCoverage source, final GridGeometry dimToAdd) throws FactoryException {
+        super(source, new GridGeometry(source.getGridGeometry(), dimToAdd));
+        this.source   = source;
+        this.dimToAdd = dimToAdd;
+    }
+
+    /**
+     * Creates a grid coverage augmented with the given dimensions.
      * The grid extent of {@code dimToAdd} shall have a grid size of one cell in all dimensions.
      *
      * @param  source    the source grid coverage for which to append extra dimensions.
@@ -59,32 +75,48 @@ final class DimensionAppender extends GridCoverage {
      * @throws IllegalArgumentException if the concatenation results in duplicated
      *         {@linkplain GridExtent#getAxisType(int) grid axis types}.
      */
-    private DimensionAppender(final GridCoverage source, final GridGeometry dimToAdd) throws FactoryException {
-        super(source, new GridGeometry(source.getGridGeometry(), dimToAdd));
-        this.source   = source;
-        this.dimToAdd = dimToAdd;
+    static GridCoverage create(GridCoverage source, GridGeometry dimToAdd) throws FactoryException {
         final GridExtent extent = dimToAdd.getExtent();
-        for (int i = extent.getDimension(); --i >= 0;) {
-            final long size = extent.getSize(i);
+        int i = extent.getDimension();
+        if (i == 0) {
+            return source;
+        }
+        do {
+            final long size = extent.getSize(--i);
             if (size != 1) {
                 throw new IllegalGridGeometryException(Resources.format(Resources.Keys.NotASlice_2,
                         extent.getAxisIdentification(i,i), size));
             }
-        }
-    }
-
-    /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    @Workaround(library="JDK", version="1.7")
-    static DimensionAppender create(GridCoverage source, GridGeometry dimToAdd) throws FactoryException {
+        } while (i != 0);
         if (source instanceof DimensionAppender) {
             final var a = (DimensionAppender) source;
             dimToAdd = new GridGeometry(a.dimToAdd, dimToAdd);
             source = a.source;
         }
         return new DimensionAppender(source, dimToAdd);
+    }
+
+    /**
+     * Returns a grid coverage with a subset of the grid dimensions, or {@code null} if not possible by this method.
+     *
+     * @param  gridAxesToPass  the grid dimensions to keep. Indices must be in strictly increasing order.
+     * @return a grid coverage with the specified dimensions, or {@code null}.
+     * @throws FactoryException if the compound CRS cannot be created.
+     */
+    final GridCoverage selectDimensions(final int[] gridAxesToPass) throws FactoryException {
+        final int sourceDim = source.getGridGeometry().getDimension();
+        final int dimension = gridAxesToPass.length;
+        if (dimension < sourceDim || gridAxesToPass[0] != 0 || gridAxesToPass[sourceDim - 1] != sourceDim - 1) {
+            return null;
+        }
+        if (dimension == sourceDim) {
+            return source;
+        }
+        final int[] selected = new int[dimension - sourceDim];
+        for (int i=sourceDim; i<dimension; i++) {
+            selected[i - sourceDim] = gridAxesToPass[i] - sourceDim;
+        }
+        return create(source, dimToAdd.selectDimensions(selected));
     }
 
     /**

@@ -301,6 +301,31 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Constructs a one-dimensional grid extent set to the specified coordinates.
+     * This convenience constructor does the same work than the constructor for the
+     * {@linkplain #GridExtent(org.opengis.metadata.spatial.DimensionNameType[], long[], long[], boolean) general case}.
+     * It is provided as a convenience for {@linkplain #GridExtent(GridExtent, GridExtent) appending a single dimension}
+     * to an existing grid.
+     *
+     * @param  axisType        the type of the grid axis, or {@code null} if unspecified.
+     * @param  low             the valid minimum grid coordinate, always inclusive.
+     * @param  high            the valid maximum grid coordinate, inclusive or exclusive depending on the next argument.
+     * @param  isHighIncluded  {@code true} if the {@code high} value is inclusive (as in ISO 19123 specification),
+     *                         or {@code false} if it is exclusive (as in Java2D usage).
+     * @throws IllegalArgumentException if {@code low} is greater than {@code high}.
+     *
+     * @since 1.5
+     */
+    public GridExtent(final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+        if (!isHighIncluded) {
+            high = Math.decrementExact(high);
+        }
+        coordinates = new long[] {low, high};
+        types = validateAxisTypes(new DimensionNameType[] {axisType});
+        validateCoordinates();
+    }
+
+    /**
      * Constructs a new grid extent set to the specified coordinates.
      * The given arrays contain a minimum (inclusive) and maximum value for each dimension of the grid coverage.
      * The lowest valid grid coordinates are often zero, but this is not mandatory.

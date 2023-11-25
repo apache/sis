@@ -68,7 +68,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.4
  */
 public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Serializable {
@@ -171,7 +171,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @param  source    the grid geometry on which to select a subset of its grid dimensions.
      * @param  gridAxes  bitmask of indices of source grid dimensions to keep in the reduced grid.
      *                   Will be modified by this constructor for internal purpose.
-     * @param  factory   the factory to use for creating new math transforms, or {@code null} if none.
+     * @param  factory   the factory to use for creating new math transforms, or {@code null} for the default.
      * @throws FactoryException if the dimensions to keep cannot be separated from the dimensions to omit.
      */
     protected DimensionalityReduction(final GridGeometry source, final BitSet gridAxes, final MathTransformFactory factory)
@@ -262,7 +262,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @param  gridAxesToRemove  the dimensions on which to operate.
      * @param  bitset   same as {@link gridAxesToRemove} but as a bit set (for efficiency).
      * @param  anchor   whether to compute the transform for pixel corner or pixel center.
-     * @param  factory  the factory to use for creating new math transforms, or {@code null} if none.
+     * @param  factory  the factory to use for creating new math transforms, or {@code null} for the default.
      */
     private MathTransform filterGridToCRS(final int[] gridAxesToRemove, final BitSet bitset, final PixelInCell anchor,
             final MathTransformFactory factory) throws FactoryException
@@ -734,7 +734,14 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
     public GridCoverage apply(final GridCoverage source) {
         ArgumentChecks.ensureNonNull("source", source);
         ensureSameAxes(sourceGeometry.extent, source.getGridGeometry().extent);
-        return isIdentity() ? source : new ReducedGridCoverage(source, this);
+        if (isIdentity()) return source;
+        if (source instanceof DimensionAppender) try {
+            GridCoverage c = ((DimensionAppender) source).selectDimensions(gridAxesToPass);
+            if (c != null) return c;
+        } catch (FactoryException e) {
+            throw new IllegalGridGeometryException(Resources.format(Resources.Keys.NonSeparableReducedDimensions, e));
+        }
+        return new ReducedGridCoverage(source, this);
     }
 
     /**

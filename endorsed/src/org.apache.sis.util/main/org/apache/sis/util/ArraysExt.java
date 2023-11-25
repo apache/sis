@@ -1915,6 +1915,25 @@ public final class ArraysExt extends Static {
     }
 
     /**
+     * Returns a copy of the given array where each value has been casted to the {@code double} type.
+     * This method does not verify if the casts would cause data loss.
+     *
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values casted to the {@code double} type,
+     *         or {@code null} if the given array was null.
+     *
+     * @since 1.5
+     */
+    public static double[] copyAsDoubles(final long[] data) {
+        if (data == null) return null;
+        final double[] result = new double[data.length];
+        for (int i=0; i<data.length; i++) {
+            result[i] = data[i];
+        }
+        return result;
+    }
+
+    /**
      * Returns a copy of the given array where each value has been casted to the {@code float} type.
      * This method does not verify if the casts would cause data loss.
      *
