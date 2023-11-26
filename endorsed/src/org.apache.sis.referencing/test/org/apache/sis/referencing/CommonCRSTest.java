@@ -275,6 +275,7 @@ public final class CommonCRSTest extends TestCase {
                 case DUBLIN_JULIAN:    epoch = "1899-12-31 12:00:00"; days = 2415020.0; break;
                 case MODIFIED_JULIAN:  epoch = "1858-11-17 00:00:00"; days = 2400000.5; break;
                 case JULIAN:           epoch = "4713-01-01 12:00:00"; days = 0;         break;
+                case TROPICAL_YEAR:    epoch = "2000-01-01 00:00:00"; days = 2451544.5; break;
                 default: throw new AssertionError(e);
             }
             final String        name   = e.name();

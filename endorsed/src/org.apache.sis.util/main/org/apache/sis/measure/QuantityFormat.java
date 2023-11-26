@@ -35,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
  * Parses and formats numbers with units of measurement.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see NumberFormat
  * @see UnitFormat
@@ -229,6 +229,24 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
             pos.setIndex(start);        // By `Format.parseObject(…)` method contract.
         }
         return null;
+    }
+
+    /**
+     * Parses only a number without units of measurement.
+     * This method is sometime useful when the number is in a context where the unit is not repeated.
+     *
+     * @param  source  the number to parse.
+     * @return the number parsed from the specified text.
+     * @throws MeasurementParseException if the given text cannot be parsed.
+     * @since  1.5
+     */
+    public Number parseNumber(final String source) throws MeasurementParseException {
+        final var pos = new ParsePosition(0);
+        final Number value = numberFormat.parse(source, pos);
+        if (value != null) {
+            return value;
+        }
+        throw new MeasurementParseException(Errors.format(Errors.Keys.CanNotParse_1, source), source, pos.getErrorIndex());
     }
 
     /**

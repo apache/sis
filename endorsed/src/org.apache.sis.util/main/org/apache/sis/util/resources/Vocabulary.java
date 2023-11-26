@@ -1220,6 +1220,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short TemporalExtent = 192;
 
         /**
+         * Temporal ({0})
+         */
+        public static final short Temporal_1 = 276;
+
+        /**
          * Temporary files
          */
         public static final short TemporaryFiles = 193;
@@ -1283,6 +1288,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Transparent
          */
         public static final short Transparent = 249;
+
+        /**
+         * Tropical year
+         */
+        public static final short TropicalYear = 275;
 
         /**
          * True

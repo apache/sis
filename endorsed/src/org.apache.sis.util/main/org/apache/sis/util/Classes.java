@@ -115,6 +115,7 @@ public final class Classes extends Static {
                 do element = element.getComponentType();
                 while (element!=null && ++change != 0);
             } else if (element != Void.TYPE) {
+                // TODO: use Class.arrayType() with JDK12.
                 final StringBuilder buffer = new StringBuilder();
                 do buffer.insert(0, '[');
                 while (--change != 0);
