@@ -89,6 +89,7 @@ import org.apache.sis.storage.Query;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
@@ -125,7 +126,7 @@ import org.opengis.filter.ValueReference;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ShapefileStore extends DataStore implements WritableFeatureSet {
+public final class ShapefileStore extends DataStore implements WritableFeatureSet, ResourceOnFileSystem {
 
     private static final String GEOMETRY_NAME = "geometry";
     private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.shapefile");
@@ -220,7 +221,12 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         featureSetView.replaceIf(predicate, unaryOperator);
     }
 
-    private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
+    @Override
+    public Path[] getComponentFiles() throws DataStoreException {
+        return featureSetView.getComponentFiles();
+    }
+
+    private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet, ResourceOnFileSystem {
 
         private final Rectangle2D.Double filter;
         private final Set<String> dbfProperties;
@@ -691,6 +697,22 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         public void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater) throws DataStoreException {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Path[] getComponentFiles() throws DataStoreException {
+            final List<Path> paths = new ArrayList<>();
+            final Path shp = files.shpFile;
+            final Path shx = files.getShx(false);
+            final Path dbf = files.getDbf(false);
+            final Path prj = files.getPrj(false);
+            final Path cpg = files.getCpg(false);
+            if (shp != null && Files.exists(shp)) paths.add(shp);
+            if (shx != null && Files.exists(shx)) paths.add(shx);
+            if (dbf != null && Files.exists(dbf)) paths.add(dbf);
+            if (prj != null && Files.exists(prj)) paths.add(prj);
+            if (cpg != null && Files.exists(cpg)) paths.add(cpg);
+            return paths.toArray(Path[]::new);
         }
     }
 
