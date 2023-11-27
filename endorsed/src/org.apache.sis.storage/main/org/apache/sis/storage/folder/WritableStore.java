@@ -107,10 +107,7 @@ final class WritableStore extends Store implements WritableAggregate {
          */
         final Path path = location.resolve(filename);
         if (!children.containsKey(path)) {
-            final StorageConnector connector = new StorageConnector(path);
-            connector.setOption(OptionKey.LOCALE,   locale);
-            connector.setOption(OptionKey.TIMEZONE, timezone);
-            connector.setOption(OptionKey.ENCODING, encoding);
+            final StorageConnector connector = new StorageConnector(configuration, path);
             connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
                 StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE
             });
