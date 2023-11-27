@@ -105,7 +105,7 @@ public final class StoreProvider extends URIDataStore.Provider {
 
         /**
          * Returns the value to be returned by {@link StoreProvider#probeContent(StorageConnector)}
-         * for the given WKT keyword. This method changes the case to match the one used in the keywords map,
+         * for the given keyword. This method changes the case to match the one used in the keywords map,
          * then verify if the keyword that we found is one of the known WKT keywords. Keywords with the "CRS"
          * suffix are WKT 2 while keywords with the "CS" suffix are WKT 1.
          */

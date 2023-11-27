@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import org.apache.sis.pending.jdk.JDK17;
+import org.apache.sis.pending.jdk.JDK13;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -217,11 +217,11 @@ final class CharactersView implements CharSequence {
         if (direct) {
             return new String(array, start, length, StandardCharsets.US_ASCII);
         } else if (length <= array.length) {
-            JDK17.get(buffer, start, array, 0, length);
+            JDK13.get(buffer, start, array, 0, length);
             return new String(array, 0, length, StandardCharsets.US_ASCII);
         } else {
             final byte[] data = new byte[length];
-            JDK17.get(buffer, start, data);
+            JDK13.get(buffer, start, data);
             return new String(data, StandardCharsets.US_ASCII);
         }
     }

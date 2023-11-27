@@ -235,7 +235,7 @@ public class LandsatStore extends DataStore implements Aggregate {
         } catch (IOException e) {
             throw new DataStoreException(e);
         } catch (FactoryException e) {
-            throw new DataStoreReferencingException(e);
+            throw new DataStoreReferencingException(e.getMessage(), e);
         }
         final BandGroup[] bands = BandGroup.group(listeners, resources, count);
         for (final BandGroup c : bands) {

@@ -77,7 +77,7 @@ public final class ShapeHeader {
             throw new IOException("Incorrect file signature");
         }
         //skip unused datas
-        channel.skipBytes(5*4);
+        channel.seek(channel.getStreamPosition() + 5*4);
         fileLength = channel.readInt() * 2; //in 16bits words
 
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);

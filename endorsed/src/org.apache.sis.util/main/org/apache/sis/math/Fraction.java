@@ -21,6 +21,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.internal.Numerics;
+import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 
 /**
@@ -127,7 +128,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
          * exact match is found, the best match will be taken.
          */
         long significand = Numerics.getSignificand(value);
-        int  exponent    = Math.getExponent(value) - Numerics.SIGNIFICAND_SIZE;                 // Power of 2.
+        int  exponent    = Math.getExponent(value) - (DOUBLE_PRECISION - 1);                    // Power of 2.
         int  shift       = Long.numberOfTrailingZeros(significand);
         significand >>>= shift;
         exponent      += shift;
@@ -155,14 +156,14 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
              * starting with base 10. We will multiply the numerator and denominator by the largest power of 10 (or other base)
              * that can be used without causing an overflow, then simplify the fraction.
              */
-            final double toMaximalSignificand = ((1L << Numerics.SIGNIFICAND_SIZE) - 1) / Math.ceil(Math.abs(value));
+            final double toMaximalSignificand = Numerics.SIGNIFICAND_MASK / Math.ceil(Math.abs(value));
             if (toMaximalSignificand > 1) {
-                exponent = Numerics.toExp10(Math.getExponent(toMaximalSignificand));                // Power of 10.
+                exponent = Numerics.toExp10(Math.getExponent(toMaximalSignificand));        // Power of 10.
                 double factor = DecimalFunctions.pow10(exponent + 1);
                 if (factor > toMaximalSignificand) {
                     factor = DecimalFunctions.pow10(exponent);
                 }
-                assert factor >= 1 && factor <= (1L << Numerics.SIGNIFICAND_SIZE) - 1 : factor;     // For use as denominator.
+                assert factor >= 1 && factor <= Numerics.SIGNIFICAND_MASK : factor;         // For use as denominator.
                 try {
                     final Fraction f = simplify(null, Math.round(value * factor), Math.round(factor));
                     if (f.doubleValue() == value) return f;

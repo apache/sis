@@ -22,7 +22,7 @@ import static java.lang.Math.multiplyExact;
 import static java.lang.Math.incrementExact;
 import static java.lang.Math.toIntExact;
 import org.apache.sis.io.TableAppender;
-import static org.apache.sis.util.internal.Numerics.ceilDiv;
+import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 
 /**

@@ -24,7 +24,6 @@ import java.util.Optional;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.filter.internal.XPath;
 import org.apache.sis.math.FunctionProperty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -124,11 +123,7 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
      */
     @Override
     public final String getXPath() {
-        String s = new XPath(path, accessor.name).toString();
-        if (accessor.isVirtual) {
-            s = PropertyValue.VIRTUAL_PREFIX.concat(s);
-        }
-        return s;
+        return accessor.getXPath(path);
     }
 
     /**

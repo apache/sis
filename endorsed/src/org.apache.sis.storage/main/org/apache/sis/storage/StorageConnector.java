@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
 import java.util.function.UnaryOperator;
@@ -55,9 +56,11 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.io.InvalidSeekException;
@@ -72,7 +75,6 @@ import org.apache.sis.io.stream.InputStreamAdapter;
 import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.system.Configuration;
-import org.apache.sis.util.internal.Strings;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -623,15 +625,19 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Returns the option value for the given key, or {@code null} if none.
+     * Creates a new data store connection which has a sub-component of a larger data store.
+     * The new storage connector inherits all options that were specified in the parent connector.
      *
-     * @param  <T>  the type of option value.
-     * @param  key  the option for which to get the value.
-     * @return the current value for the given option, or {@code null} if none.
+     * @param  parent  the storage connector from which to inherit options.
+     * @param storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     *
+     * @since 1.5
      */
-    public <T> T getOption(final OptionKey<T> key) {
-        ArgumentChecks.ensureNonNull("key", key);
-        return key.getValueFrom(options);
+    public StorageConnector(final StorageConnector parent, final Object storage) {
+        this(storage);
+        if (!Containers.isNullOrEmpty(parent.options)) {
+            options = new HashMap<>(parent.options);
+        }
     }
 
     /**
@@ -651,6 +657,19 @@ public class StorageConnector implements Serializable {
     public <T> void setOption(final OptionKey<T> key, final T value) {
         ArgumentChecks.ensureNonNull("key", key);
         options = key.setValueInto(options, value);
+    }
+
+    /**
+     * Returns the option value for the given key, or {@code null} if none.
+     * This is the value specified by the last call to a {@code setOption(…)} with the given key.
+     *
+     * @param  <T>  the type of option value.
+     * @param  key  the option for which to get the value.
+     * @return the current value for the given option, or {@code null} if none.
+     */
+    public <T> T getOption(final OptionKey<T> key) {
+        ArgumentChecks.ensureNonNull("key", key);
+        return key.getValueFrom(options);
     }
 
     /**

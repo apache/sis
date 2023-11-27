@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.DerivedCRS;
@@ -32,10 +33,11 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -64,8 +66,8 @@ public final class GridGeometryTest extends TestCase {
      * Verifies grid extent coordinates.
      */
     static void assertExtentEquals(final long[] low, final long[] high, final GridExtent extent) {
-        assertArrayEquals("extent.low",  low,  extent.getLow() .getCoordinateValues());
-        assertArrayEquals("extent.high", high, extent.getHigh().getCoordinateValues());
+        assertArrayEquals(low,  extent.getLow() .getCoordinateValues(), "extent.low");
+        assertArrayEquals(high, extent.getHigh().getCoordinateValues(), "extent.high");
     }
 
     /**
@@ -123,16 +125,16 @@ public final class GridGeometryTest extends TestCase {
          * Verify properties that should be stored "as-is".
          */
         final MathTransform trCorner = grid.getGridToCRS(PixelInCell.CELL_CORNER);
-        assertSame("gridToCRS", identity, trCorner);
+        assertSame(identity, trCorner, "gridToCRS");
         assertExtentEquals(low, high, grid.getExtent());
         /*
          * Verify computed math transform.
          */
         final MathTransform trCenter = grid.getGridToCRS(PixelInCell.CELL_CENTER);
         assertNotSame(trCenter, trCorner);
-        assertFalse ("gridToCRS.isIdentity",          trCenter.isIdentity());
-        assertEquals("gridToCRS.sourceDimensions", 4, trCenter.getSourceDimensions());
-        assertEquals("gridToCRS.targetDimensions", 4, trCenter.getTargetDimensions());
+        assertFalse (trCenter.isIdentity(), "gridToCRS.isIdentity");
+        assertEquals(4, trCenter.getSourceDimensions(), "gridToCRS.sourceDimensions");
+        assertEquals(4, trCenter.getTargetDimensions(), "gridToCRS.targetDimensions");
         assertMatrixEquals("gridToCRS", Matrices.create(5, 5, new double[] {
                 1, 0, 0, 0, 0.5,
                 0, 1, 0, 0, 0.5,
@@ -148,8 +150,8 @@ public final class GridGeometryTest extends TestCase {
         /*
          * Verify other computed properties.
          */
-        assertArrayEquals("resolution", new double[] {1, 1, 1, 1}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1, 2, 3));
+        assertArrayEquals(new double[] {1, 1, 1, 1}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1, 2, 3), "isConversionLinear");
         verifyGridToCRS(grid);
     }
 
@@ -168,16 +170,16 @@ public final class GridGeometryTest extends TestCase {
          * Verify properties that should be stored "as-is".
          */
         final MathTransform trCenter = grid.getGridToCRS(PixelInCell.CELL_CENTER);
-        assertSame("gridToCRS", identity, trCenter);
+        assertSame(identity, trCenter, "gridToCRS");
         assertExtentEquals(low, high, grid.getExtent());
         /*
          * Verify computed math transform.
          */
         final MathTransform trCorner = grid.getGridToCRS(PixelInCell.CELL_CORNER);
         assertNotSame(trCenter, trCorner);
-        assertFalse ("gridToCRS.isIdentity",          trCorner.isIdentity());
-        assertEquals("gridToCRS.sourceDimensions", 3, trCorner.getSourceDimensions());
-        assertEquals("gridToCRS.targetDimensions", 3, trCorner.getTargetDimensions());
+        assertFalse (trCorner.isIdentity(), "gridToCRS.isIdentity");
+        assertEquals(3, trCorner.getSourceDimensions(), "gridToCRS.sourceDimensions");
+        assertEquals(3, trCorner.getTargetDimensions(), "gridToCRS.targetDimensions");
         assertMatrixEquals("gridToCRS", new Matrix4(
                 1, 0, 0, -0.5,
                 0, 1, 0, -0.5,
@@ -192,8 +194,8 @@ public final class GridGeometryTest extends TestCase {
         /*
          * Verify other computed properties.
          */
-        assertArrayEquals("resolution", new double[] {1, 1, 1}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1, 2));
+        assertArrayEquals(new double[] {1, 1, 1}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1, 2), "isConversionLinear");
         verifyGridToCRS(grid);
     }
 
@@ -224,8 +226,8 @@ public final class GridGeometryTest extends TestCase {
         /*
          * Verify other computed properties.
          */
-        assertArrayEquals("resolution", new double[] {2, 1, 3}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1, 2));
+        assertArrayEquals(new double[] {2, 1, 3}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1, 2), "isConversionLinear");
         verifyGridToCRS(grid);
     }
 
@@ -275,7 +277,7 @@ public final class GridGeometryTest extends TestCase {
                 0, 1, 0.5,
                 0, 0, 1));
         final GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, null);
-        assertTrue("gridToCRS.isIdentity", grid.getGridToCRS(PixelInCell.CELL_CORNER).isIdentity());
+        assertTrue(grid.getGridToCRS(PixelInCell.CELL_CORNER).isIdentity(), "gridToCRS.isIdentity");
         verifyGridToCRS(grid);
     }
 
@@ -301,10 +303,10 @@ public final class GridGeometryTest extends TestCase {
         final MathTransform temporal  = MathTransforms.linear(3600, 60);
         final MathTransform gridToCRS = MathTransforms.compound(horizontal, vertical, temporal);
         final GridGeometry  grid      = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, null);
-        assertArrayEquals("resolution", new double[] {0.5, 0.25,        6.0, 3600}, grid.getResolution(true),  STRICT);
-        assertArrayEquals("resolution", new double[] {0.5, 0.25, Double.NaN, 3600}, grid.getResolution(false), STRICT);
-        assertFalse("isConversionLinear", grid.isConversionLinear(0, 1, 2, 3));
-        assertTrue ("isConversionLinear", grid.isConversionLinear(0, 1,    3));
+        assertArrayEquals(new double[] {0.5, 0.25,        6.0, 3600}, grid.getResolution(true),  "resolution");
+        assertArrayEquals(new double[] {0.5, 0.25, Double.NaN, 3600}, grid.getResolution(false), "resolution");
+        assertFalse(grid.isConversionLinear(0, 1, 2, 3), "isConversionLinear");
+        assertTrue (grid.isConversionLinear(0, 1,    3), "isConversionLinear");
     }
 
     /**
@@ -327,7 +329,7 @@ public final class GridGeometryTest extends TestCase {
         assertEnvelopeEquals(new GeneralEnvelope(
                 new double[] {-70,  5},
                 new double[] {+80, 15}), grid.getEnvelope(), STRICT);
-        assertArrayEquals("resolution", new double[] {0.5, 0.5}, grid.getResolution(false), STRICT);
+        assertArrayEquals(new double[] {0.5, 0.5}, grid.getResolution(false), "resolution");
         assertMatrixEquals("gridToCRS", new Matrix3(
                 0,   0.5, -89.75,
                 0.5, 0,  -179.75,
@@ -335,8 +337,8 @@ public final class GridGeometryTest extends TestCase {
         /*
          * Verify other computed properties.
          */
-        assertArrayEquals("resolution", new double[] {0.5, 0.5}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
+        assertArrayEquals(new double[] {0.5, 0.5}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1), "isConversionLinear");
         verifyGridToCRS(grid);
     }
 
@@ -366,9 +368,9 @@ public final class GridGeometryTest extends TestCase {
                 0,    0,    1), matrix, STRICT);
 
         // Verify other computed properties.
-        assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
-        assertSame("extent", extent, grid.getExtent());
+        assertArrayEquals(new double[] {0.5, 2}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1), "isConversionLinear");
+        assertSame(extent, grid.getExtent(), "extent");
         verifyGridToCRS(grid);
         /*
          * Same envelope and extent, but flip Y axis.
@@ -382,9 +384,9 @@ public final class GridGeometryTest extends TestCase {
                 0,    0,    1), matrix, STRICT);
 
         // Verify other computed properties.
-        assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
-        assertSame("extent", extent, grid.getExtent());
+        assertArrayEquals(new double[] {0.5, 2}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1), "isConversionLinear");
+        assertSame(extent, grid.getExtent(), "extent");
         verifyGridToCRS(grid);
         /*
          * The use of `DISPLAY` mode in this particular case should be equivalent ro `REFLECTION_Y`.
@@ -423,9 +425,9 @@ public final class GridGeometryTest extends TestCase {
                 0,    0,    1), matrix, STRICT);
 
         // Verify other computed properties.
-        assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
-        assertSame("extent", extent, grid.getExtent());
+        assertArrayEquals(new double[] {0.5, 2}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1), "isConversionLinear");
+        assertSame(extent, grid.getExtent(), "extent");
         verifyGridToCRS(grid);
         /*
          * Same extent and envelope, but reordering extend dimensions
@@ -443,9 +445,9 @@ public final class GridGeometryTest extends TestCase {
                 new long[] {  9,  14}, grid.getExtent());
 
         // Verify other computed properties.
-        assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
-        assertNotSame("extent", extent, grid.getExtent());
+        assertArrayEquals(new double[] {0.5, 2}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1), "isConversionLinear");
+        assertNotSame(extent, grid.getExtent(), "extent");
         verifyGridToCRS(grid);
     }
 
@@ -467,7 +469,7 @@ public final class GridGeometryTest extends TestCase {
         final Matrix   gridToCRS = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
         final Number[] numbers   = ((ExtendedPrecisionMatrix) gridToCRS).getElementAsNumbers(false);
         final double[] elements  = MatrixSIS.castOrCopy(gridToCRS).getElements();
-        assertArrayEquals(new double[] {360, 0, 0, -180, 0, 180, 0, -90, 0, 0, 3000, -1000, 0, 0, 0, 1}, elements, STRICT);
+        assertArrayEquals(new double[] {360, 0, 0, -180, 0, 180, 0, -90, 0, 0, 3000, -1000, 0, 0, 0, 1}, elements);
         assertEquals(elements.length, numbers.length);
         for (int i=0; i<elements.length; i++) {
             final double expected = elements[i];
@@ -475,7 +477,7 @@ public final class GridGeometryTest extends TestCase {
             if (expected == 0) {
                 assertNull(actual);
             } else {
-                assertEquals(expected, actual.doubleValue(), STRICT);
+                assertEquals(expected, actual.doubleValue());
             }
         }
     }
@@ -539,9 +541,9 @@ public final class GridGeometryTest extends TestCase {
             final MathTransform gridToCRS = MathTransforms.linear(mat);
             expected = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
         }
-        assertSame("envelope", grid.getEnvelope(), upsampled.getEnvelope());
-        assertEquals("GridGeometry", expected, upsampled);
-        assertArrayEquals("resolution", new double[] {0.25, 0.5}, expected.getResolution(false), STRICT);
+        assertSame(grid.getEnvelope(), upsampled.getEnvelope(), "envelope");
+        assertEquals(expected, upsampled, "GridGeometry");
+        assertArrayEquals(new double[] {0.25, 0.5}, expected.getResolution(false), "resolution");
     }
 
     /**
@@ -613,8 +615,8 @@ public final class GridGeometryTest extends TestCase {
         GridGeometry reduced = grid.selectDimensions(0, 1);
         assertNotSame(grid, reduced);
         assertExtentEquals(new long[] {336, 20}, new long[] {401, 419}, reduced.getExtent());
-        assertSame("CRS", HardCodedCRS.WGS84, reduced.getCoordinateReferenceSystem());
-        assertArrayEquals("resolution", new double[] {0.5, 0.5}, reduced.getResolution(false), STRICT);
+        assertSame(HardCodedCRS.WGS84, reduced.getCoordinateReferenceSystem(), "CRS");
+        assertArrayEquals(new double[] {0.5, 0.5}, reduced.getResolution(false), "resolution");
         assertMatrixEquals("gridToCRS", new Matrix3(
                   0, 0.5,  -90,
                   0.5, 0, -180,
@@ -625,16 +627,16 @@ public final class GridGeometryTest extends TestCase {
         reduced = grid.selectDimensions(2);
         assertNotSame(grid, reduced);
         assertExtentEquals(new long[] {4}, new long[] {10}, reduced.getExtent());
-        assertSame("CRS", HardCodedCRS.GRAVITY_RELATED_HEIGHT, reduced.getCoordinateReferenceSystem());
-        assertArrayEquals("resolution", new double[] {2}, reduced.getResolution(false), STRICT);
+        assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT, reduced.getCoordinateReferenceSystem(), "CRS");
+        assertArrayEquals(new double[] {2}, reduced.getResolution(false), "resolution");
         assertMatrixEquals("gridToCRS", new Matrix2(
                   2, 3,
                   0, 1), MathTransforms.getMatrix(reduced.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
         /*
          * Verify other computed properties.
          */
-        assertArrayEquals("resolution", new double[] {0.5, 0.5, 2}, grid.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1, 2));
+        assertArrayEquals(new double[] {0.5, 0.5, 2}, grid.getResolution(false), "resolution");
+        assertTrue(grid.isConversionLinear(0, 1, 2), "isConversionLinear");
         verifyGridToCRS(grid);
     }
 
@@ -668,8 +670,8 @@ public final class GridGeometryTest extends TestCase {
         /*
          * Verify other computed properties.
          */
-        assertArrayEquals("resolution", new double[] {0.5, 0.5}, reduced.getResolution(false), STRICT);
-        assertTrue("isConversionLinear", reduced.isConversionLinear(0, 1));
+        assertArrayEquals(new double[] {0.5, 0.5}, reduced.getResolution(false), "resolution");
+        assertTrue(reduced.isConversionLinear(0, 1), "isConversionLinear");
         verifyGridToCRS(reduced);
         /*
          * Test again by keeping the dimension without scale instead of discarding it.
@@ -678,6 +680,44 @@ public final class GridGeometryTest extends TestCase {
         reduced = grid.selectDimensions(2);
         tr = reduced.getGridToCRS(PixelInCell.CELL_CORNER);
         assertMatrixEquals("gridToCRS", new Matrix2(0, 3, 0, 1), MathTransforms.getMatrix(tr), STRICT);
+    }
+
+    /**
+     * Tests {@link GridGeometry#GridGeometry(GridGeometry, GridGeometry)}.
+     *
+     * @throws FactoryException if the constructor could not combine the CRS.
+     */
+    @Test
+    public void testConcatenate() throws FactoryException {
+        final GridGeometry lower = new GridGeometry(
+                new GridExtent(null, null, new long[] {17, 10}, true),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                    1,   0,  -7,
+                    0,  -1,  50,
+                    0,   0,   1)),
+                HardCodedCRS.WGS84);
+
+        final GridGeometry upper = new GridGeometry(
+                new GridExtent(null, null, new long[] {4}, true),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix2(
+                    8, 20,
+                    0,  1)),
+                HardCodedCRS.TIME);
+
+        final GridGeometry expected = new GridGeometry(
+                new GridExtent(null, null, new long[] {17, 10, 4}, true),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix4(
+                    1,   0,  0, -7,
+                    0,  -1,  0, 50,
+                    0,   0,  8, 20,
+                    0,   0,  0,  1)),
+                HardCodedCRS.WGS84_WITH_TIME);
+
+        final GridGeometry actual = new GridGeometry(lower, upper);
+        assertTrue(actual.equals(expected, ComparisonMode.DEBUG));
     }
 
     /**

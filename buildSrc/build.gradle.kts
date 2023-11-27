@@ -16,6 +16,7 @@
  */
 plugins {
     `java-gradle-plugin`
+    `kotlin-dsl`
 }
 
 gradlePlugin {
@@ -23,29 +24,6 @@ gradlePlugin {
         create("buildTools") {
             id = "org.apache.sis.buildtools"
             implementationClass = "org.apache.sis.buildtools.gradle.BuildHelper"
-        }
-    }
-}
-
-/*
- * Source files are organized following the same convention than other Apache SIS sub-projects.
- * However since there is currently only one module in `buildSRC`, we do not need to configure
- * for Module Source Hierarchy. We let Gradle uses Package Hierarchy (the default Gradle mode)
- * and simulate the module source hierarchy with `setSrcDirs(…)`.
- */
-sourceSets {
-    main {
-        java {
-            setSrcDirs(listOf("src/org.apache.sis.buildtools/main"))
-        }
-        resources {
-            setSrcDirs(listOf("src/org.apache.sis.buildtools/main"))
-            include("**/*.lst")
-        }
-    }
-    test {
-        java {
-            setSrcDirs(listOf("src/org.apache.sis.buildtools/test"))
         }
     }
 }

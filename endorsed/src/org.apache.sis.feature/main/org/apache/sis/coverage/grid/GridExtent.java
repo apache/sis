@@ -35,6 +35,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
@@ -91,7 +92,7 @@ import org.opengis.coverage.grid.GridCoordinates;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.0
  */
 public class GridExtent implements GridEnvelope, LenientComparable, Serializable {
@@ -301,6 +302,31 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Constructs a one-dimensional grid extent set to the specified coordinates.
+     * This convenience constructor does the same work than the constructor for the
+     * {@linkplain #GridExtent(org.opengis.metadata.spatial.DimensionNameType[], long[], long[], boolean) general case}.
+     * It is provided as a convenience for {@linkplain #GridExtent(GridExtent, GridExtent) appending a single dimension}
+     * to an existing grid.
+     *
+     * @param  axisType        the type of the grid axis, or {@code null} if unspecified.
+     * @param  low             the valid minimum grid coordinate, always inclusive.
+     * @param  high            the valid maximum grid coordinate, inclusive or exclusive depending on the next argument.
+     * @param  isHighIncluded  {@code true} if the {@code high} value is inclusive (as in ISO 19123 specification),
+     *                         or {@code false} if it is exclusive (as in Java2D usage).
+     * @throws IllegalArgumentException if {@code low} is greater than {@code high}.
+     *
+     * @since 1.5
+     */
+    public GridExtent(final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+        if (!isHighIncluded) {
+            high = Math.decrementExact(high);
+        }
+        coordinates = new long[] {low, high};
+        types = validateAxisTypes(new DimensionNameType[] {axisType});
+        validateCoordinates();
+    }
+
+    /**
      * Constructs a new grid extent set to the specified coordinates.
      * The given arrays contain a minimum (inclusive) and maximum value for each dimension of the grid coverage.
      * The lowest valid grid coordinates are often zero, but this is not mandatory.
@@ -352,6 +378,47 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         }
         types = validateAxisTypes(axisTypes);
         validateCoordinates();
+    }
+
+    /**
+     * Creates a new grid extent as the concatenation of the two specified grid extent.
+     * The number of dimensions of the new extent is the sum of the number of dimensions
+     * of the two specified extents. The dimensions of the lower extent are first,
+     * followed by the dimensions of the upper extent.
+     *
+     * @param  lower  the grid extent providing the lowest dimensions.
+     * @param  upper  the grid extent providing the highest dimensions.
+     * @throws IllegalArgumentException if the concatenation results in duplicated {@linkplain #getAxisType(int) axis types}.
+     *
+     * @since 1.5
+     */
+    public GridExtent(final GridExtent lower, final GridExtent upper) {
+        final int d1  = lower.getDimension();
+        final int d2  = upper.getDimension();
+        final int dim = d1 + d2;
+        final var axisTypes = new DimensionNameType[dim];
+        if (lower.types != null) System.arraycopy(lower.types, 0, axisTypes,  0, d1);
+        if (upper.types != null) System.arraycopy(upper.types, 0, axisTypes, d1, d2);
+        types = validateAxisTypes(axisTypes);
+        coordinates = allocate(dim);
+        System.arraycopy(lower.coordinates,  0, coordinates,      0, d1);
+        System.arraycopy(upper.coordinates,  0, coordinates,     d1, d2);
+        System.arraycopy(lower.coordinates, d1, coordinates, dim,    d1);
+        System.arraycopy(upper.coordinates, d2, coordinates, dim+d1, d2);
+    }
+
+    /**
+     * Suggests a grid dimension name for the given coordinate system axis.
+     * Note that grid axes are not necessarily in the same order than CRS axes.
+     * This method may be used when the caller knows which CRS axis will be associated to a grid axis.
+     *
+     * @param  axis  the coordinate system axis for which to get a suggested grid dimension name.
+     * @return suggested grid dimension for the given CRS axis.
+     *
+     * @since 1.5
+     */
+    public static Optional<DimensionNameType> typeFromAxis(final CoordinateSystemAxis axis) {
+        return Optional.ofNullable(AXIS_DIRECTIONS.get(AxisDirections.absolute(axis.getDirection())));
     }
 
     /**

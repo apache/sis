@@ -33,6 +33,8 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.system.Configuration;
+import static org.apache.sis.pending.jdk.JDK19.FLOAT_PRECISION;
+import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 
 /**
@@ -112,21 +114,28 @@ public final class Numerics extends Static {
     public static final long HIGH_BITS_MASK = ~((1L << Integer.SIZE) - 1);
 
     /**
-     * Number of bits in the significand (mantissa) part of IEEE 754 {@code double} representation,
+     * Mask for bits in the significand (mantissa) part of IEEE 754 {@code double} representation,
      * <strong>not</strong> including the hidden bit.
      */
-    public static final int SIGNIFICAND_SIZE = 52;
+    public static final long SIGNIFICAND_MASK = (1L << (DOUBLE_PRECISION - 1)) - 1;
 
     /**
-     * Number of bits in the significand (mantissa) part of IEEE 754 {@code float} representation,
+     * Mask for bits in the significand (mantissa) part of IEEE 754 {@code float} representation,
      * <strong>not</strong> including the hidden bit.
      */
-    public static final int SIGNIFICAND_SIZE_OF_FLOAT = 23;
+    public static final int SIGNIFICAND_MASK_OF_FLOAT = (1 << (FLOAT_PRECISION - 1)) - 1;
 
     /**
      * Maximal integer value which is convertible to {@code float} type without lost of precision digits.
      */
-    public static final int MAX_INTEGER_CONVERTIBLE_TO_FLOAT = 1 << (SIGNIFICAND_SIZE_OF_FLOAT + 1);
+    public static final int MAX_INTEGER_CONVERTIBLE_TO_FLOAT = 1 << FLOAT_PRECISION;
+
+    /**
+     * Maximal integer value which is convertible to {@code double} type without lost of precision digits.
+     *
+     * @see #clampForDouble(long)
+     */
+    public static final long MAX_INTEGER_CONVERTIBLE_TO_DOUBLE = 1L << DOUBLE_PRECISION;
 
     /**
      * Right shift to apply for a result equivalent to a division by {@value Long#SIZE} (ignoring negative numbers).
@@ -201,42 +210,6 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Returns the smallest (closest to negative infinity) integer value that is greater than or equals to x/y.
-     *
-     * @param  x  the dividend.
-     * @param  y  the divisor.
-     * @return x/y rounded toward positive infinity.
-     *
-     * @see Math#floorDiv(int, int)
-     *
-     * @todo Replace by {@link Math#ceilDiv(int, int)} in JDK18.
-     */
-    public static int ceilDiv(final int x, final int y) {
-        int r = x / y;
-        if ((x ^ y) >= 0 && (r * y != x)) {
-            r++;
-        }
-        return r;
-    }
-
-    /**
-     * Returns the smallest (closest to negative infinity) long value that is greater than or equals to x/y.
-     *
-     * @param  x  the dividend.
-     * @param  y  the divisor.
-     * @return x/y rounded toward positive infinity.
-     *
-     * @see Math#floorDiv(long, long)
-     */
-    public static long ceilDiv(final long x, final long y) {
-        long r = x / y;
-        if ((x ^ y) >= 0 && (r * y != x)) {
-            r++;
-        }
-        return r;
-    }
-
-    /**
      * Returns x/y with the requirement that the division must be integer.
      *
      * @param  x  the dividend.
@@ -294,6 +267,18 @@ public final class Numerics extends Static {
         final long result = x - y;
         if (((x ^ y) & (x ^ result)) >= 0) return result;
         return (result < x) ? Long.MAX_VALUE : Long.MIN_VALUE;
+    }
+
+    /**
+     * Returns the value rounded to nearest integer and clamped to a range
+     * that can be converted to {@code double} without precision lost.
+     *
+     * @param  value  the value to round and clamp.
+     * @return the value clamped to the range convertible to {@code double} without precision lost.
+     */
+    public static long roundAndClamp(final double value) {
+        return Math.max(-MAX_INTEGER_CONVERTIBLE_TO_DOUBLE,
+               Math.min(+MAX_INTEGER_CONVERTIBLE_TO_DOUBLE, Math.round(value)));
     }
 
     /**
@@ -495,11 +480,11 @@ public final class Numerics extends Static {
 
     /**
      * Returns the significand <var>m</var> of the given value such as {@code value = m×2ⁿ}
-     * where <var>n</var> is {@link Math#getExponent(double)} - {@value #SIGNIFICAND_SIZE}.
+     * where <var>n</var> is {@link Math#getExponent(double)} - ({@link Double#PRECISION} - 1).
      * For any non-NaN values (including infinity), the following relationship holds:
      *
      * {@snippet lang="java" :
-     *     assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == Math.abs(value);
+     *     assert Math.scalb(getSignificand(value), Math.getExponent(value) - (Double.PRECISION - 1)) == Math.abs(value);
      *     }
      *
      * For negative values, this method behaves as if the value was positive.
@@ -509,10 +494,10 @@ public final class Numerics extends Static {
      */
     public static long getSignificand(final double value) {
         long bits = Double.doubleToRawLongBits(value);
-        final long exponent = bits & (0x7FFL << SIGNIFICAND_SIZE);
-        bits &= (1L << SIGNIFICAND_SIZE) - 1;
+        final long exponent = bits & (0x7FFL << (DOUBLE_PRECISION - 1));
+        bits &= SIGNIFICAND_MASK;
         if (exponent != 0) {
-            bits |= (1L << SIGNIFICAND_SIZE);
+            bits |= (1L << (DOUBLE_PRECISION - 1));         // The IEEE754 implicit bit.
         } else {
             /*
              * Sub-normal value: compensate for the fact that Math.getExponent(value) returns
@@ -525,11 +510,11 @@ public final class Numerics extends Static {
 
     /**
      * Returns the significand <var>m</var> of the given value such as {@code value = m×2ⁿ} where
-     * <var>n</var> is {@link Math#getExponent(float)} - {@value #SIGNIFICAND_SIZE_OF_FLOAT}.
+     * <var>n</var> is {@link Math#getExponent(float)} - ({@link Float#PRECISION} - 1).
      * For any non-NaN positive values (including infinity), the following relationship holds:
      *
      * {@snippet lang="java" :
-     *     assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT) == value;
+     *     assert Math.scalb(getSignificand(value), Math.getExponent(value) - (Float.PRECISION - 1)) == value;
      *     }
      *
      * For negative values, this method behaves as if the value was positive.
@@ -539,10 +524,10 @@ public final class Numerics extends Static {
      */
     public static int getSignificand(final float value) {
         int bits = Float.floatToRawIntBits(value);
-        final int exponent = bits & (0xFF << SIGNIFICAND_SIZE_OF_FLOAT);
-        bits &= (1 << SIGNIFICAND_SIZE_OF_FLOAT) - 1;
+        final int exponent = bits & (0xFF << (FLOAT_PRECISION - 1));
+        bits &= SIGNIFICAND_MASK_OF_FLOAT;
         if (exponent != 0) {
-            bits |= (1 << SIGNIFICAND_SIZE_OF_FLOAT);
+            bits |= (1 << (FLOAT_PRECISION - 1));           // The IEEE754 implicit bit.
         } else {
             bits <<= 1;
         }

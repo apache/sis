@@ -39,7 +39,7 @@ import java.awt.image.WritableRenderedImage;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.WritableTiledImage;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.pending.jdk.JDK18;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -172,8 +172,8 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
         this.tileHeight  = tileHeight;
         this.minTileX    = minTileX;
         this.minTileY    = minTileY;
-        this.numXTiles   = Numerics.ceilDiv(width,  tileWidth);
-        this.numYTiles   = Numerics.ceilDiv(height, tileHeight);
+        this.numXTiles   = JDK18.ceilDiv(width,  tileWidth);
+        this.numYTiles   = JDK18.ceilDiv(height, tileHeight);
         this.tiles       = new WritableRaster[numXTiles * numYTiles];
         this.sampleModel = banded ? new BandedSampleModel(dataType, tileWidth, tileHeight, numBands) :
                           new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight, numBands,

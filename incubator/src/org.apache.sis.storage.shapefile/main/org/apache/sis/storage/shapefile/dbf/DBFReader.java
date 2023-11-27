@@ -73,7 +73,7 @@ public final class DBFReader implements AutoCloseable {
 
         final int marker = channel.readUnsignedByte();
         if (marker == TAG_DELETED) {
-            channel.skipBytes(header.recordSize);
+            channel.seek(channel.getStreamPosition() + header.recordSize);
             return DBFRecord.DELETED;
         } else if (marker == TAG_EOF) {
             return null;
@@ -97,7 +97,7 @@ public final class DBFReader implements AutoCloseable {
                     record.fields[k++] = header.fields[i].readValue(channel);
                 } else {
                     //skip this field
-                    channel.skipBytes(header.fields[i].fieldLength);
+                    channel.seek(channel.getStreamPosition() + header.fields[i].fieldLength);
                 }
             }
         }

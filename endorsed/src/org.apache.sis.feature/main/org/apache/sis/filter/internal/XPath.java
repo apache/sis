@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import static org.apache.sis.util.CharSequences.*;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**
@@ -35,6 +36,8 @@ public final class XPath {
      * The separator between path components.
      * Should not be used for URL or Unix name separator, even if the character is the same.
      * We use this constant for identifying locations in the code where there is some XPath parsing.
+     *
+     * @see #toSimpleString()
      */
     public static final char SEPARATOR = '/';
 
@@ -72,17 +75,9 @@ public final class XPath {
     public boolean isAbsolute;
 
     /**
-     * Creates a XPath with the given path components.
-     * The components are assumed already parsed (no braced URI literals).
-     *
-     * @param  path  components of the XPath before the tip, or {@code null} if none.
-     * @param  tip   the last component of the XPath.
+     * Creates an initially empty XPath. Caller is responsible for initializing the fields.
      */
-    public XPath(final String[] path, final String tip) {
-        if (path != null) {
-            this.path = Arrays.asList(path);
-        }
-        this.tip = tip;
+    private XPath() {
     }
 
     /**
@@ -188,6 +183,22 @@ public final class XPath {
     }
 
     /**
+     * Appends a string representation of the XPath in the given buffer.
+     *
+     * @param  sb  where to write the string representation.
+     * @return the string builder, for chained method calls.
+     */
+    private StringBuilder toString(final StringBuilder sb) {
+        if (isAbsolute) sb.append(SEPARATOR);
+        if (path != null) {
+            for (final String component : path) {
+                toBracedURI(component, sb).append(SEPARATOR);
+            }
+        }
+        return toBracedURI(tip, sb);
+    }
+
+    /**
      * Rewrites the XPath from its components and the tip.
      *
      * @return the XPath.
@@ -197,13 +208,44 @@ public final class XPath {
         if (!isAbsolute && path == null && tip.indexOf(SEPARATOR) < 0) {
             return tip;
         }
-        final var sb = new StringBuilder(40);
-        if (isAbsolute) sb.append(SEPARATOR);
+        return toString(new StringBuilder(tip.length() + 10)).toString();
+    }
+
+    /**
+     * Rewrites a property name as an XPath.
+     * The path components are assumed already parsed (no braced URI literals).
+     *
+     * @param  prefix  a prefix, or {@code null} if none.
+     * @param  path    components of the XPath before the tip, or {@code null} if none.
+     * @param  tip     the last component of the XPath.
+     * @return the given path and tip reformatted as an XPath.
+     */
+    public static String toString(final String prefix, final String[] path, final String tip) {
+        final var x = new XPath();
         if (path != null) {
-            for (final String component : path) {
-                toBracedURI(component, sb).append(SEPARATOR);
-            }
+            x.path = Arrays.asList(path);
         }
-        return toBracedURI(tip, sb).toString();
+        x.tip = tip;
+        if (prefix != null) {
+            return x.toString(new StringBuilder(tip.length() + 10).append(prefix)).toString();
+        } else {
+            return x.toString();
+        }
+    }
+
+    /**
+     * Rewrites the XPath in a form accepted by feature properties.
+     * This is the tip, without {@code "Q{namespace}"} escaping.
+     *
+     * @param  xpath  the XPath to convert to a property name.
+     * @return the XPath as a property name without escape syntax for qualified URIs.
+     * @throws IllegalArgumentException if the given XPath contains a path instead of only a tip.
+     */
+    public static String toPropertyName(final String xpath) {
+        final var x = new XPath(xpath);
+        if (x.path == null) {
+            return x.tip;
+        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.PropertyNameCannotBeXPath_1, xpath));
     }
 }

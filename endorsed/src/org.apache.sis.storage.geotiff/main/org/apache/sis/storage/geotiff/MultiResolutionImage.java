@@ -182,7 +182,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements Resource
             }
             resolutions[level] = resolution;
         } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
+            throw new DataStoreReferencingException(e.getMessage(), e);
         } catch (IOException e) {
             throw levels[level].reader.store.errorIO(e);
         }
@@ -238,7 +238,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements Resource
                 }
             }
         } catch (FactoryException | TransformException e) {
-            throw new DataStoreReferencingException(e);
+            throw new DataStoreReferencingException(e.getMessage(), e);
         }
         return resolution;
     }

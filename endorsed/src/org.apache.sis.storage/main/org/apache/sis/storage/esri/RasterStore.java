@@ -18,7 +18,6 @@ package org.apache.sis.storage.esri;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -30,7 +29,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.sql.MetadataStoreException;
@@ -141,18 +139,6 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
         return listComponentFiles(PRJ, STX, CLR);
-    }
-
-    /**
-     * Returns the spatiotemporal extent of the raster file.
-     *
-     * @return the spatiotemporal resource extent.
-     * @throws DataStoreException if an error occurred while computing the envelope.
-     * @hidden
-     */
-    @Override
-    public Optional<Envelope> getEnvelope() throws DataStoreException {
-        return Optional.ofNullable(getGridGeometry().getEnvelope());
     }
 
     /**

@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.function.Function;
+import java.time.Instant;
+import java.time.Duration;
 import java.lang.reflect.Field;
 import java.lang.reflect.InaccessibleObjectException;
 import java.awt.Shape;
@@ -28,7 +30,9 @@ import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -44,9 +48,13 @@ import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.internal.SampleDimensions;
 import org.apache.sis.coverage.internal.MultiSourceArgument;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 
@@ -591,7 +599,7 @@ public class GridCoverageProcessor implements Cloneable {
                 throw e;
             }
         } catch (FactoryException e) {
-            throw new TransformException(e);
+            throw new TransformException(e.getMessage(), e);
         }
         return resampled.forConvertedValues(isConverted);
     }
@@ -617,6 +625,83 @@ public class GridCoverageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         return resample(source, new GridGeometry(null, PixelInCell.CELL_CENTER, null, target));
+    }
+
+    /**
+     * Appends the specified grid dimensions after the dimensions of the given source coverage.
+     * This method is typically invoked for adding a vertical or temporal axis to a two-dimensional coverage.
+     * The grid extent must have a size of one cell in all the specified additional dimensions.
+     *
+     * @param  source    the source on which to append dimensions.
+     * @param  dimToAdd  the dimensions to append. The grid extent size must be 1 cell in all dimensions.
+     * @return a coverage with the specified dimensions added.
+     * @throws IllegalGridGeometryException if a dimension has more than one grid cell, or concatenation
+     *         would result in duplicated {@linkplain GridExtent#getAxisType(int) grid axis types},
+     *         or the compound CRS cannot be created.
+     *
+     * @since 1.5
+     */
+    public GridCoverage appendDimensions(final GridCoverage source, final GridGeometry dimToAdd) {
+        ArgumentChecks.ensureNonNull("source",   source);
+        ArgumentChecks.ensureNonNull("dimToAdd", dimToAdd);
+        try {
+            return DimensionAppender.create(source, dimToAdd);
+        } catch (IllegalGridGeometryException e) {
+            throw e;
+        } catch (FactoryException | IllegalArgumentException e) {
+            throw new IllegalGridGeometryException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Appends a single grid dimension after the dimensions of the given source coverage.
+     * This method is typically invoked for adding a vertical axis to a two-dimensional coverage.
+     * The default implementation delegates to {@link #appendDimensions(GridCoverage, GridGeometry)}.
+     *
+     * @param  source  the source on which to append a dimension.
+     * @param  lower   lower coordinate value of the slice, in units of the CRS.
+     * @param  span    size of the slice, in units of the CRS.
+     * @param  crs     one-dimensional coordinate reference system of the slice, or {@code null} if unknown.
+     * @return a coverage with the specified dimension added.
+     * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
+     *
+     * @since 1.5
+     */
+    public GridCoverage appendDimension(final GridCoverage source, double lower, final double span, final SingleCRS crs) {
+        /*
+         * Choose a cell index such as the translation term in the matrix will be as close as possible to zero.
+         * Reducing the magnitude of additions with IEEE 754 arithmetic can help to reduce rounding errors.
+         * It also has the desirable side-effect to increase the chances that slices share the same
+         * "grid to CRS" transform.
+         */
+        final long index = Numerics.roundAndClamp(lower / span);
+        final long[] indices = new long[] {index};
+        final GridExtent extent = new GridExtent(GridExtent.typeFromAxes(crs, 1), indices, indices, true);
+        final MathTransform gridToCRS = MathTransforms.linear(span, Math.fma(index, -span, lower));
+        return appendDimensions(source, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
+    }
+
+    /**
+     * Appends a temporal grid dimension after the dimensions of the given source coverage.
+     * The default implementation delegates to {@link #appendDimensions(GridCoverage, GridGeometry)}.
+     *
+     * @param  source  the source on which to append a temporal dimension.
+     * @param  lower   start time of the slice.
+     * @param  span    duration of the slice.
+     * @return a coverage with the specified temporal dimension added.
+     * @throws IllegalGridGeometryException if the compound CRS or compound extent cannot be created.
+     *
+     * @since 1.5
+     */
+    public GridCoverage appendDimension(final GridCoverage source, final Instant lower, final Duration span) {
+        final DefaultTemporalCRS crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
+        double scale  = crs.toValue(span);
+        double offset = crs.toValue(lower);
+        long   index  = Numerics.roundAndClamp(offset / scale);             // See comment in above method.
+        offset = crs.toValue(lower.minus(span.multipliedBy(index)));
+        final GridExtent extent = new GridExtent(DimensionNameType.TIME, index, index, true);
+        final MathTransform gridToCRS = MathTransforms.linear(scale, offset);
+        return appendDimensions(source, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
     }
 
     /**

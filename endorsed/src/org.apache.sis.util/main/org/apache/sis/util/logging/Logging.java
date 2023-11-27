@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import java.lang.reflect.Modifier;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
@@ -77,12 +76,7 @@ public final class Logging extends Static {
      */
     public static Logger getLogger(final Class<?> source) {
         ArgumentChecks.ensureNonNull("source", source);
-        String name = source.getPackageName();
-        if (name.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX)) {
-            // Remove the "internal" part from Apache SIS package names.
-            name = Modules.CLASSNAME_PREFIX + name.substring(Modules.INTERNAL_CLASSNAME_PREFIX.length());
-        }
-        return Logger.getLogger(name);
+        return Logger.getLogger(source.getPackageName());
     }
 
     /**
@@ -133,7 +127,7 @@ public final class Logging extends Static {
             final Logger fl = logger;       // Because lambda functions require final values.
             logger = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) ->
                     inferCaller(fl, (classe != null) ? classe.getCanonicalName() : null, method,
-                            stream.filter((frame) -> Modifier.isPublic(frame.getDeclaringClass().getModifiers()))
+                            stream.filter((frame) -> Classes.isPublic(frame.getDeclaringClass()))
                                   .map((StackWalker.StackFrame::toStackTraceElement)), record));
         }
         logger.log(record);
@@ -187,17 +181,12 @@ public final class Logging extends Static {
      * This method is invoked in order to infer the class and method names to declare in a {@link LogRecord}.
      * We do not document this feature in public Javadoc because it is based on heuristic rules that may change.
      *
-     * <p>The current implementation compares the class name against a hard-coded list of classes to hide.
-     * This implementation may change in any future SIS version.</p>
-     *
      * @param  e  a stack trace element.
      * @return {@code true} if the class and method specified by the given element can be considered public API.
      */
     private static boolean isPublic(final StackTraceElement e) {
         final String classname = e.getClassName();
-        if (classname.startsWith("java") || classname.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX) ||
-            classname.indexOf('$') >= 0 || e.getMethodName().indexOf('$') >= 0)
-        {
+        if (classname.startsWith("java") || classname.indexOf('$') >= 0 || e.getMethodName().indexOf('$') >= 0) {
             return false;
         }
         if (classname.startsWith(Modules.CLASSNAME_PREFIX + "util.logging.")) {

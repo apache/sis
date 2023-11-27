@@ -51,11 +51,11 @@ import org.apache.sis.io.stream.InputStreamArrayGetter;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.sql.feature.InfoStatements;
 import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.storage.sql.postgis.Band.OPPOSITE_SIGN;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -235,7 +235,7 @@ public final class RasterReader extends RasterFormat {
                  */
                 final int sampleSize  = band.getDataTypeSize();                 // In bits: 1, 2, 4, 8, 16, 32 or 64.
                 final int elementSize = DataBuffer.getDataTypeSize(dataType);   // Same as above except for 1, 2, 4.
-                final int length = Math.toIntExact(Numerics.ceilDiv(Math.multiplyFull(width, height) * sampleSize, elementSize));
+                final int length = Math.toIntExact(JDK18.ceilDiv(Math.multiplyFull(width, height) * sampleSize, elementSize));
                 final Object data;
                 switch (dataType & ~OPPOSITE_SIGN) {
                     case DataBuffer.TYPE_USHORT:

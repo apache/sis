@@ -50,7 +50,7 @@ import org.opengis.filter.BetweenComparisonOperator;
 /**
  * Comparison operators between two values. Values are converted to the same type before comparison, using a widening
  * conversion (for example from {@link Integer} to {@link Double}). If values cannot be compared because they cannot
- * be converted to a common type, or because a value is null or NaN, then the comparison result if {@code false}.
+ * be converted to a common type, or because a value is null or NaN, then the comparison result is {@code false}.
  * A consequence of this rule is that the conditions {@literal A < B} and {@literal A ≥ B} may be false at the same time.
  *
  * <p>If one operand is a collection, all collection elements may be compared to the other value.

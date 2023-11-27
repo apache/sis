@@ -687,8 +687,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @return an exception initialized with an error message built from the specified information.
      */
     private static NoSuchAuthorityCodeException noSuchAuthorityCode(String localCode, String code, Exception cause) {
-        return (NoSuchAuthorityCodeException) new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.NoSuchAuthorityCode_3,
+        return new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.NoSuchAuthorityCode_3,
                 Constants.OGC, CoordinateReferenceSystem.class, localCode),
-                Constants.OGC, localCode, code).initCause(cause);
+                Constants.OGC, localCode, code, cause);
     }
 }

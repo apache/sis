@@ -18,6 +18,7 @@ package org.apache.sis.storage.shapefile;
 
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -78,14 +79,17 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
@@ -99,6 +103,7 @@ import org.apache.sis.storage.shapefile.shp.ShapeRecord;
 import org.apache.sis.storage.shapefile.shp.ShapeType;
 import org.apache.sis.storage.shapefile.shp.ShapeWriter;
 import org.apache.sis.storage.shapefile.shx.IndexWriter;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -121,18 +126,18 @@ import org.opengis.filter.ValueReference;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ShapefileStore extends DataStore implements WritableFeatureSet {
+public final class ShapefileStore extends DataStore implements WritableFeatureSet, ResourceOnFileSystem {
 
     private static final String GEOMETRY_NAME = "geometry";
     private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.shapefile");
 
     private final Path shpPath;
     private final ShpFiles files;
+    private final Charset userDefinedCharSet;
     /**
      * Internal class to inherit AbstractFeatureSet.
      */
     private final AsFeatureSet featureSetView = new AsFeatureSet(null, true, null);
-    private Charset charset;
 
     /**
      * Lock to control read and write operations.
@@ -141,6 +146,13 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
     public ShapefileStore(Path path) {
         this.shpPath = path;
+        this.userDefinedCharSet = null;
+        this.files = new ShpFiles(shpPath);
+    }
+
+    public ShapefileStore(StorageConnector cnx) throws IllegalArgumentException, DataStoreException {
+        this.shpPath = cnx.getStorageAs(Path.class);
+        this.userDefinedCharSet = cnx.getOption(OptionKey.ENCODING);
         this.files = new ShpFiles(shpPath);
     }
 
@@ -209,11 +221,17 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         featureSetView.replaceIf(predicate, unaryOperator);
     }
 
-    private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
+    @Override
+    public Path[] getComponentFiles() throws DataStoreException {
+        return featureSetView.getComponentFiles();
+    }
+
+    private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet, ResourceOnFileSystem {
 
         private final Rectangle2D.Double filter;
         private final Set<String> dbfProperties;
         private final boolean readShp;
+        private Charset charset;
 
         /**
          * Extracted informations
@@ -392,7 +410,8 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             final ShapeRecord shpRecord = shpreader.next();
                             if (shpRecord == null) return false;
                             //move dbf to record offset, some shp record might have been skipped because of filter
-                            dbfreader.moveToOffset(header.headerSize + (shpRecord.recordNumber-1) * header.recordSize);
+                            long offset = (long)header.headerSize + ((long)(shpRecord.recordNumber-1)) * ((long)header.recordSize);
+                            dbfreader.moveToOffset(offset);
                             final DBFRecord dbfRecord = dbfreader.next();
                             final Feature next = type.newInstance();
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
@@ -516,7 +535,12 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                         throw new DataStoreException("Failed to transform bbox filter", ex);
                     }
                     area = new Rectangle2D.Double(bbox.getMinimum(0), bbox.getMinimum(1), bbox.getSpan(0), bbox.getSpan(1));
+                }
 
+                if (area == null) {
+                    //use current subset one
+                    area = filter;
+                } else {
                     //combine this area with the one we already have since this is a subset
                     if (filter != null) {
                         area = (Rectangle2D.Double) area.createIntersection(filter);
@@ -573,13 +597,17 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
             final ShapeHeader shpHeader = new ShapeHeader();
             final DBFHeader dbfHeader = new DBFHeader();
-            Charset charset = StandardCharsets.UTF_8;
+            final Charset charset = userDefinedCharSet == null ? StandardCharsets.UTF_8 : userDefinedCharSet;
             CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
 
             for (PropertyType pt : newType.getProperties(true)) {
                 if (pt instanceof AttributeType) {
                     final AttributeType at = (AttributeType) pt;
                     final Class valueClass = at.getValueClass();
+
+                    Integer length = AttributeConvention.getMaximalLengthCharacteristic(newType, pt);
+                    if (length == 0) length = 255;
+
                     if (Geometry.class.isAssignableFrom(valueClass)) {
                         if (shpHeader.shapeType != 0) {
                             throw new DataStoreException("Shapefile format can only contain one geometry");
@@ -596,13 +624,17 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                         }
 
                     } else if (String.class.isAssignableFrom(valueClass)) {
-
+                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields,  new DBFField(idField, (char)DBFField.TYPE_CHAR, 0, length, 0, charset));
+                    } else if (Byte.class.isAssignableFrom(valueClass)) {
+                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 4, 0, null));
+                    } else if (Short.class.isAssignableFrom(valueClass)) {
+                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 6, 0, null));
                     } else if (Integer.class.isAssignableFrom(valueClass)) {
-
+                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 9, 0, null));
                     } else if (Long.class.isAssignableFrom(valueClass)) {
-
+                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 19, 0, null));
                     } else if (Float.class.isAssignableFrom(valueClass)) {
-
+                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 33, 0, null));
                     } else if (Double.class.isAssignableFrom(valueClass)) {
 
                     } else if (LocalDate.class.isAssignableFrom(valueClass)) {
@@ -665,6 +697,22 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         public void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater) throws DataStoreException {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Path[] getComponentFiles() throws DataStoreException {
+            final List<Path> paths = new ArrayList<>();
+            final Path shp = files.shpFile;
+            final Path shx = files.getShx(false);
+            final Path dbf = files.getDbf(false);
+            final Path prj = files.getPrj(false);
+            final Path cpg = files.getCpg(false);
+            if (shp != null && Files.exists(shp)) paths.add(shp);
+            if (shx != null && Files.exists(shx)) paths.add(shx);
+            if (dbf != null && Files.exists(dbf)) paths.add(dbf);
+            if (prj != null && Files.exists(prj)) paths.add(prj);
+            if (cpg != null && Files.exists(cpg)) paths.add(cpg);
+            return paths.toArray(Path[]::new);
         }
     }
 
