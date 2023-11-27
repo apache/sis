@@ -377,7 +377,7 @@ final class Writer extends IOBase implements Flushable {
             geoKeys = new GeoEncoder(store.listeners());
             geoKeys.write(grid, mf);
         } catch (FactoryException | IncommensurableException | RuntimeException e) {
-            throw new DataStoreReferencingException(e);
+            throw new DataStoreReferencingException(e.getMessage(), e);
         }
         /*
          * Conversion factor from physical size to pixel size. "Physical size" here should be understood as

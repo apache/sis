@@ -20,11 +20,11 @@ import java.util.Arrays;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -118,7 +118,7 @@ abstract class CompressionChannel extends PixelChannel {
             if (i < 0) i = ~i;              // Really tild, not minus.
             capacity = divisors[i];         // Smallest divisor ≥ BUFFER_SIZE
         } else {
-            capacity = Numerics.ceilDiv(BUFFER_SIZE, scanlineStride) * scanlineStride;      // ≥ BUFFER_SIZE
+            capacity = JDK18.ceilDiv(BUFFER_SIZE, scanlineStride) * scanlineStride;      // ≥ BUFFER_SIZE
         }
         ByteBuffer buffer = directBuffer ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
         buffer = buffer.order(input.buffer.order()).limit(0);

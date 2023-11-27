@@ -27,9 +27,9 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.image.DataType;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -126,7 +126,7 @@ public final class SampleModelFactory {
                 // MultiPixelPackedSampleModel
                 pixelStride    = 0;
                 numberOfBits   = bitsPerSample;
-                scanlineStride = Numerics.ceilDiv(Math.multiplyExact(width, numberOfBits), type.size());
+                scanlineStride = JDK18.ceilDiv(Math.multiplyExact(width, numberOfBits), type.size());
             } else if (!isBanded) {
                 // SinglePixelPackedSampleModel
                 bitMasks = new int[numBands];

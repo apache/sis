@@ -259,8 +259,13 @@ public final class WriterTest extends TestCase {
         createGridGeometry();
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
-        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS + 3 - 1,              // 3 more for RGB, 1 less for strips.
-                PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, new short[] {Byte.SIZE}, false);
+        /*
+         * The number of tags depends on whether an EPSG database is present or not.
+         * So the test cannot expects an exact number of tags.
+         */
+        int tagCount = data.getShort(data.position());
+        assertTrue(tagCount >= Writer.COMMON_NUMBER_OF_TAGS + 3 - 1);           // 3 more for RGB, 1 less for strips.
+        verifyImageFileDirectory(tagCount, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, new short[] {Byte.SIZE}, false);
         verifySampleValues(1);
         store.close();
     }

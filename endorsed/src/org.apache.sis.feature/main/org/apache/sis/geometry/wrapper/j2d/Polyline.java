@@ -24,7 +24,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.internal.Numerics;
+import static org.apache.sis.pending.jdk.JDK19.FLOAT_PRECISION;
 
 
 /**
@@ -95,7 +95,7 @@ class Polyline extends FlatShape {
      * in the significand (mantissa) of {@code float} type.
      */
     private static double round(final double center, final double min, final double max) {
-        final int e = Math.getExponent(Math.max(Math.abs(min), Math.abs(max))) - (Numerics.SIGNIFICAND_SIZE_OF_FLOAT - 3);
+        final int e = Math.getExponent(Math.max(Math.abs(min), Math.abs(max))) - (FLOAT_PRECISION - 4);
         return Math.scalb(Math.round(Math.scalb(center, -e)), e);
     }
 

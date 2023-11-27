@@ -143,7 +143,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_D
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  *
@@ -1511,12 +1511,13 @@ public enum CommonCRS {
      *   <tr><td>Java time</td>        <td>{@code SIS:JavaTime}</td>            <td>CRS</td>         <td>{@link #JAVA}</td></tr>
      *   <tr><td>Julian</td>           <td>{@code OGC:JulianDate}</td>          <td>CRS, Datum</td>  <td>{@link #JULIAN}</td></tr>
      *   <tr><td>Modified Julian</td>  <td>{@code SIS:ModifiedJulianDate}</td>  <td>CRS, Datum</td>  <td>{@link #MODIFIED_JULIAN}</td></tr>
+     *   <tr><td>Tropical year</td>    <td>{@code SIS:TropicalYear}</td>        <td>CRS</td>         <td>{@link #TROPICAL_YEAR}</td></tr>
      *   <tr><td>Truncated Julian</td> <td>{@code OGC:TruncatedJulianDate}</td> <td>CRS, Datum</td>  <td>{@link #TRUNCATED_JULIAN}</td></tr>
      *   <tr><td>Unix/POSIX time</td>  <td>{@code OGC:UnixTime}</td>            <td>CRS, Datum</td>  <td>{@link #UNIX}</td></tr>
      * </table></blockquote>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
+     * @version 1.5
      *
      * @see Engineering#TIME
      *
@@ -1535,6 +1536,8 @@ public enum CommonCRS {
          * to the proleptic Gregorian calendar for every dates. For parsing and formatting of Julian days,
          * the {@link java.text.SimpleDateFormat} class is closer to the common practice (but not ISO 8601
          * compliant).</p>
+         *
+         * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
         JULIAN(Vocabulary.Keys.Julian, -2440588L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2,
                "JulianDate", true),
@@ -1543,6 +1546,9 @@ public enum CommonCRS {
          * Time measured as days since November 17, 1858 at 00:00 UTC.
          * A <cite>Modified Julian day</cite> (MJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code MJD = JD − 2400000.5}.
+         * This variant was introduced by the Smithsonian Astrophysical Observatory (Massachusetts) in 1955.
+         *
+         * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
         MODIFIED_JULIAN(Vocabulary.Keys.ModifiedJulian, -40587L * MILLISECONDS_PER_DAY,
                         "ModifiedJulianDate", false),
@@ -1552,6 +1558,9 @@ public enum CommonCRS {
          * This epoch was introduced by NASA for the space program.
          * A <cite>Truncated Julian day</cite> (TJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code TJD = JD − 2440000.5}.
+         * This variant was introduced by National Aeronautics and Space Administration (NASA) in 1979.
+         *
+         * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
         TRUNCATED_JULIAN(Vocabulary.Keys.TruncatedJulian, -587L * MILLISECONDS_PER_DAY,
                          "TruncatedJulianDate", true),
@@ -1560,9 +1569,29 @@ public enum CommonCRS {
          * Time measured as days since December 31, 1899 at 12:00 UTC.
          * A <cite>Dublin Julian day</cite> (DJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code DJD = JD − 2415020}.
+         * This variant was introduced by the International Astronomical Union (IAU) in 1955.
+         *
+         * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
         DUBLIN_JULIAN(Vocabulary.Keys.DublinJulian, -25568L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2,
                       "DublinJulian", false),
+
+        /**
+         * Time measured in units of tropical years since January 1, 2000 at 00:00 UTC.
+         * The length of a tropical year is defined by the International Union of Geological Sciences (IUGS)
+         * as exactly 31556925.445 seconds (approximately 365.24219 days) taken as the length of the tropical
+         * year in the year 2000. Apache SIS extends this definition by using January 1st, 2000 as the epoch
+         * (by contrast, the IUGS definition is only about duration).
+         *
+         * <h4>Application to geodesy</h4>
+         * The tropical year is the unit of measurement used in EPSG geodetic database for year duration.
+         * It it used for rate of changes such as "centimeters per year". Its identifier is EPSG:1029.
+         *
+         * @see Units#TROPICAL_YEAR
+         *
+         * @since 1.5
+         */
+        TROPICAL_YEAR(Vocabulary.Keys.TropicalYear, 946684800000L, "TropicalYear", false),
 
         /**
          * Time measured as seconds since January 1st, 1970 at 00:00 UTC.
@@ -1696,6 +1725,7 @@ public enum CommonCRS {
          *   <tr><td>Dublin Julian</td>      <td>{@link #DUBLIN_JULIAN}</td></tr>
          *   <tr><td>Julian</td>             <td>{@link #JULIAN}</td></tr>
          *   <tr><td>Modified Julian</td>    <td>{@link #MODIFIED_JULIAN}</td></tr>
+         *   <tr><td>Tropical year</td>      <td>{@link #TROPICAL_YEAR}</td></tr>
          *   <tr><td>Truncated Julian</td>   <td>{@link #TRUNCATED_JULIAN}</td></tr>
          *   <tr><td>Unix/POSIX</td>         <td>{@link #UNIX}</td></tr>
          *   <tr><td>Java {@link Date}</td>  <td>{@link #JAVA}</td></tr>
@@ -1735,32 +1765,26 @@ public enum CommonCRS {
          */
         @SuppressWarnings("fallthrough")
         private TimeCS cs() {
-            final Map<String,?> cs, axis;
-            Unit<Time> unit = Units.SECOND;
+            final Unit<Time> unit;
             switch (this) {
                 default: {
                     // Share the coordinate system created for truncated Julian.
                     return TRUNCATED_JULIAN.crs().getCoordinateSystem();
                 }
-                case TRUNCATED_JULIAN: {
-                    unit = Units.DAY;
-                    // Fall through
-                }
-                case UNIX: {
-                    // Share the NamedIdentifier created for Java time.
-                    final TimeCS share = JAVA.crs().getCoordinateSystem();
-                    cs   = IdentifiedObjects.getProperties(share, exclude());
-                    axis = IdentifiedObjects.getProperties(share.getAxis(0), exclude());
-                    break;
-                }
-                case JAVA: {
-                    // Create all properties for a new coordinate system.
-                    cs   = properties(Vocabulary.Keys.Temporal);
-                    axis = properties(Vocabulary.Keys.Time);
-                    unit = Units.MILLISECOND;
-                    break;
-                }
+                case TRUNCATED_JULIAN: unit = Units.DAY;           break;
+                case TROPICAL_YEAR:    unit = Units.TROPICAL_YEAR; break;
+                case UNIX:             unit = Units.SECOND;        break;
+                case JAVA:             unit = Units.MILLISECOND;   break;
             }
+            final Map<String,?> axis;
+            if (this == TRUNCATED_JULIAN) {                 // Arbitrary CRS to be created before all other CRS.
+                axis = properties(Vocabulary.Keys.Time);
+            } else {
+                // Share the NamedIdentifier created for Truncated Julian time.
+                final TimeCS share = TRUNCATED_JULIAN.crs().getCoordinateSystem();
+                axis = IdentifiedObjects.getProperties(share.getAxis(0), exclude());
+            }
+            final Map<String,?> cs = properties(Vocabulary.formatInternational(Vocabulary.Keys.Temporal_1, unit));
             return new DefaultTimeCS(cs, new DefaultCoordinateSystemAxis(axis, "t", AxisDirection.FUTURE, unit));
         }
 

@@ -23,6 +23,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.math.MathFunctions;
 import static org.apache.sis.math.MathFunctions.truncate;
+import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 
 /**
@@ -242,7 +243,7 @@ class SexagesimalConverter extends AbstractConverter {
              * Removal of degrees and/or minutes fields as integers do not add rounding errors.
              */
             int p = Math.getExponent(Math.ulp(magnitude));          // Power of 2 (negative for fractional value).
-            if (p < 0 && p >= -Numerics.SIGNIFICAND_SIZE) {         // Precision is a fraction digit >= Math.ulp(1).
+            if (p < 0 && p > -DOUBLE_PRECISION) {                   // Precision is a fraction digit >= Math.ulp(1).
                 p = Numerics.toExp10(-p);                           // Positive power of 10, rounded to lower value.
                 final double scale = MathFunctions.pow10(p);
                 remainder = Math.rint(remainder * scale) / scale;

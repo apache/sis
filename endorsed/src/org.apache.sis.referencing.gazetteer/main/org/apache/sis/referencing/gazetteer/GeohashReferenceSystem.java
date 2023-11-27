@@ -41,9 +41,9 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -371,7 +371,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
                 final long b = Math.round(numLat);
                 latNumBits = (Long.SIZE-1) - Long.numberOfLeadingZeros(b);
                 if ((1L << latNumBits) != b) latNumBits++;
-                length = Math.max(Numerics.ceilDiv(latNumBits << 1, 5), 1);
+                length = Math.max(JDK18.ceilDiv(latNumBits << 1, 5), 1);
             }
             if (numLon > numLat) {
                 final long b = Math.round(numLon);
@@ -383,7 +383,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
                      * If the latitude had enough bits, then length is sufficient.
                      */
                 } else {
-                    length = Math.max(Numerics.ceilDiv(lonNumBits << 1, 5), 1);
+                    length = Math.max(JDK18.ceilDiv(lonNumBits << 1, 5), 1);
                 }
             }
         }

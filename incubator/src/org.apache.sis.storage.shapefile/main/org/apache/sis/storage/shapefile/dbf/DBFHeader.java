@@ -76,7 +76,7 @@ public final class DBFHeader {
         nbRecord   = channel.readInt();
         headerSize = channel.readUnsignedShort();
         recordSize = channel.readUnsignedShort();
-        channel.skipBytes(20);
+        channel.seek(channel.getStreamPosition() + 20);
         fields     = new DBFField[(headerSize - FIELD_SIZE - 1) / FIELD_SIZE];
 
         for (int i = 0; i < fields.length; i++) {

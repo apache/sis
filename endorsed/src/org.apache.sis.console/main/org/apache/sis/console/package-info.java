@@ -25,7 +25,7 @@
  * the following environment variable can be set:
  *
  * {@snippet lang="shell" :
- *   export JDK_JAVA_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
+ *   export JDK_JAVA_OPTIONS="-enableassertions -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000"
  *   }
  *
  * <h2>SIS installation on remote machines</h2>

@@ -63,12 +63,20 @@ final class ConcatenatedGridCoverage extends GridCoverage {
     private static final class Loader {
         /**
          * Whether loading of grid coverages should be deferred to rendering time.
-         * This is a bit set packed as {@code long} values. A bit value of 1 means
+         * This is a bit set packed as {@code int} values. A bit value of 1 means
          * that the coverages at the corresponding index should be loaded from the
          * {@linkplain #slices slices} at same index only when first needed.
          *
+         * <h4>Invariant</h4>
+         * Deferred {@linkplain #slices slices} shall be instances of {@link GridCoverage}
+         * and non-deferred slices shall be instances of {@link GridCoverageResource}.
+         * So the {@code deferred} flags are redundant with {@code instanceof} checks.
+         * However, implementation classes may implement both interfaces.
+         * So those flags tell how to use a slice instance.
+         *
          * @see ConcatenatedGridResource#deferredLoading
          * @see #isDeferred(int)
+         * @see #valid()
          */
         final int[] deferred;
 
@@ -176,6 +184,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         this.isConverted = source.isConverted;
         this.locator     = source.locator;
         this.strategy    = source.strategy;
+        assert valid();
     }
 
     /**
@@ -192,6 +201,20 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         this.locator     = source.locator;
         this.strategy    = source.strategy;
         this.isConverted = converted;
+        assert valid();
+    }
+
+    /**
+     * Verifies that all {@linkplain #slices} are instances of the expected interface.
+     * This is used for assertions only.
+     */
+    private boolean valid() {
+        for (int i=0; i < slices.length; i++) {
+            final Object actual = slices[i];
+            Class<?> expected = isDeferred(i) ? GridCoverageResource.class : GridCoverage.class;
+            if (!expected.isInstance(actual)) throw new AssertionError(actual);
+        }
+        return true;
     }
 
     /**
@@ -200,7 +223,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
      * If {@code false}, then {@code slices[i]} shall be an instance of {@link GridCoverage}.
      */
     private boolean isDeferred(final int i) {
-        return (loader == null) || (loader.deferred[i >>> Numerics.INT_SHIFT] & (1 << i)) != 0;
+        return (loader != null) && (loader.deferred[i >>> Numerics.INT_SHIFT] & (1 << i)) != 0;
     }
 
     /**

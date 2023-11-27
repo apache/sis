@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-group = "org.apache.sis"
-version = "1.5-SNAPSHOT"
 
 /*
- * "org.apache.sis.buildtools" is a custom Gradle plugin for building a project with Module Source Hierarchy.
+ * This project uses a custom Gradle plugin for building a project with Module Source Hierarchy.
  * See the Gradle build script in the `endorsed` directory for more information.
  */
 plugins {
-    `java-library`
-    `maven-publish`     // For local deployment only. Not to be published on Maven Central.
+    id("sis.library-conventions")
     id("org.apache.sis.buildtools")
     antlr
 }
@@ -134,23 +131,6 @@ publishing {
             pom {
                 name        = "Apache SIS web services layer"
                 description = "Placeholder for future developments."
-            }
-        }
-    }
-    /* Following block is currently repeated in all sub-projects. */
-    repositories {
-        maven {
-            name = "Apache"
-            url = uri(if (version.toString().endsWith("SNAPSHOT"))
-                      "https://repository.apache.org/content/repositories/snapshots" else
-                      "https://repository.apache.org/service/local/staging/deploy/maven2")
-            credentials {
-                val asfNexusUsername = providers.gradleProperty("asfNexusUsername")
-                val asfNexusPassword = providers.gradleProperty("asfNexusPassword")
-                if (asfNexusUsername.isPresent() && asfNexusPassword.isPresent()) {
-                    username = asfNexusUsername.get()
-                    password = asfNexusPassword.get()
-                }
             }
         }
     }

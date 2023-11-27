@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
+import java.nio.file.StandardOpenOption;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
@@ -99,19 +100,10 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
     private GenericName identifier;
 
     /**
-     * Formatting conventions of dates and numbers, or {@code null} if unspecified.
+     * The user-specified connector of the root directory.
+     * Used for inheriting options when creating connector for components.
      */
-    protected final Locale locale;
-
-    /**
-     * Timezone of dates in the data store, or {@code null} if unspecified.
-     */
-    protected final TimeZone timezone;
-
-    /**
-     * Character encoding used by the data store, or {@code null} if unspecified.
-     */
-    protected final Charset encoding;
+    protected final StorageConnector configuration;
 
     /**
      * All data stores (including sub-folders) found in the directory structure, including the root directory.
@@ -173,12 +165,10 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
             throws DataStoreException, IOException
     {
         super(provider, connector);
-        originator = this;
-        location   = path;
-        locale     = connector.getOption(OptionKey.LOCALE);
-        timezone   = connector.getOption(OptionKey.TIMEZONE);
-        encoding   = connector.getOption(OptionKey.ENCODING);
-        children   = new ConcurrentHashMap<>();
+        configuration = connector;
+        originator    = this;
+        location      = path;
+        children      = new ConcurrentHashMap<>();
         children.put(path.toRealPath(), this);
         componentProvider = format;
     }
@@ -192,10 +182,8 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
      */
     private Store(final Store parent, final StorageConnector connector, final NameFactory nameFactory) throws DataStoreException {
         super(parent, parent.getProvider(), connector, false);
+        configuration     = parent.configuration;
         originator        = parent;
-        locale            = connector.getOption(OptionKey.LOCALE);
-        timezone          = connector.getOption(OptionKey.TIMEZONE);
-        encoding          = connector.getOption(OptionKey.ENCODING);
         location          = connector.commit(Path.class, StoreProvider.NAME);
         children          = parent.children;
         componentProvider = parent.componentProvider;
@@ -218,6 +206,9 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
         final String format = StoreUtilities.getFormatName(componentProvider);
         final ParameterValueGroup pg = (provider != null ? provider.getOpenParameters() : StoreProvider.PARAMETERS).createValue();
         pg.parameter(DataStoreProvider.LOCATION).setValue(location);
+        Locale   locale   = configuration.getOption(OptionKey.LOCALE);
+        TimeZone timezone = configuration.getOption(OptionKey.TIMEZONE);
+        Charset  encoding = configuration.getOption(OptionKey.ENCODING);
         if (locale   != null) pg.parameter("locale"  ).setValue(locale  );
         if (timezone != null) pg.parameter("timezone").setValue(timezone);
         if (encoding != null) pg.parameter("encoding").setValue(encoding);
@@ -270,7 +261,10 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
         if (metadata == null) {
             final MetadataBuilder mb = new MetadataBuilder();
             mb.addResourceScope(ScopeCode.valueOf("COLLECTION"), Resources.formatInternational(Resources.Keys.DirectoryContent_1, getDisplayName()));
-            mb.addLanguage(locale, encoding, MetadataBuilder.Scope.RESOURCE);
+            mb.addLanguage(configuration.getOption(OptionKey.LOCALE),
+                           configuration.getOption(OptionKey.ENCODING),
+                           MetadataBuilder.Scope.RESOURCE);
+
             final GenericName identifier = identifier(null);
             String name = null;
             if (identifier != null) {
@@ -320,11 +314,11 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
                          * If the file format is unknown (UnsupportedStorageException), we will
                          * check if we can open it as a child folder store before to skip it.
                          */
-                        final StorageConnector connector = new StorageConnector(candidate);
-                        connector.setOption(OptionKey.LOCALE,   locale);
-                        connector.setOption(OptionKey.TIMEZONE, timezone);
-                        connector.setOption(OptionKey.ENCODING, encoding);
+                        final StorageConnector connector = new StorageConnector(configuration, candidate);
                         connector.setOption(DataOptionKey.PARENT_LISTENERS, listeners);
+                        connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
+                            StandardOpenOption.READ         // Restrict to read-only mode.
+                        });
                         try {
                             if (componentProvider == null) {
                                 next = DataStores.open(connector);          // May throw UnsupportedStorageException.

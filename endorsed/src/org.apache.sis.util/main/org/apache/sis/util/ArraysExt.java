@@ -67,7 +67,7 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see Arrays
  *
@@ -1220,6 +1220,24 @@ public final class ArraysExt extends Static {
     }
 
     /**
+     * Returns the concatenation of the given arrays.
+     * If any of the supplied arrays is null or empty, then the other array is returned directly (not copied).
+     *
+     * @param  a1  the first array to concatenate, or {@code null}.
+     * @param  a2  the second array to concatenate, or {@code null}.
+     * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
+     *
+     * @since 1.5
+     */
+    public static double[] concatenate(final double[] a1, final double[] a2) {
+        if (a1 == null || a1.length == 0) return a2;
+        if (a2 == null || a2.length == 0) return a1;
+        final double[] copy = Arrays.copyOf(a1, a1.length + a2.length);
+        System.arraycopy(a2, 0, copy, a1.length, a2.length);
+        return copy;
+    }
+
+    /**
      * Removes the duplicated elements in the given array. This method should be invoked only for small arrays,
      * typically less than 10 distinct elements. For larger arrays, use {@link java.util.LinkedHashSet} instead.
      *
@@ -1890,6 +1908,25 @@ public final class ArraysExt extends Static {
     public static long[] copyAsLongs(final int[] data) {
         if (data == null) return null;
         final long[] result = new long[data.length];
+        for (int i=0; i<data.length; i++) {
+            result[i] = data[i];
+        }
+        return result;
+    }
+
+    /**
+     * Returns a copy of the given array where each value has been casted to the {@code double} type.
+     * This method does not verify if the casts would cause data loss.
+     *
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values casted to the {@code double} type,
+     *         or {@code null} if the given array was null.
+     *
+     * @since 1.5
+     */
+    public static double[] copyAsDoubles(final long[] data) {
+        if (data == null) return null;
+        final double[] result = new double[data.length];
         for (int i=0; i<data.length; i++) {
             result[i] = data[i];
         }

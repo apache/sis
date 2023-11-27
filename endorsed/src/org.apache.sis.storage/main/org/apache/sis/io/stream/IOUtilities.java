@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.LineNumberReader;
+import java.io.BufferedReader;
 import java.io.Reader;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -537,6 +538,21 @@ public final class IOUtilities extends Static {
             return Path.of(path.toString());
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Returns the given reader as a buffered reader.
+     * The reader is wrapped if needed.
+     *
+     * @param  reader  the reader to return as a buffered reader.
+     * @return the given reader returned directly or wrapped.
+     */
+    public static BufferedReader toBuffered(final Reader reader) {
+        if (reader instanceof BufferedReader) {
+            return (BufferedReader) reader;
+        } else {
+            return new LineNumberReader(reader);
         }
     }
 

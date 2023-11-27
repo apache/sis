@@ -24,6 +24,9 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ComparisonMode;
 import static org.apache.sis.util.internal.Numerics.*;
+import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
+import static org.apache.sis.pending.jdk.JDK19.FLOAT_PRECISION;
+import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 // Test dependencies
 import org.junit.Test;
@@ -221,18 +224,18 @@ public final class NumericsTest extends TestCase {
      */
     private static void assertSignificandEquals(final long expected, final double value) {
         assertEquals(expected, getSignificand(value));
-        final int e = StrictMath.getExponent(value) - SIGNIFICAND_SIZE;
+        final int e = StrictMath.getExponent(value) - (DOUBLE_PRECISION - 1);
         final double recomposed = StrictMath.scalb((double) expected, e);
         assertEquals(value, StrictMath.copySign(recomposed, value), 0);
     }
 
     /**
-     * Asserts that {@link Numerics#getSignificand(float)} returns the expected value,
-     * then verify the {@link StrictMath#scalb(float, int)} identity.
+     * Asserts that {@link Numerics#getSignificand(float)} returns the expected value.
+     * Also verifies the {@link StrictMath#scalb(float, int)} identity.
      */
     private static void assertSignificandEquals(final int expected, final float value) {
         assertEquals(expected, getSignificand(value));
-        final int e = StrictMath.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT;
+        final int e = StrictMath.getExponent(value) - (FLOAT_PRECISION - 1);
         final float recomposed = StrictMath.scalb((float) expected, e);
         assertEquals(value, StrictMath.copySign(recomposed, value), 0f);
     }

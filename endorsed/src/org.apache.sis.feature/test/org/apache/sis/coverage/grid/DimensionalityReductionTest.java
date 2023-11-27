@@ -31,7 +31,7 @@ import org.apache.sis.util.Utilities;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -127,7 +127,7 @@ public final class DimensionalityReductionTest extends TestCase {
      * @param target     expected reduced coordinates.
      */
     private static void testPosition(final DimensionalityReduction reduction, double[] source, double[] target) {
-        assertArrayEquals(target, reduction.apply(new DirectPositionView.Double(source)).getCoordinate(), STRICT);
+        assertArrayEquals(target, reduction.apply(new DirectPositionView.Double(source)).getCoordinate());
     }
 
     /**

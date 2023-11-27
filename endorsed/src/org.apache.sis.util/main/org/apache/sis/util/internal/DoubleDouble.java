@@ -25,6 +25,7 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.Debug;
+import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 
 /**
@@ -533,7 +534,7 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
              * significand bits (we ignore some more bits if ZERO_THRESHOLD is greater than 0).
              * If the error is not greater than that value, then assume that it is not significant.
              */
-            if (Math.abs(e) <= Math.scalb(Math.ulp(otherValue), ZERO_THRESHOLD - Numerics.SIGNIFICAND_SIZE)) {
+            if (Math.abs(e) <= Math.scalb(Math.ulp(otherValue), ZERO_THRESHOLD - (DOUBLE_PRECISION - 1))) {
                 return new DoubleDouble(s, 0);
             }
         }

@@ -139,7 +139,7 @@ public final class DBFField {
         final int fieldAddress   = channel.readInt();
         final int fieldLength    = channel.readUnsignedByte();
         final int fieldDecimals = channel.readUnsignedByte();
-        channel.skipBytes(14);
+        channel.seek(channel.getStreamPosition() + 14);
         return new DBFField(fieldName, fieldType, fieldAddress, fieldLength, fieldDecimals, charset);
     }
 

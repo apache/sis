@@ -17,6 +17,8 @@
 package org.apache.sis.storage;
 
 import java.util.List;
+import java.util.Optional;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -40,10 +42,29 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.0
  */
 public interface GridCoverageResource extends DataSet {
+    /**
+     * Returns the spatiotemporal extent of this resource in its most natural coordinate reference system.
+     * The default implementation fetches this information from the {@linkplain #getGridGeometry() grid geometry},
+     * if presents.
+     *
+     * @return the spatiotemporal resource extent. May be absent if none or too costly to compute.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     *
+     * @see GridGeometry#getEnvelope()
+     */
+    @Override
+    default Optional<Envelope> getEnvelope() throws DataStoreException {
+        final GridGeometry gg = getGridGeometry();
+        if (gg != null && gg.isDefined(GridGeometry.ENVELOPE)) {
+            return Optional.of(gg.getEnvelope());
+        }
+        return Optional.empty();
+    }
+
     /**
      * Returns the valid extent of grid coordinates together with the conversion from those grid
      * coordinates to real world coordinates. A grid geometry contains the following information:

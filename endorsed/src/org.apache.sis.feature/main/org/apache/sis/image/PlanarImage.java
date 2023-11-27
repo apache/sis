@@ -33,12 +33,12 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.TileOpExecutor;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -369,7 +369,7 @@ public abstract class PlanarImage implements RenderedImage {
          * If assumption documented in javadoc does not hold, the calculation performed here would need to be
          * more complicated: compute tile index of minX, compute tile index of maxX, return difference plus 1.
          */
-        return Numerics.ceilDiv(getWidth(), getTileWidth());
+        return JDK18.ceilDiv(getWidth(), getTileWidth());
     }
 
     /**
@@ -383,7 +383,7 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public int getNumYTiles() {
-        return Numerics.ceilDiv(getHeight(), getTileHeight());
+        return JDK18.ceilDiv(getHeight(), getTileHeight());
     }
 
     /**

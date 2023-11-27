@@ -49,7 +49,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.iso.Types;
@@ -57,6 +56,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -249,7 +249,7 @@ public final class Axis extends NamedElement {
             final Vector data = coordinates.read();
             int n = data.size();
             while (--n >= 0 && data.isNaN(n)) {}
-            final int nr = Numerics.ceilDiv(++n, page);
+            final int nr = JDK18.ceilDiv(++n, page);
             assert nr <= gridSizes[0] : nr;
             gridSizes[0] = nr;
             assert getSizeProduct(0) == n : n;

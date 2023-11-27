@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.filter.internal.FunctionRegister;
-import org.apache.sis.pending.jdk.JDK17;
+import org.apache.sis.pending.jdk.JDK16;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;
@@ -61,7 +61,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public Collection<String> getNames() {
-        return JDK17.toList(Arrays.stream(SQLMM.values()).map(SQLMM::name));
+        return JDK16.toList(Arrays.stream(SQLMM.values()).map(SQLMM::name));
     }
 
     /**

@@ -50,7 +50,7 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.reader.ReversedBitsChannel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
-import static org.apache.sis.util.internal.Numerics.ceilDiv;
+import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 
 /**

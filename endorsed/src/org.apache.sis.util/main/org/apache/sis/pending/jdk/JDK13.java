@@ -16,13 +16,7 @@
  */
 package org.apache.sis.pending.jdk;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.stream.Stream;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 
 /**
@@ -30,11 +24,11 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class JDK17 {
+public final class JDK13 {
     /**
      * Do not allow instantiation of this class.
      */
-    private JDK17() {
+    private JDK13() {
     }
 
     /**
@@ -61,37 +55,5 @@ public final class JDK17 {
         for (int i=0; i<length; i++) {
             dst[offset + i] = b.get(index + i);
         }
-    }
-
-    /**
-     * Place holder for {@link InputStream#skipNBytes(long)} method added in JDK12.
-     *
-     * @param  s  the input stream where to skip bytes.
-     * @param  n  the number of bytes to skip.
-     * @throws IOException if an error occurred while reading bytes, including EOF.
-     */
-    public static void skipNBytes(final InputStream s, long n) throws IOException {
-        while (n > 0) {
-            long c = s.skip(n);
-            if (c <= 0) {
-                if (c < 0 || s.read() < 0) {
-                    throw new EOFException();
-                }
-                c = 1;
-            }
-            n -= c;
-        }
-    }
-
-    /**
-     * Place holder for {@link Stream#toList()} method added in JDK16.
-     *
-     * @param  <T>  type of elements in the stream.
-     * @param  s    the stream to convert to a list.
-     * @return the stream content as a list.
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> List<T> toList(final Stream<T> s) {
-        return (List<T>) UnmodifiableArrayList.wrap(s.toArray());
     }
 }

@@ -23,14 +23,13 @@ import java.nio.Buffer;
 import org.apache.sis.image.DataType;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
-import static org.apache.sis.util.internal.Numerics.ceilDiv;
+import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 
 /**
@@ -124,7 +123,7 @@ public abstract class Inflater implements Closeable {
                  * the value that we search cannot be greater.
                  */
                 final int[] divisors = MathFunctions.divisors(samplesPerChunk);
-                int i = Arrays.binarySearch(divisors, Numerics.ceilDiv(samplesPerChunk, maxChunkSize));
+                int i = Arrays.binarySearch(divisors, ceilDiv(samplesPerChunk, maxChunkSize));
                 if (i < 0) i = ~i;      // No need for array bound check.
                 /*
                  * Following loop iterates exactly once unless `pixelsPerElement` > 1.

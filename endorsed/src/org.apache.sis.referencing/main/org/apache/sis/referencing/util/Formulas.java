@@ -79,7 +79,7 @@ public final class Formulas extends Static {
      *
      * @see org.apache.sis.measure.Longitude#normalize(double)
      */
-    public static final double LONGITUDE_MAX = (1L << Numerics.SIGNIFICAND_SIZE) * ANGULAR_TOLERANCE;
+    public static final double LONGITUDE_MAX = Numerics.MAX_INTEGER_CONVERTIBLE_TO_DOUBLE/2 * ANGULAR_TOLERANCE;
 
     /**
      * The length of a <cite>Julian year</cite> in milliseconds.

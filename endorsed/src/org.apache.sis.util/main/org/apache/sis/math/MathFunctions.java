@@ -39,7 +39,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.DoubleDouble;
 import static org.apache.sis.util.internal.Numerics.SIGN_BIT_MASK;
-import static org.apache.sis.util.internal.Numerics.SIGNIFICAND_SIZE;
+import static org.apache.sis.util.internal.Numerics.SIGNIFICAND_MASK;
+import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 
 /**
@@ -317,7 +318,7 @@ public final class MathFunctions extends Static {
      */
     public static int getExponent(final double value) {
         final long bits = doubleToRawLongBits(value);
-        int exponent = (int) ((bits >>> SIGNIFICAND_SIZE) & 0x7FFL);
+        int exponent = (int) ((bits >>> (DOUBLE_PRECISION - 1)) & 0x7FFL);
         if (exponent == 0) {
             /*
              * Number is sub-normal: there is no implicit 1 bit before the significand.
@@ -326,7 +327,7 @@ public final class MathFunctions extends Static {
              * 64 bits while the significand size is only 52 bits. The last term below
              * is for fixing this difference.
              */
-            exponent -= Long.numberOfLeadingZeros(bits & ((1L << SIGNIFICAND_SIZE) - 1)) - (Long.SIZE - SIGNIFICAND_SIZE);
+            exponent -= Long.numberOfLeadingZeros(bits & SIGNIFICAND_MASK) - (Long.SIZE - (DOUBLE_PRECISION - 1));
         }
         return exponent - Double.MAX_EXPONENT;
     }

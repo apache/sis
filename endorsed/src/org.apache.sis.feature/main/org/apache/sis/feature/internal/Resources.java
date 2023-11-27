@@ -369,6 +369,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short NotASingleton_1 = 53;
 
         /**
+         * Not a slice. Dimension “{0}” has {1} cells.
+         */
+        public static final short NotASlice_2 = 90;
+
+        /**
          * The specified dimensions are not in strictly ascending order.
          */
         public static final short NotStrictlyOrderedDimensions = 54;
@@ -398,6 +403,11 @@ public class Resources extends IndexedResourceBundle {
          * Property “{1}” already exists in feature “{0}”.
          */
         public static final short PropertyAlreadyExists_2 = 58;
+
+        /**
+         * Property name “{0}” is invalid because names cannot be XPath.
+         */
+        public static final short PropertyNameCannotBeXPath_1 = 89;
 
         /**
          * No property named “{1}” has been found in “{0}” feature.

@@ -20,7 +20,8 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Numerics;
-import static org.apache.sis.util.internal.Numerics.SIGNIFICAND_SIZE;
+import static org.apache.sis.pending.jdk.JDK19.FLOAT_PRECISION;
+import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 
 /**
@@ -143,7 +144,7 @@ public final class DecimalFunctions extends Static {
          * there is no fractional part in the value, in which case there is no rounding error to fix.
          * (Note: NaN and infinities also have exponent greater than zero).
          */
-        final int e = Math.getExponent(value) - Numerics.SIGNIFICAND_SIZE_OF_FLOAT;
+        final int e = Math.getExponent(value) - (FLOAT_PRECISION - 1);
         if (e >= 0) {
             return value;                               // Integer, infinity or NaN.
         }
@@ -221,11 +222,11 @@ public final class DecimalFunctions extends Static {
          *
          *    m × (2 ^ e)  ==  m × c × (10 ^ -e₁₀)
          */
-        final int e = Math.getExponent(value) - SIGNIFICAND_SIZE;
+        final int e = Math.getExponent(value) - (DOUBLE_PRECISION - 1);
         if (e >= 0) {
             return 0;                                   // Integer, infinity or NaN.
         }
-        if (e < -24 - SIGNIFICAND_SIZE) {               // 2.9802322E-8 threshold found empirically.
+        if (e < -23 - DOUBLE_PRECISION) {               // 2.9802322E-8 threshold found empirically.
             return (e == -1075) ? 0 : Double.NaN;       // Returns 0 for the 0 value, NaN for all others.
         }
         final long m = Numerics.getSignificand(value);
@@ -247,7 +248,7 @@ public final class DecimalFunctions extends Static {
          * will be equal or greater than 2^52. At that threshold, `double` values cannot have
          * fraction digits.
          */
-        final int PRECISION = SIGNIFICAND_SIZE + 4;               // Number of bits to use for scaling to integers.
+        final int PRECISION = DOUBLE_PRECISION + 3;               // Number of bits to use for scaling to integers.
         double cs = Math.scalb(pow10(e10 - 1), e + PRECISION);    // Range: (0.1 × 2^56  …  2^56) exclusive.
         /*
          * This is where magic happen: the following multiplication overflow (we would need a 128 bits integer
@@ -416,13 +417,13 @@ public final class DecimalFunctions extends Static {
         /*
          * We really need Math.getExponent(value) here rather than MathFunctions.getExponent(value).
          * What we actually want is MathFunctions.getExponent(Math.ulp(value)), but we get the same
-         * result more efficiently if we replace the call to Math.ulp(double) by a SIGNIFICAND_SIZE
+         * result more efficiently if we replace the call to Math.ulp(double) by a Double.PRECISION
          * subtraction in the exponent, provided that the exponent has NOT been corrected for sub-
          * normal numbers (in order to reproduce the Math.ulp behavior).
          */
         final int exponent = Math.getExponent(value);
         if (exponent <= Double.MAX_EXPONENT) {                          // Exclude NaN and ±∞ cases.
-            return -Numerics.toExp10(exponent - SIGNIFICAND_SIZE);
+            return -Numerics.toExp10(exponent - (DOUBLE_PRECISION - 1));
         }
         return 0;
     }

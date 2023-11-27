@@ -680,7 +680,7 @@ final class MetadataReader extends MetadataBuilder {
                     utmZone = -1;
                 } catch (NoSuchIdentifierException e) {
                     // Should never happen with Apache SIS implementation of MathTransformFactory.
-                    throw new DataStoreReferencingException(e);
+                    throw new DataStoreReferencingException(e.getMessage(), e);
                 }
                 break;
             }

@@ -259,6 +259,10 @@ public final class Containers extends Static {
      * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.
      * However, it is not needed for {@link java.util.IdentityHashMap}.</p>
      *
+     * <h4>Future evolution</h4>
+     * This method may be deprecated in favor of {@code HashMap.newHashMap(int)}
+     * when Apache SIS will be allowed to compile for JDK19.
+     *
      * @param  count  the number of elements to be put into the hash map or hash set.
      * @return the minimal initial capacity to be given to the hash map constructor.
      */

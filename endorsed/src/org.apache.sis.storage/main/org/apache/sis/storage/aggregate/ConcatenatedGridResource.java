@@ -43,6 +43,7 @@ import org.apache.sis.coverage.internal.RangeArgument;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -170,7 +171,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
         this.slices           = slices;
         this.locator          = locator;
         this.strategy         = strategy;
-        this.deferredLoading  = new int[Numerics.ceilDiv(slices.length, Integer.SIZE)];
+        this.deferredLoading  = new int[JDK18.ceilDiv(slices.length, Integer.SIZE)];
         for (final SampleDimension sd : ranges) {
             if (sd.forConvertedValues(true) != sd) {
                 isConverted = false;
@@ -448,7 +449,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
                 coverages [i] = slice;
                 geometries[i] = slice.getGridGeometry();
                 if (deferred == null) {
-                    deferred = new int[Numerics.ceilDiv(count, Integer.SIZE)];
+                    deferred = new int[JDK18.ceilDiv(count, Integer.SIZE)];
                 }
                 deferred[i >>> Numerics.INT_SHIFT] |= (1 << i);
             }
