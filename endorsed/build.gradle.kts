@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-group = "org.apache.sis"
-version = "2.0-SNAPSHOT"
 
 /*
- * "org.apache.sis.buildtools" is a custom Gradle plugin for building a project with Module Source Hierarchy
- * as specified in https://docs.oracle.com/en/java/javase/20/docs/specs/man/javac.html#directory-hierarchies
+ * This project uses a custom Gradle plugin for building a project with Module Source Hierarchy as specified
+ * in https://docs.oracle.com/en/java/javase/21/docs/specs/man/javac.html#directory-hierarchies documentation.
  * The expected hierarchy is:
  *
  *   endorsed
@@ -40,9 +38,7 @@ version = "2.0-SNAPSHOT"
  *         └─ etc.
  */
 plugins {
-    `java-library`
-    `maven-publish`
-    signing
+    id("sis.library-conventions")
     id("org.apache.sis.buildtools")
 }
 
@@ -442,23 +438,6 @@ publishing {
                 description = "Provides some Apache SIS functionalities as Apache OpenOffice addins. " +
                               "For example, addins provide coordinate operation services as formulas " +
                               "inside the Calc spreadsheet."
-            }
-        }
-    }
-    /* Following block is currently repeated in all sub-projects. */
-    repositories {
-        maven {
-            name = "Apache"
-            url = uri(if (version.toString().endsWith("SNAPSHOT"))
-                      "https://repository.apache.org/content/repositories/snapshots" else
-                      "https://repository.apache.org/service/local/staging/deploy/maven2")
-            credentials {
-                val asfNexusUsername = providers.gradleProperty("asfNexusUsername")
-                val asfNexusPassword = providers.gradleProperty("asfNexusPassword")
-                if (asfNexusUsername.isPresent() && asfNexusPassword.isPresent()) {
-                    username = asfNexusUsername.get()
-                    password = asfNexusPassword.get()
-                }
             }
         }
     }
