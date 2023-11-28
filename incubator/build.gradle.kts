@@ -14,15 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+group = "org.apache.sis"
+// The version is specified in `gradle.properties`.
 
 /*
  * This project uses a custom Gradle plugin for building a project with Module Source Hierarchy.
  * See the Gradle build script in the `endorsed` directory for more information.
  */
 plugins {
-    id("sis.library-conventions")
-    id("org.apache.sis.buildtools")
     antlr
+    `java-library`
+    `maven-publish`     // For local deployment only. Not to be published on Maven Central.
+    id("net.linguica.maven-settings") version "0.5"
+    id("org.apache.sis.buildtools")
 }
 
 /*
@@ -147,6 +151,14 @@ publishing {
                 name        = "Apache SIS web services layer"
                 description = "Placeholder for future developments."
             }
+        }
+    }
+    /* Following block is currently repeated in all sub-projects. */
+    repositories {
+        maven {
+            val stage = if (version.toString().endsWith("SNAPSHOT")) "snapshots" else "releases"
+            name = providers.gradleProperty("${stage}Id").get()
+            url = uri(providers.gradleProperty("${stage}URL").get())
         }
     }
 }

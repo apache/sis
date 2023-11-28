@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+group = "org.apache.sis"
+// The version is specified in `gradle.properties`.
 
 /*
  * This project uses a custom Gradle plugin for building a project with Module Source Hierarchy as specified
@@ -38,7 +40,10 @@
  *         └─ etc.
  */
 plugins {
-    id("sis.library-conventions")
+    `java-library`
+    `maven-publish`
+    signing
+    id("net.linguica.maven-settings") version "0.5"
     id("org.apache.sis.buildtools")
 }
 
@@ -439,6 +444,14 @@ publishing {
                               "For example, addins provide coordinate operation services as formulas " +
                               "inside the Calc spreadsheet."
             }
+        }
+    }
+    /* Following block is currently repeated in all sub-projects. */
+    repositories {
+        maven {
+            val stage = if (version.toString().endsWith("SNAPSHOT")) "snapshots" else "releases"
+            name = providers.gradleProperty("${stage}Id").get()
+            url = uri(providers.gradleProperty("${stage}URL").get())
         }
     }
 }

@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+group = "org.apache.sis"
+// The version is specified in `gradle.properties`.
 
 val pathToFX = System.getenv("PATH_TO_FX")
 if (pathToFX == null) {
@@ -28,7 +30,10 @@ if (!File(pathToFX, "javafx.base.jar").isFile()) {
  * See the Gradle build script in the `endorsed` directory for more information.
  */
 plugins {
-    id("sis.library-conventions")
+    `java-library`
+    `maven-publish`
+    signing
+    id("net.linguica.maven-settings") version "0.5"
     id("org.apache.sis.buildtools")
 }
 
@@ -169,6 +174,14 @@ publishing {
                               "This module requires the JavaFX environment to be pre-installed. " +
                               "See https://openjfx.io/openjfx-docs/#install-javafx for details."
             }
+        }
+    }
+    /* Following block is currently repeated in all sub-projects. */
+    repositories {
+        maven {
+            val stage = if (version.toString().endsWith("SNAPSHOT")) "snapshots" else "releases"
+            name = providers.gradleProperty("${stage}Id").get()
+            url = uri(providers.gradleProperty("${stage}URL").get())
         }
     }
 }

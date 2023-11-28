@@ -16,7 +16,6 @@
  */
 plugins {
     `java-gradle-plugin`
-    `kotlin-dsl`
 }
 
 gradlePlugin {
