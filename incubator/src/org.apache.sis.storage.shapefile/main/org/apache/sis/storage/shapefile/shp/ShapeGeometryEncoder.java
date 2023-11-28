@@ -193,6 +193,16 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         final int numPoints = channel.readInt();
         final int[] offsets = channel.readInts(numParts);
 
+        if (!shape.bbox.isFinite()) {
+            //a broken geometry with NaN, until we replace JTS we need to create an empty geometry
+            switch (nbOrdinates) {
+                case 2 : channel.seek(channel.getStreamPosition() + 2*8*numPoints); break;
+                case 3 : channel.seek(channel.getStreamPosition() + 3*8*numPoints); break;
+                case 4 : channel.seek(channel.getStreamPosition() + 4*8*numPoints); break;
+            }
+            return new LineString[0];
+        }
+
         final LineString[] lines = new LineString[numParts];
 
         //XY
