@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -94,6 +95,20 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
      */
     protected AbstractGridCoverageResource(final StoreListeners parentListeners, final boolean hidden) {
         super(parentListeners, hidden);
+    }
+
+    /**
+     * Returns the envelope of the grid geometry if known.
+     * The envelope is absent if the grid geometry does not provide this information.
+     *
+     * @return the grid geometry envelope.
+     * @throws DataStoreException if an error occurred while computing the grid geometry.
+     *
+     * @see GridGeometry#getEnvelope()
+     */
+    @Override
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        return GridCoverageResource.super.getEnvelope();
     }
 
     /**
