@@ -56,6 +56,7 @@ import org.apache.sis.coverage.grid.j2d.SampleModelFactory;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Strings;
@@ -1519,7 +1520,26 @@ final class ImageFileDirectory extends DataCube {
                                 minValues.get(Math.min(band, minValues.size()-1)), true,
                                 maxValues.get(Math.min(band, maxValues.size()-1)), true);
                     }
-                    builder.setName(band + 1).setBackground(getFillValue(true));
+                    short nameKey = 0;
+                    switch (photometricInterpretation) {
+                        case PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO:
+                        case PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO: nameKey = Vocabulary.Keys.Grayscale;  break;
+                        case PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR: nameKey = Vocabulary.Keys.ColorIndex; break;
+                        case PHOTOMETRIC_INTERPRETATION_RGB: {
+                            switch (band) {
+                                case 0: nameKey = Vocabulary.Keys.Red;   break;
+                                case 1: nameKey = Vocabulary.Keys.Green; break;
+                                case 2: nameKey = Vocabulary.Keys.Blue;  break;
+                            }
+                            break;
+                        }
+                    }
+                    if (nameKey != 0) {
+                        builder.setName(Vocabulary.formatInternational(nameKey));
+                    } else {
+                        builder.setName(band + 1);
+                    }
+                    builder.setBackground(getFillValue(true));
                     final SampleDimension sd;
                     if (isIndexValid) {
                         sd = reader.store.customizer.customize(index, band, sampleRange, builder);

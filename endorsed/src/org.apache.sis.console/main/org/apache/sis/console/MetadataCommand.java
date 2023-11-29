@@ -28,6 +28,7 @@ import org.apache.sis.util.collection.TreeTable;
 
 /**
  * The "metadata" sub-command.
+ * This command shows ISO 19115 metadata for the content of a file.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -52,7 +53,7 @@ final class MetadataCommand extends FormattedOutputCommand {
     }
 
     /**
-     * Prints metadata or CRS information.
+     * Prints metadata.
      *
      * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
      */
@@ -68,7 +69,7 @@ final class MetadataCommand extends FormattedOutputCommand {
         }
         if (metadata != null) {
             if (!(metadata instanceof Metadata)) {
-                final DefaultMetadata md = new DefaultMetadata();
+                final var md = new DefaultMetadata();
                 md.setReferenceSystemInfo(Set.of((ReferenceSystem) metadata));
                 metadata = md;
             }

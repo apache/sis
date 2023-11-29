@@ -36,7 +36,7 @@ final class CRSCommand extends FormattedOutputCommand {
     }
 
     /**
-     * Prints metadata or CRS information.
+     * Prints CRS information.
      *
      * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
      */

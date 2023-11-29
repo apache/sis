@@ -155,6 +155,7 @@ public final class Command {
                 case "mime-type":  command = new MimeTypeCommand  (commandIndex, args); break;
                 case "metadata":   command = new MetadataCommand  (commandIndex, args); break;
                 case "crs":        command = new CRSCommand       (commandIndex, args); break;
+                case "info":       command = new InfoCommand      (commandIndex, args); break;
                 case "identifier": command = new IdentifierCommand(commandIndex, args); break;
                 case "transform":  command = new TransformCommand (commandIndex, args); break;
                 case "translate":  command = new TranslateCommand (commandIndex, args); break;

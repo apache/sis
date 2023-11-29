@@ -88,7 +88,6 @@ abstract class FormattedOutputCommand extends CommandRunner {
 
     /**
      * Creates a new sub-command with the given command-line arguments.
-     * This constructor is for {@code MetadataCommand} subclasses.
      *
      * @param  commandIndex      index of the {@code arguments} element containing the sub-command name, or -1 if none.
      * @param  arguments         the command-line arguments provided by the user.
@@ -217,7 +216,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object,
                         (object instanceof Metadata) ? Metadata.class : null,
                         ValueExistencePolicy.COMPACT);
-                final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
+                final var tf = new TreeTableFormat(locale, timezone);
                 tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 tf.setNodeFilter(getNodeFilter());
                 tf.format(tree, out);
@@ -225,7 +224,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
             }
 
             case WKT: {
-                final WKTFormat f = new WKTFormat(locale, timezone);
+                final var f = new WKTFormat(locale, timezone);
                 if (convention != null) {
                     f.setConvention(convention);
                 }
@@ -238,7 +237,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
             }
 
             case XML: {
-                final MarshallerPool pool = new MarshallerPool(null);
+                final var pool = new MarshallerPool(null);
                 final Marshaller marshaller = pool.acquireMarshaller();
                 marshaller.setProperty(XML.LOCALE,   locale);
                 marshaller.setProperty(XML.TIMEZONE, timezone);
@@ -254,7 +253,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
             }
 
             default: {
-                final StorageConnector connector = new StorageConnector(out);
+                final var connector = new StorageConnector(out);
                 connector.setOption(OptionKey.TIMEZONE, timezone);
                 connector.setOption(OptionKey.LOCALE,   locale);
                 connector.setOption(OptionKey.ENCODING, encoding);
@@ -266,7 +265,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                      * Note: after such generalization is done, revert the xml-store dependency
                      *       scope in pom.xml from "compile" to "runtime".
                      */
-                    final org.apache.sis.storage.gpx.WritableStore fs = (org.apache.sis.storage.gpx.WritableStore) store;
+                    final var fs = (org.apache.sis.storage.gpx.WritableStore) store;
                     if (version != null) {
                         fs.setVersion(version);
                     }
