@@ -24,9 +24,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -34,12 +32,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -49,6 +49,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
@@ -76,6 +78,9 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -587,116 +592,205 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         }
 
         @Override
-        public void updateType(FeatureType newType) throws DataStoreException {
-            if (true) throw new UnsupportedOperationException("Not supported yet.");
+        public synchronized void updateType(FeatureType newType) throws DataStoreException {
 
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             if (Files.exists(shpPath)) {
                 throw new DataStoreException("Update type is possible only when files do not exist. It can be used to create a new shapefile but not to update one.");
             }
 
-            final ShapeHeader shpHeader = new ShapeHeader();
-            final DBFHeader dbfHeader = new DBFHeader();
-            final Charset charset = userDefinedCharSet == null ? StandardCharsets.UTF_8 : userDefinedCharSet;
-            CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
+            lock.writeLock().lock();
+            try {
+                final ShapeHeader shpHeader = new ShapeHeader();
+                shpHeader.bbox = new ImmutableEnvelope(new GeneralEnvelope(4));
+                final DBFHeader dbfHeader = new DBFHeader();
+                dbfHeader.fields = new DBFField[0];
+                final Charset charset = userDefinedCharSet == null ? StandardCharsets.UTF_8 : userDefinedCharSet;
+                CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
 
-            for (PropertyType pt : newType.getProperties(true)) {
-                if (pt instanceof AttributeType) {
-                    final AttributeType at = (AttributeType) pt;
-                    final Class valueClass = at.getValueClass();
+                for (PropertyType pt : newType.getProperties(true)) {
+                    if (pt instanceof AttributeType) {
+                        final AttributeType at = (AttributeType) pt;
+                        final Class valueClass = at.getValueClass();
+                        final String attName = at.getName().tip().toString();
 
-                    Integer length = AttributeConvention.getMaximalLengthCharacteristic(newType, pt);
-                    if (length == 0) length = 255;
+                        Integer length = AttributeConvention.getMaximalLengthCharacteristic(newType, pt);
+                        if (length == null || length == 0) length = 255;
 
-                    if (Geometry.class.isAssignableFrom(valueClass)) {
-                        if (shpHeader.shapeType != 0) {
-                            throw new DataStoreException("Shapefile format can only contain one geometry");
+                        if (Geometry.class.isAssignableFrom(valueClass)) {
+                            if (shpHeader.shapeType != 0) {
+                                throw new DataStoreException("Shapefile format can only contain one geometry");
+                            }
+                            if (Point.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POINT;
+                            else if (MultiPoint.class.isAssignableFrom(valueClass))
+                                shpHeader.shapeType = ShapeType.VALUE_MULTIPOINT;
+                            else if (LineString.class.isAssignableFrom(valueClass) || MultiLineString.class.isAssignableFrom(valueClass))
+                                shpHeader.shapeType = ShapeType.VALUE_POLYLINE;
+                            else if (Polygon.class.isAssignableFrom(valueClass) || MultiPolygon.class.isAssignableFrom(valueClass))
+                                shpHeader.shapeType = ShapeType.VALUE_POLYGON;
+                            else throw new DataStoreException("Unsupported geometry type " + valueClass);
+
+                            Object cdt = at.characteristics().get(AttributeConvention.CRS);
+                            if (cdt instanceof AttributeType) {
+                                Object defaultValue = ((AttributeType) cdt).getDefaultValue();
+                                if (defaultValue instanceof CoordinateReferenceSystem) {
+                                    crs = (CoordinateReferenceSystem) defaultValue;
+                                }
+                            }
+
+                        } else if (String.class.isAssignableFrom(valueClass)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_CHAR, 0, length, 0, charset));
+                        } else if (Byte.class.isAssignableFrom(valueClass)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 4, 0, null));
+                        } else if (Short.class.isAssignableFrom(valueClass)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 6, 0, null));
+                        } else if (Integer.class.isAssignableFrom(valueClass)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 9, 0, null));
+                        } else if (Long.class.isAssignableFrom(valueClass)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 19, 0, null));
+                        } else if (Float.class.isAssignableFrom(valueClass)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 11, 8, null));
+                        } else if (Double.class.isAssignableFrom(valueClass)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 33, 30, null));
+                        } else if (LocalDate.class.isAssignableFrom(valueClass)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_DATE, 0, 20, 0, null));
+                        } else {
+                            LOGGER.log(Level.WARNING, "Shapefile writing, field {0} is not supported", pt.getName());
                         }
-                        if (Point.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POINT;
-                        else if (MultiPoint.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_MULTIPOINT;
-                        else if (LineString.class.isAssignableFrom(valueClass) || MultiLineString.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POLYLINE;
-                        else if (Polygon.class.isAssignableFrom(valueClass) || MultiPolygon.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POLYGON;
-                        else throw new DataStoreException("Unsupported geometry type " + valueClass);
-
-                        Object cdt = at.characteristics().get(AttributeConvention.CRS_CHARACTERISTIC);
-                        if (cdt instanceof CoordinateReferenceSystem) {
-                            crs = (CoordinateReferenceSystem) cdt;
-                        }
-
-                    } else if (String.class.isAssignableFrom(valueClass)) {
-                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields,  new DBFField(idField, (char)DBFField.TYPE_CHAR, 0, length, 0, charset));
-                    } else if (Byte.class.isAssignableFrom(valueClass)) {
-                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 4, 0, null));
-                    } else if (Short.class.isAssignableFrom(valueClass)) {
-                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 6, 0, null));
-                    } else if (Integer.class.isAssignableFrom(valueClass)) {
-                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 9, 0, null));
-                    } else if (Long.class.isAssignableFrom(valueClass)) {
-                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 19, 0, null));
-                    } else if (Float.class.isAssignableFrom(valueClass)) {
-                        dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(idField, (char)DBFField.TYPE_NUMBER, 0, 33, 0, null));
-                    } else if (Double.class.isAssignableFrom(valueClass)) {
-
-                    } else if (LocalDate.class.isAssignableFrom(valueClass)) {
-
                     } else {
                         LOGGER.log(Level.WARNING, "Shapefile writing, field {0} is not supported", pt.getName());
                     }
-                } else {
-                    LOGGER.log(Level.WARNING, "Shapefile writing, field {0} is not supported", pt.getName());
                 }
+
+                //write shapefile
+                try (ShapeWriter writer = new ShapeWriter(ShpFiles.openWriteChannel(files.shpFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
+                    writer.write(shpHeader);
+                } catch (IOException ex) {
+                    throw new DataStoreException("Failed to create shapefile (shp).", ex);
+                }
+
+                //write shx
+                try (IndexWriter writer = new IndexWriter(ShpFiles.openWriteChannel(files.getShx(true), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
+                    writer.write(shpHeader);
+                } catch (IOException ex) {
+                    throw new DataStoreException("Failed to create shapefile (shx).", ex);
+                }
+
+                //write dbf
+                try (DBFWriter writer = new DBFWriter(ShpFiles.openWriteChannel(files.getDbf(true), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
+                    writer.write(dbfHeader);
+                } catch (IOException ex) {
+                    throw new DataStoreException("Failed to create shapefile (dbf).", ex);
+                }
+
+                //write cpg
+                try {
+                    CpgFiles.write(charset, files.getCpg(true));
+                } catch (IOException ex) {
+                    throw new DataStoreException("Failed to create shapefile (cpg).", ex);
+                }
+
+                //write prj
+                try {
+                    final WKTFormat format = new WKTFormat(Locale.ENGLISH, null);
+                    format.setConvention(Convention.WKT1_COMMON_UNITS);
+                    format.setNameAuthority(Citations.ESRI);
+                    format.setIndentation(WKTFormat.SINGLE_LINE);
+                    Files.writeString(files.getPrj(true), format.format(crs), StandardCharsets.ISO_8859_1, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                } catch (IOException ex) {
+                    throw new DataStoreException("Failed to create shapefile (prj).", ex);
+                }
+
+                //update file list
+                files.scan();
+            } finally {
+                lock.writeLock().unlock();
             }
-
-            //write shapefile
-            try (ShapeWriter writer = new ShapeWriter(ShpFiles.openWriteChannel(files.shpFile))) {
-                writer.write(shpHeader);
-            } catch (IOException ex){
-                throw new DataStoreException("Failed to create shapefile (shp).", ex);
-            }
-
-            //write shx
-            try (IndexWriter writer = new IndexWriter(ShpFiles.openWriteChannel(files.shxFile))) {
-                writer.write(shpHeader);
-            } catch (IOException ex){
-                throw new DataStoreException("Failed to create shapefile (shx).", ex);
-            }
-
-            //write dbf
-            try (DBFWriter writer = new DBFWriter(ShpFiles.openWriteChannel(files.dbfFile))) {
-                writer.write(dbfHeader);
-            } catch (IOException ex){
-                throw new DataStoreException("Failed to create shapefile (dbf).", ex);
-            }
-
-            //write cpg
-            try {
-                CpgFiles.write(charset, files.cpgFile);
-            } catch (IOException ex) {
-                throw new DataStoreException("Failed to create shapefile (cpg).", ex);
-            }
-
-            //write prj
-            //todo
-
-
         }
 
         @Override
         public void add(Iterator<? extends Feature> features) throws DataStoreException {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            throw new UnsupportedOperationException("Not supported yet.");
+            if (!Files.exists(shpPath)) throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
+
+            final Writer writer = new Writer(charset);
+            try {
+                //write existing features
+                try (Stream<Feature> stream = features(false)) {
+                    Iterator<Feature> iterator = stream.iterator();
+                    while (iterator.hasNext()) {
+                        writer.write(iterator.next());
+                    }
+                }
+
+                //write new features
+                while (features.hasNext()) {
+                    writer.write(features.next());
+                }
+
+                writer.finish(true);
+            } catch (IOException ex) {
+                try {
+                    writer.finish(false);
+                } catch (IOException e) {
+                    ex.addSuppressed(e);
+                }
+                throw  new DataStoreException("Writing failed", ex);
+            }
         }
 
         @Override
         public void removeIf(Predicate<? super Feature> filter) throws DataStoreException {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            throw new UnsupportedOperationException("Not supported yet.");
+            if (!Files.exists(shpPath)) throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
+
+            final Writer writer = new Writer(charset);
+            try {
+                //write existing features not matching filter
+                try (Stream<Feature> stream = features(false)) {
+                    Iterator<Feature> iterator = stream.filter(filter.negate()).iterator();
+                    while (iterator.hasNext()) {
+                        writer.write(iterator.next());
+                    }
+                }
+                writer.finish(true);
+            } catch (IOException ex) {
+                try {
+                    writer.finish(false);
+                } catch (IOException e) {
+                    ex.addSuppressed(e);
+                }
+                throw  new DataStoreException("Writing failed", ex);
+            }
         }
 
         @Override
         public void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater) throws DataStoreException {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            throw new UnsupportedOperationException("Not supported yet.");
+            if (!Files.exists(shpPath)) throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
+
+            final Writer writer = new Writer(charset);
+            try {
+                //write existing features applying modifications
+                try (Stream<Feature> stream = features(false)) {
+                    Iterator<Feature> iterator = stream.iterator();
+                    while (iterator.hasNext()) {
+                        Feature feature = iterator.next();
+                        if (filter.test(feature)) {
+                            feature = updater.apply(feature);
+                        }
+                        if (feature != null) writer.write(feature);
+                    }
+                }
+                writer.finish(true);
+            } catch (IOException ex) {
+                try {
+                    writer.finish(false);
+                } catch (IOException e) {
+                    ex.addSuppressed(e);
+                }
+                throw  new DataStoreException("Writing failed", ex);
+            }
         }
 
         @Override
@@ -707,7 +801,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             final Path dbf = files.getDbf(false);
             final Path prj = files.getPrj(false);
             final Path cpg = files.getCpg(false);
-            if (shp != null && Files.exists(shp)) paths.add(shp);
+            if (               Files.exists(shp)) paths.add(shp);
             if (shx != null && Files.exists(shx)) paths.add(shx);
             if (dbf != null && Files.exists(dbf)) paths.add(dbf);
             if (prj != null && Files.exists(prj)) paths.add(prj);
@@ -734,6 +828,14 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             final String fileName = shpFile.getFileName().toString();
             baseUpper = Character.isUpperCase(fileName.codePointAt(fileName.length()-1));
             this.baseName = IOUtilities.filenameWithoutExtension(fileName);
+            scan();
+        }
+
+        /**
+         * Search related files.
+         * Should be called after data have been modified.
+         */
+        private void scan() {
             shxFile = findSibling("shx");
             dbfFile = findSibling("dbf");
             prjFile = findSibling("prj");
@@ -784,6 +886,45 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             return cpgFile;
         }
 
+        /**
+         * Create a set of temporary files for edition.
+         */
+        private ShpFiles createTempFiles() throws IOException{
+            final Path tmp = Files.createTempFile("tmp", ".shp");
+            Files.delete(tmp);
+            return new ShpFiles(tmp);
+        }
+
+        /**
+         * Delete files permanently.
+         */
+        private void deleteFiles() throws IOException{
+            Files.deleteIfExists(shpFile);
+            if (shxFile != null) Files.deleteIfExists(shxFile);
+            if (dbfFile != null) Files.deleteIfExists(dbfFile);
+            if (cpgFile != null) Files.deleteIfExists(cpgFile);
+            if (prjFile != null) Files.deleteIfExists(prjFile);
+        }
+
+        /**
+         * Override target files by current ones.
+         */
+        private void replace(ShpFiles toReplace) throws IOException{
+            replace(shpFile, toReplace.shpFile);
+            replace(shxFile, toReplace.getShx(true));
+            replace(dbfFile, toReplace.getDbf(true));
+            replace(cpgFile, toReplace.getCpg(true));
+            replace(prjFile, toReplace.getPrj(true));
+        }
+
+        private static void replace(Path current, Path toReplace) throws IOException{
+            if (current == null) {
+                Files.deleteIfExists(toReplace);
+            } else {
+                Files.move(current, toReplace, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+
         private Path findSibling(String extension) {
             Path candidate = shpFile.getParent().resolve(baseName + "." + extension);
             if (java.nio.file.Files.isRegularFile(candidate)) return candidate;
@@ -797,9 +938,14 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             return new ChannelDataInput(path.getFileName().toString(), channel, ByteBuffer.allocate(8192), false);
         }
 
-        private static ChannelDataOutput openWriteChannel(Path path) throws IOException, IllegalArgumentException, DataStoreException {
-            final WritableByteChannel wbc = Files.newByteChannel(path, StandardOpenOption.WRITE);
-            return new ChannelDataOutput(path.getFileName().toString(), wbc, ByteBuffer.allocate(8000));
+        private static ChannelDataOutput openWriteChannel(Path path, OpenOption ... options) throws IOException, IllegalArgumentException, DataStoreException {
+            final WritableByteChannel wbc;
+            if (options != null && options.length > 0) {
+                wbc = Files.newByteChannel(path, ArraysExt.append(options, StandardOpenOption.WRITE));
+            } else {
+                wbc = Files.newByteChannel(path, StandardOpenOption.WRITE);
+            }
+            return new ChannelDataOutput(path.getFileName().toString(), wbc, ByteBuffer.allocate(8192));
         }
     }
 
@@ -894,6 +1040,125 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             }
         }
         return env;
+    }
+
+    private class Writer {
+
+        private final ShpFiles tempFiles;
+        private final ShapeWriter shpWriter;
+        private final DBFWriter dbfWriter;
+        private final IndexWriter shxWriter;
+        private final ShapeHeader shpHeader;
+        private final DBFHeader dbfHeader;
+        private String defaultGeomName = null;
+        private int inc = 0;
+
+        private Writer(Charset charset) throws DataStoreException{
+            try {
+                tempFiles = files.createTempFiles();
+            } catch (IOException ex) {
+                throw new DataStoreException("Failed to create temp files", ex);
+            }
+
+            try {
+                //get original headers and information
+                try (ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(files.shpFile), null)) {
+                    shpHeader = new ShapeHeader(reader.getHeader());
+                }
+                try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(files.dbfFile), charset, null)) {
+                    dbfHeader = new DBFHeader(reader.getHeader());
+                }
+
+                //unchanged files
+                ShpFiles.replace(files.cpgFile, tempFiles.getCpg(true));
+                ShpFiles.replace(files.prjFile, tempFiles.getPrj(true));
+
+                //start new files
+
+                //write shapefile
+                shpWriter = new ShapeWriter(ShpFiles.openWriteChannel(tempFiles.shpFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING));
+                dbfWriter = new DBFWriter(ShpFiles.openWriteChannel(tempFiles.getDbf(true), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING));
+                shxWriter = new IndexWriter(ShpFiles.openWriteChannel(tempFiles.getShx(true), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING));
+                shpWriter.write(shpHeader);
+                shxWriter.write(shpHeader);
+                dbfWriter.write(dbfHeader);
+            } catch (IOException ex) {
+                try {
+                    tempFiles.deleteFiles();
+                } catch (IOException e) {
+                    ex.addSuppressed(e);
+                }
+                throw new DataStoreException("Failed to create temp files", ex);
+            }
+
+        }
+
+        private void write(Feature feature) throws IOException {
+            inc++; //number starts at 1
+            final ShapeRecord shpRecord = new ShapeRecord();
+            final DBFRecord dbfRecord = new DBFRecord();
+            final long recordStartPosition = shpWriter.getSteamPosition();
+
+            if (defaultGeomName == null) {
+                //search for the geometry name
+                for (PropertyType pt : feature.getType().getProperties(true)) {
+                    if (pt instanceof AttributeType) {
+                        final AttributeType at = (AttributeType) pt;
+                        final String attName = at.getName().toString();
+                        if (Geometry.class.isAssignableFrom(at.getValueClass())) {
+                            defaultGeomName = attName;
+                        }
+                    }
+                }
+                if (defaultGeomName == null) {
+                    throw new IOException("Failed to find a geometry attribute in given features");
+                }
+            }
+
+            //write geometry
+            Object value = feature.getPropertyValue(defaultGeomName);
+            if (value instanceof Geometry) {
+                shpRecord.geometry = (Geometry) value;
+                shpRecord.recordNumber = inc;
+            } else {
+                throw new IOException("Feature geometry property is not a geometry");
+            }
+            shpWriter.write(shpRecord);
+            final long recordEndPosition = shpWriter.getSteamPosition();
+
+            //write index
+            shxWriter.write(Math.toIntExact(recordStartPosition), Math.toIntExact(recordEndPosition - recordStartPosition));
+
+            //copy dbf fields
+            dbfRecord.fields = new Object[dbfHeader.fields.length];
+            for (int i = 0; i < dbfRecord.fields.length; i++) {
+                dbfRecord.fields[i] = feature.getPropertyValue(dbfHeader.fields[i].fieldName);
+            }
+            dbfWriter.write(dbfRecord);
+        }
+
+        /**
+         * Close file writers and replace original files if true.
+         */
+        private void finish(boolean replaceOriginals) throws IOException {
+            try {
+                shpWriter.close();
+                dbfWriter.close();
+                shxWriter.close();
+                tempFiles.scan();
+                if (replaceOriginals) {
+                    lock.writeLock().lock();
+                    try {
+                        //swap files
+                        tempFiles.replace(files);
+                    } finally {
+                        lock.writeLock().unlock();
+                    }
+                }
+            } finally {
+                tempFiles.deleteFiles();
+            }
+        }
     }
 
 
