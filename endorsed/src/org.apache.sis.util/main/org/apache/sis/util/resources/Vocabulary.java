@@ -685,11 +685,6 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Isolines = 252;
 
         /**
-         * Java extensions
-         */
-        public static final short JavaExtensions = 109;
-
-        /**
          * Java home directory
          */
         public static final short JavaHome = 110;
@@ -848,6 +843,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Modified Julian
          */
         public static final short ModifiedJulian = 136;
+
+        /**
+         * Module path
+         */
+        public static final short ModulePath = 109;
 
         /**
          * … {0} more…
