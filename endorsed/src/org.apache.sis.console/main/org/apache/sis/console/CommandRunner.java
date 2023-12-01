@@ -55,7 +55,7 @@ abstract class CommandRunner {
      * We use this static field as a workaround for the fact that {@code ResourcesDownloader} is not
      * instantiated by us, so we cannot pass the {@code CommandRunner} instance to its constructor.
      */
-    static CommandRunner instance;
+    static final ThreadLocal<CommandRunner> instance = new ThreadLocal<>();
 
     /**
      * The name of this command, as specified by the user on the command-line.

@@ -68,7 +68,7 @@ public class ResourcesDownloader extends OptionalInstallations {
      */
     public ResourcesDownloader() {
         super("text/plain");
-        final CommandRunner command = CommandRunner.instance;
+        final CommandRunner command = CommandRunner.instance.get();
         if (command != null) {
             locale = command.locale;
             colors = command.colors;

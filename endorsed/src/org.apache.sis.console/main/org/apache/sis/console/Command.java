@@ -18,16 +18,20 @@ package org.apache.sis.console;
 
 import java.util.Locale;
 import java.util.logging.LogManager;
-import java.util.logging.ConsoleHandler;
 import java.io.Console;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.X364;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.Initializer;
 import org.apache.sis.util.logging.MonolineFormatter;
 
 
@@ -133,7 +137,7 @@ public final class Command {
      * @throws InvalidCommandException if an invalid command has been given.
      * @throws InvalidOptionException if the given arguments contain an invalid option.
      */
-    protected Command(final Object[] args) throws InvalidCommandException, InvalidOptionException {
+    public Command(final Object[] args) throws InvalidCommandException, InvalidOptionException {
         int commandIndex = -1;
         String commandName = null;
         for (int i=0; i<args.length; i++) {
@@ -171,7 +175,70 @@ public final class Command {
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
         }
-        CommandRunner.instance = command;       // For ResourcesDownloader only.
+    }
+
+    /**
+     * Loads the logging configuration file if not already done, then configures the monoline formatter.
+     * This method performs two main tasks:
+     *
+     * <ol>
+     *   <li>If the {@value Initializer#CONFIG_FILE_PROPERTY} is <em>not</em> set, then try
+     *       to set it to {@code $SIS_HOME/conf/logging.properties} and load that file.</li>
+     *   <li>If the {@code "derby.stream.error.file"} system property is not defined,
+     *       then try to set it to {@code $SIS_HOME/log/derby.log}.</li>
+     *   <li>If the configuration file declares {@link MonolineFormatter} as the console formatter,
+     *       ensures that the formatter is loaded and resets its colors depending on whether X364
+     *       seems to be supported.</li>
+     * </ol>
+     *
+     * This method can be invoked at initialization time,
+     * such as the beginning of {@code main(…)} static method.
+     *
+     * @since 1.5
+     */
+    public static void configureLogging() {
+        final String value = System.getenv("SIS_HOME");
+        if (value != null) {
+            final Path home = Path.of(value).normalize();
+            Path file = home.resolve("log");
+            if (Files.isDirectory(file)) {
+                setPropertyIfAbsent("derby.stream.error.file", file.resolve("derby.log"));
+            }
+            file = home.resolve("conf").resolve("logging.properties");
+            if (Files.isRegularFile(file)) {
+                if (setPropertyIfAbsent(Initializer.CONFIG_FILE_PROPERTY, file)) try {
+                    Initializer.reload(file);
+                } catch (IOException e) {
+                    Logging.unexpectedException(null, Command.class, "configureLogging", e);
+                }
+            }
+        }
+        /*
+         * The logging configuration is given by the "conf/logging.properties" file in the Apache SIS
+         * installation directory. By default, that configuration file contains the following line:
+         *
+         *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
+         *
+         * However, this configuration is sometime silently ignored by the LogManager at JVM startup time,
+         * maybe because the Apache SIS classes were not yet loaded. So we check again if the configuration
+         * contained that line, and manually re-install the log formatter if that line is present.
+         */
+        final String handler = LogManager.getLogManager().getProperty("java.util.logging.ConsoleHandler.formatter");
+        if (MonolineFormatter.class.getName().equals(handler)) {
+            MonolineFormatter.install().resetLevelColors(X364.isAnsiSupported());
+        }
+    }
+
+    /**
+     * Sets the specified system property if that property is not already set.
+     * This method returns whether the property has been set.
+     */
+    private static boolean setPropertyIfAbsent(final String property, final Path value) {
+        if (System.getProperty(property) == null) {
+            System.setProperty(property, value.toString());
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -190,12 +257,15 @@ public final class Command {
         if (command.options.containsKey(Option.HELP)) {
             command.help(command.commandName.toLowerCase(Locale.US));
         } else try {
+            CommandRunner.instance.set(command);        // For ResourcesDownloader only.
             int status = command.run();
             command.flush();
             return status;
         } catch (Exception e) {
             command.error(null, e);
             throw e;
+        } finally {
+            CommandRunner.instance.remove();
         }
         return 0;
     }
@@ -254,24 +324,7 @@ public final class Command {
      * @param  args  command-line options.
      */
     public static void main(final String[] args) {
-        /*
-         * The logging configuration is given by the "conf/logging.properties" file in the Apache SIS
-         * installation directory. By default, that configuration file contains the following line:
-         *
-         *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
-         *
-         * However, this configuration is silently ignored by LogManager at JVM startup time, probably
-         * because the Apache SIS class is not on the system module path. So we check again for this
-         * configuration line here, and manually install our log formatter only if the above-cited
-         * line is present.
-         */
-        final LogManager manager = LogManager.getLogManager();
-        if (MonolineFormatter.class.getName().equals(manager.getProperty(ConsoleHandler.class.getName() + ".formatter"))) {
-            MonolineFormatter.install();
-        }
-        /*
-         * Now run the command.
-         */
+        configureLogging();
         final Command c;
         try {
             c = new Command(args);

@@ -23,6 +23,7 @@ BASE_DIR="`dirname "$( readlink -e "$0"; )";`/.."
 
 SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
 export SIS_DATA
+unset  SIS_HOME
 
 if [ -z "$PATH_TO_FX" ]
 then
