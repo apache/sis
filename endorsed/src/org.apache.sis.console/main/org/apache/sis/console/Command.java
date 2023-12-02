@@ -18,8 +18,6 @@ package org.apache.sis.console;
 
 import java.util.Locale;
 import java.util.logging.LogManager;
-import java.io.Console;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -242,6 +240,18 @@ public final class Command {
     }
 
     /**
+     * Returns the writer where this command sends its output.
+     *
+     * @param  error  {@code true} for the error stream, or {@code false} for the standard output stream.
+     * @return the stream where this command sends it output.
+     *
+     * @since 1.5
+     */
+    public PrintWriter writer(final boolean error) {
+        return error ? command.err : command.out;
+    }
+
+    /**
      * Runs the command. If an exception occurs, then the exception message is sent to the error output stream
      * before to be thrown. Callers can map the exception to a {@linkplain System#exit(int) system exit code}
      * by the {@link #exitCodeFor(Throwable)} method.
@@ -295,27 +305,16 @@ public final class Command {
      *
      * @param  args  the command line arguments, used only for detecting if the {@code --debug} option was present.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void error(final String[] args, final Exception e) {
         final boolean debug = ArraysExt.containsIgnoreCase(args, Option.PREFIX + "debug");
-        final Console console = System.console();
-        if (console != null) {
-            final PrintWriter err = console.writer();
-            if (debug) {
-                e.printStackTrace(err);
-            } else {
-                err.println(e.getLocalizedMessage());
-            }
-            err.flush();
+        final PrintWriter err = CommandRunner.writer(System.console(), System.err);
+        if (debug) {
+            e.printStackTrace(err);
         } else {
-            @SuppressWarnings("UseOfSystemOutOrSystemErr")
-            final PrintStream err = System.err;
-            if (debug) {
-                e.printStackTrace(err);
-            } else {
-                err.println(e.getLocalizedMessage());
-            }
-            err.flush();
+            err.println(e.getLocalizedMessage());
         }
+        err.flush();
     }
 
     /**

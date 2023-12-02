@@ -140,7 +140,7 @@ enum Option {
     /**
      * Return the string representation as used on the command line.
      */
-    String label() {
+    synchronized String label() {
         if (label == null) {
             label = name().toLowerCase(Locale.US);
         }

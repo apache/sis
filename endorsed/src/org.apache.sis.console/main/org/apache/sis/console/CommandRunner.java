@@ -24,14 +24,17 @@ import java.util.EnumMap;
 import java.util.TimeZone;
 import java.io.Console;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.X364;
+import org.apache.sis.pending.jdk.JDK17;
 
 
 /**
@@ -49,6 +52,25 @@ abstract class CommandRunner {
      * @see #outputBuffer
      */
     static final String TEST = "TEST";
+
+    /**
+     * Whether the use of the console writer should be avoided.
+     * In our tests with Java 21, sending non ASCII characters to the console writer in a Linux system
+     * from a JShell session resulted in wrong characters being printed, sometime followed by JShell errors.
+     * This flag is set only if the commands are run from JShell.
+     *
+     * @see #writer(Console, PrintStream)
+     */
+    @Workaround(library="jshell", version="21")
+    private static boolean avoidConsoleWriter;
+
+    /**
+     * Notifies the command runners that the use of console writer should be avoided.
+     * This method should be invoked in JShell environment only.
+     */
+    static void avoidConsoleWriter() {
+        avoidConsoleWriter = true;
+    }
 
     /**
      * The instance, used by {@link ResourcesDownloader} only.
@@ -241,16 +263,29 @@ abstract class CommandRunner {
             err = out;
         } else {
             outputBuffer = null;
-            err = (console != null) ? console.writer() : new PrintWriter(System.err, true);
-            if (!explicitEncoding && console != null) {
-                out = console.writer();
+            err = writer(console, System.err);
+            if (explicitEncoding) {
+                out = new PrintWriter(new OutputStreamWriter(System.out, encoding), true);
             } else {
-                if (explicitEncoding) {
-                    out = new PrintWriter(new OutputStreamWriter(System.out, encoding), true);
-                } else {
-                    out = new PrintWriter(System.out, true);
-                }
+                out = writer(console, System.out);
             }
+        }
+    }
+
+    /**
+     * Returns the console print writer, or the given alternative if the console cannot be used.
+     *
+     * @param  console   the value of {@link System#console()}, potentially null.
+     * @param  fallback  the fallback to use if the console cannot be used.
+     * @return the writer.
+     */
+    static PrintWriter writer(final Console console, final PrintStream fallback) {
+        if (console == null) {
+            return new PrintWriter(fallback, true);
+        } else if (avoidConsoleWriter) {
+            return new PrintWriter(new OutputStreamWriter(fallback, JDK17.charset(console)), true);
+        } else {
+            return console.writer();
         }
     }
 

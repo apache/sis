@@ -289,9 +289,9 @@ abstract class FormattedOutputCommand extends CommandRunner {
 
     /**
      * Returns {@code true} if {@link #out} is sending its output to the console.
-     * If not, then we are probably writing to a file or the user specified his own encoding.
-     * In such case, we will send the XML output to an {@code OutputStream} instead of to a
-     * {@code Writer} and let the marshaller apply the encoding itself.
+     * If not, then we are probably either writing to a file, or the user specified his own encoding.
+     * In such case, we will send the XML output to an {@code OutputStream} instead of {@code Writer},
+     * and let the marshaller applies the encoding itself.
      */
     private boolean isConsole() {
         if (outputBuffer != null) return true;                      // Special case for JUnit tests only.
