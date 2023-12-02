@@ -63,7 +63,7 @@ final class InfoCommand extends FormattedOutputCommand {
      * @param  arguments     the command-line arguments provided by the user.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    InfoCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+    InfoCommand(final int commandIndex, final Object[] arguments) throws InvalidOptionException {
         super(commandIndex, arguments, options(), OutputFormat.TEXT);
         gridBitMask = GridGeometry.EXTENT | GridGeometry.GEOGRAPHIC_EXTENT | GridGeometry.TEMPORAL_EXTENT
                     | GridGeometry.CRS | GridGeometry.RESOLUTION;
@@ -80,15 +80,13 @@ final class InfoCommand extends FormattedOutputCommand {
     @Override
     public int run() throws Exception {
         final Object input;
-        final String name;
         if (useStandardInput()) {
             input = System.in;
-            name  = "stdin";
         } else {
             if (hasUnexpectedFileCount = hasUnexpectedFileCount(1, 1)) {
                 return Command.INVALID_ARGUMENT_EXIT_CODE;
             }
-            input = name = files.get(0);
+            input = files.get(0);
         }
         final var tree = new DefaultTreeTable(TableColumn.VALUE_AS_TEXT);
         try (DataStore store = DataStores.open(input)) {

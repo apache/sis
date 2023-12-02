@@ -20,7 +20,7 @@ import java.io.IOException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -46,16 +46,16 @@ public final class HelpCommandTest extends TestCase {
      */
     @Test
     public void testDefault() throws InvalidOptionException, IOException {
-        final HelpCommand test = new HelpCommand(0, CommandRunner.TEST);
+        var test = new HelpCommand(0, new String[] {CommandRunner.TEST});
         test.run();
-        final String result = test.outputBuffer.toString();
-        assertTrue("Apache SIS", result.startsWith("Apache SIS"));
-        assertTrue("--locale",   result.contains("--locale"));
-        assertTrue("--encoding", result.contains("--encoding"));
-        assertTrue("--timezone", result.contains("--timezone"));
-        assertTrue("--brief",    result.contains("--brief"));
-        assertTrue("--verbose",  result.contains("--verbose"));
-        assertTrue("--help",     result.contains("--help"));
+        String result = test.outputBuffer.toString();
+        assertTrue(result.startsWith("Apache SIS"));
+        assertTrue(result.contains("--locale"));
+        assertTrue(result.contains("--encoding"));
+        assertTrue(result.contains("--timezone"));
+        assertTrue(result.contains("--brief"));
+        assertTrue(result.contains("--verbose"));
+        assertTrue(result.contains("--help"));
     }
 
     /**
@@ -67,16 +67,16 @@ public final class HelpCommandTest extends TestCase {
      */
     @Test
     public void testHelp() throws InvalidOptionException, IOException {
-        final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help");
+        var test = new HelpCommand(0, new String[] {CommandRunner.TEST, "--help"});
         test.help("help");
-        final String result = test.outputBuffer.toString();
-        assertTrue ("help",       result.startsWith("help"));
-        assertTrue ("--locale",   result.contains("--locale"));
-        assertTrue ("--encoding", result.contains("--encoding"));
-        assertFalse("--timezone", result.contains("--timezone"));
-        assertFalse("--brief",    result.contains("--brief"));
-        assertFalse("--verbose",  result.contains("--verbose"));
-        assertTrue ("--help",     result.contains("--help"));
+        String result = test.outputBuffer.toString();
+        assertTrue (result.startsWith("help"));
+        assertTrue (result.contains("--locale"));
+        assertTrue (result.contains("--encoding"));
+        assertFalse(result.contains("--timezone"));
+        assertFalse(result.contains("--brief"));
+        assertFalse(result.contains("--verbose"));
+        assertTrue (result.contains("--help"));
     }
 
     /**
@@ -87,11 +87,11 @@ public final class HelpCommandTest extends TestCase {
      */
     @Test
     public void testEnglishLocale() throws InvalidOptionException, IOException {
-        final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help", "--locale", "en");
+        var test = new HelpCommand(0, new String[] {CommandRunner.TEST, "--help", "--locale", "en"});
         test.help("help");
-        final String result = test.outputBuffer.toString();
-        assertTrue(result, result.contains("Show a help overview."));
-        assertTrue(result, result.contains("The locale to use"));
+        String result = test.outputBuffer.toString();
+        assertTrue(result.contains("Show a help overview."));
+        assertTrue(result.contains("The locale to use"));
     }
 
     /**
@@ -102,10 +102,10 @@ public final class HelpCommandTest extends TestCase {
      */
     @Test
     public void testFrenchLocale() throws InvalidOptionException, IOException {
-        final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help", "--locale", "fr");
+        var test = new HelpCommand(0, new String[] {CommandRunner.TEST, "--help", "--locale", "fr"});
         test.help("help");
-        final String result = test.outputBuffer.toString();
-        assertTrue(result, result.contains("Affiche un écran d’aide."));
-        assertTrue(result, result.contains("Les paramètres régionaux"));
+        String result = test.outputBuffer.toString();
+        assertTrue(result.contains("Affiche un écran d’aide."));
+        assertTrue(result.contains("Les paramètres régionaux"));
     }
 }

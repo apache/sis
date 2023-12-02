@@ -17,7 +17,6 @@
 package org.apache.sis.console;
 
 import java.util.EnumSet;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.StorageConnector;
@@ -35,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * The "translate" sub-command.
- * This command reads resources and rewrites them in another format.
+ * This sub-command reads resources and rewrites them in another format.
  * If more than one source file is specified, then all those files are aggregated in the output file.
  * This is possible only if the output format supports the storage of an arbitrary number of resources.
  *
@@ -49,7 +48,7 @@ final class TranslateCommand extends CommandRunner {
      * @param  arguments     the command-line arguments provided by the user.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    TranslateCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+    TranslateCommand(final int commandIndex, final Object[] arguments) throws InvalidOptionException {
         super(commandIndex, arguments, EnumSet.of(Option.OUTPUT, Option.FORMAT, Option.HELP, Option.DEBUG));
     }
 
@@ -64,15 +63,15 @@ final class TranslateCommand extends CommandRunner {
         if (hasUnexpectedFileCount(1, Integer.MAX_VALUE)) {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
-        final String output = getMandatoryOption(Option.OUTPUT);
-        final String format = options.get(Option.FORMAT);
-        final var connector = new StorageConnector(Path.of(output));
+        final Object output = getMandatoryOption(Option.OUTPUT);
+        final String format = getOptionAsString(Option.FORMAT);
+        final var connector = new StorageConnector(output);
         connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
             StandardOpenOption.CREATE_NEW,
             StandardOpenOption.WRITE
         });
         try (DataStore target = DataStores.openWritable(connector, format)) {
-            for (final String file : files) {
+            for (final Object file : files) {
                 try (DataStore source = DataStores.open(file)) {
                     if (target instanceof WritableAggregate) {
                         ((WritableAggregate) target).add(source);

@@ -39,6 +39,11 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * The "identifier" sub-command.
+ * Some available options are:
+ *
+ * <ul>
+ *   <li>{@code --format}: the output format (text).</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -100,7 +105,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
     /**
      * Creates the {@code "identifier"} sub-command.
      */
-    IdentifierCommand(final int commandIndex, final String... args) throws InvalidOptionException {
+    IdentifierCommand(final int commandIndex, final Object[] args) throws InvalidOptionException {
         super(commandIndex, args, options(), OutputFormat.TEXT);
     }
 
@@ -126,7 +131,12 @@ final class IdentifierCommand extends FormattedOutputCommand {
                 final Identifier id = ((Metadata) metadata).getMetadataIdentifier();
                 if (id != null) {
                     CharSequence desc = id.getDescription();
-                    if (desc != null && !files.isEmpty()) desc = files.get(0);
+                    if (desc == null && !files.isEmpty()) {
+                        final Object c = files.get(0);
+                        if (c instanceof CharSequence) {
+                            desc = c.toString();
+                        }
+                    }
                     rows.add(new Row(State.VALID, IdentifiedObjects.toString(id), desc));
                 }
                 for (final ReferenceSystem rs : ((Metadata) metadata).getReferenceSystemInfo()) {

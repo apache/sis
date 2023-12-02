@@ -21,7 +21,7 @@ import org.apache.sis.util.CharSequences;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -47,7 +47,7 @@ public final class AboutCommandTest extends TestCase {
      */
     @Test
     public void testDefault() throws Exception {
-        final AboutCommand test = new AboutCommand(0, CommandRunner.TEST);
+        final AboutCommand test = new AboutCommand(0, new String[] {CommandRunner.TEST});
         test.run();
         verify(test.outputBuffer.toString());
     }
@@ -57,16 +57,16 @@ public final class AboutCommandTest extends TestCase {
      */
     private static void verify(final String result) {
         String expected = Version.SIS.toString();
-        assertTrue(expected, result.contains(expected));
+        assertTrue(result.contains(expected), expected);
 
         expected = System.getProperty("java.version");
-        assertTrue(expected, result.contains(expected));
+        assertTrue(result.contains(expected), expected);
 
         expected = System.getProperty("os.name");
-        assertTrue(expected, result.contains(expected));
+        assertTrue(result.contains(expected), expected);
 
         expected = System.getProperty("user.home");
-        assertTrue(expected, result.contains(expected));
+        assertTrue(result.contains(expected), expected);
     }
 
     /**
@@ -76,10 +76,10 @@ public final class AboutCommandTest extends TestCase {
      */
     @Test
     public void testBrief() throws Exception {
-        final AboutCommand test = new AboutCommand(0, CommandRunner.TEST, "--brief");
+        var test = new AboutCommand(0, new String[] {CommandRunner.TEST, "--brief"});
         test.run();
-        final String result = getSingleton(CharSequences.splitOnEOL(test.outputBuffer.toString().trim())).toString();
-        assertTrue(result, result.contains(Version.SIS.toString()));
+        String result = getSingleton(CharSequences.splitOnEOL(test.outputBuffer.toString().trim())).toString();
+        assertTrue(result.contains(Version.SIS.toString()), result);
     }
 
     /**
@@ -91,7 +91,7 @@ public final class AboutCommandTest extends TestCase {
      */
     @Test
     public void testVerbose() throws Exception {
-        final AboutCommand test = new AboutCommand(0, CommandRunner.TEST, "--verbose");
+        var test = new AboutCommand(0, new String[] {CommandRunner.TEST, "--verbose"});
         test.run();
         verify(test.outputBuffer.toString());
     }

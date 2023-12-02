@@ -25,6 +25,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * The "help" subcommand.
+ * This sub-command prints the same text than when {@code SIS} is invoked on the command-line without arguments.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -58,7 +59,7 @@ final class HelpCommand extends CommandRunner {
      * @param  arguments     the command-line arguments provided by the user.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    HelpCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+    HelpCommand(final int commandIndex, final Object[] arguments) throws InvalidOptionException {
         super(commandIndex, arguments, EnumSet.of(Option.LOCALE, Option.ENCODING, Option.HELP, Option.DEBUG));
     }
 

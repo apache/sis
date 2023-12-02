@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import java.util.Arrays;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.EnumSet;
@@ -26,6 +27,7 @@ import java.nio.file.FileSystemNotFoundException;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.stream.IOUtilities;
 
 
 /**
@@ -50,7 +52,7 @@ final class MimeTypeCommand extends CommandRunner {
      * @param  arguments     the command-line arguments provided by the user.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    MimeTypeCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+    MimeTypeCommand(final int commandIndex, final Object[] arguments) throws InvalidOptionException {
         super(commandIndex, arguments, EnumSet.of(Option.ENCODING, Option.HELP, Option.DEBUG));
     }
 
@@ -66,28 +68,24 @@ final class MimeTypeCommand extends CommandRunner {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
         /*
-         * Computes the width of the first column, which will contain file names.
+         * Computes the width of the first column, which will contain the URIs.
          */
-        int width = 0;
-        for (final String file : files) {
-            final int length = file.length() + 1;
-            if (length > width) {
-                width = length;
-            }
-        }
+        final String[] names = files.stream().map(IOUtilities::toString).toArray(String[]::new);
+        final int width = Arrays.stream(names).mapToInt(String::length).max().orElse(0) + 1;
         /*
          * Now detect and print MIME type.
          */
-        for (final String file : files) {
+        for (int i=0; i<names.length; i++) {
+            final Object file = files.get(i);
             final URI uri;
             try {
-                uri = new URI(file);
+                uri = IOUtilities.toURI(file);
             } catch (URISyntaxException e) {
                 canNotOpen(0, e);
                 return Command.IO_EXCEPTION_EXIT_CODE;
             }
             String type;
-            if (!uri.isAbsolute()) {
+            if (uri == null || !uri.isAbsolute()) {
                 /*
                  * If the URI is not absolute, we will not be able to convert to Path.
                  * Open as a String, leaving the conversion to DataStore implementations.
@@ -107,9 +105,10 @@ final class MimeTypeCommand extends CommandRunner {
              *   file: type
              */
             if (type != null) {
-                out.print(file);
+                final String name = names[i];
+                out.print(name);
                 out.print(':');
-                out.print(CharSequences.spaces(width - file.length()));
+                out.print(CharSequences.spaces(width - name.length()));
                 out.println(type);
                 out.flush();
             }

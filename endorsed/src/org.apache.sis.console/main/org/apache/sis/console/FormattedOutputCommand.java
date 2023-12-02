@@ -95,7 +95,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
      * @param  supportedFormats  the output formats to accept. The first format is the default one.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    FormattedOutputCommand(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions,
+    FormattedOutputCommand(final int commandIndex, final Object[] arguments, final EnumSet<Option> validOptions,
             final OutputFormat... supportedFormats) throws InvalidOptionException
     {
         super(commandIndex, arguments, validOptions);
@@ -104,7 +104,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
          * Output format can be either "text" (the default) or "xml".
          * In the case of "crs" sub-command, we accept also WKT variants.
          */
-        final String format = options.get(Option.FORMAT);
+        final String format = getOptionAsString(Option.FORMAT);
         if (format == null) {
             outputFormat = supportedFormats[0];
             convention   = Convention.WKT2_SIMPLIFIED;
@@ -190,13 +190,15 @@ abstract class FormattedOutputCommand extends CommandRunner {
             hasUnexpectedFileCount = true;
             return null;
         } else {
-            final String file = files.get(0);
-            if (CodeType.guess(file).isCRS) {
-                return CRS.forCode(file);
-            } else {
-                try (DataStore store = DataStores.open(file)) {
-                    return store.getMetadata();
+            final Object file = files.get(0);
+            if (file instanceof CharSequence) {
+                final String c = file.toString();
+                if (CodeType.guess(c).isCRS) {
+                    return CRS.forCode(c);
                 }
+            }
+            try (DataStore store = DataStores.open(file)) {
+                return store.getMetadata();
             }
         }
     }

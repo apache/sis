@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -74,8 +74,8 @@ public final class CommandRunnerTest extends TestCase {
     public void testLocale() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--locale", "ja");
         assertEquals(Option.LOCALE, getSingleton(c.options.keySet()));
-        assertSame("locale", Locale.JAPANESE, c.locale);
-        assertTrue("files.isEmpty()", c.files.isEmpty());
+        assertSame(Locale.JAPANESE, c.locale, "locale");
+        assertTrue(c.files.isEmpty(), "files.isEmpty()");
     }
 
     /**
@@ -87,9 +87,9 @@ public final class CommandRunnerTest extends TestCase {
     public void testTimeZone() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--timezone", "JST");
         assertEquals(Option.TIMEZONE, getSingleton(c.options.keySet()));
-        assertEquals("timezone", TimeZone.getTimeZone("JST"), c.timezone);
-        assertEquals("rawoffset", TimeUnit.HOURS.toMillis(9), c.timezone.getRawOffset());
-        assertTrue("files.isEmpty()", c.files.isEmpty());
+        assertEquals(TimeZone.getTimeZone("JST"), c.timezone, "timezone");
+        assertEquals(TimeUnit.HOURS.toMillis(9), c.timezone.getRawOffset(), "rawoffset");
+        assertTrue(c.files.isEmpty(), "files.isEmpty()");
     }
 
     /**
@@ -101,8 +101,8 @@ public final class CommandRunnerTest extends TestCase {
     public void testEncoding() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--encoding", "UTF-16");
         assertEquals(Option.ENCODING, getSingleton(c.options.keySet()));
-        assertEquals("encoding", StandardCharsets.UTF_16, c.encoding);
-        assertTrue("files.isEmpty()", c.files.isEmpty());
+        assertEquals(StandardCharsets.UTF_16, c.encoding, "encoding");
+        assertTrue(c.files.isEmpty(), "files.isEmpty()");
     }
 
     /**
@@ -115,13 +115,12 @@ public final class CommandRunnerTest extends TestCase {
     public void testOptionMix() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST,
                 "--brief", "--locale", "ja", "--verbose", "--timezone", "JST");
-        assertEquals("options", EnumSet.of(
-                Option.BRIEF, Option.LOCALE, Option.VERBOSE, Option.TIMEZONE), c.options.keySet());
+        assertEquals(EnumSet.of(Option.BRIEF, Option.LOCALE, Option.VERBOSE, Option.TIMEZONE), c.options.keySet(), "options");
 
         // Test specific values.
-        assertSame  ("locale",   Locale.JAPANESE,             c.locale);
-        assertEquals("timezone", TimeZone.getTimeZone("JST"), c.timezone);
-        assertTrue("files.isEmpty()", c.files.isEmpty());
+        assertSame(Locale.JAPANESE, c.locale, "locale");
+        assertEquals(TimeZone.getTimeZone("JST"), c.timezone, "timezone");
+        assertTrue(c.files.isEmpty(), "files.isEmpty()");
     }
 
     /**
@@ -135,13 +134,10 @@ public final class CommandRunnerTest extends TestCase {
     public void testMissingOptionValue() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief"); // Should not comply.
         assertEquals(Option.BRIEF, getSingleton(c.options.keySet()));
-        try {
-            new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief", "--locale");
-            fail("Expected InvalidOptionException");
-        } catch (InvalidOptionException e) {
-            final String message = e.getMessage();
-            assertTrue(message.contains("locale"));
-        }
+        String message = assertThrows(InvalidOptionException.class,
+                () -> new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief", "--locale"))
+                .getMessage();
+        assertTrue(message.contains("locale"));
     }
 
     /**
@@ -151,13 +147,10 @@ public final class CommandRunnerTest extends TestCase {
      */
     @Test
     public void testUnexpectedOption() throws InvalidOptionException {
-        try {
-            new Dummy(EnumSet.of(Option.HELP, Option.BRIEF), CommandRunner.TEST, "--brief", "--verbose", "--help");
-            fail("Expected InvalidOptionException");
-        } catch (InvalidOptionException e) {
-            final String message = e.getMessage();
-            assertTrue(message.contains("verbose"));
-        }
+        String message = assertThrows(InvalidOptionException.class,
+                () -> new Dummy(EnumSet.of(Option.HELP, Option.BRIEF), CommandRunner.TEST, "--brief", "--verbose", "--help"))
+                .getMessage();
+        assertTrue(message.contains("verbose"));
     }
 
     /**
@@ -167,9 +160,9 @@ public final class CommandRunnerTest extends TestCase {
      */
     @Test
     public void testHasContradictoryOptions() throws InvalidOptionException {
-        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief", "--verbose");
+        final var c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief", "--verbose");
         assertTrue(c.hasContradictoryOptions(Option.BRIEF, Option.VERBOSE));
-        final String message = c.outputBuffer.toString();
+        String message = c.outputBuffer.toString();
         assertTrue(message.contains("brief"));
         assertTrue(message.contains("verbose"));
     }
@@ -181,13 +174,13 @@ public final class CommandRunnerTest extends TestCase {
      */
     @Test
     public void testHasUnexpectedFileCount() throws InvalidOptionException {
-        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "MyFile.txt");
+        final var c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "MyFile.txt");
         assertFalse(c.hasUnexpectedFileCount(0, 1));
         assertEquals("", c.outputBuffer.toString());
         assertFalse(c.hasUnexpectedFileCount(1, 2));
         assertEquals("", c.outputBuffer.toString());
         assertTrue(c.hasUnexpectedFileCount(2, 3));
-        final String message = c.outputBuffer.toString();
+        String message = c.outputBuffer.toString();
         assertTrue(message.length() != 0);
     }
 }

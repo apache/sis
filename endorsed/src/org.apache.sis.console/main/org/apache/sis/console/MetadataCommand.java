@@ -28,7 +28,12 @@ import org.apache.sis.util.collection.TreeTable;
 
 /**
  * The "metadata" sub-command.
- * This command shows ISO 19115 metadata for the content of a file.
+ * This sub-command shows ISO 19115 metadata for the content of a file.
+ * Some available options are:
+ *
+ * <ul>
+ *   <li>{@code --format}: the output format (text, XML or GPX).</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -48,7 +53,7 @@ final class MetadataCommand extends FormattedOutputCommand {
      * @param  arguments     the command-line arguments provided by the user.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    MetadataCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+    MetadataCommand(final int commandIndex, final Object[] arguments) throws InvalidOptionException {
         super(commandIndex, arguments, options(), OutputFormat.TEXT, OutputFormat.XML, OutputFormat.GPX);
     }
 

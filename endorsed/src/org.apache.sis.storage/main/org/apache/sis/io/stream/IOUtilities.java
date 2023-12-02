@@ -193,12 +193,30 @@ public final class IOUtilities extends Static {
             return path.toString();
         }
         /*
-         * While toString() would work too on the default implementation, the following
-         * type is not final. So we are better to invoke the dedicated method.
+         * While `toString()` would work too on the default `File` implementation,
+         * the class is not final. So we are better to invoke the dedicated method.
          */
         if (path instanceof File) {
             return ((File) path).getPath();
         }
+        return null;
+    }
+
+    /**
+     * Converts the given object to an URI if possible, or returns {@code null} otherwise.
+     * The current implementation recognizes the {@link Path}, {@link File}, {@link URL},
+     * {@link URI} and {@link CharSequence} types.
+     *
+     * @param  path  the path for which to return an URI.
+     * @return the given path as an URI, or {@code null}.
+     * @throws URISyntaxException if the URI cannot be parsed.
+     */
+    public static URI toURI(final Object path) throws URISyntaxException {
+        if (path instanceof URI)          return  (URI)  path;
+        if (path instanceof URL)          return ((URL)  path).toURI();
+        if (path instanceof File)         return ((File) path).toURI();
+        if (path instanceof Path)         return ((Path) path).toUri();
+        if (path instanceof CharSequence) return new URI(path.toString());
         return null;
     }
 

@@ -124,26 +124,34 @@ public final class Command {
      * Creates a new command for the given arguments. The first value in the given array which is
      * not an option is taken as the command name. All other values are options or filenames.
      *
+     * <p>Arguments should be instances of {@link String}, except the arguments for input or output files
+     * which can be any types accepted by {@link org.apache.sis.storage.StorageConnector}. This includes,
+     * for example, {@link String}, {@link java.io.File}, {@link java.nio.file.Path}, {@link java.net.URL},
+     * <i>etc.</i></p>
+     *
      * @param  args  the command-line arguments.
      * @throws InvalidCommandException if an invalid command has been given.
      * @throws InvalidOptionException if the given arguments contain an invalid option.
      */
-    protected Command(final String[] args) throws InvalidCommandException, InvalidOptionException {
+    protected Command(final Object[] args) throws InvalidCommandException, InvalidOptionException {
         int commandIndex = -1;
         String commandName = null;
         for (int i=0; i<args.length; i++) {
-            final String arg = args[i];
-            if (arg.startsWith(Option.PREFIX)) {
-                final String name = arg.substring(Option.PREFIX.length());
-                final Option option = Option.forLabel(name);
-                if (option.hasValue) {
-                    i++;                        // Skip the next argument.
+            final Object arg = args[i];
+            if (arg instanceof CharSequence) {
+                final String s = arg.toString();
+                if (s.startsWith(Option.PREFIX)) {
+                    final String name = s.substring(Option.PREFIX.length());
+                    final Option option = Option.forLabel(name);
+                    if (option.hasValue) {
+                        i++;                        // Skip the next argument.
+                    }
+                } else {
+                    // Takes the first non-argument option as the command name.
+                    commandName  = s;
+                    commandIndex = i;
+                    break;
                 }
-            } else {
-                // Takes the first non-argument option as the command name.
-                commandName = arg;
-                commandIndex = i;
-                break;
             }
         }
         if (commandName == null) {
@@ -182,7 +190,9 @@ public final class Command {
         if (command.options.containsKey(Option.HELP)) {
             command.help(command.commandName.toLowerCase(Locale.US));
         } else try {
-            return command.run();
+            int status = command.run();
+            command.flush();
+            return status;
         } catch (Exception e) {
             command.error(null, e);
             throw e;
@@ -280,7 +290,6 @@ public final class Command {
         } catch (Exception e) {
             status = exitCodeFor(e);
         }
-        c.command.flush();
         if (status != 0) {
             System.exit(status);
         }

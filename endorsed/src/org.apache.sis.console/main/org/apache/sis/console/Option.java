@@ -99,7 +99,7 @@ enum Option {
      * Boolean values accepted on the command line. Values at even indices are {@code false}
      * and values at odd indices are {@code true}.
      *
-     * @see #parseBoolean(String)
+     * @see #parseBoolean(Object)
      */
     private static final String[] BOOLEAN_VALUES = {
         "false", "true",
@@ -166,13 +166,17 @@ enum Option {
      * @return the value as a boolean.
      * @throws InvalidOptionException if the given value is not recognized as a boolean.
      */
-    boolean parseBoolean(final String value) throws InvalidOptionException {
+    boolean parseBoolean(final Object value) throws InvalidOptionException {
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        final String s = value.toString();
         for (int i=0; i<BOOLEAN_VALUES.length; i++) {
-            if (value.equalsIgnoreCase(BOOLEAN_VALUES[i])) {
+            if (s.equalsIgnoreCase(BOOLEAN_VALUES[i])) {
                 return (i & 1) != 0;
             }
         }
-        final String name = name().toLowerCase(Locale.US);
+        final String name = label();
         throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
     }
 }
