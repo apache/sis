@@ -36,18 +36,19 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.internal.X364;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Supervisor;
 import org.apache.sis.system.SupervisorMBean;
 import org.apache.sis.system.DataDirectory;
-import org.apache.sis.util.internal.StandardDateFormat;
-import org.apache.sis.util.internal.X364;
+import org.apache.sis.io.stream.IOUtilities;
 
 
 /**
  * The "about" subcommand.
  * By default this sub-command prints all information except the {@link About#LIBRARIES} section,
- * because the latter is considered too verbose. Available options are:
+ * because the latter is considered too verbose. Some available options are:
  *
  * <ul>
  *   <li>{@code --brief}:   prints only Apache SIS version number.</li>
@@ -69,7 +70,7 @@ final class AboutCommand extends CommandRunner {
      * @param  arguments     the command-line arguments provided by the user.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    AboutCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+    AboutCommand(final int commandIndex, final Object[] arguments) throws InvalidOptionException {
         super(commandIndex, arguments, EnumSet.of(Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
                 Option.BRIEF, Option.VERBOSE, Option.HELP, Option.DEBUG));
     }
@@ -115,7 +116,10 @@ final class AboutCommand extends CommandRunner {
                  *
                  * Tutorial: http://docs.oracle.com/javase/tutorial/jmx/remote/custom.html
                  */
-                final String address = files.get(0);
+                final String address = IOUtilities.toString(files.get(0));
+                if (address == null) {
+                    return Command.INVALID_ARGUMENT_EXIT_CODE;
+                }
                 final String path = toRemoteURL(address);
                 final long time = System.nanoTime();
                 final TreeTable table;

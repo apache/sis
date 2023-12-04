@@ -20,7 +20,7 @@ import java.net.URL;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -51,7 +51,7 @@ public final class MetadataCommandTest extends TestCase {
     @Ignore("Requires GeoAPI 3.1")
     public void testNetCDF() throws Exception {
         final URL url = new URL("Cube2D_geographic_packed.nc"); // TestData.NETCDF_2D_GEOGRAPHIC.location();
-        final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString());
+        var test = new MetadataCommand(0, new String[] {CommandRunner.TEST, url.toString()});
         test.run();
         verifyNetCDF("Metadata", test.outputBuffer.toString());
     }
@@ -61,10 +61,10 @@ public final class MetadataCommandTest extends TestCase {
      * This method will check only for some keyword - this is not an extensive check of the result.
      */
     private static void verifyNetCDF(final String expectedHeader, final String result) {
-        assertTrue(expectedHeader,                           result.startsWith(expectedHeader));
-        assertTrue("Sea Surface Temperature Analysis Model", result.contains("Sea Surface Temperature Analysis Model"));
-        assertTrue("GCMD Science Keywords",                  result.contains("GCMD Science Keywords"));
-        assertTrue("NOAA/NWS/NCEP",                          result.contains("NOAA/NWS/NCEP"));
+        assertTrue(result.startsWith(expectedHeader));
+        assertTrue(result.contains("Sea Surface Temperature Analysis Model"));
+        assertTrue(result.contains("GCMD Science Keywords"));
+        assertTrue(result.contains("NOAA/NWS/NCEP"));
     }
 
     /**
@@ -77,7 +77,7 @@ public final class MetadataCommandTest extends TestCase {
     @DependsOnMethod("testNetCDF")
     public void testFormatXML() throws Exception {
         final URL url = new URL("Cube2D_geographic_packed.nc") ; // TestData.NETCDF_2D_GEOGRAPHIC.location();
-        final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString(), "--format", "XML");
+        var test = new MetadataCommand(0, new String[] {CommandRunner.TEST, url.toString(), "--format", "XML"});
         test.run();
         verifyNetCDF("<?xml", test.outputBuffer.toString());
     }

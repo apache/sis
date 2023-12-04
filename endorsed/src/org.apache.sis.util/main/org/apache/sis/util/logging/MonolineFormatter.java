@@ -32,6 +32,7 @@ import java.util.SortedMap;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.logging.*;
+import java.util.function.IntSupplier;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.ArgumentChecks;
@@ -111,7 +112,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.UTC;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @see SimpleFormatter
  * @see Handler#setFormatter(Formatter)
@@ -228,6 +229,14 @@ public class MonolineFormatter extends Formatter {
      * @see #levelWidth(Level)
      */
     private final int levelWidth;
+
+    /**
+     * Provider of the maximal number of columns in the records to format, or {@code null} if none.
+     * The value is provided in number of Unicode code points.
+     *
+     * @see #getMaximalLineLength()
+     */
+    private IntSupplier maximalLineLength;
 
     /**
      * Time of {@code MonolineFormatter} creation, in milliseconds elapsed since January 1, 1970.
@@ -390,29 +399,27 @@ loop:   for (int i=0; ; i++) {
      * @return the string to write on the left side of the first line of every log records, or {@code null} if none.
      */
     public String getHeader() {
-        final String header;
         synchronized (buffer) {
-            header = this.header;
+            // All other properties in MonolineFormatter are defined in such a way
+            // that null means "none", so we do the same here for consistency.
+            return header.isEmpty() ? null : header;
         }
-        // All other properties in MonolineFormatter are defined in such a way
-        // that null means "none", so we do the same here for consistency.
-        return header.isEmpty() ? null : header;
     }
 
     /**
      * Sets the string to write on the left side of the first line of every log records.
      *
-     * @param header The string to write on the left side of the first line of every log records,
+     * @param text  the string to write on the left side of the text line of every log records,
      *        or {@code null} if none.
      */
-    public void setHeader(String header) {
-        if (header == null) {                           // See comment in getHeader().
-            header = "";
+    public void setHeader(String text) {
+        if (text == null) {                           // See comment in getHeader().
+            text = "";
         }
         synchronized (buffer) {
-            this.header = header;
+            header = text;
             buffer.setLength(0);
-            buffer.append(header);
+            buffer.append(text);
         }
     }
 
@@ -588,6 +595,7 @@ loop:   for (int i=0; ; i++) {
      * are supported or not - this check must be done by the caller.
      */
     private void resetLevelColors() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final SortedMap<Level,X364> colors = colors();
         colors.clear();
         colors.put(Level.ALL,     X364.BACKGROUND_GRAY);
@@ -645,6 +653,35 @@ loop:   for (int i=0; ; i++) {
     }
 
     /**
+     * {@return the provider of the maximal number of columns in the records to format, or {@code null} if none}.
+     * Records longer than this value (in number of Unicode code points) will be separated one two or more lines.
+     * The value may be a constant, or it may be a value fetched from the {@code COLUMNS} environment variable.
+     * Advanced applications may also try to get this value by executing an OS-specific command.
+     *
+     * @since 1.5
+     */
+    public IntSupplier getMaximalLineLength() {
+        synchronized (buffer) {
+            return maximalLineLength;
+        }
+    }
+
+    /**
+     * Sets the provider of the maximal number of columns in the records to format.
+     * The value will be fetched for each record to format in order to allow changes.
+     * For example, the user may resize the terminal window.
+     *
+     * @param  value  the provider of the maximal number of columns, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    public void setMaximalLineLength(final IntSupplier value) {
+        synchronized (buffer) {
+            maximalLineLength = value;
+        }
+    }
+
+    /**
      * Formats the given log record and returns the formatted string.
      * See the <a href="#overview">class javadoc</a> for information on the log format.
      *
@@ -657,10 +694,9 @@ loop:   for (int i=0; ; i++) {
         String emphasisStart = "";                  // ANSI escape sequence for bold text if we use it.
         String emphasisEnd   = "";                  // ANSI escape sequence for stopping bold text if we use it.
         final Level level = record.getLevel();
-        final StringBuffer buffer = this.buffer;
         synchronized (buffer) {
-            final boolean colors = (this.colors != null);
-            if (colors && level.intValue() >= LEVEL_THRESHOLD.intValue()) {
+            final boolean colored = (colors != null);
+            if (colored && level.intValue() >= LEVEL_THRESHOLD.intValue()) {
                 emphasisStart = X364.BOLD.sequence();
                 emphasisEnd   = X364.NORMAL.sequence();
                 faint         = faintSupported;
@@ -668,7 +704,7 @@ loop:   for (int i=0; ; i++) {
             buffer.setLength(header.length());
             /*
              * Append the time (e.g. "00:00:12.365"). The time pattern can be set either
-             * programmatically by a call to 'setTimeFormat(…)', or in logging.properties
+             * programmatically by a call to `setTimeFormat(…)`, or in logging.properties
              * file with the "org.apache.sis.util.logging.MonolineFormatter.time" property.
              */
             if (timeFormat != null) {
@@ -683,7 +719,7 @@ loop:   for (int i=0; ; i++) {
             int margin = buffer.length();
             String levelColor = "", levelReset = "";
             if (SHOW_LEVEL) {
-                if (colors) {
+                if (colored) {
                     levelColor = colorAt(level);
                     levelReset = X364.BACKGROUND_DEFAULT.sequence();
                 }
@@ -743,15 +779,21 @@ loop:   for (int i=0; ; i++) {
             }
             final Throwable exception = record.getThrown();
             String message = formatMessage(record);
+            int maximalLength = Integer.MAX_VALUE;
             int length = 0;
             if (message != null) {
                 length = CharSequences.skipTrailingWhitespaces(message, 0, message.length());
+                if (maximalLineLength != null) {
+                    maximalLength = maximalLineLength.getAsInt();
+                }
             }
             /*
              * Up to this point, we wrote directly in the StringBuilder for performance reasons.
              * Now for the message part, we need to use the LineAppender in order to replace EOL
              * and tabulations.
              */
+            writer.setMaximalLineLength(maximalLength);
+            writer.setCurrentLineLength(X364.lengthOfPlain(buffer, 0, buffer.length()));
             try {
                 if (message != null) {
                     writer.append(message, 0, length);
@@ -767,15 +809,16 @@ loop:   for (int i=0; ; i++) {
                                 record.getSourceClassName(), record.getSourceMethodName());
                     }
                 }
+                writer.clear();
                 writer.flush();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
             /*
              * We wrote the main content, but maybe with some extra lines. Trim the last lines by skipping white spaces
-             * and line separator (EOL). If the 'bodyLineSeparator' margin is found immediately before the white spaces
+             * and line separator (EOL). If the `bodyLineSeparator` margin is found immediately before the white spaces
              * and EOL that we skipped, we repeat this process until we find at least one non-white character after the
-             * 'bodyLineSeparator'.
+             * `bodyLineSeparator`.
              */
             int lastMargin = buffer.length();
             do {
@@ -904,7 +947,7 @@ loop:   for (int i=0; ; i++) {
                 }
             }
             /*
-             * If the stack trace element pointed by 'logProducer' is the same one than
+             * If the stack trace element pointed by `logProducer` is the same one than
              * during the previous iteration, it is not worth to print those elements again.
              */
             int stopIndex = trace.length;

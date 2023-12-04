@@ -14,17 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.pending.jdk;
+
+import java.io.Console;
+import java.nio.charset.Charset;
+
 
 /**
- * Additional dependencies needed for Apache SIS tests.
+ * Place holder for some functionalities defined in a JDK more recent than Java 11.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-module org.apache.sis.test.incubator {
-    requires transitive junit;
-    requires transitive org.junit.jupiter.api;
-    requires transitive org.opengis.geoapi.conformance;
-    requires org.apache.sis.feature;
-    requires org.apache.sis.storage;
-    requires org.locationtech.jts;
+public final class JDK17 {
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private JDK17() {
+    }
+
+    /**
+     * {@return a placeholder for the character set of the console}.
+     *
+     * @param  console  the console for which to get the character set.
+     */
+    public static Charset charset(final Console console) {
+        return Charset.defaultCharset();
+    }
 }

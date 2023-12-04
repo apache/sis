@@ -33,7 +33,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Handler;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.text.Format;
 import java.text.DateFormat;
@@ -75,11 +74,11 @@ import static org.apache.sis.util.internal.StandardDateFormat.UTC;
  *   <li>Version numbers (SIS, Java, Operation system).</li>
  *   <li>Default locale, timezone and character encoding.</li>
  *   <li>Current directory, user home and Java home.</li>
- *   <li>Libraries on the classpath and extension directories.</li>
+ *   <li>Libraries on the module path.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public enum About {
@@ -146,7 +145,7 @@ public enum About {
      *
      * <ul>
      *   <li>JAR files in the extension directories</li>
-     *   <li>JAR files and directories in the application classpath</li>
+     *   <li>JAR files and directories in the application module path</li>
      * </ul>
      */
     LIBRARIES(Vocabulary.Keys.Libraries);
@@ -334,7 +333,7 @@ fill:   for (int i=0; ; i++) {
                                 .getMethod("providers", Locale.class, Vocabulary.class).invoke(null, locale, resources);
                         value = resources.getString(Vocabulary.Keys.EntryCount_1, children.length / 2);
                     } catch (ClassNotFoundException e) {
-                        // org.apache.sis.storage module not in the classpath.
+                        // org.apache.sis.storage module not on the module path.
                         Logging.recoverableException(getLogger(Modules.STORAGE), About.class, "configuration", e);
                     } catch (ReflectiveOperationException e) {
                         value = Exceptions.unwrap(e).toString();
@@ -424,30 +423,30 @@ fill:   for (int i=0; ; i++) {
                 }
                 case 17: {
                     if (sections.contains(PATHS)) {
-                        nameKey = Vocabulary.Keys.TemporaryFiles;
-                        value = getProperty("java.io.tmpdir");
+                        nameKey = Vocabulary.Keys.JavaHome;
+                        value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
                 case 18: {
                     if (sections.contains(PATHS)) {
-                        nameKey = Vocabulary.Keys.JavaHome;
-                        value = javaHome = getProperty("java.home");
+                        nameKey = Vocabulary.Keys.TemporaryFiles;
+                        value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
                 case 19: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
-                        nameKey = Vocabulary.Keys.JavaExtensions;
-                        value = classpath(getProperty("java.ext.dirs"), true);
+                        nameKey = Vocabulary.Keys.ModulePath;
+                        value = modulePath(getProperty("jdk.module.path"), false);
                     }
                     break;
                 }
                 case 20: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
-                        value = classpath(getProperty("java.class.path"), false);
+                        value = modulePath(getProperty("java.class.path"), true);
                     }
                     break;
                 }
@@ -540,60 +539,50 @@ pathTree:   for (int j=0; ; j++) {
      * Returns a map of all JAR files or class directories found in the given paths,
      * associated to a description obtained from their {@code META-INF/MANIFEST.MF}.
      *
-     * @param  paths          the paths using the {@link File#pathSeparatorChar} separator.
-     * @param  asDirectories  {@code true} if the paths are directories, or {@code false} for JAR files.
+     * @param  paths      the paths using the {@link File#pathSeparatorChar} separator.
+     * @param  classpath  whether to scan the class-path manifest attribute.
      * @return the paths, or {@code null} if none.
      */
-    private static Map<File,CharSequence> classpath(final String paths, final boolean asDirectories) {
+    private static Map<File,CharSequence> modulePath(final String paths, final boolean classpath) {
         final Map<File,CharSequence> files = new LinkedHashMap<>();
-        return classpath(paths, null, asDirectories, files) ? files : null;
+        return modulePath(paths, File.pathSeparatorChar, classpath, null, files) ? files : null;
     }
 
     /**
-     * Implementation of {@link #classpath(String, boolean)} to be invoked recursively.
-     * The {@code paths} argument may contains many path separated by one of the
-     * following separators:
+     * Implementation of {@link #modulePath(String, boolean)} to be invoked recursively.
+     * The {@code paths} argument may contain many paths separated by the given separator.
+     * That separator is usually {@link File#pathSeparatorChar}, except for the value of
+     * the {@code MANIFEST.MF} attribute in which case the separator is a space.
      *
-     * <ul>
-     *   <li>If {@code directory} is null, then {@code paths} is assumed to be a
-     *       system property value using the {@link File#pathSeparatorChar}.</li>
-     *   <li>If {@code directory} is non-null, then {@code paths} is assumed to be
-     *       a {@code MANIFEST.MF} attribute using space as the path separator.</li>
-     * </ul>
-     *
-     * @param  paths          the paths using the separator described above.
-     * @param  directory      the directory of {@code MANIFEST.MF} classpath, or {@code null}.
-     * @param  asDirectories  {@code true} if the paths are directories, or {@code false} for JAR files.
-     * @param  files          where to add the paths.
+     * @param  paths      the paths using the specified path separator.
+     * @param  separator  the path separator: {@link File#pathSeparatorChar} or space.
+     * @param  classpath  whether to scan the class-path manifest attribute.
+     * @param  directory  the directory of {@code MANIFEST.MF} classpath, or {@code null}.
+     * @param  files      where to add the paths.
      * @return {@code true} if the given map has been changed as a result of this method call.
      */
-    private static boolean classpath(final String paths, final File directory,
-            final boolean asDirectories, final Map<File,CharSequence> files)
+    private static boolean modulePath(final String paths, final char separator, final boolean classpath,
+            final File directory, final Map<File,CharSequence> files)
     {
         if (paths == null) {
             return false;
         }
         boolean changed = false;
-        for (final CharSequence path : CharSequences.split(paths, (directory == null) ? File.pathSeparatorChar : ' ')) {
+        for (final CharSequence path : CharSequences.split(paths, separator)) {
             final File file = new File(directory, path.toString());
-            if (file.exists()) {
-                if (!asDirectories) {
-                    if (!files.containsKey(file)) {
-                        files.put(file, null);
-                        changed = true;
-                    }
-                } else {
-                    // If we are scanning extensions, then the path are directories
-                    // rather than files. So we need to scan the directory content.
-                    final JARFilter filter = new JARFilter();
-                    final File[] list = file.listFiles(filter);
-                    if (list != null) {
-                        Arrays.sort(list);
-                        for (final File ext : list) {
-                            if (!files.containsKey(ext)) {
-                                files.put(ext, null);
-                                changed = true;
-                            }
+            if (file.isFile()) {
+                if (!files.containsKey(file)) {
+                    files.put(file, null);
+                    changed = true;
+                }
+            } else if (file.isDirectory()) {
+                final File[] list = file.listFiles((pathname) -> pathname.getName().endsWith(".jar"));
+                if (list != null) {
+                    Arrays.sort(list);
+                    for (final File ext : list) {
+                        if (!files.containsKey(ext)) {
+                            files.put(ext, null);
+                            changed = true;
                         }
                     }
                 }
@@ -608,8 +597,7 @@ pathTree:   for (int j=0; ; j++) {
          */
         IOException error = null;
         for (final Map.Entry<File,CharSequence> entry : files.entrySet()) {
-            CharSequence title = entry.getValue();
-            if (title != null) {
+            if (entry.getValue() != null) {
                 continue;               // This file has already been processed by a recursive method invocation.
             }
             final File file = entry.getKey();
@@ -619,6 +607,7 @@ pathTree:   for (int j=0; ; j++) {
                     if (manifest != null) {
                         final Attributes attributes = manifest.getMainAttributes();
                         if (attributes != null) {
+                            CharSequence title;
                             title = concatenate(attributes.getValue(Attributes.Name.IMPLEMENTATION_TITLE),
                                     attributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION), false);
                             if (title == null) {
@@ -631,10 +620,16 @@ pathTree:   for (int j=0; ; j++) {
                                 }
                             }
                             entry.setValue(title);
-                            if (classpath(attributes.getValue(Attributes.Name.CLASS_PATH),
-                                    file.getParentFile(), false, files))
-                            {
-                                break;          // Necessary for avoiding ConcurrentModificationException.
+                            /*
+                             * If scanning a class path, this JAR file implicitly adds the content of the
+                             * CLASS-PATH attribute as transitive dependencies. If scanning a module path,
+                             * this is ignored.
+                             */
+                            if (classpath) {
+                                String cp = attributes.getValue(Attributes.Name.CLASS_PATH);
+                                if (modulePath(cp, ' ', true, file.getParentFile(), files)) {
+                                    break;          // Necessary for avoiding ConcurrentModificationException.
+                                }
                             }
                         }
                     }
@@ -773,15 +768,6 @@ pathTree:   for (int j=0; ; j++) {
      */
     private static StringBuffer format(final Format df, final int offset, final StringBuffer buffer) {
         return df.format(Math.abs(offset), buffer.append(offset < 0 ? '-' : '+').append(' '), new FieldPosition(0));
-    }
-
-    /**
-     * Filters the JAR files in an extension directory.
-     */
-    private static final class JARFilter implements FileFilter {
-        @Override public boolean accept(final File pathname) {
-            return pathname.getName().endsWith(".jar");
-        }
     }
 
     /**

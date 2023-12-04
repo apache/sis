@@ -18,16 +18,18 @@ package org.apache.sis.console;
 
 import java.util.Locale;
 import java.util.logging.LogManager;
-import java.util.logging.ConsoleHandler;
-import java.io.Console;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.X364;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.Initializer;
 import org.apache.sis.util.logging.MonolineFormatter;
 
 
@@ -124,26 +126,34 @@ public final class Command {
      * Creates a new command for the given arguments. The first value in the given array which is
      * not an option is taken as the command name. All other values are options or filenames.
      *
+     * <p>Arguments should be instances of {@link String}, except the arguments for input or output files
+     * which can be any types accepted by {@link org.apache.sis.storage.StorageConnector}. This includes,
+     * for example, {@link String}, {@link java.io.File}, {@link java.nio.file.Path}, {@link java.net.URL},
+     * <i>etc.</i></p>
+     *
      * @param  args  the command-line arguments.
      * @throws InvalidCommandException if an invalid command has been given.
      * @throws InvalidOptionException if the given arguments contain an invalid option.
      */
-    protected Command(final String[] args) throws InvalidCommandException, InvalidOptionException {
+    public Command(final Object[] args) throws InvalidCommandException, InvalidOptionException {
         int commandIndex = -1;
         String commandName = null;
         for (int i=0; i<args.length; i++) {
-            final String arg = args[i];
-            if (arg.startsWith(Option.PREFIX)) {
-                final String name = arg.substring(Option.PREFIX.length());
-                final Option option = Option.forLabel(name);
-                if (option.hasValue) {
-                    i++;                        // Skip the next argument.
+            final Object arg = args[i];
+            if (arg instanceof CharSequence) {
+                final String s = arg.toString();
+                if (s.startsWith(Option.PREFIX)) {
+                    final String name = s.substring(Option.PREFIX.length());
+                    final Option option = Option.forLabel(name);
+                    if (option.hasValue) {
+                        i++;                        // Skip the next argument.
+                    }
+                } else {
+                    // Takes the first non-argument option as the command name.
+                    commandName  = s;
+                    commandIndex = i;
+                    break;
                 }
-            } else {
-                // Takes the first non-argument option as the command name.
-                commandName = arg;
-                commandIndex = i;
-                break;
             }
         }
         if (commandName == null) {
@@ -155,6 +165,7 @@ public final class Command {
                 case "mime-type":  command = new MimeTypeCommand  (commandIndex, args); break;
                 case "metadata":   command = new MetadataCommand  (commandIndex, args); break;
                 case "crs":        command = new CRSCommand       (commandIndex, args); break;
+                case "info":       command = new InfoCommand      (commandIndex, args); break;
                 case "identifier": command = new IdentifierCommand(commandIndex, args); break;
                 case "transform":  command = new TransformCommand (commandIndex, args); break;
                 case "translate":  command = new TranslateCommand (commandIndex, args); break;
@@ -162,7 +173,99 @@ public final class Command {
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
         }
-        CommandRunner.instance = command;       // For ResourcesDownloader only.
+    }
+
+    /**
+     * Loads the logging configuration file if not already done, then configures the monoline formatter.
+     * This method performs two main tasks:
+     *
+     * <ol>
+     *   <li>If the {@value Initializer#CONFIG_FILE_PROPERTY} is <em>not</em> set, then try
+     *       to set it to {@code $SIS_HOME/conf/logging.properties} and load that file.</li>
+     *   <li>If the {@code "derby.stream.error.file"} system property is not defined,
+     *       then try to set it to {@code $SIS_HOME/log/derby.log}.</li>
+     *   <li>If the configuration file declares {@link MonolineFormatter} as the console formatter,
+     *       ensures that the formatter is loaded and resets its colors depending on whether X364
+     *       seems to be supported.</li>
+     * </ol>
+     *
+     * This method can be invoked at initialization time,
+     * such as the beginning of {@code main(…)} static method.
+     *
+     * @since 1.5
+     */
+    public static void configureLogging() {
+        final String value = System.getenv("SIS_HOME");
+        if (value != null) {
+            final Path home = Path.of(value).normalize();
+            Path file = home.resolve("log");
+            if (Files.isDirectory(file)) {
+                setPropertyIfAbsent("derby.stream.error.file", file.resolve("derby.log"));
+            }
+            file = home.resolve("conf").resolve("logging.properties");
+            if (Files.isRegularFile(file)) {
+                if (setPropertyIfAbsent(Initializer.CONFIG_FILE_PROPERTY, file)) try {
+                    Initializer.reload(file);
+                } catch (IOException e) {
+                    Logging.unexpectedException(null, Command.class, "configureLogging", e);
+                }
+            }
+        }
+        /*
+         * The logging configuration is given by the "conf/logging.properties" file in the Apache SIS
+         * installation directory. By default, that configuration file contains the following line:
+         *
+         *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
+         *
+         * However, this configuration is sometime silently ignored by the LogManager at JVM startup time,
+         * maybe because the Apache SIS classes were not yet loaded. So we check again if the configuration
+         * contained that line, and manually re-install the log formatter if that line is present.
+         */
+        final String handler = LogManager.getLogManager().getProperty("java.util.logging.ConsoleHandler.formatter");
+        if (MonolineFormatter.class.getName().equals(handler)) {
+            MonolineFormatter f = MonolineFormatter.install();
+            f.setMaximalLineLength(Command::terminalSize);
+            f.resetLevelColors(X364.isAnsiSupported());
+        }
+    }
+
+    /**
+     * {@return the terminal size if known, of {@link Integer#MAX_VALUE} otherwise}.
+     * The returned value may be obsolete, because the {@code COLUMNS} environment
+     * variable is not updated when the user resizes the terminal window.
+     */
+    private static int terminalSize() {
+        final String n = System.getenv("COLUMNS");
+        if (n != null && !n.isEmpty()) try {
+            return Integer.parseInt(n);
+        } catch (NumberFormatException e) {
+            // Ignore.
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    /**
+     * Sets the specified system property if that property is not already set.
+     * This method returns whether the property has been set.
+     */
+    private static boolean setPropertyIfAbsent(final String property, final Path value) {
+        if (System.getProperty(property) == null) {
+            System.setProperty(property, value.toString());
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the writer where this command sends its output.
+     *
+     * @param  error  {@code true} for the error stream, or {@code false} for the standard output stream.
+     * @return the stream where this command sends it output.
+     *
+     * @since 1.5
+     */
+    public PrintWriter writer(final boolean error) {
+        return error ? command.err : command.out;
     }
 
     /**
@@ -181,10 +284,15 @@ public final class Command {
         if (command.options.containsKey(Option.HELP)) {
             command.help(command.commandName.toLowerCase(Locale.US));
         } else try {
-            return command.run();
+            CommandRunner.instance.set(command);        // For ResourcesDownloader only.
+            int status = command.run();
+            command.flush();
+            return status;
         } catch (Exception e) {
             command.error(null, e);
             throw e;
+        } finally {
+            CommandRunner.instance.remove();
         }
         return 0;
     }
@@ -214,27 +322,16 @@ public final class Command {
      *
      * @param  args  the command line arguments, used only for detecting if the {@code --debug} option was present.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void error(final String[] args, final Exception e) {
         final boolean debug = ArraysExt.containsIgnoreCase(args, Option.PREFIX + "debug");
-        final Console console = System.console();
-        if (console != null) {
-            final PrintWriter err = console.writer();
-            if (debug) {
-                e.printStackTrace(err);
-            } else {
-                err.println(e.getLocalizedMessage());
-            }
-            err.flush();
+        final PrintWriter err = CommandRunner.writer(System.console(), System.err);
+        if (debug) {
+            e.printStackTrace(err);
         } else {
-            @SuppressWarnings("UseOfSystemOutOrSystemErr")
-            final PrintStream err = System.err;
-            if (debug) {
-                e.printStackTrace(err);
-            } else {
-                err.println(e.getLocalizedMessage());
-            }
-            err.flush();
+            err.println(e.getLocalizedMessage());
         }
+        err.flush();
     }
 
     /**
@@ -243,24 +340,7 @@ public final class Command {
      * @param  args  command-line options.
      */
     public static void main(final String[] args) {
-        /*
-         * The logging configuration is given by the "conf/logging.properties" file in the Apache SIS
-         * installation directory. By default, that configuration file contains the following line:
-         *
-         *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
-         *
-         * However, this configuration is silently ignored by LogManager at JVM startup time, probably
-         * because the Apache SIS class is not on the system module path. So we check again for this
-         * configuration line here, and manually install our log formatter only if the above-cited
-         * line is present.
-         */
-        final LogManager manager = LogManager.getLogManager();
-        if (MonolineFormatter.class.getName().equals(manager.getProperty(ConsoleHandler.class.getName() + ".formatter"))) {
-            MonolineFormatter.install();
-        }
-        /*
-         * Now run the command.
-         */
+        configureLogging();
         final Command c;
         try {
             c = new Command(args);
@@ -279,7 +359,6 @@ public final class Command {
         } catch (Exception e) {
             status = exitCodeFor(e);
         }
-        c.command.flush();
         if (status != 0) {
             System.exit(status);
         }

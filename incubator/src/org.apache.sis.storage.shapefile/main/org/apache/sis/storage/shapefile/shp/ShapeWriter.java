@@ -44,6 +44,13 @@ public final class ShapeWriter implements AutoCloseable{
     }
 
     /**
+     * @return current position in the stream
+     */
+    public long getSteamPosition() {
+        return channel.getBitOffset();
+    }
+
+    /**
      * Header will be copied and modified.
      * Use getHeader to obtain the new header.
      */
@@ -57,11 +64,12 @@ public final class ShapeWriter implements AutoCloseable{
 
     public void write(ShapeRecord record) throws IOException {
         record.write(channel, io);
+        final GeneralEnvelope geomBox = io.getBoundingBox(record.geometry);
         if (bbox == null) {
-            bbox = new GeneralEnvelope(record.bbox.getDimension());
-            bbox.setEnvelope(record.bbox);
+            bbox = new GeneralEnvelope(geomBox.getDimension());
+            bbox.setEnvelope(geomBox);
         } else {
-            bbox.add(record.bbox);
+            bbox.add(geomBox);
         }
     }
 

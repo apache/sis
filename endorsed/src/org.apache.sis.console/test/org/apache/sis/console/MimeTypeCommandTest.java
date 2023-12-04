@@ -20,7 +20,7 @@ import java.net.URL;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.gpx.TestData;
 import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 import org.apache.sis.test.DependsOn;
@@ -48,10 +48,10 @@ public final class MimeTypeCommandTest extends TestCase {
     @Test
     public void testWithMetadataXML() throws Exception {
         final URL url = DefaultExtentTest.getTestFileURL();
-        final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
+        var test = new MimeTypeCommand(0, new String[] {CommandRunner.TEST, url.toString()});
         test.run();
-        final String output = test.outputBuffer.toString().trim();
-        assertTrue(output, output.endsWith(".xml: application/vnd.iso.19139+xml"));
+        String output = test.outputBuffer.toString().trim();
+        assertTrue(output.endsWith(".xml: application/vnd.iso.19139+xml"), output);
     }
 
     /**
@@ -63,9 +63,9 @@ public final class MimeTypeCommandTest extends TestCase {
     public void testWithMetadataGPX() throws Exception {
         final URL url = TestData.V1_1.getURL(TestData.METADATA);
         assertNotNull(url);
-        final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
+        var test = new MimeTypeCommand(0, new String[] {CommandRunner.TEST, url.toString()});
         test.run();
-        final String output = test.outputBuffer.toString().trim();
-        assertTrue(output, output.endsWith("metadata.xml: application/gpx+xml"));
+        String output = test.outputBuffer.toString().trim();
+        assertTrue(output.endsWith("metadata.xml: application/gpx+xml"), output);
     }
 }

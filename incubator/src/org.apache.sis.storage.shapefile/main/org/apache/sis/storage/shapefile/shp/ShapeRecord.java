@@ -19,11 +19,15 @@ package org.apache.sis.storage.shapefile.shp;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.nio.ByteOrder;
+
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.Point;
 
 
 /**

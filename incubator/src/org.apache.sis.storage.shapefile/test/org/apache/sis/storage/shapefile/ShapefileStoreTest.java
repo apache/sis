@@ -16,13 +16,20 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.util.Utilities;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -30,6 +37,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.feature.internal.AttributeConvention;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,6 +55,8 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @author Johann Sorel (Geomatys)
  */
 public class ShapefileStoreTest {
+
+    private static final GeometryFactory GF = new GeometryFactory();
 
     @Test
     public void testStream() throws URISyntaxException, DataStoreException {
@@ -170,21 +180,65 @@ public class ShapefileStoreTest {
         try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
             Path[] componentFiles = store.getComponentFiles();
             assertEquals(5, componentFiles.length);
-            componentFiles[0].toString().endsWith("point.shp");
-            componentFiles[1].toString().endsWith("point.shx");
-            componentFiles[2].toString().endsWith("point.dbf");
-            componentFiles[3].toString().endsWith("point.prj");
-            componentFiles[4].toString().endsWith("point.cpg");
+            assertTrue(componentFiles[0].toString().endsWith("point.shp"));
+            assertTrue(componentFiles[1].toString().endsWith("point.shx"));
+            assertTrue(componentFiles[2].toString().endsWith("point.dbf"));
+            assertTrue(componentFiles[3].toString().endsWith("point.prj"));
+            assertTrue(componentFiles[4].toString().endsWith("point.cpg"));
         }
     }
 
     /**
      * Test creating a new shapefile.
      */
-    @Ignore
     @Test
-    public void testCreate() throws URISyntaxException, DataStoreException {
-        //todo
+    public void testCreate() throws URISyntaxException, DataStoreException, IOException {
+        final Path temp = Files.createTempFile("test", ".shp");
+        Files.delete(temp);
+        final String name = temp.getFileName().toString().split("\\.")[0];
+        try (final ShapefileStore store = new ShapefileStore(temp)) {
+            Path[] componentFiles = store.getComponentFiles();
+            assertEquals(0, componentFiles.length);
+
+            {//create type
+                final DefaultFeatureType type = createType();
+                store.updateType(type);
+            }
+
+            {//check files have been created
+                componentFiles = store.getComponentFiles();
+                assertEquals(5, componentFiles.length);
+                assertTrue(componentFiles[0].toString().endsWith(name+".shp"));
+                assertTrue(componentFiles[1].toString().endsWith(name+".shx"));
+                assertTrue(componentFiles[2].toString().endsWith(name+".dbf"));
+                assertTrue( componentFiles[3].toString().endsWith(name+".prj"));
+                assertTrue(componentFiles[4].toString().endsWith(name+".cpg"));
+            }
+
+            {// check created type
+                DefaultFeatureType type = store.getType();
+                assertEquals(name, type.getName().toString());
+                System.out.println(type.toString());
+                assertEquals(9, type.getProperties(true).size());
+                assertNotNull(type.getProperty("sis:identifier"));
+                assertNotNull(type.getProperty("sis:envelope"));
+                assertNotNull(type.getProperty("sis:geometry"));
+                final var geomProp = (DefaultAttributeType) type.getProperty("geometry");
+                final var idProp = (DefaultAttributeType) type.getProperty("id");
+                final var textProp = (DefaultAttributeType) type.getProperty("text");
+                final var integerProp = (DefaultAttributeType) type.getProperty("integer");
+                final var floatProp = (DefaultAttributeType) type.getProperty("float");
+                final var dateProp = (DefaultAttributeType) type.getProperty("date");
+                final DefaultAttributeType crsChar = (DefaultAttributeType) geomProp.characteristics().get(AttributeConvention.CRS);
+                assertTrue(Utilities.equalsIgnoreMetadata(CommonCRS.WGS84.geographic(),crsChar.getDefaultValue()));
+                assertEquals(Point.class, geomProp.getValueClass());
+                assertEquals(Integer.class, idProp.getValueClass());
+                assertEquals(String.class, textProp.getValueClass());
+                assertEquals(Integer.class, integerProp.getValueClass());
+                assertEquals(Double.class, floatProp.getValueClass());
+                assertEquals(LocalDate.class, dateProp.getValueClass());
+            }
+        }
     }
 
     /**
@@ -192,8 +246,22 @@ public class ShapefileStoreTest {
      */
     @Ignore
     @Test
-    public void testAddFeatures() throws URISyntaxException, DataStoreException {
-        //todo
+    public void testAddFeatures() throws URISyntaxException, DataStoreException, IOException {
+        final Path temp = Files.createTempFile("test", ".shp");
+        Files.delete(temp);
+        try (final ShapefileStore store = new ShapefileStore(temp)) {
+            DefaultFeatureType type = createType();
+            store.updateType(type);
+            type = store.getType();
+
+            AbstractFeature feature1 = createFeature1(type);
+            AbstractFeature feature2 = createFeature2(type);
+            store.add(List.of(feature1, feature2).iterator());
+
+            Object[] result = store.features(false).toArray();
+
+
+        }
     }
 
     /**
@@ -212,6 +280,40 @@ public class ShapefileStoreTest {
     @Test
     public void testReplaceFeatures() throws URISyntaxException, DataStoreException {
         //todo
+    }
+
+    private static DefaultFeatureType createType() {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.setName("test");
+        ftb.addAttribute(Integer.class).setName("id");
+        ftb.addAttribute(String.class).setName("text");
+        ftb.addAttribute(Integer.class).setName("integer");
+        ftb.addAttribute(Float.class).setName("float");
+        ftb.addAttribute(LocalDate.class).setName("date");
+        ftb.addAttribute(Point.class).setName("geometry").setCRS(CommonCRS.WGS84.geographic());
+        return ftb.build();
+    }
+
+    private static AbstractFeature createFeature1(DefaultFeatureType type) {
+        AbstractFeature feature = type.newInstance();
+        feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(10,20)));
+        feature.setPropertyValue("id", 1);
+        feature.setPropertyValue("text", "some text 1");
+        feature.setPropertyValue("integer", 123);
+        feature.setPropertyValue("float", 123.456);
+        feature.setPropertyValue("date", LocalDate.of(2023, 5, 12));
+        return feature;
+    }
+
+    private static AbstractFeature createFeature2(DefaultFeatureType type) {
+        AbstractFeature feature = type.newInstance();
+        feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(30,40)));
+        feature.setPropertyValue("id", 2);
+        feature.setPropertyValue("text", "some text 2");
+        feature.setPropertyValue("integer", 456);
+        feature.setPropertyValue("float", 456.789);
+        feature.setPropertyValue("date", LocalDate.of(2030, 6, 21));
+        return feature;
     }
 
 }

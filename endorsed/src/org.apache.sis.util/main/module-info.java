@@ -172,5 +172,6 @@ module org.apache.sis.util {
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
-            org.apache.sis.storage.geotiff;
+            org.apache.sis.storage.geotiff,
+            org.apache.sis.console;
 }

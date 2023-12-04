@@ -16,20 +16,10 @@ REM See the License for the specific language governing permissions and
 REM limitations under the License.
 
 
-SET BASE_DIR=%~dp0\..
-CALL "%BASE_DIR%\conf\setenv.bat"
-SET SIS_DATA=%BASE_DIR%\data
+SET SIS_HOME=%~dp0\..
+SET SIS_DATA=%SIS_HOME%\data
 
-IF "%PATH_TO_FX%"=="" (
-    java --class-path "%BASE_DIR%\lib\app\org.apache.sis.gui.jar" org.apache.sis.gui.setup.FXFinder "%BASE_DIR%\conf\setenv.bat"
-    IF %ERRORLEVEL% GEQ 1 EXIT /B 1
-    CALL "%BASE_DIR%\conf\setenv.bat"
-)
-
-java -splash:"%BASE_DIR%\lib\logo.jpg"^
- --module-path "%PATH_TO_FX%;%BASE_DIR%\lib;%BASE_DIR%\lib\app\org.apache.sis.gui.jar"^
- -Djava.util.logging.config.class=org.apache.sis.util.logging.Initializer^
- -Djava.util.logging.config.file="%BASE_DIR%\conf\logging.properties"^
- -Dderby.stream.error.file="%BASE_DIR%\log\derby.log"^
- --module org.apache.sis.gui/org.apache.sis.gui.DataViewer^
- %SIS_OPTS%
+jshell --module-path "%SIS_HOME%\lib;%SIS_HOME%\lib\app\org.apache.sis.console.jar"^
+       --add-module org.apache.sis.console^
+       --startup "%SIS_HOME%\conf\imports.jsh"^
+       %*
