@@ -18,6 +18,10 @@
 
 set -o errexit
 
+
+#
+# Initialization.
+#
 BASE_DIR="`dirname "$( readlink -e "$0"; )";`/.."
 . "$BASE_DIR/conf/setenv.sh"
 
@@ -25,9 +29,43 @@ SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
 export SIS_DATA
 unset  SIS_HOME
 
+
+#
+# Check requirements. If no path to FX is specified,
+# try the location used by some package managers.
+#
+MIN_FX_VERSION=20
 if [ -z "$PATH_TO_FX" ]
 then
-    java --class-path "$BASE_DIR/lib/*" org.apache.sis.gui.setup.FXFinder $BASE_DIR/conf/setenv.sh
+    PATH_TO_FX=/usr/lib/jvm/openjfx
+fi
+
+
+#
+# Check for a sentinel OpenJFX file and its version number.
+# If too old, we will process as if no OpenJFX is installed.
+#
+if [ -r $PATH_TO_FX/javafx.controls.jar ]
+then
+    FX_VERSION=`java --module-path=$PATH_TO_FX --describe-module=javafx.controls | grep --only-matching --max-count=1 "[0-9]\+" | head --lines=1`
+    if [ $FX_VERSION -lt $MIN_FX_VERSION ]
+    then
+        echo "Found OpenJFX $FX_VERSION in $PATH_TO_FX but requires OpenJFX $MIN_FX_VERSION."
+        unset PATH_TO_FX
+    else
+        export PATH_TO_FX
+    fi
+else
+    unset PATH_TO_FX
+fi
+
+
+#
+# If no suitable OpenJFX version has been found, start the installation wizard.
+#
+if [ -z "$PATH_TO_FX" ]
+then
+    java --class-path "$BASE_DIR/lib/app/org.apache.sis.gui.jar" org.apache.sis.gui.setup.FXFinder $BASE_DIR/conf/setenv.sh
     if [ $? -ne 0 ]
     then
         exit
@@ -35,7 +73,10 @@ then
     . "$BASE_DIR/conf/setenv.sh"
 fi
 
+
+#
 # Execute SIS with any optional JAR that the user may put in the `lib` directory.
+#
 java -splash:"$BASE_DIR/lib/logo.jpg" \
      --module-path "$PATH_TO_FX:$BASE_DIR/lib:$BASE_DIR/lib/app/org.apache.sis.gui.jar" \
      -Djava.util.logging.config.class="org.apache.sis.util.logging.Initializer" \
