@@ -88,7 +88,6 @@ abstract class FormattedOutputCommand extends CommandRunner {
 
     /**
      * Creates a new sub-command with the given command-line arguments.
-     * This constructor is for {@code MetadataCommand} subclasses.
      *
      * @param  commandIndex      index of the {@code arguments} element containing the sub-command name, or -1 if none.
      * @param  arguments         the command-line arguments provided by the user.
@@ -96,7 +95,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
      * @param  supportedFormats  the output formats to accept. The first format is the default one.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    FormattedOutputCommand(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions,
+    FormattedOutputCommand(final int commandIndex, final Object[] arguments, final EnumSet<Option> validOptions,
             final OutputFormat... supportedFormats) throws InvalidOptionException
     {
         super(commandIndex, arguments, validOptions);
@@ -105,7 +104,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
          * Output format can be either "text" (the default) or "xml".
          * In the case of "crs" sub-command, we accept also WKT variants.
          */
-        final String format = options.get(Option.FORMAT);
+        final String format = getOptionAsString(Option.FORMAT);
         if (format == null) {
             outputFormat = supportedFormats[0];
             convention   = Convention.WKT2_SIMPLIFIED;
@@ -191,13 +190,15 @@ abstract class FormattedOutputCommand extends CommandRunner {
             hasUnexpectedFileCount = true;
             return null;
         } else {
-            final String file = files.get(0);
-            if (CodeType.guess(file).isCRS) {
-                return CRS.forCode(file);
-            } else {
-                try (DataStore store = DataStores.open(file)) {
-                    return store.getMetadata();
+            final Object file = files.get(0);
+            if (file instanceof CharSequence) {
+                final String c = file.toString();
+                if (CodeType.guess(c).isCRS) {
+                    return CRS.forCode(c);
                 }
+            }
+            try (DataStore store = DataStores.open(file)) {
+                return store.getMetadata();
             }
         }
     }
@@ -217,7 +218,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object,
                         (object instanceof Metadata) ? Metadata.class : null,
                         ValueExistencePolicy.COMPACT);
-                final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
+                final var tf = new TreeTableFormat(locale, timezone);
                 tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 tf.setNodeFilter(getNodeFilter());
                 tf.format(tree, out);
@@ -225,7 +226,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
             }
 
             case WKT: {
-                final WKTFormat f = new WKTFormat(locale, timezone);
+                final var f = new WKTFormat(locale, timezone);
                 if (convention != null) {
                     f.setConvention(convention);
                 }
@@ -238,7 +239,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
             }
 
             case XML: {
-                final MarshallerPool pool = new MarshallerPool(null);
+                final var pool = new MarshallerPool(null);
                 final Marshaller marshaller = pool.acquireMarshaller();
                 marshaller.setProperty(XML.LOCALE,   locale);
                 marshaller.setProperty(XML.TIMEZONE, timezone);
@@ -254,7 +255,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
             }
 
             default: {
-                final StorageConnector connector = new StorageConnector(out);
+                final var connector = new StorageConnector(out);
                 connector.setOption(OptionKey.TIMEZONE, timezone);
                 connector.setOption(OptionKey.LOCALE,   locale);
                 connector.setOption(OptionKey.ENCODING, encoding);
@@ -266,7 +267,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                      * Note: after such generalization is done, revert the xml-store dependency
                      *       scope in pom.xml from "compile" to "runtime".
                      */
-                    final org.apache.sis.storage.gpx.WritableStore fs = (org.apache.sis.storage.gpx.WritableStore) store;
+                    final var fs = (org.apache.sis.storage.gpx.WritableStore) store;
                     if (version != null) {
                         fs.setVersion(version);
                     }
@@ -288,9 +289,9 @@ abstract class FormattedOutputCommand extends CommandRunner {
 
     /**
      * Returns {@code true} if {@link #out} is sending its output to the console.
-     * If not, then we are probably writing to a file or the user specified his own encoding.
-     * In such case, we will send the XML output to an {@code OutputStream} instead of to a
-     * {@code Writer} and let the marshaller apply the encoding itself.
+     * If not, then we are probably either writing to a file, or the user specified his own encoding.
+     * In such case, we will send the XML output to an {@code OutputStream} instead of {@code Writer},
+     * and let the marshaller applies the encoding itself.
      */
     private boolean isConsole() {
         if (outputBuffer != null) return true;                      // Special case for JUnit tests only.

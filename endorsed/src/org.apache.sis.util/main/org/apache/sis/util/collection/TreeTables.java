@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +35,6 @@ import org.apache.sis.util.ArgumentChecks;
  * Static methods working on {@link TreeTable} objects and their nodes.
  * This class provides methods for some tasks considered generic enough,
  * and example codes for more specialized tasks that developers can customize.
- *
- * <p>The remaining of this class javadoc contains example codes placed in public domain.
- * Developers can copy and adapt those examples as they see fit.</p>
  *
  * <h2>Example 1: Reduce the depth of a tree</h2>
  * For every branch containing exactly one child, the following method concatenates in-place
@@ -99,7 +98,7 @@ import org.apache.sis.util.ArgumentChecks;
  * }
  *
  * @author  Martin Desruisseaux
- * @version 0.3
+ * @version 1.5
  *
  * @see TreeTable
  *
@@ -252,6 +251,25 @@ public final class TreeTables extends Static {
             }
         }
         return changes;
+    }
+
+    /**
+     * Removes all children of the given source, then adds them to the given target.
+     * Children need to be removed first because they cannot have two parents.
+     * Caller should ensure that the two tables use the same columns.
+     *
+     * @param  source  source from which to remove children.
+     * @param  target  where to add the children.
+     *
+     * @since 1.5
+     */
+    public static void moveChildren(final TreeTable.Node source, final TreeTable.Node target) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
+        final Collection<TreeTable.Node> children = source.getChildren();
+        final TreeTable.Node[] array = children.toArray(TreeTable.Node[]::new);
+        children.clear();
+        target.getChildren().addAll(Arrays.asList(array));
     }
 
     /**

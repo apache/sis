@@ -28,6 +28,12 @@ import org.apache.sis.util.collection.TreeTable;
 
 /**
  * The "metadata" sub-command.
+ * This sub-command shows ISO 19115 metadata for the content of a file.
+ * Some available options are:
+ *
+ * <ul>
+ *   <li>{@code --format}: the output format (text, XML or GPX).</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -47,12 +53,12 @@ final class MetadataCommand extends FormattedOutputCommand {
      * @param  arguments     the command-line arguments provided by the user.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    MetadataCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+    MetadataCommand(final int commandIndex, final Object[] arguments) throws InvalidOptionException {
         super(commandIndex, arguments, options(), OutputFormat.TEXT, OutputFormat.XML, OutputFormat.GPX);
     }
 
     /**
-     * Prints metadata or CRS information.
+     * Prints metadata.
      *
      * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
      */
@@ -68,7 +74,7 @@ final class MetadataCommand extends FormattedOutputCommand {
         }
         if (metadata != null) {
             if (!(metadata instanceof Metadata)) {
-                final DefaultMetadata md = new DefaultMetadata();
+                final var md = new DefaultMetadata();
                 md.setReferenceSystemInfo(Set.of((ReferenceSystem) metadata));
                 metadata = md;
             }

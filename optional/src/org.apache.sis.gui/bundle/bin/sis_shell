@@ -18,18 +18,15 @@
 
 set -o errexit
 
-BASE_DIR="`dirname "$( readlink -e "$0"; )";`/.."
-SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
+SIS_HOME="`dirname "$( readlink -e "$0"; )";`/.."
+SIS_DATA="${SIS_DATA:-$SIS_HOME/data}"
 export SIS_DATA
-unset  SIS_HOME
+export SIS_HOME
 
 COLUMNS=${COLUMNS:-`tput cols`}
 export COLUMNS
 
-# Execute SIS with any optional JAR that the user may put in the 'lib' directory.
-java --module-path "$BASE_DIR/lib:$BASE_DIR/lib/app/org.apache.sis.console.jar" \
-     -Djava.util.logging.config.class="org.apache.sis.util.logging.Initializer" \
-     -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \
-     -Dderby.stream.error.file="$BASE_DIR/log/derby.log" \
-     --module org.apache.sis.console/org.apache.sis.console.Command \
-     $SIS_OPTS "$@"
+jshell --module-path "$SIS_HOME/lib:$SIS_HOME/lib/app/org.apache.sis.console.jar" \
+       --add-module org.apache.sis.console \
+       --startup "$SIS_HOME/conf/imports.jsh" \
+       "$@"

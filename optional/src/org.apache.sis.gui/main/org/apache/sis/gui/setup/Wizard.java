@@ -385,7 +385,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
      * @return the added button.
      */
     private JButton createButton(final Box addTo, final String label) {
-        JButton button = new JButton(label);
+        var button = new JButton(label);
         button.setActionCommand(label);
         button.addActionListener(this);
         addTo.add(button);
@@ -533,7 +533,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
      * file or cancels.
      */
     private void showDirectoryChooser() {
-        final JFileChooser fd = new JFileChooser(javafxFinder.getDirectory());
+        final var fd = new JFileChooser(javafxFinder.getDirectory());
         fd.addChoosableFileFilter(this);
         fd.setFileFilter(this);
         fd.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);

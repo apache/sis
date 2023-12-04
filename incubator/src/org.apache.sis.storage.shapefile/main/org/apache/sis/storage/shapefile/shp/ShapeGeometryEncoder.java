@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.util.ArraysExt;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.algorithm.Orientation;
@@ -119,6 +122,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
 
     /**
      * Decode geometry and store it in ShapeRecord.
+     * This method creates and fill the record bbox if it is null.
      *
      * @param channel to read from
      * @param record to read into
@@ -141,6 +145,8 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
      * @return geometry size in bytes once encoded.
      */
     public abstract int getEncodedLength(Geometry geom);
+
+    public abstract GeneralEnvelope getBoundingBox(Geometry geom);
 
     /**
      * Read 2D Bounding box from channel.
@@ -174,10 +180,11 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
      * @param shape to read from
      */
     protected void writeBBox2D(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
-        channel.writeDouble(shape.bbox.getMinimum(0));
-        channel.writeDouble(shape.bbox.getMinimum(1));
-        channel.writeDouble(shape.bbox.getMaximum(0));
-        channel.writeDouble(shape.bbox.getMaximum(1));
+        final Envelope env2d = shape.geometry.getEnvelopeInternal();
+        channel.writeDouble(env2d.getMinX());
+        channel.writeDouble(env2d.getMinY());
+        channel.writeDouble(env2d.getMaxX());
+        channel.writeDouble(env2d.getMaxY());
     }
 
     /**
@@ -192,6 +199,16 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         final int numParts = channel.readInt();
         final int numPoints = channel.readInt();
         final int[] offsets = channel.readInts(numParts);
+
+        if (!shape.bbox.isFinite()) {
+            //a broken geometry with NaN, until we replace JTS we need to create an empty geometry
+            switch (nbOrdinates) {
+                case 2 : channel.seek(channel.getStreamPosition() + 2*8*numPoints); break;
+                case 3 : channel.seek(channel.getStreamPosition() + 3*8*numPoints); break;
+                case 4 : channel.seek(channel.getStreamPosition() + 4*8*numPoints); break;
+            }
+            return new LineString[0];
+        }
 
         final LineString[] lines = new LineString[numParts];
 
@@ -256,19 +273,28 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
 
         //Z and M
-        if (nbOrdinates >= 3)  writeLineOrdinates(channel, shape, lines, 2);
-        if (nbOrdinates == 4)  writeLineOrdinates(channel, shape, lines, 3);
+        if (nbOrdinates >= 3)  writeLineOrdinates(channel, shape, lines, 2, nbPts);
+        if (nbOrdinates == 4)  writeLineOrdinates(channel, shape, lines, 3, nbPts);
     }
 
-    protected void writeLineOrdinates(ChannelDataOutput channel, ShapeRecord shape,List<LineString> lines, int ordinateIndex) throws IOException {
-        channel.writeDouble(shape.bbox.getMinimum(ordinateIndex));
-        channel.writeDouble(shape.bbox.getMaximum(ordinateIndex));
+    protected void writeLineOrdinates(ChannelDataOutput channel, ShapeRecord shape,List<LineString> lines, int ordinateIndex, int nbPts) throws IOException {
+
+        final double[] values = new double[nbPts];
+        double minK = Double.MAX_VALUE;
+        double maxK = -Double.MAX_VALUE;
+        int i = 0;
         for (LineString line : lines) {
             final CoordinateSequence cs = line.getCoordinateSequence();
             for (int k = 0, kn =cs.size(); k < kn; k++) {
-                channel.writeDouble(cs.getOrdinate(k, ordinateIndex));
+                values[i] = cs.getOrdinate(k, ordinateIndex);
+                minK = Double.min(minK, values[i]);
+                maxK = Double.max(maxK, values[i]);
+                i++;
             }
         }
+        channel.writeDouble(minK);
+        channel.writeDouble(maxK);
+        channel.writeDoubles(values);
     }
 
     protected List<LineString> extractRings(Geometry geom) {
@@ -358,6 +384,51 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
     }
 
+    protected GeneralEnvelope getLinesBoundingBox(Geometry geom) {
+        final List<LineString> lines = extractRings(geom);
+
+        int nbOrdinate = 0;
+        GeneralEnvelope env = null;
+
+        for (int k = 0, kn = lines.size(); k < kn; k++) {
+            final LineString line = lines.get(k);
+            final CoordinateSequence cs = line.getCoordinateSequence();
+
+            if (nbOrdinate == 0) {
+                nbOrdinate = cs.getDimension();
+            }
+
+            for (int i = 0, n = cs.size(); i < n; i++) {
+                if (env == null) {
+                    env = new GeneralEnvelope(nbOrdinate);
+                    switch (nbOrdinate) {
+                        case 4 :
+                            double m = cs.getOrdinate(i, 3);
+                            env.setRange(3, m, m);
+                        case 3 :
+                            double z = cs.getOrdinate(i, 2);
+                            env.setRange(2, z, z);
+                        case 2 :
+                            double y = cs.getOrdinate(i, 1);
+                            env.setRange(1, y, y);
+                            double x = cs.getOrdinate(i, 0);
+                            env.setRange(0, x, x);
+                    }
+                } else {
+                    switch (nbOrdinate) {
+                        case 4 :
+                            env.add(new GeneralDirectPosition(cs.getOrdinate(i,0), cs.getOrdinate(i,1), cs.getOrdinate(i,2), cs.getOrdinate(i,3))); break;
+                        case 3 :
+                            env.add(new GeneralDirectPosition(cs.getOrdinate(i,0), cs.getOrdinate(i,1), cs.getOrdinate(i,2))); break;
+                        case 2 :
+                            env.add(new GeneralDirectPosition(cs.getOrdinate(i,0), cs.getOrdinate(i,1))); break;
+                    }
+                }
+            }
+        }
+        return env;
+    }
+
     private static class Null extends ShapeGeometryEncoder<Geometry> {
 
         private static final Null INSTANCE = new Null();
@@ -380,6 +451,10 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
         }
 
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            return new GeneralEnvelope(0);
+        }
     }
 
     private static class PointXY extends ShapeGeometryEncoder<Point> {
@@ -407,13 +482,21 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
             final Point pt = (Point) shape.geometry;
             final Coordinate coord = pt.getCoordinate();
-            channel.writeDouble(coord.getX());
-            channel.writeDouble(coord.getY());
+            final double[] xy = new double[]{coord.getX(), coord.getY()};
+            channel.writeDoubles(xy);
         }
 
         @Override
         public int getEncodedLength(Geometry geom) {
             return 2*8; //2 ordinates
+        }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            final Point pt = (Point) geom;
+            final Coordinate coord = pt.getCoordinate();
+            final double[] xy = new double[]{coord.getX(), coord.getY()};
+            return new GeneralEnvelope(xy, xy);
         }
     }
 
@@ -443,14 +526,24 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
             final Point pt = (Point) shape.geometry;
             final Coordinate coord = pt.getCoordinate();
-            channel.writeDouble(coord.getX());
-            channel.writeDouble(coord.getY());
-            channel.writeDouble(coord.getM());
+            final double[] xym = new double[]{coord.getX(), coord.getY(), coord.getM()};
+            channel.writeDoubles(xym);
+            if (shape.bbox == null) {
+                shape.bbox = new GeneralEnvelope(xym,xym);
+            }
         }
 
         @Override
         public int getEncodedLength(Geometry geom) {
             return 3*8; //3 ordinates
+        }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            final Point pt = (Point) geom;
+            final Coordinate coord = pt.getCoordinate();
+            final double[] xym = new double[]{coord.getX(), coord.getY(), coord.getM()};
+            return new GeneralEnvelope(xym, xym);
         }
     }
 
@@ -483,15 +576,21 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         public void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
             final Point pt = (Point) shape.geometry;
             final Coordinate coord = pt.getCoordinate();
-            channel.writeDouble(coord.getX());
-            channel.writeDouble(coord.getY());
-            channel.writeDouble(coord.getZ());
-            channel.writeDouble(coord.getM());
+            final double[] xyzm = new double[]{coord.getX(), coord.getY(), coord.getZ(), coord.getM()};
+            channel.writeDoubles(xyzm);
         }
 
         @Override
         public int getEncodedLength(Geometry geom) {
             return 4*8; //4 ordinates
+        }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            final Point pt = (Point) geom;
+            final Coordinate coord = pt.getCoordinate();
+            final double[] xyzm = new double[]{coord.getX(), coord.getY(), coord.getZ(), coord.getM()};
+            return new GeneralEnvelope(xyzm, xyzm);
         }
     }
 
@@ -519,8 +618,8 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             channel.writeInt(nbPts);
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                channel.writeDouble(pt.getX());
-                channel.writeDouble(pt.getY());
+                final double[] xy = new double[]{pt.getX(), pt.getY()};
+                channel.writeDoubles(xy);
             }
         }
 
@@ -529,6 +628,20 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             return 4 * 8 //bbox
                  + 4 //nbPts
                  + ((MultiPoint) geom).getNumGeometries() * 2 * 8;
+        }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            final GeneralEnvelope env = new GeneralEnvelope(2);
+            final MultiPoint pts = (MultiPoint) geom;
+            for (int i = 0, n = pts.getNumGeometries(); i < n; i++) {
+                final Point pt = (Point)pts.getGeometryN(i);
+                final Coordinate coord = pt.getCoordinate();
+                final double[] xy = new double[]{coord.getX(), coord.getY()};
+                if (i == 0) env.setEnvelope(xy[0], xy[1], xy[0], xy[1]);
+                else env.add(new GeneralDirectPosition(xy));
+            }
+            return env;
         }
     }
 
@@ -565,15 +678,21 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             channel.writeInt(nbPts);
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                channel.writeDouble(pt.getX());
-                channel.writeDouble(pt.getY());
+                final double[] xy = new double[]{pt.getX(), pt.getY()};
+                channel.writeDoubles(xy);
             }
-            channel.writeDouble(shape.bbox.getMinimum(2));
-            channel.writeDouble(shape.bbox.getMaximum(2));
+            final double[] m = new double[nbPts];
+            double minM = Double.MAX_VALUE;
+            double maxM = -Double.MAX_VALUE;
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                channel.writeDouble(pt.getCoordinate().getM());
+                m[i] = pt.getCoordinate().getM();
+                minM = Double.min(minM, m[i]);
+                maxM = Double.max(maxM, m[i]);
             }
+            channel.writeDouble(minM);
+            channel.writeDouble(maxM);
+            channel.writeDoubles(m);
         }
 
         @Override
@@ -581,6 +700,20 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             return 6 * 8 //bbox
                  + 4 //nbPts
                  + ((MultiPoint) geom).getNumGeometries() * 3 * 8;
+        }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            final GeneralEnvelope env = new GeneralEnvelope(3);
+            final MultiPoint pts = (MultiPoint) geom;
+            for (int i = 0, n = pts.getNumGeometries(); i < n; i++) {
+                final Point pt = (Point)pts.getGeometryN(i);
+                final Coordinate coord = pt.getCoordinate();
+                final double[] xym = new double[]{coord.getX(), coord.getY(), coord.getM()};
+                if (i == 0) env.setEnvelope(xym[0], xym[1], xym[2], xym[0], xym[1], xym[2]);
+                else env.add(new GeneralDirectPosition(xym));
+            }
+            return env;
         }
     }
 
@@ -624,18 +757,33 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
                 channel.writeDouble(pt.getX());
                 channel.writeDouble(pt.getY());
             }
-            channel.writeDouble(shape.bbox.getMinimum(2));
-            channel.writeDouble(shape.bbox.getMaximum(2));
+
+            final double[] z = new double[nbPts];
+            double minZ = Double.MAX_VALUE;
+            double maxZ = -Double.MAX_VALUE;
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                channel.writeDouble(pt.getCoordinate().getZ());
+                z[i] = pt.getCoordinate().getZ();
+                minZ = Double.min(minZ, z[i]);
+                maxZ = Double.max(maxZ, z[i]);
             }
-            channel.writeDouble(shape.bbox.getMinimum(3));
-            channel.writeDouble(shape.bbox.getMaximum(3));
+            channel.writeDouble(minZ);
+            channel.writeDouble(maxZ);
+            channel.writeDoubles(z);
+
+
+            final double[] m = new double[nbPts];
+            double minM = Double.MAX_VALUE;
+            double maxM = -Double.MAX_VALUE;
             for (int i = 0; i < nbPts; i++) {
                 final Point pt = (Point) geometry.getGeometryN(i);
-                channel.writeDouble(pt.getCoordinate().getM());
+                m[i] = pt.getCoordinate().getM();
+                minM = Double.min(minM, m[i]);
+                maxM = Double.max(maxM, m[i]);
             }
+            channel.writeDouble(minM);
+            channel.writeDouble(maxM);
+            channel.writeDoubles(m);
         }
 
         @Override
@@ -643,6 +791,20 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
             return 8 * 8 //box
                  + 4 //nbPts
                  + ((MultiPoint) geom).getNumGeometries() * 4 * 8;
+        }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            final GeneralEnvelope env = new GeneralEnvelope(4);
+            final MultiPoint pts = (MultiPoint) geom;
+            for (int i = 0, n = pts.getNumGeometries(); i < n; i++) {
+                final Point pt = (Point)pts.getGeometryN(i);
+                final Coordinate coord = pt.getCoordinate();
+                final double[] xyzm = new double[]{coord.getX(), coord.getY(), coord.getZ(), coord.getM()};
+                if (i == 0) env.setEnvelope(xyzm[0], xyzm[1], xyzm[2], xyzm[3], xyzm[0], xyzm[1], xyzm[2], xyzm[3]);
+                else env.add(new GeneralDirectPosition(xyzm));
+            }
+            return env;
         }
     }
 
@@ -678,6 +840,11 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
                  + 4 * 2 //num parts and num points
                  + nbGeom * 4 //offsets table
                  + nbPoints * nbOrdinates * 8; //all ordinates
+        }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            return getLinesBoundingBox(geom);
         }
     }
 
@@ -718,6 +885,11 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
                  + nbGeom * 4 //offsets table
                  + nbPoints * nbOrdinates * 8; //all ordinates
         }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
+            return getLinesBoundingBox(geom);
+        }
     }
 
     private static class MultiPatch extends ShapeGeometryEncoder<MultiPolygon> {
@@ -740,6 +912,11 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
 
         @Override
         public int getEncodedLength(Geometry geom) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public GeneralEnvelope getBoundingBox(Geometry geom) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

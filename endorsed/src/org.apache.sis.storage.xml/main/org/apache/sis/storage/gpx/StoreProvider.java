@@ -40,7 +40,7 @@ import org.apache.sis.util.Version;
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
                fileSuffixes  = "xml",
-               capabilities  = {Capability.READ, Capability.WRITE},
+               capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
                resourceTypes = {FeatureSet.class})
 public final class StoreProvider extends StaxDataStoreProvider {
     /**

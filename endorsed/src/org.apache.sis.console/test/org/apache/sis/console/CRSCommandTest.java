@@ -20,7 +20,7 @@ import org.apache.sis.util.CharSequences;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -73,10 +73,10 @@ public final class CRSCommandTest extends TestCase {
      */
     @Test
     public void testCode() throws Exception {
-        final CRSCommand test = new CRSCommand(0, CommandRunner.TEST, "EPSG:4326");
+        var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "EPSG:4326"});
         test.run();
-        final String wkt = test.outputBuffer.toString();
-        assertTrue(wkt, wkt.matches(WGS84));
+        String wkt = test.outputBuffer.toString();
+        assertTrue(wkt.matches(WGS84), wkt);
     }
 
     /**
@@ -87,10 +87,10 @@ public final class CRSCommandTest extends TestCase {
     @Test
     @DependsOnMethod("testCode")
     public void testURN() throws Exception {
-        final CRSCommand test = new CRSCommand(0, CommandRunner.TEST, "urn:ogc:def:crs:epsg::4326");
+        var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "urn:ogc:def:crs:epsg::4326"});
         test.run();
-        final String wkt = test.outputBuffer.toString();
-        assertTrue(wkt, wkt.matches(WGS84));
+        String wkt = test.outputBuffer.toString();
+        assertTrue(wkt.matches(WGS84), wkt);
     }
 
     /**
@@ -101,9 +101,9 @@ public final class CRSCommandTest extends TestCase {
     @Test
     @DependsOnMethod("testURN")
     public void testHTTP() throws Exception {
-        final CRSCommand test = new CRSCommand(0, CommandRunner.TEST, "http://www.opengis.net/gml/srs/epsg.xml#4326");
+        var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "http://www.opengis.net/gml/srs/epsg.xml#4326"});
         test.run();
-        final String wkt = test.outputBuffer.toString();
-        assertTrue(wkt, wkt.matches(WGS84));
+        String wkt = test.outputBuffer.toString();
+        assertTrue(wkt.matches(WGS84), wkt);
     }
 }

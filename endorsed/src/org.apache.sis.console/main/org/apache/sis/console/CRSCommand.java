@@ -23,7 +23,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * The "crs" sub-command.
- * CRS are considered as a kind of metadata here.
+ * CRS are considered as a kind of metadata.
+ * Some available options are:
+ *
+ * <ul>
+ *   <li>{@code --format}: the output format (WKT or XML).</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -31,12 +36,12 @@ final class CRSCommand extends FormattedOutputCommand {
     /**
      * Creates the {@code "crs"} sub-command.
      */
-    CRSCommand(final int commandIndex, final String... args) throws InvalidOptionException {
+    CRSCommand(final int commandIndex, final Object[] args) throws InvalidOptionException {
         super(commandIndex, args, MetadataCommand.options(), OutputFormat.WKT, OutputFormat.XML);
     }
 
     /**
-     * Prints metadata or CRS information.
+     * Prints CRS information.
      *
      * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
      */

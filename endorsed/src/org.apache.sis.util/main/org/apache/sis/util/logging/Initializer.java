@@ -59,8 +59,8 @@ import java.nio.file.Path;
  * (i.e. as documented by {@link FileHandler}).
  *
  * <h2>Usage</h2>
- * This class should not referenced directly by other Java code.
- * Instead, it should be specified at JVM startup time like below:
+ * This class should not be referenced directly by other Java code.
+ * Instead, it can be specified at JVM startup time like below:
  *
  * <pre>java -Djava.util.logging.config.class=org.apache.sis.util.logging.Initializer \
  *     -Djava.util.logging.config.file=<i>path/to/my/application/conf/logging.properties</i></pre>
@@ -68,7 +68,7 @@ import java.nio.file.Path;
  * See for example the {@code bin/sis} shell script in Apache SIS binary distribution.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @see FileHandler
  *
@@ -81,9 +81,17 @@ public class Initializer {
      */
 
     /**
+     * The system property for the logging configuration file.
+     * The value is defined by {@link LogManager} to {@value}.
+     *
+     * @since 1.5
+     */
+    public static final String CONFIG_FILE_PROPERTY = "java.util.logging.config.file";
+
+    /**
      * The property for which to replace the {@value #PATTERN} string.
      */
-    private static final String PROPERTY = "java.util.logging.FileHandler.pattern";
+    private static final String PATTERN_PROPERTY = "java.util.logging.FileHandler.pattern";
 
     /**
      * The pattern to replace.
@@ -93,7 +101,7 @@ public class Initializer {
     /**
      * Configures Java logging using a filtered configuration file.
      * This constructor gets the configuration file referenced by
-     * the {@code "java.util.logging.config.file"} system property,
+     * the {@value #CONFIG_FILE_PROPERTY} system property,
      * applies the filtering described in class javadoc,
      * then gives the filtered configuration to {@link LogManager#readConfiguration(InputStream)}.
      *
@@ -103,29 +111,45 @@ public class Initializer {
      * @throws IOException if an error occurred while reading the configuration file.
      */
     public Initializer() throws IOException {
-        final String file = System.getProperty("java.util.logging.config.file");
+        final String file = System.getProperty(CONFIG_FILE_PROPERTY);
         if (file != null) {
-            final Path path = Path.of(file).normalize();
-            final StringBuilder buffer = new StringBuilder(600);
-            for (String line : Files.readAllLines(path)) {
-                if (!(line = line.trim()).isEmpty() && line.charAt(0) != '#') {
-                    final int base = buffer.length();
-                    buffer.append(line).append('\n');
-                    if (line.startsWith(PROPERTY)) {
-                        final int i = buffer.indexOf(PATTERN, base + PROPERTY.length());
-                        if (i >= 0) {
-                            Path parent = path;
-                            for (int j=Math.min(parent.getNameCount(), 2); --j >= 0;) {
-                                parent = parent.getParent();
-                            }
-                            String replacement = (parent != null) ? parent.toString() : ".";
-                            replacement = replacement.replace(File.separatorChar, '/');
-                            buffer.replace(i, i + PATTERN.length(), replacement);
+            reload(Path.of(file));
+        }
+    }
+
+    /**
+     * Reloads the logging configuration from the specified file.
+     * The new configuration replaces the previous one (this is not an update).
+     * The extended pattern ({@code "%p"}) is parsed as described in the class summary.
+     *
+     * @param  path  path to the logging configuration file.
+     * @throws IOException if an error occurred while reading the configuration file.
+     *
+     * @see LogManager#readConfiguration(InputStream)
+     *
+     * @since 1.5
+     */
+    public static void reload(Path path) throws IOException {
+        path = path.normalize();
+        final StringBuilder buffer = new StringBuilder(600);
+        for (String line : Files.readAllLines(path)) {
+            if (!(line = line.trim()).isEmpty() && line.charAt(0) != '#') {
+                final int base = buffer.length();
+                buffer.append(line).append('\n');
+                if (line.startsWith(PATTERN_PROPERTY)) {
+                    final int i = buffer.indexOf(PATTERN, base + PATTERN_PROPERTY.length());
+                    if (i >= 0) {
+                        Path parent = path;
+                        for (int j=Math.min(parent.getNameCount(), 2); --j >= 0;) {
+                            parent = parent.getParent();
                         }
+                        String replacement = (parent != null) ? parent.toString() : ".";
+                        replacement = replacement.replace(File.separatorChar, '/');
+                        buffer.replace(i, i + PATTERN.length(), replacement);
                     }
                 }
             }
-            LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(buffer.toString().getBytes()));
         }
+        LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(buffer.toString().getBytes()));
     }
 }

@@ -54,7 +54,7 @@ import org.apache.sis.util.internal.X364;
  * {@link #setTabulationExpanded(boolean)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.5
  * @since   0.3
  */
 public class LineAppender extends Appender implements Flushable {
@@ -63,9 +63,9 @@ public class LineAppender extends Appender implements Flushable {
      * {@link #append(CharSequence, int, int)} method will try to infer it from the submitted text.
      *
      * <p>If {@link #isEndOfLineReplaced} is {@code false} (the default), then this line separator
-     * will be used only when this class inserts new line separators as a consequence of line wraps;
-     * line separators found in the texts given by the user will be passed "as is". If {@code true},
-     * then all line separators are replaced.</p>
+     * will be used only when this class inserts new line separators as a consequence of line wraps.
+     * Line separators found in the texts given by the user will be passed "as is".
+     * If {@code true}, then all line separators are replaced.</p>
      */
     private String lineSeparator;
 
@@ -81,6 +81,8 @@ public class LineAppender extends Appender implements Flushable {
      * The length of the current line, in units of <em>code points</em> (not {@code char}).
      * It may be greater than the length of {@link #buffer} because the latter contains only
      * the last word.
+     *
+     * @see #getCurrentLineLength()
      */
     private int codePointCount;
 
@@ -215,6 +217,31 @@ public class LineAppender extends Appender implements Flushable {
     }
 
     /**
+     * (@return the length of the current line, in units of Unicode code points}.
+     *
+     * @since 1.5
+     */
+    public int getCurrentLineLength() {
+        return codePointCount;
+    }
+
+    /**
+     * Sets the length of the current line. This method usually do not need to be invoked,
+     * because the value of this property is automatically adjusted when texts are appended
+     * by this {@code LineAppender}. However, setting an explicit value may be useful when
+     * the output specified to the constructor was not initially empty, or when the output
+     * content is modified outside this {@code LineAppender} instance.
+     *
+     * @param  lengh  the new length of the current line, in units of Unicode code points.
+     *
+     * @since 1.5
+     */
+    public void setCurrentLineLength(final int length) {
+        ArgumentChecks.ensurePositive("length", length);
+        codePointCount = length;
+    }
+
+    /**
      * Returns the current tabulation width, in unit of Unicode characters (code point count).
      * The default value is 8.
      *
@@ -302,10 +329,9 @@ public class LineAppender extends Appender implements Flushable {
     }
 
     /**
-     * Writes pending non-white characters, discards trailing whitespaces, and resets column
-     * position to zero. This method does <strong>not</strong> write the line separator and
-     * does not modify the status of the {@link #skipLF} flag; those tasks are caller's
-     * responsibility.
+     * Writes pending non-white characters, discards trailing whitespaces, and resets column position to zero.
+     * This method does <strong>not</strong> write the line separator and does not modify the status of the
+     * {@link #skipLF} flag. Those tasks are caller's responsibility.
      */
     private void endOfLine() throws IOException {
         buffer.setLength(printableLength);      // Reduce the amount of work for StringBuilder.deleteCharAt(int).
@@ -355,7 +381,6 @@ public class LineAppender extends Appender implements Flushable {
      */
     @SuppressWarnings("fallthrough")
     private void write(final int c) throws IOException {
-        final StringBuilder buffer = this.buffer;
         /*
          * If the character to write is a EOL sequence, then:
          *
@@ -375,9 +400,9 @@ public class LineAppender extends Appender implements Flushable {
                 endOfLine();
             }
             if (!isEndOfLineReplaced) {
-                appendCodePoint(c); // Forward EOL sequences "as-is".
+                appendCodePoint(c);         // Forward EOL sequences "as-is".
             } else if (!skip) {
-                writeLineSeparator(); // Replace EOL sequences by the unique line separator.
+                writeLineSeparator();       // Replace EOL sequences by the unique line separator.
             }
             return;
         }
@@ -387,8 +412,8 @@ public class LineAppender extends Appender implements Flushable {
          * the buffer to the underlying appendable since we know that those characters didn't
          * exceeded the line length limit.
          *
-         * We use Character.isWhitespace(…) instead of Character.isSpaceChar(…) because
-         * the former returns 'true' tabulations (which we want), and returns 'false'
+         * We use `Character.isWhitespace(…)` instead of `Character.isSpaceChar(…)` because
+         * the former returns `true` tabulations (which we want), and returns `false`
          * for non-breaking spaces (which we also want).
          */
         if (Character.isWhitespace(c)) {
@@ -415,7 +440,7 @@ public class LineAppender extends Appender implements Flushable {
         /*
          * Special handling of ANSI X3.64 escape sequences. Since they are not visible
          * characters (they are used for controlling the colors), do not count them in
-         * 'codePointCount' (but still count them as "printable" characters, since we
+         * `codePointCount` (but still count them as "printable" characters, since we
          * don't want to trim them). The sequence pattern is "CSI <digits> <command>"
          * where <command> is a single letter.
          */
@@ -426,9 +451,9 @@ public class LineAppender extends Appender implements Flushable {
             final char previous = buffer.charAt(printableLength - 2);
             if (previous != X364.ESCAPE) {
                 isEscapeSequence = (c >= '0' && c <= '9');
-                return; // The letter after the digits will be the last character to skip.
+                return;         // The letter after the digits will be the last character to skip.
             } else if (c == X364.BRACKET) {
-                return; // Found the second part of the Control Sequence Introducer (CSI).
+                return;         // Found the second part of the Control Sequence Introducer (CSI).
             }
             // [ESC] was not followed by '['. Proceed as a normal character.
             isEscapeSequence = false;
@@ -511,7 +536,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
             /*
              * Use the line separator found in the submitted document, if possible.
              * If we don't find any line separator in the submitted content, leave
-             * the 'lineSeparator' field to null since the 'write' method will set
+             * the `lineSeparator` field to null since the `write` method will set
              * it to the default value only if it really needs it.
              */
             lineSeparator = lineSeparator(sequence, start, end);

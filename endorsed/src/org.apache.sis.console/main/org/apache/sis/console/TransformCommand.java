@@ -22,9 +22,10 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.io.IOException;
-import java.io.FileInputStream;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.BufferedReader;
 import java.text.NumberFormat;
 import static java.util.logging.Logger.getLogger;
 import javax.measure.Unit;
@@ -57,12 +58,14 @@ import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.CodeType;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.WKTFormat;
@@ -74,6 +77,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.setup.OptionKey;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
@@ -82,6 +86,13 @@ import org.opengis.referencing.ObjectDomain;
 /**
  * The "transform" subcommand.
  * The output is a comma separated values (CSV) file, with {@code '#'} as the first character of comment lines.
+ * The source and target CRS are mandatory and can be specified as EPSG codes, WKT strings, or read from data files.
+ * Those information are passed as options:
+ *
+ * <ul>
+ *   <li>{@code --sourceCRS}: the coordinate reference system of input points.</li>
+ *   <li>{@code --targetCRS}: the coordinate reference system of output points.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -147,7 +158,7 @@ final class TransformCommand extends FormattedOutputCommand {
     /**
      * Creates the {@code "transform"} sub-command.
      */
-    TransformCommand(final int commandIndex, final String... args) throws InvalidOptionException {
+    TransformCommand(final int commandIndex, final Object[] args) throws InvalidOptionException {
         super(commandIndex, args, options(), OutputFormat.WKT, OutputFormat.TEXT);
         resources = Vocabulary.getResources(locale);
     }
@@ -161,26 +172,28 @@ final class TransformCommand extends FormattedOutputCommand {
      * @throws FactoryException if the operation failed for another reason.
      */
     private CoordinateReferenceSystem fetchCRS(final Option option) throws InvalidOptionException, FactoryException, DataStoreException {
-        final String identifier = getMandatoryOption(option);
-        if (CodeType.guess(identifier).isCRS) try {
-            return CRS.forCode(identifier);
-        } catch (NoSuchAuthorityCodeException e) {
-            final String name = option.label();
-            throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, identifier), e, name);
-        } else {
-            final Metadata metadata;
-            try (DataStore store = DataStores.open(identifier)) {
-                metadata = store.getMetadata();
+        final Object identifier = getMandatoryOption(option);
+        if (identifier instanceof CharSequence) {
+            final String c = identifier.toString();
+            if (CodeType.guess(c).isCRS) try {
+                return CRS.forCode(c);
+            } catch (NoSuchAuthorityCodeException e) {
+                final String name = option.label();
+                throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, identifier), e, name);
             }
-            if (metadata != null) {
-                for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
-                    if (rs instanceof CoordinateReferenceSystem) {
-                        return (CoordinateReferenceSystem) rs;
-                    }
+        }
+        final Metadata metadata;
+        try (DataStore store = DataStores.open(identifier)) {
+            metadata = store.getMetadata();
+        }
+        if (metadata != null) {
+            for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
+                if (rs instanceof CoordinateReferenceSystem) {
+                    return (CoordinateReferenceSystem) rs;
                 }
             }
-            throw new InvalidOptionException(Errors.format(Errors.Keys.UnspecifiedCRS), option.label());
         }
+        throw new InvalidOptionException(Errors.format(Errors.Keys.UnspecifiedCRS), option.label());
     }
 
     /**
@@ -205,8 +218,10 @@ final class TransformCommand extends FormattedOutputCommand {
                     points = readCoordinates(in, "stdin");
                 }
             } else {
-                for (final String file : files) {
-                    try (LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(file), encoding))) {
+                for (final Object file : files) {
+                    final var c = new StorageConnector(file);
+                    c.setOption(OptionKey.ENCODING, encoding);
+                    try (BufferedReader in = IOUtilities.toBuffered(c.commit(Reader.class, "transform"))) {
                         points = readCoordinates(in, file);
                     }
                 }
@@ -518,7 +533,7 @@ final class TransformCommand extends FormattedOutputCommand {
      * @param  filename  the filename, for error reporting only.
      * @return the coordinate values.
      */
-    private List<double[]> readCoordinates(final LineNumberReader in, final String filename) throws IOException {
+    private List<double[]> readCoordinates(final BufferedReader in, Object filename) throws IOException {
         final List<double[]> points = new ArrayList<>();
         try {
             String line;
@@ -529,7 +544,9 @@ final class TransformCommand extends FormattedOutputCommand {
                 }
             }
         } catch (NumberFormatException e) {
-            errorMessage = Errors.format(Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber());
+            if ((filename = IOUtilities.toString(filename)) == null) filename = "?";
+            Object line = (in instanceof LineNumberReader) ? ((LineNumberReader) in).getLineNumber() : "?";
+            errorMessage = Errors.format(Errors.Keys.ErrorInFileAtLine_2, filename, line);
             errorCause = e;
         }
         return points;

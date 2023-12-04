@@ -24,14 +24,17 @@ import java.util.EnumMap;
 import java.util.TimeZone;
 import java.io.Console;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.X364;
+import org.apache.sis.pending.jdk.JDK17;
 
 
 /**
@@ -51,11 +54,30 @@ abstract class CommandRunner {
     static final String TEST = "TEST";
 
     /**
+     * Whether the use of the console writer should be avoided.
+     * In our tests with Java 21, sending non ASCII characters to the console writer in a Linux system
+     * from a JShell session resulted in wrong characters being printed, sometime followed by JShell errors.
+     * This flag is set only if the commands are run from JShell.
+     *
+     * @see #writer(Console, PrintStream)
+     */
+    @Workaround(library="jshell", version="21")
+    private static boolean avoidConsoleWriter;
+
+    /**
+     * Notifies the command runners that the use of console writer should be avoided.
+     * This method should be invoked in JShell environment only.
+     */
+    static void avoidConsoleWriter() {
+        avoidConsoleWriter = true;
+    }
+
+    /**
      * The instance, used by {@link ResourcesDownloader} only.
      * We use this static field as a workaround for the fact that {@code ResourcesDownloader} is not
      * instantiated by us, so we cannot pass the {@code CommandRunner} instance to its constructor.
      */
-    static CommandRunner instance;
+    static final ThreadLocal<CommandRunner> instance = new ThreadLocal<>();
 
     /**
      * The name of this command, as specified by the user on the command-line.
@@ -72,8 +94,10 @@ abstract class CommandRunner {
 
     /**
      * The command-line options allowed by this sub-command, together with their values.
+     * Values are usually instances of {@link String}, but other types are allowed when
+     * the values is expected to be a file.
      */
-    protected final EnumMap<Option,String> options;
+    protected final EnumMap<Option,Object> options;
 
     /**
      * The locale specified by the {@code "--locale"} option. If no such option was provided,
@@ -128,8 +152,10 @@ abstract class CommandRunner {
     /**
      * Any remaining parameters that are not command name or option.
      * They are typically file names, but can occasionally be other types like URL.
+     * Values are always instances of {@link String} when SIS is executed from bash,
+     * but may be other kinds of object when {@link SIS} is executed from JShell.
      */
-    protected final List<String> files;
+    protected final List<Object> files;
 
     /**
      * Copies the configuration of the given sub-command. This constructor is used
@@ -162,10 +188,10 @@ abstract class CommandRunner {
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    protected CommandRunner(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions)
+    protected CommandRunner(final int commandIndex, final Object[] arguments, final EnumSet<Option> validOptions)
             throws InvalidOptionException
     {
-        commandName = (commandIndex >= 0) ? arguments[commandIndex] : null;
+        commandName = (commandIndex >= 0) ? arguments[commandIndex].toString() : null;
         this.validOptions = validOptions;
         options = new EnumMap<>(Option.class);
         files = new ArrayList<>(arguments.length);
@@ -173,14 +199,15 @@ abstract class CommandRunner {
             if (i == commandIndex) {
                 continue;
             }
-            final String arg = arguments[i];
-            if (arg.startsWith(Option.PREFIX)) {
-                final String name = arg.substring(Option.PREFIX.length());
+            final Object arg = arguments[i];
+            final String s;
+            if (arg instanceof CharSequence && (s = arg.toString()).startsWith(Option.PREFIX)) {
+                final String name = s.substring(Option.PREFIX.length());
                 final Option option = Option.forLabel(name);
                 if (!validOptions.contains(option)) {
                     throw new InvalidOptionException(Errors.format(Errors.Keys.UnknownOption_1, name), name);
                 }
-                String value = null;
+                Object value = null;
                 if (option.hasValue) {
                     if (++i >= arguments.length) {
                         throw new InvalidOptionException(Errors.format(Errors.Keys.MissingValueForOption_1, name), name);
@@ -199,21 +226,22 @@ abstract class CommandRunner {
          * Process the --locale, --encoding and --colors options.
          */
         Option option = null;                                           // In case of IllegalArgumentException.
-        String value  = null;
+        Object value  = null;
         final Console console;
         final boolean explicitEncoding;
         try {
             debug = options.containsKey(option = Option.DEBUG);
 
-            value = options.get(option = Option.LOCALE);
-            locale = (value != null) ? Locales.parse(value) : Locale.getDefault(Locale.Category.DISPLAY);
+            String s;
+            value = s = getOptionAsString(option = Option.LOCALE);
+            locale = (s != null) ? Locales.parse(s) : Locale.getDefault(Locale.Category.DISPLAY);
 
-            value = options.get(option = Option.TIMEZONE);
-            timezone = (value != null) ? TimeZone.getTimeZone(value) : TimeZone.getDefault();
+            value = s = getOptionAsString(option = Option.TIMEZONE);
+            timezone = (s != null) ? TimeZone.getTimeZone(s) : TimeZone.getDefault();
 
-            value = options.get(option = Option.ENCODING);
-            explicitEncoding = (value != null);
-            encoding = explicitEncoding ? Charset.forName(value) : Charset.defaultCharset();
+            value = s = getOptionAsString(option = Option.ENCODING);
+            explicitEncoding = (s != null);
+            encoding = explicitEncoding ? Charset.forName(s) : Charset.defaultCharset();
 
             value = options.get(option = Option.COLORS);
             console = System.console();
@@ -235,17 +263,47 @@ abstract class CommandRunner {
             err = out;
         } else {
             outputBuffer = null;
-            err = (console != null) ? console.writer() : new PrintWriter(System.err, true);
-            if (!explicitEncoding && console != null) {
-                out = console.writer();
+            err = writer(console, System.err);
+            if (explicitEncoding) {
+                out = new PrintWriter(new OutputStreamWriter(System.out, encoding), true);
             } else {
-                if (explicitEncoding) {
-                    out = new PrintWriter(new OutputStreamWriter(System.out, encoding), true);
-                } else {
-                    out = new PrintWriter(System.out, true);
-                }
+                out = writer(console, System.out);
             }
         }
+    }
+
+    /**
+     * Returns the console print writer, or the given alternative if the console cannot be used.
+     *
+     * @param  console   the value of {@link System#console()}, potentially null.
+     * @param  fallback  the fallback to use if the console cannot be used.
+     * @return the writer.
+     */
+    static PrintWriter writer(final Console console, final PrintStream fallback) {
+        if (console == null) {
+            return new PrintWriter(fallback, true);
+        } else if (avoidConsoleWriter) {
+            return new PrintWriter(new OutputStreamWriter(fallback, JDK17.charset(console)), true);
+        } else {
+            return console.writer();
+        }
+    }
+
+    /**
+     * Returns the value of the specified option as a character string.
+     *
+     * @param  key  the option for which to get a value.
+     * @return the requested option, or {@code null} if not present.
+     * @throws InvalidOptionException if the value is not a character string.
+     */
+    final String getOptionAsString(final Option key) throws InvalidOptionException {
+        final Object value = options.get(key);
+        if (value == null) return null;
+        if (value instanceof CharSequence) {
+            return value.toString();
+        }
+        final String name = key.label();
+        throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
     }
 
     /**
@@ -255,8 +313,8 @@ abstract class CommandRunner {
      * @return the option value, never {@code null}.
      * @throws InvalidOptionException if the option is missing.
      */
-    final String getMandatoryOption(final Option option) throws InvalidOptionException {
-        final String value = options.get(option);
+    final Object getMandatoryOption(final Option option) throws InvalidOptionException {
+        final Object value = options.get(option);
         if (value == null) {
             final String name = option.label();
             throw new InvalidOptionException(Errors.format(Errors.Keys.MissingValueForOption_1, name), name);
@@ -341,6 +399,7 @@ abstract class CommandRunner {
         } else {
             err.println(Exceptions.formatChainedMessages(locale, message, e));
         }
+        err.flush();
     }
 
     /**
@@ -365,8 +424,8 @@ abstract class CommandRunner {
     public abstract int run() throws Exception;
 
     /**
-     * Invoked before to exit the JVM for flushing and pending information to the output streams.
-     * The default information flushed {@link #out} and {@link #err} in that order.
+     * Flushes any pending information to the output streams.
+     * The default information flushes {@link #out} and {@link #err} in that order.
      * Subclasses may override if there is more things to flush.
      */
     protected void flush() {
