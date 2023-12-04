@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.io.Console;
+import java.io.PrintWriter;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.setup.OptionalInstallations;
@@ -37,7 +38,7 @@ import org.apache.sis.setup.OptionalInstallations;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.5
  * @since   0.7
  */
 @Fallback
@@ -46,6 +47,12 @@ public class ResourcesDownloader extends OptionalInstallations {
      * The console to use for printing EPSG terms of use and asking for agreement, or {@code null} if none.
      */
     private final Console console;
+
+    /**
+     * Where to write. It should be {@code console.writer()},
+     * but the latter seems partially broken when used from JShell.
+     */
+    private final PrintWriter out;
 
     /**
      * The locale to use for text display.
@@ -66,6 +73,7 @@ public class ResourcesDownloader extends OptionalInstallations {
     /**
      * Creates a new installation scripts provider.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public ResourcesDownloader() {
         super("text/plain");
         final CommandRunner command = CommandRunner.instance.get();
@@ -77,6 +85,7 @@ public class ResourcesDownloader extends OptionalInstallations {
             colors = false;
         }
         console = System.console();
+        out = CommandRunner.writer(console, System.out);
     }
 
     /**
@@ -107,6 +116,10 @@ public class ResourcesDownloader extends OptionalInstallations {
      * This method may be invoked twice for the same {@code authority} argument:
      * first with a null {@code license} argument for asking if the user agrees to download the data,
      * then with a non-null {@code license} argument for asking if the user agrees with the license terms.
+     *
+     * @param  authority  "EPSG".
+     * @param  license    the license, or {@code null} for asking if the user wants to download the data.
+     * @return whether user accepted.
      */
     @Override
     protected boolean askUserAgreement(final String authority, final String license) {
@@ -131,18 +144,21 @@ public class ResourcesDownloader extends OptionalInstallations {
         /*
          * Show the question.
          */
+        final String lineSeparator = System.lineSeparator();
         final String prompt, action;
         if (license == null) {
             prompt = "download";
             action = "downloading";
-            console.format(resources.getString("install"), textColor, getSpaceRequirement(authority),
+            format(resources.getString("install"), textColor, getSpaceRequirement(authority),
                            linkColor, destinationDirectory, linkOff, resetColor);
         } else {
             prompt = "accept";
             action = "installing";
-            console.format("%n").writer().write(license);
-            console.format("%n");
+            out.write(lineSeparator);
+            out.write(license);
+            out.write(lineSeparator);
         }
+        out.flush();
         /*
          * Ask user agreement.
          */
@@ -151,10 +167,24 @@ public class ResourcesDownloader extends OptionalInstallations {
             answer = answers.get(console.readLine(resources.getString(prompt), textColor, resetColor).toLowerCase(getLocale()));
         } while (answer == null);
         if (answer) {
-            console.format(resources.getString(action), actionColor, resetColor);
+            format(resources.getString(action), actionColor, resetColor);
         } else {
-            console.format("%n");
+            out.write(lineSeparator);
         }
         return answer;
+    }
+
+    /**
+     * Writes a formatted output to the console.
+     *
+     * @param pattern  pattern to write.
+     * @param args  arguments referenced by the pattern.
+     */
+    private void format(final String pattern, final Object... args) {
+        if (console.writer() == out) {
+            console.format(pattern, args);
+        } else {
+            out.format(pattern, args);
+        }
     }
 }
