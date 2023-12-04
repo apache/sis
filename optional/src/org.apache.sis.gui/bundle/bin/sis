@@ -23,6 +23,9 @@ SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
 export SIS_DATA
 unset  SIS_HOME
 
+COLUMNS=${COLUMNS:-`tput cols`}
+export COLUMNS
+
 # Execute SIS with any optional JAR that the user may put in the 'lib' directory.
 java --module-path "$BASE_DIR/lib:$BASE_DIR/lib/app/org.apache.sis.console.jar" \
      -Djava.util.logging.config.class="org.apache.sis.util.logging.Initializer" \

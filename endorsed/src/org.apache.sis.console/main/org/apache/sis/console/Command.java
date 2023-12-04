@@ -223,8 +223,25 @@ public final class Command {
          */
         final String handler = LogManager.getLogManager().getProperty("java.util.logging.ConsoleHandler.formatter");
         if (MonolineFormatter.class.getName().equals(handler)) {
-            MonolineFormatter.install().resetLevelColors(X364.isAnsiSupported());
+            MonolineFormatter f = MonolineFormatter.install();
+            f.setMaximalLineLength(Command::terminalSize);
+            f.resetLevelColors(X364.isAnsiSupported());
         }
+    }
+
+    /**
+     * {@return the terminal size if known, of {@link Integer#MAX_VALUE} otherwise}.
+     * The returned value may be obsolete, because the {@code COLUMNS} environment
+     * variable is not updated when the user resizes the terminal window.
+     */
+    private static int terminalSize() {
+        final String n = System.getenv("COLUMNS");
+        if (n != null && !n.isEmpty()) try {
+            return Integer.parseInt(n);
+        } catch (NumberFormatException e) {
+            // Ignore.
+        }
+        return Integer.MAX_VALUE;
     }
 
     /**

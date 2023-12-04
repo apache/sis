@@ -23,6 +23,9 @@ SIS_DATA="${SIS_DATA:-$SIS_HOME/data}"
 export SIS_DATA
 export SIS_HOME
 
+COLUMNS=${COLUMNS:-`tput cols`}
+export COLUMNS
+
 jshell --module-path "$SIS_HOME/lib:$SIS_HOME/lib/app/org.apache.sis.console.jar" \
        --add-module org.apache.sis.console \
        --startup "$SIS_HOME/conf/imports.jsh" \
