@@ -18,11 +18,9 @@
 /**
  * Shapefile store.
  *
- * @author  Travis L. Pinney
- * @author  Marc Le Bihan
+ * @author Johann Sorel (Geomatys)
  */
 module org.apache.sis.storage.shapefile {
-    requires java.sql;
     requires esri.geometry.api;
     requires transitive org.apache.sis.storage;
 
