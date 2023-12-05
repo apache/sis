@@ -172,7 +172,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
     public void close() throws DataStoreException {
     }
 
-
     /*
     Redirect FeatureSet interface to View
     */
@@ -649,9 +648,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                         } else if (Long.class.isAssignableFrom(valueClass)) {
                             dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 19, 0, null));
                         } else if (Float.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 11, 8, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 11, 6, null));
                         } else if (Double.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 33, 30, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 33, 18, null));
                         } else if (LocalDate.class.isAssignableFrom(valueClass)) {
                             dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_DATE, 0, 20, 0, null));
                         } else {

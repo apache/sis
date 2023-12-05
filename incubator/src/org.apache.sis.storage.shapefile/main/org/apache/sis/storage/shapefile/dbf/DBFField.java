@@ -111,6 +111,7 @@ public final class DBFField {
             case TYPE_NUMBER : {
                 if (fieldDecimals != 0) {  valueClass = Double.class;  reader = this::readNumber;     writer = this::writeNumber;
                     format = NumberFormat.getNumberInstance(Locale.US);
+                    format.setGroupingUsed(false);
                     format.setMaximumFractionDigits(fieldDecimals);
                     format.setMinimumFractionDigits(fieldDecimals);
                 }
@@ -198,7 +199,20 @@ public final class DBFField {
     }
 
     private Object readLogic(ChannelDataInput channel) throws IOException {
-        throw new UnsupportedOperationException();
+        final String str = new String(channel.readBytes(fieldLength)).trim().toLowerCase();
+        final char c = str.charAt(0);
+        switch (c) {
+            case '1':
+            case 't':
+            case 'y':
+                return Boolean.TRUE;
+            case '0':
+            case 'f':
+            case 'n':
+                return Boolean.FALSE;
+            default:
+                throw new IOException("Unexpected logic value : " + str);
+        }
     }
 
     private Object readMemo(ChannelDataInput channel) throws IOException {
@@ -218,11 +232,11 @@ public final class DBFField {
     }
 
     private Object readFloat(ChannelDataInput channel) throws IOException {
-        throw new UnsupportedOperationException();
+        return channel.readFloat();
     }
 
     private Object readDouble(ChannelDataInput channel) throws IOException {
-        throw new UnsupportedOperationException();
+        return channel.readDouble();
     }
 
     private Object readOLE(ChannelDataInput channel) throws IOException {
@@ -260,6 +274,7 @@ public final class DBFField {
         sb.append(month);
         if(day.length() < 2) sb.append("0");
         sb.append(day);
+        ensureLength(sb.toString());
         channel.repeat(fieldLength - sb.length(), (byte)' ');
         channel.write(sb.toString().getBytes(StandardCharsets.US_ASCII));
     }
@@ -268,32 +283,30 @@ public final class DBFField {
         final Number v = ((Number) value);
         final String str = format.format(v.doubleValue());
         final int length = str.length();
+        ensureLength(str);
         channel.repeat(fieldLength - length, (byte)' ');
         channel.write(str.getBytes(StandardCharsets.US_ASCII));
     }
 
     private void writeNumberInt(ChannelDataOutput channel, Object value) throws IOException {
-        final String v = ((Integer) value).toString();
-        final int length = v.length();
-        if (length > fieldLength) {
-            throw new IOException(v + " is longer then field length " + fieldLength);
-        }
-        channel.repeat(fieldLength - length, (byte)' ');
-        channel.write(v.getBytes(StandardCharsets.US_ASCII));
+        final String str = ((Integer) value).toString();
+        ensureLength(str);
+        channel.repeat(fieldLength - str.length(), (byte)' ');
+        channel.write(str.getBytes(StandardCharsets.US_ASCII));
     }
 
     private void writeNumberLong(ChannelDataOutput channel, Object value) throws IOException {
-        final String v = ((Long) value).toString();
-        final int length = v.length();
-        if (length > fieldLength) {
-            throw new IOException(v + " is longer then field length " + fieldLength);
-        }
-        channel.repeat(fieldLength - length, (byte)' ');
-        channel.write(v.getBytes(StandardCharsets.US_ASCII));
+        final String str = ((Long) value).toString();
+        ensureLength(str);
+        channel.repeat(fieldLength - str.length(), (byte)' ');
+        channel.write(str.getBytes(StandardCharsets.US_ASCII));
     }
 
     private void writeLogic(ChannelDataOutput channel, Object value) throws IOException {
-        throw new UnsupportedOperationException();
+        final String str = Boolean.TRUE.equals(value) ? "T" : "F";
+        ensureLength(str);
+        channel.repeat(fieldLength - str.length(), (byte)' ');
+        channel.write(str.getBytes(StandardCharsets.US_ASCII));
     }
 
     private void writeMemo(ChannelDataOutput channel, Object value) throws IOException {
@@ -313,15 +326,20 @@ public final class DBFField {
     }
 
     private void writeFloat(ChannelDataOutput channel, Object value) throws IOException {
-        throw new UnsupportedOperationException();
+        channel.writeFloat(((Number)value).floatValue());
     }
 
     private void writeDouble(ChannelDataOutput channel, Object value) throws IOException {
-        throw new UnsupportedOperationException();
+        channel.writeDouble(((Number)value).doubleValue());
     }
 
     private void writeOLE(ChannelDataOutput channel, Object value) throws IOException {
         throw new UnsupportedOperationException();
+    }
+
+    private void ensureLength(String str) throws IOException{
+        final int remain = fieldLength - str.length();
+        if (remain < 0) throw new IOException("Failed to write field value" + str + ", value is larger then field " + this);
     }
 
     @Override
