@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.shapefile.dbf;
-
 
 /**
- * A DBF record is an array of field values.
+ * DBase III format reader and writer.
+ * <p>
+ * This package is used and made for ESRI shapefile format which at it's creation time
+ * was related to DBase III.
  *
- * @author Johann Sorel (Geomatys)
+ * <h2>Reading example</h2>
+ *{@snippet class="org.apache.sis.storage.shapefile.dbf.Snippets" region="read"}
+ *
+ * <h2>Writing example</h2>
+ *{@snippet class="org.apache.sis.storage.shapefile.dbf.Snippets" region="write"}
+ *
+ * @see <a href="https://en.wikipedia.org/wiki/.dbf">Format from Wikipedia</a>
+ * @see <a href="http://www.dbase.com/KnowledgeBase/int/db7_file_fmt.htm">Format from dbase.com</a>
+ * @see <a href="https://wiki.dbfmanager.com/dbf-structure">Format from wiki.dbfmanager.com</a>
  */
-public final class DBFRecord {
-
-    public static final DBFRecord DELETED = new DBFRecord();
-
-    public Object[] fields;
-
-    public DBFRecord() {
-    }
-
-}
+package org.apache.sis.storage.shapefile.dbf;

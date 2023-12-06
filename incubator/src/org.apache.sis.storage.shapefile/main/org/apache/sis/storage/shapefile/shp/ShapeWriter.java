@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
+import org.locationtech.jts.geom.Geometry;
 
 
 /**
@@ -35,15 +36,26 @@ public final class ShapeWriter implements AutoCloseable{
     private GeneralEnvelope bbox;
     private ShapeGeometryEncoder io;
 
-    public ShapeWriter(ChannelDataOutput channel) throws IOException {
+    /**
+     * Construct writer above given channel.
+     *
+     * @param channel to write into
+     */
+    public ShapeWriter(ChannelDataOutput channel) {
         this.channel = channel;
     }
 
+    /**
+     * Get header, not null after writeHeader has been call.
+     * @return shapefile header
+     */
     public ShapeHeader getHeader() {
         return header;
     }
 
     /**
+     * Get current position in the stream.
+     *
      * @return current position in the stream
      */
     public long getSteamPosition() {
@@ -53,8 +65,10 @@ public final class ShapeWriter implements AutoCloseable{
     /**
      * Header will be copied and modified.
      * Use getHeader to obtain the new header.
+     * @param header to write, not null
+     * @throws IOException If an I/O error occurs
      */
-    public void write(ShapeHeader header) throws IOException {
+    public void writeHeader(ShapeHeader header) throws IOException {
         this.header = new ShapeHeader(header);
         this.header.fileLength = 0;
         this.header.bbox = new ImmutableEnvelope(new GeneralEnvelope(4));
@@ -62,7 +76,24 @@ public final class ShapeWriter implements AutoCloseable{
         io = ShapeGeometryEncoder.getEncoder(header.shapeType);
     }
 
-    public void write(ShapeRecord record) throws IOException {
+    /**
+     * Write a new record.
+     *
+     * @param recordNumber record number
+     * @param geometry record geometry
+     * @throws IOException If an I/O error occurs
+     */
+    public void writeRecord(int recordNumber, Geometry geometry) throws IOException {
+        writeRecord(new ShapeRecord(recordNumber, geometry));
+    }
+
+    /**
+     * Write a new record.
+     *
+     * @param record new record
+     * @throws IOException If an I/O error occurs
+     */
+    public void writeRecord(ShapeRecord record) throws IOException {
         record.write(channel, io);
         final GeneralEnvelope geomBox = io.getBoundingBox(record.geometry);
         if (bbox == null) {
@@ -73,13 +104,14 @@ public final class ShapeWriter implements AutoCloseable{
         }
     }
 
-    public void flush() throws IOException {
-        channel.flush();
-    }
-
+    /**
+     * Release writer resources.
+     *
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     public void close() throws IOException {
-        flush();
+        channel.flush();
 
         //update header and rewrite it
         //update the file length

@@ -32,33 +32,54 @@ public final class DBFWriter implements AutoCloseable{
     private int writtenNbRecord = 0 ;
     private DBFHeader header;
 
+    /**
+     * Constructor.
+     *
+     * @param channel to write into
+     */
     public DBFWriter(ChannelDataOutput channel) {
         this.channel = channel;
     }
 
-    public void write(DBFHeader header) throws IOException {
+    /**
+     * Write DBase header.
+     *
+     * This should be the first call on the writer.
+     * Header number of records will be updated in the close method.
+     *
+     * @param header to write
+     * @throws IOException If an I/O error occurs
+     */
+    public void writeHeader(DBFHeader header) throws IOException {
         this.header = new DBFHeader(header);
         this.header.updateSizes(); //recompute sizes
         this.header.nbRecord = 0; //force to zero, will be replaced when closing writer.
         this.header.write(channel);
     }
 
-    public void write(DBFRecord record) throws IOException {
+    /**
+     * Write a DBase record.
+     *
+     * @param fieldValues record fields to write
+     * @throws IOException If an I/O error occurs
+     */
+    public void writeRecord(Object ... fieldValues) throws IOException {
         channel.writeByte(DBFReader.TAG_PRESENT);
         for (int i = 0; i < header.fields.length; i++) {
-            header.fields[i].writeValue(channel, record.fields[i]);
+            header.fields[i].writeValue(channel, fieldValues[i]);
         }
         writtenNbRecord++;
     }
 
-    public void flush() throws IOException {
-        channel.writeByte(DBFReader.TAG_EOF);
-        channel.flush();
-    }
-
+    /**
+     * Write end of file tag, update written number of record and release resources.
+     *
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     public void close() throws IOException {
-        flush();
+        channel.writeByte(DBFReader.TAG_EOF);
+        channel.flush();
 
         //update the nbRecord in the header
         channel.seek(4);

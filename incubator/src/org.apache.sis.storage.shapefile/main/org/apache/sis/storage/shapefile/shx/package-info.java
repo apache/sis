@@ -16,20 +16,6 @@
  */
 
 /**
- * Shapefile store.
- *
- * @author Johann Sorel (Geomatys)
+ * Shapefile Shx index reader and writer.
  */
-module org.apache.sis.storage.shapefile {
-    requires esri.geometry.api;
-    requires transitive org.apache.sis.storage;
-
-    exports org.apache.sis.storage.shapefile;
-    exports org.apache.sis.storage.shapefile.cpg;
-    exports org.apache.sis.storage.shapefile.dbf;
-    exports org.apache.sis.storage.shapefile.shp;
-    exports org.apache.sis.storage.shapefile.shx;
-
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.shapefile.ShapefileProvider;
-}
+package org.apache.sis.storage.shapefile.shx;

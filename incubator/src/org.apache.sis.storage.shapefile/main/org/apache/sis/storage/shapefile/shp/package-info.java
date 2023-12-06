@@ -16,20 +16,14 @@
  */
 
 /**
- * Shapefile store.
+ * Shapefile format reader and writer.
  *
- * @author Johann Sorel (Geomatys)
+ * <h2>Reading example</h2>
+ *{@snippet class="org.apache.sis.storage.shapefile.shp.Snippets" region="read"}
+ *
+ * <h2>Writing example</h2>
+ *{@snippet class="org.apache.sis.storage.shapefile.shp.Snippets" region="write"}
+ *
+ * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
  */
-module org.apache.sis.storage.shapefile {
-    requires esri.geometry.api;
-    requires transitive org.apache.sis.storage;
-
-    exports org.apache.sis.storage.shapefile;
-    exports org.apache.sis.storage.shapefile.cpg;
-    exports org.apache.sis.storage.shapefile.dbf;
-    exports org.apache.sis.storage.shapefile.shp;
-    exports org.apache.sis.storage.shapefile.shx;
-
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.shapefile.ShapefileProvider;
-}
+package org.apache.sis.storage.shapefile.shp;

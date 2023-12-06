@@ -48,17 +48,24 @@ public final class ShapeHeader {
     /**
      * Shape type.
      */
-    public int shapeType;
+    public ShapeType shapeType;
     /**
      * Shapefile bounding box without CRS.
      * Ordinates are in X,Y,Z,M order.
      */
     public ImmutableEnvelope bbox;
 
+    /**
+     * Default constructor
+     */
     public ShapeHeader() {
-
     }
 
+    /**
+     * Copy constructor.
+     *
+     * @param toCopy header to copy
+     */
     public ShapeHeader(ShapeHeader toCopy) {
         this.fileLength = toCopy.fileLength;
         this.shapeType = toCopy.shapeType;
@@ -85,7 +92,7 @@ public final class ShapeHeader {
         if (version != 1000) {
             throw new IOException("Incorrect file version, expected 1000 but was " + version);
         }
-        shapeType = channel.readInt();
+        shapeType = ShapeType.get(channel.readInt());
         final double[] bb = channel.readDoubles(8);
         GeneralEnvelope bbox = new GeneralEnvelope(4);
         bbox.setRange(0, bb[0], bb[2]);
@@ -107,7 +114,7 @@ public final class ShapeHeader {
         channel.writeInt(fileLength/2);
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         channel.writeInt(1000);
-        channel.writeInt(shapeType);
+        channel.writeInt(shapeType.getCode());
         channel.writeDouble(bbox.getMinimum(0));
         channel.writeDouble(bbox.getMinimum(1));
         channel.writeDouble(bbox.getMaximum(0));

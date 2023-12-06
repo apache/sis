@@ -27,6 +27,8 @@ import org.apache.sis.io.stream.ChannelDataOutput;
 
 
 /**
+ * Immutable DBase III field description.
+ * This class holds the different field attributes with value read and write capabilities.
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -35,60 +37,83 @@ public final class DBFField {
     /**
      * Binary, String : b or B
      */
-    public static final int TYPE_BINARY = 'b';
+    public static final char TYPE_BINARY = 'b';
     /**
      * Characters : c or C
      */
-    public static final int TYPE_CHAR = 'c';
+    public static final char TYPE_CHAR = 'c';
     /**
      * Date : d or D
      */
-    public static final int TYPE_DATE = 'd';
+    public static final char TYPE_DATE = 'd';
     /**
      * Numeric : n or N
      */
-    public static final int TYPE_NUMBER = 'n';
+    public static final char TYPE_NUMBER = 'n';
     /**
      * Logical : l or L
      */
-    public static final int TYPE_LOGIC = 'l';
+    public static final char TYPE_LOGIC = 'l';
     /**
      * Memo, String : m or M
      */
-    public static final int TYPE_MEMO = 'm';
+    public static final char TYPE_MEMO = 'm';
     /**
      * TimeStamp : 8 bytes, two longs, first for date, second for time.
      * The date is the number of days since  01/01/4713 BC.
      * Time is hours * 3600000L + minutes * 60000L + Seconds * 1000L
      */
-    public static final int TYPE_TIMESTAMP = '@';
+    public static final char TYPE_TIMESTAMP = '@';
     /**
      * Long : i or I on 4 bytes, first bit is the sign, 0 = negative
      */
-    public static final int TYPE_LONG = 'i';
+    public static final char TYPE_LONG = 'i';
     /**
      * Autoincrement : same as Long
      */
-    public static final int TYPE_INC = '+';
+    public static final char TYPE_INC = '+';
     /**
      * Floats : f or F
      */
-    public static final int TYPE_FLOAT = 'f';
+    public static final char TYPE_FLOAT = 'f';
     /**
      * Double : o or O, real double on 8bytes, not string encoded
      */
-    public static final int TYPE_DOUBLE = 'o';
+    public static final char TYPE_DOUBLE = 'o';
     /**
      * OLE : g or G
      */
-    public static final int TYPE_OLE = 'g';
+    public static final char TYPE_OLE = 'g';
 
+    /**
+     * Field name.
+     */
     public final String fieldName;
+    /**
+     * Field type.
+     */
     public final char fieldType;
+    /**
+     * Reserved, found with different names in different spec.
+     * Unused in current implementation.
+     */
     public final int fieldAddress;
+    /**
+     * Field length in binary.
+     */
     public final int fieldLength;
+    /**
+     * Field decimal count in binary.
+     */
     public final int fieldDecimals;
-    public final Charset charset;
+    /**
+     * Used to decode strings.
+     * Can be null.
+     */
+    private final Charset charset;
+    /**
+     * Java value type matching field type.
+     */
     public final Class valueClass;
 
     private final ReadMethod reader;
@@ -96,6 +121,16 @@ public final class DBFField {
     //used by decimal format only;
     private NumberFormat format;
 
+    /**
+     * Field constructor.
+     *
+     * @param fieldName field name
+     * @param fieldType field data type
+     * @param fieldAddress unused for now, has a meaning in some specifications but not all
+     * @param fieldLength total field length in bytes
+     * @param fieldDecimals number of decimals for floating points
+     * @param charset String base field encoding
+     */
     public DBFField(String fieldName, char fieldType, int fieldAddress, int fieldLength, int fieldDecimals, Charset charset) {
         this.fieldName = fieldName;
         this.fieldType = fieldType;
@@ -131,6 +166,14 @@ public final class DBFField {
         }
     }
 
+    /**
+     * Read field description.
+     *
+     * @param channel to read from
+     * @param charset field text encoding
+     * @return dbf field description
+     * @throws IOException if an error occured while parsing field
+     */
     public static DBFField read(ChannelDataInput channel, Charset charset) throws IOException {
         byte[] n = channel.readBytes(11);
         int nameSize = 0;
@@ -144,6 +187,12 @@ public final class DBFField {
         return new DBFField(fieldName, fieldType, fieldAddress, fieldLength, fieldDecimals, charset);
     }
 
+    /**
+     * Write field description.
+     *
+     * @param channel to write into
+     * @throws IOException if an error occured while writing field
+     */
     public void write(ChannelDataOutput channel) throws IOException {
         byte[] bytes = fieldName.getBytes(StandardCharsets.US_ASCII);
         if (bytes.length > 11) throw new IOException("Field name length must not be longer then 11 characters.");
@@ -156,10 +205,24 @@ public final class DBFField {
         channel.repeat(14, (byte) 0);
     }
 
+    /**
+     * Read a value of this field type.
+     *
+     * @param channel to read from
+     * @return decoded field value
+     * @throws IOException if an error occured while parsing field value
+     */
     public Object readValue(ChannelDataInput channel) throws IOException {
         return reader.readValue(channel);
     }
 
+    /**
+     * Write a value of this field type.
+     *
+     * @param channel to write into
+     * @param value field value
+     * @throws IOException if an error occured while writing field value
+     */
     public void writeValue(ChannelDataOutput channel, Object value) throws IOException {
         writer.writeValue(channel, value);
     }

@@ -16,11 +16,25 @@
  */
 
 /**
- * Shapefile.
+ * Shapefile format DataStore implementation.
  *
- * <div class="warning">This is an experimental package,
- * not yet target for any Apache SIS release at this time.</div>
+ * <h2>Reading example</h2>
+ *{@snippet class="org.apache.sis.storage.shapefile.Snippets" region="read"}
+ *
+ * <h2>Writing example</h2>
+ *{@snippet class="org.apache.sis.storage.shapefile.Snippets" region="write"}
+ *
+ * For raw access to DBF and SHP, use the related packages :
+ * <ul>
+ * <li>{@link org.apache.sis.storage.shapefile.shp}</li>
+ * <li>{@link org.apache.sis.storage.shapefile.shx}</li>
+ * <li>{@link org.apache.sis.storage.shapefile.dbf}</li>
+ * <li>{@link org.apache.sis.storage.shapefile.cpg}</li>
+ * </ul>
+ * The shapefile datastore layer is very thin and the only performance overheap
+ * is the mapping from DBFRecord/ShpRecord to Feature.
  *
  * @author Johann Sorel (Geomatys)
+ * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
  */
 package org.apache.sis.storage.shapefile;

@@ -79,10 +79,10 @@ public class ShapeIOTest {
             try (ShapeReader reader = new ShapeReader(cdi, null);
                  ShapeWriter writer = new ShapeWriter(cdo)) {
 
-                writer.write(reader.getHeader());
+                writer.writeHeader(reader.getHeader());
 
                 for (ShapeRecord record = reader.next(); record != null; record = reader.next()) {
-                    writer.write(record);
+                    writer.writeRecord(record);
                 }
             }
 
