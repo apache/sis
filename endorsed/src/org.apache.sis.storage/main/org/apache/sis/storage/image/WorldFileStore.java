@@ -47,7 +47,6 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
@@ -357,7 +356,7 @@ loop:   for (int convention=0;; convention++) {
             }
         }
         if (warning != null) {
-            listeners.warning(resources().getString(Resources.Keys.CanNotReadAuxiliaryFile_1, preferred), warning);
+            listeners.warning(cannotReadAuxiliaryFile(preferred), warning);
         }
         return null;
     }
@@ -373,7 +372,7 @@ loop:   for (int convention=0;; convention++) {
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
         final AuxiliaryContent content = readAuxiliaryFile(wld);
         if (content == null) {
-            listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, wld));
+            listeners.warning(cannotReadAuxiliaryFile(wld));
             return null;
         }
         final String         filename = content.getFilename();
@@ -407,17 +406,10 @@ loop:   for (int convention=0;; convention++) {
     }
 
     /**
-     * Returns the localized resources for producing warnings or error messages.
-     */
-    final Resources resources() {
-        return Resources.forLocale(listeners.getLocale());
-    }
-
-    /**
      * Returns the localized resources for producing error messages.
      */
     private Errors errors() {
-        return Errors.getResources(listeners.getLocale());
+        return Errors.getResources(getLocale());
     }
 
     /**
@@ -539,6 +531,7 @@ loop:   for (int convention=0;; convention++) {
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
                 builder.addExtent(gridGeometry.getEnvelope(), listeners);
             }
+            mergeAuxiliaryMetadata(builder);
             addTitleOrIdentifier(builder);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();

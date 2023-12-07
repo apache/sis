@@ -351,6 +351,13 @@ writeCoeffs:    for (int i=0;; i++) {
     }
 
     /**
+     * Returns the localized resources for producing warnings or error messages.
+     */
+    final Resources resources() {
+        return Resources.forLocale(getLocale());
+    }
+
+    /**
      * Returns a label for the given resource in error messages.
      */
     private static String label(final Resource resource) throws DataStoreException {

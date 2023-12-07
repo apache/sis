@@ -29,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
@@ -3302,7 +3303,7 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Merge the given metadata into the metadata created by this builder.
+     * Merges the given metadata into the metadata created by this builder.
      * The given source should be an instance of {@link Metadata},
      * but some types of metadata components are accepted as well.
      *
@@ -3346,7 +3347,61 @@ parse:      for (int i = 0; i < length;) {
         else return false;
         final Merger merger = new Merger(locale);
         merger.copy(source, target);
+        useParentElements();
         return true;
+    }
+
+    /**
+     * Replaces any null metadata element by the last element from the parent.
+     * This is used for continuing the edition of an existing metadata.
+     */
+    private void useParentElements() {
+        if (identification == null) identification = last (DefaultDataIdentification.class,     metadata,       Metadata::getIdentificationInfo);
+        if (citation       == null) citation       = fetch(DefaultCitation.class,               identification, Identification::getCitation);
+        if (responsibility == null) responsibility = last (DefaultResponsibility.class,         citation,       Citation::getCitedResponsibleParties);
+        if (party          == null) party          = last (AbstractParty.class,                 responsibility, Responsibility::getParties);
+        if (constraints    == null) constraints    = last (DefaultLegalConstraints.class,       identification, Identification::getResourceConstraints);
+        if (extent         == null) extent         = last (DefaultExtent.class,                 identification, Identification::getExtents);
+        if (acquisition    == null) acquisition    = last (DefaultAcquisitionInformation.class, metadata,       Metadata::getAcquisitionInformation);
+        if (platform       == null) platform       = last (DefaultPlatform.class,               acquisition,    AcquisitionInformation::getPlatforms);
+    }
+
+    /**
+     * Returns the element of the given source metadata if it is of the desired class.
+     * This method is equivalent to {@link #last(Class, Object, Function)} but for a singleton.
+     *
+     * @param  target  the desired class.
+     * @param  source  the source metadata, or {@code null} if none.
+     * @param  getter  the getter to use for fetching elements from the source metadata.
+     * @return the metadata element from the source, or {@code null} if none.
+     */
+    private static <S,T> T fetch(final Class<T> target, final S source, final Function<S,?> getter) {
+        if (source != null) {
+            final Object last = getter.apply(source);
+            if (target.isInstance(last)) {
+                return target.cast(last);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the element of the given source metadata if it is of the desired class.
+     * This method is equivalent to {@link #fetch(Class, Object, Function)} but for a collection.
+     *
+     * @param  target  the desired class.
+     * @param  source  the source metadata, or {@code null} if none.
+     * @param  getter  the getter to use for fetching elements from the source metadata.
+     * @return the metadata element from the source, or {@code null} if none.
+     */
+    private static <S,T> T last(final Class<T> target, final S source, final Function<S,Collection<?>> getter) {
+        if (source != null) {
+            final Object last = CollectionsExt.last(getter.apply(source));
+            if (target.isInstance(last)) {
+                return target.cast(last);
+            }
+        }
+        return null;
     }
 
     /**

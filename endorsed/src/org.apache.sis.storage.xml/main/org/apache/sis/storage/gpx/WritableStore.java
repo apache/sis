@@ -126,7 +126,7 @@ public final class WritableStore extends Store implements WritableFeatureSet {
      */
     private Updater updater() throws DataStoreException {
         try {
-            return new Updater(this, getSpecifiedPath());
+            return new Updater(this, locationAsPath);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }

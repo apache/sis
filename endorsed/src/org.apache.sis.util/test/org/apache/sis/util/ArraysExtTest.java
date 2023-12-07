@@ -18,7 +18,7 @@ package org.apache.sis.util;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -76,6 +76,16 @@ public final class ArraysExtTest extends TestCase {
     }
 
     /**
+     * Tests {@link ArraysExt#removeNulls(Object[])}.
+     */
+    @Test
+    public void testRemoveNulls() {
+        final Integer[] array = new Integer[] {2, 8, null, 4, null, 3, 1, null, null};
+        assertArrayEquals(new Integer[] {2, 8, 4, 3, 1},
+                ArraysExt.resize(array, ArraysExt.removeNulls(array)));
+    }
+
+    /**
      * Tests {@link ArraysExt#reverse(int[])}.
      * The test uses an array of even length, then an array of odd length.
      */
@@ -96,11 +106,11 @@ public final class ArraysExtTest extends TestCase {
     @Test
     public void testRange() {
         int[] sequence = ArraysExt.range(-1, 3);
-        assertArrayEquals("range", new int[] {-1, 0, 1, 2}, sequence);
-        assertTrue ("isRange", ArraysExt.isRange(-1, sequence));
-        assertFalse("isRange", ArraysExt.isRange(-2, sequence));
-        assertTrue ("isRange", ArraysExt.isRange(1, new int[] {1, 2, 3, 4}));
-        assertFalse("isRange", ArraysExt.isRange(1, new int[] {1, 2,    4}));
+        assertArrayEquals(new int[] {-1, 0, 1, 2}, sequence);
+        assertTrue (ArraysExt.isRange(-1, sequence));
+        assertFalse(ArraysExt.isRange(-2, sequence));
+        assertTrue (ArraysExt.isRange(1, new int[] {1, 2, 3, 4}));
+        assertFalse(ArraysExt.isRange(1, new int[] {1, 2,    4}));
     }
 
     /**
@@ -253,7 +263,7 @@ public final class ArraysExtTest extends TestCase {
     public void testSwapFloat() {
         final float[] array = new float[] {4, 8, 12, 15, 18};
         ArraysExt.swap(array, 1, 3);
-        assertArrayEquals(new float[] {4, 15, 12, 8, 18}, array, 0f);
+        assertArrayEquals(new float[] {4, 15, 12, 8, 18}, array);
     }
 
     /**
@@ -314,7 +324,7 @@ public final class ArraysExtTest extends TestCase {
         double[] array = {2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY};
         float[] result = ArraysExt.copyAsFloatsIfLossless(array);
         assertNotNull(result);
-        assertArrayEquals(new float[] {2f, 0.5f, 0.25f, Float.NaN, Float.POSITIVE_INFINITY}, result, 0f);
+        assertArrayEquals(new float[] {2f, 0.5f, 0.25f, Float.NaN, Float.POSITIVE_INFINITY}, result);
         array[3] = 0.3333333333333;
         assertNull(ArraysExt.copyAsFloatsIfLossless(array));
     }

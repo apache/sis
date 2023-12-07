@@ -140,6 +140,22 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the last element of the given iterable if it is a list, or an arbitrary element otherwise.
+     *
+     * @todo Check for sequenced collection in JDK21.
+     *
+     * @param  <T>         the type of elements contained in the iterable.
+     * @param  collection  the iterable from which to get the last element, or {@code null}.
+     * @return the last element, or {@code null} if the given iterable is null or empty.
+     */
+    public static <T> T last(final Collection<T> collection) {
+        if (collection instanceof List<?> && !collection.isEmpty()) {
+            return ((List<T>) collection).get(collection.size() - 1);
+        }
+        return null;
+    }
+
+    /**
      * If the given iterable contains exactly one non-null element, returns that element.
      * Otherwise returns {@code null}.
      *

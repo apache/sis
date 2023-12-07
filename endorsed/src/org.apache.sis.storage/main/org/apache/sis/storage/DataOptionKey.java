@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import java.nio.file.Path;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.feature.FoliationRepresentation;
@@ -28,7 +28,7 @@ import org.apache.sis.feature.FoliationRepresentation;
  * or other kinds of structure that are specific to some data formats.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @param <T>  the type of option values.
  *
@@ -41,15 +41,15 @@ public final class DataOptionKey<T> extends OptionKey<T> {
     private static final long serialVersionUID = 8927757348322016043L;
 
     /**
-     * The coordinate reference system (CRS) of data to use if not explicitly defined.
-     * This option can be used when the file to read does not describe itself the data CRS.
-     * For example, this option can be used when reading ASCII Grid without CRS information,
-     * but is ignored if the ASCII Grid file is accompanied by a {@code *.prj} file giving the CRS.
+     * Path to an auxiliary file containing metadata encoded in an ISO 19115-3 XML document.
+     * The given path, if not absolute, is relative to the path of the main storage file.
+     * If the file exists, it is parsed and its content is merged or appended after the
+     * metadata read by the storage. If the file does not exist, then it is ignored.
      *
-     * @since 1.2
+     * @since 1.5
      */
-    public static final OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
-            new DataOptionKey<>("DEFAULT_CRS", CoordinateReferenceSystem.class);
+    public static final OptionKey<Path> METADATA_PATH =
+            new DataOptionKey<>("METADATA_PATH", Path.class);
 
     /**
      * Whether to assemble trajectory fragments (distinct CSV lines) into a single {@code Feature} instance

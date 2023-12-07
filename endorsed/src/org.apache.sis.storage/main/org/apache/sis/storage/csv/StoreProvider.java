@@ -197,7 +197,7 @@ public final class StoreProvider extends URIDataStore.Provider {
      */
     @Override
     protected ParameterDescriptorGroup build(final ParameterBuilder builder) {
-        return builder.createGroup(LOCATION_PARAM, ENCODING, FOLIATION);
+        return builder.createGroup(LOCATION_PARAM, METADATA_PARAM, ENCODING, FOLIATION);
     }
 
     /**

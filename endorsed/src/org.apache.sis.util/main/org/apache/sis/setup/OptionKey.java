@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import static java.util.logging.Logger.getLogger;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
@@ -62,7 +63,7 @@ import org.apache.sis.system.Modules;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @param <T>  the type of option values.
  *
@@ -180,6 +181,17 @@ public class OptionKey<T> implements Serializable {
      * </ul>
      */
     public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<>("BYTE_BUFFER", ByteBuffer.class);
+
+    /**
+     * The coordinate reference system (CRS) of data to use if not explicitly defined.
+     * This option can be used when the file to read does not describe itself the data CRS.
+     * For example, this option can be used when reading ASCII Grid without CRS information,
+     * but is ignored if the ASCII Grid file is accompanied by a {@code *.prj} file giving the CRS.
+     *
+     * @since 1.5
+     */
+    public static final OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
+            new OptionKey<>("DEFAULT_CRS", CoordinateReferenceSystem.class);
 
     /**
      * The library to use for creating geometric objects at reading time.
