@@ -1,0 +1,7 @@
+EngineeringCRS["A plane somewhere",
+  EngineeringDatum["Center of the plane"],
+  CS[Cartesian, 2],
+    Axis["x", columns],
+    Axis["y", rows],
+    Unit["unity", 1],
+  REMARK["Dummy CRS for the `BSQ.raw` test raster."]]
