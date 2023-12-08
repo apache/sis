@@ -92,6 +92,7 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
@@ -170,6 +171,18 @@ public class MetadataBuilder {
      * Creates a new metadata builder.
      */
     public MetadataBuilder() {
+    }
+
+    /**
+     * Creates a new metadata builder for completing an existing metadata.
+     * The given metadata shall may be modifiable. When a metadata element accepts many instances,
+     * the instance which will be modified is the last one.
+     *
+     * @param  edit  the metadata to modify, or {@code null} if none.
+     */
+    public MetadataBuilder(final Metadata edit) {
+        metadata = DefaultMetadata.castOrCopy(edit);
+        useParentElements();
     }
 
     /**
@@ -3323,25 +3336,34 @@ parse:      for (int i = 0; i < length;) {
     public boolean mergeMetadata(final Object source, final Locale locale) {
         flush();
         final ModifiableMetadata target;
+        /*
+         * In the following `instanceof` checks, objects closer to root should be tested first.
+         * For example, we should finish the checks of all `Metadata` elements before to check
+         * if the object is a sub-element of a `Metadata` element. This ordering is because an
+         * implementation may implement many interfaces: the main element together with some of
+         * its sub-elements. We want to use the object with most information. Furthermore, the
+         * main object may not use a type (e.g. `Citation`) for the same sub-element than what
+         * the code below assumes.
+         */
              if (source instanceof Metadata)                    target = metadata();
         else if (source instanceof DataIdentification)          target = identification();
+        else if (source instanceof GridSpatialRepresentation)   target = gridRepresentation();
+        else if (source instanceof CoverageDescription)         target = coverageDescription();
+        else if (source instanceof FeatureCatalogueDescription) target = featureDescription();
+        else if (source instanceof AcquisitionInformation)      target = acquisition();
+        else if (source instanceof Lineage)                     target = lineage();
+        else if (source instanceof Distribution)                target = distribution();
         else if (source instanceof Citation)                    target = citation();
+        else if (source instanceof Extent)                      target = extent();
+        else if (source instanceof LegalConstraints)            target = constraints();
         else if (source instanceof Series)                      target = series();
         else if (source instanceof Responsibility)              target = responsibility();
         else if (source instanceof Party)                       target = party();
-        else if (source instanceof LegalConstraints)            target = constraints();
-        else if (source instanceof Extent)                      target = extent();
-        else if (source instanceof AcquisitionInformation)      target = acquisition();
-        else if (source instanceof Platform)                    target = platform();
-        else if (source instanceof FeatureCatalogueDescription) target = featureDescription();
-        else if (source instanceof CoverageDescription)         target = coverageDescription();
         else if (source instanceof AttributeGroup)              target = attributeGroup();
         else if (source instanceof SampleDimension)             target = sampleDimension();
-        else if (source instanceof GridSpatialRepresentation)   target = gridRepresentation();
         else if (source instanceof GCPCollection)               target = groundControlPoints();
-        else if (source instanceof Distribution)                target = distribution();
         else if (source instanceof Format)                      target = format();
-        else if (source instanceof Lineage)                     target = lineage();
+        else if (source instanceof Platform)                    target = platform();
         else if (source instanceof ProcessStep)                 target = processStep();
         else if (source instanceof Processing)                  target = processing();
         else return false;
@@ -3356,28 +3378,43 @@ parse:      for (int i = 0; i < length;) {
      * This is used for continuing the edition of an existing metadata.
      */
     private void useParentElements() {
-        if (identification == null) identification = last (DefaultDataIdentification.class,     metadata,       Metadata::getIdentificationInfo);
-        if (citation       == null) citation       = fetch(DefaultCitation.class,               identification, Identification::getCitation);
-        if (responsibility == null) responsibility = last (DefaultResponsibility.class,         citation,       Citation::getCitedResponsibleParties);
-        if (party          == null) party          = last (AbstractParty.class,                 responsibility, Responsibility::getParties);
-        if (constraints    == null) constraints    = last (DefaultLegalConstraints.class,       identification, Identification::getResourceConstraints);
-        if (extent         == null) extent         = last (DefaultExtent.class,                 identification, Identification::getExtents);
-        if (acquisition    == null) acquisition    = last (DefaultAcquisitionInformation.class, metadata,       Metadata::getAcquisitionInformation);
-        if (platform       == null) platform       = last (DefaultPlatform.class,               acquisition,    AcquisitionInformation::getPlatforms);
+        if (identification      == null) identification      = last (DefaultDataIdentification.class,          metadata,            DefaultMetadata::getIdentificationInfo);
+        if (gridRepresentation  == null) gridRepresentation  = last (DefaultGridSpatialRepresentation.class,   metadata,            DefaultMetadata::getSpatialRepresentationInfo);
+        if (coverageDescription == null) coverageDescription = last (DefaultCoverageDescription.class,         metadata,            DefaultMetadata::getContentInfo);
+        if (featureDescription  == null) featureDescription  = last (DefaultFeatureCatalogueDescription.class, metadata,            DefaultMetadata::getContentInfo);
+        if (acquisition         == null) acquisition         = last (DefaultAcquisitionInformation.class,      metadata,            DefaultMetadata::getAcquisitionInformation);
+        if (lineage             == null) lineage             = last (DefaultLineage.class,                     metadata,            DefaultMetadata::getResourceLineages);
+        if (distribution        == null) distribution        = last (DefaultDistribution.class,                metadata,            DefaultMetadata::getDistributionInfo);
+        if (citation            == null) citation            = fetch(DefaultCitation.class,                    identification,      AbstractIdentification::getCitation);
+        if (extent              == null) extent              = last (DefaultExtent.class,                      identification,      AbstractIdentification::getExtents);
+        if (constraints         == null) constraints         = last (DefaultLegalConstraints.class,            identification,      AbstractIdentification::getResourceConstraints);
+        if (responsibility      == null) responsibility      = last (DefaultResponsibility.class,              citation,            DefaultCitation::getCitedResponsibleParties);
+        if (party               == null) party               = last (AbstractParty.class,                      responsibility,      DefaultResponsibility::getParties);
+        if (attributeGroup      == null) attributeGroup      = last (DefaultAttributeGroup.class,              coverageDescription, DefaultCoverageDescription::getAttributeGroups);
+        if (sampleDimension     == null) sampleDimension     = last (DefaultSampleDimension.class,             attributeGroup,      DefaultAttributeGroup::getAttributes);
+        if (format              == null) format              = last (DefaultFormat.class,                      distribution,        DefaultDistribution::getDistributionFormats);
+        if (platform            == null) platform            = last (DefaultPlatform.class,                    acquisition,         DefaultAcquisitionInformation::getPlatforms);
+        if (processStep         == null) processStep         = last (DefaultProcessStep.class,                 lineage,             DefaultLineage::getProcessSteps);
+        if (processing          == null) processing          = fetch(DefaultProcessing.class,                  processStep,         DefaultProcessStep::getProcessingInformation);
     }
 
     /**
      * Returns the element of the given source metadata if it is of the desired class.
      * This method is equivalent to {@link #last(Class, Object, Function)} but for a singleton.
      *
-     * @param  target  the desired class.
+     * @param  <S>     the type of the source metadata.
+     * @param  <E>     the type of metadata element provided by the source.
+     * @param  <T>     the type of the desired metadata element.
+     * @param  target  the type of the desired metadata element.
      * @param  source  the source metadata, or {@code null} if none.
      * @param  getter  the getter to use for fetching elements from the source metadata.
      * @return the metadata element from the source, or {@code null} if none.
      */
-    private static <S,T> T fetch(final Class<T> target, final S source, final Function<S,?> getter) {
+    private static <S extends ISOMetadata, E, T extends E> T fetch(final Class<T> target, final S source,
+            final Function<S,E> getter)
+    {
         if (source != null) {
-            final Object last = getter.apply(source);
+            final E last = getter.apply(source);
             if (target.isInstance(last)) {
                 return target.cast(last);
             }
@@ -3389,16 +3426,23 @@ parse:      for (int i = 0; i < length;) {
      * Returns the element of the given source metadata if it is of the desired class.
      * This method is equivalent to {@link #fetch(Class, Object, Function)} but for a collection.
      *
-     * @param  target  the desired class.
+     * @param  <S>     the type of the source metadata.
+     * @param  <E>     the type of metadata element provided by the source.
+     * @param  <T>     the type of the desired metadata element.
+     * @param  target  the type of the desired metadata element.
      * @param  source  the source metadata, or {@code null} if none.
      * @param  getter  the getter to use for fetching elements from the source metadata.
      * @return the metadata element from the source, or {@code null} if none.
      */
-    private static <S,T> T last(final Class<T> target, final S source, final Function<S,Collection<?>> getter) {
+    private static <S extends ISOMetadata, E, T extends E> T last(final Class<T> target, final S source,
+            final Function<S,Collection<E>> getter)
+    {
         if (source != null) {
-            final Object last = CollectionsExt.last(getter.apply(source));
-            if (target.isInstance(last)) {
-                return target.cast(last);
+            // If not a sequenced collection, the iteration may be in any order.
+            for (final E last : JDK21.reversed(getter.apply(source))) {
+                if (target.isInstance(last)) {
+                    return target.cast(last);
+                }
             }
         }
         return null;
