@@ -17,6 +17,10 @@
 package org.apache.sis.storage;
 
 import java.nio.file.Path;
+import java.io.ObjectStreamException;
+import static java.util.logging.Logger.getLogger;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.system.Modules;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.feature.FoliationRepresentation;
@@ -75,5 +79,25 @@ public final class DataOptionKey<T> extends OptionKey<T> {
      */
     private DataOptionKey(final String name, final Class<T> type) {
         super(name, type);
+    }
+
+    /**
+     * Resolves this option key on deserialization. This method is invoked only
+     * for instance of the exact {@code DataOptionKey} class, not subclasses.
+     *
+     * @return the unique {@code DataOptionKey} instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
+     */
+    private Object readResolve() throws ObjectStreamException {
+        try {
+            return DataOptionKey.class.getField(getName()).get(null);
+        } catch (ReflectiveOperationException e) {
+            /*
+             * This may happen if we are deserializing a stream produced by a more recent SIS library
+             * than the one running in this JVM.
+             */
+            Logging.recoverableException(getLogger(Modules.STORAGE), DataOptionKey.class, "readResolve", e);
+            return this;
+        }
     }
 }

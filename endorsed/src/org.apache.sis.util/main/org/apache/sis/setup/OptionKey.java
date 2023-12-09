@@ -154,8 +154,8 @@ public class OptionKey<T> implements Serializable {
     public static final OptionKey<String> URL_ENCODING = new OptionKey<>("URL_ENCODING", String.class);
 
     /**
-     * Whether a storage object (e.g. a {@link org.apache.sis.storage.DataStore}) shall be opened in read,
-     * write, append or other modes. The main options that can be provided are:
+     * Whether a storage object shall be opened in read, write, append or other modes.
+     * The main options that can be provided are:
      *
      * <table class="sis">
      *   <caption>Supported open options</caption>
@@ -179,7 +179,13 @@ public class OptionKey<T> implements Serializable {
      *   <li>The buffer does not contains any valuable data, as it will be {@linkplain ByteBuffer#clear() cleared}.</li>
      *   <li>The same buffer is not used concurrently by two different {@code DataStore} instances.</li>
      * </ul>
+     *
+     * @deprecated This option forces unconditional allocation of byte buffer, even if the data store does not use it.
+     * It should be replaced by a {@link java.util.function.Supplier} or {@link java.util.function.Function}, but the
+     * exact form has not been determined yet.
      */
+    @Deprecated(since="1.5")
+    // TODO: provide replacement in DataOptionKey, because this option is specific to data stores.
     public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<>("BYTE_BUFFER", ByteBuffer.class);
 
     /**
@@ -361,7 +367,7 @@ public class OptionKey<T> implements Serializable {
              * This may happen if we are deserializing a stream produced by a more recent SIS library
              * than the one running in this JVM. This class should be robust to this situation, since
              * we override the `equals` and `hashCode` methods. This option is likely to be ignored,
-             * but options are expected to be optional...
+             * but options are expected to be optional.
              */
             Logging.recoverableException(getLogger(Modules.UTILITIES), OptionKey.class, "readResolve", e);
             return this;

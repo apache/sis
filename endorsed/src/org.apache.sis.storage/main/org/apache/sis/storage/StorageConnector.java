@@ -641,7 +641,8 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Sets the option value for the given key. The default implementation recognizes the following options:
+     * Sets the option value for the given key.
+     * The {@code StorageConnector} class uses the following options, if present:
      *
      * <ul>
      *   <li>{@link OptionKey#ENCODING}     for decoding characters in an input stream, if needed.</li>
@@ -649,6 +650,8 @@ public class StorageConnector implements Serializable {
      *   <li>{@link OptionKey#OPEN_OPTIONS} for specifying whether the data store shall be read only or read/write.</li>
      *   <li>{@link OptionKey#BYTE_BUFFER}  for allowing users to control the byte buffer to be created.</li>
      * </ul>
+     *
+     * In addition, each {@link DataStore} implementation may use more options.
      *
      * @param <T>    the type of option value.
      * @param key    the option for which to set the value.
@@ -1191,6 +1194,7 @@ public class StorageConnector implements Serializable {
      * @return the byte buffer to use with {@link ChannelDataInput} or {@link ChannelDataOutput}.
      */
     private ByteBuffer getChannelBuffer(final ChannelFactory factory) {
+        @SuppressWarnings("deprecated")
         ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);               // User-supplied buffer.
         if (buffer == null) {
             if (factory.suggestDirectBuffer) {

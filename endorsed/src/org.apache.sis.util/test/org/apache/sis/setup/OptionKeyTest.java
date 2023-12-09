@@ -22,7 +22,7 @@ import static org.apache.sis.setup.OptionKey.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -86,7 +86,7 @@ public final class OptionKeyTest extends TestCase {
     @Test
     public void testSerialization() {
         assertSame(URL_ENCODING, assertSerializedEquals(URL_ENCODING));
-        assertSame(BYTE_BUFFER,  assertSerializedEquals(BYTE_BUFFER ));
+        assertSame(OPEN_OPTIONS, assertSerializedEquals(OPEN_OPTIONS));
     }
 
     /**
