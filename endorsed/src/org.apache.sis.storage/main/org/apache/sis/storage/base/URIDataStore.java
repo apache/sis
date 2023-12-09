@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.base;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
+import java.net.URISyntaxException;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
@@ -75,6 +77,8 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     /**
      * Path to an auxiliary file providing metadata as path, or {@code null} if none or not applicable.
      * Unless absolute, this path is relative to the {@link #location} or to the {@link #locationAsPath}.
+     * The path may contain the {@code '*'} character, which need to be replaced by the main file name
+     * without suffix at reading time.
      */
     private final Path metadataPath;
 
@@ -134,17 +138,82 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * Returns the path to the auxiliary metadata file, or {@code null} if none.
-     * This is a path build from the "metadata path" option if present.
+     * {@return the path to the auxiliary metadata file, or {@code null} if none}.
+     * This is a path built from the {@link DataOptionKey#METADATA_PATH} value if present.
+     * Note that the metadata may be unavailable as a {@link Path} but available as an {@link URI}.
      */
-    private Path getMetadataPath() {
-        if (metadataPath != null && locationAsPath != null) {
-            Path path = locationAsPath.getParent();
+    private Path getMetadataPath() throws IOException {
+        Path path = replaceWildcard(metadataPath);
+        if (path != null) {
+            Path parent = locationAsPath;
+            if (parent != null) {
+                parent = parent.getParent();
+                if (parent != null) {
+                    path = parent.resolve(path);
+                }
+            }
+            if (Files.isSameFile(path, locationAsPath)) {
+                return null;
+            }
+        }
+        return path;
+    }
+
+    /**
+     * {@return the URI to the auxiliary metadata file, or {@code null} if none}.
+     * This is a path built from the {@link DataOptionKey#METADATA_PATH} value if present.
+     * Note that the metadata may be unavailable as an {@link URI} but available as a {@link Path}.
+     */
+    private URI getMetadataURI() throws URISyntaxException {
+        URI uri = location;
+        if (uri != null) {
+            final Path path = replaceWildcard(metadataPath);
             if (path != null) {
-                return path.resolve(metadataPath);
+                uri = IOUtilities.toAuxiliaryURI(uri, path.toString(), false);
+                if (!uri.equals(location)) {
+                    return uri;
+                }
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the given path with the wildcard character replaced by the name of the main file.
+     *
+     * @param  path  path in which to replace wildcard character, or {@code null}.
+     * @return path with wildcard character replaced, or {@code path} if no replacement was done,
+     *         or {@code null} if a replacement was required but couldn't be done.
+     */
+    private Path replaceWildcard(Path path) {
+        if (path != null) {
+            boolean changed = false;
+            String filename = null;     // Determined when first needed.
+            final var names = new String[path.getNameCount()];
+            int count = 0;
+            for (final Path p : path) {
+                String name = p.toString();
+                if (name.indexOf('*') >= 0) {
+                    if (filename == null) {
+                        filename = IOUtilities.filename(locationAsPath != null ? locationAsPath : location);
+                        if (filename == null) {
+                            return null;
+                        }
+                        final int s = filename.lastIndexOf(IOUtilities.EXTENSION_SEPARATOR);
+                        if (s >= 0) {
+                            filename = filename.substring(0, s);
+                        }
+                    }
+                    name = name.replace("*", filename);
+                    changed = true;
+                }
+                names[count++] = name;
+            }
+            if (changed) {
+                path = path.getFileSystem().getPath(names[0], Arrays.copyOfRange(names, 1, count));
+            }
+        }
+        return path;
     }
 
     /**
@@ -153,12 +222,16 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * if such conversion was possible, or {@code null} otherwise.
      *
      * @return the URI as a path, or an empty array if unknown.
-     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
+     * @throws DataStoreException if an error occurred while getting the paths.
      */
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
-        final var paths = new Path[] {locationAsPath, getMetadataPath()};
-        return ArraysExt.resize(paths, ArraysExt.removeDuplicated(paths, ArraysExt.removeNulls(paths)));
+        try {
+            final var paths = new Path[] {locationAsPath, getMetadataPath()};
+            return ArraysExt.resize(paths, ArraysExt.removeDuplicated(paths, ArraysExt.removeNulls(paths)));
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
     }
 
     /**
@@ -404,12 +477,28 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @param  builder  where to merge the metadata.
      */
     protected final void mergeAuxiliaryMetadata(final MetadataBuilder builder) {
-        final Path path = getMetadataPath();
-        if (path != null) try {
-            builder.mergeMetadata(XML.unmarshal(path), getLocale());
+        Object metadata = null;
+        Exception error = null;
+        try {
+            final Path path = getMetadataPath();
+            if (path != null) {
+                metadata = XML.unmarshal(path);
+            } else {
+                final URI uri = getMetadataURI();
+                if (uri != null) {
+                    metadata = XML.unmarshal(uri.toURL());
+                }
+            }
+        } catch (URISyntaxException | IOException e) {
+            error = e;
         } catch (JAXBException e) {
             final Throwable cause = e.getCause();
-            listeners.warning(cannotReadAuxiliaryFile("xml"), (cause instanceof IOException) ? (Exception) cause : e);
+            error = (cause instanceof IOException) ? (Exception) cause : e;
+        }
+        if (metadata != null) {
+            builder.mergeMetadata(metadata, getLocale());
+        } else if (error != null) {
+            listeners.warning(cannotReadAuxiliaryFile("xml"), error);
         }
     }
 

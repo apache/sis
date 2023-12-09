@@ -38,6 +38,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.StorageConnector;
@@ -50,10 +51,10 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.ListOfUnknownSize;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.setup.OptionKey;
@@ -397,7 +398,7 @@ loop:   for (int convention=0;; convention++) {
             throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, filename));
         }
         if (filename != null) {
-            final int s = filename.lastIndexOf('.');
+            final int s = filename.lastIndexOf(IOUtilities.EXTENSION_SEPARATOR);
             if (s >= 0) {
                 suffixWLD = filename.substring(s+1);
             }

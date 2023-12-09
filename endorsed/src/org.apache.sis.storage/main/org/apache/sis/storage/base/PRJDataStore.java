@@ -204,7 +204,7 @@ public abstract class PRJDataStore extends URIDataStore {
             stream = Files.newInputStream(path);
             source = path;
         } else try {
-            final URI uri = IOUtilities.toAuxiliaryURI(location, extension);
+            final URI uri = IOUtilities.toAuxiliaryURI(location, extension, true);
             if (uri == null) {
                 return null;
             }
@@ -437,8 +437,8 @@ public abstract class PRJDataStore extends URIDataStore {
      */
     private static String getBaseFilename(final Path path) {
         final String base = path.getFileName().toString();
-        final int s = base.lastIndexOf('.');
-        return (s >= 0) ? base.substring(0, s+1) : base + '.';
+        final int s = base.lastIndexOf(IOUtilities.EXTENSION_SEPARATOR);
+        return (s >= 0) ? base.substring(0, s+1) : base + IOUtilities.EXTENSION_SEPARATOR;
     }
 
     /**

@@ -37,6 +37,7 @@ import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -99,7 +100,7 @@ final class WritableStore extends Store implements WritableAggregate {
         String filename = identifier.toString();
         final String[] suffixes = StoreUtilities.getFileSuffixes(componentProvider.getClass());
         if (suffixes.length != 0) {
-            filename += '.' + suffixes[0];
+            filename += IOUtilities.EXTENSION_SEPARATOR + suffixes[0];
         }
         /*
          * Create new store/resource for write access, provided that no store already exist for the path.

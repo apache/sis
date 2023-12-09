@@ -50,6 +50,11 @@ public final class DataOptionKey<T> extends OptionKey<T> {
      * If the file exists, it is parsed and its content is merged or appended after the
      * metadata read by the storage. If the file does not exist, then it is ignored.
      *
+     * <h4>Wildcard</h4>
+     * It the {@code '*'} character is present in the path, then it is replaced by the name of the
+     * main file without its extension. For example if the main file is {@code "city-center.tiff"},
+     * then {@code "*.xml"} will become {@code "city-center.xml"}.
+     *
      * @since 1.5
      */
     public static final OptionKey<Path> METADATA_PATH =

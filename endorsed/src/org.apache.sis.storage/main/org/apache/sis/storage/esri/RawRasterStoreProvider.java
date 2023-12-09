@@ -28,6 +28,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.PRJDataStore;
+import org.apache.sis.io.stream.IOUtilities;
 
 
 /**
@@ -92,8 +93,8 @@ public final class RawRasterStoreProvider extends PRJDataStore.Provider {
         Path path = connector.getStorageAs(Path.class);
         if (path != null) {
             String filename = path.getFileName().toString();
-            final int s = filename.lastIndexOf('.');
-            filename = ((s >= 0) ? filename.substring(0, s+1) : filename.concat(".")).concat(HDR);
+            final int s = filename.lastIndexOf(IOUtilities.EXTENSION_SEPARATOR);
+            filename = ((s >= 0) ? filename.substring(0, s+1) : filename + IOUtilities.EXTENSION_SEPARATOR) + HDR;
             path = path.resolveSibling(filename);
             if (Files.isRegularFile(path)) {
                 // TODO: maybe we should do more tests here (open the file?)
