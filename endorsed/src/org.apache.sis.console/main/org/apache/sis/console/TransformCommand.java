@@ -77,7 +77,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.setup.OptionKey;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
@@ -219,8 +218,7 @@ final class TransformCommand extends FormattedOutputCommand {
                 }
             } else {
                 for (final Object file : files) {
-                    final var c = new StorageConnector(file);
-                    c.setOption(OptionKey.ENCODING, encoding);
+                    final StorageConnector c = inputConnector(file);
                     try (BufferedReader in = IOUtilities.toBuffered(c.commit(Reader.class, "transform"))) {
                         points = readCoordinates(in, file);
                     }

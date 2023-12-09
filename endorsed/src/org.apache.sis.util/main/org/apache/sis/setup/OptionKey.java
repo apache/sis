@@ -108,7 +108,7 @@ public class OptionKey<T> implements Serializable {
 
     /**
      * The character encoding of document content.
-     * This option can be used when the file to read does not describe itself its encoding.
+     * This option can be used when the file to read or write does not describe itself its encoding.
      * For example, this option can be used when reading plain text files, but is ignored when
      * reading XML files having a {@code <?xml version="1.0" encoding="…"?>} declaration.
      *

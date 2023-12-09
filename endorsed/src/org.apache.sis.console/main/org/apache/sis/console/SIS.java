@@ -433,6 +433,19 @@ public final class SIS extends Static {
         Metadata(String command) {super(command);}
 
         /**
+         * Sets the path to auxiliary metadata, relative to the main file.
+         * The {@code '*'} character stands for the name of the main file.
+         * For example if the main file is {@code "city-center.tiff"},
+         * then {@code "*.xml"} stands for {@code "city-center.xml"}.
+         *
+         * @param  value  relative path to auxiliary metadata.
+         * @return a new builder or {@code this}, for method call chaining.
+         */
+        public Metadata metadata(String value) {
+            return set(Option.METADATA, value);
+        }
+
+        /**
          * Sets the output format.
          *
          * @param  value  the format. Examples: xml, wkt, wkt1 or text.
@@ -698,6 +711,19 @@ public final class SIS extends Static {
     public static final class Translate extends Builder<Translate> {
         /** Creates the unique instance. */
         Translate() {super("translate");}
+
+        /**
+         * Sets the path to auxiliary metadata, relative to the main file.
+         * The {@code '*'} character stands for the name of the main file.
+         * For example if the main file is {@code "city-center.tiff"},
+         * then {@code "*.xml"} stands for {@code "city-center.xml"}.
+         *
+         * @param  value  relative path to auxiliary metadata.
+         * @return a new builder or {@code this}, for method call chaining.
+         */
+        public Translate metadata(String value) {
+            return set(Option.METADATA, value);
+        }
 
         /**
          * Sets the destination file.

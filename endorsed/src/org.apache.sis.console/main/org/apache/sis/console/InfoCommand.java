@@ -48,7 +48,7 @@ final class InfoCommand extends FormattedOutputCommand {
      * Returns valid options for the {@code "metadata"} command.
      */
     static EnumSet<Option> options() {
-        return EnumSet.of(Option.LOCALE, Option.TIMEZONE, Option.COLORS, Option.VERBOSE, Option.HELP, Option.DEBUG);
+        return EnumSet.of(Option.METADATA, Option.LOCALE, Option.TIMEZONE, Option.COLORS, Option.VERBOSE, Option.HELP, Option.DEBUG);
     }
 
     /**

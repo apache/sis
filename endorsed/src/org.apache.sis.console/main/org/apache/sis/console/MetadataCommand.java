@@ -32,7 +32,8 @@ import org.apache.sis.util.collection.TreeTable;
  * Some available options are:
  *
  * <ul>
- *   <li>{@code --format}: the output format (text, XML or GPX).</li>
+ *   <li>{@code --metadata}: relative path to auxiliary metadata to combine with the main metadata.</li>
+ *   <li>{@code --format}:   the output format (text, XML or GPX).</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -42,7 +43,7 @@ final class MetadataCommand extends FormattedOutputCommand {
      * Returns valid options for the {@code "metadata"} command.
      */
     static EnumSet<Option> options() {
-        return EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE,
+        return EnumSet.of(Option.METADATA, Option.FORMAT, Option.LOCALE, Option.TIMEZONE,
                 Option.ENCODING, Option.COLORS, Option.VERBOSE, Option.HELP, Option.DEBUG);
     }
 

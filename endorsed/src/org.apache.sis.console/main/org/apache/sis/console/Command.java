@@ -41,10 +41,12 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code help}       </td><td>Show a help overview.</td></tr>
  * <tr><td>{@code about}      </td><td>Show information about Apache SIS and system configuration.</td></tr>
  * <tr><td>{@code mime-type}  </td><td>Show MIME type for the given file.</td></tr>
+ * <tr><td>{@code identifier} </td><td>Show identifiers for metadata and referencing systems in the given file.</td></tr>
  * <tr><td>{@code metadata}   </td><td>Show metadata information for the given file.</td></tr>
  * <tr><td>{@code crs}        </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
- * <tr><td>{@code identifier} </td><td>Show identifiers for metadata and referencing systems in the given file.</td></tr>
+ * <tr><td>{@code info}       </td><td>Show resource-specific information (e.g., grid geometry).</td></tr>
  * <tr><td>{@code transform}  </td><td>Convert or transform coordinates from given source CRS to target CRS.</td></tr>
+ * <tr><td>{@code translate}  </td><td>Rewrite a data file in another format.</td></tr>
  * </table></blockquote>
  *
  * Each command can accepts some of the following options:
@@ -53,10 +55,11 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <caption>Supported command-line options</caption>
  * <tr><td>{@code --sourceCRS} </td><td>The Coordinate Reference System of input data.</td></tr>
  * <tr><td>{@code --targetCRS} </td><td>The Coordinate Reference System of output data.</td></tr>
+ * <tr><td>{@code --metadata}  </td><td>Relative path to an auxiliary metadata file.</td></tr>
  * <tr><td>{@code --format}    </td><td>The output format: {@code xml}, {@code wkt}, {@code wkt1} or {@code text}.</td></tr>
- * <tr><td>{@code --locale}    </td><td>The locale to use for the command output.</td></tr>
- * <tr><td>{@code --timezone}  </td><td>The timezone for the dates to be formatted.</td></tr>
- * <tr><td>{@code --encoding}  </td><td>The encoding to use for the command outputs and some inputs.</td></tr>
+ * <tr><td>{@code --locale}    </td><td>The locale to use for the console output.</td></tr>
+ * <tr><td>{@code --timezone}  </td><td>The timezone for the dates printed to the console output.</td></tr>
+ * <tr><td>{@code --encoding}  </td><td>The encoding to use for some text inputs and for console output.</td></tr>
  * <tr><td>{@code --colors}    </td><td>Whether colorized output shall be enabled.</td></tr>
  * <tr><td>{@code --brief}     </td><td>Whether the output should contain only brief information.</td></tr>
  * <tr><td>{@code --verbose}   </td><td>Whether the output should contain more detailed information.</td></tr>

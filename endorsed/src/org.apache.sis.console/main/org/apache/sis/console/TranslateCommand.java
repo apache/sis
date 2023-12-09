@@ -49,7 +49,7 @@ final class TranslateCommand extends CommandRunner {
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
     TranslateCommand(final int commandIndex, final Object[] arguments) throws InvalidOptionException {
-        super(commandIndex, arguments, EnumSet.of(Option.OUTPUT, Option.FORMAT, Option.HELP, Option.DEBUG));
+        super(commandIndex, arguments, EnumSet.of(Option.METADATA, Option.OUTPUT, Option.FORMAT, Option.HELP, Option.DEBUG));
     }
 
     /**
@@ -72,7 +72,7 @@ final class TranslateCommand extends CommandRunner {
         });
         try (DataStore target = DataStores.openWritable(connector, format)) {
             for (final Object file : files) {
-                try (DataStore source = DataStores.open(file)) {
+                try (DataStore source = DataStores.open(inputConnector(file))) {
                     if (target instanceof WritableAggregate) {
                         ((WritableAggregate) target).add(source);
                     } else if (target instanceof WritableGridCoverageResource) {

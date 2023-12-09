@@ -29,12 +29,16 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.InvalidPathException;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.pending.jdk.JDK17;
+import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.StorageConnector;
 
 
 /**
@@ -302,8 +306,29 @@ abstract class CommandRunner {
         if (value instanceof CharSequence) {
             return value.toString();
         }
-        final String name = key.label();
-        throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
+        throw invalidOption(key, value, null);
+    }
+
+    /**
+     * Returns the value of the specified option as a path.
+     *
+     * @param  key  the option for which to get a value.
+     * @return the requested option, or {@code null} if not present.
+     * @throws InvalidOptionException if the value is not convertible to a path.
+     */
+    final Path getOptionAsPath(final Option key) throws InvalidOptionException {
+        final Object value = options.get(key);
+        if (value == null) return null;
+        if (value instanceof Path) {
+            return (Path) value;
+        }
+        Throwable cause = null;
+        if (value instanceof CharSequence) try {
+            return Path.of(value.toString());
+        } catch (InvalidPathException e) {
+            cause = e;
+        }
+        throw invalidOption(key, value, cause);
     }
 
     /**
@@ -374,6 +399,38 @@ abstract class CommandRunner {
      */
     final boolean useStandardInput() {
         return files.isEmpty() && System.console() == null;
+    }
+
+    /**
+     * Returns a storage connector for the specified input.
+     * This method should be invoked only for the input, not for the output, because it uses input-specific options.
+     * Conversely, this storage connector does <strong>not</strong> include the options intended for console output
+     * such as {@linkplain #locale}, {@link #timezone} and {@linkplain #encoding}.
+     *
+     * @param  input  the storage input.
+     * @return storage connector for the specified input.
+     * @throws InvalidOptionException if an option has an invalid value.
+     */
+    final StorageConnector inputConnector(final Object input) throws InvalidOptionException {
+        final var connector = new StorageConnector(input);
+        final Path p = getOptionAsPath(Option.METADATA);
+        if (p != null) {
+            connector.setOption(DataOptionKey.METADATA_PATH, p);
+        }
+        return connector;
+    }
+
+    /**
+     * Returns the exception to throw for an invalid option.
+     *
+     * @param  key    the requested option.
+     * @param  value  the value associated to the specified option.
+     * @param  cause  cause of the invalidity, or {@code null} if none.
+     * @return the exception to throw.
+     */
+    private static InvalidOptionException invalidOption(Option key, Object value, Throwable cause) {
+        final String name = key.label();
+        return new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), cause, name);
     }
 
     /**
