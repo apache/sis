@@ -3366,7 +3366,12 @@ parse:      for (int i = 0; i < length;) {
         else if (source instanceof Platform)                    target = platform();
         else if (source instanceof ProcessStep)                 target = processStep();
         else if (source instanceof Processing)                  target = processing();
-        else return false;
+        else if (source instanceof ReferenceSystem) {
+            addReferenceSystem((ReferenceSystem) source);
+            return true;
+        } else {
+            return false;
+        }
         final Merger merger = new Merger(locale);
         merger.copy(source, target);
         useParentElements();
