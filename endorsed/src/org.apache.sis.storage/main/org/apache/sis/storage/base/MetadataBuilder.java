@@ -242,6 +242,7 @@ public class MetadataBuilder {
      * Returns the information about the series, or aggregate dataset, of which the dataset is a part.
      */
     private DefaultSeries series() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final DefaultCitation citation = citation();
         DefaultSeries series = DefaultSeries.castOrCopy(citation.getSeries());
         if (series == null) {
@@ -1193,6 +1194,7 @@ public class MetadataBuilder {
     public final void addTitle(final CharSequence title) {
         final InternationalString i18n = trim(title);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultCitation citation = citation();
             final InternationalString current = citation.getTitle();
             if (current == null) {
@@ -1247,6 +1249,7 @@ public class MetadataBuilder {
     public final void addEdition(final CharSequence version) {
         final InternationalString i18n = trim(version);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultCitation citation = citation();
             citation.setEdition(append(citation.getEdition(), i18n));
         }
@@ -1323,6 +1326,7 @@ public class MetadataBuilder {
     public final void addAbstract(final CharSequence description) {
         final InternationalString i18n = trim(description);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultDataIdentification identification = identification();
             identification.setAbstract(append(identification.getAbstract(), i18n));
         }
@@ -1344,6 +1348,7 @@ public class MetadataBuilder {
     public final void addPurpose(final CharSequence intention) {
         final InternationalString i18n = trim(intention);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultDataIdentification identification = identification();
             identification.setPurpose(append(identification.getPurpose(), i18n));
         }
@@ -1380,6 +1385,7 @@ public class MetadataBuilder {
     public final void addSupplementalInformation(final CharSequence info) {
         final InternationalString i18n = trim(info);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultDataIdentification identification = identification();
             identification.setSupplementalInformation(append(identification.getSupplementalInformation(), i18n));
         }
@@ -2081,14 +2087,14 @@ parse:      for (int i = 0; i < length;) {
                 addReferenceSystem(crs);
             }
             if (grid.isDefined(GridGeometry.EXTENT)) {
-                final GridExtent extent = grid.getExtent();
-                final int dimension = extent.getDimension();
+                final GridExtent gex = grid.getExtent();
+                final int dimension = gex.getDimension();
                 for (int i=0; i<dimension; i++) {
-                    final Optional<DimensionNameType> axisType = extent.getAxisType(i);
+                    final Optional<DimensionNameType> axisType = gex.getAxisType(i);
                     if (axisType.isPresent()) {
                         setAxisName(i, axisType.get());
                     }
-                    setAxisSize(i, extent.getSize(i));
+                    setAxisSize(i, gex.getSize(i));
                 }
             }
             if (addResolution && grid.isDefined(GridGeometry.RESOLUTION)) {
@@ -2163,6 +2169,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setPointInPixel(final PixelOrientation value) {
         if (value != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
             if (gridRepresentation instanceof DefaultGeorectified) {
                 ((DefaultGeorectified) gridRepresentation).setPointInPixel(value);
@@ -2194,6 +2201,7 @@ parse:      for (int i = 0; i < length;) {
                                                     final boolean controlPointAvailability,
                                                     final boolean orientationParameterAvailability)
     {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
         gridRepresentation.setTransformationParameterAvailable(transformationParameterAvailability);
         if (gridRepresentation instanceof DefaultGeorectified) {
@@ -2216,6 +2224,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addGeolocation(final GeolocationInformation info) {
         if (info != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
             if (gridRepresentation instanceof DefaultGeoreferenceable) {
                 addIfNotPresent(((DefaultGeoreferenceable) gridRepresentation).getGeolocationInformation(), info);
@@ -2240,6 +2249,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addControlPoints(final DirectPosition geographicCoordinates, final Element accuracyReport) {
         if (geographicCoordinates != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
             final Collection<GCP> points;
             if (gridRepresentation instanceof DefaultGeorectified) {
@@ -2479,6 +2489,7 @@ parse:      for (int i = 0; i < length;) {
     public final void addBandDescription(final CharSequence description) {
         final InternationalString i18n = trim(description);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultSampleDimension sampleDimension = sampleDimension();
             sampleDimension.setDescription(append(sampleDimension.getDescription(), i18n));
         }
@@ -2525,6 +2536,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addMinimumSampleValue(final double value) {
         if (!Double.isNaN(value)) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultSampleDimension sampleDimension = sampleDimension();
             final Double current = sampleDimension.getMinValue();
             if (current == null || value < current) {
@@ -2550,6 +2562,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addMaximumSampleValue(final double value) {
         if (!Double.isNaN(value)) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultSampleDimension sampleDimension = sampleDimension();
             final Double current = sampleDimension.getMaxValue();
             if (current == null || value > current) {
@@ -2872,6 +2885,7 @@ parse:      for (int i = 0; i < length;) {
     public final void addLineage(final CharSequence statement) {
         final InternationalString i18n = trim(statement);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultLineage lineage = lineage();
             lineage.setStatement(append(lineage.getStatement(), i18n));
         }
@@ -3116,14 +3130,15 @@ parse:      for (int i = 0; i < length;) {
     public final void addFormatName(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultFormat format = format();
-            DefaultCitation citation = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
-            if (citation == null) {
-                citation = new DefaultCitation(i18n);
+            DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+            if (c == null) {
+                c = new DefaultCitation(i18n);
             } else {
-                addIfNotPresent(citation.getAlternateTitles(), i18n);
+                addIfNotPresent(c.getAlternateTitles(), i18n);
             }
-            format.setFormatSpecificationCitation(citation);
+            format.setFormatSpecificationCitation(c);
         }
     }
 
@@ -3145,13 +3160,14 @@ parse:      for (int i = 0; i < length;) {
     public final void setFormatEdition(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultFormat format = format();
-            DefaultCitation citation = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
-            if (citation == null) {
-                citation = new DefaultCitation();
-                format.setFormatSpecificationCitation(citation);
+            DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+            if (c == null) {
+                c = new DefaultCitation();
+                format.setFormatSpecificationCitation(c);
             }
-            citation.setEdition(i18n);
+            c.setEdition(i18n);
         }
     }
 
@@ -3174,6 +3190,7 @@ parse:      for (int i = 0; i < length;) {
     public final void addCompression(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultFormat format = format();
             format.setFileDecompressionTechnique(append(format.getFileDecompressionTechnique(), i18n));
         }
@@ -3220,7 +3237,7 @@ parse:      for (int i = 0; i < length;) {
      * Aggregate metadata should be set before to invoke this method, in particular:
      *
      * <ul>
-     *   <li>The aggregated resource {@linkplain #addTitle title}.</li>
+     *   <li>The aggregated resource {@linkplain #addTitle(CharSequence) title}.</li>
      *   <li>The {@linkplain #addFormatName format} (may not be the same than component format).</li>
      * </ul>
      *
@@ -3234,7 +3251,7 @@ parse:      for (int i = 0; i < length;) {
      *   <li>All Coordinate Reference System information are added without duplicated values.</li>
      *   <li>Some citation information are merged in a single citation.
      *       The following information are ignored because considered too specific to the component:<ul>
-     *         <li>titles</li>
+     *         <li>titles (except if no title has been set, in which case the first title is used)</li>
      *         <li>identifiers</li>
      *         <li>series (includes page numbers).</li>
      *       </ul></li>
@@ -3261,8 +3278,12 @@ parse:      for (int i = 0; i < length;) {
         for (final Identification info : component.getIdentificationInfo()) {
             final Citation c = info.getCitation();
             if (c != null) {
-                // Title, identifiers and series are assumed to not apply (see Javadoc).
+                // Title (except first one), identifiers and series are assumed to not apply (see Javadoc).
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final DefaultCitation citation = citation();
+                if (citation.getTitle() == null) {
+                    citation.setTitle(c.getTitle());
+                }
                 for (Responsibility r : c.getCitedResponsibleParties()) {
                     addIfNotPresent(citation.getCitedResponsibleParties(), r);
                 }
@@ -3271,6 +3292,7 @@ parse:      for (int i = 0; i < length;) {
                 }
                 citation.getPresentationForms().addAll(c.getPresentationForms());
             }
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultDataIdentification identification = identification();
             for (Extent e : info.getExtents()) {
                 addIfNotPresent(identification.getExtents(), e);
@@ -3291,6 +3313,7 @@ parse:      for (int i = 0; i < length;) {
             identification.getTopicCategories().addAll(info.getTopicCategories());
             identification.getSpatialRepresentationTypes().addAll(info.getSpatialRepresentationTypes());
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final DefaultMetadata metadata = metadata();
         for (ContentInformation info : component.getContentInfo()) {
             addIfNotPresent(metadata.getContentInfo(), info);
