@@ -16,9 +16,11 @@
  */
 package org.apache.sis.util.internal;
 
+import java.util.Map;
+
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -53,15 +55,15 @@ public final class DefinitionURITest extends TestCase {
     @Test
     public void testParse() {
         final DefinitionURI parsed = DefinitionURI.parse(" urn:ogc:def: crs : EPSG: 8.2 :4326 ");
-        assertNotNull("DefinitionURI", parsed);
-        assertEquals ("isHTTP",    false,   parsed.isHTTP);
-        assertEquals ("isGML",     false,   parsed.isGML);
-        assertEquals ("type",      "crs",   parsed.type);
-        assertEquals ("authority", "EPSG",  parsed.authority);
-        assertEquals ("version",   "8.2",   parsed.version);
-        assertEquals ("code",      "4326",  parsed.code);
-        assertNull   ("parameters",         parsed.parameters);
-        assertEquals ("toString()", "urn:ogc:def:crs:EPSG:8.2:4326", parsed.toString());
+        assertNotNull(parsed, "DefinitionURI");
+        assertEquals (false,   parsed.isHTTP,     "isHTTP");
+        assertEquals (false,   parsed.isGML,      "isGML");
+        assertEquals ("crs",   parsed.type,       "type");
+        assertEquals ("EPSG",  parsed.authority,  "authority");
+        assertEquals ("8.2",   parsed.version,    "version");
+        assertEquals ("4326",  parsed.code,       "code");
+        assertNull   (         parsed.parameters, "parameters");
+        assertEquals ("urn:ogc:def:crs:EPSG:8.2:4326", parsed.toString(), "toString()");
     }
 
     /**
@@ -71,15 +73,15 @@ public final class DefinitionURITest extends TestCase {
     @Test
     public void testParseWithoutVersion() {
         final DefinitionURI parsed = DefinitionURI.parse("URN :X-OGC: Def:crs:EPSG::4326");
-        assertNotNull("DefinitionURI", parsed);
-        assertEquals ("isHTTP",    false,   parsed.isHTTP);
-        assertEquals ("isGML",     false,   parsed.isGML);
-        assertEquals ("type",      "crs",   parsed.type);
-        assertEquals ("authority", "EPSG",  parsed.authority);
-        assertNull   ("version",            parsed.version);
-        assertEquals ("code",      "4326",  parsed.code);
-        assertNull   ("parameters",         parsed.parameters);
-        assertEquals ("toString()", "urn:ogc:def:crs:EPSG::4326", parsed.toString());
+        assertNotNull(parsed, "DefinitionURI");
+        assertEquals (false,   parsed.isHTTP,     "isHTTP");
+        assertEquals (false,   parsed.isGML,      "isGML");
+        assertEquals ("crs",   parsed.type,       "type");
+        assertEquals ("EPSG",  parsed.authority,  "authority");
+        assertNull   (         parsed.version,    "version");
+        assertEquals ("4326",  parsed.code,       "code");
+        assertNull   (         parsed.parameters, "parameters");
+        assertEquals ("urn:ogc:def:crs:EPSG::4326", parsed.toString(), "toString()");
     }
 
     /**
@@ -90,16 +92,16 @@ public final class DefinitionURITest extends TestCase {
     @DependsOnMethod("testParse")
     public void testParseWithParameters() {
         final DefinitionURI parsed = DefinitionURI.parse("urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45");
-        assertNotNull("DefinitionURI", parsed);
-        assertEquals ("isHTTP",    false,       parsed.isHTTP);
-        assertEquals ("isGML",     false,       parsed.isGML);
-        assertEquals ("type",      "crs",       parsed.type);
-        assertEquals ("authority", "OGC",       parsed.authority);
-        assertEquals ("version",   "1.3",       parsed.version);
-        assertEquals ("code",      "AUTO42003", parsed.code);
-        assertNotNull("parameters",             parsed.parameters);
-        assertArrayEquals("parameters", new String[] {"1", "-100", "45"}, parsed.parameters);
-        assertEquals("toString()", "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45", parsed.toString());
+        assertNotNull(parsed, "DefinitionURI");
+        assertEquals (false,       parsed.isHTTP,     "isHTTP");
+        assertEquals (false,       parsed.isGML,      "isGML");
+        assertEquals ("crs",       parsed.type,       "type");
+        assertEquals ("OGC",       parsed.authority,  "authority");
+        assertEquals ("1.3",       parsed.version,    "version");
+        assertEquals ("AUTO42003", parsed.code,       "code");
+        assertNotNull(             parsed.parameters, "parameters");
+        assertArrayEquals(new String[] {"1", "-100", "45"}, parsed.parameters, "parameters");
+        assertEquals("urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45", parsed.toString(), "toString()");
     }
 
     /**
@@ -109,15 +111,15 @@ public final class DefinitionURITest extends TestCase {
     @DependsOnMethod("testParse")
     public void testParseHTTP() {
         final DefinitionURI parsed = DefinitionURI.parse("http://www.opengis.net/def/crs/epsg/0/4326");
-        assertNotNull("DefinitionURI", parsed);
-        assertEquals ("isHTTP",    true,   parsed.isHTTP);
-        assertEquals ("isGML",     false,  parsed.isGML);
-        assertEquals ("type",      "crs",  parsed.type);
-        assertEquals ("authority", "epsg", parsed.authority);
-        assertNull   ("version",           parsed.version);
-        assertEquals ("code",      "4326", parsed.code);
-        assertNull   ("parameters",        parsed.parameters);
-        assertEquals ("toString()", "http://www.opengis.net/def/crs/epsg/0/4326", parsed.toString());
+        assertNotNull(parsed, "DefinitionURI");
+        assertEquals (true,   parsed.isHTTP,     "isHTTP");
+        assertEquals (false,  parsed.isGML,      "isGML");
+        assertEquals ("crs",  parsed.type,       "type");
+        assertEquals ("epsg", parsed.authority,  "authority");
+        assertNull   (        parsed.version,    "version");
+        assertEquals ("4326", parsed.code,       "code");
+        assertNull   (        parsed.parameters, "parameters");
+        assertEquals ("http://www.opengis.net/def/crs/epsg/0/4326", parsed.toString(), "toString()");
     }
 
     /**
@@ -127,22 +129,22 @@ public final class DefinitionURITest extends TestCase {
     @DependsOnMethod("testParse")
     public void testParseGML() {
         final DefinitionURI parsed = DefinitionURI.parse("http://www.opengis.net/gml/srs/epsg.xml#4326");
-        assertNotNull("DefinitionURI", parsed);
-        assertEquals ("isHTTP",    true,   parsed.isHTTP);
-        assertEquals ("isGML",     true,   parsed.isGML);
-        assertEquals ("type",      "crs",  parsed.type);
-        assertEquals ("authority", "epsg", parsed.authority);
-        assertNull   ("version",           parsed.version);
-        assertEquals ("code",      "4326", parsed.code);
-        assertNull   ("parameters",        parsed.parameters);
-        assertEquals ("toString()", "http://www.opengis.net/gml/srs/epsg.xml#4326", parsed.toString());
+        assertNotNull(parsed, "DefinitionURI");
+        assertEquals (true,   parsed.isHTTP,     "isHTTP");
+        assertEquals (true,   parsed.isGML,      "isGML");
+        assertEquals ("crs",  parsed.type,       "type");
+        assertEquals ("epsg", parsed.authority,  "authority");
+        assertNull   (        parsed.version,    "version");
+        assertEquals ("4326", parsed.code,       "code");
+        assertNull   (        parsed.parameters, "parameters");
+        assertEquals ("http://www.opengis.net/gml/srs/epsg.xml#4326", parsed.toString(), "toString()");
 
         final DefinitionURI withoutExtension = DefinitionURI.parse("http://www.opengis.net/gml/srs/epsg#4326");
-        assertNotNull("Should parse even if the .xml extension is missig.", withoutExtension);
+        assertNotNull(withoutExtension, "Should parse even if the .xml extension is missig.");
         assertEquals(parsed.toString(), withoutExtension.toString());
 
-        assertNull("Should not parse if no '#' character.",
-                DefinitionURI.parse("http://www.opengis.net/gml/srs/epsg?4326"));
+        assertNull(DefinitionURI.parse("http://www.opengis.net/gml/srs/epsg?4326"),
+                   "Should not parse if no '#' character.");
     }
 
     /**
@@ -153,8 +155,8 @@ public final class DefinitionURITest extends TestCase {
     @DependsOnMethod("testParse")
     public void testCompoundURN() {
         DefinitionURI parsed = DefinitionURI.parse("urn:ogc:def:crs, crs :EPSG:9.1:27700, crs:EPSG: 9.1 :5701");
-        assertNotNull("components",                    parsed.components);
-        assertEquals("components.length", 2,           parsed.components.length);
+        assertNotNull(parsed.components, "components");
+        assertEquals(2, parsed.components.length, "components.length");
         assertEquals("urn:ogc:def:crs:EPSG:9.1:27700", parsed.components[0].toString());
         assertEquals("urn:ogc:def:crs:EPSG:9.1:5701",  parsed.components[1].toString());
         assertEquals("urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701", parsed.toString());
@@ -165,10 +167,10 @@ public final class DefinitionURITest extends TestCase {
          *   - the "ogc:crs" parts should not be accepted because "def" is missing between "ogc" and "crs".
          */
         parsed = DefinitionURI.parse("urn:ogc:def:crs,urn:ogc:def:crs:EPSG:9.1:27700,ogc:crs:EPSG:9.1:5701,def:crs:OGC::AnsiDate");
-        assertNotNull("components",                    parsed.components);
-        assertEquals("components.length", 3,           parsed.components.length);
+        assertNotNull(parsed.components, "components");
+        assertEquals(3, parsed.components.length, "components.length");
         assertEquals("urn:ogc:def:crs:EPSG:9.1:27700", parsed.components[0].toString());
-        assertNull  ("urn:ogc:def:crs:EPSG:9.1:5701",  parsed.components[1]);
+        assertNull  (parsed.components[1], "urn:ogc:def:crs:EPSG:9.1:5701");
         assertEquals("urn:ogc:def:crs:OGC::AnsiDate",  parsed.components[2].toString());
     }
 
@@ -181,8 +183,8 @@ public final class DefinitionURITest extends TestCase {
         DefinitionURI parsed = DefinitionURI.parse("http://www.opengis.net/def/crs-compound?"
                 + "1=http://www.opengis.net/def/crs/EPSG/9.1/27700&"
                 + "2=http://www.opengis.net/def/crs/EPSG/9.1/5701");
-        assertEquals("type", "crs-compound", parsed.type);
-        assertEquals("components.length", 2, parsed.components.length);
+        assertEquals("crs-compound", parsed.type, "type");
+        assertEquals(2, parsed.components.length, "components.length");
         assertEquals("http://www.opengis.net/def/crs/EPSG/9.1/27700", parsed.components[0].toString());
         assertEquals("http://www.opengis.net/def/crs/EPSG/9.1/5701",  parsed.components[1].toString());
         assertEquals("http://www.opengis.net/def/crs-compound?"
@@ -191,60 +193,74 @@ public final class DefinitionURITest extends TestCase {
     }
 
     /**
-     * Tests {@link DefinitionURI#codeOf(String, String, String)}
+     * Convenience method invoking {@link DefinitionURI#codeOf(String, String[], CharSequence)}
+     * with a single authority.
+     */
+    private static String codeOf(final String type, final String authority, final CharSequence uri) {
+        Map.Entry<Integer,String> entry = DefinitionURI.codeOf(type, new String[] {authority}, uri);
+        if (entry == null) {
+            return null;
+        }
+        assertEquals(0, entry.getKey());
+        return entry.getValue();
+    }
+
+    /**
+     * Tests {@link DefinitionURI#codeOf(String, String[], CharSequence)}
      * with URI like {@code "EPSG:4326"}.
      */
     @Test
     public void testCodeOfEPSG() {
-        assertNull  (        DefinitionURI.codeOf("crs", "EPSG", "4326"));
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "EPSG:4326"));
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "EPSG::4326"));
-        assertNull  (        DefinitionURI.codeOf("crs", "EPSG", "EPSG:::4326"));
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "EPSG:8.2:4326"));
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", " epsg : 4326 "));
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", " epsg :: 4326 "));
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", " epsg : : 4326 "));
+        assertNull  (        codeOf("crs", "EPSG", "4326"));
+        assertEquals("4326", codeOf("crs", "EPSG", "EPSG:4326"));
+        assertEquals("4326", codeOf("crs", "EPSG", "EPSG::4326"));
+        assertNull  (        codeOf("crs", "EPSG", "EPSG:::4326"));
+        assertEquals("4326", codeOf("crs", "EPSG", "EPSG:8.2:4326"));
+        assertEquals("4326", codeOf("crs", "EPSG", " epsg : 4326 "));
+        assertEquals("4326", codeOf("crs", "EPSG", " epsg :: 4326 "));
+        assertEquals("4326", codeOf("crs", "EPSG", " epsg : : 4326 "));
     }
 
     /**
-     * Tests {@link DefinitionURI#codeOf(String, String, String)}
+     * Tests {@link DefinitionURI#codeOf(String, String[], CharSequence)}
      * with URN like {@code "urn:ogc:def:crs:EPSG::4326"}.
      */
     @Test
     public void testCodeOfURN() {
-        assertEquals("4326",  DefinitionURI.codeOf("crs", "EPSG", "urn:ogc:def:crs:EPSG:4326"));
-        assertEquals("4326",  DefinitionURI.codeOf("crs", "EPSG", "urn:ogc:def:crs:EPSG::4326"));
-        assertEquals("4326",  DefinitionURI.codeOf("crs", "EPSG", "urn:ogc:def:crs:EPSG:8.2:4326"));
-        assertEquals("4326",  DefinitionURI.codeOf("crs", "EPSG", "urn:x-ogc:def:crs:EPSG::4326"));
-        assertNull  (         DefinitionURI.codeOf("crs", "EPSG", "urn:n-ogc:def:crs:EPSG::4326"));
-        assertEquals("4326",  DefinitionURI.codeOf("crs", "EPSG", " urn : ogc : def : crs : epsg : : 4326"));
-        assertNull  (         DefinitionURI.codeOf("crs", "EPSG", "urn:ogc:def:uom:EPSG::9102"));
-        assertEquals("9102",  DefinitionURI.codeOf("uom", "EPSG", "urn:ogc:def:uom:EPSG::9102"));
-        assertNull  (         DefinitionURI.codeOf("crs", "EPSG", "urn:ogc:def:crs:OGC:1.3:CRS84"));
-        assertEquals("CRS84", DefinitionURI.codeOf("crs", "OGC",  "urn:ogc:def:crs:OGC:1.3:CRS84"));
-        assertNull  (         DefinitionURI.codeOf("crs", "OGC",  "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"));
+        assertEquals("4326",  codeOf("crs", "EPSG", "urn:ogc:def:crs:EPSG:4326"));
+        assertEquals("4326",  codeOf("crs", "EPSG", "urn:ogc:def:crs:EPSG::4326"));
+        assertEquals("4326",  codeOf("crs", "EPSG", "urn:ogc:def:crs:EPSG:8.2:4326"));
+        assertEquals("4326",  codeOf("crs", "EPSG", "urn:x-ogc:def:crs:EPSG::4326"));
+        assertNull  (         codeOf("crs", "EPSG", "urn:n-ogc:def:crs:EPSG::4326"));
+        assertEquals("4326",  codeOf("crs", "EPSG", " urn : ogc : def : crs : epsg : : 4326"));
+        assertNull  (         codeOf("crs", "EPSG", "urn:ogc:def:uom:EPSG::9102"));
+        assertEquals("9102",  codeOf("uom", "EPSG", "urn:ogc:def:uom:EPSG::9102"));
+        assertNull  (         codeOf("crs", "EPSG", "urn:ogc:def:crs:OGC:1.3:CRS84"));
+        assertEquals("CRS84", codeOf("crs", "OGC",  "urn:ogc:def:crs:OGC:1.3:CRS84"));
+        assertNull  (         codeOf("crs", "OGC",  "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"));
     }
 
     /**
-     * Tests {@link DefinitionURI#codeOf(String, String, String)}
+     * Tests {@link DefinitionURI#codeOf(String, String[], CharSequence)}
      * with URL like {@code "http://www.opengis.net/def/crs/EPSG/0/4326"}.
      */
     @Test
     public void testCodeOfDefinitionServer() {
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "http://www.opengis.net/def/crs/EPSG/0/4326"));
-        assertEquals("9102", DefinitionURI.codeOf("uom", "EPSG", "http://www.opengis.net/def/uom/EPSG/0/9102"));
+        assertEquals("4326", codeOf("crs", "EPSG", "http://www.opengis.net/def/crs/EPSG/0/4326"));
+        assertEquals("9102", codeOf("uom", "EPSG", "http://www.opengis.net/def/uom/EPSG/0/9102"));
+        assertEquals("d",    codeOf("uom", "UCUM", "http://www.opengis.net/def/uom/UCUM/0/d"));
     }
 
     /**
-     * Tests {@link DefinitionURI#codeOf(String, String, String)}
+     * Tests {@link DefinitionURI#codeOf(String, String[], CharSequence)}
      * with URL like {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}.
      */
     @Test
     public void testCodeOfGML() {
-        assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "http://www.opengis.net/gml/srs/epsg.xml#4326"));
-        assertNull  (        DefinitionURI.codeOf("crs", "OGC",  "http://www.opengis.net/gml/srs/epsg.xml#4326"));
-        assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://www.opengis.net/gml/srs/epsg.xml#4326"));
-        assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertEquals("4326", codeOf("crs", "EPSG", "http://www.opengis.net/gml/srs/epsg.xml#4326"));
+        assertNull  (        codeOf("crs", "OGC",  "http://www.opengis.net/gml/srs/epsg.xml#4326"));
+        assertNull  (        codeOf("uom", "EPSG", "http://www.opengis.net/gml/srs/epsg.xml#4326"));
+        assertNull  (        codeOf("uom", "EPSG", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertNull  (        codeOf("uom", "EPSG", "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
     }
 }

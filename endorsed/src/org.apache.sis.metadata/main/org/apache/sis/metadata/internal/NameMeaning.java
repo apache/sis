@@ -114,7 +114,7 @@ public final class NameMeaning extends Static {
             entry(Constants.OGC),       // Open Geospatial Consortium
             entry("OGC-WFS"),           // OGC Web Feature Service
             entry("SI"),                // Système International d'Unités
-            entry("UCUM"),              // Unified Code for Units of Measure
+            entry(Constants.UCUM),      // Unified Code for Units of Measure
             entry("UNSD"),              // United Nations Statistics Division
             entry("USNO"));             // United States Naval Observatory
 
