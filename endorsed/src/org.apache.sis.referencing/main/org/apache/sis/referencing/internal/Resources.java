@@ -114,7 +114,7 @@ public class Resources extends IndexedResourceBundle {
         /**
          * Cannot linearize the localization grid.
          */
-        public static final short CanNotLinearizeLocalizationGrid = 100;
+        public static final short CanNotLinearizeLocalizationGrid = 45;
 
         /**
          * Cannot map an axis from the specified coordinate system to the “{0}” direction.
@@ -224,7 +224,7 @@ public class Resources extends IndexedResourceBundle {
          * Definitions from public sources. When a definition corresponds to an EPSG object (ignoring
          * metadata), the EPSG code is provided as a reference where to find the complete definition.
          */
-        public static final short FallbackAuthorityNotice = 102;
+        public static final short FallbackAuthorityNotice = 42;
 
         /**
          * There is no local registry for version {1} of “{0}” authority. Fallback on default version
@@ -361,11 +361,6 @@ public class Resources extends IndexedResourceBundle {
         public static final short MissingAuthority_1 = 39;
 
         /**
-         * No horizontal dimension found in “{0}”.
-         */
-        public static final short MissingHorizontalDimension_1 = 40;
-
-        /**
          * Not enough dimension in ‘MathTransform’ input or output coordinates for the interpolation
          * points.
          */
@@ -377,16 +372,6 @@ public class Resources extends IndexedResourceBundle {
         public static final short MissingParameterValues_1 = 74;
 
         /**
-         * No spatial or temporal dimension found in “{0}”
-         */
-        public static final short MissingSpatioTemporalDimension_1 = 42;
-
-        /**
-         * No temporal dimension found in “{0}”
-         */
-        public static final short MissingTemporalDimension_1 = 43;
-
-        /**
          * Missing value for “{0}” parameter.
          */
         public static final short MissingValueForParameter_1 = 44;
@@ -395,11 +380,6 @@ public class Resources extends IndexedResourceBundle {
          * The localization grid still have some undefined source or target coordinates.
          */
         public static final short MissingValuesInLocalizationGrid = 81;
-
-        /**
-         * No vertical dimension found in “{0}”
-         */
-        public static final short MissingVerticalDimension_1 = 45;
 
         /**
          * No convergence.
@@ -495,7 +475,7 @@ public class Resources extends IndexedResourceBundle {
         /**
          * Operation “{1}” of class ‘{0}’ has no mathematical transform.
          */
-        public static final short OperationHasNoTransform_2 = 101;
+        public static final short OperationHasNoTransform_2 = 43;
 
         /**
          * No parameter named “{1}” has been found in “{0}”.
@@ -505,7 +485,7 @@ public class Resources extends IndexedResourceBundle {
         /**
          * Points are not on a regular grid.
          */
-        public static final short PointsAreNotOnRegularGrid = 99;
+        public static final short PointsAreNotOnRegularGrid = 40;
 
         /**
          * Recursive call while creating an object of type ‘{0}’ for code “{1}”.

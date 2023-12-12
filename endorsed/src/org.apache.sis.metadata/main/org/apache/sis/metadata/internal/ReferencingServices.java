@@ -128,16 +128,21 @@ public class ReferencingServices extends OptionalDependency {
      * to a geographic CRS (without datum shift if possible). Otherwise, the envelope is assumed already
      * in a geographic CRS using (<var>longitude</var>, <var>latitude</var>) axis order.
      *
-     * <p>If {@code findOpCaller} is non-null, then this method will be executed in optional mode:
-     * some failures will cause this method to return {@code null} instead of throwing an exception.
-     * Note that {@link TransformException} may still be thrown but not directly by this method.
-     * Warning may be logged, but in such case this method presumes that public caller is the named method from
-     * {@code Envelopes} — typically {@link org.apache.sis.geometry.Envelopes#findOperation(Envelope, Envelope)}.</p>
+     * <p>If {@code findOpCaller} is non-null, then this method is invoked for computing a <em>hint</em>
+     * for choosing a coordinate operation between a pair of reference systems. It changes the behavior
+     * of this methods in two ways:</p>
+     *
+     * <ul>
+     *   <li>Some failures will cause this method to return {@code null} instead of throwing an exception.
+     *       Those exception will be logged on the assumption that {@code findOpCaller} is a public method
+     *       of {@code Envelopes}.</li>
+     *   <li>The bounding box may be conservatively expanded to the whole world.</li>
+     * </ul>
      *
      * @param  envelope      the source envelope.
      * @param  target        the target bounding box, or {@code null} for creating it automatically.
-     * @param  findOpCaller  non-null for replacing some (not all) exceptions by {@code null} return value.
-     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
+     * @param  findOpCaller  non-null for computing a hint rather than an exact bounding box.
+     * @return the bounding box, or {@code null} on failure (in hint mode) or if no horizontal component was found.
      * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      * @throws TransformException if the given envelope cannot be transformed.
      */
@@ -153,10 +158,10 @@ public class ReferencingServices extends OptionalDependency {
      *
      * @param  envelope  the source envelope.
      * @param  target    the target vertical extent.
-     * @throws TransformException if no vertical component can be extracted from the given envelope.
+     * @return whether the envelope contains a vertical component.
      * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      */
-    public void setBounds(Envelope envelope, DefaultVerticalExtent target) throws TransformException {
+    public boolean setBounds(Envelope envelope, DefaultVerticalExtent target) {
         throw moduleNotFound();
     }
 
@@ -166,10 +171,10 @@ public class ReferencingServices extends OptionalDependency {
      *
      * @param  envelope  the source envelope.
      * @param  target    the target temporal extent.
-     * @throws TransformException if no temporal component can be extracted from the given envelope.
+     * @return whether the envelope contains a temporal component.
      * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      */
-    public void setBounds(Envelope envelope, DefaultTemporalExtent target) throws TransformException {
+    public boolean setBounds(Envelope envelope, DefaultTemporalExtent target) {
         throw moduleNotFound();
     }
 
@@ -189,10 +194,11 @@ public class ReferencingServices extends OptionalDependency {
      *
      * @param  envelope  the source envelope.
      * @param  target    the target spatiotemporal extent.
-     * @throws TransformException if no temporal component can be extracted from the given envelope.
+     * @return whether the envelope contains a spatial or temporal component.
+     * @throws TransformException if a coordinate transformation was required and failed.
      * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      */
-    public void setBounds(Envelope envelope, DefaultSpatialTemporalExtent target) throws TransformException {
+    public boolean setBounds(Envelope envelope, DefaultSpatialTemporalExtent target) throws TransformException {
         throw moduleNotFound();
     }
 
@@ -201,10 +207,11 @@ public class ReferencingServices extends OptionalDependency {
      *
      * @param  envelope  the source envelope.
      * @param  target    the target extent.
+     * @return whether the envelope contains a spatial or temporal component.
      * @throws TransformException if a coordinate transformation was required and failed.
      * @throws UnsupportedOperationException if the {@code org.apache.sis.referencing} module has not been found on the module path.
      */
-    public void addElements(Envelope envelope, DefaultExtent target) throws TransformException {
+    public boolean addElements(Envelope envelope, DefaultExtent target) throws TransformException {
         throw moduleNotFound();
     }
 

@@ -136,7 +136,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlSchema(location="https://schemas.isotc211.org/19115/-3/gex/1.0/gex.xsd",

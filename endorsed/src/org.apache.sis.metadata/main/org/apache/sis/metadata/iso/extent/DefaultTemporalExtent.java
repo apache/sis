@@ -238,7 +238,9 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      */
     public void setBounds(final Envelope envelope) throws TransformException {
         checkWritePermission(extent);
-        ReferencingServices.getInstance().setBounds(envelope, this);
+        if (!ReferencingServices.getInstance().setBounds(envelope, this)) {
+            throw new NotSpatioTemporalException(2, envelope);
+        }
     }
 
     /**

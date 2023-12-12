@@ -31,7 +31,7 @@ import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -87,10 +87,10 @@ public final class ServicesForMetadataTest extends TestCase {
      * Verifies the values of the given geographic bounding box.
      */
     private static void verifySpatialExtent(final GeographicBoundingBox box) {
-        assertEquals(-40, box.getWestBoundLongitude(), STRICT);
-        assertEquals( 60, box.getEastBoundLongitude(), STRICT);
-        assertEquals(-20, box.getSouthBoundLatitude(), STRICT);
-        assertEquals( 30, box.getNorthBoundLatitude(), STRICT);
+        assertEquals(-40, box.getWestBoundLongitude());
+        assertEquals( 60, box.getEastBoundLongitude());
+        assertEquals(-20, box.getSouthBoundLatitude());
+        assertEquals( 30, box.getNorthBoundLatitude());
         assertEquals(Boolean.TRUE, box.getInclusion());
     }
 
@@ -98,8 +98,8 @@ public final class ServicesForMetadataTest extends TestCase {
      * Verifies the values of the given vertical extent.
      */
     private static void verifyVerticalExtent(final CommonCRS.Vertical expectedCRS, final VerticalExtent extent) {
-        assertEquals(-10, extent.getMinimumValue(), STRICT);
-        assertEquals( 70, extent.getMaximumValue(), STRICT);
+        assertEquals(-10, extent.getMinimumValue());
+        assertEquals( 70, extent.getMaximumValue());
         assertEqualsIgnoreMetadata(expectedCRS.crs(), extent.getVerticalCRS());
     }
 
@@ -181,14 +181,14 @@ public final class ServicesForMetadataTest extends TestCase {
         final GeneralEnvelope envelope = createEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, 170, 195);
         box.setBounds(envelope);
-        assertEquals( 170, box.getWestBoundLongitude(), STRICT);
-        assertEquals(-165, box.getEastBoundLongitude(), STRICT);
+        assertEquals( 170, box.getWestBoundLongitude());
+        assertEquals(-165, box.getEastBoundLongitude());
         envelope.setRange(0, 0, 360);
         box.setBounds(envelope);
-        assertEquals(-180, box.getWestBoundLongitude(), STRICT);
-        assertEquals(+180, box.getEastBoundLongitude(), STRICT);
-        assertEquals( -20, box.getSouthBoundLatitude(), STRICT);
-        assertEquals(  30, box.getNorthBoundLatitude(), STRICT);
+        assertEquals(-180, box.getWestBoundLongitude());
+        assertEquals(+180, box.getEastBoundLongitude());
+        assertEquals( -20, box.getSouthBoundLatitude());
+        assertEquals(  30, box.getNorthBoundLatitude());
         assertEquals(Boolean.TRUE, box.getInclusion());
     }
 
@@ -221,7 +221,7 @@ public final class ServicesForMetadataTest extends TestCase {
         e1.setBounds(t1, t3);
         e2.setBounds(t2, t4);
         e1.intersect(e2);
-        assertEquals("startTime", t2, e1.getStartTime());
-        assertEquals("endTime",   t3, e1.getEndTime());
+        assertEquals(t2, e1.getStartTime(), "startTime");
+        assertEquals(t3, e1.getEndTime(), "endTime");
     }
 }

@@ -79,6 +79,12 @@ public class Resources extends IndexedResourceBundle {
         public static final short ExpectedInterface_2 = 5;
 
         /**
+         * No {0,choice,0#horizontal|1#vertical|2#temporal|3#spatial or temporal} dimension has been
+         * found in “{1}”.
+         */
+        public static final short MissingDimension_2 = 10;
+
+        /**
          * Multiline record
          */
         public static final short MultilineRecord = 9;

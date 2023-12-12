@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
@@ -1884,9 +1885,14 @@ parse:      for (int i = 0; i < length;) {
             if (!(envelope instanceof AbstractEnvelope && ((AbstractEnvelope) envelope).isAllNaN())) {
                 if (crs != null) try {
                     extent().addElements(envelope);
-                } catch (TransformException | UnsupportedOperationException e) {
+                } catch (TransformException e) {
+                    final boolean ignorable = (e instanceof NotSpatioTemporalException);
                     if (listeners != null) {
-                        listeners.warning(e);
+                        if (ignorable) {
+                            listeners.warning(Level.FINE, null, e);
+                        } else {
+                            listeners.warning(e);
+                        }
                     } else {
                         Logging.recoverableException(StoreUtilities.LOGGER, null, null, e);
                     }

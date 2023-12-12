@@ -59,15 +59,14 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -101,33 +100,19 @@ public final class ServicesForMetadata extends ReferencingServices {
     ///////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates an exception message for a spatial, vertical or temporal dimension not found.
-     * The given key must be one of {@code Resources.Keys} constants.
-     */
-    private static String dimensionNotFound(final short resourceKey, final CoordinateReferenceSystem crs) {
-        if (crs == null) {
-            return Errors.format(Errors.Keys.UnspecifiedCRS);
-        } else {
-            return Resources.format(resourceKey, crs.getName());
-        }
-    }
-
-    /**
      * Implementation of the public {@code setBounds(…, DefaultGeographicBoundingBox, …)} methods for
      * the horizontal extent. If the {@code crs} argument is null, then it is caller's responsibility
      * to ensure that the given envelope is two-dimensional.
      *
-     * <p>If {@code findOpCaller} is non-null, then this method will be executed in optional mode:
-     * some failures will cause this method to return {@code null} instead of throwing an exception.
-     * Note that {@link TransformException} may still be thrown but not directly by this method.
-     * Warning may be logged, but in such case this method presumes that public caller is the named
-     * method from {@link Envelopes} — typically {@link Envelopes#findOperation(Envelope, Envelope)}.</p>
+     * <p>If {@code findOpCaller} is non-null, then this method is assumed to be invoked by something
+     * equivalent to {@link Envelopes#findOperation(Envelope, Envelope)} for the purpose of computing
+     * a <em>hint</em>, not a bounding box that needs to be exact.</p>
      *
      * @param  envelope       the source envelope.
      * @param  target         the target bounding box, or {@code null} for creating it automatically.
      * @param  crs            the envelope CRS, or {@code null} if unknown.
      * @param  normalizedCRS  the horizontal component of the given CRS, or null if the {@code crs} argument is null.
-     * @param  findOpCaller   non-null for replacing some (not all) exceptions by {@code null} return value.
+     * @param  findOpCaller   non-null for computing a hint rather than an exact bounding box.
      * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
      * @throws TransformException if the given envelope cannot be transformed.
      */
@@ -240,15 +225,15 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Sets a geographic bounding box from the specified envelope.
      * If the envelope has no CRS, then (<var>longitude</var>, <var>latitude</var>) axis order is assumed.
-     * If the envelope CRS is not geographic, then the envelope will be transformed to a geographic CRS.
-     * If {@code findOpCaller} is {@code true}, then some failures will cause this method to return {@code null}
-     * instead of throwing an exception, and warning may be logged with assumption that caller is the named
-     * method from {@link Envelopes} — typically {@link Envelopes#findOperation(Envelope, Envelope)}.
+     *
+     * <p>If {@code findOpCaller} is {@code true}, then the envelope will be computed in <em>hint</em> mode:
+     * some exception may be logged instead of thrown, and the envelope may be expanded to the whole world.
+     * This mode is for {@link Envelopes#findOperation(Envelope, Envelope)} usage of equivalent functions.</p>
      *
      * @param  envelope      the source envelope.
      * @param  target        the target bounding box, or {@code null} for creating it automatically.
-     * @param  findOpCaller  non-null for replacing some (not all) exceptions by {@code null} return value.
-     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
+     * @param  findOpCaller  non-null for computing a hint rather than an exact bounding box.
+     * @return the bounding box, or {@code null} on failure (in hint mode) or if no horizontal component was found.
      * @throws TransformException if the given envelope cannot be transformed.
      */
     @Override
@@ -261,8 +246,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             if (crs != null) {
                 normalizedCRS = CommonCRS.defaultGeographic();
             } else if (envelope.getDimension() != 2) {
-                if (findOpCaller != null) return null;
-                throw new TransformException(dimensionNotFound(Resources.Keys.MissingHorizontalDimension_1, crs));
+                return null;
             }
         }
         return setGeographicExtent(envelope, target, crs, normalizedCRS, findOpCaller);
@@ -274,16 +258,17 @@ public final class ServicesForMetadata extends ReferencingServices {
      *
      * @param  envelope  the source envelope.
      * @param  target    the target vertical extent where to store envelope information.
-     * @throws TransformException if no vertical component can be extracted from the given envelope.
+     * @return whether the envelope contains a vertical component.
      */
     @Override
-    public void setBounds(final Envelope envelope, final DefaultVerticalExtent target) throws TransformException {
+    public boolean setBounds(final Envelope envelope, final DefaultVerticalExtent target) {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
         if (verticalCRS == null && envelope.getDimension() != 1) {
-            throw new TransformException(dimensionNotFound(Resources.Keys.MissingVerticalDimension_1, crs));
+            return false;
         }
         setVerticalExtent(envelope, target, crs, verticalCRS);
+        return true;
     }
 
     /**
@@ -292,16 +277,17 @@ public final class ServicesForMetadata extends ReferencingServices {
      *
      * @param  envelope  the source envelope.
      * @param  target    the target temporal extent where to store envelope information.
-     * @throws TransformException if no temporal component can be extracted from the given envelope.
+     * @return whether the envelope contains a temporal component.
      */
     @Override
-    public void setBounds(final Envelope envelope, final DefaultTemporalExtent target) throws TransformException {
+    public boolean setBounds(final Envelope envelope, final DefaultTemporalExtent target) {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
         if (accessor == null) {                     // Mandatory for the conversion from numbers to dates.
-            throw new TransformException(dimensionNotFound(Resources.Keys.MissingTemporalDimension_1, crs));
+            return false;
         }
         accessor.setTemporalExtent(envelope, target);
+        return true;
     }
 
     /**
@@ -311,16 +297,17 @@ public final class ServicesForMetadata extends ReferencingServices {
      *
      * @param  envelope  the source envelope.
      * @param  target    the target spatiotemporal extent where to store envelope information.
-     * @throws TransformException if no temporal component can be extracted from the given envelope.
+     * @return whether the envelope contains a spatial or temporal component.
+     * @throws TransformException if a coordinate transformation was required and failed.
      */
     @Override
-    public void setBounds(final Envelope envelope, final DefaultSpatialTemporalExtent target) throws TransformException {
+    public boolean setBounds(final Envelope envelope, final DefaultSpatialTemporalExtent target) throws TransformException {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final SingleCRS horizontalCRS = CRS.getHorizontalComponent(crs);
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
         final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
         if (horizontalCRS == null && verticalCRS == null && accessor == null) {
-            throw new TransformException(dimensionNotFound(Resources.Keys.MissingSpatioTemporalDimension_1, crs));
+            return false;
         }
         /*
          * Try to set the geographic bounding box first, because this operation may fail with a
@@ -371,6 +358,7 @@ public final class ServicesForMetadata extends ReferencingServices {
         } else {
             target.setExtent(null);
         }
+        return true;
     }
 
     /**
@@ -378,32 +366,37 @@ public final class ServicesForMetadata extends ReferencingServices {
      *
      * @param  envelope  the source envelope.
      * @param  target    the target extent where to store envelope information.
+     * @return whether the envelope contains a spatial or temporal component.
      * @throws TransformException if a coordinate transformation was required and failed.
      * @throws UnsupportedOperationException if this method requires an Apache SIS module
      *         which has been found on the module path.
      */
     @Override
-    public void addElements(final Envelope envelope, final DefaultExtent target) throws TransformException {
+    public boolean addElements(final Envelope envelope, final DefaultExtent target) throws TransformException {
+        boolean found = false;
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-        final SingleCRS horizontalCRS = CRS.getHorizontalComponent(crs);
+        if (CRS.hasHorizontalComponent(crs)) {
+            DefaultGeographicBoundingBox horizontal = setBounds(envelope, null, null);
+            if (horizontal != null) {
+                target.getGeographicElements().add(horizontal);
+                found = true;
+            }
+        }
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
-        final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
-        if (horizontalCRS == null && verticalCRS == null && accessor == null) {
-            throw new TransformException(dimensionNotFound(Resources.Keys.MissingSpatioTemporalDimension_1, crs));
-        }
-        if (horizontalCRS != null) {
-            target.getGeographicElements().add(setBounds(envelope, null, null));
-        }
         if (verticalCRS != null) {
             final DefaultVerticalExtent extent = new DefaultVerticalExtent();
             setVerticalExtent(envelope, extent, crs, verticalCRS);
             target.getVerticalElements().add(extent);
+            found = true;
         }
+        final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
         if (accessor != null) {
             final DefaultTemporalExtent extent = new DefaultTemporalExtent();
             accessor.setTemporalExtent(envelope, extent);
             target.getTemporalElements().add(extent);
+            found = true;
         }
+        return found;
     }
 
     /**
