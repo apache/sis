@@ -272,6 +272,18 @@ public final class Command {
     }
 
     /**
+     * Turns on or off the faint output, if supported.
+     * This method does nothing if the terminal does not seem to support X364 sequences.
+     *
+     * @param  faint  whether to turn on the faint output.
+     */
+    final void setFaintOutput(final boolean faint) {
+        if (command.colors) {
+            command.out.write((faint ? X364.FAINT : X364.NORMAL).sequence());
+        }
+    }
+
+    /**
      * Runs the command. If an exception occurs, then the exception message is sent to the error output stream
      * before to be thrown. Callers can map the exception to a {@linkplain System#exit(int) system exit code}
      * by the {@link #exitCodeFor(Throwable)} method.

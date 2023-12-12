@@ -178,7 +178,8 @@ public final class SIS extends Static {
              */
             var c = new Command(allArgs);
             final PrintWriter out = c.writer(false);
-            out.print("> sis");
+            c.setFaintOutput(true);
+            out.print("command> sis");
             for (i=0; i < allArgs.length; i++) {
                 final String arg = allArgs[i].toString();
                 final int start = arg.startsWith(Option.PREFIX) ? Option.PREFIX.length() : 0;
@@ -188,6 +189,7 @@ public final class SIS extends Static {
                 out.print(arg.replace("\"", "\\\""));
                 if (quote) out.print('"');
             }
+            c.setFaintOutput(false);
             out.println();
             int status = c.run();
             if (status != 0) {
