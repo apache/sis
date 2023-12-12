@@ -160,7 +160,7 @@ public final class NameMeaning extends Static {
              */
             final Citation c = Citations.fromName(key);
             codeSpace = Citations.toCodeSpace(c);
-            if (AUTHORITIES.get(codeSpace) == null) {
+            if (codeSpace == null || AUTHORITIES.get(codeSpace) == null) {
                 return null;            // Not an authority that we recognize for the OGC namespace.
             }
             version = getVersion(c);    // Unconditionally overwrite the user-specified version.
