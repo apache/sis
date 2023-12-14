@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.io.stream;
+package org.apache.sis.storage.internal;
 
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import javax.imageio.stream.ImageInputStream;
 import org.apache.sis.io.InvalidSeekException;
-import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.io.stream.Markable;
 
 
 /**
@@ -30,14 +30,15 @@ import org.apache.sis.storage.internal.Resources;
  * <h2>Thread-safety</h2>
  * This class is thread-safe only if the underlying {@link ImageInputStream} is itself thread-safe.
  * For performance reasons, this class does not synchronize the frequently invoked {@code read(…)}
- * methods since they do nothing else than delegating to {@code ImageInputStream}. This means that
- * if the wrapped input is {@link ChannelImageInputStream}, then this class is <strong>not</strong>
- * thread-safe. This is not necessarily a contradiction with Java API since input streams define no
- * explicit synchronization lock (contrarily to {@link java.io.Reader}.
+ * methods since they do nothing else than delegating to {@code ImageInputStream}.
+ * This means that if the wrapped input is {@link org.apache.sis.io.stream.ChannelImageInputStream},
+ * then this class is <strong>not</strong> thread-safe. This is not necessarily a contradiction with
+ * Java API because input streams define no explicit synchronization lock
+ * (contrarily to {@link java.io.Reader}).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  *
- * @see OutputStreamAdapter
+ * @see org.apache.sis.io.stream.OutputStreamAdapter
  */
 public final class InputStreamAdapter extends InputStream implements Markable {
     /**

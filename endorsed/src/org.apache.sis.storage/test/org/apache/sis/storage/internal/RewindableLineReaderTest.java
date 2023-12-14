@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.io.stream;
+package org.apache.sis.storage.internal;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +22,7 @@ import javax.imageio.stream.ImageInputStreamImpl;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -54,18 +54,18 @@ public final class RewindableLineReaderTest extends TestCase {
     public void testRewind() throws IOException {
         RewindableLineReader reader = reader();
         reader.mark(TRANSFERT_SIZE);                    // Use a smaller limit for testing sooner mark invalidation.
-        assertEquals("charAt(0)", 'A', reader.read());
-        assertEquals("charAt(1)", 'B', reader.read());
-        assertEquals("charAt(2)", 'C', reader.read());
+        assertEquals('A', reader.read());
+        assertEquals('B', reader.read());
+        assertEquals('C', reader.read());
         /*
          * Since we have read less than 100 characters, RewindableLineReader.rewind()
          * should be able to successfully delegate the work to BufferedReader.reset().
          */
-        assertSame("BufferedReader.reset() should have succeeded.", reader, reader.rewind());
-        assertEquals("charAt(0)", 'A', reader.read());
-        assertEquals("charAt(1)", 'B', reader.read());
-        assertEquals("charAt(2)", 'C', reader.read());
-        assertEquals("charAt(3)", 'D', reader.read());
+        assertSame(reader, reader.rewind());
+        assertEquals('A', reader.read());
+        assertEquals('B', reader.read());
+        assertEquals('C', reader.read());
+        assertEquals('D', reader.read());
         /*
          * Skip a number of characters greater than the current buffer content. It should cause BufferedReader to
          * invalidate the mark. As a result of failure to execute BufferedReader.reset(), the 'reader' variable
@@ -73,19 +73,16 @@ public final class RewindableLineReaderTest extends TestCase {
          * BufferedReader.reset() succeeded or not depends on BufferedReader implementation.
          */
         reader.skip(2 * TRANSFERT_SIZE);
-        assertEquals("charAt(…)", 'W', reader.read());
+        assertEquals('W', reader.read());
         final RewindableLineReader old = reader;
         reader = reader.rewind();                       // Should be a new instance, but this is not mandatory.
-        if (reader != old) try {
-            old.read();
-            fail("Old reader should be closed.");
-        } catch (IOException e) {
-            // This is the expected exception.
+        if (reader != old) {
+            assertThrows(IOException.class, () -> old.read());
         }
-        assertEquals("charAt(0)", 'A', reader.read());
-        assertEquals("charAt(1)", 'B', reader.read());
-        assertEquals("charAt(2)", 'C', reader.read());
-        assertEquals("charAt(3)", 'D', reader.read());
+        assertEquals('A', reader.read());
+        assertEquals('B', reader.read());
+        assertEquals('C', reader.read());
+        assertEquals('D', reader.read());
         reader.close();
     }
 
@@ -124,7 +121,7 @@ public final class RewindableLineReaderTest extends TestCase {
 
             /** The only seek allowed for this test should be at the beginning of stream. */
             @Override public void seek(final long pos) throws IOException {
-                assertEquals("Should seek at origin.", 0, pos);
+                assertEquals(0, pos, "Should seek at origin.");
                 next = 'A';
             }
         }), StandardCharsets.US_ASCII);

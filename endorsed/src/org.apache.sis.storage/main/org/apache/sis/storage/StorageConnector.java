@@ -71,9 +71,9 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.ChannelImageInputStream;
 import org.apache.sis.io.stream.ChannelImageOutputStream;
-import org.apache.sis.io.stream.InputStreamAdapter;
-import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.io.stream.InternalOptionKey;
+import org.apache.sis.storage.internal.InputStreamAdapter;
+import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.setup.OptionKey;
 

@@ -64,7 +64,7 @@ import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.io.stream.RewindableLineReader;
+import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
