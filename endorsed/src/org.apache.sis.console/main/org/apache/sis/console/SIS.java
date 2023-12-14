@@ -19,6 +19,7 @@ package org.apache.sis.console;
 import java.util.EnumMap;
 import java.io.PrintWriter;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.Printable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -211,6 +212,15 @@ public final class SIS extends Static {
      * Do not allow instantiation of this class.
      */
     private SIS() {
+    }
+
+    /**
+     * {@return a string representation of the Apache SIS version}.
+     *
+     * @see Version#SIS
+     */
+    public static String version() {
+        return Version.SIS.toString();
     }
 
 

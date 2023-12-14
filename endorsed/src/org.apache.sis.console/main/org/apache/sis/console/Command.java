@@ -196,6 +196,8 @@ public final class Command {
      * This method can be invoked at initialization time,
      * such as the beginning of {@code main(…)} static method.
      *
+     * @see MonolineFormatter#install()
+     *
      * @since 1.5
      */
     public static void configureLogging() {
