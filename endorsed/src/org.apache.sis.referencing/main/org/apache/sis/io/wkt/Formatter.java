@@ -130,18 +130,6 @@ public class Formatter implements Localized {
     private static final int VERTICAL_ACCURACY = 9;
 
     /**
-     * The value of {@code X364.FOREGROUND_DEFAULT.sequence()}, hard-coded for avoiding
-     * {@link org.apache.sis.util.internal.X364} class loading.
-     */
-    static final String FOREGROUND_DEFAULT = "\u001B[39m";
-
-    /**
-     * The value of {@code X364.BACKGROUND_DEFAULT.sequence()}, hard-coded for avoiding
-     * {@link org.apache.sis.util.internal.X364} class loading.
-     */
-    static final String BACKGROUND_DEFAULT = "\u001B[49m";
-
-    /**
      * The locale for the localization of international strings.
      * This is not the same than {@link Symbols#getLocale()}.
      *
@@ -543,11 +531,16 @@ public class Formatter implements Localized {
     /**
      * Appends in the {@linkplain #buffer} the ANSI escape sequence for resetting the color to the default.
      * This method does nothing unless syntax coloring has been explicitly enabled.
+     *
+     * <h4>Implementation note</h4>
+     * This method needs to reset not only the foreground, but also the background if the
+     * {@link #highlightError} flag is {@code true}. It is simpler to just use the "reset"
+     * sequence unconditionally for the current implementation.
      */
     private void resetColor() {
         if (colors != null && --colorApplied <= 0) {
             colorApplied = 0;
-            buffer.append(FOREGROUND_DEFAULT);
+            buffer.append(X364.RESET.sequence());
         }
     }
 
@@ -627,8 +620,8 @@ public class Formatter implements Localized {
         }
         appendSeparator();
         if (toUpperCase != 0) {
-            final Locale locale = symbols.getLocale();
-            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
+            final Locale syntax = symbols.getLocale();      // Not the same purpose as `this.locale`.
+            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(syntax) : keyword.toLowerCase(syntax);
         }
         elementStart = buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0)).length();
     }
@@ -719,13 +712,13 @@ public class Formatter implements Localized {
             }
             keyword = getName(object.getClass());
         } else if (toUpperCase != 0) {
-            final Locale locale = symbols.getLocale();
-            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
+            final Locale syntax = symbols.getLocale();      // Not the same purpose as `this.locale`.
+            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(syntax) : keyword.toLowerCase(syntax);
         }
         if (highlightError && colors != null) {
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
             if (color != null) {
-                buffer.insert(base, color + BACKGROUND_DEFAULT);
+                buffer.insert(base, color + X364.BACKGROUND_DEFAULT.sequence());
                 base += color.length();
             }
         }
@@ -1174,8 +1167,9 @@ public class Formatter implements Localized {
                 buffer.append(name);
                 resetColor();
             } else {
-                quote(name, ElementKind.CODE_LIST);
+                quote(name, ElementKind.ERROR);
                 setInvalidWKT(code.getClass(), null);
+                highlightError = false;                 // Because already highlighted.
             }
         }
     }
@@ -1413,7 +1407,7 @@ public class Formatter implements Localized {
     private void appendExact(final double number) {
         if (Locale.ROOT.equals(symbols.getLocale())) {
             appendSeparator();
-            setColor(highlightError ? ElementKind.ERROR : ElementKind.NUMBER);
+            setColor(ElementKind.NUMBER);
             final int i = (int) number;
             if (i == number) {
                 buffer.append(i);
@@ -1424,7 +1418,6 @@ public class Formatter implements Localized {
         } else {
             append(number);
         }
-        highlightError = false;
     }
 
     /**
@@ -1854,8 +1847,10 @@ public class Formatter implements Localized {
      * If this method is invoked, then it shall be the last method before {@link #toWKT()}.
      */
     final void appendWarnings() throws IOException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Warnings warnings = this.warnings;                    // Protect against accidental changes.
         if (warnings != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final StringBuffer buffer = this.buffer;
             final String ln = System.lineSeparator();
             buffer.append(ln).append(ln);

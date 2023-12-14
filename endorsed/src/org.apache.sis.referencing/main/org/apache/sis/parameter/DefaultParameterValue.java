@@ -993,6 +993,7 @@ convert:            if (componentType != null) {
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#119">WKT 2 specification §17.2.4</a>
      */
     @Override
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     protected String formatTo(final Formatter formatter) {
         final ParameterDescriptor<T> descriptor = getDescriptor();  // Gives to users a chance to override this property.
         WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);

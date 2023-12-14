@@ -194,6 +194,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * The prime meridian is part of datum according ISO 19111, but is formatted
          * as a sibling (rather than a child) element in WKT for historical reasons.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final GeodeticDatum datum = getDatum();             // Gives subclasses a chance to override.
         formatter.newLine();
         formatter.append(WKTUtilities.toFormattable(datum));

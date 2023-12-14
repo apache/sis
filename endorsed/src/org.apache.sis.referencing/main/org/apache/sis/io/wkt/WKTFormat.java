@@ -49,6 +49,7 @@ import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Loggers;
@@ -845,6 +846,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @return root of the tree of elements.
      */
     final StoredTree textToTree(final String wkt, final ParsePosition pos, final String aliasKey) throws ParseException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final AbstractParser parser  = parser(true);
         final List<Element>  results = new ArrayList<>(4);
         warnings = null;            // Do not invoke `clear()` because we do not want to clear `sharedValues` map.
@@ -900,6 +902,8 @@ public class WKTFormat extends CompoundFormat<Object> {
         clear();
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
         ArgumentChecks.ensureNonNull ("pos", pos);
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final AbstractParser parser = parser(false);
         Object result = null;
         try {
@@ -921,6 +925,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     final Object buildFromTree(StoredTree tree) throws ParseException {
         clear();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final AbstractParser parser = parser(false);
         parser.ignoredElements.clear();
         final SingletonElement singleton = new SingletonElement();
@@ -942,6 +947,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @param  modifiable  whether the caller intents to modify the {@link #fragments} map.
      */
     private AbstractParser parser(final boolean modifiable) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         AbstractParser parser = this.parser;
         /*
          * `parser` is always null on a fresh clone. However, the `fragments`
@@ -1027,6 +1033,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         /*
          * Creates the Formatter when first needed.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Formatter formatter = this.formatter;
         if (formatter == null) {
             formatter = new Formatter(getLocale(), getErrorLocale(), symbols,
@@ -1097,6 +1104,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @since 0.6
      */
+    @OptionalCandidate
     public Warnings getWarnings() {
         if (warnings != null) {
             warnings.publish();
@@ -1105,7 +1113,9 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * If a warning occurred, logs it.
+     * If a warning occurred, logs it. This method is invoked when a WKT was parsed or formatted
+     * in another context than a call to a {@code parse(…)} or {@code format(…)} method.
+     * For example it may be during the build of {@link WKTDictionary}.
      *
      * @param  classe  the class to report as the source of the logging message.
      * @param  method  the method to report as the source of the logging message.

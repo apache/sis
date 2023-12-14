@@ -29,6 +29,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Colors;
+import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.referencing.CRS;
@@ -236,6 +237,12 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 }
                 f.format(object, out);
                 out.println();
+                final Warnings warnings = f.getWarnings();
+                if (warnings != null) {
+                    out.flush();
+                    err.println();
+                    err.println(warnings.toString(locale));
+                }
                 break;
             }
 
