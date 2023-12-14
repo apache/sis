@@ -18,13 +18,11 @@ package org.apache.sis.console;
 
 import java.util.EnumMap;
 import java.io.PrintWriter;
-import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Printable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.X364;
-import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.system.Environment;
 
 
 /**
@@ -49,7 +47,7 @@ public final class SIS extends Static {
      * Problems observed with Java 21 on Linux when printing non-ASCII characters.
      */
     static {
-        CommandRunner.avoidConsoleWriter();
+        Environment.avoidConsoleWriter();
     }
 
     /**
@@ -752,31 +750,18 @@ public final class SIS extends Static {
 
 
     /**
-     * The object to use for formatting WKT objects, created when first needed.
-     */
-    private static WKTFormat wktFormat;
-
-    /**
      * Prints the given object to the standard output stream.
      *
      * @param  value  the object to print.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void print(final Object value) {
-        final PrintWriter out = CommandRunner.writer(System.console(), System.out);
-        if (value instanceof FormattableObject) {
-            synchronized (SIS.class) {
-                if (wktFormat == null) {
-                    wktFormat = new WKTFormat(null, null);
-                    if (X364.isAnsiSupported()) {
-                        wktFormat.setColors(Colors.DEFAULT);
-                    }
-                }
-                out.print(wktFormat.format(value));
-            }
+        if (value instanceof Printable) {
+            ((Printable) value).print();
         } else {
+            final PrintWriter out = Environment.writer(System.console(), System.out);
             out.println(value);
+            out.flush();
         }
-        out.flush();
     }
 }

@@ -18,7 +18,6 @@ package org.apache.sis.referencing.util.j2d;
 
 import java.util.Locale;
 import java.util.Random;
-import java.io.Console;
 import java.io.PrintWriter;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -32,6 +31,7 @@ import java.awt.geom.Point2D;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.apache.sis.system.Environment;
 import org.apache.sis.util.CharSequences;
 
 
@@ -96,8 +96,7 @@ public final class ShapeUtilitiesViewer extends JPanel {
         input  = new Path2D.Float();
         output = new Path2D.Float();
         random = new Random();
-        final Console console = System.console();
-        out = (console != null) ? console.writer() : new PrintWriter(System.out);
+        out    = Environment.writer();
     }
 
     /**

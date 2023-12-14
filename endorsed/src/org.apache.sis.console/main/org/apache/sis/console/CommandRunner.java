@@ -24,19 +24,17 @@ import java.util.EnumMap;
 import java.util.TimeZone;
 import java.io.Console;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.InvalidPathException;
+import org.apache.sis.system.Environment;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.X364;
-import org.apache.sis.pending.jdk.JDK17;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.StorageConnector;
 
@@ -56,25 +54,6 @@ abstract class CommandRunner {
      * @see #outputBuffer
      */
     static final String TEST = "TEST";
-
-    /**
-     * Whether the use of the console writer should be avoided.
-     * In our tests with Java 21, sending non ASCII characters to the console writer in a Linux system
-     * from a JShell session resulted in wrong characters being printed, sometime followed by JShell errors.
-     * This flag is set only if the commands are run from JShell.
-     *
-     * @see #writer(Console, PrintStream)
-     */
-    @Workaround(library="jshell", version="21")
-    private static boolean avoidConsoleWriter;
-
-    /**
-     * Notifies the command runners that the use of console writer should be avoided.
-     * This method should be invoked in JShell environment only.
-     */
-    static void avoidConsoleWriter() {
-        avoidConsoleWriter = true;
-    }
 
     /**
      * The instance, used by {@link ResourcesDownloader} only.
@@ -267,29 +246,12 @@ abstract class CommandRunner {
             err = out;
         } else {
             outputBuffer = null;
-            err = writer(console, System.err);
+            err = Environment.writer(console, System.err);
             if (explicitEncoding) {
                 out = new PrintWriter(new OutputStreamWriter(System.out, encoding), true);
             } else {
-                out = writer(console, System.out);
+                out = Environment.writer(console, System.out);
             }
-        }
-    }
-
-    /**
-     * Returns the console print writer, or the given alternative if the console cannot be used.
-     *
-     * @param  console   the value of {@link System#console()}, potentially null.
-     * @param  fallback  the fallback to use if the console cannot be used.
-     * @return the writer.
-     */
-    static PrintWriter writer(final Console console, final PrintStream fallback) {
-        if (console == null) {
-            return new PrintWriter(fallback, true);
-        } else if (avoidConsoleWriter) {
-            return new PrintWriter(new OutputStreamWriter(fallback, JDK17.charset(console)), true);
-        } else {
-            return console.writer();
         }
     }
 
@@ -392,6 +354,30 @@ abstract class CommandRunner {
         }
         err.println(Errors.format(key, expected, size));
         return true;
+    }
+
+    /**
+     * Prints the given color to the standard output stream if ANSI X3.64
+     * escape sequences are enabled, or does nothing otherwise.
+     *
+     * @param  code  the ANSI X3.64 color to print.
+     */
+    final void color(final X364 code) {
+        color(colors, out, code);
+    }
+
+    /**
+     * Prints the given color to the given stream if ANSI X3.64
+     * escape sequences are enabled, or does nothing otherwise.
+     *
+     * @param  colors  the condition for printing the color. Usually {@link #colors}.
+     * @param  out     where to print the ANSI sequence. Usually {@link #out} or {@link #err}.
+     * @param  code    the ANSI X3.64 color to print.
+     */
+    static void color(final boolean colors, final PrintWriter out, final X364 code) {
+        if (colors) {
+            out.print(code.sequence());
+        }
     }
 
     /**

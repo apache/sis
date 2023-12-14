@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.io.Console;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.io.PrintWriter;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -46,15 +46,16 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.wkt.Colors;
+import org.apache.sis.system.Environment;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.X364;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.metadata.internal.NameToIdentifier;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -998,8 +999,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void print(final Object object) {
-        final Console console = System.console();
-        final Appendable out = (console != null) ? console.writer() : System.out;
+        final PrintWriter out = Environment.writer();
         final ParameterFormat f = getSharedInstance(Colors.NAMING);
         try {
             f.format(object, out);
@@ -1007,6 +1007,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             throw new UncheckedIOException(e);      // Should never happen since we are writing to stdout.
         }
         INSTANCE.set(f);
+        out.flush();
     }
 
     /**

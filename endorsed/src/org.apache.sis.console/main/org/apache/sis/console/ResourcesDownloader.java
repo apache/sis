@@ -25,6 +25,7 @@ import java.io.Console;
 import java.io.PrintWriter;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.system.Fallback;
+import org.apache.sis.system.Environment;
 import org.apache.sis.setup.OptionalInstallations;
 
 
@@ -85,7 +86,7 @@ public class ResourcesDownloader extends OptionalInstallations {
             colors = false;
         }
         console = System.console();
-        out = CommandRunner.writer(console, System.out);
+        out = Environment.writer(console, System.out);
     }
 
     /**

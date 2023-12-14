@@ -226,16 +226,16 @@ final class IdentifierCommand extends FormattedOutputCommand {
             if (row != null) {
                 states.add(row.state);
                 final boolean warning = colors && row.state.text.startsWith("!");
-                if (warning) out.print(X364.FOREGROUND_RED.sequence());
+                color(warning, out, X364.FOREGROUND_RED);
                 out.print(row.state.text);
                 out.print(' ');
                 out.print(row.identifier);
-                if (warning) out.print(X364.FOREGROUND_DEFAULT.sequence());
-                if (colors)  out.print(X364.FOREGROUND_GRAY.sequence());
+                color(warning, out, X364.FOREGROUND_DEFAULT);
+                color(X364.FOREGROUND_GRAY);
                 out.print(CharSequences.spaces(width - row.identifier.length()));
                 out.print("| ");
                 out.println(row.description);
-                if (colors) out.print(X364.FOREGROUND_DEFAULT.sequence());
+                color(X364.FOREGROUND_DEFAULT);
             }
         }
         states.remove(State.VALID);
@@ -246,9 +246,9 @@ final class IdentifierCommand extends FormattedOutputCommand {
             final ResourceBundle resources = ResourceBundle.getBundle("org.apache.sis.console.IdentifierState", locale);
             for (final State state : states) {
                 final boolean warning = colors && state.text.startsWith("!");
-                if (warning) out.print(X364.FOREGROUND_RED.sequence());
+                color(warning, out, X364.FOREGROUND_RED);
                 out.print(state.text);
-                if (warning) out.print(X364.FOREGROUND_DEFAULT.sequence());
+                color(warning, out, X364.FOREGROUND_DEFAULT);
                 out.print(' ');
                 out.println(resources.getString(state.name()));
             }

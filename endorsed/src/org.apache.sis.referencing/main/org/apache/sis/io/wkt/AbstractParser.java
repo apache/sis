@@ -239,8 +239,9 @@ abstract class AbstractParser implements Parser {
     @Override
     public final Object createFromWKT(final String wkt) throws FactoryException {
         final ParsePosition position = new ParsePosition(0);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final Warnings warnings;
         Object result = null;
-        Warnings warnings;
         try {
             result = createFromWKT(wkt, position);
         } catch (ParseException exception) {

@@ -31,6 +31,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.Initializer;
 import org.apache.sis.util.logging.MonolineFormatter;
+import org.apache.sis.system.Environment;
 
 
 /**
@@ -278,9 +279,7 @@ public final class Command {
      * @param  faint  whether to turn on the faint output.
      */
     final void setFaintOutput(final boolean faint) {
-        if (command.colors) {
-            command.out.write((faint ? X364.FAINT : X364.NORMAL).sequence());
-        }
+        command.color(faint ? X364.FAINT : X364.NORMAL);
     }
 
     /**
@@ -340,7 +339,7 @@ public final class Command {
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void error(final String[] args, final Exception e) {
         final boolean debug = ArraysExt.containsIgnoreCase(args, Option.PREFIX + "debug");
-        final PrintWriter err = CommandRunner.writer(System.console(), System.err);
+        final PrintWriter err = Environment.writer(System.console(), System.err);
         if (debug) {
             e.printStackTrace(err);
         } else {

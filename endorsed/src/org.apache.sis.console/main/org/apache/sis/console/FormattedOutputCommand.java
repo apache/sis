@@ -45,6 +45,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.X364;
 import org.apache.sis.measure.Range;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.xml.MarshallerPool;
@@ -241,7 +242,9 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 if (warnings != null) {
                     out.flush();
                     err.println();
+                    color(colors, err, X364.FOREGROUND_YELLOW);
                     err.println(warnings.toString(locale));
+                    color(colors, err, X364.RESET);
                 }
                 break;
             }

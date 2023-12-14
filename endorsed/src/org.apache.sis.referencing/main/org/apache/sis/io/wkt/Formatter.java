@@ -19,7 +19,6 @@ package org.apache.sis.io.wkt;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,13 +61,11 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.util.internal.Numerics;
@@ -1855,23 +1852,11 @@ public class Formatter implements Localized {
             final String ln = System.lineSeparator();
             buffer.append(ln).append(ln);
             if (colors != null) {
-                buffer.append(X364.BACKGROUND_RED.sequence()).append(X364.BOLD.sequence()).append(' ');
+                buffer.append(X364.FOREGROUND_YELLOW.sequence());
             }
-            Vocabulary.getResources(errorLocale).appendLabel(Vocabulary.Keys.Warnings, buffer);
+            buffer.append(warnings);
             if (colors != null) {
-                buffer.append(' ').append(X364.RESET.sequence()).append(X364.FOREGROUND_RED.sequence());
-            }
-            buffer.append(ln);
-            final int n = warnings.getNumMessages();
-            final Set<String> done = new HashSet<>();
-            for (int i=0; i<n; i++) {
-                String message = Exceptions.getLocalizedMessage(warnings.getException(i), errorLocale);
-                if (message == null) {
-                    message = warnings.getMessage(i);
-                }
-                if (done.add(message)) {
-                    buffer.append("  • ").append(message).append(ln);
-                }
+                buffer.append(X364.RESET.sequence());
             }
         }
     }
