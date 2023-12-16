@@ -23,6 +23,7 @@ import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Messages;
 
 
@@ -161,7 +162,7 @@ public enum DataDirectory {
     public static synchronized Path getRootDirectory() {
         if (rootDirectory == null) try {
             final String dir = getenv();
-            if (dir == null || dir.isEmpty()) {
+            if (Strings.isNullOrEmpty(dir)) {
                 warning(null, Messages.Keys.DataDirectoryNotSpecified_1, ENV);
             } else try {
                 final Path path = Path.of(dir);

@@ -45,6 +45,7 @@ import org.apache.sis.util.internal.DefinitionURI;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.logging.Logging;
 
@@ -1381,14 +1382,13 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                 case MULTIPLY: return unit.multiply(term);
                 case DIVIDE:   return unit.divide(term);
                 case EXPONENT: {
-                    if (UnitDimension.isDimensionless(term.getDimension())) {
-                        final String symbol = term.getSymbol();
-                        if (symbol == null || symbol.isEmpty()) {
-                            final double scale = Units.toStandardUnit(term);
-                            final int power = (int) scale;
-                            if (power == scale) {
-                                return unit.pow(power);
-                            }
+                    if (UnitDimension.isDimensionless(term.getDimension())
+                             && Strings.isNullOrEmpty(term.getSymbol()))
+                    {
+                        final double scale = Units.toStandardUnit(term);
+                        final int power = (int) scale;
+                        if (power == scale) {
+                            return unit.pow(power);
                         }
                     }
                     throw new MeasurementParseException(Errors.format(Errors.Keys.NotAnInteger_1, term), symbols, position);

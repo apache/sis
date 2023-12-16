@@ -33,6 +33,7 @@ import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.referencing.util.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.internal.Strings;
 
 
 /**
@@ -228,7 +229,7 @@ final class DataStoreRegistry extends LazySet<DataStoreProvider> {
          * The intent is to avoid DataStoreProvider.probeContent(…) invocations loading large dependencies.
          */
         final String      extension   = connector.getFileExtension();
-        final boolean     useSuffix   = !(extension == null || extension.isEmpty());
+        final boolean     useSuffix   = !Strings.isNullOrEmpty(extension);
         final boolean     isWriteOnly = (capability == Capability.WRITE) && IOUtilities.isWriteOnly(connector.getStorage());
         ProbeProviderPair selected    = null;
         final var needMoreBytes = new LinkedList<ProbeProviderPair>();

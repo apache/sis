@@ -19,6 +19,7 @@ package org.apache.sis.referencing.factory;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.referencing.internal.Resources;
 
@@ -136,7 +137,7 @@ final class CommonAuthorityCode {
      * Returns whether there is no parameters.
      */
     final boolean isParameterless() {
-        return (complement == null) || complement.isEmpty();
+        return Strings.isNullOrEmpty(complement);
     }
 
     /**

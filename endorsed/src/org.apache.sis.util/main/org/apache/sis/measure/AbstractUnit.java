@@ -33,6 +33,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Configuration;
 
@@ -205,7 +206,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * @return Unicode code point of the invalid character, or a negative value.
      */
     static int invalidCharForSymbol(final String symbol, int maxMultiply, final boolean allowExponents) {
-        if (symbol == null || symbol.isEmpty()) {
+        if (Strings.isNullOrEmpty(symbol)) {
             return -2;
         }
         for (int i=0; i < symbol.length();) {

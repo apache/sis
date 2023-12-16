@@ -754,7 +754,7 @@ public final class IdentifiedObjects extends Static {
             return null;
         }
         String cs = identifier.getCodeSpace();
-        if (cs == null || cs.isEmpty()) {
+        if (Strings.isNullOrEmpty(cs)) {
             cs = Identifiers.getIdentifier(identifier.getAuthority(), true);
         }
         return NameMeaning.toURN(type, cs, identifier.getVersion(), identifier.getCode());
@@ -795,7 +795,7 @@ public final class IdentifiedObjects extends Static {
         }
         final String code = identifier.getCode();
         String cs = identifier.getCodeSpace();
-        if (cs == null || cs.isEmpty()) {
+        if (Strings.isNullOrEmpty(cs)) {
             cs = Citations.toCodeSpace(identifier.getAuthority());
         }
         if (cs != null) {

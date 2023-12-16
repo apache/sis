@@ -1729,7 +1729,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      */
                     case "temporal": {
                         final Date originDate;
-                        if (anchor == null || anchor.isEmpty()) {
+                        if (Strings.isNullOrEmpty(anchor)) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate));
                         }
                         if (dateFormat == null) {

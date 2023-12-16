@@ -62,8 +62,19 @@ public final class Strings extends Static {
      * @see java.util.Objects#equals(Object, Object)
      * @see String#equalsIgnoreCase(String)
      */
+    @SuppressWarnings("StringEquality")
     public static boolean equalsIgnoreCase(final String a, final String b) {
         return (a == b) || (a != null && a.equalsIgnoreCase(b));
+    }
+
+    /**
+     * Returns {@code true} if the given text is either null or empty.
+     *
+     * @param  text  the text to test.
+     * @return whether the given test is null or empty.
+     */
+    public static boolean isNullOrEmpty(final String text) {
+        return (text == null) || text.isEmpty();
     }
 
     /**

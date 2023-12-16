@@ -1044,7 +1044,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         Object value = null;
         lock.readLock().lock();
         try {
-            boolean valid = (codespace == null || codespace.isEmpty() || codespaces.contains(codespace));
+            boolean valid = Strings.isNullOrEmpty(codespace) || codespaces.contains(codespace);
             if (!valid) {
                 for (final String cs : codespaces) {            // More costly check if no exact match.
                     valid = cs.equalsIgnoreCase(codespace);
