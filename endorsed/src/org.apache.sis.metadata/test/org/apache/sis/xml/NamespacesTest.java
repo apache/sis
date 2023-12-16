@@ -20,7 +20,7 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPAC
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -55,11 +55,12 @@ public final class NamespacesTest extends TestCase {
      */
     @Test
     public void testGuessForType() {
-        assertSame("CI_Citation",           Namespaces.CIT, Namespaces.guessForType("CI_Citation"));
-        assertSame("EX_Extent",             Namespaces.GEX, Namespaces.guessForType("EX_Extent"));
-        assertSame("MD_Metadata",           Namespaces.MDB, Namespaces.guessForType("MD_Metadata"));
-        assertSame("MD_DataIdentification", Namespaces.MRI, Namespaces.guessForType("MD_DataIdentification"));
-        assertSame("DS_InitiativeTypeCode", Namespaces.MRI, Namespaces.guessForType("DS_InitiativeTypeCode"));
-        assertSame("DCPList",               Namespaces.SRV, Namespaces.guessForType("DCPList"));
+        String type;
+        assertSame(Namespaces.CIT, Namespaces.guessForType(type = "CI_Citation"),           type);
+        assertSame(Namespaces.GEX, Namespaces.guessForType(type = "EX_Extent"),             type);
+        assertSame(Namespaces.MDB, Namespaces.guessForType(type = "MD_Metadata"),           type);
+        assertSame(Namespaces.MRI, Namespaces.guessForType(type = "MD_DataIdentification"), type);
+        assertSame(Namespaces.MRI, Namespaces.guessForType(type = "DS_InitiativeTypeCode"), type);
+        assertSame(Namespaces.SRV, Namespaces.guessForType(type = "DCPList"),               type);
     }
 }
