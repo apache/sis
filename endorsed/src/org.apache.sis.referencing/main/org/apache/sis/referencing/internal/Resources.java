@@ -215,6 +215,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short DuplicatedSpatialComponents_1 = 76;
 
         /**
+         * … {0} elements omitted …
+         */
+        public static final short ElementsOmitted_1 = 99;
+
+        /**
          * Compound coordinate reference systems should not contain ellipsoidal height. Use a
          * three-dimensional {0,choice,0#geographic|1#projected} system instead.
          */
