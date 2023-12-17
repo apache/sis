@@ -63,6 +63,8 @@ public class WraparoundAdjustment {
 
     /**
      * The geographic bounds of {@link #domainOfValidity}, or {@code null} if not applicable.
+     * This is used for more accurate selection of a coordinate operation between a pair of CRS,
+     * so it is okay to conservatively use an area covering the whole world.
      *
      * @see CRS#findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
      */
@@ -185,7 +187,7 @@ public class WraparoundAdjustment {
          */
         if (!geographicDomainKnown && !Utilities.equalsIgnoreMetadata(source, target)) try {
             geographicDomainKnown = true;                       // Shall be set even in case of failure.
-            geographicDomain = ReferencingServices.getInstance().setBounds(domainOfValidity, null, null);
+            geographicDomain = ReferencingServices.getInstance().setBounds(domainOfValidity, null, "shift");
         } catch (TransformException e) {
             Logging.ignorableException(Envelopes.LOGGER, WraparoundAdjustment.class, "<init>", e);
             // No more attempt will be done.

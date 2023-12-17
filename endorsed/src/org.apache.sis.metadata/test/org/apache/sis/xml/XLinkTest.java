@@ -22,7 +22,7 @@ import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -36,6 +36,20 @@ public final class XLinkTest extends TestCase {
      * Creates a new test case.
      */
     public XLinkTest() {
+    }
+
+    /**
+     * Verifies that the hash code is different than the given value.
+     *
+     * @param  hashCode  the old hash code.
+     * @param  link      the XLink to hash.
+     * @return the new hash code.
+     */
+    private static int assertHashCodeChanged(int hashCode, final XLink link) {
+        final int newHash = link.hashCode();
+        assertNotEquals(hashCode, newHash, "Hash code should have changed.");
+        assertNotEquals(0, hashCode, "Hash code cannot be zero.");
+        return newHash;
     }
 
     /**
@@ -53,62 +67,51 @@ public final class XLinkTest extends TestCase {
         link.setType(XLink.Type.AUTO);
         assertEquals(XLink.Type.TITLE, link.getType());
         assertEquals("XLink[type=\"title\"]", link.toString());
-        assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code cannot be zero.", hashCode == 0);
+        hashCode = assertHashCodeChanged(hashCode, link);
 
         link.setRole(new URI("org:apache:sis:role"));
         assertEquals(XLink.Type.EXTENDED, link.getType());
         assertEquals("XLink[type=\"extended\", role=\"org:apache:sis:role\"]", link.toString());
-        assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code cannot be zero.", hashCode == 0);
+        hashCode = assertHashCodeChanged(hashCode, link);
 
         link.setTitle(new SimpleInternationalString("Some title"));
         assertEquals(XLink.Type.EXTENDED, link.getType());
         assertEquals("XLink[type=\"extended\", role=\"org:apache:sis:role\", title=\"Some title\"]", link.toString());
-        assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code cannot be zero.", hashCode == 0);
+        hashCode = assertHashCodeChanged(hashCode, link);
 
         link.setLabel("SomeLabel");
         assertEquals(XLink.Type.RESOURCE, link.getType());
         assertEquals("XLink[type=\"resource\", role=\"org:apache:sis:role\", title=\"Some title\", label=\"SomeLabel\"]", link.toString());
-        assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code cannot be zero.", hashCode == 0);
+        hashCode = assertHashCodeChanged(hashCode, link);
 
         link.setHRef(new URI("org:apache:sis:href"));
         assertEquals(XLink.Type.LOCATOR, link.getType());
         assertEquals("XLink[type=\"locator\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", label=\"SomeLabel\"]", link.toString());
-        assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code cannot be zero.", hashCode == 0);
+        hashCode = assertHashCodeChanged(hashCode, link);
 
         link.setShow(XLink.Show.NEW);
-        assertNull("Cannot be Type.SIMPLE if a label is defined.", link.getType());
+        assertNull(link.getType(), "Cannot be Type.SIMPLE if a label is defined.");
         assertEquals("XLink[href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\", label=\"SomeLabel\"]", link.toString());
-        assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code cannot be zero.", hashCode == 0);
+        hashCode = assertHashCodeChanged(hashCode, link);
 
         link.setLabel(null);
         assertEquals(XLink.Type.SIMPLE, link.getType());
         assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\"]", link.toString());
-        assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code cannot be zero.", hashCode == 0);
+        hashCode = assertHashCodeChanged(hashCode, link);
 
         link.setActuate(XLink.Actuate.ON_LOAD);
         assertEquals(XLink.Type.SIMPLE, link.getType());
         assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\", actuate=\"onLoad\"]", link.toString());
-        assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code cannot be zero.", hashCode == 0);
+        hashCode = assertHashCodeChanged(hashCode, link);
         /*
          * Now freezes the XLink and ensures that it is really immutable.
          */
         link.freeze();
-        assertEquals("hashCode", hashCode, link.hashCode());
-        try {
-            link.setType(null);
-            fail("The XLink should be unmodifiable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("XLink"));
-        }
+        assertEquals(hashCode, link.hashCode(), "hashCode");
+        String message;
+        message = assertThrows(UnsupportedOperationException.class, () -> link.setType(null),
+                               "The XLink should be unmodifiable.").getMessage();
+        assertTrue(message.contains("XLink"));
     }
 
     /**
@@ -121,41 +124,32 @@ public final class XLinkTest extends TestCase {
         final XLink link = new XLink();
         link.setType(XLink.Type.SIMPLE);
         link.setHRef(new URI("org:apache:sis:href"));
-        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
-        try {
-            link.setLabel("SomeLabel");
-            fail("Should not be allowed to set the label.");
-        } catch (IllegalStateException e) {
-            // This is the expected exception. The message should contain the type name.
-            assertTrue(e.getMessage().contains("label"));
-            assertTrue(e.getMessage().contains("simple"));
-        }
-        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
-        try {
-            link.setType(XLink.Type.EXTENDED);
-            fail("Should not be allowed to set a type that does not include HREF.");
-        } catch (IllegalStateException e) {
-            // This is the expected exception. The message should contain the type name.
-            assertTrue(e.getMessage().contains("extended"));
-        }
-        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
+        String message;
         /*
-         * The Locator type contains the HREF attribute, so the following operation should be
-         * allowed.
+         * Should not be allowed to set the label.
          */
+        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
+        message = assertThrows(IllegalStateException.class, () -> link.setLabel("SomeLabel")).getMessage();
+        assertTrue(message.contains("label"));
+        assertTrue(message.contains("simple"));
+        /*
+         * Should not be allowed to set a type that does not include HREF.
+         */
+        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
+        message = assertThrows(IllegalStateException.class, () -> link.setType(XLink.Type.EXTENDED)).getMessage();
+        assertTrue(message.contains("extended"));
+        /*
+         * The Locator type contains the HREF attribute, so the following operation should be allowed.
+         */
+        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
         link.setType(XLink.Type.LOCATOR);
         assertEquals("XLink[type=\"locator\", href=\"org:apache:sis:href\"]", link.toString());
         /*
          * Now freezes the XLink and ensures that it is really immutable.
          */
         link.freeze();
-        try {
-            link.setHRef(null);
-            fail("The XLink should be unmodifiable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("XLink"));
-        }
+        message = assertThrows(UnsupportedOperationException.class, () -> link.setHRef(null)).getMessage();
+        assertTrue(message.contains("XLink"));
     }
 
     /**

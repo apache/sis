@@ -69,14 +69,15 @@ public class Resources extends IndexedResourceBundle {
         public static final short ElementAlreadyInitialized_1 = 2;
 
         /**
-         * … {0} elements omitted …
-         */
-        public static final short ElementsOmitted_1 = 4;
-
-        /**
          * Illegal class `{1}`. Specify the `{0}` interface instead.
          */
         public static final short ExpectedInterface_2 = 5;
+
+        /**
+         * No {0,choice,0#horizontal|1#vertical|2#temporal|3#spatial or temporal} dimension has been
+         * found in “{1}”.
+         */
+        public static final short MissingDimension_2 = 4;
 
         /**
          * Multiline record

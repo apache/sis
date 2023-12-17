@@ -18,18 +18,17 @@
 /**
  * Shapefile store.
  *
- * @author  Travis L. Pinney
- * @author  Marc Le Bihan
+ * @author Johann Sorel (Geomatys)
  */
 module org.apache.sis.storage.shapefile {
-    requires java.sql;
     requires esri.geometry.api;
     requires transitive org.apache.sis.storage;
 
     exports org.apache.sis.storage.shapefile;
     exports org.apache.sis.storage.shapefile.cpg;
-    exports org.apache.sis.storage.shapefile.shp;
     exports org.apache.sis.storage.shapefile.dbf;
+    exports org.apache.sis.storage.shapefile.shp;
+    exports org.apache.sis.storage.shapefile.shx;
 
     provides org.apache.sis.storage.DataStoreProvider
             with org.apache.sis.storage.shapefile.ShapefileProvider;

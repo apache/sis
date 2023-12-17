@@ -77,7 +77,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.setup.OptionKey;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
@@ -219,8 +218,7 @@ final class TransformCommand extends FormattedOutputCommand {
                 }
             } else {
                 for (final Object file : files) {
-                    final var c = new StorageConnector(file);
-                    c.setOption(OptionKey.ENCODING, encoding);
+                    final StorageConnector c = inputConnector(file);
                     try (BufferedReader in = IOUtilities.toBuffered(c.commit(Reader.class, "transform"))) {
                         points = readCoordinates(in, file);
                     }
@@ -274,16 +272,21 @@ final class TransformCommand extends FormattedOutputCommand {
     }
 
     /**
+     * Appends the ANSI X3.64 sequence if colors are enabled, otherwise does nothing.
+     */
+    private void outHeader(final X364 code) {
+        if (colors) {
+            outHeader.append(code.sequence());
+        }
+    }
+
+    /**
      * Prints the character for commented lines.
      */
     private void printCommentLinePrefix() {
-        if (colors) {
-            outHeader.append(X364.FOREGROUND_GRAY.sequence());
-        }
+        outHeader(X364.FOREGROUND_GRAY);
         outHeader.append("# ");
-        if (colors) {
-            outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
-        }
+        outHeader(X364.FOREGROUND_DEFAULT);
     }
 
     /**
@@ -313,15 +316,11 @@ final class TransformCommand extends FormattedOutputCommand {
         outHeader.append(object.getName().getCode());
         if (identifier != null) {
             outHeader.append(' ');
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_CYAN.sequence());
-            }
+            outHeader(X364.FOREGROUND_CYAN);
             outHeader.append('(');
             outHeader.append(identifier);
             outHeader.append(')');
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
-            }
+            outHeader(X364.FOREGROUND_DEFAULT);
         }
         if (!idRequired) {
             outHeader.nextLine();
@@ -340,13 +339,9 @@ final class TransformCommand extends FormattedOutputCommand {
     private void printOperations(final CoordinateOperation step, boolean isNext) {
         if (isNext) {
             isNext = false;
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_GREEN.sequence());
-            }
+            outHeader(X364.FOREGROUND_GREEN);
             outHeader.append(" → ");
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
-            }
+            outHeader(X364.FOREGROUND_DEFAULT);
         }
         if (!printNameAndIdentifier(step, true)) {
             if (step instanceof ConcatenatedOperation) {
@@ -371,13 +366,9 @@ final class TransformCommand extends FormattedOutputCommand {
                 accuracy = Formulas.LINEAR_TOLERANCE;
             }
             printHeader(Vocabulary.Keys.Accuracy);
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_YELLOW.sequence());    // Same as Colors.DEFAULT for ElementKind.NUMBER
-            }
+            outHeader(X364.FOREGROUND_YELLOW);              // Same as Colors.DEFAULT for ElementKind.NUMBER
             outHeader.append(Double.toString(accuracy));
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
-            }
+            outHeader(X364.FOREGROUND_DEFAULT);
             outHeader.append(" metres");
             outHeader.nextLine();
         }
@@ -463,11 +454,11 @@ final class TransformCommand extends FormattedOutputCommand {
         }
         if (quoted) fieldWidth -= 2;
         out.print(CharSequences.spaces(fieldWidth - text.length()));
-        if (colors) out.print(color.sequence());
+        color(color);
         if (quoted) out.print('"');
         out.print(text);
         if (quoted) out.print('"');
-        if (colors) out.print(X364.FOREGROUND_DEFAULT.sequence());
+        color(X364.FOREGROUND_DEFAULT);
     }
 
     /*

@@ -26,7 +26,7 @@ import org.apache.sis.util.CharSequences;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -122,15 +122,16 @@ public final class IOUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests {@link IOUtilities#toAuxiliaryURI(URI, int)}.
+     * Tests {@link IOUtilities#toAuxiliaryURI(URI, String, boolean)}.
      *
      * @throws URISyntaxException if a URI cannot be parsed.
      * @throws MalformedURLException if a URL cannot be parsed.
      */
     @Test
     public void testAuxiliaryURI() throws URISyntaxException, MalformedURLException {
-        assertEquals(new URI("http://localhost/directory/image.tfw"),
-                IOUtilities.toAuxiliaryURI(new URI("http://localhost/directory/image.tiff"), "tfw"));
+        final var src = new URI("http://localhost/directory/image.tiff?request=ignore.me");
+        assertEquals(new URI("http://localhost/directory/image.tfw"),    IOUtilities.toAuxiliaryURI(src, "tfw", true));
+        assertEquals(new URI("http://localhost/directory/metadata.xml"), IOUtilities.toAuxiliaryURI(src, "metadata.xml", false));
     }
 
     /**
@@ -210,11 +211,11 @@ public final class IOUtilitiesTest extends TestCase {
      * @throws IOException if a URL cannot be parsed.
      */
     private void testToFile(final String encoding, final String plus) throws IOException {
-        assertEquals("Unix absolute path.", new File("/Users/name/Map.png"),
+        assertEquals(new File("/Users/name/Map.png"),                   // Unix absolute path.
                 IOUtilities.toFile(IOUtilities.toURL("file:/Users/name/Map.png", encoding)));
-        assertEquals("Path with space.", new File("/Users/name/Map with spaces.png"),
+        assertEquals(new File("/Users/name/Map with spaces.png"),       // Path with space.
                 IOUtilities.toFile(IOUtilities.toURL("file:/Users/name/Map with spaces.png", encoding)));
-        assertEquals("Path with + sign.", new File("/Users/name/++t--++est.shp"),
+        assertEquals(new File("/Users/name/++t--++est.shp"),            // Path with + sign.
                 IOUtilities.toFile(IOUtilities.toURL(
                         CharSequences.replace("file:/Users/name/++t--++est.shp", "+", plus).toString(), encoding)));
     }

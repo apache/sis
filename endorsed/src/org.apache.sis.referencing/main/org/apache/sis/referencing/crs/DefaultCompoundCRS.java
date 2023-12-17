@@ -179,6 +179,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @param  properties  the properties to be given to the coordinate reference system.
      * @param  components  the sequence of coordinate reference systems making this compound CRS.
+     * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
      * @throws IllegalArgumentException if the given array does not contain at least two components,
      *         or if two consecutive components are a geographic CRS with an ellipsoidal height.
      *
@@ -266,6 +267,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
      * @param  crs  the coordinate reference system to copy.
+     * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
      */
     protected DefaultCompoundCRS(final CompoundCRS crs) {
         super(crs);
@@ -365,6 +367,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * <p><strong>WARNING:</strong> this method is invoked by <em>before</em> the {@linkplain #components}
      * field is set. Do not use that field in this method.</p>
+     *
+     * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
      *
      * @see #getSingleComponents()
      */

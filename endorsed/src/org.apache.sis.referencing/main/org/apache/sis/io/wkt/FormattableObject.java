@@ -22,9 +22,11 @@ import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Printable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.util.internal.Constants;
+import org.apache.sis.system.Environment;
 
 
 /**
@@ -60,7 +62,7 @@ import org.apache.sis.util.internal.Constants;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -68,7 +70,7 @@ import org.apache.sis.util.internal.Constants;
  * @since 0.4
  */
 @XmlTransient
-public abstract class FormattableObject {
+public abstract class FormattableObject implements Printable {
     /**
      * The formatter for the {@link #toWKT()} and {@link #toString()} methods. Formatters are not
      * thread-safe, consequently we must make sure that only one thread uses a given instance.
@@ -149,16 +151,13 @@ public abstract class FormattableObject {
      * <p>This is a convenience method for debugging purpose and for console applications.</p>
      */
     @Debug
+    @Override
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void print() {
         final Console console = System.console();
-        final PrintWriter out = (console != null) ? console.writer() : null;
-        final String wkt = formatWKT(Convention.WKT2_SIMPLIFIED, (out != null) && X364.isAnsiSupported(), false);
-        if (out != null) {
-            out.println(wkt);
-        } else {
-            System.out.println(wkt);
-        }
+        final PrintWriter out = Environment.writer(console, System.out);
+        out.println(formatWKT(Convention.WKT2_SIMPLIFIED, (console != null) && X364.isAnsiSupported(), false));
+        out.flush();
     }
 
     /**

@@ -46,7 +46,6 @@ import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.coverage.grid.j2d.ObservableImage;
 import org.apache.sis.coverage.internal.RangeArgument;
-import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
@@ -172,6 +171,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 builder.addNewBand(band);
             }
         }
+        mergeAuxiliaryMetadata(builder);
         addTitleOrIdentifier(builder);
         builder.setISOStandards(false);
         metadata = builder.buildAndFreeze();
@@ -426,7 +426,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         if (exception instanceof NoSuchFileException || exception instanceof FileNotFoundException) {
             level = Level.FINE;
         }
-        listeners.warning(level, Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, suffix), exception);
+        listeners.warning(level, cannotReadAuxiliaryFile(suffix), exception);
     }
 
     /**

@@ -375,7 +375,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         for (final Variable v : data) {
             name = (String) CharSequences.commonWords(name, v.getName());
         }
-        if (name == null || name.isEmpty()) {
+        if (Strings.isNullOrEmpty(name)) {
             name = data[0].getName();           // If unable to get a common name, fallback on the first one.
         }
         final GenericName newValue = decoder.nameFactory.createLocalName(decoder.namespace, name);

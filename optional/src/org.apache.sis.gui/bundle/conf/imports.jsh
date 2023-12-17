@@ -297,3 +297,4 @@ import static org.apache.sis.console.SIS.print;
 
 // Initialization
 org.apache.sis.console.Command.configureLogging()
+SIS.version()   // For class static initializer.

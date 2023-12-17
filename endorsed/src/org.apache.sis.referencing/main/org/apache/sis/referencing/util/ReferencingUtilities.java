@@ -55,6 +55,8 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
+import org.apache.sis.metadata.internal.Identifiers;
+import org.apache.sis.xml.NilObject;
 
 
 /**
@@ -229,9 +231,21 @@ public final class ReferencingUtilities extends Static {
             if (candidate instanceof CompoundCRS) {
                 getSingleComponents(((CompoundCRS) candidate).getComponents(), addTo);
                 sameContent = false;
-            } else {
-                // Intentional CassCastException here if the candidate is not a SingleCRS.
+            } else if (candidate instanceof SingleCRS) {
                 addTo.add((SingleCRS) candidate);
+            } else {
+                /*
+                 * Illegal class. Try to provide a better error message, in particular when the CRS component
+                 * is nil because it is an unresolved xlink in a GML document. Nil objects are proxies, which
+                 * have hard to understand class names.
+                 */
+                final String message;
+                if (candidate instanceof NilObject) {
+                    message = Errors.format(Errors.Keys.NilObject_1, Identifiers.getNilReason((NilObject) candidate));
+                } else {
+                    message = Errors.format(Errors.Keys.NestedElementNotAllowed_1, getInterface(candidate));
+                }
+                throw new ClassCastException(message);
             }
         }
         return sameContent;

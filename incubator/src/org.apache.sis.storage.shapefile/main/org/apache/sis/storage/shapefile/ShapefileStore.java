@@ -99,7 +99,6 @@ import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
 import org.apache.sis.storage.shapefile.dbf.DBFReader;
-import org.apache.sis.storage.shapefile.dbf.DBFRecord;
 import org.apache.sis.storage.shapefile.dbf.DBFWriter;
 import org.apache.sis.storage.shapefile.shp.ShapeGeometryEncoder;
 import org.apache.sis.storage.shapefile.shp.ShapeHeader;
@@ -149,18 +148,33 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
      */
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    /**
+     * Construct store from given path.
+     *
+     * @param path path to .shp file
+     */
     public ShapefileStore(Path path) {
         this.shpPath = path;
         this.userDefinedCharSet = null;
         this.files = new ShpFiles(shpPath);
     }
 
+    /**
+     * Construct store from given connector.
+     *
+     * @param cnx not null
+     * @throws IllegalArgumentException if connector could not provide a valid Path instance
+     * @throws DataStoreException if connector could not provide a valid Path instance
+     */
     public ShapefileStore(StorageConnector cnx) throws IllegalArgumentException, DataStoreException {
         this.shpPath = cnx.getStorageAs(Path.class);
         this.userDefinedCharSet = cnx.getOption(OptionKey.ENCODING);
         this.files = new ShpFiles(shpPath);
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
         final Parameters parameters = Parameters.castOrWrap(ShapefileProvider.PARAMETERS_DESCRIPTOR.createValue());
@@ -168,64 +182,96 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         return Optional.of(parameters);
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public void close() throws DataStoreException {
     }
 
-
-    /*
-    Redirect FeatureSet interface to View
-    */
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
         return featureSetView.getIdentifier();
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public Metadata getMetadata() throws DataStoreException {
         return featureSetView.getMetadata();
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public FeatureType getType() throws DataStoreException {
         return featureSetView.getType();
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
         return featureSetView.subset(query);
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public Stream<Feature> features(boolean parallel) throws DataStoreException {
         return featureSetView.features(parallel);
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public Optional<Envelope> getEnvelope() throws DataStoreException {
         return featureSetView.getEnvelope();
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public void updateType(FeatureType featureType) throws DataStoreException {
         featureSetView.updateType(featureType);
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public void add(Iterator<? extends Feature> iterator) throws DataStoreException {
         featureSetView.add(iterator);
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public void removeIf(Predicate<? super Feature> predicate) throws DataStoreException {
         featureSetView.removeIf(predicate);
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public void replaceIf(Predicate<? super Feature> predicate, UnaryOperator<Feature> unaryOperator) throws DataStoreException {
         featureSetView.replaceIf(predicate, unaryOperator);
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
         return featureSetView.getComponentFiles();
@@ -417,11 +463,11 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             //move dbf to record offset, some shp record might have been skipped because of filter
                             long offset = (long)header.headerSize + ((long)(shpRecord.recordNumber-1)) * ((long)header.recordSize);
                             dbfreader.moveToOffset(offset);
-                            final DBFRecord dbfRecord = dbfreader.next();
+                            final Object[] dbfRecord = dbfreader.next();
                             final Feature next = type.newInstance();
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
-                                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord.fields[i]);
+                                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
                             action.accept(next);
                             return true;
@@ -454,11 +500,11 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     @Override
                     public boolean tryAdvance(Consumer action) {
                         try {
-                            final DBFRecord dbfRecord = dbfreader.next();
+                            final Object[] dbfRecord = dbfreader.next();
                             if (dbfRecord == null) return false;
                             final Feature next = type.newInstance();
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
-                                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord.fields[i]);
+                                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
                             action.accept(next);
                             return true;
@@ -604,6 +650,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 final ShapeHeader shpHeader = new ShapeHeader();
                 shpHeader.bbox = new ImmutableEnvelope(new GeneralEnvelope(4));
                 final DBFHeader dbfHeader = new DBFHeader();
+                dbfHeader.lastUpdate = LocalDate.now();
                 dbfHeader.fields = new DBFField[0];
                 final Charset charset = userDefinedCharSet == null ? StandardCharsets.UTF_8 : userDefinedCharSet;
                 CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
@@ -618,16 +665,16 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                         if (length == null || length == 0) length = 255;
 
                         if (Geometry.class.isAssignableFrom(valueClass)) {
-                            if (shpHeader.shapeType != 0) {
+                            if (shpHeader.shapeType != null) {
                                 throw new DataStoreException("Shapefile format can only contain one geometry");
                             }
-                            if (Point.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.VALUE_POINT;
+                            if (Point.class.isAssignableFrom(valueClass)) shpHeader.shapeType = ShapeType.POINT;
                             else if (MultiPoint.class.isAssignableFrom(valueClass))
-                                shpHeader.shapeType = ShapeType.VALUE_MULTIPOINT;
+                                shpHeader.shapeType = ShapeType.MULTIPOINT;
                             else if (LineString.class.isAssignableFrom(valueClass) || MultiLineString.class.isAssignableFrom(valueClass))
-                                shpHeader.shapeType = ShapeType.VALUE_POLYLINE;
+                                shpHeader.shapeType = ShapeType.POLYLINE;
                             else if (Polygon.class.isAssignableFrom(valueClass) || MultiPolygon.class.isAssignableFrom(valueClass))
-                                shpHeader.shapeType = ShapeType.VALUE_POLYGON;
+                                shpHeader.shapeType = ShapeType.POLYGON;
                             else throw new DataStoreException("Unsupported geometry type " + valueClass);
 
                             Object cdt = at.characteristics().get(AttributeConvention.CRS);
@@ -649,9 +696,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                         } else if (Long.class.isAssignableFrom(valueClass)) {
                             dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 19, 0, null));
                         } else if (Float.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 11, 8, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 11, 6, null));
                         } else if (Double.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 33, 30, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 33, 18, null));
                         } else if (LocalDate.class.isAssignableFrom(valueClass)) {
                             dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_DATE, 0, 20, 0, null));
                         } else {
@@ -664,21 +711,21 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
                 //write shapefile
                 try (ShapeWriter writer = new ShapeWriter(ShpFiles.openWriteChannel(files.shpFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
-                    writer.write(shpHeader);
+                    writer.writeHeader(shpHeader);
                 } catch (IOException ex) {
                     throw new DataStoreException("Failed to create shapefile (shp).", ex);
                 }
 
                 //write shx
                 try (IndexWriter writer = new IndexWriter(ShpFiles.openWriteChannel(files.getShx(true), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
-                    writer.write(shpHeader);
+                    writer.writeHeader(shpHeader);
                 } catch (IOException ex) {
                     throw new DataStoreException("Failed to create shapefile (shx).", ex);
                 }
 
                 //write dbf
                 try (DBFWriter writer = new DBFWriter(ShpFiles.openWriteChannel(files.getDbf(true), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
-                    writer.write(dbfHeader);
+                    writer.writeHeader(dbfHeader);
                 } catch (IOException ex) {
                     throw new DataStoreException("Failed to create shapefile (dbf).", ex);
                 }
@@ -1079,9 +1126,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 shpWriter = new ShapeWriter(ShpFiles.openWriteChannel(tempFiles.shpFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING));
                 dbfWriter = new DBFWriter(ShpFiles.openWriteChannel(tempFiles.getDbf(true), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING));
                 shxWriter = new IndexWriter(ShpFiles.openWriteChannel(tempFiles.getShx(true), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING));
-                shpWriter.write(shpHeader);
-                shxWriter.write(shpHeader);
-                dbfWriter.write(dbfHeader);
+                shpWriter.writeHeader(shpHeader);
+                shxWriter.writeHeader(shpHeader);
+                dbfWriter.writeHeader(dbfHeader);
             } catch (IOException ex) {
                 try {
                     tempFiles.deleteFiles();
@@ -1096,7 +1143,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         private void write(Feature feature) throws IOException {
             inc++; //number starts at 1
             final ShapeRecord shpRecord = new ShapeRecord();
-            final DBFRecord dbfRecord = new DBFRecord();
             final long recordStartPosition = shpWriter.getSteamPosition();
 
             if (defaultGeomName == null) {
@@ -1123,18 +1169,18 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             } else {
                 throw new IOException("Feature geometry property is not a geometry");
             }
-            shpWriter.write(shpRecord);
+            shpWriter.writeRecord(shpRecord);
             final long recordEndPosition = shpWriter.getSteamPosition();
 
             //write index
-            shxWriter.write(Math.toIntExact(recordStartPosition), Math.toIntExact(recordEndPosition - recordStartPosition));
+            shxWriter.writeRecord(Math.toIntExact(recordStartPosition), Math.toIntExact(recordEndPosition - recordStartPosition));
 
             //copy dbf fields
-            dbfRecord.fields = new Object[dbfHeader.fields.length];
-            for (int i = 0; i < dbfRecord.fields.length; i++) {
-                dbfRecord.fields[i] = feature.getPropertyValue(dbfHeader.fields[i].fieldName);
+            Object[] fields = new Object[dbfHeader.fields.length];
+            for (int i = 0; i < fields.length; i++) {
+                fields[i] = feature.getPropertyValue(dbfHeader.fields[i].fieldName);
             }
-            dbfWriter.write(dbfRecord);
+            dbfWriter.writeRecord(fields);
         }
 
         /**
@@ -1160,6 +1206,5 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             }
         }
     }
-
 
 }

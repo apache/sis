@@ -1238,14 +1238,59 @@ public final class ArraysExt extends Static {
     }
 
     /**
+     * Removes all null elements in the given array. For each null element found in the array at index <var>i</var>,
+     * all elements at indices <var>i</var>+1, <var>i</var>+2, <var>i</var>+3, <i>etc.</i> are moved to indices
+     * <var>i</var>, <var>i</var>+1, <var>i</var>+2, <i>etc.</i>
+     * This method returns the new array length, which is {@code array.length} minus the number of null elements.
+     * The array content at indices equal or greater than the new length is undetermined.
+     *
+     * <p>Callers can obtain an array of appropriate length using the following idiom.
+     * Note that this idiom will create a new array only if necessary:</p>
+     *
+     * {@snippet lang="java" :
+     *     T[] array = ...;
+     *     array = resize(array, removeNulls(array));
+     *     }
+     *
+     * @param  array  array from which to remove null elements, or {@code null}.
+     * @return the number of remaining elements in the given array, or 0 if the given {@code array} was null.
+     *
+     * @since 1.5
+     */
+    public static int removeNulls(final Object[] array) {
+        if (array == null) {
+            return 0;
+        }
+        int i;
+        for (i=0; ; i++) {
+            if (i >= array.length) return i;            // Return if all values are non-null.
+            if (array[i] == null) break;                // Stop without incrementing `i`.
+        }
+        Object value;
+        int count = i;
+        do if (++i >= array.length) return count;       // Common case where all remaining values are null.
+        while ((value = array[i]) == null);
+
+        // Start copying values only on the portion of the array where it is needed.
+        array[count++] = value;
+        while (++i < array.length) {
+            value = array[i];
+            if (value != null) {
+                array[count++] = value;
+            }
+        }
+        return count;
+    }
+
+    /**
      * Removes the duplicated elements in the given array. This method should be invoked only for small arrays,
      * typically less than 10 distinct elements. For larger arrays, use {@link java.util.LinkedHashSet} instead.
      *
-     * <p>This method compares all pair of elements using the {@link Objects#equals(Object, Object)}
-     * method - so null elements are allowed. If duplicated values are found, then only the first
-     * occurrence is retained; the second occurrence is removed in-place. After all elements have
-     * been compared, this method returns the number of remaining elements in the array. The free
-     * space at the end of the array is padded with {@code null} values.</p>
+     * <p>This method compares all pairs of elements using the {@link Objects#equals(Object, Object)} method -
+     * so null elements are allowed. If duplicated values are found,
+     * then only the first occurrence is retained and the second occurrence is removed in-place.
+     * After all elements have been compared, this method returns the number of remaining elements in the array.
+     * The free space at the end of the array is padded with {@code null} values.</p>
      *
      * <p>Callers can obtain an array of appropriate length using the following idiom.
      * Note that this idiom will create a new array only if necessary:</p>
@@ -1255,11 +1300,6 @@ public final class ArraysExt extends Static {
      *     array = resize(array, removeDuplicated(array));
      *     }
      *
-     * <div class="note"><b>API note:</b>
-     * This method return type is not an array in order to make obvious that the given array will be modified in-place.
-     * This behavior is different than the behavior of many other methods in this class, which do not modify the given
-     * source array.</div>
-     *
      * @param  array array from which to remove duplicated elements, or {@code null}.
      * @return the number of remaining elements in the given array, or 0 if the given {@code array} was null.
      */
@@ -1267,7 +1307,28 @@ public final class ArraysExt extends Static {
         if (array == null) {
             return 0;
         }
-        int length = array.length;
+        return removeDuplicated(array, array.length);
+    }
+
+    /**
+     * Removes the duplicated elements in the first elements of the given array.
+     * This method performs the same work than {@link #removeDuplicated(Object[])},
+     * but taking in account only the first {@code length} elements. The latter argument
+     * is convenient for chaining this method after {@link #removeNulls(Object[])} as below:
+     *
+     * {@snippet lang="java" :
+     *     T[] array = ...;
+     *     array = resize(array, removeDuplicated(array, removeNulls(array)));
+     *     }
+     *
+     * @param  array   array from which to remove duplicated elements, or {@code null}.
+     * @param  length  number of elements to examine at the beginning of the array.
+     * @return the number of remaining elements in the given array, or 0 if the given {@code array} was null.
+     * @throws ArrayIndexOutOfBoundsException if {@code length} is negative or greater than {@code array.length}.
+     *
+     * @since 1.5
+     */
+    public static int removeDuplicated(final Object[] array, int length) {
         for (int i=length; --i>=0;) {
             final Object value = array[i];
             for (int j=i; --j>=0;) {

@@ -38,6 +38,11 @@ enum Option {
     TARGET_CRS(true),
 
     /**
+     * Relative path to an auxiliary metadata file.
+     */
+    METADATA(true),
+
+    /**
      * The file to write.
      */
     OUTPUT(true),

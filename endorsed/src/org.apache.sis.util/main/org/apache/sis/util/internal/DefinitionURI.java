@@ -18,12 +18,12 @@ package org.apache.sis.util.internal;
 
 import java.util.Map;
 import java.util.TreeMap;
+import static java.util.AbstractMap.SimpleEntry;
 import static java.util.logging.Logger.getLogger;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
 import static org.apache.sis.util.CharSequences.*;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -264,7 +264,7 @@ public final class DefinitionURI {
     }
 
     /**
-     * Attempts to parse the given URI, which may either a URN or URL.
+     * Attempts to parse the given URI, which may be either a URN or URL.
      * If this method does not recognize the given URI, then it returns {@code null}.
      * If the given URI is incomplete, then the {@link #code} value will be {@code null}.
      *
@@ -272,7 +272,6 @@ public final class DefinitionURI {
      * @return the parse result, or {@code null} if the given URI is not recognized.
      */
     public static DefinitionURI parse(final String uri) {
-        ensureNonNull("uri", uri);
         return parse(uri, false, -1, uri.length());
     }
 
@@ -506,52 +505,56 @@ public final class DefinitionURI {
      *   <li>The GML form (e.g. {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}).</li>
      * </ul>
      *
-     * @param  type       the expected object type (e.g. {@code "crs"}) in lower cases. See class javadoc for a list of types.
-     * @param  authority  the expected authority, typically {@code "EPSG"}. See class javadoc for a list of authorities.
-     * @param  uri        the URI to parse.
-     * @return the code part of the given URI, or {@code null} if the codespace does not match the given type
-     *         and authority, the code is empty, or the code is followed by parameters.
+     * @param  type         the expected object type (e.g. {@code "crs"}) in lower cases. See class javadoc for a list of types.
+     * @param  authorities  the expected authorities, typically {@code "EPSG"}. See class javadoc for a list of authorities.
+     * @param  uri          the URI to parse.
+     * @return the code part of the given URI together with the authority index, or {@code null} if the codespace
+     *         does not match any given type and authority, the code is empty, or the code is followed by parameters.
      */
-    public static String codeOf(final String type, final String authority, final CharSequence uri) {
-        ensureNonNull("type",      type);
-        ensureNonNull("authority", authority);
+    public static Map.Entry<Integer,String> codeOf(final String type, final String[] authorities, final CharSequence uri) {
         final int length = uri.length();
         int s = indexOf(uri, SEPARATOR, 0, length);
         if (s >= 0) {
-            int from = skipLeadingWhitespaces(uri, 0, s);           // Start of authority part.
-            if (skipTrailingWhitespaces(uri, from, s) - from == authority.length()
-                      && CharSequences.regionMatches(uri, from, authority, true))
-            {
-                from = skipLeadingWhitespaces(uri, s+1, length);    // Start of code part.
-                if (from >= length) {
-                    return null;
-                }
-                /*
-                 * The substring is expected to contains zero or one more separator character.
-                 * If present, then the separator character and everything before it are ignored.
-                 * The ignored part should be the version number, but this is not verified.
-                 */
-                s = indexOf(uri, SEPARATOR, from, length);
-                if (s >= 0) {
-                    from = skipLeadingWhitespaces(uri, s+1, length);
-                    if (from >= length || indexOf(uri, SEPARATOR, from, length) >= 0) {
-                        /*
-                         * If the remaining substring contains more ':' characters, then it means that
-                         * the code has parameters, e.g. "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45".
-                         */
+            int from = skipLeadingWhitespaces(uri, 0, s);                   // Start of authority part.
+            final int span = skipTrailingWhitespaces(uri, from, s) - from;
+            for (int i=0; i < authorities.length; i++) {
+                final String authority = authorities[i];
+                if (span == authority.length() && CharSequences.regionMatches(uri, from, authority, true)) {
+                    from = skipLeadingWhitespaces(uri, s+1, length);        // Start of code part.
+                    if (from >= length) {
                         return null;
                     }
+                    /*
+                     * The substring is expected to contains zero or one more separator character.
+                     * If present, then the separator character and everything before it are ignored.
+                     * The ignored part should be the version number, but this is not verified.
+                     */
+                    s = indexOf(uri, SEPARATOR, from, length);
+                    if (s >= 0) {
+                        from = skipLeadingWhitespaces(uri, s+1, length);
+                        if (from >= length || indexOf(uri, SEPARATOR, from, length) >= 0) {
+                            /*
+                             * If the remaining substring contains more ':' characters, then it means that
+                             * the code has parameters, e.g. "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45".
+                             */
+                            return null;
+                        }
+                    }
+                    final String code = uri.subSequence(from, skipTrailingWhitespaces(uri, from, length)).toString();
+                    return new SimpleEntry<>(i, code);
                 }
-                return uri.subSequence(from, skipTrailingWhitespaces(uri, from, length)).toString();
             }
             final DefinitionURI def = parse(uri.toString());
-            if (def != null && def.parameters == null) {
-                if (type.equalsIgnoreCase(def.type) && authority.equalsIgnoreCase(def.authority)) {
-                    String code = def.code;
-                    if (code == null) {
-                        code = def.version;     // May happen with for example "EPSG:4326" instead of "EPSG::4326".
+            if (def != null && def.parameters == null && type.equalsIgnoreCase(def.type)) {
+                for (int i=0; i < authorities.length; i++) {
+                    final String authority = authorities[i];
+                    if (authority.equalsIgnoreCase(def.authority)) {
+                        String code = def.code;
+                        if (code == null) {
+                            code = def.version;     // May happen with for example "EPSG:4326" instead of "EPSG::4326".
+                        }
+                        return new SimpleEntry<>(i, code);
                     }
-                    return code;
                 }
             }
         }

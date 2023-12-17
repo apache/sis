@@ -64,7 +64,7 @@ import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.io.stream.RewindableLineReader;
+import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
@@ -642,6 +642,7 @@ final class Store extends URIDataStore implements FeatureSet {
             builder.addResourceScope(ScopeCode.FEATURE, null);
             builder.addExtent(envelope, listeners);
             builder.addFeatureType(featureType, -1);
+            mergeAuxiliaryMetadata(builder);
             addTitleOrIdentifier(builder);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();

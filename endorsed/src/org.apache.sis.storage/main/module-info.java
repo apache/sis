@@ -30,7 +30,7 @@ module org.apache.sis.storage {
     requires transitive org.apache.sis.feature;
 
     provides java.nio.file.spi.FileTypeDetector
-        with org.apache.sis.storage.internal.StoreTypeDetector;
+        with org.apache.sis.storage.services.StoreTypeDetector;
 
     uses     org.apache.sis.storage.DataStoreProvider;
     provides org.apache.sis.storage.DataStoreProvider

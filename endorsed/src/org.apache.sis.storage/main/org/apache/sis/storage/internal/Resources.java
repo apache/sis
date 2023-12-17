@@ -308,6 +308,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short MarkNotSupported_1 = 62;
 
         /**
+         * Relative path to metadata.
+         */
+        public static final short MetadataLocation = 81;
+
+        /**
          * Resource “{0}” does not have an identifier.
          */
         public static final short MissingResourceIdentifier_1 = 42;

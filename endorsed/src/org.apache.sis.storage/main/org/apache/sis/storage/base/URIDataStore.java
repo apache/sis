@@ -16,19 +16,21 @@
  */
 package org.apache.sis.storage.base;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.Charset;
+import java.net.URISyntaxException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -36,6 +38,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
@@ -47,6 +50,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.xml.XML;
 
 
 /**
@@ -64,23 +68,19 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     protected final URI location;
 
     /**
-     * The {@link #location} as a path, computed when first needed.
-     * If the storage given at construction time was a {@link Path} or a {@link File} instance,
-     * then this field is initialized in the constructor in order to avoid a "path → URI → path" roundtrip
-     * (such roundtrip transforms relative paths into {@linkplain Path#toAbsolutePath() absolute paths}).
+     * The {@link #location} as a path, or {@code null} if none or if the URI cannot be converted to a path.
      *
-     * @see #getSpecifiedPath()
      * @see #getComponentFiles()
      */
-    private volatile Path locationAsPath;
+    protected final Path locationAsPath;
 
     /**
-     * Whether {@link #locationAsPath} was initialized at construction time ({@code true})
-     * of inferred from the {@link #location} URI at a later time ({@code false}).
-     *
-     * @see #getSpecifiedPath()
+     * Path to an auxiliary file providing metadata as path, or {@code null} if none or not applicable.
+     * Unless absolute, this path is relative to the {@link #location} or to the {@link #locationAsPath}.
+     * The path may contain the {@code '*'} character, which need to be replaced by the main file name
+     * without suffix at reading time.
      */
-    private final boolean locationIsPath;
+    private final Path metadataPath;
 
     /**
      * Creates a new data store. This constructor does not open the file,
@@ -94,16 +94,13 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      */
     protected URIDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        location = connector.getStorageAs(URI.class);
-        final Object storage = connector.getStorage();
-        if (storage instanceof Path) {
-            locationAsPath = (Path) storage;
-        } else if (storage instanceof File) {
-            locationAsPath = ((File) storage).toPath();
-        } else if (storage instanceof CharSequence) {
-            locationAsPath = connector.getStorageAs(Path.class);
+        location       = connector.getStorageAs(URI.class);
+        locationAsPath = connector.getStorageAs(Path.class);
+        if (locationAsPath != null || location != null) {
+            metadataPath = connector.getOption(DataOptionKey.METADATA_PATH);
+        } else {
+            metadataPath = null;
         }
-        locationIsPath = (locationAsPath != null);
     }
 
     /**
@@ -141,38 +138,100 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * If the location was specified as a {@link Path} or {@link File} instance, returns that path.
-     * Otherwise returns {@code null}. This method does not try to convert URI to {@link Path}
-     * because this conversion may fail for HTTP and FTP connections.
-     *
-     * @return the path specified at construction time, or {@code null} if the storage was not specified as a path.
+     * {@return the path to the auxiliary metadata file, or {@code null} if none}.
+     * This is a path built from the {@link DataOptionKey#METADATA_PATH} value if present.
+     * Note that the metadata may be unavailable as a {@link Path} but available as an {@link URI}.
      */
-    protected final Path getSpecifiedPath() {
-        return locationIsPath ? locationAsPath : null;
+    private Path getMetadataPath() throws IOException {
+        Path path = replaceWildcard(metadataPath);
+        if (path != null) {
+            Path parent = locationAsPath;
+            if (parent != null) {
+                parent = parent.getParent();
+                if (parent != null) {
+                    path = parent.resolve(path);
+                }
+            }
+            if (Files.isSameFile(path, locationAsPath)) {
+                return null;
+            }
+        }
+        return path;
     }
 
     /**
-     * Returns the {@linkplain #location} as a {@code Path} component or an empty array if none.
-     * The default implementation returns the storage specified at construction time if it was
-     * a {@link Path} or {@link File}, or converts the URI to a {@link Path} otherwise.
+     * {@return the URI to the auxiliary metadata file, or {@code null} if none}.
+     * This is a path built from the {@link DataOptionKey#METADATA_PATH} value if present.
+     * Note that the metadata may be unavailable as an {@link URI} but available as a {@link Path}.
+     */
+    private URI getMetadataURI() throws URISyntaxException {
+        URI uri = location;
+        if (uri != null) {
+            final Path path = replaceWildcard(metadataPath);
+            if (path != null) {
+                uri = IOUtilities.toAuxiliaryURI(uri, path.toString(), false);
+                if (!uri.equals(location)) {
+                    return uri;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the given path with the wildcard character replaced by the name of the main file.
+     *
+     * @param  path  path in which to replace wildcard character, or {@code null}.
+     * @return path with wildcard character replaced, or {@code path} if no replacement was done,
+     *         or {@code null} if a replacement was required but couldn't be done.
+     */
+    private Path replaceWildcard(Path path) {
+        if (path != null) {
+            boolean changed = false;
+            String filename = null;     // Determined when first needed.
+            final var names = new String[path.getNameCount()];
+            int count = 0;
+            for (final Path p : path) {
+                String name = p.toString();
+                if (name.indexOf('*') >= 0) {
+                    if (filename == null) {
+                        filename = IOUtilities.filename(locationAsPath != null ? locationAsPath : location);
+                        if (filename == null) {
+                            return null;
+                        }
+                        final int s = filename.lastIndexOf(IOUtilities.EXTENSION_SEPARATOR);
+                        if (s >= 0) {
+                            filename = filename.substring(0, s);
+                        }
+                    }
+                    name = name.replace("*", filename);
+                    changed = true;
+                }
+                names[count++] = name;
+            }
+            if (changed) {
+                path = path.getFileSystem().getPath(names[0], Arrays.copyOfRange(names, 1, count));
+            }
+        }
+        return path;
+    }
+
+    /**
+     * Returns the main and metadata locations as {@code Path} components, or an empty array if none.
+     * The default implementation returns the storage specified at construction time converted to a {@link Path}
+     * if such conversion was possible, or {@code null} otherwise.
      *
      * @return the URI as a path, or an empty array if unknown.
-     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
+     * @throws DataStoreException if an error occurred while getting the paths.
      */
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
-        Path path = locationAsPath;
-        if (path == null) {
-            if (location == null) {
-                return new Path[0];
-            } else try {
-                path = Path.of(location);
-            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-                throw new DataStoreException(e);
-            }
-            locationAsPath = path;
+        try {
+            final var paths = new Path[] {locationAsPath, getMetadataPath()};
+            return ArraysExt.resize(paths, ArraysExt.removeDuplicated(paths, ArraysExt.removeNulls(paths)));
+        } catch (IOException e) {
+            throw new DataStoreException(e);
         }
-        return new Path[] {path};
     }
 
     /**
@@ -217,6 +276,11 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
         public static final ParameterDescriptor<URI> LOCATION_PARAM;
 
         /**
+         * Description of the "metadata" parameter.
+         */
+        public static final ParameterDescriptor<Path> METADATA_PARAM;
+
+        /**
          * Description of the optional {@value #CREATE} parameter, which may be present in writable data store.
          * This parameter is not included in the descriptor created by {@link #build(ParameterBuilder)} default
          * implementation. It is subclass responsibility to add it if desired, only if supported.
@@ -233,6 +297,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
             final ParameterBuilder builder = new ParameterBuilder();
             ENCODING       = builder.addName("encoding").setDescription(Resources.formatInternational(Resources.Keys.DataStoreEncoding)).create(Charset.class, null);
             CREATE_PARAM   = builder.addName( CREATE   ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreCreate  )).create(Boolean.class, null);
+            METADATA_PARAM = builder.addName("metadata").setDescription(Resources.formatInternational(Resources.Keys.MetadataLocation )).create(Path.class, null);
             LOCATION_PARAM = builder.addName( LOCATION ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocation)).setRequired(true).create(URI.class, null);
         }
 
@@ -267,14 +332,14 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
         /**
          * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs to be created.
          * When invoked, the parameter group name is set to a name derived from the {@link #getShortName()} value.
-         * The default implementation creates a group containing only {@link #LOCATION_PARAM}.
+         * The default implementation creates a group containing {@link #LOCATION_PARAM} and {@link #METADATA_PARAM}.
          * Subclasses can override if they need to create a group with more parameters.
          *
          * @param  builder  the builder to use for creating parameter descriptor. The group name is already set.
          * @return the parameters descriptor created from the given builder.
          */
         protected ParameterDescriptorGroup build(final ParameterBuilder builder) {
-            return builder.createGroup(LOCATION_PARAM);
+            return builder.createGroup(LOCATION_PARAM, METADATA_PARAM);
         }
 
         /**
@@ -390,10 +455,10 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * Adds the filename (without extension) as the citation title if there are no titles, or as the identifier otherwise.
+     * Adds the filename (without extension) as the citation title if there is no title, or as the identifier otherwise.
      * This method should be invoked last, after {@code DataStore} implementation did its best effort for adding a title.
-     * The intent is actually to provide an identifier, but since the title is mandatory in ISO 19115 metadata, providing
-     * only an identifier without title would be invalid.
+     * The intend is actually to provide an identifier, but since the title is mandatory in ISO 19115 metadata,
+     * providing only an identifier without title would be invalid.
      *
      * @param  builder  where to add the title or identifier.
      */
@@ -402,5 +467,47 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
         if (filename != null) {
             builder.addTitleOrIdentifier(filename, MetadataBuilder.Scope.ALL);
         }
+    }
+
+    /**
+     * If an auxiliary metadata file has been specified, merge that file to the given metadata.
+     * This step should be done only after the data store added its own metadata.
+     * Failure to load auxiliary metadata are only a warning.
+     *
+     * @param  builder  where to merge the metadata.
+     */
+    protected final void mergeAuxiliaryMetadata(final MetadataBuilder builder) {
+        Object metadata = null;
+        Exception error = null;
+        try {
+            final Path path = getMetadataPath();
+            if (path != null) {
+                metadata = XML.unmarshal(path);
+            } else {
+                final URI uri = getMetadataURI();
+                if (uri != null) {
+                    metadata = XML.unmarshal(uri.toURL());
+                }
+            }
+        } catch (URISyntaxException | IOException e) {
+            error = e;
+        } catch (JAXBException e) {
+            final Throwable cause = e.getCause();
+            error = (cause instanceof IOException) ? (Exception) cause : e;
+        }
+        if (metadata != null) {
+            builder.mergeMetadata(metadata, getLocale());
+        } else if (error != null) {
+            listeners.warning(cannotReadAuxiliaryFile("xml"), error);
+        }
+    }
+
+    /**
+     * {@return the error message for saying than auxiliary file cannot be read}.
+     *
+     * @param  extension  file extension of the auxiliary file, without leading dot.
+     */
+    protected final String cannotReadAuxiliaryFile(final String extension) {
+        return Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotReadAuxiliaryFile_1, extension);
     }
 }

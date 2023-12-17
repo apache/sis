@@ -1090,12 +1090,20 @@ public class GridGeometry implements LenientComparable, Serializable {
         GeographicBoundingBox bbox = geographicBBox;
         if (bbox == null) {
             if (getCoordinateReferenceSystem(envelope) != null && !envelope.isAllNaN()) {
+                DefaultGeographicBoundingBox db;
+                NilReason reason = null;
                 try {
-                    final DefaultGeographicBoundingBox db = ReferencingServices.getInstance().setBounds(envelope, null, null);
+                    db = ReferencingServices.getInstance().setBounds(envelope, null, null);
+                } catch (TransformException e) {
+                    db = null;
+                    reason = NilReason.INAPPLICABLE;
+                }
+                if (db != null) {
                     db.transitionTo(DefaultGeographicBoundingBox.State.FINAL);
                     bbox = db;
-                } catch (TransformException e) {
-                    bbox = NilReason.INAPPLICABLE.createNilObject(GeographicBoundingBox.class);
+                } else {
+                    if (reason == null) reason = NilReason.MISSING;
+                    bbox = reason.createNilObject(GeographicBoundingBox.class);
                 }
                 geographicBBox = bbox;
             }

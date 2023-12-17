@@ -19,11 +19,13 @@ package org.apache.sis.storage.shapefile.dbf;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.time.LocalDate;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 
 
 /**
+ * Mutable DBase III file header.
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -32,21 +34,40 @@ public final class DBFHeader {
     private static final int FIELD_SIZE = 32;
     private static final int FIELD_DESCRIPTOR_TERMINATOR = 0x0D;
 
-    public int year;
-    public int month;
-    public int day;
+    /**
+     * Date of last update.
+     */
+    public LocalDate lastUpdate;
+    /**
+     * Number of records in the file.
+     */
     public int nbRecord;
+    /**
+     * Total header size.
+     */
     public int headerSize;
+    /**
+     * Size of a single record.
+     */
     public int recordSize;
+    /**
+     * Array of field descriptors.
+     */
     public DBFField[] fields;
 
+    /**
+     * Default constructor.
+     */
     public DBFHeader() {
     }
 
+    /**
+     * Duplicate constructor.
+     *
+     * @param toCopy to copy from
+     */
     public DBFHeader(DBFHeader toCopy) {
-        this.year = toCopy.year;
-        this.month = toCopy.month;
-        this.day = toCopy.day;
+        this.lastUpdate = toCopy.lastUpdate;
         this.nbRecord = toCopy.nbRecord;
         this.headerSize = toCopy.headerSize;
         this.recordSize = toCopy.recordSize;
@@ -65,14 +86,22 @@ public final class DBFHeader {
         }
     }
 
+    /**
+     * Read header.
+     *
+     * @param channel to read from
+     * @param charset field text encoding
+     * @throws IOException if an error occured while parsing header
+     */
     public void read(ChannelDataInput channel, Charset charset) throws IOException {
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         if (channel.readByte()!= 0x03) {
             throw new IOException("Unvalid database III magic");
         }
-        year       = channel.readUnsignedByte();
-        month      = channel.readUnsignedByte();
-        day        = channel.readUnsignedByte();
+        int year       = channel.readUnsignedByte();
+        int month      = channel.readUnsignedByte();
+        int day        = channel.readUnsignedByte();
+        lastUpdate = LocalDate.of(year+1900, month, day);
         nbRecord   = channel.readInt();
         headerSize = channel.readUnsignedShort();
         recordSize = channel.readUnsignedShort();
@@ -87,12 +116,18 @@ public final class DBFHeader {
         }
     }
 
+    /**
+     * Write header.
+     *
+     * @param channel to write into
+     * @throws IOException if an error occured while writing header
+     */
     public void write(ChannelDataOutput channel) throws IOException {
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         channel.writeByte(0x03);
-        channel.writeByte(year);
-        channel.writeByte(month);
-        channel.writeByte(day);
+        channel.writeByte(lastUpdate.getYear()-1900);
+        channel.writeByte(lastUpdate.getMonthValue());
+        channel.writeByte(lastUpdate.getDayOfMonth());
         channel.writeInt(nbRecord);
         channel.writeShort(headerSize);
         channel.writeShort(recordSize);
@@ -106,9 +141,7 @@ public final class DBFHeader {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBFHeader{");
-        sb.append("year=").append(year);
-        sb.append(",month=").append(month);
-        sb.append(",day=").append(day);
+        sb.append("lastUpdate=").append(lastUpdate);
         sb.append(",nbRecord=").append(nbRecord);
         sb.append(",headerSize=").append(headerSize);
         sb.append(",recordSize=").append(recordSize);

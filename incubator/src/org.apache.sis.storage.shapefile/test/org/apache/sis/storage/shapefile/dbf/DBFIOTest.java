@@ -66,9 +66,9 @@ public class DBFIOTest {
 
         try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8, null)) {
             final DBFHeader header = reader.getHeader();
-            assertEquals(123, header.year);
-            assertEquals(10, header.month);
-            assertEquals(27, header.day);
+            assertEquals(123, header.lastUpdate.getYear()-1900);
+            assertEquals(10, header.lastUpdate.getMonthValue());
+            assertEquals(27, header.lastUpdate.getDayOfMonth());
             assertEquals(2, header.nbRecord);
             assertEquals(193, header.headerSize);
             assertEquals(120, header.recordSize);
@@ -100,18 +100,18 @@ public class DBFIOTest {
             assertEquals(0,    header.fields[4].fieldDecimals);
 
 
-            final DBFRecord record1 = reader.next();
-            assertEquals(1L, record1.fields[0]);
-            assertEquals("text1", record1.fields[1]);
-            assertEquals(10L, record1.fields[2]);
-            assertEquals(20.0, record1.fields[3]);
-            assertEquals(LocalDate.of(2023, 10, 27), record1.fields[4]);
+            final Object[] record1 = reader.next();
+            assertEquals(1L, record1[0]);
+            assertEquals("text1", record1[1]);
+            assertEquals(10L, record1[2]);
+            assertEquals(20.0, record1[3]);
+            assertEquals(LocalDate.of(2023, 10, 27), record1[4]);
 
-            final DBFRecord record2 = reader.next();
-            assertEquals(2L, record2.fields[0]);
-            assertEquals(40L, record2.fields[2]);
-            assertEquals(60.0, record2.fields[3]);
-            assertEquals(LocalDate.of(2023, 10, 28), record2.fields[4]);
+            final Object[] record2 = reader.next();
+            assertEquals(2L, record2[0]);
+            assertEquals(40L, record2[2]);
+            assertEquals(60.0, record2[3]);
+            assertEquals(LocalDate.of(2023, 10, 28), record2[4]);
 
             //no more records
             assertNull(reader.next());
@@ -138,10 +138,10 @@ public class DBFIOTest {
             try (DBFReader reader = new DBFReader(cdi, StandardCharsets.US_ASCII, null);
                  DBFWriter writer = new DBFWriter(cdo)) {
 
-                writer.write(reader.getHeader());
+                writer.writeHeader(reader.getHeader());
 
-                for (DBFRecord record = reader.next(); record != null; record = reader.next()) {
-                    writer.write(record);
+                for (Object[] record = reader.next(); record != null; record = reader.next()) {
+                    writer.writeRecord(record);
                 }
             }
 
@@ -166,13 +166,13 @@ public class DBFIOTest {
         try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8, new int[]{1,3})) {
             final DBFHeader header = reader.getHeader();
 
-            final DBFRecord record1 = reader.next();
-            assertEquals("text1", record1.fields[0]);
-            assertEquals(20.0, record1.fields[1]);
+            final Object[] record1 = reader.next();
+            assertEquals("text1", record1[0]);
+            assertEquals(20.0, record1[1]);
 
-            final DBFRecord record2 = reader.next();
-            assertEquals("text2", record2.fields[0]);
-            assertEquals(60.0, record2.fields[1]);
+            final Object[] record2 = reader.next();
+            assertEquals("text2", record2[0]);
+            assertEquals(60.0, record2[1]);
 
             //no more records
             assertNull(reader.next());

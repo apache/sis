@@ -357,8 +357,7 @@ final class RawRasterStore extends RasterStore {
         ByteOrder byteOrder    = ByteOrder.nativeOrder();
         final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR);
         if (header == null) {
-            throw new DataStoreException(Resources.forLocale(getLocale())
-                    .getString(Resources.Keys.CanNotReadAuxiliaryFile_1, RawRasterStoreProvider.HDR));
+            throw new DataStoreException(cannotReadAuxiliaryFile(RawRasterStoreProvider.HDR));
         }
         for (CharSequence line : CharSequences.splitOnEOL(header)) {
             final int length   = line.length();

@@ -24,17 +24,19 @@ import java.util.EnumMap;
 import java.util.TimeZone;
 import java.io.Console;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.InvalidPathException;
+import org.apache.sis.system.Environment;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.X364;
-import org.apache.sis.pending.jdk.JDK17;
+import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.StorageConnector;
 
 
 /**
@@ -52,25 +54,6 @@ abstract class CommandRunner {
      * @see #outputBuffer
      */
     static final String TEST = "TEST";
-
-    /**
-     * Whether the use of the console writer should be avoided.
-     * In our tests with Java 21, sending non ASCII characters to the console writer in a Linux system
-     * from a JShell session resulted in wrong characters being printed, sometime followed by JShell errors.
-     * This flag is set only if the commands are run from JShell.
-     *
-     * @see #writer(Console, PrintStream)
-     */
-    @Workaround(library="jshell", version="21")
-    private static boolean avoidConsoleWriter;
-
-    /**
-     * Notifies the command runners that the use of console writer should be avoided.
-     * This method should be invoked in JShell environment only.
-     */
-    static void avoidConsoleWriter() {
-        avoidConsoleWriter = true;
-    }
 
     /**
      * The instance, used by {@link ResourcesDownloader} only.
@@ -263,29 +246,12 @@ abstract class CommandRunner {
             err = out;
         } else {
             outputBuffer = null;
-            err = writer(console, System.err);
+            err = Environment.writer(console, System.err);
             if (explicitEncoding) {
                 out = new PrintWriter(new OutputStreamWriter(System.out, encoding), true);
             } else {
-                out = writer(console, System.out);
+                out = Environment.writer(console, System.out);
             }
-        }
-    }
-
-    /**
-     * Returns the console print writer, or the given alternative if the console cannot be used.
-     *
-     * @param  console   the value of {@link System#console()}, potentially null.
-     * @param  fallback  the fallback to use if the console cannot be used.
-     * @return the writer.
-     */
-    static PrintWriter writer(final Console console, final PrintStream fallback) {
-        if (console == null) {
-            return new PrintWriter(fallback, true);
-        } else if (avoidConsoleWriter) {
-            return new PrintWriter(new OutputStreamWriter(fallback, JDK17.charset(console)), true);
-        } else {
-            return console.writer();
         }
     }
 
@@ -302,8 +268,29 @@ abstract class CommandRunner {
         if (value instanceof CharSequence) {
             return value.toString();
         }
-        final String name = key.label();
-        throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
+        throw invalidOption(key, value, null);
+    }
+
+    /**
+     * Returns the value of the specified option as a path.
+     *
+     * @param  key  the option for which to get a value.
+     * @return the requested option, or {@code null} if not present.
+     * @throws InvalidOptionException if the value is not convertible to a path.
+     */
+    final Path getOptionAsPath(final Option key) throws InvalidOptionException {
+        final Object value = options.get(key);
+        if (value == null) return null;
+        if (value instanceof Path) {
+            return (Path) value;
+        }
+        Throwable cause = null;
+        if (value instanceof CharSequence) try {
+            return Path.of(value.toString());
+        } catch (InvalidPathException e) {
+            cause = e;
+        }
+        throw invalidOption(key, value, cause);
     }
 
     /**
@@ -370,10 +357,66 @@ abstract class CommandRunner {
     }
 
     /**
+     * Prints the given color to the standard output stream if ANSI X3.64
+     * escape sequences are enabled, or does nothing otherwise.
+     *
+     * @param  code  the ANSI X3.64 color to print.
+     */
+    final void color(final X364 code) {
+        color(colors, out, code);
+    }
+
+    /**
+     * Prints the given color to the given stream if ANSI X3.64
+     * escape sequences are enabled, or does nothing otherwise.
+     *
+     * @param  colors  the condition for printing the color. Usually {@link #colors}.
+     * @param  out     where to print the ANSI sequence. Usually {@link #out} or {@link #err}.
+     * @param  code    the ANSI X3.64 color to print.
+     */
+    static void color(final boolean colors, final PrintWriter out, final X364 code) {
+        if (colors) {
+            out.print(code.sequence());
+        }
+    }
+
+    /**
      * Returns {@code true} if the command should use the standard input.
      */
     final boolean useStandardInput() {
         return files.isEmpty() && System.console() == null;
+    }
+
+    /**
+     * Returns a storage connector for the specified input.
+     * This method should be invoked only for the input, not for the output, because it uses input-specific options.
+     * Conversely, this storage connector does <strong>not</strong> include the options intended for console output
+     * such as {@linkplain #locale}, {@link #timezone} and {@linkplain #encoding}.
+     *
+     * @param  input  the storage input.
+     * @return storage connector for the specified input.
+     * @throws InvalidOptionException if an option has an invalid value.
+     */
+    final StorageConnector inputConnector(final Object input) throws InvalidOptionException {
+        final var connector = new StorageConnector(input);
+        final Path p = getOptionAsPath(Option.METADATA);
+        if (p != null) {
+            connector.setOption(DataOptionKey.METADATA_PATH, p);
+        }
+        return connector;
+    }
+
+    /**
+     * Returns the exception to throw for an invalid option.
+     *
+     * @param  key    the requested option.
+     * @param  value  the value associated to the specified option.
+     * @param  cause  cause of the invalidity, or {@code null} if none.
+     * @return the exception to throw.
+     */
+    private static InvalidOptionException invalidOption(Option key, Object value, Throwable cause) {
+        final String name = key.label();
+        return new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), cause, name);
     }
 
     /**

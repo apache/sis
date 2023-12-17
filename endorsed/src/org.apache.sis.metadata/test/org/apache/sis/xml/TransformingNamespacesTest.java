@@ -26,7 +26,7 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
@@ -109,7 +109,7 @@ public final class TransformingNamespacesTest extends TestCase implements Namesp
          */
         assertNull(getPrefix(LegacyNamespaces.GMD));                // This test is useless if this is non-null.
         final String prefix = fns.getPrefix(LegacyNamespaces.GMD);
-        assertTrue(prefix, prefixes().contains(prefix));
+        assertTrue(prefixes().contains(prefix), prefix);
     }
 
     /**

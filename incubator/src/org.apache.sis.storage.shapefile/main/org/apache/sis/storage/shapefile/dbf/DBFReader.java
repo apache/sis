@@ -22,11 +22,16 @@ import org.apache.sis.io.stream.ChannelDataInput;
 
 
 /**
- * Seekable dbf file reader.
+ * Seekable DBase file reader.
  *
  * @author Johann Sorel (Geomatys)
  */
 public final class DBFReader implements AutoCloseable {
+
+    /**
+     * Unique instance used to mark a record which has been deleted.
+     */
+    public static final Object[] DELETED_RECORD = new Object[0];
 
     static final int TAG_PRESENT = 0x20;
     static final int TAG_DELETED = 0x2a;
@@ -38,9 +43,12 @@ public final class DBFReader implements AutoCloseable {
     private int nbRead = 0;
 
     /**
+     * Constructor.
+     *
      * @param channel to read from
      * @param charset text encoding
      * @param fieldsToRead fields index in the header to decode, other fields will be skipped. must be in increment order.
+     * @throws IOException if a decoding error occurs on the header
      */
     public DBFReader(ChannelDataInput channel, Charset charset, int[] fieldsToRead) throws IOException {
         this.channel = channel;
@@ -49,24 +57,36 @@ public final class DBFReader implements AutoCloseable {
         this.fieldsToRead = fieldsToRead;
     }
 
+    /**
+     * Get decoded header.
+     *
+     * @return Dbase file header
+     */
     public DBFHeader getHeader() {
         return header;
     }
 
+    /**
+     * Move channel to given position.
+     *
+     * @param position new position
+     * @throws IOException if the stream cannot be moved to the given position.
+     */
     public void moveToOffset(long position) throws IOException {
         channel.seek(position);
     }
 
     /**
+     * Get next record.
      *
-     * @return record or DBFRecord.DELETED if this record has been deleted.
+     * @return record or DBFReader.DELETED_RECORD if this record has been deleted.
      * @throws IOException if a decoding error occurs
      */
-    public DBFRecord next() throws IOException {
+    public Object[] next() throws IOException {
         if (nbRead >= header.nbRecord) {
             //reached records end
             //we do not trust the EOF if we already have the expected count
-            //some writes do not have it
+            //some incorrect files do not have it
             return null;
         }
         nbRead++;
@@ -74,27 +94,26 @@ public final class DBFReader implements AutoCloseable {
         final int marker = channel.readUnsignedByte();
         if (marker == TAG_DELETED) {
             channel.seek(channel.getStreamPosition() + header.recordSize);
-            return DBFRecord.DELETED;
+            return DELETED_RECORD;
         } else if (marker == TAG_EOF) {
             return null;
         } else if (marker != TAG_PRESENT) {
             throw new IOException("Unexpected record marker " + marker);
         }
 
-        final DBFRecord record = new DBFRecord();
-        record.fields = new Object[header.fields.length];
+        Object[] record;
         if (fieldsToRead == null) {
             //read all fields
-            record.fields = new Object[header.fields.length];
+            record = new Object[header.fields.length];
             for (int i = 0; i < header.fields.length; i++) {
-                record.fields[i] = header.fields[i].readValue(channel);
+                record[i] = header.fields[i].readValue(channel);
             }
         } else {
             //read only selected fields
-            record.fields = new Object[fieldsToRead.length];
+            record = new Object[fieldsToRead.length];
             for (int i = 0,k = 0; i < header.fields.length; i++) {
                 if (k < fieldsToRead.length && fieldsToRead[k] == i) {
-                    record.fields[k++] = header.fields[i].readValue(channel);
+                    record[k++] = header.fields[i].readValue(channel);
                 } else {
                     //skip this field
                     channel.seek(channel.getStreamPosition() + header.fields[i].fieldLength);
@@ -105,8 +124,11 @@ public final class DBFReader implements AutoCloseable {
         return record;
     }
 
-
-
+    /**
+     * Release reader resources.
+     *
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     public void close() throws IOException {
         channel.channel.close();

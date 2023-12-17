@@ -30,7 +30,7 @@ import org.apache.sis.xml.XLink;
 
 
 /**
- * A map of identifiers which support {@code put} and {@code remove} operations.
+ * A map of identifiers which supports {@code put} and {@code remove} operations.
  *
  * <h2>Thread safety</h2>
  * This class is thread safe if the underlying identifier collection is thread safe.

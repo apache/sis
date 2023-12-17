@@ -655,6 +655,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short NestedElementNotAllowed_1 = 94;
 
         /**
+         * The object is nil for the following reason: {0}.
+         */
+        public static final short NilObject_1 = 204;
+
+        /**
          * No value is associated to “{0}”.
          */
         public static final short NoSuchValue_1 = 95;

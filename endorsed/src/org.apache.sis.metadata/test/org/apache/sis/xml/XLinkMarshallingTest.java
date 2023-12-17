@@ -28,8 +28,7 @@ import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -77,10 +76,10 @@ public final class XLinkMarshallingTest extends TestCase {
      */
     private static void verify(final boolean isNilExpected, final DefaultMetadata metadata) {
         final Identification identification = getSingleton(metadata.getIdentificationInfo());
-        assertEquals("NilObject", isNilExpected, identification instanceof NilObject);
-        assertInstanceOf("Identification", IdentifiedObject.class, identification);
+        assertEquals(isNilExpected, identification instanceof NilObject, "NilObject");
+        assertInstanceOf(IdentifiedObject.class, identification, "Identification");
         final XLink xlink = ((IdentifiedObject) identification).getIdentifierMap().getSpecialized(IdentifierSpace.XLINK);
-        assertEquals("xlink:href", "http://test.net", xlink.getHRef().toString());
+        assertEquals("http://test.net", xlink.getHRef().toString(), "xlink:href");
     }
 
     /**
