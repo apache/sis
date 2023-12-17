@@ -36,6 +36,13 @@ public final class ShapeReader implements AutoCloseable{
     private final ShapeGeometryEncoder geomParser;
     private final Rectangle2D.Double filter;
 
+    /**
+     * Construct reader from given channel and an optional rectangle filter.
+     *
+     * @param channel to read from
+     * @param filter optional filtering rectangle
+     * @throws IOException if a decoding error occurs
+     */
     public ShapeReader(ChannelDataInput channel, Rectangle2D.Double filter) throws IOException {
         Objects.nonNull(channel);
         this.channel = channel;
@@ -45,14 +52,31 @@ public final class ShapeReader implements AutoCloseable{
         geomParser = ShapeGeometryEncoder.getEncoder(header.shapeType);
     }
 
+    /**
+     * Get header.
+     *
+     * @return shapefile header
+     */
     public ShapeHeader getHeader() {
         return header;
     }
 
+    /**
+     * Move channel to given position.
+     *
+     * @param position new position
+     * @throws IOException if the stream cannot be moved to the given position.
+     */
     public void moveToOffset(long position) throws IOException {
         channel.seek(position);
     }
 
+    /**
+     * Get next record.
+     *
+     * @return record or null if there is no more record
+     * @throws IOException if a decoding error occurs
+     */
     public ShapeRecord next() throws IOException {
         final ShapeRecord record = new ShapeRecord();
         try {
@@ -72,6 +96,11 @@ public final class ShapeReader implements AutoCloseable{
         }
     }
 
+    /**
+     * Release reader resources.
+     *
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     public void close() throws IOException {
         channel.channel.close();

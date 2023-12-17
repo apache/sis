@@ -23,7 +23,7 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -46,22 +46,22 @@ public final class TransformerTest extends TestCase {
     public void testLoad() {
         final Set<String> targets = new HashSet<>(12);
         final Map<String, Map<String,String>> namespaces = Transformer.load(false, TransformingReader.FILENAME, targets, 260);
-        assertTrue(LegacyNamespaces.GMI_ALIAS, targets.contains(LegacyNamespaces.GMI_ALIAS));
-        assertTrue(LegacyNamespaces.GMI, targets.contains(LegacyNamespaces.GMI));
-        assertTrue(LegacyNamespaces.GMD, targets.contains(LegacyNamespaces.GMD));
-        assertTrue(LegacyNamespaces.SRV, targets.contains(LegacyNamespaces.SRV));
-        assertTrue(LegacyNamespaces.GCO, targets.contains(LegacyNamespaces.GCO));
-        assertTrue(LegacyNamespaces.GMX, targets.contains(LegacyNamespaces.GMX));
-        assertTrue(LegacyNamespaces.GML, targets.contains(LegacyNamespaces.GML));
+        assertTrue(targets.contains(LegacyNamespaces.GMI_ALIAS), LegacyNamespaces.GMI_ALIAS);
+        assertTrue(targets.contains(LegacyNamespaces.GMI),       LegacyNamespaces.GMI      );
+        assertTrue(targets.contains(LegacyNamespaces.GMD),       LegacyNamespaces.GMD      );
+        assertTrue(targets.contains(LegacyNamespaces.SRV),       LegacyNamespaces.SRV      );
+        assertTrue(targets.contains(LegacyNamespaces.GCO),       LegacyNamespaces.GCO      );
+        assertTrue(targets.contains(LegacyNamespaces.GMX),       LegacyNamespaces.GMX      );
+        assertTrue(targets.contains(LegacyNamespaces.GML),       LegacyNamespaces.GML      );
 
         Map<String, String> m = namespaces.get("CI_Citation");
-        assertNotNull("CI_Citation", m);
-        assertEquals("title",   Namespaces.CIT, m.get("title"));
-        assertEquals("edition", Namespaces.CIT, m.get("edition"));
+        assertNotNull(m, "CI_Citation");
+        assertEquals(Namespaces.CIT, m.get("title"), "title");
+        assertEquals(Namespaces.CIT, m.get("edition"), "edition");
 
         m = namespaces.get("MD_Metadata");
-        assertNotNull("MD_Metadata", m);
-        assertEquals("identificationInfo",        Namespaces.MDB, m.get("identificationInfo"));
-        assertEquals("spatialRepresentationInfo", Namespaces.MDB, m.get("spatialRepresentationInfo"));
+        assertNotNull(m, "MD_Metadata");
+        assertEquals(Namespaces.MDB, m.get("identificationInfo"), "identificationInfo");
+        assertEquals(Namespaces.MDB, m.get("spatialRepresentationInfo"), "spatialRepresentationInfo");
     }
 }

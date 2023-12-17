@@ -28,6 +28,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Constants;
+import static org.apache.sis.util.internal.Strings.isNullOrEmpty;
 import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.metadata.sql.util.SQLUtilities;
 
@@ -399,13 +400,6 @@ public class SQLTranslator implements Function<String,String> {
     }
 
     /**
-     * If {@code true} if the given string is null or empty.
-     */
-    private static boolean isEmpty(final String s) {
-        return (s == null) || s.isEmpty();
-    }
-
-    /**
      * Adapts the given SQL statement from the original MS-Access dialect to the dialect of the target database.
      * Table and column names may also be replaced.
      *
@@ -414,7 +408,7 @@ public class SQLTranslator implements Function<String,String> {
      */
     @Override
     public String apply(final String sql) {
-        if (quote.isEmpty() && accessToAnsi.isEmpty() && isEmpty(schema) && isEmpty(catalog)) {
+        if (quote.isEmpty() && accessToAnsi.isEmpty() && isNullOrEmpty(schema) && isNullOrEmpty(catalog)) {
             return sql;
         }
         final StringBuilder ansi = new StringBuilder(sql.length() + 16);
@@ -485,10 +479,10 @@ public class SQLTranslator implements Function<String,String> {
      * This is used mostly for appending table names, but can also be used for appending enumeration types.
      */
     private void appendIdentifier(final StringBuilder buffer, final String identifier) {
-        if (!isEmpty(catalog)) {
+        if (!isNullOrEmpty(catalog)) {
             buffer.append(quote).append(catalog).append(quote).append('.');
         }
-        if (!isEmpty(schema)) {
+        if (!isNullOrEmpty(schema)) {
             buffer.append(quote).append(schema).append(quote).append('.');
         }
         if (quoteTableNames) {

@@ -29,7 +29,7 @@ import org.apache.sis.util.Characters;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -136,7 +136,7 @@ public final class UnitFormatTest extends TestCase {
         verify(declared, "DECIBEL",             "",             "dB",    "decibel",                 Units.DECIBEL);
         verify(declared, "GAL",                 "L∕T²",         "Gal",   "gal",                     Units.GAL);
         verify(declared, "METRES_PER_SECOND_SQUARED", "L∕T²",   "m∕s²",  "metres per second squared", Units.METRES_PER_SECOND_SQUARED);
-        assertTrue("Missing units in test:" + declared, declared.isEmpty());
+        assertTrue(declared.isEmpty(), () -> "Missing units in test:" + declared);
     }
 
     /**
@@ -150,19 +150,19 @@ public final class UnitFormatTest extends TestCase {
      * @param unit       the unit to verify.
      */
     private static void verify(final Set<String> declared, final String field, final String dimension, final String symbol, final String name, final Unit<?> unit) {
-        assertEquals(field, dimension, String.valueOf(unit.getDimension()));
-        assertEquals(field, symbol,    UnitFormat.INSTANCE.format(unit));
+        assertEquals(dimension, String.valueOf(unit.getDimension()), field);
+        assertEquals(symbol, UnitFormat.INSTANCE.format(unit), field);
         if (name != null) {
-            assertEquals(field, name, UnitFormat.getBundle(Locale.UK).getString(symbol));
+            assertEquals(name, UnitFormat.getBundle(Locale.UK).getString(symbol), field);
             for (int i=0; i<name.length();) {
                 final int c = name.codePointAt(i);
-                assertTrue(name, AbstractUnit.isSymbolChar(c) || Character.isWhitespace(c));
+                assertTrue(AbstractUnit.isSymbolChar(c) || Character.isWhitespace(c), name);
                 i += Character.charCount(c);
             }
         }
         for (int i=0; i<symbol.length();) {
             final int c = symbol.codePointAt(i);
-            assertTrue(symbol, AbstractUnit.isSymbolChar(c) || Characters.isSuperScript(c) || c == '∕');
+            assertTrue(AbstractUnit.isSymbolChar(c) || Characters.isSuperScript(c) || c == '∕', symbol);
             i += Character.charCount(c);
         }
         declared.remove(field);
@@ -196,23 +196,15 @@ public final class UnitFormatTest extends TestCase {
         assertEquals("mètre", f.format(Units.METRE));
         assertEquals("sFoo",  f.format(Units.SECOND));
         assertSame(Units.METRE, f.parse("mètre"));
-        try {
-            f.parse("mFoo");
-            fail("“mFoo” should not be assigned to unit anymore.");
-        } catch (MeasurementParseException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("mFoo"));
-        }
-        /*
-         * Verify that we cannot specify invalid unit label.
-         */
-        try {
-            f.label(Units.METRE, "m¹");
-            fail("Should not accept labels ending with a digit.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("m¹"));
-        }
+
+        String message;
+        // “mFoo” should not be assigned to unit anymore.
+        message = assertThrows(MeasurementParseException.class, () -> f.parse("mFoo")).getMessage();
+        assertTrue(message.contains("mFoo"), message);
+
+        // Should not accept labels ending with a digit.
+        message = assertThrows(IllegalArgumentException.class, () -> f.label(Units.METRE, "m¹")).getMessage();
+        assertTrue(message.contains("m¹"), message);
     }
 
     /**
@@ -396,23 +388,18 @@ public final class UnitFormatTest extends TestCase {
         assertSame(Units.CELSIUS,       f.parse("deg C"));
         assertSame(Units.WATT,          f.parse("watt"));
         assertSame(Units.UNITY,         f.parse("unity"));
-        try {
-            f.parse("degree foo");
-            fail("Should not accept unknown unit.");
-        } catch (MeasurementParseException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("degree"));
-            assertTrue(message, message.contains("foo"));
-        }
-        // Tests with localisation.
-        try {
-            f.parse("mètre cube");
-            fail("Should not accept localized unit unless requested.");
-        } catch (MeasurementParseException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("mètre"));
-            assertTrue(message, message.contains("cube"));
-        }
+
+        String message;
+        // Should not accept unknown unit.
+        message = assertThrows(MeasurementParseException.class, () -> f.parse("degree foo")).getMessage();
+        assertTrue(message.contains("degree"), message);
+        assertTrue(message.contains("foo"), message);
+
+        // Should not accept localized unit unless requested.
+        message = assertThrows(MeasurementParseException.class, () -> f.parse("mètre cube")).getMessage();
+        assertTrue(message.contains("mètre"), message);
+        assertTrue(message.contains("cube"), message);
+
         f.setLocale(Locale.FRANCE);
         assertSame(Units.CUBIC_METRE, f.parse("mètre cube"));
     }
@@ -437,6 +424,16 @@ public final class UnitFormatTest extends TestCase {
         assertSame(Units.METRE,             f.parse("EPSG:9001"));
         assertSame(Units.METRE,             f.parse("urn:ogc:def:uom:EPSG::9001"));
         assertSame(Units.METRES_PER_SECOND, f.parse("urn:ogc:def:uom:EPSG::1026"));
+    }
+
+    /**
+     * Tests parsing a unit defined by a URL.
+     */
+    @Test
+    public void testParseURL() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.METRE, f.parse("http://www.opengis.net/def/uom/EPSG/0/9001"));
+        assertSame(Units.DAY,   f.parse("http://www.opengis.net/def/uom/UCUM/0/d"));
     }
 
     /**
@@ -480,21 +477,19 @@ public final class UnitFormatTest extends TestCase {
          * When the unit contain an exponent, the conversion factor shall be raised
          * to that exponent too.
          */
-        assertEquals("km²", 1E+6, Units.toStandardUnit(f.parse("km²")), STRICT);
-        assertEquals("kJ²", 1E+6, Units.toStandardUnit(f.parse("kJ²")), STRICT);
+        assertEquals(1E+6, Units.toStandardUnit(f.parse("km²")), "km²");
+        assertEquals(1E+6, Units.toStandardUnit(f.parse("kJ²")), "kJ²");
         /*
          * Verify that prefix are not accepted for conventional units. It would either be illegal prefix duplication
          * (for example we should not accept "kkm" as if it was "k" + "km") or confusing (for example "a" stands for
          * the tropical year, "ha" could be understood as 100 tropical years but is actually used for hectare).
          */
         assertSame(Units.TROPICAL_YEAR, f.parse("a"));
-        try {
-            f.parse("ka");
-            fail("Should not accept prefix in ConventionalUnit.");
-        } catch (MeasurementParseException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("ka"));
-        }
+
+        String message;
+        // Should not accept prefix in ConventionalUnit.
+        message = assertThrows(MeasurementParseException.class, () -> f.parse("ka")).getMessage();
+        assertTrue(message.contains("ka"), message);
     }
 
     /**
@@ -522,14 +517,12 @@ public final class UnitFormatTest extends TestCase {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.METRES_PER_SECOND, f.parse("m s**-1"));
         assertEqualsIgnoreSymbol(Units.KILOGRAM.divide(Units.SQUARE_METRE), f.parse("kg m**-2"));
-        try {
-            f.parse("degree minute");
-            fail("Should not accept unknown sentence even if each individual word is known.");
-        } catch (MeasurementParseException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("degree"));
-            assertTrue(message, message.contains("minute"));
-        }
+
+        // Should not accept unknown sentence even if each individual word is known.
+        String message;
+        message = assertThrows(MeasurementParseException.class, () -> f.parse("degree minute")).getMessage();
+        assertTrue(message.contains("degree"), message);
+        assertTrue(message.contains("minute"), message);
     }
 
     /**
@@ -619,8 +612,8 @@ public final class UnitFormatTest extends TestCase {
         final UnitFormat f = new UnitFormat(Locale.UK);
         final ParsePosition pos = new ParsePosition(4);
         assertSame(Units.CENTIMETRE, f.parse("ABC cm foo", pos));
-        assertEquals("ParsePosition.getIndex()", 6, pos.getIndex());
-        assertEquals("ParsePosition.getErrorIndex()", -1, pos.getErrorIndex());
+        assertEquals( 6, pos.getIndex(), "ParsePosition.getIndex()");
+        assertEquals(-1, pos.getErrorIndex(), "ParsePosition.getErrorIndex()");
         /*
          * Adding "cm DEF" as a unit label should allow UnitFormat to recognize those characters.
          * We associate a random unit to that label, just for testing purpose.
@@ -628,8 +621,8 @@ public final class UnitFormatTest extends TestCase {
         pos.setIndex(4);
         f.label(Units.HECTARE, "cm foo");
         assertEqualsIgnoreSymbol(Units.HECTARE, f.parse("ABC cm foo", pos));
-        assertEquals("ParsePosition.getIndex()", 10, pos.getIndex());
-        assertEquals("ParsePosition.getErrorIndex()", -1, pos.getErrorIndex());
+        assertEquals(10, pos.getIndex(), "ParsePosition.getIndex()");
+        assertEquals(-1, pos.getErrorIndex(), "ParsePosition.getErrorIndex()");
     }
 
     /**

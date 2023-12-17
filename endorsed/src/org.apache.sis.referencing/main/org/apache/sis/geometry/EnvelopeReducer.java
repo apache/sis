@@ -62,6 +62,8 @@ class EnvelopeReducer {
 
     /**
      * The public method from {@link Envelopes} which is using this envelope reducer.
+     * Used for logging purposes in case of error during the calculation of the envelope
+     * to use as a hint for finding an operation between a pair of CRS.
      */
     private final String caller;
 

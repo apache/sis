@@ -231,6 +231,8 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     @Override
     public void setBounds(final Envelope envelope) throws TransformException {
         checkWritePermission(valueIfDefined(spatialExtent));
-        ReferencingServices.getInstance().setBounds(envelope, this);
+        if (!ReferencingServices.getInstance().setBounds(envelope, this)) {
+            throw new NotSpatioTemporalException(3, envelope);
+        }
     }
 }

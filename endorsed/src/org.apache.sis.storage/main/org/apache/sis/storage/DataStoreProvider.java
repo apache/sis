@@ -25,14 +25,14 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.simple.SimpleFormat;
-import org.apache.sis.storage.base.URIDataStore;
-import org.apache.sis.io.stream.Markable;
-import org.apache.sis.io.stream.RewindableLineReader;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
+import org.apache.sis.io.stream.Markable;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.measure.Range;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
@@ -443,7 +443,7 @@ public abstract class DataStoreProvider {
                  * from using marks, but without wrapper if we can safely expose a `BufferedReader`
                  * (because users may want to use the `BufferedReader.readLine()` method).
                  */
-                final RewindableLineReader r = (RewindableLineReader) input;
+                final var r = (RewindableLineReader) input;
                 r.protectedMark();
                 result = prober.test(input);
                 r.protectedReset();

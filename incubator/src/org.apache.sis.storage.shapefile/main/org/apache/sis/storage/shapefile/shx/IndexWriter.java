@@ -32,35 +32,56 @@ public final class IndexWriter implements AutoCloseable{
 
     private ShapeHeader header;
 
-    public IndexWriter(ChannelDataOutput channel) throws IOException {
+    /**
+     * Constructor.
+     *
+     * @param channel to write into
+     */
+    public IndexWriter(ChannelDataOutput channel) {
         this.channel = channel;
     }
 
+    /**
+     * Get shapefile header, null before the call to writeHeader.
+     *
+     * @return shapefile header
+     */
     public ShapeHeader getHeader() {
         return header;
     }
     /**
      * Header will be copied and modified.
      * Use getHeader to obtain the new header.
+     *
+     * @param header to write
+     * @throws IOException If an I/O error occurs
      */
-    public void write(ShapeHeader header) throws IOException {
+    public void writeHeader(ShapeHeader header) throws IOException {
         this.header = new ShapeHeader(header);
         this.header.fileLength = 0;
         header.write(channel);
     }
 
-    public void write(int offset, int length) throws IOException {
+    /**
+     * Write a new record.
+     *
+     * @param offset record offset
+     * @param length record length
+     * @throws IOException If an I/O error occurs
+     */
+    public void writeRecord(int offset, int length) throws IOException {
         channel.writeInt(offset);
         channel.writeInt(length);
     }
 
-    public void flush() throws IOException {
-        channel.flush();
-    }
-
+    /**
+     * Release writer resources.
+     *
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     public void close() throws IOException {
-        flush();
+        channel.flush();
 
         //update header and rewrite it
         //update the file length

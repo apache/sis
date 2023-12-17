@@ -257,7 +257,9 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      */
     public void setBounds(final Envelope envelope) throws TransformException {
         checkWritePermission(value());
-        ReferencingServices.getInstance().setBounds(envelope, this);
+        if (!ReferencingServices.getInstance().setBounds(envelope, this)) {
+            throw new NotSpatioTemporalException(1, envelope);
+        }
     }
 
     /**

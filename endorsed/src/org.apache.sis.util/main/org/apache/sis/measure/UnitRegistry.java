@@ -30,6 +30,7 @@ import javax.measure.format.MeasurementParseException;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -198,7 +199,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
         if ("cd".equals(s) ||
             "Hz".equals(s) || "Bq".equals(s)) existed &= ~(1    );      // Accepts dimension collisions only;
         if (unit.dimension.isDimensionless()) existed &= ~(1 | 2);      // Accepts dimension and quantity collisions.
-        return (s == null) || s.isEmpty() ? 0 : existed;
+        return Strings.isNullOrEmpty(s) ? 0 : existed;
     }
 
     /**

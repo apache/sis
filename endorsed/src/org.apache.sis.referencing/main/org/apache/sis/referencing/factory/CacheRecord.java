@@ -22,9 +22,9 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collection;
-import java.io.Console;
 import java.io.PrintWriter;
 import org.opengis.referencing.IdentifiedObject;
+import org.apache.sis.system.Environment;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
@@ -119,8 +119,7 @@ final class CacheRecord implements Comparable<CacheRecord> {
         final CacheRecord[] records = list.toArray(CacheRecord[]::new);
         Arrays.sort(records);
         if (out == null) {
-            final Console c = System.console();
-            out = (c != null) ? c.writer() : new PrintWriter(System.out);
+            out = Environment.writer();
         }
         for (final CacheRecord record : records) {
             out.print(record.key);

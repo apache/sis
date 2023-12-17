@@ -29,8 +29,7 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPAC
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -82,8 +81,8 @@ public final class CharSequenceSubstitutionTest extends TestCase {
 
         final ReferenceSystemMetadata md = unmarshal(ReferenceSystemMetadata.class, expected);
         final ReferenceIdentifier id = md.getName();
-        assertEquals("codespace", "L101", id.getCodeSpace());
-        assertEquals("code", "EPSG:4326", id.getCode());
+        assertEquals("L101", id.getCodeSpace(), "codespace");
+        assertEquals("EPSG:4326", id.getCode(), "code");
     }
 
     /**
@@ -109,8 +108,8 @@ public final class CharSequenceSubstitutionTest extends TestCase {
                 "</mcc:MD_Identifier>";
 
         final DefaultIdentifier id = unmarshal(DefaultIdentifier.class, expected);
-        assertEquals("codespace", "L101", id.getCodeSpace());
-        assertEquals("code", "EPSG:4326", id.getCode());
+        assertEquals("L101", id.getCodeSpace(), "codespace");
+        assertEquals("EPSG:4326", id.getCode(), "code");
     }
 
     /**
@@ -177,8 +176,8 @@ public final class CharSequenceSubstitutionTest extends TestCase {
                 "</mri:MD_DataIdentification>";
 
         final DataIdentification id = unmarshal(DataIdentification.class, expected);
-        assertEquals("purpose", "Investigation", String.valueOf(id.getPurpose()));
-        assertSame("purpose", InitiativeType.INVESTIGATION, Types.forCodeTitle(id.getPurpose()));
+        assertEquals("Investigation", String.valueOf(id.getPurpose()), "purpose");
+        assertSame(InitiativeType.INVESTIGATION, Types.forCodeTitle(id.getPurpose()), "purpose");
 
         final String actual = marshal(id);
         assertXmlEquals(expected, actual, "xmlns:*");
@@ -203,7 +202,7 @@ public final class CharSequenceSubstitutionTest extends TestCase {
                 "</gmi:MI_Instrument>";
 
         final Instrument instrument = unmarshal(Instrument.class, expected);
-        assertEquals("type", "RADIOMETER", String.valueOf(instrument.getType()));
-        assertInstanceOf("type", SensorType.class, Types.forCodeTitle(instrument.getType()));
+        assertEquals("RADIOMETER", String.valueOf(instrument.getType()), "type");
+        assertInstanceOf(SensorType.class, Types.forCodeTitle(instrument.getType()), "type");
     }
 }

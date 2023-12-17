@@ -19,18 +19,15 @@ package org.apache.sis.storage.shapefile.shp;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.nio.ByteOrder;
-
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
-import org.locationtech.jts.geom.MultiPoint;
-import org.locationtech.jts.geom.Point;
-
 
 /**
+ * A record in a shape file.
+ * Contains a unique record number and it's associated geometry.
+ *
  * @author Johann Sorel (Geomatys)
  */
 public final class ShapeRecord {
@@ -40,19 +37,36 @@ public final class ShapeRecord {
      */
     public int recordNumber;
     /**
-     * Encoded geometry.
+     * Record geometry
      */
-    public byte[] content;
-
     public Geometry geometry;
-
+    /**
+     * Geometry bounding box
+     */
     public GeneralEnvelope bbox;
+
+    /**
+     * Default constructor
+     */
+    public ShapeRecord() {
+    }
+
+    /**
+     * Constructor with initialization.
+     *
+     * @param recordNumber initial record number
+     * @param geometry initial geometry
+     */
+    public ShapeRecord(int recordNumber, Geometry geometry) {
+        this.recordNumber = recordNumber;
+        this.geometry = geometry;
+    }
 
     /**
      * Read this shape record.
      *
      * @param channel input channel, not null
-     * @param io geometry decoder, if null gemetry content will be stored in content array, otherwise geometry will be parsed
+     * @param io geometry decoder
      * @param filter optional filter envelope to stop geometry decoding as soon as possible
      * @return true if geometry pass the filter or if there is no filter
      * @throws IOException if an error occurred while reading.
@@ -66,31 +80,26 @@ public final class ShapeRecord {
         final long position = channel.getStreamPosition();
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         final int shapeType = channel.readInt();
-        if (io == null) {
-            content = channel.readBytes(byteSize);
-            return true;
-        } else {
-            final boolean match = io.decode(channel,this, filter);
-            if (!match) {
-                //move to record end
-                channel.seek(position + byteSize);
-            }
-            return match;
+        final boolean match = io.decode(channel,this, filter);
+        if (!match) {
+            //move to record end
+            channel.seek(position + byteSize);
         }
+        return match;
     }
 
     /**
      * Write this shape record.
      * @param channel output channel to write into, not null
      * @param io geometry encoder
-     * @throws IOException
+     * @throws IOException if an error occurred while writing.
      */
     public void write(ChannelDataOutput channel, ShapeGeometryEncoder io) throws IOException {
         channel.buffer.order(ByteOrder.BIG_ENDIAN);
         channel.writeInt(recordNumber);
         channel.writeInt((io.getEncodedLength(geometry) + 4) / 2); // +4 for shape type and /2 because size is in 16bit words
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
-        channel.writeInt(io.getShapeType());
+        channel.writeInt(io.getShapeType().getCode());
         io.encode(channel, this);
     }
 }

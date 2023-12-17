@@ -161,24 +161,22 @@ final class AboutCommand extends CommandRunner {
         if (warnings != null) {
             out.println();
             if (colors) {
-                out.print(X364.BACKGROUND_RED.sequence());
-                out.print(X364.BOLD.sequence());
+                color(X364.BACKGROUND_RED);
+                color(X364.BOLD);
                 out.print(' ');
             }
             Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Warnings, out);
             if (colors) {
                 out.print(' ');
                 out.println(X364.RESET.sequence());
-                out.print(X364.FOREGROUND_RED.sequence());
+                color(X364.FOREGROUND_RED);
             } else {
                 out.println();
             }
             for (final String warning : warnings) {
                 out.println(warning);
             }
-            if (colors) {
-                out.print(X364.FOREGROUND_DEFAULT.sequence());
-            }
+            color(X364.FOREGROUND_DEFAULT);
         }
         out.flush();
         return 0;

@@ -23,8 +23,7 @@ import org.opengis.metadata.citation.Citation;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
@@ -133,11 +132,11 @@ public final class UUIDMarshallingTest extends TestCase {
          * which is the main object of interest in this test.
          */
         final Series series = citation.getSeries();
-        assertFalse("Unexpected proxy", Proxy.isProxyClass(series.getClass()));
-        assertInstanceOf("Expected IdentifiedObject", IdentifiedObject.class, series);
+        assertFalse(Proxy.isProxyClass(series.getClass()), "Citation.series.isProxy");
+        assertInstanceOf(IdentifiedObject.class, series, "Citation.series");
         final IdentifierMap map = ((IdentifiedObject) series).getIdentifierMap();
-        assertEquals("series", "My aggregate dataset",  series.getName().toString());
-        assertNull  ("href", map.get(IdentifierSpace.HREF));
+        assertEquals("My aggregate dataset",  series.getName().toString(), "series");
+        assertNull(map.get(IdentifierSpace.HREF), "href");
         assertEquals(UUID_VALUE, String.valueOf(map.get(IdentifierSpace.UUID)));
         /*
          * Marshal the object back to XML and compare with the original string
@@ -184,12 +183,12 @@ public final class UUIDMarshallingTest extends TestCase {
          * which is the main object of interest in this test.
          */
         final Series series = citation.getSeries();
-        assertInstanceOf("Citation.series", IdentifiedObject.class, series);
-        assertFalse     ("Citation.series.isProxy", Proxy.isProxyClass(series.getClass()));
-        assertEquals    ("Citation.series.name", "My aggregate dataset", series.getName().toString());
+        assertInstanceOf(IdentifiedObject.class, series, "Citation.series");
+        assertFalse(Proxy.isProxyClass(series.getClass()), "Citation.series.isProxy");
+        assertEquals("My aggregate dataset", series.getName().toString(), "Citation.series.name");
         final IdentifierMap map = ((IdentifiedObject) series).getIdentifierMap();
-        assertNull  ("href",             map.get(IdentifierSpace.HREF));
-        assertEquals("uuid", UUID_VALUE, map.get(IdentifierSpace.UUID));
+        assertNull(map.get(IdentifierSpace.HREF), "href");
+        assertEquals(UUID_VALUE, map.get(IdentifierSpace.UUID), "uuid");
         /*
          * Marshal the object back to XML and compare with the expected result. The result shall be
          * slightly different than the original XML, since the UUID in the <cit:series> element shall
@@ -217,14 +216,14 @@ public final class UUIDMarshallingTest extends TestCase {
          * which is the main object of interest in this test.
          */
         final Series series = citation.getSeries();
-        assertInstanceOf("Citation.series", IdentifiedObject.class, series);
-        assertNull      ("Citation.series.name", series.getName());
-        assertTrue      ("Citation.series.isProxy", Proxy.isProxyClass(series.getClass()));
-        assertInstanceOf("Citation.series", NilObject.class, series);
-        assertEquals    ("Series[{gco:uuid=“" + UUID_VALUE + "”}]", series.toString());
+        assertInstanceOf(IdentifiedObject.class, series, "Citation.series");
+        assertNull(series.getName(), "Citation.series.name");
+        assertTrue(Proxy.isProxyClass(series.getClass()), "Citation.series.isProxy");
+        assertInstanceOf(NilObject.class, series, "Citation.series");
+        assertEquals("Series[{gco:uuid=“" + UUID_VALUE + "”}]", series.toString());
         final IdentifierMap map = ((IdentifiedObject) series).getIdentifierMap();
-        assertNull  ("href",             map.get(IdentifierSpace.HREF));
-        assertEquals("uuid", UUID_VALUE, map.get(IdentifierSpace.UUID));
+        assertNull(map.get(IdentifierSpace.HREF), "href");
+        assertEquals(UUID_VALUE, map.get(IdentifierSpace.UUID), "uuid");
         /*
          * Marshal the object back to XML and compare with the expected result.
          */

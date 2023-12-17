@@ -136,7 +136,7 @@ import org.apache.sis.referencing.internal.Legacy;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public final class CRS extends Static {
@@ -1090,6 +1090,32 @@ public final class CRS extends Static {
     }
 
     /**
+     * Returns {@code true} if the given coordinate reference system has an horizontal component.
+     * The horizontal component may be part of a higher dimensional CRS, either in the form of a
+     * three-dimensional CRS (with an ellipsoidal height) or a compound CRS.
+     *
+     * @param  crs  the coordinate reference system, or {@code null}.
+     * @return whether the given CRS has an horizontal component.
+     *
+     * @category information
+     *
+     * @since 1.5
+     */
+    public static boolean hasHorizontalComponent(final CoordinateReferenceSystem crs) {
+        if (horizontalCode(crs) != 0) {
+            return true;
+        }
+        if (crs instanceof CompoundCRS) {
+            for (CoordinateReferenceSystem c : ((CompoundCRS) crs).getComponents()) {
+                if (hasHorizontalComponent(c)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the first horizontal coordinate reference system found in the given CRS, or {@code null} if there is
      * none. If the given CRS is already horizontal according {@link #isHorizontalCRS(CoordinateReferenceSystem)},
      * then this method returns it as-is. Otherwise if the given CRS is compound, then this method searches for the
@@ -1158,8 +1184,7 @@ public final class CRS extends Static {
             }
         }
         if (crs instanceof CompoundCRS) {
-            final CompoundCRS cp = (CompoundCRS) crs;
-            for (final CoordinateReferenceSystem c : cp.getComponents()) {
+            for (CoordinateReferenceSystem c : ((CompoundCRS) crs).getComponents()) {
                 final SingleCRS candidate = getHorizontalComponent(c);
                 if (candidate != null) {
                     return candidate;

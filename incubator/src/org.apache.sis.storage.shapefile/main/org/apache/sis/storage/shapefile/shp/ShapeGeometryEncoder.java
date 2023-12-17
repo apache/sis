@@ -24,12 +24,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.util.ArraysExt;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.algorithm.RayCrossingCounter;
-import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
@@ -40,51 +38,71 @@ import org.apache.sis.io.stream.ChannelDataOutput;
  * This class should be kept separate because I might be used in ESRI geodatabase format.
  *
  * @author Johann Sorel (Geomatys)
+ * @param <T> encoder geometry type
  */
 public abstract class ShapeGeometryEncoder<T extends Geometry> {
 
     private static final GeometryFactory GF = new GeometryFactory();
 
-    protected final int shapeType;
+    /**
+     * Encoder shape type.
+     */
+    protected final ShapeType shapeType;
+    /**
+     * Encoder java value class.
+     */
     protected final Class<T> geometryClass;
+    /**
+     * Number of dimension in the geometry.
+     */
     protected final int dimension;
+    /**
+     * Number of measures in the geometry.
+     */
     protected final int measures;
+    /**
+     * Sum of dimension and measures.
+     */
     protected final int nbOrdinates;
 
     /**
+     * Get encoder for given shape type.
      *
      * @param shapeType shape type to encode
      * @return requested encoder
      */
-    public static ShapeGeometryEncoder getEncoder(int shapeType) {
+    public static ShapeGeometryEncoder getEncoder(ShapeType shapeType) {
         switch(shapeType) {
             //2D
-            case ShapeType.VALUE_NULL: return Null.INSTANCE;
-            case ShapeType.VALUE_POINT: return PointXY.INSTANCE;
-            case ShapeType.VALUE_POLYLINE: return Polyline.INSTANCE;
-            case ShapeType.VALUE_POLYGON: return Polygon.INSTANCE;
-            case ShapeType.VALUE_MULTIPOINT: return MultiPointXY.INSTANCE;
+            case NULL: return Null.INSTANCE;
+            case POINT: return PointXY.INSTANCE;
+            case POLYLINE: return Polyline.INSTANCE;
+            case POLYGON: return Polygon.INSTANCE;
+            case MULTIPOINT: return MultiPointXY.INSTANCE;
             //2D+1
-            case ShapeType.VALUE_POINT_M: return PointXYM.INSTANCE;
-            case ShapeType.VALUE_POLYLINE_M: return Polyline.INSTANCE_M;
-            case ShapeType.VALUE_POLYGON_M: return Polygon.INSTANCE_M;
-            case ShapeType.VALUE_MULTIPOINT_M: return MultiPointXYM.INSTANCE;
+            case POINT_M: return PointXYM.INSTANCE;
+            case POLYLINE_M: return Polyline.INSTANCE_M;
+            case POLYGON_M: return Polygon.INSTANCE_M;
+            case MULTIPOINT_M: return MultiPointXYM.INSTANCE;
             //3D+1
-            case ShapeType.VALUE_POINT_ZM: return PointXYZM.INSTANCE;
-            case ShapeType.VALUE_POLYLINE_ZM: return Polyline.INSTANCE_ZM;
-            case ShapeType.VALUE_POLYGON_ZM: return Polygon.INSTANCE_ZM;
-            case ShapeType.VALUE_MULTIPOINT_ZM: return MultiPointXYZM.INSTANCE;
-            case ShapeType.VALUE_MULTIPATCH_ZM: return MultiPatch.INSTANCE;
+            case POINT_ZM: return PointXYZM.INSTANCE;
+            case POLYLINE_ZM: return Polyline.INSTANCE_ZM;
+            case POLYGON_ZM: return Polygon.INSTANCE_ZM;
+            case MULTIPOINT_ZM: return MultiPointXYZM.INSTANCE;
+            case MULTIPATCH_ZM: return MultiPatch.INSTANCE;
             default: throw new IllegalArgumentException("unknown shape type");
         }
     }
 
     /**
+     * Constructor.
+     *
      * @param shapeType shape type code.
+     * @param geometryClass java geometry class
      * @param dimension number of dimensions in processed geometries.
      * @param measures number of measures in processed geometries.
      */
-    protected ShapeGeometryEncoder(int shapeType, Class<T> geometryClass, int dimension, int measures) {
+    protected ShapeGeometryEncoder(ShapeType shapeType, Class<T> geometryClass, int dimension, int measures) {
         this.shapeType = shapeType;
         this.geometryClass = geometryClass;
         this.dimension = dimension;
@@ -93,13 +111,17 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
     }
 
     /**
-     * @return shape type code.
+     * Get shape type.
+     *
+     * @return shape type.
      */
-    public int getShapeType() {
+    public ShapeType getShapeType() {
         return shapeType;
     }
 
     /**
+     * Get java geometry value class.
+     *
      * @return geometry class handled by this encoder
      */
     public Class<T> getValueClass() {
@@ -107,6 +129,8 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
     }
 
     /**
+     * Get number of dimensions in processed geometries.
+     *
      * @return number of dimensions in processed geometries.
      */
     public final int getDimension() {
@@ -114,6 +138,8 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
     }
 
     /**
+     * Get number of measures in processed geometries.
+     *
      * @return number of measures in processed geometries.
      */
     public final int getMeasures() {
@@ -128,6 +154,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
      * @param record to read into
      * @param filter optional filter envelope to stop geometry decoding as soon as possible
      * @return true if geometry pass the filter
+     * @throws IOException If an I/O error occurs
      */
     public abstract boolean decode(ChannelDataInput channel, ShapeRecord record, Rectangle2D.Double filter) throws IOException;
 
@@ -136,6 +163,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
      *
      * @param channel to write into
      * @param shape geometry to encode
+     * @throws IOException If an I/O error occurs
      */
     public abstract void encode(ChannelDataOutput channel, ShapeRecord shape) throws IOException;
 
@@ -146,6 +174,12 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
      */
     public abstract int getEncodedLength(Geometry geom);
 
+    /**
+     * Calculate geometry bounding box.
+     *
+     * @param geom to compute
+     * @return geometry bounding box
+     */
     public abstract GeneralEnvelope getBoundingBox(Geometry geom);
 
     /**
@@ -155,6 +189,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
      * @param shape to write into
      * @param filter optional filter envelope to stop geometry decoding as soon as possible
      * @return true if filter match or is null
+     * @throws IOException If an I/O error occurs
      */
     protected boolean readBBox2D(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter) throws IOException {
         final double minX = channel.readDouble();
@@ -178,6 +213,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
      *
      * @param channel to write into
      * @param shape to read from
+     * @throws IOException If an I/O error occurs
      */
     protected void writeBBox2D(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
         final Envelope env2d = shape.geometry.getEnvelopeInternal();
@@ -188,11 +224,14 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
     }
 
     /**
+     * Read encoded lines.
+     *
      * @param channel to read from
      * @param shape to write into
      * @param filter optional filter envelope to stop geometry decoding as soon as possible
      * @param asRing true to produce LinearRing instead of LineString
      * @return null if filter do no match
+     * @throws IOException If an I/O error occurs
      */
     protected LineString[] readLines(ChannelDataInput channel, ShapeRecord shape, Rectangle2D.Double filter, boolean asRing) throws IOException {
         if (!readBBox2D(channel, shape, filter)) return null;
@@ -234,6 +273,15 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         return lines;
     }
 
+    /**
+     * Read lines ordinates.
+     *
+     * @param channel to read from
+     * @param shape to update
+     * @param lines to update
+     * @param ordinateIndex ordinate index to read
+     * @throws IOException If an I/O error occurs
+     */
     protected void readLineOrdinates(ChannelDataInput channel, ShapeRecord shape, LineString[] lines, int ordinateIndex) throws IOException {
         final int nbDim = getDimension() + getMeasures();
         shape.bbox.setRange(ordinateIndex, channel.readDouble(), channel.readDouble());
@@ -246,6 +294,13 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
     }
 
+    /**
+     * Write given lines.
+     *
+     * @param channel to write into
+     * @param shape to write
+     * @throws IOException if an I/O exception occurs
+     */
     protected void writeLines(ChannelDataOutput channel, ShapeRecord shape) throws IOException {
         writeBBox2D(channel, shape);
         final List<LineString> lines = extractRings(shape.geometry);
@@ -277,6 +332,16 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         if (nbOrdinates == 4)  writeLineOrdinates(channel, shape, lines, 3, nbPts);
     }
 
+    /**
+     * Write given lines ordinates.
+     *
+     * @param channel to write into
+     * @param shape to write
+     * @param lines to write
+     * @param ordinateIndex line coordinate ordinate to write
+     * @param nbPts number of points
+     * @throws IOException if an I/O exception occurs
+     */
     protected void writeLineOrdinates(ChannelDataOutput channel, ShapeRecord shape,List<LineString> lines, int ordinateIndex, int nbPts) throws IOException {
 
         final double[] values = new double[nbPts];
@@ -297,6 +362,12 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         channel.writeDoubles(values);
     }
 
+    /**
+     * Extract all linear elements of given geometry.
+     *
+     * @param geom to extract lines from.
+     * @return list of lines
+     */
     protected List<LineString> extractRings(Geometry geom) {
         final List<LineString> lst = new ArrayList();
         extractRings(geom, lst);
@@ -384,6 +455,12 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         }
     }
 
+    /**
+     * Compute geometry bounding box.
+     *
+     * @param geom to compute
+     * @return geometry bounding box
+     */
     protected GeneralEnvelope getLinesBoundingBox(Geometry geom) {
         final List<LineString> lines = extractRings(geom);
 
@@ -434,7 +511,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         private static final Null INSTANCE = new Null();
 
         private Null() {
-            super(ShapeType.VALUE_NULL, Geometry.class, 2, 0);
+            super(ShapeType.NULL, Geometry.class, 2, 0);
         }
 
         @Override
@@ -462,7 +539,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         private static final PointXY INSTANCE = new PointXY();
 
         private PointXY() {
-            super(ShapeType.VALUE_POINT, Point.class, 2,0);
+            super(ShapeType.POINT, Point.class, 2,0);
         }
 
         @Override
@@ -504,7 +581,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
 
         private static final PointXYM INSTANCE = new PointXYM();
         private PointXYM() {
-            super(ShapeType.VALUE_POINT_M, Point.class, 2, 1);
+            super(ShapeType.POINT_M, Point.class, 2, 1);
         }
 
         @Override
@@ -552,7 +629,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         private static final PointXYZM INSTANCE = new PointXYZM();
 
         private PointXYZM() {
-            super(ShapeType.VALUE_POINT_ZM, Point.class, 3, 1);
+            super(ShapeType.POINT_ZM, Point.class, 3, 1);
         }
 
         @Override
@@ -598,7 +675,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
 
         private static final MultiPointXY INSTANCE = new MultiPointXY();
         private MultiPointXY() {
-            super(ShapeType.VALUE_MULTIPOINT, MultiPoint.class, 2, 0);
+            super(ShapeType.MULTIPOINT, MultiPoint.class, 2, 0);
         }
 
         @Override
@@ -650,7 +727,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         private static final MultiPointXYM INSTANCE = new MultiPointXYM();
 
         private MultiPointXYM() {
-            super(ShapeType.VALUE_MULTIPOINT_M, MultiPoint.class, 2, 1);
+            super(ShapeType.MULTIPOINT_M, MultiPoint.class, 2, 1);
         }
 
         @Override
@@ -722,7 +799,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         private static final MultiPointXYZM INSTANCE = new MultiPointXYZM();
 
         private MultiPointXYZM() {
-            super(ShapeType.VALUE_MULTIPOINT_ZM, MultiPoint.class, 3, 1);
+            super(ShapeType.MULTIPOINT_ZM, MultiPoint.class, 3, 1);
         }
 
         @Override
@@ -810,11 +887,11 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
 
     private static class Polyline extends ShapeGeometryEncoder<MultiLineString> {
 
-        private static final Polyline INSTANCE = new Polyline(ShapeType.VALUE_POLYLINE, 2, 0);
-        private static final Polyline INSTANCE_M = new Polyline(ShapeType.VALUE_POLYLINE_M, 3, 0);
-        private static final Polyline INSTANCE_ZM = new Polyline(ShapeType.VALUE_POLYLINE_ZM, 3, 1);
+        private static final Polyline INSTANCE = new Polyline(ShapeType.POLYLINE, 2, 0);
+        private static final Polyline INSTANCE_M = new Polyline(ShapeType.POLYLINE_M, 3, 0);
+        private static final Polyline INSTANCE_ZM = new Polyline(ShapeType.POLYLINE_ZM, 3, 1);
 
-        private Polyline(int shapeType, int dimension, int measures) {
+        private Polyline(ShapeType shapeType, int dimension, int measures) {
             super(shapeType, MultiLineString.class, dimension, measures);
         }
 
@@ -850,11 +927,11 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
 
     private static class Polygon extends ShapeGeometryEncoder<MultiPolygon> {
 
-        private static final Polygon INSTANCE = new Polygon(ShapeType.VALUE_POLYGON, 2, 0);
-        private static final Polygon INSTANCE_M = new Polygon(ShapeType.VALUE_POLYGON_M, 3, 0);
-        private static final Polygon INSTANCE_ZM = new Polygon(ShapeType.VALUE_POLYGON_ZM, 3, 1);
+        private static final Polygon INSTANCE = new Polygon(ShapeType.POLYGON, 2, 0);
+        private static final Polygon INSTANCE_M = new Polygon(ShapeType.POLYGON_M, 3, 0);
+        private static final Polygon INSTANCE_ZM = new Polygon(ShapeType.POLYGON_ZM, 3, 1);
 
-        private Polygon(int shapeType, int dimension, int measures) {
+        private Polygon(ShapeType shapeType, int dimension, int measures) {
             super(shapeType, MultiPolygon.class, dimension, measures);
         }
 
@@ -897,7 +974,7 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         private static final MultiPatch INSTANCE = new MultiPatch();
 
         private MultiPatch() {
-            super(ShapeType.VALUE_MULTIPATCH_ZM, MultiPolygon.class, 3, 1);
+            super(ShapeType.MULTIPATCH_ZM, MultiPolygon.class, 3, 1);
         }
 
         @Override

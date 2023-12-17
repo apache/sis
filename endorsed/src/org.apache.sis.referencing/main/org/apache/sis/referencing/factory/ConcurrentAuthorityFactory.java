@@ -47,21 +47,22 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Printable;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.system.ReferenceQueueConsumer;
 import org.apache.sis.system.DelayedExecutor;
 import org.apache.sis.system.DelayedRunnable;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Shutdown;
-import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.internal.StandardDateFormat;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -102,7 +103,7 @@ import org.apache.sis.util.resources.Messages;
  * @since 0.7
  */
 public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFactory>
-        extends GeodeticAuthorityFactory implements AutoCloseable
+        extends GeodeticAuthorityFactory implements AutoCloseable, Printable
 {
     /**
      * Duration of data access operations that should be logged, in nanoseconds.
@@ -1998,6 +1999,19 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     @Debug
     public void printCacheContent(final PrintWriter out) {
         CacheRecord.printCacheContent(cache, out);
+    }
+
+    /**
+     * Prints the cache content to the standard output stream.
+     * Keys are sorted by numerical order if possible, or alphabetical order otherwise.
+     * This method is used for debugging purpose only.
+     *
+     * @see #isCacheable(String, Object)
+     */
+    @Debug
+    @Override
+    public void print() {
+        printCacheContent(null);
     }
 
     /**

@@ -316,7 +316,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * Ensures that the properties of this {@code ImmutableIdentifier} are valid.
      */
     private void validate(final Map<String,?> properties) {
-        if (code == null || code.isEmpty()) {
+        if (Strings.isNullOrEmpty(code)) {
             boolean missing = (code == null) || (properties != null && properties.get(CODE_KEY) == null);
             throw new IllegalArgumentException(Errors.getResources(properties)
                     .getString(missing ? Errors.Keys.MissingValueForProperty_1

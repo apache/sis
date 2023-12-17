@@ -35,56 +35,93 @@ import java.util.Map;
  */
 public enum ShapeType {
 
+    /**
+     * Null geometry type
+     */
     NULL (0),
+    /**
+     * Point geometry type
+     */
     POINT(1),
+    /**
+     * Polyline geometry type
+     */
     POLYLINE(3),
+    /**
+     * Polygon geometry type
+     */
     POLYGON(5),
+    /**
+     * MultiPoint geometry type
+     */
     MULTIPOINT(8),
+    /**
+     * Point with M geometry type
+     */
     POINT_M(11),
+    /**
+     * Polyline with M geometry type
+     */
     POLYLINE_M(13),
+    /**
+     * Polygon with M geometry type
+     */
     POLYGON_M(15),
+    /**
+     * MultiPoint with M geometry type
+     */
     MULTIPOINT_M(18),
+    /**
+     * Point with Z and M geometry type
+     */
     POINT_ZM(21),
+    /**
+     * Polyline with Z and M geometry type
+     */
     POLYLINE_ZM(23),
+    /**
+     * Polygon with Z and M geometry type
+     */
     POLYGON_ZM(25),
+    /**
+     * MultiPoint with Z and M geometry type
+     */
     MULTIPOINT_ZM(28),
+    /**
+     * MultiPatch with Z and M geometry type
+     */
     MULTIPATCH_ZM(31);
 
-    public static final int VALUE_NULL = 0;
-    public static final int VALUE_POINT = 1;
-    public static final int VALUE_POLYLINE = 3;
-    public static final int VALUE_POLYGON = 5;
-    public static final int VALUE_MULTIPOINT = 8;
-    public static final int VALUE_POINT_M = 11;
-    public static final int VALUE_POLYLINE_M = 13;
-    public static final int VALUE_POLYGON_M = 15;
-    public static final int VALUE_MULTIPOINT_M = 18;
-    public static final int VALUE_POINT_ZM = 21;
-    public static final int VALUE_POLYLINE_ZM = 23;
-    public static final int VALUE_POLYGON_ZM = 25;
-    public static final int VALUE_MULTIPOINT_ZM = 28;
-    public static final int VALUE_MULTIPATCH_ZM = 31;
-
-    // used for initializing the enumeration
-    public final int value;
+    private final int code;
 
     private ShapeType (int value ) {
-        this.value = value;
+        this.code = value;
     }
 
-    public int getValue() {
-        return value;
+    /**
+     * Get geometry type code.
+     *
+     * @return geometry type code
+     */
+    public int getCode() {
+        return code;
     }
 
     private static final Map<Integer, ShapeType> lookup = new HashMap<Integer, ShapeType>();
 
     static {
         for (ShapeType ste : EnumSet.allOf(ShapeType.class)) {
-            lookup.put(ste.getValue(), ste);
+            lookup.put(ste.getCode(), ste);
         }
     }
 
-    public static ShapeType get(int value) {
-        return lookup.get(value);
+    /**
+     * Get geometry type for given code.
+     *
+     * @param code geometry code
+     * @return ShapeType for given code
+     */
+    public static ShapeType get(int code) {
+        return lookup.get(code);
     }
 }

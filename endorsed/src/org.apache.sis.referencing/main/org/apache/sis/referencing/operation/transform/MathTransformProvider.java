@@ -50,22 +50,29 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * Example:
  *
  * {@snippet lang="java" :
- *     public class MyProjectionProvider extends DefaultOperationMethod implements MathTransformProvider {
- *         public MyProjectionProvider() {
- *             super(Map.of(NAME_KEY, "My projection"),
- *                     2, // Number of source dimensions
- *                     2, // Number of target dimensions
- *                     parameters);
- *         }
- *
- *         @Override
- *         public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
- *             double semiMajor = values.parameter("semi_major").doubleValue(Units.METRE);
- *             double semiMinor = values.parameter("semi_minor").doubleValue(Units.METRE);
- *             // etc...
- *             return new MyProjection(semiMajor, semiMinor, ...);
- *         }
+ * public class MyOperationProvider extends DefaultOperationMethod implements MathTransformProvider {
+ *     private static final ParameterDescriptor<Foo> FOO;
+ *     private static final ParameterDescriptor<Bar> BAR;
+ *     private static final ParameterDescriptorGroup PARAMETERS;
+ *     static {
+ *         final var builder = new ParameterBuilder();
+ *         FOO = builder.addName("Foo").create(Foo.class, null);
+ *         BAR = builder.addName("Bar").create(Bar.class, null);
+ *         PARAMETERS = builder.addName("My operation").createGroup(FOO, BAR);
  *     }
+ *
+ *     public MyOperationProvider() {
+ *         super(Map.of(NAME_KEY, PARAMETERS.getName()), PARAMETERS);
+ *     }
+ *
+ *     @Override
+ *     public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
+ *         var pg  = Parameters.castOrWrap(values);
+ *         Foo foo = pg.getMandatoryValue(FOO);
+ *         Bar bar = pg.getMandatoryValue(BAR);
+ *         return new MyOperation(foo, bar);
+ *     }
+ * }
  * }
  *
  * Then the class name of that implementation shall be declared in {@code module-info.java}

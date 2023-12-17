@@ -39,6 +39,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Printable;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -104,11 +105,11 @@ import org.apache.sis.util.resources.Errors;
  * overriding one method has no impact on other methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @XmlTransient
-public abstract class Parameters implements ParameterValueGroup, Cloneable {
+public abstract class Parameters implements ParameterValueGroup, Cloneable, Printable {
     /**
      * For subclass constructors only.
      */
@@ -976,6 +977,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * @since 0.7
      */
     @Debug
+    @Override
     public void print() {
         ParameterFormat.print(this);
     }

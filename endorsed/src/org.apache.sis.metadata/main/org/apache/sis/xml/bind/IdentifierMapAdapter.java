@@ -39,7 +39,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 /**
  * Implementation of the map of identifiers associated to {@link org.apache.sis.xml.IdentifiedObject} instances.
- * This base class implements an unmodifiable map, but the {@link ModifiableIdentifierMap} subclass add write
+ * This base class implements an unmodifiable map, but the {@link ModifiableIdentifierMap} subclass adds write
  * capabilities.
  *
  * <p>This class works as a wrapper around a collection of identifiers. Because all operations

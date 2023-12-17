@@ -181,7 +181,9 @@ final class Store extends URIDataStore {
             }
             if (count == 1) {                   // Set the citation title only if non-ambiguous.
                 builder.addTitle(name);
+                mergeAuxiliaryMetadata(builder);
             } else {
+                mergeAuxiliaryMetadata(builder);
                 addTitleOrIdentifier(builder);
             }
             metadata = builder.buildAndFreeze();

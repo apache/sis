@@ -50,6 +50,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.storage.internal.InputStreamAdapter;
 
 
 /**
@@ -71,6 +72,18 @@ public final class IOUtilities extends Static {
      * The symbol for current directory.
      */
     public static final String CURRENT_DIRECTORY_SYMBOL = ".";
+
+    /**
+     * The separator between a filename components in an URI.
+     * Declared for making easier to identify the code doing such separation.
+     */
+    public static final char URI_PATH_SEPARATOR = '/';
+
+    /**
+     * The separator between a filename and its suffix.
+     * Declared for making easier to identify the code doing such separation.
+     */
+    public static final char EXTENSION_SEPARATOR = '.';
 
     /**
      * Do not allow instantiation of this class.
@@ -113,7 +126,7 @@ public final class IOUtilities extends Static {
      * {@link URI} or {@link CharSequence} instance. If no extension is found, returns an empty string.
      * If the given object is of unknown type, return {@code null}.
      *
-     * @param  path  the filename extension (may be an empty string), or {@code null} if unknown.
+     * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
      * @return the extension in the given path, or an empty string if none, or {@code null}
      *         if the given object is null or of unknown type.
      */
@@ -123,6 +136,11 @@ public final class IOUtilities extends Static {
 
     /**
      * Implementation of {@link #filename(Object)} and {@link #extension(Object)} methods.
+     *
+     * @param  path      the path as an instance of the types listed in public methods, or {@code null}.
+     * @param  exension  {@code true} for requesting the extension instead of the file name.
+     * @return the filename or extension in the given path, or an empty string if none, or {@code null}
+     *         if the given object is null or of unknown type.
      */
     private static String part(final Object path, final boolean extension) {
         int fromIndex = 0;
@@ -132,10 +150,12 @@ public final class IOUtilities extends Static {
             name = ((File) path).getName();
             end  = name.length();
         } else if (path instanceof Path) {
-            name = ((Path) path).getFileName().toString();
+            final Path tip = ((Path) path).getFileName();
+            if (tip == null) return null;
+            name = tip.toString();
             end  = name.length();
         } else {
-            char separator = '/';
+            char separator = URI_PATH_SEPARATOR;
             if (path instanceof URL) {
                 name = ((URL) path).getPath();
             } else if (path instanceof URI) {
@@ -155,8 +175,8 @@ public final class IOUtilities extends Static {
             end = name.length();
             do {
                 if (--end < 0) return "";               // `end` is temporarily inclusive in this loop.
-                fromIndex = name.lastIndexOf('/', end);
-                if (separator != '/') {
+                fromIndex = name.lastIndexOf(URI_PATH_SEPARATOR, end);
+                if (separator != URI_PATH_SEPARATOR) {
                     // Search for platform-specific character only if the object is neither a URL or a URI.
                     fromIndex = Math.max(fromIndex, name.lastIndexOf(separator, end));
                 }
@@ -165,7 +185,7 @@ public final class IOUtilities extends Static {
             end++;                                      // Make exclusive.
         }
         if (extension) {
-            fromIndex = CharSequences.lastIndexOf(name, '.', fromIndex, end) + 1;
+            fromIndex = CharSequences.lastIndexOf(name, EXTENSION_SEPARATOR, fromIndex, end) + 1;
             if (fromIndex <= 1) {
                 // If the dot is the first character, do not consider as a filename extension.
                 return "";
@@ -221,16 +241,19 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Converts the given URI to a new URI with the same path except for the file extension,
-     * which is replaced by the given extension. This method is used for opening auxiliary files
-     * such as {@code "*.prj"} and {@code "*.tfw"} files that come with e.g. TIFF files.
+     * Converts the given URI to a new URI with the same path except for the filename or extension.
+     * This method is used for opening auxiliary files such as {@code "*.prj"} and {@code "*.tfw"}
+     * files that come with e.g. TIFF files.
      *
-     * @param  location   the URI to convert to a URL with a different extension, or {@code null}.
-     * @param  extension  the file extension (without {@code '.'}) of the auxiliary file.
+     * @param  location     the URI to convert to a URL with a different extension, or {@code null}.
+     * @param  replacement  the filename (including extension) or file extension (without {@code '.'}) of the auxiliary file.
+     * @param  extension    whether the replacement is the filename or only the file extension.
      * @return URI for the auxiliary file with the given extension, or {@code null} if none.
      * @throws URISyntaxException if the URI cannot be reconstructed.
      */
-    public static URI toAuxiliaryURI(final URI location, final String extension) throws URISyntaxException {
+    public static URI toAuxiliaryURI(final URI location, final String replacement, final boolean extension)
+            throws URISyntaxException
+    {
         if (location == null || !location.isAbsolute() || location.isOpaque()) {
             return null;
         }
@@ -242,11 +265,12 @@ public final class IOUtilities extends Static {
                 s = path.length();
             }
         }
-        s = path.lastIndexOf('.', s);
-        if (s >= 0) {
-            path = path.substring(0, s+1) + extension;
+        final int base = path.lastIndexOf(URI_PATH_SEPARATOR, s);
+        s = extension ? path.lastIndexOf(EXTENSION_SEPARATOR, s) : base;
+        if (!extension || s > base) {
+            path = path.substring(0, s+1) + replacement;
         } else {
-            path = path + '.' + extension;
+            path = path + EXTENSION_SEPARATOR + replacement;
         }
         return new URI(location.getScheme(),            // http, https, file or jar.
                        location.getRawAuthority(),      // Host name or literal IP address.
@@ -264,10 +288,10 @@ public final class IOUtilities extends Static {
     public static String filenameWithoutExtension(String path) {
         if (path != null) {
             int s = path.lastIndexOf(File.separatorChar);
-            if (s < 0 && File.separatorChar != '/') {
-                s = path.lastIndexOf('/');
+            if (s < 0 && File.separatorChar != URI_PATH_SEPARATOR) {
+                s = path.lastIndexOf(URI_PATH_SEPARATOR);
             }
-            int e = path.lastIndexOf('.');
+            int e = path.lastIndexOf(EXTENSION_SEPARATOR);
             if (e <= ++s) {
                 e = path.length();
             }

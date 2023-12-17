@@ -16,7 +16,11 @@
  */
 package org.apache.sis.storage;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import java.nio.file.Path;
+import java.io.ObjectStreamException;
+import static java.util.logging.Logger.getLogger;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.system.Modules;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.feature.FoliationRepresentation;
@@ -28,7 +32,7 @@ import org.apache.sis.feature.FoliationRepresentation;
  * or other kinds of structure that are specific to some data formats.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @param <T>  the type of option values.
  *
@@ -41,15 +45,20 @@ public final class DataOptionKey<T> extends OptionKey<T> {
     private static final long serialVersionUID = 8927757348322016043L;
 
     /**
-     * The coordinate reference system (CRS) of data to use if not explicitly defined.
-     * This option can be used when the file to read does not describe itself the data CRS.
-     * For example, this option can be used when reading ASCII Grid without CRS information,
-     * but is ignored if the ASCII Grid file is accompanied by a {@code *.prj} file giving the CRS.
+     * Path to an auxiliary file containing metadata encoded in an ISO 19115-3 XML document.
+     * The given path, if not absolute, is relative to the path of the main storage file.
+     * If the file exists, it is parsed and its content is merged or appended after the
+     * metadata read by the storage. If the file does not exist, then it is ignored.
      *
-     * @since 1.2
+     * <h4>Wildcard</h4>
+     * It the {@code '*'} character is present in the path, then it is replaced by the name of the
+     * main file without its extension. For example if the main file is {@code "city-center.tiff"},
+     * then {@code "*.xml"} will become {@code "city-center.xml"}.
+     *
+     * @since 1.5
      */
-    public static final OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
-            new DataOptionKey<>("DEFAULT_CRS", CoordinateReferenceSystem.class);
+    public static final OptionKey<Path> METADATA_PATH =
+            new DataOptionKey<>("METADATA_PATH", Path.class);
 
     /**
      * Whether to assemble trajectory fragments (distinct CSV lines) into a single {@code Feature} instance
@@ -75,5 +84,25 @@ public final class DataOptionKey<T> extends OptionKey<T> {
      */
     private DataOptionKey(final String name, final Class<T> type) {
         super(name, type);
+    }
+
+    /**
+     * Resolves this option key on deserialization. This method is invoked only
+     * for instance of the exact {@code DataOptionKey} class, not subclasses.
+     *
+     * @return the unique {@code DataOptionKey} instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
+     */
+    private Object readResolve() throws ObjectStreamException {
+        try {
+            return DataOptionKey.class.getField(getName()).get(null);
+        } catch (ReflectiveOperationException e) {
+            /*
+             * This may happen if we are deserializing a stream produced by a more recent SIS library
+             * than the one running in this JVM.
+             */
+            Logging.recoverableException(getLogger(Modules.STORAGE), DataOptionKey.class, "readResolve", e);
+            return this;
+        }
     }
 }

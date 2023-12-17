@@ -757,7 +757,7 @@ public final class IdentifiedObjects extends Static {
         if (identifier instanceof ReferenceIdentifier) {
             cs = ((ReferenceIdentifier) identifier).getCodeSpace();
         }
-        if (cs == null || cs.isEmpty()) {
+        if (Strings.isNullOrEmpty(cs)) {
             cs = Identifiers.getIdentifier(identifier.getAuthority(), true);
         }
         return NameMeaning.toURN(type, cs,
@@ -803,7 +803,7 @@ public final class IdentifiedObjects extends Static {
         if (identifier instanceof ReferenceIdentifier) {
             cs = ((ReferenceIdentifier) identifier).getCodeSpace();
         }
-        if (cs == null || cs.isEmpty()) {
+        if (Strings.isNullOrEmpty(cs)) {
             cs = Citations.toCodeSpace(identifier.getAuthority());
         }
         if (cs != null) {

@@ -62,6 +62,11 @@ public final class Constants extends Static {
     /**
      * The {@value} code space.
      */
+    public static final String UCUM = "UCUM";
+
+    /**
+     * The {@value} code space.
+     */
     public static final String EPSG = "EPSG";
 
     /**

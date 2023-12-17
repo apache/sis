@@ -1,0 +1,7 @@
+EngineeringCRS["A plane somewhere",
+  EngineeringDatum["Center of the plane"],
+  CS[Cartesian, 2],
+    Axis["x", west],
+    Axis["y", south],
+    Unit["kilometer", 1000],
+  REMARK["Dummy CRS for the `BIP.raw` test raster."]]

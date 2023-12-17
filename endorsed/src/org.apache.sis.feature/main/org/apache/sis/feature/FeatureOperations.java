@@ -27,6 +27,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Specific to the main branch:
@@ -220,7 +221,7 @@ public final class FeatureOperations extends Static {
         }
         ArgumentChecks.ensureNonEmpty("singleAttributes", singleAttributes);
         if (singleAttributes.length == 1) {
-            if ((prefix == null || prefix.isEmpty()) && (suffix == null || suffix.isEmpty())) {
+            if (Strings.isNullOrEmpty(prefix) && Strings.isNullOrEmpty(suffix)) {
                 final AbstractIdentifiedType at = singleAttributes[0];
                 if (!(at instanceof DefaultAssociationRole)) {
                     return link(identification, at);

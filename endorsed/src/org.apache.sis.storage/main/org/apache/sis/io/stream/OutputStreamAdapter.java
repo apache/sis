@@ -25,7 +25,7 @@ import java.io.IOException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see InputStreamAdapter
+ * @see org.apache.sis.storage.internal.InputStreamAdapter
  */
 final class OutputStreamAdapter extends OutputStream implements Markable {
     /**

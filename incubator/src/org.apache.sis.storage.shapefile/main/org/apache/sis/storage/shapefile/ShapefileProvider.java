@@ -36,8 +36,14 @@ import org.apache.sis.storage.StorageConnector;
  */
 public final class ShapefileProvider extends DataStoreProvider {
 
+    /**
+     * Format name.
+     */
     public static final String NAME = "esri shapefile";
 
+    /**
+     * Format mime type.
+     */
     public static final String MIME_TYPE = "application/x-shapefile";
 
     /**
@@ -48,23 +54,38 @@ public final class ShapefileProvider extends DataStoreProvider {
             .setRequired(true)
             .create(URI.class, null);
 
+    /**
+     * Shapefile store creation parameters.
+     */
     public static final ParameterDescriptorGroup PARAMETERS_DESCRIPTOR =
             new ParameterBuilder().addName(NAME).addName("EsriShapefileParameters").createGroup(
                 PATH);
 
+    /**
+     * Default constructor.
+     */
     public ShapefileProvider() {
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public String getShortName() {
         return NAME;
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public ParameterDescriptorGroup getOpenParameters() {
         return PARAMETERS_DESCRIPTOR;
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
         final Path path = connector.getStorageAs(Path.class);
@@ -74,6 +95,9 @@ public final class ShapefileProvider extends DataStoreProvider {
         return ProbeResult.UNSUPPORTED_STORAGE;
     }
 
+    /**
+     * {@inheritDoc }
+     */
     @Override
     public DataStore open(StorageConnector connector) throws DataStoreException {
         final Path path = connector.getStorageAs(Path.class);

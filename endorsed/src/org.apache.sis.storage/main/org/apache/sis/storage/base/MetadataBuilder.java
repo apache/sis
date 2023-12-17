@@ -29,6 +29,8 @@ import java.util.LinkedHashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.logging.Level;
 import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
@@ -91,6 +93,7 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
@@ -170,6 +173,18 @@ public class MetadataBuilder {
     }
 
     /**
+     * Creates a new metadata builder for completing an existing metadata.
+     * The given metadata shall may be modifiable. When a metadata element accepts many instances,
+     * the instance which will be modified is the last one.
+     *
+     * @param  edit  the metadata to modify, or {@code null} if none.
+     */
+    public MetadataBuilder(final Metadata edit) {
+        metadata = DefaultMetadata.castOrCopy(edit);
+        useParentElements();
+    }
+
+    /**
      * The metadata created by this builder, or {@code null} if not yet created.
      */
     private DefaultMetadata metadata;
@@ -226,6 +241,7 @@ public class MetadataBuilder {
      * Returns the information about the series, or aggregate dataset, of which the dataset is a part.
      */
     private DefaultSeries series() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final DefaultCitation citation = citation();
         DefaultSeries series = DefaultSeries.castOrCopy(citation.getSeries());
         if (series == null) {
@@ -1182,6 +1198,7 @@ public class MetadataBuilder {
     public final void addTitle(final CharSequence title) {
         final InternationalString i18n = trim(title);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultCitation citation = citation();
             final InternationalString current = citation.getTitle();
             if (current == null) {
@@ -1236,6 +1253,7 @@ public class MetadataBuilder {
     public final void addEdition(final CharSequence version) {
         final InternationalString i18n = trim(version);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultCitation citation = citation();
             citation.setEdition(append(citation.getEdition(), i18n));
         }
@@ -1311,6 +1329,7 @@ public class MetadataBuilder {
     public final void addAbstract(final CharSequence description) {
         final InternationalString i18n = trim(description);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultDataIdentification identification = identification();
             identification.setAbstract(append(identification.getAbstract(), i18n));
         }
@@ -1332,6 +1351,7 @@ public class MetadataBuilder {
     public final void addPurpose(final CharSequence intention) {
         final InternationalString i18n = trim(intention);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultDataIdentification identification = identification();
             identification.setPurpose(append(identification.getPurpose(), i18n));
         }
@@ -1369,6 +1389,7 @@ public class MetadataBuilder {
     public final void addSupplementalInformation(final CharSequence info) {
         final InternationalString i18n = trim(info);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultDataIdentification identification = identification();
             identification.setSupplementalInformation(append(identification.getSupplementalInformation(), i18n));
         }
@@ -1870,9 +1891,14 @@ parse:      for (int i = 0; i < length;) {
             if (!(envelope instanceof AbstractEnvelope && ((AbstractEnvelope) envelope).isAllNaN())) {
                 if (crs != null) try {
                     extent().addElements(envelope);
-                } catch (TransformException | UnsupportedOperationException e) {
+                } catch (TransformException e) {
+                    final boolean ignorable = (e instanceof NotSpatioTemporalException);
                     if (listeners != null) {
-                        listeners.warning(e);
+                        if (ignorable) {
+                            listeners.warning(Level.FINE, null, e);
+                        } else {
+                            listeners.warning(e);
+                        }
                     } else {
                         Logging.recoverableException(StoreUtilities.LOGGER, null, null, e);
                     }
@@ -2073,14 +2099,14 @@ parse:      for (int i = 0; i < length;) {
                 addReferenceSystem(crs);
             }
             if (grid.isDefined(GridGeometry.EXTENT)) {
-                final GridExtent extent = grid.getExtent();
-                final int dimension = extent.getDimension();
+                final GridExtent gex = grid.getExtent();
+                final int dimension = gex.getDimension();
                 for (int i=0; i<dimension; i++) {
-                    final Optional<DimensionNameType> axisType = extent.getAxisType(i);
+                    final Optional<DimensionNameType> axisType = gex.getAxisType(i);
                     if (axisType.isPresent()) {
                         setAxisName(i, axisType.get());
                     }
-                    setAxisSize(i, extent.getSize(i));
+                    setAxisSize(i, gex.getSize(i));
                 }
             }
             if (addResolution && grid.isDefined(GridGeometry.RESOLUTION)) {
@@ -2139,6 +2165,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setPointInPixel(final PixelOrientation value) {
         if (value != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
             if (gridRepresentation instanceof DefaultGeorectified) {
                 ((DefaultGeorectified) gridRepresentation).setPointInPixel(value);
@@ -2170,6 +2197,7 @@ parse:      for (int i = 0; i < length;) {
                                                     final boolean controlPointAvailability,
                                                     final boolean orientationParameterAvailability)
     {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
         gridRepresentation.setTransformationParameterAvailable(transformationParameterAvailability);
         if (gridRepresentation instanceof DefaultGeorectified) {
@@ -2192,6 +2220,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addGeolocation(final GeolocationInformation info) {
         if (info != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
             if (gridRepresentation instanceof DefaultGeoreferenceable) {
                 addIfNotPresent(((DefaultGeoreferenceable) gridRepresentation).getGeolocationInformation(), info);
@@ -2216,6 +2245,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addControlPoints(final DirectPosition geographicCoordinates, final Element accuracyReport) {
         if (geographicCoordinates != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
             final Collection<GCP> points;
             if (gridRepresentation instanceof DefaultGeorectified) {
@@ -2455,6 +2485,7 @@ parse:      for (int i = 0; i < length;) {
     public final void addBandDescription(final CharSequence description) {
         final InternationalString i18n = trim(description);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultSampleDimension sampleDimension = sampleDimension();
             sampleDimension.setDescription(append(sampleDimension.getDescription(), i18n));
         }
@@ -2501,6 +2532,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addMinimumSampleValue(final double value) {
         if (!Double.isNaN(value)) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultSampleDimension sampleDimension = sampleDimension();
             final Double current = sampleDimension.getMinValue();
             if (current == null || value < current) {
@@ -2526,6 +2558,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void addMaximumSampleValue(final double value) {
         if (!Double.isNaN(value)) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultSampleDimension sampleDimension = sampleDimension();
             final Double current = sampleDimension.getMaxValue();
             if (current == null || value > current) {
@@ -2848,6 +2881,7 @@ parse:      for (int i = 0; i < length;) {
     public final void addLineage(final CharSequence statement) {
         final InternationalString i18n = trim(statement);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultLineage lineage = lineage();
             lineage.setStatement(append(lineage.getStatement(), i18n));
         }
@@ -3096,14 +3130,15 @@ parse:      for (int i = 0; i < length;) {
     public final void addFormatName(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultFormat format = format();
-            DefaultCitation citation = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
-            if (citation == null) {
-                citation = new DefaultCitation(i18n);
+            DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+            if (c == null) {
+                c = new DefaultCitation(i18n);
             } else {
-                addIfNotPresent(citation.getAlternateTitles(), i18n);
+                addIfNotPresent(c.getAlternateTitles(), i18n);
             }
-            format.setFormatSpecificationCitation(citation);
+            format.setFormatSpecificationCitation(c);
         }
     }
 
@@ -3125,13 +3160,14 @@ parse:      for (int i = 0; i < length;) {
     public final void setFormatEdition(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultFormat format = format();
-            DefaultCitation citation = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
-            if (citation == null) {
-                citation = new DefaultCitation();
-                format.setFormatSpecificationCitation(citation);
+            DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+            if (c == null) {
+                c = new DefaultCitation();
+                format.setFormatSpecificationCitation(c);
             }
-            citation.setEdition(i18n);
+            c.setEdition(i18n);
         }
     }
 
@@ -3154,6 +3190,7 @@ parse:      for (int i = 0; i < length;) {
     public final void addCompression(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultFormat format = format();
             format.setFileDecompressionTechnique(append(format.getFileDecompressionTechnique(), i18n));
         }
@@ -3200,7 +3237,7 @@ parse:      for (int i = 0; i < length;) {
      * Aggregate metadata should be set before to invoke this method, in particular:
      *
      * <ul>
-     *   <li>The aggregated resource {@linkplain #addTitle title}.</li>
+     *   <li>The aggregated resource {@linkplain #addTitle(CharSequence) title}.</li>
      *   <li>The {@linkplain #addFormatName format} (may not be the same than component format).</li>
      * </ul>
      *
@@ -3214,7 +3251,7 @@ parse:      for (int i = 0; i < length;) {
      *   <li>All Coordinate Reference System information are added without duplicated values.</li>
      *   <li>Some citation information are merged in a single citation.
      *       The following information are ignored because considered too specific to the component:<ul>
-     *         <li>titles</li>
+     *         <li>titles (except if no title has been set, in which case the first title is used)</li>
      *         <li>identifiers</li>
      *         <li>series (includes page numbers).</li>
      *       </ul></li>
@@ -3241,13 +3278,18 @@ parse:      for (int i = 0; i < length;) {
         for (final Identification info : component.getIdentificationInfo()) {
             final Citation c = info.getCitation();
             if (c != null) {
-                // Title, identifiers and series are assumed to not apply (see Javadoc).
+                // Title (except first one), identifiers and series are assumed to not apply (see Javadoc).
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final DefaultCitation citation = citation();
+                if (citation.getTitle() == null) {
+                    citation.setTitle(c.getTitle());
+                }
                 for (ResponsibleParty r : c.getCitedResponsibleParties()) {
                     addIfNotPresent(citation.getCitedResponsibleParties(), r);
                 }
                 citation.getPresentationForms().addAll(c.getPresentationForms());
             }
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultDataIdentification identification = identification();
             for (Format r : info.getResourceFormats()) {
                 addCompression(r.getFileDecompressionTechnique());
@@ -3268,6 +3310,7 @@ parse:      for (int i = 0; i < length;) {
                 identification.getSpatialRepresentationTypes().addAll(di.getSpatialRepresentationTypes());
             }
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final DefaultMetadata metadata = metadata();
         for (ContentInformation info : component.getContentInfo()) {
             addIfNotPresent(metadata.getContentInfo(), info);
@@ -3291,7 +3334,7 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Merge the given metadata into the metadata created by this builder.
+     * Merges the given metadata into the metadata created by this builder.
      * The given source should be an instance of {@link Metadata},
      * but some types of metadata components are accepted as well.
      *
@@ -3311,31 +3354,121 @@ parse:      for (int i = 0; i < length;) {
     public boolean mergeMetadata(final Object source, final Locale locale) {
         flush();
         final ModifiableMetadata target;
+        /*
+         * In the following `instanceof` checks, objects closer to root should be tested first.
+         * For example, we should finish the checks of all `Metadata` elements before to check
+         * if the object is a sub-element of a `Metadata` element. This ordering is because an
+         * implementation may implement many interfaces: the main element together with some of
+         * its sub-elements. We want to use the object with most information. Furthermore, the
+         * main object may not use a type (e.g. `Citation`) for the same sub-element than what
+         * the code below assumes.
+         */
              if (source instanceof Metadata)                    target = metadata();
         else if (source instanceof DataIdentification)          target = identification();
+        else if (source instanceof GridSpatialRepresentation)   target = gridRepresentation();
+        else if (source instanceof CoverageDescription)         target = coverageDescription();
+        else if (source instanceof FeatureCatalogueDescription) target = featureDescription();
+        else if (source instanceof AcquisitionInformation)      target = acquisition();
+        else if (source instanceof Lineage)                     target = lineage();
+        else if (source instanceof Distribution)                target = distribution();
         else if (source instanceof Citation)                    target = citation();
+        else if (source instanceof Extent)                      target = extent();
+        else if (source instanceof LegalConstraints)            target = constraints();
         else if (source instanceof Series)                      target = series();
         else if (source instanceof DefaultResponsibleParty)     target = responsibility();
         else if (source instanceof AbstractParty)               target = party();
-        else if (source instanceof LegalConstraints)            target = constraints();
-        else if (source instanceof Extent)                      target = extent();
-        else if (source instanceof AcquisitionInformation)      target = acquisition();
-        else if (source instanceof Platform)                    target = platform();
-        else if (source instanceof FeatureCatalogueDescription) target = featureDescription();
-        else if (source instanceof CoverageDescription)         target = coverageDescription();
         else if (source instanceof DefaultAttributeGroup)       target = attributeGroup();
         else if (source instanceof SampleDimension)             target = sampleDimension();
-        else if (source instanceof GridSpatialRepresentation)   target = gridRepresentation();
         else if (source instanceof GCPCollection)               target = groundControlPoints();
-        else if (source instanceof Distribution)                target = distribution();
         else if (source instanceof Format)                      target = format();
-        else if (source instanceof Lineage)                     target = lineage();
+        else if (source instanceof Platform)                    target = platform();
         else if (source instanceof ProcessStep)                 target = processStep();
         else if (source instanceof Processing)                  target = processing();
-        else return false;
+        else if (source instanceof ReferenceSystem) {
+            addReferenceSystem((ReferenceSystem) source);
+            return true;
+        } else {
+            return false;
+        }
         final Merger merger = new Merger(locale);
         merger.copy(source, target);
+        useParentElements();
         return true;
+    }
+
+    /**
+     * Replaces any null metadata element by the last element from the parent.
+     * This is used for continuing the edition of an existing metadata.
+     */
+    private void useParentElements() {
+        if (identification      == null) identification      = last (DefaultDataIdentification.class,          metadata,            DefaultMetadata::getIdentificationInfo);
+        if (gridRepresentation  == null) gridRepresentation  = last (DefaultGridSpatialRepresentation.class,   metadata,            DefaultMetadata::getSpatialRepresentationInfo);
+        if (coverageDescription == null) coverageDescription = last (DefaultCoverageDescription.class,         metadata,            DefaultMetadata::getContentInfo);
+        if (featureDescription  == null) featureDescription  = last (DefaultFeatureCatalogueDescription.class, metadata,            DefaultMetadata::getContentInfo);
+        if (acquisition         == null) acquisition         = last (DefaultAcquisitionInformation.class,      metadata,            DefaultMetadata::getAcquisitionInformation);
+        if (lineage             == null) lineage             = last (DefaultLineage.class,                     metadata,            DefaultMetadata::getResourceLineages);
+        if (distribution        == null) distribution        = fetch(DefaultDistribution.class,                metadata,            DefaultMetadata::getDistributionInfo);
+        if (citation            == null) citation            = fetch(DefaultCitation.class,                    identification,      AbstractIdentification::getCitation);
+        if (extent              == null) extent              = last (DefaultExtent.class,                      identification,      AbstractIdentification::getExtents);
+        if (constraints         == null) constraints         = last (DefaultLegalConstraints.class,            identification,      AbstractIdentification::getResourceConstraints);
+        if (responsibility      == null) responsibility      = last (DefaultResponsibleParty.class,            citation,            DefaultCitation::getCitedResponsibleParties);
+        if (party               == null) party               = last (AbstractParty.class,                      responsibility,      DefaultResponsibility::getParties);
+        if (attributeGroup      == null) attributeGroup      = last (DefaultAttributeGroup.class,              coverageDescription, DefaultCoverageDescription::getAttributeGroups);
+        if (sampleDimension     == null) sampleDimension     = last (DefaultSampleDimension.class,             attributeGroup,      DefaultAttributeGroup::getAttributes);
+        if (format              == null) format              = last (DefaultFormat.class,                      distribution,        DefaultDistribution::getDistributionFormats);
+        if (platform            == null) platform            = last (DefaultPlatform.class,                    acquisition,         DefaultAcquisitionInformation::getPlatforms);
+        if (processStep         == null) processStep         = last (DefaultProcessStep.class,                 lineage,             DefaultLineage::getProcessSteps);
+        if (processing          == null) processing          = fetch(DefaultProcessing.class,                  processStep,         DefaultProcessStep::getProcessingInformation);
+    }
+
+    /**
+     * Returns the element of the given source metadata if it is of the desired class.
+     * This method is equivalent to {@link #last(Class, Object, Function)} but for a singleton.
+     *
+     * @param  <S>     the type of the source metadata.
+     * @param  <E>     the type of metadata element provided by the source.
+     * @param  <T>     the type of the desired metadata element.
+     * @param  target  the type of the desired metadata element.
+     * @param  source  the source metadata, or {@code null} if none.
+     * @param  getter  the getter to use for fetching elements from the source metadata.
+     * @return the metadata element from the source, or {@code null} if none.
+     */
+    private static <S extends ISOMetadata, E, T extends E> T fetch(final Class<T> target, final S source,
+            final Function<S,E> getter)
+    {
+        if (source != null) {
+            final E last = getter.apply(source);
+            if (target.isInstance(last)) {
+                return target.cast(last);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the element of the given source metadata if it is of the desired class.
+     * This method is equivalent to {@link #fetch(Class, Object, Function)} but for a collection.
+     *
+     * @param  <S>     the type of the source metadata.
+     * @param  <E>     the type of metadata element provided by the source.
+     * @param  <T>     the type of the desired metadata element.
+     * @param  target  the type of the desired metadata element.
+     * @param  source  the source metadata, or {@code null} if none.
+     * @param  getter  the getter to use for fetching elements from the source metadata.
+     * @return the metadata element from the source, or {@code null} if none.
+     */
+    private static <S extends ISOMetadata, E, T extends E> T last(final Class<T> target, final S source,
+            final Function<S,Collection<E>> getter)
+    {
+        if (source != null) {
+            // If not a sequenced collection, the iteration may be in any order.
+            for (final E last : JDK21.reversed(getter.apply(source))) {
+                if (target.isInstance(last)) {
+                    return target.cast(last);
+                }
+            }
+        }
+        return null;
     }
 
     /**

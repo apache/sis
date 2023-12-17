@@ -29,6 +29,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Colors;
+import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.referencing.CRS;
@@ -44,6 +45,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.X364;
 import org.apache.sis.measure.Range;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.xml.MarshallerPool;
@@ -178,14 +180,14 @@ abstract class FormattedOutputCommand extends CommandRunner {
      * The input format is detected automatically (this is <strong>not</strong> {@link #outputFormat}).
      *
      * @return a {@link Metadata} or {@link CoordinateReferenceSystem} instance, or {@code null} if none.
+     * @throws InvalidOptionException if an option has an invalid value.
      * @throws DataStoreException if an error occurred while reading the file.
      * @throws FactoryException if an error occurred while looking for a CRS identifier.
      */
-    final Object readMetadataOrCRS() throws DataStoreException, FactoryException {
+    final Object readMetadataOrCRS() throws InvalidOptionException, DataStoreException, FactoryException {
+        final Object input;
         if (useStandardInput()) {
-            try (DataStore store = DataStores.open(System.in)) {
-                return store.getMetadata();
-            }
+            input = System.in;
         } else if (hasUnexpectedFileCount(1, 1)) {
             hasUnexpectedFileCount = true;
             return null;
@@ -197,9 +199,10 @@ abstract class FormattedOutputCommand extends CommandRunner {
                     return CRS.forCode(c);
                 }
             }
-            try (DataStore store = DataStores.open(file)) {
-                return store.getMetadata();
-            }
+            input = file;
+        }
+        try (DataStore store = DataStores.open(inputConnector(input))) {
+            return store.getMetadata();
         }
     }
 
@@ -235,6 +238,14 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 }
                 f.format(object, out);
                 out.println();
+                final Warnings warnings = f.getWarnings();
+                if (warnings != null) {
+                    out.flush();
+                    err.println();
+                    color(colors, err, X364.FOREGROUND_YELLOW);
+                    err.println(warnings.toString(locale));
+                    color(colors, err, X364.RESET);
+                }
                 break;
             }
 

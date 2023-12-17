@@ -38,6 +38,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.StorageConnector;
@@ -47,14 +48,13 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.ListOfUnknownSize;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.setup.OptionKey;
@@ -357,7 +357,7 @@ loop:   for (int convention=0;; convention++) {
             }
         }
         if (warning != null) {
-            listeners.warning(resources().getString(Resources.Keys.CanNotReadAuxiliaryFile_1, preferred), warning);
+            listeners.warning(cannotReadAuxiliaryFile(preferred), warning);
         }
         return null;
     }
@@ -373,7 +373,7 @@ loop:   for (int convention=0;; convention++) {
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
         final AuxiliaryContent content = readAuxiliaryFile(wld);
         if (content == null) {
-            listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, wld));
+            listeners.warning(cannotReadAuxiliaryFile(wld));
             return null;
         }
         final String         filename = content.getFilename();
@@ -398,7 +398,7 @@ loop:   for (int convention=0;; convention++) {
             throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, filename));
         }
         if (filename != null) {
-            final int s = filename.lastIndexOf('.');
+            final int s = filename.lastIndexOf(IOUtilities.EXTENSION_SEPARATOR);
             if (s >= 0) {
                 suffixWLD = filename.substring(s+1);
             }
@@ -407,17 +407,10 @@ loop:   for (int convention=0;; convention++) {
     }
 
     /**
-     * Returns the localized resources for producing warnings or error messages.
-     */
-    final Resources resources() {
-        return Resources.forLocale(listeners.getLocale());
-    }
-
-    /**
      * Returns the localized resources for producing error messages.
      */
     private Errors errors() {
-        return Errors.getResources(listeners.getLocale());
+        return Errors.getResources(getLocale());
     }
 
     /**
@@ -539,6 +532,7 @@ loop:   for (int convention=0;; convention++) {
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
                 builder.addExtent(gridGeometry.getEnvelope(), listeners);
             }
+            mergeAuxiliaryMetadata(builder);
             addTitleOrIdentifier(builder);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();

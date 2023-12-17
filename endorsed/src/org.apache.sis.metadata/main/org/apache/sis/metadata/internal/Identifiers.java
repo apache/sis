@@ -29,6 +29,9 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.xml.NilObject;
+import org.apache.sis.xml.NilReason;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -275,5 +278,29 @@ public final class Identifiers extends Static {
         return (owner == null)
                 ? Errors.format(Errors.Keys.MissingValueForProperty_1, property)
                 : Errors.format(Errors.Keys.MissingValueForProperty_2, owner, property);
+    }
+
+    /**
+     * Returns a string representation of the reason why an object is nil.
+     * If the object provides a {@link NilReason}, then its string representation is returned.
+     * Otherwise, if the given object provides identifiers, then they are assumed unresolved references.
+     * Otherwise, this method returns "unspecified" in the default locale.
+     *
+     * @param  object  the object for which to get the nil reason.
+     * @return string representation of the nil reason.
+     */
+    public static String getNilReason(final NilObject object) {
+        NilReason reason = object.getNilReason();
+        if (reason != null) {
+            return reason.toString();
+        }
+        if (object instanceof org.apache.sis.xml.IdentifiedObject) {
+            for (String id : ((org.apache.sis.xml.IdentifiedObject) object).getIdentifierMap().values()) {
+                if (id != null && !id.isBlank()) {
+                    return "unresolved " + id;
+                }
+            }
+        }
+        return Vocabulary.format(Vocabulary.Keys.Unspecified);
     }
 }

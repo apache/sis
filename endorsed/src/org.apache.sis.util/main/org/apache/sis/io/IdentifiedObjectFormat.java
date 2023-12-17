@@ -23,6 +23,7 @@ import java.text.ParsePosition;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.MetadataServices;
 
@@ -69,7 +70,7 @@ final class IdentifiedObjectFormat extends Format {
         }
         final String code = identifier.getCode();
         String cs = identifier.getCodeSpace();
-        if (cs == null || cs.isEmpty()) {
+        if (Strings.isNullOrEmpty(cs)) {
             cs = MetadataServices.getInstance().getUnicodeIdentifier(identifier.getAuthority());
         }
         if (cs != null) {

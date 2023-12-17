@@ -45,6 +45,7 @@ import org.apache.sis.util.internal.DefinitionURI;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.logging.Logging;
 
@@ -61,6 +62,10 @@ import org.apache.sis.util.logging.Logging;
  * and whitespaces around path separators), then {@code "####"} is parsed as an integer and forwarded to the
  * {@link Units#valueOfEPSG(int)} method.
  *
+ * <p>If a character sequence starts with {@code "http://www.opengis.net/def/uom/UCUM/0/####"} (ignoring case
+ * and whitespaces around path separators), then {@code "####"} is parsed as a symbol as if the URL before it
+ * was absent.</p>
+ *
  * <h2>Note on netCDF unit symbols</h2>
  * In netCDF files, values of "unit" attribute are concatenations of an angular unit with an axis direction,
  * as in {@code "degrees_east"} or {@code "degrees_north"}. This class ignores those suffixes and unconditionally
@@ -71,7 +76,7 @@ import org.apache.sis.util.logging.Logging;
  * each thread should have its own {@code UnitFormat} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see Units#valueOf(String)
  *
@@ -84,10 +89,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     private static final long serialVersionUID = -3064428584419360693L;
 
     /**
-     * Whether the parsing of authority codes such as {@code "EPSG:9001"} is allowed.
+     * The authorities to accept, or {@code null} for disabling authority parsing.
+     * Codes may be URLs such as {@code "http://www.opengis.net/def/uom/UCUM/0/d"}
+     * or URNs such as {@code "EPSG:9001"}. The order of authority names matter,
+     * because the index is used for identifying the authority.
      */
     @Configuration
-    private static final boolean PARSE_AUTHORITY_CODES = true;
+    private static final String[] AUTHORITIES = {Constants.EPSG, Constants.UCUM};
 
     /**
      * The unit name for degrees (not necessarily angular), to be handled in a special way.
@@ -1113,19 +1121,30 @@ appPow: if (unit == null) {
          */
         int end   = symbols.length();
         int start = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), end);
-        if (PARSE_AUTHORITY_CODES) {
-            final String code = DefinitionURI.codeOf("uom", Constants.EPSG, symbols);
-            if (code != null) {
+        if (AUTHORITIES != null) {
+            final Map.Entry<Integer, String> entry = DefinitionURI.codeOf("uom", AUTHORITIES, symbols);
+            if (entry != null) {
+                Unit<?> unit = null;
                 NumberFormatException failure = null;
-                try {
-                    final Unit<?> unit = Units.valueOfEPSG(Integer.parseInt(code));
-                    if (unit != null) {
-                        position.setIndex(end);
-                        finish(position);
-                        return unit;
+                final String code = entry.getValue();
+                switch (entry.getKey()) {
+                    case 0: {                   // EPSG
+                        try {
+                            unit = Units.valueOfEPSG(Integer.parseInt(code));
+                        } catch (NumberFormatException e) {
+                            failure = e;
+                        }
+                        break;
                     }
-                } catch (NumberFormatException e) {
-                    failure = e;
+                    case 1: {                   // UCUM
+                        unit = parse(code);
+                        break;
+                    }
+                }
+                if (unit != null) {
+                    position.setIndex(end);
+                    finish(position);
+                    return unit;
                 }
                 throw (MeasurementParseException) new MeasurementParseException(
                         Errors.format(Errors.Keys.UnknownUnit_1,
@@ -1363,14 +1382,13 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                 case MULTIPLY: return unit.multiply(term);
                 case DIVIDE:   return unit.divide(term);
                 case EXPONENT: {
-                    if (UnitDimension.isDimensionless(term.getDimension())) {
-                        final String symbol = term.getSymbol();
-                        if (symbol == null || symbol.isEmpty()) {
-                            final double scale = Units.toStandardUnit(term);
-                            final int power = (int) scale;
-                            if (power == scale) {
-                                return unit.pow(power);
-                            }
+                    if (UnitDimension.isDimensionless(term.getDimension())
+                             && Strings.isNullOrEmpty(term.getSymbol()))
+                    {
+                        final double scale = Units.toStandardUnit(term);
+                        final int power = (int) scale;
+                        if (power == scale) {
+                            return unit.pow(power);
                         }
                     }
                     throw new MeasurementParseException(Errors.format(Errors.Keys.NotAnInteger_1, term), symbols, position);

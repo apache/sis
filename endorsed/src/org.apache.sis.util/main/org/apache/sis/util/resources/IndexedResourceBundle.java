@@ -322,7 +322,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
                     if (locale != null) {
                         language = locale.getDisplayName(Locale.US);
                     }
-                    if (language == null || language.isEmpty()) {
+                    if (Strings.isNullOrEmpty(language)) {
                         language = "<root>";
                     }
                     record.setParameters(new String[] {language, baseName});

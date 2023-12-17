@@ -656,6 +656,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#52">WKT 2 specification §8.2.1</a>
      */
     @Override
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         final Convention   convention = formatter.getConvention();

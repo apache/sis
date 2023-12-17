@@ -289,7 +289,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
                 case XLINK: candidate = IdentifierSpace.XLINK; break;
                 default: return super.readResolve();
             }
-        } while (!((NonMarshalledAuthority<?>) candidate).getName().equals(name));
+        } while (!candidate.getName().equals(name));
         return candidate;
     }
 }

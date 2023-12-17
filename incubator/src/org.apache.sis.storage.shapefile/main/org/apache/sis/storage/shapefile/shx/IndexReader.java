@@ -32,22 +32,42 @@ public final class IndexReader implements AutoCloseable{
     private final ChannelDataInput channel;
     private final ShapeHeader header;
 
+    /**
+     * Constructor.
+     *
+     * @param channel to read from
+     * @throws IOException if a decoding error occurs on the header
+     */
     public IndexReader(ChannelDataInput channel) throws IOException {
         this.channel = channel;
         header = new ShapeHeader();
         header.read(channel);
     }
 
+    /**
+     * Get shapefile header.
+     *
+     * @return shapefile header
+     */
     public ShapeHeader getHeader() {
         return header;
     }
 
+    /**
+     * Move channel to given position.
+     *
+     * @param position new position
+     * @throws IOException if the stream cannot be moved to the given position.
+     */
     public void moveToOffset(long position) throws IOException {
         channel.seek(position);
     }
 
     /**
-     * @return offset and length of the record in the shp file
+     * Get next record.
+     *
+     * @return next offset and length of the record in the shp file, null if no more records
+     * @throws IOException if a decoding error occurs
      */
     public int[] next() throws IOException {
         try {
@@ -58,6 +78,11 @@ public final class IndexReader implements AutoCloseable{
         }
     }
 
+    /**
+     * Release reader resources.
+     *
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     public void close() throws IOException {
         channel.channel.close();

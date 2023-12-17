@@ -309,7 +309,9 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     public void addElements(final Envelope envelope) throws TransformException {
         checkWritePermission(isNonEmpty());
         ArgumentChecks.ensureNonNull("envelope", envelope);
-        ReferencingServices.getInstance().addElements(envelope, this);
+        if (!ReferencingServices.getInstance().addElements(envelope, this)) {
+            throw new NotSpatioTemporalException(3, envelope);
+        }
     }
 
     /**

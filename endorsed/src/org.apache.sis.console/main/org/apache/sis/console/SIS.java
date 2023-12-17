@@ -18,13 +18,12 @@ package org.apache.sis.console;
 
 import java.util.EnumMap;
 import java.io.PrintWriter;
-import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Version;
+import org.apache.sis.util.Printable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.X364;
-import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.system.Environment;
 
 
 /**
@@ -49,7 +48,7 @@ public final class SIS extends Static {
      * Problems observed with Java 21 on Linux when printing non-ASCII characters.
      */
     static {
-        CommandRunner.avoidConsoleWriter();
+        Environment.avoidConsoleWriter();
     }
 
     /**
@@ -178,7 +177,8 @@ public final class SIS extends Static {
              */
             var c = new Command(allArgs);
             final PrintWriter out = c.writer(false);
-            out.print("> sis");
+            c.setFaintOutput(true);
+            out.print("command> sis");
             for (i=0; i < allArgs.length; i++) {
                 final String arg = allArgs[i].toString();
                 final int start = arg.startsWith(Option.PREFIX) ? Option.PREFIX.length() : 0;
@@ -188,6 +188,7 @@ public final class SIS extends Static {
                 out.print(arg.replace("\"", "\\\""));
                 if (quote) out.print('"');
             }
+            c.setFaintOutput(false);
             out.println();
             int status = c.run();
             if (status != 0) {
@@ -211,6 +212,15 @@ public final class SIS extends Static {
      * Do not allow instantiation of this class.
      */
     private SIS() {
+    }
+
+    /**
+     * {@return a string representation of the Apache SIS version}.
+     *
+     * @see Version#SIS
+     */
+    public static String version() {
+        return Version.SIS.toString();
     }
 
 
@@ -431,6 +441,19 @@ public final class SIS extends Static {
     public static final class Metadata extends Builder<Metadata> {
         /** Creates the instance for metadata or CRS. */
         Metadata(String command) {super(command);}
+
+        /**
+         * Sets the path to auxiliary metadata, relative to the main file.
+         * The {@code '*'} character stands for the name of the main file.
+         * For example if the main file is {@code "city-center.tiff"},
+         * then {@code "*.xml"} stands for {@code "city-center.xml"}.
+         *
+         * @param  value  relative path to auxiliary metadata.
+         * @return a new builder or {@code this}, for method call chaining.
+         */
+        public Metadata metadata(String value) {
+            return set(Option.METADATA, value);
+        }
 
         /**
          * Sets the output format.
@@ -700,6 +723,19 @@ public final class SIS extends Static {
         Translate() {super("translate");}
 
         /**
+         * Sets the path to auxiliary metadata, relative to the main file.
+         * The {@code '*'} character stands for the name of the main file.
+         * For example if the main file is {@code "city-center.tiff"},
+         * then {@code "*.xml"} stands for {@code "city-center.xml"}.
+         *
+         * @param  value  relative path to auxiliary metadata.
+         * @return a new builder or {@code this}, for method call chaining.
+         */
+        public Translate metadata(String value) {
+            return set(Option.METADATA, value);
+        }
+
+        /**
          * Sets the destination file.
          *
          * @param  value  the output file.
@@ -724,31 +760,18 @@ public final class SIS extends Static {
 
 
     /**
-     * The object to use for formatting WKT objects, created when first needed.
-     */
-    private static WKTFormat wktFormat;
-
-    /**
      * Prints the given object to the standard output stream.
      *
      * @param  value  the object to print.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void print(final Object value) {
-        final PrintWriter out = CommandRunner.writer(System.console(), System.out);
-        if (value instanceof FormattableObject) {
-            synchronized (SIS.class) {
-                if (wktFormat == null) {
-                    wktFormat = new WKTFormat(null, null);
-                    if (X364.isAnsiSupported()) {
-                        wktFormat.setColors(Colors.DEFAULT);
-                    }
-                }
-                out.print(wktFormat.format(value));
-            }
+        if (value instanceof Printable) {
+            ((Printable) value).print();
         } else {
+            final PrintWriter out = Environment.writer(System.console(), System.out);
             out.println(value);
+            out.flush();
         }
-        out.flush();
     }
 }

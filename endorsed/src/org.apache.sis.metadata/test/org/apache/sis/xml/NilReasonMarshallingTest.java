@@ -23,8 +23,7 @@ import org.opengis.metadata.citation.Citation;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -63,15 +62,15 @@ public final class NilReasonMarshallingTest extends TestCase {
         assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
-        assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);
+        assertInstanceOf(NilObject.class, series, "Should have instantiated a proxy.");
 
         final NilReason reason = ((NilObject) series).getNilReason();
-        assertSame("nilReason", NilReason.MISSING, reason);
-        assertNull("NilReason.explanation", reason.getOtherExplanation());
-        assertNull("NilReason.URI",         reason.getURI());
+        assertSame(NilReason.MISSING, reason, "nilReason");
+        assertNull(reason.getOtherExplanation(), "NilReason.explanation");
+        assertNull(reason.getURI(), "NilReason.URI");
 
         assertEquals("Series[missing]", series.toString());
-        assertNull("All attributes are expected to be null.", series.getName());
+        assertNull(series.getName(), "All attributes are expected to be null.");
 
         final String actual = marshal(citation);
         assertXmlEquals(expected, actual, "xmlns:*");
@@ -98,14 +97,14 @@ public final class NilReasonMarshallingTest extends TestCase {
         final Band result = unmarshal(Band.class, expected);
 
         final Double minValue = result.getMinValue();
-        assertNotNull("Expected a sentinel value.", minValue);
-        assertTrue("Nil value shall be NaN.", minValue.isNaN());
-        assertSame("nilReason", NilReason.UNKNOWN, NilReason.forObject(minValue));
+        assertNotNull(minValue, "Expected a sentinel value.");
+        assertTrue(minValue.isNaN(), "Nil value shall be NaN.");
+        assertSame(NilReason.UNKNOWN, NilReason.forObject(minValue), "nilReason");
 
         final Double peakResponse = result.getMinValue();
-        assertNotNull("Expected a sentinel value.", peakResponse);
-        assertTrue("Nil value shall be NaN.", peakResponse.isNaN());
-        assertSame("nilReason", NilReason.UNKNOWN, NilReason.forObject(peakResponse));
+        assertNotNull(peakResponse, "Expected a sentinel value.");
+        assertTrue(peakResponse.isNaN(), "Nil value shall be NaN.");
+        assertSame(NilReason.UNKNOWN, NilReason.forObject(peakResponse), "nilReason");
 
         final String actual = marshal(result);
         assertXmlEquals(expected, actual, "xmlns:*");
@@ -133,14 +132,14 @@ public final class NilReasonMarshallingTest extends TestCase {
         assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
-        assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);
+        assertInstanceOf(NilObject.class, series, "Should have instantiated a proxy.");
 
         final NilReason reason = ((NilObject) series).getNilReason();
-        assertEquals("NilReason.explanation", "myReason", reason.getOtherExplanation());
-        assertNull("NilReason.URI", reason.getURI());
+        assertEquals("myReason", reason.getOtherExplanation(), "NilReason.explanation");
+        assertNull(reason.getURI(), "NilReason.URI");
 
         assertEquals("Series[other:myReason]", series.toString());
-        assertNull("All attributes are expected to be null.", series.getName());
+        assertNull(series.getName(), "All attributes are expected to be null.");
 
         final String actual = marshal(citation);
         assertXmlEquals(expected, actual, "xmlns:*");
@@ -168,14 +167,14 @@ public final class NilReasonMarshallingTest extends TestCase {
         assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
-        assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);
+        assertInstanceOf(NilObject.class, series, "Should have instantiated a proxy.");
 
         final NilReason reason = ((NilObject) series).getNilReason();
-        assertNull("NilReason.explanation", reason.getOtherExplanation());
-        assertEquals("NilReason.URI", "http://www.myreason.org", String.valueOf(reason.getURI()));
+        assertNull(reason.getOtherExplanation(), "NilReason.explanation");
+        assertEquals("http://www.myreason.org", String.valueOf(reason.getURI()), "NilReason.URI");
 
         assertEquals("Series[http://www.myreason.org]", series.toString());
-        assertNull("All attributes are expected to be null.", series.getName());
+        assertNull(series.getName(), "All attributes are expected to be null.");
 
         final String actual = marshal(citation);
         assertXmlEquals(expected, actual, "xmlns:*");

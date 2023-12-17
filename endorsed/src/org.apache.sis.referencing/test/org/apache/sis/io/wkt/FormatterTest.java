@@ -21,11 +21,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.internal.X364;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.VerticalCRSMock;
@@ -43,15 +41,6 @@ public final class FormatterTest extends TestCase {
      * Creates a new test case.
      */
     public FormatterTest() {
-    }
-
-    /**
-     * Verifies the ANSI escape sequences hard-coded in {@link Formatter}.
-     */
-    @Test
-    public void testAnsiEscapeSequences() {
-        assertEquals("FOREGROUND_DEFAULT", X364.FOREGROUND_DEFAULT.sequence(), Formatter.FOREGROUND_DEFAULT);
-        assertEquals("BACKGROUND_DEFAULT", X364.BACKGROUND_DEFAULT.sequence(), Formatter.BACKGROUND_DEFAULT);
     }
 
     /**

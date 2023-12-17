@@ -1,0 +1,7 @@
+EngineeringCRS["A camera looking ahead",
+  EngineeringDatum["Center of the camera"],
+  CS[spherical, 2],
+    Axis["Relative bearing (V)", CLOCKWISE],
+    Axis["Altitude (α)", up],
+    Unit["arc-second", 4.84813681109536E-6],
+  REMARK["Dummy CRS for the `BIL.raw` test raster."]]

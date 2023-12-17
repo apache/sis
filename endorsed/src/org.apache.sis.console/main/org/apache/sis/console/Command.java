@@ -31,6 +31,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.Initializer;
 import org.apache.sis.util.logging.MonolineFormatter;
+import org.apache.sis.system.Environment;
 
 
 /**
@@ -41,10 +42,12 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code help}       </td><td>Show a help overview.</td></tr>
  * <tr><td>{@code about}      </td><td>Show information about Apache SIS and system configuration.</td></tr>
  * <tr><td>{@code mime-type}  </td><td>Show MIME type for the given file.</td></tr>
+ * <tr><td>{@code identifier} </td><td>Show identifiers for metadata and referencing systems in the given file.</td></tr>
  * <tr><td>{@code metadata}   </td><td>Show metadata information for the given file.</td></tr>
  * <tr><td>{@code crs}        </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
- * <tr><td>{@code identifier} </td><td>Show identifiers for metadata and referencing systems in the given file.</td></tr>
+ * <tr><td>{@code info}       </td><td>Show resource-specific information (e.g., grid geometry).</td></tr>
  * <tr><td>{@code transform}  </td><td>Convert or transform coordinates from given source CRS to target CRS.</td></tr>
+ * <tr><td>{@code translate}  </td><td>Rewrite a data file in another format.</td></tr>
  * </table></blockquote>
  *
  * Each command can accepts some of the following options:
@@ -53,10 +56,11 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <caption>Supported command-line options</caption>
  * <tr><td>{@code --sourceCRS} </td><td>The Coordinate Reference System of input data.</td></tr>
  * <tr><td>{@code --targetCRS} </td><td>The Coordinate Reference System of output data.</td></tr>
+ * <tr><td>{@code --metadata}  </td><td>Relative path to an auxiliary metadata file.</td></tr>
  * <tr><td>{@code --format}    </td><td>The output format: {@code xml}, {@code wkt}, {@code wkt1} or {@code text}.</td></tr>
- * <tr><td>{@code --locale}    </td><td>The locale to use for the command output.</td></tr>
- * <tr><td>{@code --timezone}  </td><td>The timezone for the dates to be formatted.</td></tr>
- * <tr><td>{@code --encoding}  </td><td>The encoding to use for the command outputs and some inputs.</td></tr>
+ * <tr><td>{@code --locale}    </td><td>The locale to use for the console output.</td></tr>
+ * <tr><td>{@code --timezone}  </td><td>The timezone for the dates printed to the console output.</td></tr>
+ * <tr><td>{@code --encoding}  </td><td>The encoding to use for some text inputs and for console output.</td></tr>
  * <tr><td>{@code --colors}    </td><td>Whether colorized output shall be enabled.</td></tr>
  * <tr><td>{@code --brief}     </td><td>Whether the output should contain only brief information.</td></tr>
  * <tr><td>{@code --verbose}   </td><td>Whether the output should contain more detailed information.</td></tr>
@@ -192,6 +196,8 @@ public final class Command {
      * This method can be invoked at initialization time,
      * such as the beginning of {@code main(…)} static method.
      *
+     * @see MonolineFormatter#install()
+     *
      * @since 1.5
      */
     public static void configureLogging() {
@@ -269,6 +275,16 @@ public final class Command {
     }
 
     /**
+     * Turns on or off the faint output, if supported.
+     * This method does nothing if the terminal does not seem to support X364 sequences.
+     *
+     * @param  faint  whether to turn on the faint output.
+     */
+    final void setFaintOutput(final boolean faint) {
+        command.color(faint ? X364.FAINT : X364.NORMAL);
+    }
+
+    /**
      * Runs the command. If an exception occurs, then the exception message is sent to the error output stream
      * before to be thrown. Callers can map the exception to a {@linkplain System#exit(int) system exit code}
      * by the {@link #exitCodeFor(Throwable)} method.
@@ -325,7 +341,7 @@ public final class Command {
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void error(final String[] args, final Exception e) {
         final boolean debug = ArraysExt.containsIgnoreCase(args, Option.PREFIX + "debug");
-        final PrintWriter err = CommandRunner.writer(System.console(), System.err);
+        final PrintWriter err = Environment.writer(System.console(), System.err);
         if (debug) {
             e.printStackTrace(err);
         } else {
