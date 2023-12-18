@@ -29,6 +29,7 @@ import java.util.Locale;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.bind.Context;
 
 // Test dependencies
@@ -55,9 +56,10 @@ public final class XmlUtilitiesTest extends TestCase {
      * The reverse operation is also tested.
      *
      * @throws DatatypeConfigurationException if the XML factory cannot be created.
+     * @throws JAXBException if an error occurred while creating the JAXB context used for XML tests in SIS.
      */
     @Test
-    public void testDateToXML() throws DatatypeConfigurationException {
+    public void testDateToXML() throws DatatypeConfigurationException, JAXBException {
         createContext(false, Locale.FRANCE, "CET");
         final Date date = new Date(1230786000000L);
         final XMLGregorianCalendar calendar = XmlUtilities.toXML(context, date);
@@ -73,9 +75,10 @@ public final class XmlUtilitiesTest extends TestCase {
      * This test arbitrarily uses the JST timezone.
      *
      * @throws DatatypeConfigurationException if the XML factory cannot be created.
+     * @throws JAXBException if an error occurred while creating the JAXB context used for XML tests in SIS.
      */
     @Test
-    public void testTemporalToXML() throws DatatypeConfigurationException {
+    public void testTemporalToXML() throws DatatypeConfigurationException, JAXBException {
         createContext(false, Locale.JAPAN, "JST");
         XMLGregorianCalendar calendar;
         Temporal t;

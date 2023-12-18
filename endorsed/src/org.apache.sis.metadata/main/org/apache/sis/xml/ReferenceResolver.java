@@ -17,15 +17,22 @@
 package org.apache.sis.xml;
 
 import java.net.URI;
+import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.lang.reflect.Proxy;
+import javax.xml.transform.Source;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gcx.Anchor;
-import static org.apache.sis.util.ArgumentChecks.*;
+import org.apache.sis.xml.util.ExternalLinkHandler;
 
 
 /**
@@ -39,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * to a unmarshaller.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.5
  * @since   0.3
  */
 public class ReferenceResolver {
@@ -99,21 +106,27 @@ public class ReferenceResolver {
      * @return an object of the given type for the given {@code uuid} attribute, or {@code null} if none.
      */
     public <T> T resolve(final MarshalContext context, final Class<T> type, final UUID uuid) {
-        ensureNonNull("type", type);
-        ensureNonNull("uuid", uuid);
+        ArgumentChecks.ensureNonNull("type", type);
+        ArgumentChecks.ensureNonNull("uuid", uuid);
         return null;
     }
 
     /**
      * Returns an object of the given type for the given {@code xlink} attribute, or {@code null} if none.
-     * The default implementation performs the following lookups:
+     * The default implementation fetches the {@link XLink#getHRef() xlink:href} attribute, then:
      *
      * <ul>
-     *   <li>If the {@link XLink#getHRef() xlink:href} attribute is a {@linkplain URI#getFragment() URI fragment}
-     *       of the form {@code "#foo"} and if an object of class {@code type} with the {@code gml:id="foo"} attribute
-     *       has previously been seen in the same XML document, then that object is returned.</li>
-     *   <li>Otherwise returns {@code null}.</li>
+     *   <li>If {@code xlink:href} is null or {@linkplain URI#isOpaque() opaque}, returns {@code null}.</li>
+     *   <li>Otherwise, if {@code xlink:href} {@linkplain URI#isAbsolute() is absolute} or has a non-empty
+     *       {@linkplain URI#getPath() path}, delegate to {@link #resolveExternal(MarshalContext, Source)}.</li>
+     *   <li>Otherwise, if {@code xlink:href} is a {@linkplain URI#getFragment() fragment} of the form {@code "#foo"}
+     *       and if an object of class {@code type} with the {@code gml:id="foo"} attribute has previously been seen
+     *       in the same XML document, then return that object.</li>
+     *   <li>Otherwise, returns {@code null}.</li>
      * </ul>
+     *
+     * If an object is found but is not of the class declared in {@code type},
+     * then this method emits a warning and returns {@code null}.
      *
      * @param  <T>      the compile-time type of the {@code type} argument.
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
@@ -122,29 +135,76 @@ public class ReferenceResolver {
      * @return an object of the given type for the given {@code xlink} attribute, or {@code null} if none.
      */
     public <T> T resolve(final MarshalContext context, final Class<T> type, final XLink link) {
-        ensureNonNull("type",  type);
-        ensureNonNull("xlink", link);
+        ArgumentChecks.ensureNonNull("type",  type);
+        ArgumentChecks.ensureNonNull("xlink", link);
         final URI href = link.getHRef();
-        if (href != null && href.toString().startsWith("#")) {
-            final String id = href.getFragment();
-            final Context c = (context instanceof Context) ? (Context) context : Context.current();
-            final Object object = Context.getObjectForID(c, id);
-            if (type.isInstance(object)) {
-                return type.cast(object);
-            } else {
-                final short key;
-                final Object[] args;
-                if (object == null) {
-                    key = Errors.Keys.NotABackwardReference_1;
-                    args = new Object[] {id};
-                } else {
-                    key = Errors.Keys.UnexpectedTypeForReference_3;
-                    args = new Object[] {id, type, object.getClass()};
-                }
-                Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
+        if (href == null || href.isOpaque()) {
+            return null;
+        }
+        final Object label, object;
+        final Context c = (context instanceof Context) ? (Context) context : Context.current();
+        if (!href.isAbsolute() && Strings.isNullOrEmpty(href.getPath())) {
+            final String id = href.getFragment();       // Taken as the `gml:id` value to look for.
+            if (Strings.isNullOrEmpty(id)) {
+                return null;
             }
+            object = Context.getObjectForID(c, id);
+            label  = id;                // Used if the object is invalid.
+        } else try {
+            final Source source = Context.linkHandler(c).openReader(href);
+            object = (source != null) ? resolveExternal(c, source) : null;
+            label  = href;              // Used if the object is invalid.
+        } catch (Exception e) {
+            Context.warningOccured(c, Level.WARNING, ReferenceResolver.class, "resolve",
+                                   e, Errors.class, Errors.Keys.CanNotRead_1, href);
+            return null;
+        }
+        if (type.isInstance(object)) {
+            return type.cast(object);
+        } else {
+            final short key;
+            final Object[] args;
+            if (object == null) {
+                key = Errors.Keys.NotABackwardReference_1;
+                args = new Object[] {label.toString()};
+            } else {
+                key = Errors.Keys.UnexpectedTypeForReference_3;
+                args = new Object[] {label.toString(), type, object.getClass()};
+            }
+            Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
         }
         return null;
+    }
+
+    /**
+     * Returns an object defined in an external document, or {@code null} if none.
+     * This method is invoked automatically by {@link #resolve(MarshalContext, Class, XLink)}
+     * when the {@code xlink:href} attribute is absolute or contains the path to a document.
+     * The default implementation loads the file from the given source if it is not in the cache,
+     * then returns the object identified by the fragment part of the URI.
+     *
+     * <p>The URL of the document to load, if known, should be given by {@link Source#getSystemId()}.</p>
+     *
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  source   source of the document specified by the {@code xlink:href} attribute value.
+     * @return an object for the given source, or {@code null} if none.
+     * @throws IOException if an error occurred while opening the document.
+     * @throws JAXBException if an error occurred while parsing the document.
+     *
+     * @since 1.5
+     */
+    protected Object resolveExternal(final MarshalContext context, final Source source) throws IOException, JAXBException {
+        final MarshallerPool pool = context.getPool();
+        final Unmarshaller m = pool.acquireUnmarshaller();
+        final URI uri = ExternalLinkHandler.ifOnlyURI(source);
+        final Object object;
+        if (uri != null) {
+            object = m.unmarshal(uri.toURL());
+        } else {
+            object = m.unmarshal(source);
+        }
+        pool.recycle(m);
+        return object;
     }
 
     /**

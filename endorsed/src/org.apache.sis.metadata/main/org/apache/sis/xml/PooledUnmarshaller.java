@@ -39,6 +39,7 @@ import jakarta.xml.bind.attachment.AttachmentUnmarshaller;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.util.ExternalLinkHandler;
 
 
 /**
@@ -107,15 +108,16 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      * This method is invoked when we may marshal a different GML or metadata version than the one
      * supported natively by SIS, i.e. when {@link #getTransformVersion()} returns a non-null value.
      *
-     * @param  input    the reader created by SIS (<b>not</b> the reader given by the user).
-     * @param  version  identify the namespace substitutions to perform.
+     * @param  input        the reader created by SIS (<b>not</b> the reader given by the user).
+     * @param  version      identify the namespace substitutions to perform.
+     * @param  linkHandler  the document-dependent resolver of relative URIs, or {@code null}.
      * @return the unmarshalled object.
      */
-    private Object unmarshal(XMLEventReader input, final TransformVersion version)
+    private Object unmarshal(XMLEventReader input, final TransformVersion version, final ExternalLinkHandler linkHandler)
             throws XMLStreamException, JAXBException
     {
         input = new TransformingReader(input, version);
-        final Context context = begin();
+        final Context context = begin(linkHandler);
         final Object object;
         try {
             object = unmarshaller.unmarshal(input);
@@ -127,14 +129,16 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     }
 
     /**
-     * Same as {@link #unmarshal(XMLEventReader, TransformVersion)}, but delegating to the unmarshaller
-     * methods returning a JAXB element instead of the one returning the object.
+     * Same as {@link #unmarshal(XMLEventReader, TransformVersion, ExternalLinkHandler)},
+     * but delegating to the unmarshaller methods returning a JAXB element instead
+     * of the one returning the object.
      */
-    private <T> JAXBElement<T> unmarshal(XMLEventReader input, final TransformVersion version, final Class<T> declaredType)
+    private <T> JAXBElement<T> unmarshal(XMLEventReader input, final TransformVersion version,
+            final ExternalLinkHandler linkHandler, final Class<T> declaredType)
             throws XMLStreamException, JAXBException
     {
         input = new TransformingReader(input, version);
-        final Context context = begin();
+        final Context context = begin(linkHandler);
         final JAXBElement<T> object;
         try {
             object = unmarshaller.unmarshal(input, declaredType);
@@ -150,13 +154,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final InputStream input) throws JAXBException {
+        final var linkHandler = ExternalLinkHandler.forStream(input);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input);
             } finally {
@@ -170,15 +175,16 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final URL input) throws JAXBException {
+        final var linkHandler = new ExternalLinkHandler(input);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
             try (InputStream s = input.openStream()) {
-                return unmarshal(InputFactory.createXMLEventReader(s), version);
+                return unmarshal(InputFactory.createXMLEventReader(s), version, linkHandler);
             }
         } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input);
             } finally {
@@ -192,15 +198,16 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final File input) throws JAXBException {
+        final var linkHandler = new ExternalLinkHandler(input);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
             try (InputStream s = new BufferedInputStream(new FileInputStream(input))) {
-                return unmarshal(InputFactory.createXMLEventReader(s), version);
+                return unmarshal(InputFactory.createXMLEventReader(s), version, linkHandler);
             }
         } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input);
             } finally {
@@ -214,13 +221,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final Reader input) throws JAXBException {
+        final var linkHandler = ExternalLinkHandler.forStream(input);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input);
             } finally {
@@ -234,13 +242,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final InputSource input) throws JAXBException {
+        final var linkHandler = new ExternalLinkHandler(input.getSystemId());
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input);
             } finally {
@@ -254,13 +263,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final Node input) throws JAXBException {
+        final var linkHandler = new ExternalLinkHandler(input.getBaseURI());
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input);
             } finally {
@@ -274,13 +284,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public <T> JAXBElement<T> unmarshal(final Node input, final Class<T> declaredType) throws JAXBException {
+        final var linkHandler = new ExternalLinkHandler(input.getBaseURI());
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version, declaredType);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler, declaredType);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input, declaredType);
             } finally {
@@ -294,13 +305,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final Source input) throws JAXBException {
+        final var linkHandler = new ExternalLinkHandler(input);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input);
             } finally {
@@ -314,13 +326,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public <T> JAXBElement<T> unmarshal(final Source input, final Class<T> declaredType) throws JAXBException {
+        final var linkHandler = new ExternalLinkHandler(input);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version, declaredType);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler, declaredType);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input, declaredType);
             } finally {
@@ -334,13 +347,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final XMLStreamReader input) throws JAXBException {
+        final var linkHandler = ExternalLinkHandler.create(input);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input);
             } finally {
@@ -354,13 +368,14 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public <T> JAXBElement<T> unmarshal(final XMLStreamReader input, final Class<T> declaredType) throws JAXBException {
+        final var linkHandler = ExternalLinkHandler.create(input);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLEventReader(input), version, declaredType);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler, declaredType);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return unmarshaller.unmarshal(input, declaredType);
             } finally {
@@ -374,11 +389,17 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(XMLEventReader input) throws JAXBException {
+        final ExternalLinkHandler linkHandler;
+        try {
+            linkHandler = ExternalLinkHandler.create(input);
+        } catch (XMLStreamException e) {
+            throw new JAXBException(e);
+        }
         final TransformVersion version = getTransformVersion();
         if (version != null) {
             input = new TransformingReader(input, version);
         }
-        final Context context = begin();
+        final Context context = begin(linkHandler);
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -391,11 +412,17 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public <T> JAXBElement<T> unmarshal(XMLEventReader input, final Class<T> declaredType) throws JAXBException {
+        final ExternalLinkHandler linkHandler;
+        try {
+            linkHandler = ExternalLinkHandler.create(input);
+        } catch (XMLStreamException e) {
+            throw new JAXBException(e);
+        }
         final TransformVersion version = getTransformVersion();
         if (version != null) {
             input = new TransformingReader(input, version);
         }
-        final Context context = begin();
+        final Context context = begin(linkHandler);
         try {
             return unmarshaller.unmarshal(input, declaredType);
         } finally {

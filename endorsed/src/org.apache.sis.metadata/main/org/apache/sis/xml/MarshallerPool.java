@@ -25,6 +25,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
@@ -60,7 +61,7 @@ import org.apache.sis.util.internal.Constants;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see XML
  * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
@@ -176,17 +177,13 @@ public class MarshallerPool {
      * @param  properties  the properties to be given to the (un)marshaller, or {@code null} if none.
      * @throws JAXBException if the marshaller pool cannot be created.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})          // Generic array creation
+    @SuppressWarnings("this-escape")
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         ArgumentChecks.ensureNonNull("context", context);
-        this.context = context;
-        replacements = ServiceLoader.load(AdapterReplacement.class, Reflect.getContextClassLoader());
-        implementation = Implementation.detect(context);
-        /*
-         * Prepares a copy of the property map (if any), then removes the
-         * properties which are handled especially by this constructor.
-         */
-        template           = new PooledTemplate(properties, implementation);
+        this.context       = context;
+        replacements       = ServiceLoader.load(AdapterReplacement.class, Reflect.getContextClassLoader());
+        implementation     = Implementation.detect(context);
+        template           = new PooledTemplate(this, properties, implementation);
         marshallers        = new ConcurrentLinkedDeque<>();
         unmarshallers      = new ConcurrentLinkedDeque<>();
         isRemovalScheduled = new AtomicBoolean();
@@ -445,5 +442,35 @@ public class MarshallerPool {
             }
         }
         return unmarshaller;
+    }
+
+    /**
+     * {@return a string representation of this pool for debugging purposes}.
+     * The string representation is unspecified and may change in any future
+     * Apache SIS version.
+     *
+     * @since 1.5
+     */
+    @Override
+    public String toString() {
+        final var buffer = new StringBuilder(Classes.getShortClassName(this)).append('[');
+        final Context c = Context.current();
+        boolean s = (c != null && c.getPool() == this);
+        if (s) buffer.append("in use");
+        s = appendSize(buffer,   marshallers,   "marshallers", s);
+            appendSize(buffer, unmarshallers, "unmarshallers", s);
+        return buffer.append(']').toString();
+    }
+
+    /**
+     * Appends the size of the marshaller or unmarshaller pool to the given buffer.
+     * This is an helper method for {@link #toString()} only.
+     */
+    private static boolean appendSize(final StringBuilder buffer, final Deque<?> pool, final String label, boolean s) {
+        int n = pool.size();
+        if (n == 0) return s;
+        if (s) buffer.append(", ");
+        buffer.append(n).append(' ').append(label);
+        return true;
     }
 }

@@ -26,7 +26,7 @@ import org.apache.sis.util.Version;
  * Context of a marshalling or unmarshalling process.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  * @since   0.3
  */
 public abstract class MarshalContext {
@@ -37,7 +37,18 @@ public abstract class MarshalContext {
     }
 
     /**
-     * Returns the locale to use for (un)marshalling, or {@code null} if no locale were explicitly specified.
+     * Returns the marshaller pool that produced the marshaller or unmarshaller in use.
+     * This pool may be used for creating new (un)marshaller when a document contains
+     * {@code xlink:href} to another document.
+     *
+     * @return the marshaller pool that produced the marshaller or unmarshaller in use.
+     *
+     * @since 1.5
+     */
+    public abstract MarshallerPool getPool();
+
+    /**
+     * Returns the locale to use for (un)marshalling, or {@code null} if no locale was explicitly specified.
      * The locale returned by this method can be used for choosing a language in an {@link InternationalString}.
      *
      * <p>This locale may vary in different fragments of the same XML document.

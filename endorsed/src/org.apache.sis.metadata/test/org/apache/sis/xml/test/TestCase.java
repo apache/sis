@@ -149,15 +149,16 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
     /**
      * Initializes the {@link #context} to the given locale and timezone.
      *
-     * @param marshal   {@code true} for setting the {@link Context#MARSHALLING} flag.
-     * @param locale    the locale, or {@code null} for the default.
-     * @param timezone  the timezone, or {@code null} for the default.
+     * @param  marshal   {@code true} for setting the {@link Context#MARSHALLING} flag.
+     * @param  locale    the locale, or {@code null} for the default.
+     * @param  timezone  the timezone, or {@code null} for the default.
+     * @throws JAXBException if an error occurred while initializing the context.
      *
      * @see #clearContext()
      */
-    protected final void createContext(final boolean marshal, final Locale locale, final String timezone) {
-        context = new Context(marshal ? Context.MARSHALLING : 0, locale,
-                (timezone != null) ? TimeZone.getTimeZone(timezone) : null, null, null, null, null, null, null);
+    protected final void createContext(final boolean marshal, final Locale locale, final String timezone) throws JAXBException {
+        context = new Context(marshal ? Context.MARSHALLING : 0, getMarshallerPool(), locale,
+                (timezone != null) ? TimeZone.getTimeZone(timezone) : null, null, null, null, null, null, null, null);
     }
 
     /**

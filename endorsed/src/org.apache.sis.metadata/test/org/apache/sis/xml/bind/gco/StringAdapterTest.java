@@ -61,7 +61,7 @@ public final class StringAdapterTest extends TestCase {
         i18n.add(Locale.ENGLISH,  "A word");
         i18n.add(Locale.FRENCH,   "Un mot");
         i18n.add(Locale.JAPANESE, "言葉");
-        final Context context = new Context(0, Locale.ENGLISH, null, null, null, null, null, null, null);
+        final Context context = new Context(0, null, Locale.ENGLISH, null, null, null, null, null, null, null, null);
         try {
             Context.push(Locale.JAPANESE);  assertEquals("言葉",    StringAdapter.toString(i18n));
             Context.push(Locale.FRENCH);    assertEquals("Un mot", StringAdapter.toString(i18n));

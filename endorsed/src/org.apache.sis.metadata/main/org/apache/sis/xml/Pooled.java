@@ -40,6 +40,7 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.TypeRegistration;
 import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.util.ExternalLinkHandler;
 
 
 /**
@@ -59,6 +60,11 @@ abstract class Pooled {
     private static final String[] SCHEMA_KEYS = {"cat", "gmd", "gmi", "gml"};
 
     /**
+     * The pool that produced this marshaller or unmarshaller.
+     */
+    private final MarshallerPool pool;
+
+    /**
      * The initial state of the (un)marshaller. Will be filled only as needed,
      * often with null values (which must be supported by the map implementation).
      *
@@ -71,7 +77,7 @@ abstract class Pooled {
      *
      * This map is never {@code null}.
      */
-    final Map<Object,Object> initialProperties;
+    final Map<Object,Object> initialProperties = new LinkedHashMap<>();
 
     /**
      * Bit masks for various boolean attributes. This include whatever the language codes
@@ -149,9 +155,11 @@ abstract class Pooled {
 
     /**
      * Creates a {@link PooledTemplate}.
+     *
+     * @param pool  the pool that produced this template.
      */
-    Pooled() {
-        initialProperties = new LinkedHashMap<>();
+    Pooled(final MarshallerPool pool) {
+        this.pool = pool;
     }
 
     /**
@@ -161,7 +169,7 @@ abstract class Pooled {
      * @param template the {@link PooledTemplate} from which to get the initial values.
      */
     Pooled(final Pooled template) {
-        initialProperties = new LinkedHashMap<>();
+        pool = template.pool;
     }
 
     /**
@@ -512,11 +520,11 @@ abstract class Pooled {
     }
 
     /**
-     * Must be invoked by subclasses before a {@code try} block performing a (un)marshalling
-     * operation. Must be followed by a call to {@code finish()} in a {@code finally} block.
+     * Must be invoked by subclasses before a {@code try} block performing a (un)marshalling operation.
+     * Must be followed by a call to {@code finish()} in a {@code finally} block.
      *
      * {@snippet lang="java" :
-     *     Context context = begin();
+     *     Context context = begin(linkHandler);
      *     try {
      *         ...
      *     } finally {
@@ -525,9 +533,22 @@ abstract class Pooled {
      *     }
      *
      * @see Context#finish()
+     *
+     * @param  linkHandler  the document-dependent resolver or relativizer of URIs, or {@code null}.
      */
-    final Context begin() {
-        return new Context(bitMasks | specificBitMasks(), locale, timezone,
-                schemas, versionGML, versionMetadata, resolver, converter, logFilter);
+    final Context begin(final ExternalLinkHandler linkHandler) {
+        return new Context(bitMasks | specificBitMasks(), pool, locale, timezone,
+                           schemas, versionGML, versionMetadata,
+                           linkHandler, resolver, converter, logFilter);
+    }
+
+    /**
+     * {@return a string representation of this (un)marshaller for debugging purposes}.
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(), "baseURI", ExternalLinkHandler.getCurrentURI(),
+                "locale", locale, "timezone", timezone,
+                "versionGML", versionGML, "versionMetadata", versionMetadata);
     }
 }

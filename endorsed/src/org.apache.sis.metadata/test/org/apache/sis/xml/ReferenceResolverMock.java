@@ -54,7 +54,7 @@ public final class ReferenceResolverMock extends ReferenceResolver {
      * @return the (un)marshalling context.
      */
     public static Context begin(final boolean marshalling) {
-        return new Context(marshalling ? Context.MARSHALLING : 0, null, null, null, null,
+        return new Context(marshalling ? Context.MARSHALLING : 0, null, null, null, null, null, null,
                 null, new ReferenceResolverMock(), null, null);
     }
 

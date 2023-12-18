@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.DateType;
@@ -294,7 +295,15 @@ public final class DefaultCitationTest extends TestUsingFile {
      * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
      */
     private void testUnmarshalling(final Format format) throws JAXBException {
-        final DefaultCitation c = unmarshalFile(DefaultCitation.class, openTestFile(format));
+        verifyUnmarshalledCitation(unmarshalFile(DefaultCitation.class, openTestFile(format)));
+    }
+
+    /**
+     * Verifies the citation unmarshalled from the XML file.
+     *
+     * @param c  the citation.
+     */
+    public static void verifyUnmarshalledCitation(final Citation c) {
         assertTitleEquals("title", "Fight against poverty", c);
 
         final CitationDate date = getSingleton(c.getDates());
@@ -302,7 +311,7 @@ public final class DefaultCitationTest extends TestUsingFile {
         assertEquals("dateType", DateType.ADOPTED, date.getDateType());
         assertEquals("presentationForm", PresentationForm.PHYSICAL_OBJECT, getSingleton(c.getPresentationForms()));
 
-        final Iterator<Responsibility> it = c.getCitedResponsibleParties().iterator();
+        final Iterator<? extends Responsibility> it = c.getCitedResponsibleParties().iterator();
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
         assertEquals("Contact instruction", "Send carrier pigeon.", String.valueOf(contact.getContactInstructions()));
 

@@ -373,9 +373,9 @@ public class XLink implements Serializable {
     }
 
     /**
-     * Sets the type of link. Any value different than {@link org.apache.sis.xml.XLink.Type#AUTO
-     * Type.AUTO} (including {@code null}) will overwrite the value inferred automatically by
-     * {@link #getType()}. A {@code AUTO} value will enable automatic type detection.
+     * Sets the type of link. Any value different than {@link org.apache.sis.xml.XLink.Type#AUTO Type.AUTO}
+     * (including {@code null}) will overwrite the value inferred automatically by {@link #getType()}.
+     * An {@code AUTO} value will enable automatic type detection.
      *
      * @param  type  the new type of link, or {@code null} if none.
      */
@@ -600,8 +600,7 @@ public class XLink implements Serializable {
     }
 
     /**
-     * Communicates the desired timing of traversal from the starting resource to the ending
-     * resource.
+     * Communicates the desired timing of traversal from the starting resource to the ending resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.4
@@ -634,8 +633,8 @@ public class XLink implements Serializable {
     }
 
     /**
-     * Returns the desired timing of traversal from the starting resource to the ending
-     * resource. It's value should be treated as follows:
+     * Returns the desired timing of traversal from the starting resource to the ending resource.
+     * It's value should be treated as follows:
      *
      * <ul>
      *   <li><b>onLoad:</b>    traverse to the ending resource immediately on loading the starting resource</li>

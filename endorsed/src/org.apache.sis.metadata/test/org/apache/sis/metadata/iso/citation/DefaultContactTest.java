@@ -77,7 +77,7 @@ public final class DefaultContactTest extends TestCase implements Filter {
      * Initializes the test for catching warning messages.
      */
     private void init() {
-        context = new Context(0, null, null, null, null, null, null, null, this);
+        context = new Context(0, null, null, null, null, null, null, null, null, null, this);
     }
 
     /**

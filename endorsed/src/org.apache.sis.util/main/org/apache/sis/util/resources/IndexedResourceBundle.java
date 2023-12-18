@@ -408,7 +408,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
                 }
                 replacement = CharSequences.shortSentence(text, MAX_STRING_LENGTH);
             } else if (element instanceof URI) {
-                replacement = ((URI) element).getPath();        // For decoding encoded characters.
+                replacement = ((URI) element).getSchemeSpecificPart();      // For decoding encoded characters.
             } else if (element instanceof Class<?>) {
                 replacement = Classes.getShortName(getPublicType((Class<?>) element));
             } else if (element instanceof ControlledVocabulary) {
