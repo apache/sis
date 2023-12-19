@@ -17,6 +17,7 @@
 package org.apache.sis.xml.util;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.io.InputStream;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.sis.util.internal.Strings;
@@ -29,30 +30,43 @@ import org.apache.sis.util.internal.Strings;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class URISource extends StreamSource {
+public final class URISource extends StreamSource {
     /**
-     * URL of the XML document.
+     * Normalized URI of the XML document, without the fragment part if the document will be read from this URL.
+     * The URI is normalized for making possible to use it as a key in a cache of previously loaded documents.
      */
-    final URI source;
+    public final URI document;
 
     /**
-     * Creates a source from a URL.
-     *
-     * @param source  URL of the XML document.
+     * The fragment part of the original URI, or {@code null} if none of if the fragment is in the document URI.
+     * The latter case happen when the XML will need to be read from the input stream rather than from the URI,
+     * in which case we do not know if the input stream is not already for the fragment.
      */
-    URISource(final URI source) {
-        this.source = source;
+    public final String fragment;
+
+    /**
+     * Creates a source from an URI.
+     *
+     * @param source  URI to the XML document.
+     * @throws URISyntaxException if the URI is not valid.
+     */
+    URISource(URI source) throws URISyntaxException {
+        source = source.normalize();
+        final URI c = new URI(source.getScheme(), source.getSchemeSpecificPart(), null);
+        document = source.equals(c) ? source : c;       // Share the existing instance if applicable.
+        fragment = source.getFragment();
     }
 
     /**
-     * Creates a new source.
+     * Creates a new source from an input stream.
      *
      * @param input   stream of the XML document.
      * @param source  URL of the XML document.
      */
     private URISource(final InputStream input, final URI source) {
         super(input);
-        this.source = source;
+        document = source.normalize();
+        fragment = null;
     }
 
     /**
@@ -62,12 +76,22 @@ final class URISource extends StreamSource {
      * @param  source  URL of the XML document, or {@code null} if none.
      * @return the given input stream as a source.
      */
-    public static StreamSource create(final InputStream input, final URI source) {
+    static StreamSource create(final InputStream input, final URI source) {
         if (source != null) {
             return new URISource(input, source);
         } else {
             return new StreamSource(input);
         }
+    }
+
+    /**
+     * If this source if defined only by URI (no input stream), returns that URI.
+     * Otherwise returns {@code null}.
+     *
+     * @return the URI, or {@code null} if not applicable for reading the document.
+     */
+    public URI getReadableURI() {
+        return getInputStream() == null ? document : null;
     }
 
     /**
@@ -78,7 +102,7 @@ final class URISource extends StreamSource {
     public String getSystemId() {
         String systemId = super.getSystemId();
         if (systemId == null) {
-            systemId = source.toASCIIString();
+            systemId = document.toASCIIString();
             setSystemId(systemId);
         }
         return systemId;
@@ -89,6 +113,6 @@ final class URISource extends StreamSource {
      */
     @Override
     public String toString() {
-        return Strings.toString(getClass(), "source", source, "inputStream", getInputStream());
+        return Strings.toString(getClass(), "document", document, "fragment", fragment, "inputStream", getInputStream());
     }
 }

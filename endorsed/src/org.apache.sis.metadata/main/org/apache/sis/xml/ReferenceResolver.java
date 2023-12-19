@@ -19,7 +19,6 @@ package org.apache.sis.xml;
 import java.net.URI;
 import java.io.IOException;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.lang.reflect.Proxy;
 import javax.xml.transform.Source;
 import jakarta.xml.bind.Unmarshaller;
@@ -33,6 +32,7 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.xml.util.ExternalLinkHandler;
+import org.apache.sis.xml.util.URISource;
 
 
 /**
@@ -141,22 +141,30 @@ public class ReferenceResolver {
         if (href == null || href.isOpaque()) {
             return null;
         }
-        final Object label, object;
+        final Object object;
         final Context c = (context instanceof Context) ? (Context) context : Context.current();
         if (!href.isAbsolute() && Strings.isNullOrEmpty(href.getPath())) {
-            final String id = href.getFragment();       // Taken as the `gml:id` value to look for.
-            if (Strings.isNullOrEmpty(id)) {
+            /*
+             * URI defined only by an anchor in the same document. There is nothing to load,
+             * we just check for previously unmarshalled objects in the same marshal context.
+             * Current implementation supports only backward references.
+             *
+             * For forward references, see https://issues.apache.org/jira/browse/SIS-420
+             */
+            final String fragment = Strings.trimOrNull(href.getFragment());
+            if (fragment == null) {
                 return null;
             }
-            object = Context.getObjectForID(c, id);
-            label  = id;                // Used if the object is invalid.
+            object = Context.getObjectForID(c, fragment);
         } else try {
+            /*
+             * URI to an external document. We let `ExternalLinkHandler` decide how to replace relative URI
+             * by absolute URI. It may depend on whether user has specified a `javax.xml.stream.XMLResolver`
+             */
             final Source source = Context.linkHandler(c).openReader(href);
-            object = (source != null) ? resolveExternal(c, source) : null;
-            label  = href;              // Used if the object is invalid.
+            object = (source != null) ? resolveExternal(context, source) : null;
         } catch (Exception e) {
-            Context.warningOccured(c, Level.WARNING, ReferenceResolver.class, "resolve",
-                                   e, Errors.class, Errors.Keys.CanNotRead_1, href);
+            ExternalLinkHandler.warningOccured(href, e);
             return null;
         }
         if (type.isInstance(object)) {
@@ -166,10 +174,10 @@ public class ReferenceResolver {
             final Object[] args;
             if (object == null) {
                 key = Errors.Keys.NotABackwardReference_1;
-                args = new Object[] {label.toString()};
+                args = new Object[] {href.toString()};
             } else {
                 key = Errors.Keys.UnexpectedTypeForReference_3;
-                args = new Object[] {label.toString(), type, object.getClass()};
+                args = new Object[] {href.toString(), type, object.getClass()};
             }
             Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
         }
@@ -194,16 +202,48 @@ public class ReferenceResolver {
      * @since 1.5
      */
     protected Object resolveExternal(final MarshalContext context, final Source source) throws IOException, JAXBException {
+        final Object systemId;
+        final String fragment;
+        final URI uri;
+        if (source instanceof URISource) {
+            final var s = (URISource) source;
+            uri = s.getReadableURI();
+            systemId = s.document;
+            fragment = s.fragment;
+        } else {
+            systemId = source.getSystemId();
+            fragment = null;
+            uri      = null;
+        }
+        /*
+         * At this point, we got the system identifier (usually as a resolved URI, but not necessarily)
+         * and the URI fragment to use as a GML identifier. Check if the document is in the cache.
+         */
+        final Context c = Context.current();
+        Object object = Context.getObjectForID(c, systemId, fragment);
+        if (object != null) {
+            return object;
+        }
+        /*
+         * Object not found in the cache. Parse it.
+         */
         final MarshallerPool pool = context.getPool();
         final Unmarshaller m = pool.acquireUnmarshaller();
-        final URI uri = ExternalLinkHandler.ifOnlyURI(source);
-        final Object object;
+        if (m instanceof Pooled) {
+            ((Pooled) m).forIncludedDocument(systemId);
+        }
         if (uri != null) {
             object = m.unmarshal(uri.toURL());
         } else {
             object = m.unmarshal(source);
         }
         pool.recycle(m);
+        /*
+         * Object should be in the cache now.
+         */
+        if (fragment != null) {
+            object = Context.getObjectForID(c, systemId, fragment);
+        }
         return object;
     }
 

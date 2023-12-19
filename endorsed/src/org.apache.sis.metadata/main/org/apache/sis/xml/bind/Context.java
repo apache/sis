@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.bind;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -28,6 +29,7 @@ import java.util.logging.Filter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -171,20 +173,36 @@ public final class Context extends MarshalContext {
     private final ValueConverter converter;
 
     /**
-     * The objects associated to XML identifiers. At marhalling time, this is used for avoiding duplicated identifiers
-     * in the same XML document. At unmarshalling time, this is used for getting a previous object from its identifier.
+     * The objects associated to XML identifiers in the current document.
+     * At marhalling time, this map is used for avoiding duplicated identifiers in the same XML document.
+     * At unmarshalling time, this is used for getting a previously unmarshalled object from its identifier.
      *
      * @see #getObjectForID(Context, String)
      */
     private final Map<String,Object> identifiers;
 
     /**
-     * The identifiers used for marshalled objects. This is the converse of {@link #identifiers}, used in order to
-     * identify which {@code gml:id} to use for the given object. The {@code gml:id} to use are not necessarily the
-     * same than the one associated to {@link IdentifierSpace#ID} if the identifier was already used for another
-     * object in the same XML document.
+     * The identifiers used for marshalled objects in the current document.
+     * This is the converse of the {@link #identifiers} map, used in order to identify which {@code gml:id} to use
+     * for a given object. The {@code gml:id} values to use are not necessarily the same than the values associated
+     * to {@link IdentifierSpace#ID} if some identifiers were already used for other objects in the same XML document.
      */
     private final Map<Object,String> identifiedObjects;
+
+    /**
+     * The {@link #identifiers} map for each document being unmarshalled.
+     * This cache is populated if the document contains {@code xlink:href} to other documents.
+     * This cache contains only the documents seen by following the references since the root document.
+     * This is not a system-wide cache.
+     *
+     * <p>Keys are {@code systemId} as instances of {@link URI} or {@link String}. For documents that are read
+     * from a file or an URL, {@code systemId} should be the value of {@link java.net.URI#toASCIIString()} for
+     * consistency with {@link javax.xml.transform.stream.StreamSource}.  However, URI instances are preferred
+     * in this map because the {@link URI#equals(Object)} method applies some rules regarding case-sensitivity
+     * that {@link String#equals(Object)} cannot know. Values of the map are the {@link #identifiers} maps of
+     * the corresponding document. By convention, the object associated to the null key is the whole document.</p>
+     */
+    private final Map<Object, Map<String,Object>> identifiersPerDocuments;
 
     /**
      * The object to inform about warnings, or {@code null} if none.
@@ -250,18 +268,19 @@ public final class Context extends MarshalContext {
         if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.VERSION_2014) < 0) {
             bitMasks |= LEGACY_METADATA;
         }
-        this.pool              = pool;
-        this.locale            = locale;
-        this.timezone          = timezone;
-        this.schemas           = schemas;               // No clone, because this class is internal.
-        this.versionGML        = versionGML;
-        this.linkHandler       = linkHandler;
-        this.resolver          = resolver;
-        this.converter         = converter;
-        this.logFilter         = logFilter;
-        this.identifiers       = new HashMap<>();
-        this.identifiedObjects = new IdentityHashMap<>();
-        this.previous          = CURRENT.get();
+        this.pool               = pool;
+        this.locale             = locale;
+        this.timezone           = timezone;
+        this.schemas            = schemas;              // No clone, because this class is internal.
+        this.versionGML         = versionGML;
+        this.linkHandler        = linkHandler;
+        this.resolver           = resolver;
+        this.converter          = converter;
+        this.logFilter          = logFilter;
+        identifiers             = new HashMap<>();
+        identifiersPerDocuments = new HashMap<>();
+        identifiedObjects       = new IdentityHashMap<>();
+        previous                = CURRENT.get();
         if ((bitMasks & MARSHALLING) != 0) {
             /*
              * Set global semaphore last after our best effort to ensure that construction
@@ -298,7 +317,7 @@ public final class Context extends MarshalContext {
         this.resolver    = parent.resolver;
         this.converter   = parent.converter;
         this.logFilter   = parent.logFilter;
-        this.bitMasks    = parent.bitMasks;
+        this.bitMasks    = parent.bitMasks & ~CLEAR_SEMAPHORE;
         if (inline) {
             identifiers       = parent.identifiers;
             identifiedObjects = parent.identifiedObjects;
@@ -306,7 +325,9 @@ public final class Context extends MarshalContext {
             identifiers       = new HashMap<>();
             identifiedObjects = new IdentityHashMap<>();
         }
-        previous = CURRENT.get();
+        identifiersPerDocuments = parent.identifiersPerDocuments;
+        previous = parent;
+        assert parent == CURRENT.get();
     }
 
     /**
@@ -384,6 +405,21 @@ public final class Context extends MarshalContext {
     }
 
     /**
+     * Creates the context for following a {@code xlink:href} to a separated document.
+     * Because the separated document may be in a different directory, the new context
+     * will use a different {@link ExternalLinkHandler}. The returned context shall be
+     * used in the same way as a context created from the public constructor.
+     *
+     * @param  linkHandler  the document-dependent resolver of relative URIs, or {@code null}.
+     * @return the context as a child of current context, never {@code null}.
+     */
+    public final Context createChild(final ExternalLinkHandler linkHandler) {
+        final Context context = new Context(this, locale, linkHandler, false);
+        CURRENT.set(context);
+        return context;
+    }
+
+    /**
      * Sets the locale to the given value. The old locales are remembered and will
      * be restored by the next call to {@link #pull()}. This method can be invoked
      * when marshalling object that need to marshal their children in a different
@@ -412,23 +448,10 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Sets the context for reading a separated document.
-     * Because the separated document may be in a different directory,
-     * it uses a different {@link ExternalLinkHandler}.
-     * Caller shall invoke {@link #pull()} in a {@code finally} block.
-     *
-     * @param linkHandler  the document-dependent resolver of relative URIs, or {@code null}.
-     */
-    public static void push(final ExternalLinkHandler linkHandler) {
-        final Context current = current();
-        if (current != null) {
-            CURRENT.set(new Context(current, current.locale, linkHandler, false));
-        }
-    }
-
-    /**
-     * Restores the locale which was used prior the call to {@link #push(Locale)}.
-     * It is not necessary to invoke this method in a {@code finally} block.
+     * Restores the locale which was used prior the call to {@code push(…)}.
+     * It is not necessary to invoke this method in a {@code finally} block,
+     * provided that {@link #finish()} is invoked in a finally block by some
+     * enclosing method calls.
      */
     public static void pull() {
         Context c = current();
@@ -589,10 +612,10 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns {@code true} if the given identifier is available, or {@code false} if it is used by another object.
-     * If this method returns {@code true}, then the given identifier is associated to the given object for future
-     * invocation of {@code Context} methods. If this method returns {@code false}, then the caller is responsible
-     * for computing another identifier candidate.
+     * Associates the given object to the given identifier if that identifier is available.
+     * Returns {@code true} if the given identifier was available, or {@code false} if used by another object.
+     * In the latter case, this method does nothing (the existing object is not replaced) and the caller should
+     * try again with another identifier candidate.
      *
      * @param  context  the current context, or {@code null} if none.
      * @param  object   the object for which to assign the {@code gml:id}.
@@ -610,6 +633,32 @@ public final class Context extends MarshalContext {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns the object for the given {@code gml:id} in the specified document, or {@code null} if none.
+     * GML identifiers can be referenced by the fragment part of URI in XLinks. This association is valid
+     * only for documents referenced in {@code xlink:href} attributes since the root document of current
+     * unmarshalling process. This is not a system-wide cache.
+     *
+     * <p>For documents that are read from a file or an URL, the {@code systemId} argument should be the value of
+     * {@link java.net.URI#toASCIIString()} for consistency with {@link javax.xml.transform.stream.StreamSource}.
+     * However, the original URI instances should be used instead when they are available.
+     * By convention, a null {@code id} returns the whole document.</p>
+     *
+     * @param  context   the current context, or {@code null} if none.
+     * @param  systemId  document identifier (without the fragment part) as an {@link URI} or a {@link String}.
+     * @param  id        the fragment part of the URI identifying the object to get.
+     * @return the object associated to the given identifier, or {@code null} if none.
+     */
+    public static Object getObjectForID(final Context context, final Object systemId, final String id) {
+        if (context != null) {
+            final Map<String,Object> identifiers = context.identifiersPerDocuments.get(systemId);
+            if (identifiers != null) {
+                return identifiers.get(id);
+            }
+        }
+        return null;
     }
 
     /**
@@ -761,16 +810,36 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Invoked in a {@code finally} block when a unmarshalling process is finished.
+     * Invoked in a {@code finally} block when a (un)marshalling process is finished.
+     * This method should be invoked on the instance created by the constructor or
+     * on the instance returned by the {@link #push(ExternalLinkHandler)} method,
+     * <em>not</em> on the instance returned by {@link #current()} because the latter
+     * may cause a memory leak if some calls to the {@link #pull()} method are missing.
      */
     public final void finish() {
         if ((bitMasks & CLEAR_SEMAPHORE) != 0) {
             Semaphores.clear(Semaphores.NULL_COLLECTION);
         }
-        if (previous != null) {
-            CURRENT.set(previous);
-        } else {
+        if (previous == null) {
             CURRENT.remove();
+        } else {
+            CURRENT.set(previous);
+            if (linkHandler != null) {
+                final Object systemId = linkHandler.includedDocumentSystemId;
+                if (systemId != null) {
+                    previous.identifiersPerDocuments.putIfAbsent(systemId, identifiers);
+                }
+            }
         }
+    }
+
+    /**
+     * {@return a string representation of this context for debugging purposes}.
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(), "operation", (bitMasks & MARSHALLING) != 0 ? "marshal" : "unmarshal",
+                "locale", locale, "timezone", timezone,
+                null, (bitMasks & LENIENT_UNMARSHAL) != 0 ? "lenient"  : null);
     }
 }

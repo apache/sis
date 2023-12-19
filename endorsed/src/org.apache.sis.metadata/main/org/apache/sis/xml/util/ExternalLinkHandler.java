@@ -16,11 +16,12 @@
  */
 package org.apache.sis.xml.util;
 
-import java.net.URL;
-import java.net.URI;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLInputFactory;
@@ -39,7 +40,8 @@ import org.apache.sis.xml.bind.Context;
 
 /**
  * Resolves relative or absolute {@code xlink:href} attribute as an absolute URI.
- * This class is used for links outside the document being parsed.
+ * This class is used for resolving {@code xlink:href} values referencing a fragment
+ * outside the document being parsed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -61,6 +63,18 @@ public class ExternalLinkHandler {
      * @see #resolve(URI)
      */
     private Object base;
+
+    /**
+     * Key to use for caching the result of (un)marshalling the document resolved by this link handler.
+     * This is usually the same value than the {@link String}, {@link File} or {@link URL} specified at
+     * construction time, but as an {@link URI} or {@link String} instance.
+     *
+     * <p>This field is not used by {@code ExternalLinkHandler}. It is defined only as a way
+     * to transfer information between {@code PooledUnmarshaller} and {@link Context}.</p>
+     *
+     * @see Context#getObjectForID(Context, Object, String)
+     */
+    public Object includedDocumentSystemId;
 
     /**
      * Creates a new resolver for documents relative to the document in the specified URL.
@@ -99,7 +113,7 @@ public class ExternalLinkHandler {
      */
     public ExternalLinkHandler(final Source sibling) {
         if (sibling instanceof URISource) {
-            base = ((URISource) sibling).source;
+            base = ((URISource) sibling).document;
         } else {
             base = sibling.getSystemId();
         }
@@ -143,7 +157,7 @@ valid:  if (b != null) {
                         break valid;
                     }
                 } catch (URISyntaxException e) {
-                    Context.warningOccured(Context.current(), ReferenceResolver.class, "resolve", e, true);
+                    warningOccured(b, e);
                     break valid;
                 }
                 base = baseURI;
@@ -151,6 +165,21 @@ valid:  if (b != null) {
             return baseURI.resolve(path);
         }
         return path.isAbsolute() ? path : null;
+    }
+
+    /**
+     * Reports a warning about a URI that cannot be parsed.
+     * This method declares {@link ReferenceResolver} as the public source of the warning.
+     * The latter assumption is valid if {@code ReferenceResolver.resolve(…)} is the only
+     * code invoking, directly or indirectly, this {@code warning(…)} method.
+     *
+     * @param  href   the URI that cannot be parsed.
+     * @param  cause  the exception that occurred while trying to process the document.
+     */
+    public static void warningOccured(final Object href, final Exception cause) {
+        Context.warningOccured(Context.current(), ReferenceResolver.class, "resolve", cause, true);
+        Context.warningOccured(Context.current(), Level.WARNING, ReferenceResolver.class, "resolve",
+                               cause, Errors.class, Errors.Keys.CanNotRead_1, href);
     }
 
     /**
@@ -241,22 +270,6 @@ valid:  if (b != null) {
                 }
             }
         };
-    }
-
-    /**
-     * If the given source if defined only by URI (no input stream), returns that source.
-     *
-     * @param  source  the source.
-     * @return the URI of the source, or {@code null} if not applicable for reading the document.
-     */
-    public static URI ifOnlyURI(final Source source) {
-        if (source instanceof URISource) {
-            final var input = (URISource) source;
-            if (input.getInputStream() == null && input.getReader() == null) {
-                return input.source;
-            }
-        }
-        return null;
     }
 
     /**

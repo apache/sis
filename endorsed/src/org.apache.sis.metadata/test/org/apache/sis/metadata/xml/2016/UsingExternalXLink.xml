@@ -31,5 +31,21 @@
   <mri:abstract>
     <gco:CharacterString>Test the use of XLink to an external document.</gco:CharacterString>
   </mri:abstract>
+  <mri:pointOfContact>
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode"
+                         codeListValue="pointOfContact">pointOfContact</cit:CI_RoleCode>
+      </cit:role>
+      <cit:party>
+        <cit:CI_Individual>
+          <cit:name>
+            <gco:CharacterString>Little John</gco:CharacterString>
+          </cit:name>
+          <cit:contactInfo xlink:href="Citation.xml#ip-protocol"/>
+        </cit:CI_Individual>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </mri:pointOfContact>
 
 </mri:MD_DataIdentification>

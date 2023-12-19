@@ -83,6 +83,7 @@ abstract class Pooled {
      * Bit masks for various boolean attributes. This include whatever the language codes
      * or the country codes should be substituted by a simpler character string elements.
      * Those bits are determined by the {@link XML#STRING_SUBSTITUTES} property.
+     * The meaning of the bits are defined by constants in {@link Context} class.
      */
     private int bitMasks;
 
@@ -120,6 +121,16 @@ abstract class Pooled {
      * @see Context#getVersion(String)
      */
     private Version versionMetadata;
+
+    /**
+     * If the document to (un)marshal is included inside a larger document,
+     * the {@code systemId} of the included document. Otherwise {@code null}.
+     * This is used for caching the map of fragments (identified by {@code gml:id} attributes)
+     * included inside a document referenced by an {@code xlink:href} attribute.
+     *
+     * @see Context#getObjectForID(Context, Object, String)
+     */
+    private Object includedDocumentSystemId;
 
     /**
      * The reference resolver to use during unmarshalling.
@@ -200,6 +211,7 @@ abstract class Pooled {
             reset(entry.getKey(), entry.getValue());
         }
         initialProperties.clear();
+        includedDocumentSystemId = null;
         bitMasks         = template.bitMasks;
         locale           = template.locale;
         timezone         = template.timezone;
@@ -520,6 +532,16 @@ abstract class Pooled {
     }
 
     /**
+     * Notifies this object that it will be used for marshalling or unmarshalling a document
+     * included in a larger document. It happens when following {@code xlink:href}.
+     *
+     * @param  systemId  key to use for caching the parsing result in the marshal {@link Context}.
+     */
+    final void forIncludedDocument(final Object systemId) {
+        includedDocumentSystemId = systemId;
+    }
+
+    /**
      * Must be invoked by subclasses before a {@code try} block performing a (un)marshalling operation.
      * Must be followed by a call to {@code finish()} in a {@code finally} block.
      *
@@ -537,6 +559,15 @@ abstract class Pooled {
      * @param  linkHandler  the document-dependent resolver or relativizer of URIs, or {@code null}.
      */
     final Context begin(final ExternalLinkHandler linkHandler) {
+        if (includedDocumentSystemId != null) {
+            if (linkHandler != null) {
+                linkHandler.includedDocumentSystemId = includedDocumentSystemId;
+            }
+            final Context current = Context.current();
+            if (current != null) {
+                return current.createChild(linkHandler);
+            }
+        }
         return new Context(bitMasks | specificBitMasks(), pool, locale, timezone,
                            schemas, versionGML, versionMetadata,
                            linkHandler, resolver, converter, logFilter);

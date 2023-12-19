@@ -84,7 +84,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public final class XML extends Static {
