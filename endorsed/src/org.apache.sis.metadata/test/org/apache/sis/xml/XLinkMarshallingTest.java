@@ -48,7 +48,7 @@ public final class XLinkMarshallingTest extends TestCase {
     private static final String LINK_ONLY_XML =
             "<mdb:MD_Metadata xmlns:mdb=\""   + Namespaces.MDB + '"' +
                             " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-            "  <mdb:identificationInfo xlink:href=\"http://test.net\"/>\n" +
+            "  <mdb:identificationInfo xlink:href=\"" + DUMMY_URL + "\"/>\n" +
             "</mdb:MD_Metadata>";
 
     /**
@@ -59,7 +59,7 @@ public final class XLinkMarshallingTest extends TestCase {
                             " xmlns:mri=\""   + Namespaces.MRI + '"' +
                             " xmlns:gco=\""   + Namespaces.GCO + '"' +
                             " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-            " <mdb:identificationInfo xlink:href=\"http://test.net\">\n" +
+            " <mdb:identificationInfo xlink:href=\"" + DUMMY_URL + "\">\n" +
             "    <mri:MD_DataIdentification>\n" +
             "      <mri:abstract>\n" +
             "        <gco:CharacterString>This is a test.</gco:CharacterString>\n" +
@@ -79,7 +79,7 @@ public final class XLinkMarshallingTest extends TestCase {
         assertEquals(isNilExpected, identification instanceof NilObject, "NilObject");
         assertInstanceOf(IdentifiedObject.class, identification, "Identification");
         final XLink xlink = ((IdentifiedObject) identification).getIdentifierMap().getSpecialized(IdentifierSpace.XLINK);
-        assertEquals("http://test.net", xlink.getHRef().toString(), "xlink:href");
+        assertEquals(DUMMY_URL, xlink.getHRef().toString(), "xlink:href");
     }
 
     /**
@@ -104,7 +104,7 @@ public final class XLinkMarshallingTest extends TestCase {
     @Test
     public void testLinkOnly() throws JAXBException, URISyntaxException {
         final XLink xlink = new XLink();
-        xlink.setHRef(new URI("http://test.net"));
+        xlink.setHRef(new URI(DUMMY_URL));
         final DefaultDataIdentification identification = new DefaultDataIdentification();
         identification.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, xlink);
         final DefaultMetadata metadata = new DefaultMetadata();
@@ -136,7 +136,7 @@ public final class XLinkMarshallingTest extends TestCase {
     @Test
     public void testWithElement() throws JAXBException, URISyntaxException {
         final XLink xlink = new XLink();
-        xlink.setHRef(new URI("http://test.net"));
+        xlink.setHRef(new URI(DUMMY_URL));
         final DefaultDataIdentification identification = new DefaultDataIdentification();
         identification.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, xlink);
         identification.setAbstract(new SimpleInternationalString("This is a test."));

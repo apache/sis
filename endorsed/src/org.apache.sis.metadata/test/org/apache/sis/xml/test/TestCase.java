@@ -66,6 +66,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  */
 public abstract class TestCase extends org.apache.sis.test.TestCase {
     /**
+     * A dummy URL to not try to load. This URL is handled in a special way by the unmarshallers created
+     * by {@link #getMarshallerPool()}: they will not try to download the document at this address.
+     */
+    protected static final String DUMMY_URL = "http://test.net";
+
+    /**
      * Miscellaneous version constants used for ISO standards.
      */
     protected static final Version VERSION_2007 = LegacyNamespaces.VERSION_2007,
@@ -140,6 +146,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
                 assertNull(properties.put(XML.LOCALE, Locale.UK));
                 assertNull(properties.put(XML.TIMEZONE, TIMEZONE));
                 assertNull(properties.put(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
+                assertNull(properties.put(XML.RESOLVER, new TestReferenceResolver(DUMMY_URL)));
                 defaultPool = new MarshallerPool(properties);
             }
             return defaultPool;
