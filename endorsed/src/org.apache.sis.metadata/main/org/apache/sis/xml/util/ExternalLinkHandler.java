@@ -31,7 +31,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.stax.StAXSource;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.ReferenceResolver;
@@ -114,6 +113,14 @@ public class ExternalLinkHandler {
      */
     public ExternalLinkHandler(final Result sibling) {
         base = sibling.getSystemId();
+    }
+
+    /**
+     * {@return the base URI of the link handler}. The returned object may be an instance of
+     * {@link String}, {@link File}, {@link URL} or {@link URI}, or it may be {@code null}.
+     */
+    public final Object getURI() {
+        return base;
     }
 
     /**
@@ -258,16 +265,6 @@ valid:  if (b != null) {
                 }
             }
         };
-    }
-
-    /**
-     * {@return the base URI of the link handler in current (un)marshalling context}.
-     * This is a helper method for diagnostic purposes only.
-     */
-    @Debug
-    public static Object getCurrentURI() {
-        final var handler = Context.linkHandler(Context.current());
-        return (handler != null) ? handler.base : null;
     }
 
     /**

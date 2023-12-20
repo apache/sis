@@ -575,7 +575,9 @@ abstract class Pooled {
      */
     @Override
     public String toString() {
-        return Strings.toString(getClass(), "baseURI", ExternalLinkHandler.getCurrentURI(),
+        final Context current = Context.current();
+        return Strings.toString(getClass(),
+                "baseURI", Context.linkHandler(current).getURI(),
                 "locale", locale, "timezone", timezone,
                 "versionGML", versionGML, "versionMetadata", versionMetadata);
     }

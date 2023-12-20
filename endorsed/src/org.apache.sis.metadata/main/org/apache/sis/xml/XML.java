@@ -257,7 +257,10 @@ public final class XML extends Static {
      * <ul>
      *   <li>If the reference is of the form {@code xlink:href="#foo"} and an object with the {@code gml:id="foo"}
      *       attribute was previously found in the same XML document, then that object will be used.</li>
-     *   <li>Otherwise an empty element containing only the values of the above-cited attributes is created.</li>
+     *   <li>Otherwise, if {@code xlink:href} references an external document, that document is unmarshalled.
+     *       The URI resolution can be controlled with an {@link javax.xml.transform.URIResolver} specified
+     *       at construction time.</li>
+     *   <li>Otherwise, an empty element containing only the values of the above-cited attributes is created.</li>
      * </ul>
      *
      * Applications can sometimes do better by using some domain-specific knowledge, for example by searching in a
