@@ -45,16 +45,18 @@ public final class URISource extends StreamSource {
     public final String fragment;
 
     /**
-     * Creates a source from an URI.
+     * Creates a source from an URI. This constructor separates the fragment from the path.
+     * The URI stored by this constructor in {@link #document} excludes the fragment part.
      *
      * @param source  URI to the XML document.
      * @throws URISyntaxException if the URI is not valid.
      */
     URISource(URI source) throws URISyntaxException {
         source = source.normalize();
+        // Build a new URI unconditionally because it also decodes escaped characters.
         final URI c = new URI(source.getScheme(), source.getSchemeSpecificPart(), null);
         document = source.equals(c) ? source : c;       // Share the existing instance if applicable.
-        fragment = source.getFragment();
+        fragment = Strings.trimOrNull(source.getFragment());
     }
 
     /**

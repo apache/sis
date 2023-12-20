@@ -65,18 +65,6 @@ public class ExternalLinkHandler {
     private Object base;
 
     /**
-     * Key to use for caching the result of (un)marshalling the document resolved by this link handler.
-     * This is usually the same value than the {@link String}, {@link File} or {@link URL} specified at
-     * construction time, but as an {@link URI} or {@link String} instance.
-     *
-     * <p>This field is not used by {@code ExternalLinkHandler}. It is defined only as a way
-     * to transfer information between {@code PooledUnmarshaller} and {@link Context}.</p>
-     *
-     * @see Context#getObjectForID(Context, Object, String)
-     */
-    public Object includedDocumentSystemId;
-
-    /**
      * Creates a new resolver for documents relative to the document in the specified URL.
      * The given URL can be what StAX, SAX and DOM call {@code systemId}.
      * According StAX documentation, {@code systemId} value is used to resolve relative URIs.

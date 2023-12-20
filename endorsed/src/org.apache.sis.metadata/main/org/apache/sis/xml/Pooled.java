@@ -560,12 +560,9 @@ abstract class Pooled {
      */
     final Context begin(final ExternalLinkHandler linkHandler) {
         if (includedDocumentSystemId != null) {
-            if (linkHandler != null) {
-                linkHandler.includedDocumentSystemId = includedDocumentSystemId;
-            }
             final Context current = Context.current();
             if (current != null) {
-                return current.createChild(linkHandler);
+                return current.createChild(includedDocumentSystemId, linkHandler);
             }
         }
         return new Context(bitMasks | specificBitMasks(), pool, locale, timezone,

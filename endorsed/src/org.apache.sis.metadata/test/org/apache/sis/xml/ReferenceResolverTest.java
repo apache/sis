@@ -18,6 +18,7 @@ package org.apache.sis.xml;
 
 import java.io.IOException;
 import jakarta.xml.bind.JAXBException;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 
 // Test dependencies
@@ -25,6 +26,7 @@ import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -49,6 +51,16 @@ public final class ReferenceResolverTest extends TestUsingFile {
     public void testUsingExternalXLink() throws IOException, JAXBException {
         final var data = (DataIdentification) XML.unmarshal(Format.XML2016.getURL("UsingExternalXLink.xml"));
         assertEquals("Test the use of XLink to an external document.", data.getAbstract().toString());
-        DefaultCitationTest.verifyUnmarshalledCitation(data.getCitation());
+        final Citation citation = data.getCitation();
+        DefaultCitationTest.verifyUnmarshalledCitation(citation);
+        /*
+         * The fragment should reference the exact same object than the one in the citation.
+         */
+        final var parent  = getSingleton(citation.getCitedResponsibleParties().iterator().next().getParties());
+        final var reusing = getSingleton(getSingleton(data.getPointOfContacts()).getParties());
+        assertEquals("Little John", reusing.getName().toString());
+        assertSame(getSingleton(parent .getContactInfo()),
+                   getSingleton(reusing.getContactInfo()));
+
     }
 }

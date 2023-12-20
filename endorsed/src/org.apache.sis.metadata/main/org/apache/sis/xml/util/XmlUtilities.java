@@ -16,6 +16,8 @@
  */
 package org.apache.sis.xml.util;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -35,6 +37,10 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.GregorianCalendar;
 import java.util.function.ObjIntConsumer;
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stax.StAXSource;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -329,5 +335,40 @@ public final class XmlUtilities extends SystemListener {
             return calendar.getTime();
         }
         return null;
+    }
+
+    /**
+     * Closes the reader, input stream or XML stream used by the given source.
+     *
+     * @param  source  the source to close.
+     * @throws Exception if an error occurred while closing the source.
+     */
+    public static void close(final Source source) throws Exception {
+        if (source instanceof StreamSource) {
+            var s = (StreamSource) source;
+            close(s.getInputStream(), s.getReader());
+        } else if (source instanceof SAXSource) {
+            var s = ((SAXSource) source).getInputSource();
+            if (s != null) {
+                close(s.getByteStream(), s.getCharacterStream());
+            }
+        } else if (source instanceof StAXSource) {
+            var s = (StAXSource) source;
+            var c = s.getXMLEventReader();  if (c != null) c.close();
+            var b = s.getXMLStreamReader(); if (b != null) b.close();
+            /*
+             * Note: above calls to `close()` do not close the underlying streams,
+             * so we are not really done yet. But we cannot do better in this method.
+             */
+        }
+    }
+
+    /**
+     * Closes the given byte stream and character stream if non-null.
+     * This is an helper method for {@link #close(Source)} only.
+     */
+    private static void close(final Closeable b, final Closeable c) throws IOException {
+        if (c != null) c.close();
+        if (b != null) b.close();
     }
 }

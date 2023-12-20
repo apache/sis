@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import java.util.Locale;
 import java.util.TimeZone;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 
 
@@ -29,7 +30,7 @@ import org.apache.sis.util.Version;
  * @version 1.5
  * @since   0.3
  */
-public abstract class MarshalContext {
+public abstract class MarshalContext implements Localized {
     /**
      * Creates a new (un)marshalling context.
      */
@@ -69,6 +70,7 @@ public abstract class MarshalContext {
      *
      * @see org.apache.sis.util.DefaultInternationalString#toString(Locale)
      */
+    @Override
     public abstract Locale getLocale();
 
     /**

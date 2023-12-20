@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -410,11 +411,20 @@ public final class Context extends MarshalContext {
      * will use a different {@link ExternalLinkHandler}. The returned context shall be
      * used in the same way as a context created from the public constructor.
      *
+     * <p>The {@code systemId} argument is the key to use for caching the result of (un)marshalling a document
+     * in the new context. This is usually the same value than the {@link String}, {@link File} or {@link URL}
+     * specified at {@code linkHandler} construction time, but as an {@link URI} or {@link String} instance.</p>
+     *
+     * @param  systemId     {@link URI} or {@link String} identifier of the document to (un)marshal.
      * @param  linkHandler  the document-dependent resolver of relative URIs, or {@code null}.
      * @return the context as a child of current context, never {@code null}.
+     *
+     * @see Context#getExternalObjectForID(Object, String)
      */
-    public final Context createChild(final ExternalLinkHandler linkHandler) {
+    public final Context createChild(final Object systemId, final ExternalLinkHandler linkHandler) {
+        // Use Map.put(…) instead of putIfAbsent(…) because maybe the previous map is unmodifiable.
         final Context context = new Context(this, locale, linkHandler, false);
+        identifiersPerDocuments.put(systemId, context.identifiers);
         CURRENT.set(context);
         return context;
     }
@@ -646,19 +656,30 @@ public final class Context extends MarshalContext {
      * However, the original URI instances should be used instead when they are available.
      * By convention, a null {@code id} returns the whole document.</p>
      *
-     * @param  context   the current context, or {@code null} if none.
      * @param  systemId  document identifier (without the fragment part) as an {@link URI} or a {@link String}.
      * @param  id        the fragment part of the URI identifying the object to get.
      * @return the object associated to the given identifier, or {@code null} if none.
      */
-    public static Object getObjectForID(final Context context, final Object systemId, final String id) {
-        if (context != null) {
-            final Map<String,Object> identifiers = context.identifiersPerDocuments.get(systemId);
-            if (identifiers != null) {
-                return identifiers.get(id);
-            }
+    public final Object getExternalObjectForID(final Object systemId, final String id) {
+        final Map<String,Object> cache = identifiersPerDocuments.get(systemId);
+        return (cache != null) ? cache.get(id) : null;
+    }
+
+    /**
+     * Adds in the cache the result of unmarshalling a document referenced by {@code xlink:href}.
+     * This method cache the whole document, ignoring the fragment in the {@code xlink:href}.
+     * The fragment part is obtained by {@link #getExternalObjectForID(Object, String)}.
+     *
+     * @param  systemId  document identifier (without the fragment part) as an {@link URI} or a {@link String}.
+     * @param  document  the document to cache.
+     */
+    public final void cacheDocument(final Object systemId, final Object document) {
+        final Map<String, Object> cache = identifiersPerDocuments.get(systemId);
+        if (cache == null || cache.isEmpty()) {
+            identifiersPerDocuments.put(systemId, Collections.singletonMap(null, document));
+        } else {
+            cache.put(null, document);
         }
-        return null;
     }
 
     /**
@@ -820,16 +841,10 @@ public final class Context extends MarshalContext {
         if ((bitMasks & CLEAR_SEMAPHORE) != 0) {
             Semaphores.clear(Semaphores.NULL_COLLECTION);
         }
-        if (previous == null) {
-            CURRENT.remove();
-        } else {
+        if (previous != null) {
             CURRENT.set(previous);
-            if (linkHandler != null) {
-                final Object systemId = linkHandler.includedDocumentSystemId;
-                if (systemId != null) {
-                    previous.identifiersPerDocuments.putIfAbsent(systemId, identifiers);
-                }
-            }
+        } else {
+            CURRENT.remove();
         }
     }
 
