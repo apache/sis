@@ -16,7 +16,12 @@
  */
 package org.apache.sis.xml;
 
+import java.util.HashSet;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.io.File;
 import java.io.Reader;
 import java.io.InputStream;
@@ -40,6 +45,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.util.ExternalLinkHandler;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -159,7 +165,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(null, e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -172,24 +178,55 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Delegates the unmarshalling to the wrapped unmarshaller.
+     * The URL is opened by this method instead of by the wrapped unmarshaller for allowing us to update
+     * the URL in case of redirection. This is necessary for resolution of relative {@code xlink:href}.
      */
     @Override
-    public Object unmarshal(final URL input) throws JAXBException {
-        final var linkHandler = new ExternalLinkHandler(input);
+    public Object unmarshal(URL input) throws JAXBException {
         final TransformVersion version = getTransformVersion();
-        if (version != null) try {
-            try (InputStream s = input.openStream()) {
-                return unmarshal(InputFactory.createXMLEventReader(s), version, linkHandler);
+        final var done = new HashSet<URL>();
+        for (;;) try {      // Will retry if there is redirect.
+            final URLConnection connection = input.openConnection();
+            if (connection instanceof HttpURLConnection) {
+                final var hc = (HttpURLConnection) connection;
+                if (hc.getInstanceFollowRedirects()) {
+                    switch (hc.getResponseCode()) {
+                        /*
+                         * The HTTP_SEE_OTHER case is questionable because the new URI is not considered
+                         * equivalent to the original URI. However either we accept this URI, or either
+                         * we cannot parse the content.
+                         */
+                        case HttpURLConnection.HTTP_SEE_OTHER:
+                        case HttpURLConnection.HTTP_MOVED_TEMP: case 307:       // Temporary Redirect.
+                        case HttpURLConnection.HTTP_MOVED_PERM: case 308: {     // Moved Permanently.
+                            if (!done.add(input)) {
+                                // Safety against never-ending loop.
+                                throw new IOException(Errors.format(Errors.Keys.CanNotConnectTo_1, input));
+                            }
+                            final String location = hc.getHeaderField("Location");
+                            if (location != null) {
+                                input = input.toURI().resolve(new URI(location)).toURL();
+                                continue;
+                            }
+                        }
+                    }
+                }
             }
-        } catch (IOException | XMLStreamException e) {
-            throw new JAXBException(e);
-        } else {
-            final Context context = begin(linkHandler);
-            try {
-                return unmarshaller.unmarshal(input);
-            } finally {
-                context.finish();
+            final var linkHandler = new ExternalLinkHandler(input);
+            try (InputStream s = connection.getInputStream()) {
+                if (version != null) {
+                    return unmarshal(InputFactory.createXMLEventReader(s), version, linkHandler);
+                } else {
+                    final Context context = begin(linkHandler);
+                    try {
+                        return unmarshaller.unmarshal(s);
+                    } finally {
+                        context.finish();
+                    }
+                }
             }
+        } catch (URISyntaxException | IOException | XMLStreamException e) {
+            throw cannotParse(input, e);
         }
     }
 
@@ -205,7 +242,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
                 return unmarshal(InputFactory.createXMLEventReader(s), version, linkHandler);
             }
         } catch (IOException | XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(input, e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -226,7 +263,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(null, e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -247,7 +284,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(input.getPublicId(), e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -268,7 +305,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(input.getNodeName(), e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -289,7 +326,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler, declaredType);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(input.getNodeName(), e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -310,7 +347,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(input.getSystemId(), e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -331,7 +368,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler, declaredType);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(input.getSystemId(), e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -352,7 +389,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(input.getLocalName(), e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -373,7 +410,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         if (version != null) try {
             return unmarshal(InputFactory.createXMLEventReader(input), version, linkHandler, declaredType);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(input.getLocalName(), e);
         } else {
             final Context context = begin(linkHandler);
             try {
@@ -393,7 +430,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         try {
             linkHandler = ExternalLinkHandler.create(input);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(null, e);
         }
         final TransformVersion version = getTransformVersion();
         if (version != null) {
@@ -416,7 +453,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         try {
             linkHandler = ExternalLinkHandler.create(input);
         } catch (XMLStreamException e) {
-            throw new JAXBException(e);
+            throw cannotParse(null, e);
         }
         final TransformVersion version = getTransformVersion();
         if (version != null) {
@@ -428,6 +465,13 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } finally {
             context.finish();
         }
+    }
+
+    /**
+     * Returns the exception to throw for an input file or URL that cannot be parsed.
+     */
+    private static JAXBException cannotParse(final Object input, final Exception cause) {
+        return new JAXBException((input != null) ? Errors.format(Errors.Keys.CanNotParse_1, input) : cause.getMessage(), cause);
     }
 
     /**
