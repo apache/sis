@@ -17,13 +17,16 @@
 package org.apache.sis.system;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.InvalidPathException;
+import java.nio.file.NoSuchFileException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 
 
@@ -93,6 +96,13 @@ public enum DataDirectory {
      * @see #getDirectory()
      */
     private Path directory;
+
+    /**
+     * The directory as an URI, or {@code null} if none or not yet determined.
+     *
+     * @see #getDirectoryAsURI()
+     */
+    private URI directoryAsURI;
 
     /**
      * Prevents the log message about {@code SIS_DATA} environment variable not set.
@@ -190,7 +200,7 @@ public enum DataDirectory {
      *
      * @return the sub-directory, or {@code null} if unspecified.
      */
-    public synchronized Path getDirectory() {
+    public final synchronized Path getDirectory() {
         if (directory == null) {
             final Path root = getRootDirectory();
             if (root != null) {
@@ -218,5 +228,60 @@ public enum DataDirectory {
             }
         }
         return directory;
+    }
+
+    /**
+     * Returns the sub-directory as an {@code URI}, or {@code null} if none.
+     * The URI form is useful when the file to resolve it itself expressed as an URI.
+     * The use of {@link URI#resolve(URI)} instead of {@link Path#resolve(Path)} preserves
+     * URI-specific components such as fragment and query.
+     *
+     * @return the sub-directory, or {@code null} if unspecified.
+     */
+    private synchronized URI getDirectoryAsURI() {
+        if (directoryAsURI == null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final Path directory = getDirectory();
+            if (directory != null) {
+                directoryAsURI = directory.toUri();
+                if (!directoryAsURI.getPath().endsWith("/")) {
+                    directoryAsURI = null;
+                    warning(null, Messages.Keys.DataDirectoryNotAccessible_2, ENV, directory);
+                }
+            }
+        }
+        return directoryAsURI;
+    }
+
+    /**
+     * Returns the given URI as an absolute URI, resolved with this {@code DataDirectory} if the URI is relative.
+     * If the URI cannot be made absolute, a {@link NoSuchFileException} is thrown. This is necessary for letting
+     * the caller know that a coordinate operation is probably valid but cannot be constructed because an optional
+     * configuration is missing. It is typically because the {@code SIS_DATA} environment variable has not been set.
+     *
+     * @param  path  the URI to make absolute.
+     * @return an absolute URI to the data.
+     * @throws NoSuchFileException if the path cannot be made absolute.
+     */
+    public final URI toAbsolutePath(URI path) throws NoSuchFileException {
+        final URI base = getDirectoryAsURI();
+        if (base != null) {
+            path = base.resolve(path);
+        }
+        if (path.isAbsolute()) {
+            return path;
+        }
+        final String message;
+        if (path.isOpaque()) {
+            message = Errors.format(Errors.Keys.CanNotOpen_1, path);
+        } else {
+            final String env = getenv();
+            if (env == null) {
+                message = Messages.format(Messages.Keys.DataDirectoryNotSpecified_1, ENV);
+            } else {
+                message = Messages.format(Messages.Keys.DataDirectoryNotAccessible_2, ENV, env);
+            }
+        }
+        throw new NoSuchFileException(path.toString(), null, message);
     }
 }

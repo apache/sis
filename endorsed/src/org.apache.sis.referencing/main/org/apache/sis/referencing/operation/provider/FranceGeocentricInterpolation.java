@@ -46,6 +46,8 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
 import org.apache.sis.referencing.util.NilReferencingObject;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -54,8 +56,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.referencing.datum.DefaultEllipsoid;
-import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
+import org.apache.sis.system.DataDirectory;
 import static org.apache.sis.util.internal.Constants.DIM;
 
 
@@ -376,7 +377,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
     static DatumShiftGridFile<Angle,Length> getOrLoad(final URI file, final double[] averages, final double scale)
             throws Exception
     {
-        final URI resolved = DatumShiftGridLoader.toAbsolutePath(file);
+        final URI resolved = DataDirectory.DATUM_CHANGES.toAbsolutePath(file);
         return DatumShiftGridFile.getOrLoad(resolved, null, new Loader(resolved, averages, scale))
                                  .castTo(Angle.class, Length.class);
     }

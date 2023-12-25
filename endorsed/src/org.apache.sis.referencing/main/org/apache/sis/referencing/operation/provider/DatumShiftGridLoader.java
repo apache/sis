@@ -32,7 +32,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.Channels;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.DataDirectory;
 import org.apache.sis.referencing.internal.Resources;
@@ -147,39 +146,6 @@ abstract class DatumShiftGridLoader {
             ensureBufferContains(Math.min(n, buffer.capacity()));
         }
         buffer.position(p);
-    }
-
-    /**
-     * If the given URI is not absolute, tries to make it absolute
-     * with a path to the common directory of datum shift grid files.
-     *
-     * @param  path  the URI to make absolute.
-     * @return an absolute (if possible) URI to the data.
-     * @throws NoSuchFileException if the path cannot be made absolute.
-     *         This exception is necessary for letting the caller know that the coordinate operation is
-     *         probably valid but cannot be constructed because an optional configuration is missing.
-     *         It is typically because the {@code SIS_DATA} environment variable has not been set.
-     */
-    static URI toAbsolutePath(final URI path) throws NoSuchFileException {
-        if (path.isAbsolute()) {
-            return path;
-        }
-        String message;
-        if (path.isOpaque()) {
-            message = Errors.format(Errors.Keys.CanNotOpen_1, path);
-        } else {
-            final Path dir = DataDirectory.DATUM_CHANGES.getDirectory();
-            if (dir != null) {
-                return dir.resolve(path.getPath()).toUri();
-            }
-            final String env = DataDirectory.getenv();
-            if (env == null) {
-                message = Messages.format(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
-            } else {
-                message = Messages.format(Messages.Keys.DataDirectoryNotReadable_2, DataDirectory.ENV, env);
-            }
-        }
-        throw new NoSuchFileException(path.toString(), null, message);
     }
 
     /**

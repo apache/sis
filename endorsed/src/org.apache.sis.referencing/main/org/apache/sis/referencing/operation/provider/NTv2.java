@@ -45,13 +45,14 @@ import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.internal.Strings;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.measure.Units;
+import org.apache.sis.system.DataDirectory;
 
 
 /**
@@ -166,7 +167,7 @@ public final class NTv2 extends AbstractProvider {
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
             final URI file, final int version) throws Exception
     {
-        final URI resolved = Loader.toAbsolutePath(file);
+        final URI resolved = DataDirectory.DATUM_CHANGES.toAbsolutePath(file);
         return DatumShiftGridFile.getOrLoad(resolved, null, () -> {
             final DatumShiftGridFile<?,?> grid;
             try (ReadableByteChannel in = DatumShiftGridLoader.newByteChannel(resolved)) {

@@ -41,6 +41,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
+import org.apache.sis.system.DataDirectory;
 
 
 /**
@@ -159,8 +160,8 @@ public final class NADCON extends AbstractProvider {
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final URI latitudeShifts, final URI longitudeShifts)
             throws Exception
     {
-        final URI rlat = Loader.toAbsolutePath(latitudeShifts);
-        final URI rlon = Loader.toAbsolutePath(longitudeShifts);
+        final URI rlat = DataDirectory.DATUM_CHANGES.toAbsolutePath(latitudeShifts);
+        final URI rlon = DataDirectory.DATUM_CHANGES.toAbsolutePath(longitudeShifts);
         return DatumShiftGridFile.getOrLoad(rlat, rlon, () -> {
             final Loader loader;
             URI file = latitudeShifts;

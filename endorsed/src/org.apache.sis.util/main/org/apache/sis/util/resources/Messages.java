@@ -110,8 +110,8 @@ public class Messages extends IndexedResourceBundle {
         public static final short DataDirectoryDoesNotExist_2 = 12;
 
         /**
-         * Apache SIS is not authorized to access the “{1}” sub-directory in the directory given by the
-         * {0} environment variable.
+         * Cannot access the “{1}” sub-directory in the directory given by the {0} environment
+         * variable.
          */
         public static final short DataDirectoryNotAccessible_2 = 13;
 
