@@ -346,7 +346,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
             grid = getOrLoad(file, isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
         } catch (Exception e) {
             // NumberFormatException, ArithmeticException, NoSuchElementException, and more.
-            throw DatumShiftGridLoader.canNotLoad(HEADER, file, e);
+            throw DatumShiftGridLoader.canNotLoad(FranceGeocentricInterpolation.class, HEADER, file, e);
         }
         MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
@@ -371,7 +371,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
      * @throws Exception if an error occurred while loading the grid.
      *         Caller should handle the exception with {@code canNotLoad(…)}.
      *
-     * @see DatumShiftGridLoader#canNotLoad(String, URI, Exception)
+     * @see DatumShiftGridLoader#canNotLoad(Class, String, URI, Exception)
      */
     static DatumShiftGridFile<Angle,Length> getOrLoad(final URI file, final double[] averages, final double scale)
             throws Exception

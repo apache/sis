@@ -226,19 +226,17 @@ abstract class DatumShiftGridLoader {
     /**
      * Creates the exception to throw when the provider failed to load the grid file.
      *
+     * @param  caller  the provider to logs as the source class if a warning occurs.
      * @param  format  the format name (e.g. "NTv2" or "NADCON").
      * @param  file    the grid file that the subclass tried to load.
      * @param  cause   the cause of the failure to load the grid file.
      */
-    public static FactoryException canNotLoad(final String format, final URI file, final Exception cause) {
+    public static FactoryException canNotLoad(final Class<?> caller, final String format, final URI file, final Exception cause) {
         if (!datumDirectoryLogged.get()) {
             final Path directory = DataDirectory.DATUM_CHANGES.getDirectory();
             if (directory != null && !datumDirectoryLogged.getAndSet(true)) {
-                final LogRecord record = Resources.forLocale(null).getLogRecord(
-                        Level.INFO, Resources.Keys.DatumChangesDirectory_1, directory);
-
-                // "readGrid" is actually defined by subclasses.
-                Logging.completeAndLog(AbstractProvider.LOGGER, DatumShiftGridLoader.class, "readGrid", record);
+                log(caller, Resources.forLocale(null).getLogRecord(Level.INFO,
+                            Resources.Keys.DatumChangesDirectory_1, directory));
             }
         }
         final boolean notFound = (cause instanceof NoSuchFileException) || (cause instanceof FileNotFoundException);

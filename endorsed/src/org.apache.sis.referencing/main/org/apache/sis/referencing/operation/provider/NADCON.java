@@ -185,7 +185,7 @@ public final class NADCON extends AbstractProvider {
                  * Handle the exception here instead of by the caller
                  * because we know which of the 2 files is problematic.
                  */
-                throw DatumShiftGridLoader.canNotLoad("NADCON", file, e);
+                throw DatumShiftGridLoader.canNotLoad(NADCON.class, "NADCON", file, e);
             }
             grid = DatumShiftGridCompressed.compress(loader.grid, null, loader.grid.accuracy);
             return grid.useSharedData();

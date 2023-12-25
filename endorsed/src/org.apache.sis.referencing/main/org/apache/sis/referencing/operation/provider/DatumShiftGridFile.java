@@ -257,7 +257,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @throws Exception if an error occurred while loading the grid.
      *         Caller should handle the exception with {@code canNotLoad(…)}.
      *
-     * @see DatumShiftGridLoader#canNotLoad(String, URI, Exception)
+     * @see DatumShiftGridLoader#canNotLoad(Class, String, URI, Exception)
      */
     static DatumShiftGridFile<?,?> getOrLoad(final URI f1, final URI f2, final Callable<DatumShiftGridFile<?,?>> loader)
             throws Exception

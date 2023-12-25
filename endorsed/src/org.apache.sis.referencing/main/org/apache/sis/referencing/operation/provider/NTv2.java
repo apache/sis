@@ -146,7 +146,7 @@ public final class NTv2 extends AbstractProvider {
         try {
             grid = getOrLoad(provider, file, version);
         } catch (Exception e) {
-            throw DatumShiftGridLoader.canNotLoad(provider.getSimpleName(), file, e);
+            throw DatumShiftGridLoader.canNotLoad(provider, provider.getSimpleName(), file, e);
         }
         return DatumShiftGridFile.createGeodeticTransformation(provider, factory, grid);
     }
