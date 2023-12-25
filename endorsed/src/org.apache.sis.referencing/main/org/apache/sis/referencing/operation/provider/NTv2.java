@@ -169,7 +169,7 @@ public final class NTv2 extends AbstractProvider {
         final URI resolved = Loader.toAbsolutePath(file);
         return DatumShiftGridFile.getOrLoad(resolved, null, () -> {
             final DatumShiftGridFile<?,?> grid;
-            try (ReadableByteChannel in = Loader.newByteChannel(resolved)) {
+            try (ReadableByteChannel in = DatumShiftGridLoader.newByteChannel(resolved)) {
                 DatumShiftGridLoader.startLoading(provider, file);
                 final Loader loader = new Loader(in, file, version);
                 grid = loader.readAllGrids();

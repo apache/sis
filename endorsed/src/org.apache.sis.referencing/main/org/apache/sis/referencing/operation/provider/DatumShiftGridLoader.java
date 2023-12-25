@@ -50,7 +50,7 @@ abstract class DatumShiftGridLoader {
     /**
      * Conversion factor from degrees to seconds.
      */
-    static final double DEGREES_TO_SECONDS = 3600;
+    protected static final double DEGREES_TO_SECONDS = 3600;
 
     /**
      * Possible precision for offset values in seconds of angle. This value is used only as a hint
@@ -67,12 +67,12 @@ abstract class DatumShiftGridLoader {
      * We use a value of 1E-4 because more accurate values tend to cause overflows in the compression algorithm,
      * in which case the compression fails. With a more reasonable value, we have better chances of success.
      */
-    static final double SECOND_PRECISION = 1E-4;
+    protected static final double SECOND_PRECISION = 1E-4;
 
     /**
      * The file to load, used for parameter declaration and if we have errors to report.
      */
-    final URI file;
+    protected final URI file;
 
     /**
      * The channel opened on the file.
@@ -82,7 +82,7 @@ abstract class DatumShiftGridLoader {
     /**
      * The buffer to use for transferring data from the channel.
      */
-    final ByteBuffer buffer;
+    protected final ByteBuffer buffer;
 
     /**
      * Whether the tip about the location of datum shift files has been logged.
@@ -114,7 +114,7 @@ abstract class DatumShiftGridLoader {
      * @throws EOFException if the channel has reached the end of stream.
      * @throws IOException if another kind of error occurred while reading.
      */
-    final void ensureBufferContains(int n) throws IOException {
+    protected final void ensureBufferContains(int n) throws IOException {
         assert n >= 0 && n <= buffer.capacity() : n;
         n -= buffer.remaining();
         if (n > 0) {
@@ -136,8 +136,10 @@ abstract class DatumShiftGridLoader {
 
     /**
      * Skips exactly <var>n</var> bytes.
+     *
+     * @param  n  the number of bytes to skip.
      */
-    final void skip(int n) throws IOException {
+    protected final void skip(int n) throws IOException {
         int p;
         while ((p = buffer.position() + n) > buffer.limit()) {
             n -= buffer.remaining();
@@ -182,12 +184,13 @@ abstract class DatumShiftGridLoader {
 
     /**
      * Creates a channel for reading bytes from the file at the specified path.
+     * This method tries to open using the file system before to open from the URL.
      *
      * @param  path  the path from where to read bytes.
      * @return a channel for reading bytes from the given path.
      * @throws IOException if the channel cannot be created.
      */
-    static ReadableByteChannel newByteChannel(final URI path) throws IOException {
+    public static ReadableByteChannel newByteChannel(final URI path) throws IOException {
         try {
             return Files.newByteChannel(Path.of(path));
         } catch (FileSystemNotFoundException e) {
@@ -198,23 +201,25 @@ abstract class DatumShiftGridLoader {
 
     /**
      * Logs a message about a grid which is about to be loaded.
+     * The logger will be {@code "org.apache.sis.referencing.operation"} and the originating
+     * method will be {@code "createMathTransform"} in the specified {@code caller} class.
      *
      * @param  caller  the provider to logs as the source class.
-     *                 the source method will be set to {@code "createMathTransform"}.
      * @param  file    the grid file, as a {@link String} or a {@link URI}.
      */
-    static void startLoading(final Class<?> caller, final Object file) {
+    public static void startLoading(final Class<?> caller, final Object file) {
         log(caller, Resources.forLocale(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file));
     }
 
     /**
      * Logs the given record.
+     * The logger will be {@code "org.apache.sis.referencing.operation"} and the originating
+     * method will be {@code "createMathTransform"} in the specified {@code caller} class.
      *
      * @param  caller  the provider to logs as the source class.
-     *                 the source method will be set to {@code "createMathTransform"}.
      * @param  record  the record to complete and log.
      */
-    static void log(final Class<?> caller, final LogRecord record) {
+    protected static void log(final Class<?> caller, final LogRecord record) {
         Logging.completeAndLog(AbstractProvider.LOGGER, caller, "createMathTransform", record);
     }
 
@@ -225,7 +230,7 @@ abstract class DatumShiftGridLoader {
      * @param  file    the grid file that the subclass tried to load.
      * @param  cause   the cause of the failure to load the grid file.
      */
-    static FactoryException canNotLoad(final String format, final URI file, final Exception cause) {
+    public static FactoryException canNotLoad(final String format, final URI file, final Exception cause) {
         if (!datumDirectoryLogged.get()) {
             final Path directory = DataDirectory.DATUM_CHANGES.getDirectory();
             if (directory != null && !datumDirectoryLogged.getAndSet(true)) {
