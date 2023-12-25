@@ -1267,10 +1267,10 @@ public abstract class Variable extends Node {
     }
 
     /**
-     * Constructs the exception to thrown when the variable position cannot be computed.
+     * Constructs the exception to throw when the variable position cannot be computed.
      *
      * @param  cause  the reason why we cannot compute the position, or {@code null}.
-     * @return the exception to thrown.
+     * @return the exception to throw.
      */
     protected final DataStoreContentException canNotComputePosition(final ArithmeticException cause) {
         return new DataStoreContentException(resources().getString(

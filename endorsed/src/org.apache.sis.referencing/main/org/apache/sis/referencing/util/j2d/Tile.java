@@ -670,7 +670,7 @@ public class Tile implements Serializable {
         /*
          * Table completed. Flushs to the writer and appends additional text if we have
          * not formatted every tiles. IOException may be thrown starting from this point
-         * (the above code is not expected to thrown any IOException).
+         * (the above code is not expected to throw any IOException).
          */
         table.flush();
         if (remaining < 0) {

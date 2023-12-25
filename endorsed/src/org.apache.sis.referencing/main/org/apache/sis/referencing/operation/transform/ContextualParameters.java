@@ -677,7 +677,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Returns the exception to thrown when the parameter of the given name has not been found.
+     * Returns the exception to throw when the parameter of the given name has not been found.
      */
     private ParameterNotFoundException parameterNotFound(final String name) {
         return new ParameterNotFoundException(Resources.format(

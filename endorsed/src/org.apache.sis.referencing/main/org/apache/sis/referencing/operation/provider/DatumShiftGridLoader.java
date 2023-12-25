@@ -219,7 +219,7 @@ abstract class DatumShiftGridLoader {
     }
 
     /**
-     * Creates the exception to thrown when the provider failed to load the grid file.
+     * Creates the exception to throw when the provider failed to load the grid file.
      *
      * @param  format  the format name (e.g. "NTv2" or "NADCON").
      * @param  file    the grid file that the subclass tried to load.

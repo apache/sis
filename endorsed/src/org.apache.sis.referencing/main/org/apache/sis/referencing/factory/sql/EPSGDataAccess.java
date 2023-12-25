@@ -1935,7 +1935,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 /*
                  * One of `semiMinorAxis` and `inverseFlattening` values can be NULL in the database.
                  * Consequently, we don't use `getString(ResultSet, int)` for those parameters because
-                 * we do not want to thrown an exception if a NULL value is found.
+                 * we do not want to throw an exception if a NULL value is found.
                  */
                 final Integer epsg              = getInteger  (code, result, 1);
                 final String  name              = getString   (code, result, 2);
@@ -2285,7 +2285,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 if (i < axes.length) {
                     /*
                      * If `i` is out of bounds, an exception will be thrown after the loop.
-                     * We do not want to thrown an ArrayIndexOutOfBoundsException here.
+                     * We do not want to throw an ArrayIndexOutOfBoundsException here.
                      */
                     axes[i] = owner.createCoordinateSystemAxis(axis);
                 }

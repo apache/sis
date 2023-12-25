@@ -1332,7 +1332,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
 
     /**
      * If set to {@code true}, different values may be assigned to the same key. This is usually an
-     * error, so the default {@code Cache} behavior is to thrown an {@link IllegalStateException}
+     * error, so the default {@code Cache} behavior is to throw an {@link IllegalStateException}
      * in such cases, typically when {@link Handler#putAndUnlock(Object)} is invoked. However, in
      * some cases we may want to relax this check. For example, the EPSG database sometimes assigns
      * the same key to different kinds of objects.

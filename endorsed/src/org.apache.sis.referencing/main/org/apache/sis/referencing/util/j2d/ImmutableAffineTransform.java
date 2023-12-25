@@ -80,7 +80,7 @@ public class ImmutableAffineTransform extends AffineTransform {
 
     /**
      * Checks if the caller is allowed to change this {@code AffineTransform} state.
-     * If this method is defined to thrown an exception in all case (which is the default),
+     * If this method is defined to throw an exception in all case (which is the default),
      * then this {@code AffineTransform} is immutable.
      *
      * <p>An {@code ImmutableAffineTransform} may be temporary mutable at construction time,

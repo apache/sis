@@ -359,7 +359,7 @@ public final class NADCON extends AbstractProvider {
         }
 
         /**
-         * Returns the exception to thrown in the file does not seems to be a NADCON format.
+         * Returns the exception to throw in the file does not seems to be a NADCON format.
          */
         private FactoryException unexpectedFormat() {
             return new FactoryException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, NADCON, file));
