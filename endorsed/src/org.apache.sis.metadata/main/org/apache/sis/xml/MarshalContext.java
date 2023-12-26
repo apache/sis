@@ -16,7 +16,9 @@
  */
 package org.apache.sis.xml;
 
+import java.net.URI;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.TimeZone;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Localized;
@@ -103,5 +105,16 @@ public abstract class MarshalContext implements Localized {
      * @param  prefix  one of the above-cited prefix.
      * @return the version for the given schema, or {@code null} if unknown.
      */
-    public abstract Version getVersion(final String prefix);
+    public abstract Version getVersion(String prefix);
+
+    /**
+     * Returns the URI of the document being (un)marshalled, if this URI is known.
+     * The URI is generally unknown if the source of the XML document is,
+     * for example, an {@link java.io.InputStream}.
+     *
+     * @return the URI of the document being marshalled or unmarshalled.
+     *
+     * @since 1.5
+     */
+    public abstract Optional<URI> getDocumentURI();
 }

@@ -195,7 +195,7 @@ public class ReferenceResolver {
             final ExternalLinkHandler handler = Context.linkHandler(c);
             Source source = null;
             if (externalSourceResolver != null) {
-                Object base = handler.getURI();
+                Object base = handler.getBase();
                 if (base != null) {
                     source = externalSourceResolver.resolve(href.toString(), base.toString());
                 }

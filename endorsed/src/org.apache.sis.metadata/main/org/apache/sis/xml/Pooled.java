@@ -577,7 +577,7 @@ abstract class Pooled {
     public String toString() {
         final Context current = Context.current();
         return Strings.toString(getClass(),
-                "baseURI", Context.linkHandler(current).getURI(),
+                "baseURI", Context.linkHandler(current).getBase(),
                 "locale", locale, "timezone", timezone,
                 "versionGML", versionGML, "versionMetadata", versionMetadata);
     }

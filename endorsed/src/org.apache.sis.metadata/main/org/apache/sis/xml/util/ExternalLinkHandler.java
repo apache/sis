@@ -119,8 +119,41 @@ public class ExternalLinkHandler {
      * {@return the base URI of the link handler}. The returned object may be an instance of
      * {@link String}, {@link File}, {@link URL} or {@link URI}, or it may be {@code null}.
      */
-    public final Object getURI() {
+    public final Object getBase() {
         return base;
+    }
+
+    /**
+     * {@return the base URI of the link handler}. This is the same value as {@link #getBase()},
+     * but converted to an {@link URI} object when first invoked.
+     */
+    public final URI getURI() {
+        final Object b = base;
+        if (b == null) {
+            return null;
+        }
+        final URI baseURI;
+        if (b instanceof URI) {         // `instanceof` check of final classes are efficient.
+            baseURI = (URI) b;
+        } else {
+            base = null;                // Clear first in case of failure, for avoiding to try again later.
+            try {
+                if (b instanceof String) {
+                    baseURI = new URI((String) b);
+                } else if (b instanceof URL) {
+                    baseURI = ((URL) b).toURI();
+                } else if (b instanceof File) {
+                    baseURI = ((File) b).toURI();
+                } else {
+                    return null;
+                }
+            } catch (URISyntaxException e) {
+                warningOccured(b, e);
+                return null;
+            }
+            base = baseURI;
+        }
+        return baseURI;
     }
 
     /**
@@ -134,29 +167,8 @@ public class ExternalLinkHandler {
      * @see URI#resolve(URI)
      */
     final URI resolve(final URI path) {
-        final Object b = base;
-valid:  if (b != null) {
-            final URI baseURI;
-            if (b instanceof URI) {         // `instanceof` check of final classes are efficient.
-                baseURI = (URI) b;
-            } else {
-                base = null;                // Clear first in case of failure, for avoiding to try again later.
-                try {
-                    if (b instanceof String) {
-                        baseURI = new URI((String) b);
-                    } else if (b instanceof URL) {
-                        baseURI = ((URL) b).toURI();
-                    } else if (b instanceof File) {
-                        baseURI = ((File) b).toURI();
-                    } else {
-                        break valid;
-                    }
-                } catch (URISyntaxException e) {
-                    warningOccured(b, e);
-                    break valid;
-                }
-                base = baseURI;
-            }
+        final URI baseURI = getURI();
+        if (baseURI != null) {
             return baseURI.resolve(path);
         }
         return path.isAbsolute() ? path : null;

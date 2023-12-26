@@ -23,6 +23,7 @@ import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -378,6 +379,14 @@ public final class Context extends MarshalContext {
             // Future SIS versions may add more cases here.
         }
         return null;
+    }
+
+    /**
+     * Returns the URI of the document being (un)marshalled, if this URI is known.
+     */
+    @Override
+    public final Optional<URI> getDocumentURI() {
+        return (linkHandler != null) ? Optional.ofNullable(linkHandler.getURI()) : Optional.empty();
     }
 
 
