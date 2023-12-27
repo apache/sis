@@ -144,7 +144,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * @throws DataStoreException if an error occurred while reading the file.
      */
     protected final void readPRJ() throws DataStoreException {
-        Exception cause = null;
+        Exception cause = null, suppressed = null;
         try {
             final AuxiliaryContent content = readAuxiliaryFile(PRJ);
             if (content == null) {
@@ -154,6 +154,11 @@ public abstract class PRJDataStore extends URIDataStore {
             final String wkt = content.toString();
             final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
             format.setConvention(Convention.WKT1_COMMON_UNITS);         // Ignored if the format is WKT 2.
+            try {
+                format.setSourceFile(content.getURI());
+            } catch (URISyntaxException e) {
+                suppressed = e;
+            }
             final ParsePosition pos = new ParsePosition(0);
             crs = (CoordinateReferenceSystem) format.parse(wkt, pos);
             if (crs != null) {
@@ -171,7 +176,9 @@ public abstract class PRJDataStore extends URIDataStore {
         } catch (IOException | ParseException | ClassCastException e) {
             cause = e;
         }
-        throw new DataStoreReferencingException(cannotReadAuxiliaryFile(PRJ), cause);
+        final var e = new DataStoreReferencingException(cannotReadAuxiliaryFile(PRJ), cause);
+        if (suppressed != null) e.addSuppressed(suppressed);
+        throw e;
     }
 
     /**
@@ -271,6 +278,16 @@ public abstract class PRJDataStore extends URIDataStore {
          */
         public String getFilename() {
             return IOUtilities.filename(source);
+        }
+
+        /**
+         * Returns the source as an URI if possible.
+         *
+         * @return the source as an URI, or {@code null} if none.
+         * @throws URISyntaxException if the URI cannot be parsed.
+         */
+        public URI getURI() throws URISyntaxException {
+            return IOUtilities.toURI(source);
         }
 
         /**

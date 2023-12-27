@@ -1659,15 +1659,15 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * inverse matrix but those information are lost at WKT formatting time. A similar "hidden" information
      * lost may also happen with {@link WraparoundTransform}, also making that transform non-invertible.</p>
      *
-     * @param  text  math transform encoded in Well-Known Text format.
+     * @param  wkt  math transform encoded in Well-Known Text format.
      * @return the math transform (never {@code null}).
      * @throws FactoryException if the Well-Known Text cannot be parsed,
      *         or if the math transform creation failed from some other reason.
      */
     @Override
-    public MathTransform createFromWKT(final String text) throws FactoryException {
+    public MathTransform createFromWKT(final String wkt) throws FactoryException {
         lastMethod.remove();
-        ArgumentChecks.ensureNonEmpty("text", text);
+        ArgumentChecks.ensureNonEmpty("wkt", wkt);
         Parser p = parser.getAndSet(null);
         if (p == null) try {
             Constructor<? extends Parser> c = parserConstructor;
@@ -1687,7 +1687,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          */
         final Object object;
         try {
-            object = p.createFromWKT(text);
+            object = p.createFromWKT(wkt);
         } catch (FactoryException e) {
             /*
              * The parsing may fail because a operation parameter is not known to SIS. If this happen, replace

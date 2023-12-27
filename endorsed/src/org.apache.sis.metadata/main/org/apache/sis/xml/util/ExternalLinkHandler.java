@@ -132,7 +132,7 @@ public class ExternalLinkHandler {
         if (b == null) {
             return null;
         }
-        final URI baseURI;
+        URI baseURI;
         if (b instanceof URI) {         // `instanceof` check of final classes are efficient.
             baseURI = (URI) b;
         } else {
@@ -151,6 +151,7 @@ public class ExternalLinkHandler {
                 warningOccured(b, e);
                 return null;
             }
+            baseURI = baseURI.normalize();
             base = baseURI;
         }
         return baseURI;

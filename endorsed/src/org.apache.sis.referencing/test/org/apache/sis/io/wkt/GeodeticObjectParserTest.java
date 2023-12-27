@@ -92,8 +92,8 @@ public final class GeodeticObjectParserTest extends TestCase {
      * Instantiates the parser to test.
      */
     private void newParser(final Convention convention) {
-        parser = new GeodeticObjectParser(Symbols.getDefault(), Map.of(),
-                null, null, null, convention, Transliterator.DEFAULT, null, new ReferencingFactoryContainer());
+        parser = new GeodeticObjectParser(null, Map.of(), Symbols.getDefault(), null, null, null,
+                        convention, Transliterator.DEFAULT, null, new ReferencingFactoryContainer());
         assertEquals(GeodeticObjectFactory.class.getCanonicalName(), parser.getPublicFacade());
     }
 

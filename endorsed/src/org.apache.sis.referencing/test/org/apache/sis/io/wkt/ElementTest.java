@@ -46,8 +46,8 @@ public final class ElementTest extends TestCase {
     /**
      * A dummy parser to be given to the {@link Element} constructor.
      */
-    private final AbstractParser parser = new AbstractParser(Symbols.SQUARE_BRACKETS, new HashMap<>(2),
-            null, null, null, Locale.ENGLISH)
+    private final AbstractParser parser = new AbstractParser(
+            null, new HashMap<>(2), Symbols.SQUARE_BRACKETS, null, null, null, Locale.ENGLISH)
     {
         @Override String getPublicFacade() {
             throw new UnsupportedOperationException();

@@ -306,7 +306,7 @@ public final class CRS extends Static {
      * Applications which need to parse a large amount of WKT strings should consider to use
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
-     * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
+     * @param  wkt  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @return the parsed Coordinate Reference System.
      * @throws FactoryException if the given WKT cannot be parsed.
      *
@@ -317,9 +317,8 @@ public final class CRS extends Static {
      *
      * @since 0.6
      */
-    public static CoordinateReferenceSystem fromWKT(final String text) throws FactoryException {
-        ArgumentChecks.ensureNonNull("text", text);
-        final CoordinateReferenceSystem crs = GeodeticObjectFactory.provider().createFromWKT(text);
+    public static CoordinateReferenceSystem fromWKT(final String wkt) throws FactoryException {
+        final CoordinateReferenceSystem crs = GeodeticObjectFactory.provider().createFromWKT(wkt);
         DefinitionVerifier.withAuthority(crs, Loggers.WKT, CRS.class, "fromWKT");
         return crs;
     }

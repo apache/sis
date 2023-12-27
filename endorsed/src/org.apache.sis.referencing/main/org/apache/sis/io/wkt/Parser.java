@@ -60,9 +60,9 @@ public interface Parser {
      * For processing warnings in a different way than logging them, one can use
      * {@link WKTFormat#parseObject(String)} followed by a call to {@link WKTFormat#getWarnings()}.
      *
-     * @param  text  object encoded in Well-Known Text format (version 1 or 2).
+     * @param  wkt  object encoded in Well-Known Text format (version 1 or 2).
      * @return the result of parsing the given text.
      * @throws FactoryException if the object creation failed.
      */
-    Object createFromWKT(String text) throws FactoryException;
+    Object createFromWKT(String wkt) throws FactoryException;
 }

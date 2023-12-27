@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
@@ -94,6 +95,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("LocalVariableHidesMemberVariable")       // We hide with the same value made final.
 class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
     /*
      * Force class initialization of `AxisDirections` in order to have
@@ -182,7 +184,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     public GeodeticObjectParser(final Map<String,?> defaultProperties,
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
-        super(Symbols.getDefault(), Collections.emptyMap(), null, null, null,
+        super(null, Collections.emptyMap(), Symbols.getDefault(), null, null, null,
                 new ReferencingFactoryContainer(defaultProperties,
                         (CRSFactory)   factories,
                         (CSFactory)    factories,
@@ -198,8 +200,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Constructs a parser for the specified set of symbols using the specified set of factories.
      * This constructor is for {@link WKTFormat} usage only.
      *
-     * @param  symbols       the set of symbols to use.
+     * @param  sourceFile    URI to declare as the source of the WKT definitions, or {@code null} if unknown.
      * @param  fragments     reference to the {@link WKTFormat#fragments} map, or an empty map if none.
+     * @param  symbols       the set of symbols to use. Cannot be null.
      * @param  numberFormat  the number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  dateFormat    the date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  unitFormat    the unit format provided by {@link WKTFormat}, or {@code null} for a default format.
@@ -207,12 +210,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      * @param  factories     on input, the factories to use. On output, the factories used. Can be null.
      */
-    GeodeticObjectParser(final Symbols symbols, final Map<String,StoredTree> fragments,
+    GeodeticObjectParser(final URI sourceFile, final Map<String,StoredTree> fragments, final Symbols symbols,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
             final Convention convention, final Transliterator transliterator, final Locale errorLocale,
             final ReferencingFactoryContainer factories)
     {
-        super(symbols, fragments, numberFormat, dateFormat, unitFormat, factories, errorLocale);
+        super(sourceFile, fragments, symbols, numberFormat, dateFormat, unitFormat, factories, errorLocale);
         this.transliterator = transliterator;
         usesCommonUnits = convention.usesCommonUnits;
         ignoreAxes      = convention == Convention.WKT1_IGNORE_AXES;
