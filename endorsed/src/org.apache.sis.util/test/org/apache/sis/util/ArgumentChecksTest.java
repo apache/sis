@@ -21,6 +21,7 @@ import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -41,14 +42,12 @@ public final class ArgumentChecksTest extends TestCase {
      */
     @Test
     public void testEnsureNonNullElement() {
-        NullPointerException e = assertThrows(NullPointerException.class, () -> {
-            ArgumentChecks.ensureNonNullElement("axes", 2, null);
-        });
-        assertTrue(e.getMessage().contains("axes[2]"));
-        e = assertThrows(NullPointerException.class, () -> {
-            ArgumentChecks.ensureNonNullElement("axes[#].unit", 2, null);
-        });
-        assertTrue(e.getMessage().contains("axes[2].unit"));
+        NullPointerException exception;
+        exception = assertThrows(NullPointerException.class, () -> ArgumentChecks.ensureNonNullElement("axes", 2, null));
+        assertMessageContains(exception, "axes[2]");
+
+        exception = assertThrows(NullPointerException.class, () -> ArgumentChecks.ensureNonNullElement("axes[#].unit", 2, null));
+        assertTrue(exception.getMessage().contains("axes[2].unit"));
     }
 
     /**
@@ -57,10 +56,9 @@ public final class ArgumentChecksTest extends TestCase {
     @Test
     public void testEnsureBetweenAndDistinct() {
         ArgumentChecks.ensureNonEmptyBounded("dimensions", true, 0, 4, new int[] {2, 3, 0, 1});
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> {
-            ArgumentChecks.ensureNonEmptyBounded("dimensions", true, 0, 4, new int[] {2, 3, 3, 1});
-        });
-        assertNotNull(e.getMessage());
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> ArgumentChecks.ensureNonEmptyBounded("dimensions", true, 0, 4, new int[] {2, 3, 3, 1}));
+        assertMessageContains(exception);
     }
 
     /**
@@ -70,17 +68,15 @@ public final class ArgumentChecksTest extends TestCase {
     public void testEnsurePositive() {
         ArgumentChecks.ensurePositive("length", 4d);
         ArgumentChecks.ensurePositive("length", 0d);
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> {
-            ArgumentChecks.ensurePositive("length", -4d);
-        });
-        assertTrue(e.getMessage().contains("length"));
-        e = assertThrows(IllegalArgumentException.class, () -> {
-            ArgumentChecks.ensurePositive("length", -0d);
-        });
-        assertTrue(e.getMessage().contains("length"));
-        e = assertThrows(IllegalArgumentException.class, () -> {
-            ArgumentChecks.ensurePositive("length", -0f);
-        });
-        assertTrue(e.getMessage().contains("length"));
+        IllegalArgumentException exception;
+
+        exception = assertThrows(IllegalArgumentException.class, () -> ArgumentChecks.ensurePositive("length", -4d));
+        assertMessageContains(exception, "length");
+
+        exception = assertThrows(IllegalArgumentException.class, () -> ArgumentChecks.ensurePositive("length", -0d));
+        assertMessageContains(exception, "length");
+
+        exception = assertThrows(IllegalArgumentException.class, () -> ArgumentChecks.ensurePositive("length", -0f));
+        assertMessageContains(exception, "length");
     }
 }

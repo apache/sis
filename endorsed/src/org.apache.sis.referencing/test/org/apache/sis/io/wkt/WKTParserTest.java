@@ -25,7 +25,7 @@ import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.junit.Test;
 import org.junit.Ignore;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.test.DependsOn;
 
@@ -76,15 +76,15 @@ public final class WKTParserTest extends CRSParserTest {
     private void verifyEllipsoidalCS() {
         final CoordinateSystem cs = object.getCoordinateSystem();
         switch (cs.getDimension()) {
-            default: assertEquals("name", AxisNames.ELLIPSOIDAL_HEIGHT, cs.getAxis(2).getName().getCode());
-            case 2:  assertEquals("name", AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode());
-            case 1:  assertEquals("name", AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode());
+            default: assertEquals(AxisNames.ELLIPSOIDAL_HEIGHT, cs.getAxis(2).getName().getCode(), "name");
+            case 2:  assertEquals(AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode(), "name");
+            case 1:  assertEquals(AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode(), "name");
             case 0:  break;
         }
         switch (cs.getDimension()) {
-            default: assertEquals("abbreviation", "h", cs.getAxis(2).getAbbreviation());
-            case 2:  assertEquals("abbreviation", "λ", cs.getAxis(1).getAbbreviation());
-            case 1:  assertEquals("abbreviation", "φ", cs.getAxis(0).getAbbreviation());
+            default: assertEquals("h", cs.getAxis(2).getAbbreviation(), "abbreviation");
+            case 2:  assertEquals("λ", cs.getAxis(1).getAbbreviation(), "abbreviation");
+            case 1:  assertEquals("φ", cs.getAxis(0).getAbbreviation(), "abbreviation");
             case 0:  break;
         }
     }
@@ -224,9 +224,9 @@ public final class WKTParserTest extends CRSParserTest {
     public void testGeocentric() throws FactoryException {
         super.testGeocentric();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.GEOCENTRIC_X, cs.getAxis(0).getName().getCode());
-        assertEquals("name", AxisNames.GEOCENTRIC_Y, cs.getAxis(1).getName().getCode());
-        assertEquals("name", AxisNames.GEOCENTRIC_Z, cs.getAxis(2).getName().getCode());
+        assertEquals(AxisNames.GEOCENTRIC_X, cs.getAxis(0).getName().getCode(), "name");
+        assertEquals(AxisNames.GEOCENTRIC_Y, cs.getAxis(1).getName().getCode(), "name");
+        assertEquals(AxisNames.GEOCENTRIC_Z, cs.getAxis(2).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testGeocentric();                             // Test again with “ and ” replaced by ".
@@ -281,8 +281,8 @@ public final class WKTParserTest extends CRSParserTest {
     public void testProjectedWithFootUnits() throws FactoryException {
         super.testProjectedWithFootUnits();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.EASTING,  cs.getAxis(0).getName().getCode());
-        assertEquals("name", AxisNames.NORTHING, cs.getAxis(1).getName().getCode());
+        assertEquals(AxisNames.EASTING,  cs.getAxis(0).getName().getCode(), "name");
+        assertEquals(AxisNames.NORTHING, cs.getAxis(1).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testProjectedWithFootUnits();                  // Test again with “ and ” replaced by ".
@@ -320,8 +320,8 @@ public final class WKTParserTest extends CRSParserTest {
     public void testProjectedWithImplicitParameterUnits() throws FactoryException {
         super.testProjectedWithImplicitParameterUnits();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.EASTING,  cs.getAxis(0).getName().getCode());
-        assertEquals("name", AxisNames.NORTHING, cs.getAxis(1).getName().getCode());
+        assertEquals(AxisNames.EASTING,  cs.getAxis(0).getName().getCode(), "name");
+        assertEquals(AxisNames.NORTHING, cs.getAxis(1).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testProjectedWithImplicitParameterUnits();    // Test again with “ and ” replaced by ".
@@ -345,8 +345,8 @@ public final class WKTParserTest extends CRSParserTest {
     public void testVertical() throws FactoryException {
         super.testVertical();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(0).getName().getCode());
-        assertEquals("datumType", VerticalDatumType.GEOIDAL, ((VerticalCRS) object).getDatum().getVerticalDatumType());
+        assertEquals(AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(0).getName().getCode(), "name");
+        assertEquals(VerticalDatumType.GEOIDAL, ((VerticalCRS) object).getDatum().getVerticalDatumType(), "datumType");
 
         useStraightQuotes = true;
         super.testVertical();                               // Test again with “ and ” replaced by ".
@@ -369,7 +369,7 @@ public final class WKTParserTest extends CRSParserTest {
     public void testTemporal() throws FactoryException {
         super.testTemporal();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.TIME, cs.getAxis(0).getName().getCode());
+        assertEquals(AxisNames.TIME, cs.getAxis(0).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testTemporal();                               // Test again with “ and ” replaced by ".
@@ -394,7 +394,7 @@ public final class WKTParserTest extends CRSParserTest {
     public void testParametric() throws FactoryException {
         super.testParametric();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", "pressure", cs.getAxis(0).getName().getCode());
+        assertEquals("pressure", cs.getAxis(0).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testParametric();                             // Test again with “ and ” replaced by ".
@@ -421,8 +421,8 @@ public final class WKTParserTest extends CRSParserTest {
     public void testEngineering() throws FactoryException {
         super.testEngineering();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.NORTHING, cs.getAxis(0).getName().getCode());
-        assertEquals("name", AxisNames.WESTING,  cs.getAxis(1).getName().getCode());
+        assertEquals(AxisNames.NORTHING, cs.getAxis(0).getName().getCode(), "name");
+        assertEquals(AxisNames.WESTING,  cs.getAxis(1).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testEngineering();                            // Test again with “ and ” replaced by ".
@@ -449,8 +449,8 @@ public final class WKTParserTest extends CRSParserTest {
     public void testEngineeringRotated() throws FactoryException {
         super.testEngineeringRotated();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", "site east",  cs.getAxis(0).getName().getCode());
-        assertEquals("name", "site north", cs.getAxis(1).getName().getCode());
+        assertEquals("site east",  cs.getAxis(0).getName().getCode(), "name");
+        assertEquals("site north", cs.getAxis(1).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testEngineeringRotated();                     // Test again with “ and ” replaced by ".
@@ -482,9 +482,9 @@ public final class WKTParserTest extends CRSParserTest {
          * In this case we had no axis names, so Apache SIS reused the abbreviations.
          * This could change in any future SIS version if we update Transliterator.
          */
-        assertEquals("name", "x", cs.getAxis(0).getName().getCode());
-        assertEquals("name", "y", cs.getAxis(1).getName().getCode());
-        assertEquals("name", "z", cs.getAxis(2).getName().getCode());
+        assertEquals("x", cs.getAxis(0).getName().getCode(), "name");
+        assertEquals("y", cs.getAxis(1).getName().getCode(), "name");
+        assertEquals("z", cs.getAxis(2).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testEngineeringForShip();                     // Test again with “ and ” replaced by ".
@@ -555,9 +555,9 @@ public final class WKTParserTest extends CRSParserTest {
     public void testDerivedEngineeringFromGeodetic() throws FactoryException {
         super.testDerivedEngineeringFromGeodetic();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", "Topocentric East",   cs.getAxis(0).getName().getCode());
-        assertEquals("name", "Topocentric North",  cs.getAxis(1).getName().getCode());
-        assertEquals("name", "Topocentric height", cs.getAxis(2).getName().getCode());
+        assertEquals("Topocentric East",   cs.getAxis(0).getName().getCode(), "name");
+        assertEquals("Topocentric North",  cs.getAxis(1).getName().getCode(), "name");
+        assertEquals("Topocentric height", cs.getAxis(2).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testDerivedEngineeringFromGeodetic();         // Test again with “ and ” replaced by ".
@@ -580,8 +580,8 @@ public final class WKTParserTest extends CRSParserTest {
          * In this case we had no axis names, so Apache SIS reused the abbreviations.
          * This could change in any future SIS version if we update Transliterator.
          */
-        assertEquals("name", "I", cs.getAxis(0).getName().getCode());
-        assertEquals("name", "J", cs.getAxis(1).getName().getCode());
+        assertEquals("I", cs.getAxis(0).getName().getCode(), "name");
+        assertEquals("J", cs.getAxis(1).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testDerivedEngineeringFromProjected();        // Test again with “ and ” replaced by ".
@@ -616,9 +616,9 @@ public final class WKTParserTest extends CRSParserTest {
     public void testCompoundWithVertical() throws FactoryException {
         super.testCompoundWithVertical();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.GEODETIC_LATITUDE,      cs.getAxis(0).getName().getCode());
-        assertEquals("name", AxisNames.GEODETIC_LONGITUDE,     cs.getAxis(1).getName().getCode());
-        assertEquals("name", AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(2).getName().getCode());
+        assertEquals(AxisNames.GEODETIC_LATITUDE,      cs.getAxis(0).getName().getCode(), "name");
+        assertEquals(AxisNames.GEODETIC_LONGITUDE,     cs.getAxis(1).getName().getCode(), "name");
+        assertEquals(AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(2).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testCompoundWithVertical();                   // Test again with “ and ” replaced by ".
@@ -651,9 +651,9 @@ public final class WKTParserTest extends CRSParserTest {
     public void testCompoundWithTime() throws FactoryException {
         super.testCompoundWithTime();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode());
-        assertEquals("name", AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode());
-        assertEquals("name", AxisNames.TIME,               cs.getAxis(2).getName().getCode());
+        assertEquals(AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode(), "name");
+        assertEquals(AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode(), "name");
+        assertEquals(AxisNames.TIME,               cs.getAxis(2).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testCompoundWithTime();                       // Test again with “ and ” replaced by ".
@@ -688,9 +688,9 @@ public final class WKTParserTest extends CRSParserTest {
     public void testCompoundWithParametric() throws FactoryException {
         super.testCompoundWithParametric();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals("name", AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode());
-        assertEquals("name", AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode());
-        assertEquals("name", "pressure",                   cs.getAxis(2).getName().getCode());
+        assertEquals(AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode(), "name");
+        assertEquals(AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode(), "name");
+        assertEquals("pressure",                   cs.getAxis(2).getName().getCode(), "name");
 
         useStraightQuotes = true;
         super.testCompoundWithParametric();                 // Test again with “ and ” replaced by ".

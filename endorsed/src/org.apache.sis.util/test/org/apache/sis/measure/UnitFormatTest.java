@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -197,14 +198,14 @@ public final class UnitFormatTest extends TestCase {
         assertEquals("sFoo",  f.format(Units.SECOND));
         assertSame(Units.METRE, f.parse("mètre"));
 
-        String message;
         // “mFoo” should not be assigned to unit anymore.
-        message = assertThrows(MeasurementParseException.class, () -> f.parse("mFoo")).getMessage();
-        assertTrue(message.contains("mFoo"), message);
+        RuntimeException exception;
+        exception = assertThrows(MeasurementParseException.class, () -> f.parse("mFoo"));
+        assertMessageContains(exception, "mFoo");
 
         // Should not accept labels ending with a digit.
-        message = assertThrows(IllegalArgumentException.class, () -> f.label(Units.METRE, "m¹")).getMessage();
-        assertTrue(message.contains("m¹"), message);
+        exception = assertThrows(IllegalArgumentException.class, () -> f.label(Units.METRE, "m¹"));
+        assertMessageContains(exception, "m¹");
     }
 
     /**
@@ -389,16 +390,14 @@ public final class UnitFormatTest extends TestCase {
         assertSame(Units.WATT,          f.parse("watt"));
         assertSame(Units.UNITY,         f.parse("unity"));
 
-        String message;
         // Should not accept unknown unit.
-        message = assertThrows(MeasurementParseException.class, () -> f.parse("degree foo")).getMessage();
-        assertTrue(message.contains("degree"), message);
-        assertTrue(message.contains("foo"), message);
+        MeasurementParseException exception;
+        exception = assertThrows(MeasurementParseException.class, () -> f.parse("degree foo"));
+        assertMessageContains(exception, "degree", "foo");
 
         // Should not accept localized unit unless requested.
-        message = assertThrows(MeasurementParseException.class, () -> f.parse("mètre cube")).getMessage();
-        assertTrue(message.contains("mètre"), message);
-        assertTrue(message.contains("cube"), message);
+        exception = assertThrows(MeasurementParseException.class, () -> f.parse("mètre cube"));
+        assertMessageContains(exception, "mètre", "cube");
 
         f.setLocale(Locale.FRANCE);
         assertSame(Units.CUBIC_METRE, f.parse("mètre cube"));
@@ -486,10 +485,10 @@ public final class UnitFormatTest extends TestCase {
          */
         assertSame(Units.TROPICAL_YEAR, f.parse("a"));
 
-        String message;
         // Should not accept prefix in ConventionalUnit.
-        message = assertThrows(MeasurementParseException.class, () -> f.parse("ka")).getMessage();
-        assertTrue(message.contains("ka"), message);
+        MeasurementParseException exception;
+        exception = assertThrows(MeasurementParseException.class, () -> f.parse("ka"));
+        assertMessageContains(exception, "ka");
     }
 
     /**
@@ -519,10 +518,9 @@ public final class UnitFormatTest extends TestCase {
         assertEqualsIgnoreSymbol(Units.KILOGRAM.divide(Units.SQUARE_METRE), f.parse("kg m**-2"));
 
         // Should not accept unknown sentence even if each individual word is known.
-        String message;
-        message = assertThrows(MeasurementParseException.class, () -> f.parse("degree minute")).getMessage();
-        assertTrue(message.contains("degree"), message);
-        assertTrue(message.contains("minute"), message);
+        MeasurementParseException exception;
+        exception = assertThrows(MeasurementParseException.class, () -> f.parse("degree minute"));
+        assertMessageContains(exception, "degree", "minute");
     }
 
     /**

@@ -42,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMapEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
@@ -294,9 +295,11 @@ public final class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 1, 220, 799);
         assertExtentEquals(extent, 2, 40,  46);
         assertSame(extent.intersect(domain), extent);
+
         final GridExtent disjoint = domain.translate(0, 1000);
-        String message = assertThrows(DisjointExtentException.class, () -> extent.intersect(disjoint)).getMessage();
-        assertNotNull(message);
+        DisjointExtentException exception;
+        exception = assertThrows(DisjointExtentException.class, () -> extent.intersect(disjoint));
+        assertMessageContains(exception);
     }
 
     /**
@@ -323,8 +326,9 @@ public final class GridExtentTest extends TestCase {
                 new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.TRACK, DimensionNameType.TIME},
                 new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
 
-        String message = assertThrows(IllegalArgumentException.class, () -> domain.intersect(other)).getMessage();
-        assertNotNull(message);
+        IllegalArgumentException exception;
+        exception = assertThrows(IllegalArgumentException.class, () -> domain.intersect(other));
+        assertMessageContains(exception);
     }
 
     /**
@@ -367,8 +371,9 @@ public final class GridExtentTest extends TestCase {
          * change in future SIS version).
          */
         slicePoint.setOrdinate(0, 900);
-        String message = assertThrows(PointOutsideCoverageException.class, () -> extent.slice(slicePoint, new int[] {1, 2})).getLocalizedMessage();
-        assertTrue(message.contains("(900, 47)"), message);         // See above comment.
+        PointOutsideCoverageException exception;
+        exception = assertThrows(PointOutsideCoverageException.class, () -> extent.slice(slicePoint, new int[] {1, 2}));
+        assertMessageContains(exception, "(900, 47)");         // See above comment.
     }
 
     /**
@@ -382,8 +387,10 @@ public final class GridExtentTest extends TestCase {
         assertSubspaceEquals(extent, 0,  2  );
         assertSubspaceEquals(extent, 0,1,2  );
         assertSubspaceEquals(extent, 0,1,2,3);
-        String message = assertThrows(SubspaceNotSpecifiedException.class, () -> extent.getSubspaceDimensions(1)).getMessage();
-        assertNotNull(message);
+
+        SubspaceNotSpecifiedException exception;
+        exception = assertThrows(SubspaceNotSpecifiedException.class, () -> extent.getSubspaceDimensions(1));
+        assertMessageContains(exception);
     }
 
     /**

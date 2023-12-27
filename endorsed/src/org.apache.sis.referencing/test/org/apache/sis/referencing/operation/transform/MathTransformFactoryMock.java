@@ -29,6 +29,10 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
+
+// Test dependencies
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -44,12 +48,38 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
     private final DefaultOperationMethod method;
 
     /**
+     * Parameters used during the last creation of a math transform.
+     * Stored for allowing callers to verify the parameters if needed.
+     *
+     * @see #createParameterizedTransform(ParameterValueGroup)
+     */
+    public ParameterValueGroup lastParameters;
+
+    /**
+     * Creates a new mock supporting only the affine and concatenate operations.
+     */
+    public MathTransformFactoryMock() {
+        method = null;
+    }
+
+    /**
      * Creates a new mock for the given operation method.
      *
      * @param  method  the operation method to put in this factory.
      */
     public MathTransformFactoryMock(final DefaultOperationMethod method) {
         this.method = method;
+    }
+
+    /**
+     * Creates a new mock for the operation method of the given name.
+     *
+     * @param  method  the operation method to put in this factory.
+     * @throws NoSuchIdentifierException if the given method is not known.
+     */
+    public MathTransformFactoryMock(final String method) throws NoSuchIdentifierException {
+        final var factory = DefaultMathTransformFactory.provider();
+        this.method = assertInstanceOf(AbstractProvider.class, factory.getOperationMethod(method));
     }
 
     /**
@@ -98,6 +128,7 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      */
     @Override
     public MathTransform createParameterizedTransform(ParameterValueGroup parameters) throws FactoryException {
+        lastParameters = parameters;
         return ((MathTransformProvider) method).createMathTransform(this, parameters);
     }
 

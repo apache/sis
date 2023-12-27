@@ -16,22 +16,29 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Locale;
 import java.text.ParseException;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
+import org.apache.sis.parameter.DefaultParameterValue;
+import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
@@ -426,32 +433,28 @@ public final class WKTFormatTest extends TestCase {
      */
     @Test
     public void testWarnings() throws ParseException {
-        DefaultPrimeMeridian pm = new DefaultPrimeMeridian(
+        final var pm = new DefaultPrimeMeridian(
                 Map.of(DefaultPrimeMeridian.NAME_KEY, "Invalid “$name” here"),
                 -10, Units.DEGREE);
         format = new WKTFormat(Locale.US, null);
         final String   wkt      = format.format(pm);
         final Warnings warnings = format.getWarnings();
-        assertNotNull("warnings", warnings);
-        assertEquals ("warnings.numMessages", 1, warnings.getNumMessages());
+        assertNotNull(warnings, "warnings");
+        assertEquals (1, warnings.getNumMessages(), "warnings.numMessages");
         assertEquals ("PRIMEM[\"Invalid \"\"$name\"\" here\", -10.0, ANGLEUNIT[\"degree\", 0.017453292519943295]]", wkt);
         assertEquals ("The “$” character in “\"$name\"” is not permitted by the “Well-Known Text” format.", warnings.getMessage(0));
         assertNull   (warnings.getException(0));
         /*
          * Verify that FormattableObject.toWKT() reports that the WKT is invalid.
          */
-        try {
-            pm.toWKT();
-            fail("Expected UnformattableObjectException.");
-        } catch (UnformattableObjectException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("$name"));
-        }
+        UnformattableObjectException e;
+        e = assertThrows(UnformattableObjectException.class, () -> pm.toWKT());
+        assertMessageContains(e, "$name");
         /*
          * Verify that the WKT is still parseable despite the warning.
          */
-        pm = (DefaultPrimeMeridian) format.parseObject(wkt);
-        assertEquals("Invalid \"$name\" here", pm.getName().getCode());
+        final var parsed = (DefaultPrimeMeridian) format.parseObject(wkt);
+        assertEquals("Invalid \"$name\" here", parsed.getName().getCode());
     }
 
     /**
@@ -478,5 +481,36 @@ public final class WKTFormatTest extends TestCase {
                 "    AXIS[\"Latitude (B)\", north, ORDER[1]],\n" +
                 "    AXIS[\"Longitude (L)\", east, ORDER[2]],\n" +
                 "    ANGLEUNIT[\"degree\", 0.017453292519943295]]", wkt);
+    }
+
+    /**
+     * Tests parsing of a WKT when a source file specified.
+     * The source file should be present in {@link DefaultParameterValue#getSourceFile()}.
+     *
+     * @throws ParseException if the parsing failed.
+     * @throws Exception if another error occurred during test initialization.
+     */
+    @Test
+    public void testSourceFile() throws Exception {
+        final var source  = new URI("test/wkt.prj");
+        final var factory = new MathTransformFactoryMock("Mercator");
+        format = new WKTFormat(null, null);
+        format.setSourceFile(source);
+        format.setFactory(MathTransformFactory.class, factory);
+        final Parameterized mt = assertInstanceOf(Parameterized.class, format.parseObject(
+                "PARAM_MT[“Mercator”,\n"
+                + "PARAMETER[“semi_major”, 1],\n"
+                + "PARAMETER[“semi_minor”, 1]]"));
+        /*
+         * Source file is not relevant to numerical parameter value. But we do not use a more
+         * relevant file parameter such as NADCON longitude/latitude files, because we do not
+         * want the operation to try to really open the file.
+         */
+        ParameterValue<?> p = factory.lastParameters.parameter("semi_major");
+        assertEquals(source, assertInstanceOf(DefaultParameterValue.class, p).getSourceFile().get());
+
+        // The information is lost in the final parameter value, because not relevant.
+        p = mt.getParameterValues().parameter("semi_major");
+        assertTrue(assertInstanceOf(DefaultParameterValue.class, p).getSourceFile().isEmpty());
     }
 }

@@ -18,9 +18,10 @@ package org.apache.sis.io.wkt;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -65,14 +66,9 @@ public final class ColorsTest extends TestCase {
      */
     @Test
     public void testImmutability() {
-        try {
-            Colors.DEFAULT.setName(ElementKind.METHOD, "blue");
-            fail("Constant shall be immutable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Colors"));
-        }
+        UnsupportedOperationException e;
+        e = assertThrows(UnsupportedOperationException.class, () -> Colors.DEFAULT.setName(ElementKind.METHOD, "blue"));
+        assertMessageContains(e, "Colors");
     }
 
     /**

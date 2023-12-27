@@ -24,7 +24,7 @@ import org.apache.sis.metadata.internal.AxisNames;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.CoordinateSystemAxisMock;
@@ -100,12 +100,12 @@ public final class TransliteratorTest extends TestCase {
     @Test
     public void testToUnicodeAbbreviation() {
         final Transliterator t = Transliterator.DEFAULT;
-        assertEquals("P", "φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "P"));
-        assertEquals("B", "φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "B"));
-        assertEquals("L", "λ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.EAST,  "L"));
-        assertEquals("U", "θ",  t.toUnicodeAbbreviation("polar",       AxisDirection.OTHER, "U"));
-        assertEquals("U", "Ω",  t.toUnicodeAbbreviation("spherical",   AxisDirection.NORTH, "U"));
-        assertEquals("V", "θ",  t.toUnicodeAbbreviation("spherical",   AxisDirection.EAST,  "V"));
+        assertEquals("φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "P"), "P");
+        assertEquals("φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "B"), "B");
+        assertEquals("λ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.EAST,  "L"), "L");
+        assertEquals("θ",  t.toUnicodeAbbreviation("polar",       AxisDirection.OTHER, "U"), "U");
+        assertEquals("Ω",  t.toUnicodeAbbreviation("spherical",   AxisDirection.NORTH, "U"), "U");
+        assertEquals("θ",  t.toUnicodeAbbreviation("spherical",   AxisDirection.EAST,  "V"), "V");
     }
 
     /**
@@ -124,8 +124,7 @@ public final class TransliteratorTest extends TestCase {
      * is equal to the expected string.
      */
     private static void assertShortAxisNameEquals(final String expected, final CoordinateSystemAxisMock axis) {
-        assertEquals("name", expected, Transliterator.DEFAULT.toShortAxisName(axis,
-                axis.getDirection(), axis.getName().getCode()));
+        assertEquals(expected, Transliterator.DEFAULT.toShortAxisName(axis, axis.getDirection(), axis.getName().getCode()));
     }
 
     /**
@@ -133,8 +132,7 @@ public final class TransliteratorTest extends TestCase {
      * is equal to the expected string.
      */
     private static void assertAbbreviationEquals(final String expected, final CoordinateSystemAxisMock axis) {
-        assertEquals("abbreviation", expected, Transliterator.DEFAULT.toLatinAbbreviation(axis,
-                axis.getDirection(), axis.getAbbreviation()));
+        assertEquals(expected, Transliterator.DEFAULT.toLatinAbbreviation(axis, axis.getDirection(), axis.getAbbreviation()));
     }
 
     /**
