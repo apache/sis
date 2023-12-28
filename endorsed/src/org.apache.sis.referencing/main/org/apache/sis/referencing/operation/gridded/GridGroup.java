@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.gridded;
 import java.util.Map;
 import java.util.List;
 import java.util.LinkedHashMap;
-import java.net.URI;
 import java.io.IOException;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -156,7 +155,7 @@ public final class GridGroup<C extends Quantity<C>, T extends Quantity<T>> exten
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.
      */
     public static <C extends Quantity<C>, T extends Quantity<T>> GridGroup<C,T> create(
-            final URI file, final List<LoadedGrid<C,T>> subgrids)
+            final GridFile file, final List<LoadedGrid<C,T>> subgrids)
             throws IOException, FactoryException, NoninvertibleTransformException
     {
         final TileOrganizer mosaic = new TileOrganizer(null);
@@ -182,7 +181,7 @@ public final class GridGroup<C extends Quantity<C>, T extends Quantity<T>> exten
          */
         final Map.Entry<Tile,Tile[]> result = CollectionsExt.singletonOrNull(mosaic.tiles().entrySet());
         if (result == null) {
-            throw new FactoryException(Resources.format(Resources.Keys.MisalignedDatumShiftGrid_1, file));
+            throw new FactoryException(Resources.format(Resources.Keys.MisalignedDatumShiftGrid_1, file.parameter));
         }
         final Tile global = result.getKey();
         return new GridGroup<>(result.getValue(), grids, global.getGridToCRS(), global.getSize());

@@ -28,14 +28,16 @@ import java.nio.charset.StandardCharsets;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.gridded.LoadedGrid;
-import org.apache.sis.referencing.operation.gridded.GridGroup;
-import static org.apache.sis.referencing.operation.gridded.GridLoader.DEGREES_TO_SECONDS;
+import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.gridded.GridFile;
+import org.apache.sis.referencing.operation.gridded.GridGroup;
+import org.apache.sis.referencing.operation.gridded.LoadedGrid;
+import static org.apache.sis.referencing.operation.gridded.GridLoader.DEGREES_TO_SECONDS;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
@@ -109,7 +111,7 @@ public final class NTv2Test extends DatumShiftTestCase {
      * @param  file  path to the official {@code "NTF_R93.gsb"} file.
      * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
-    public static void testRGF93(final URI file) throws Exception {
+    public static void testRGF93(final GridFile file) throws Exception {
         testRGF93(file, -19800, 36000, 147600, 187200);
     }
 
@@ -121,7 +123,7 @@ public final class NTv2Test extends DatumShiftTestCase {
      * @param  ymin  value of the {@code "S_LAT"} record.
      * @param  ymax  value of the {@code "N_LAT"} record.
      */
-    private static void testRGF93(final URI file, final double xmin, final double xmax,
+    private static void testRGF93(final GridFile file, final double xmin, final double xmax,
             final double ymin, final double ymax) throws Exception
     {
         final double cellSize = 360;
@@ -188,8 +190,11 @@ public final class NTv2Test extends DatumShiftTestCase {
     public void testMultiGrids() throws Exception {
         assumeTrue(RUN_EXTENSIVE_TESTS);
         assumeTrue(DataDirectory.getenv() != null);
-        final URI file = DataDirectory.DATUM_CHANGES.toAbsolutePath(new URI(MULTIGRID_TEST_FILE));
-        assumeTrue(Files.exists(Path.of(file)));
+        final Parameters pg = Parameters.castOrWrap(new NTv2().getParameters().createValue());
+        pg.getOrCreate(NTv2.FILE).setValue(new URI(MULTIGRID_TEST_FILE));
+        final GridFile file = new GridFile(pg, NTv2.FILE);
+        assumeTrue(Files.exists(Path.of(file.resolved())));
+
         final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf("Should contain many grids.", GridGroup.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());

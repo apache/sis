@@ -18,6 +18,7 @@ package org.apache.sis.test.integration;
 
 import java.net.URI;
 import org.apache.sis.system.DataDirectory;
+import org.apache.sis.referencing.operation.gridded.GridFile;
 
 // Test dependencies
 import org.junit.Test;
@@ -57,7 +58,7 @@ public final class DatumShiftTest extends TestCase {
     @Test
     public void testRGF93() throws Exception {
         final URI file = assumeDataExists(DataDirectory.DATUM_CHANGES, "ntf_r93.gsb");
-        NTv2Test.testRGF93(file);
+        NTv2Test.testRGF93(new GridFile(file));
     }
 
     /**
@@ -70,6 +71,6 @@ public final class DatumShiftTest extends TestCase {
     public void testNADCON() throws Exception {
         final URI latitudeShifts  = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.las");
         final URI longitudeShifts = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.los");
-        NADCONTest.testNADCON(latitudeShifts, longitudeShifts);
+        NADCONTest.testNADCON(new GridFile(latitudeShifts), new GridFile(longitudeShifts));
     }
 }

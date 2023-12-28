@@ -179,7 +179,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
      * @param nx                number of cells along the <var>x</var> axis in the grid.
      * @param ny                number of cells along the <var>y</var> axis in the grid.
      * @param descriptor        the parameter descriptor of the provider that created this grid.
-     * @param files             the file(s) from which the grid has been loaded. This array is not cloned.
+     * @param files             the file(s) from which the grid has been loaded.
      */
     LoadedGrid(final Unit<C> coordinateUnit,
                final Unit<T> translationUnit,
@@ -188,12 +188,15 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
                final double Δx, final double Δy,
                final int    nx, final int    ny,
                final ParameterDescriptorGroup descriptor,
-               final URI... files) throws NoninvertibleTransformException
+               final GridFile... sources) throws NoninvertibleTransformException
     {
         super(coordinateUnit, new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(),
               new int[] {nx, ny}, isCellValueRatio, translationUnit);
-        this.descriptor     = descriptor;
-        this.files          = files;
+        files = new URI[sources.length];
+        for (int i=0; i<sources.length; i++) {
+            files[i] = sources[i].resolved();
+        }
+        this.descriptor = descriptor;
         this.scanlineStride = nx;
         if (Units.isAngular(coordinateUnit)) {
             periodX = Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / Math.abs(Δx));
@@ -260,10 +263,13 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
      *
      * @see GridLoader#canNotLoad(Class, String, URI, Exception)
      */
-    public static LoadedGrid<?,?> getOrLoad(final URI f1, final URI f2, final Callable<LoadedGrid<?,?>> loader)
+    public static LoadedGrid<?,?> getOrLoad(final GridFile f1, final GridFile f2, final Callable<LoadedGrid<?,?>> loader)
             throws Exception
     {
-        final Object key = (f2 != null) ? new AbstractMap.SimpleImmutableEntry<>(f1, f2) : f1;
+        Object key = f1.resolved();
+        if (f2 != null) {
+            key = new AbstractMap.SimpleImmutableEntry<>(key, f2.resolved());
+        }
         return CACHE.getOrCreate(key, loader);
     }
 
@@ -550,7 +556,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
                      final double Δx, final double Δy,
                      final int    nx, final int    ny,
                      final ParameterDescriptorGroup descriptor,
-                     final URI... files) throws NoninvertibleTransformException
+                     final GridFile... files) throws NoninvertibleTransformException
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
             offsets = new float[dim][Math.multiplyExact(nx, ny)];
@@ -663,7 +669,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
                       final double Δx, final double Δy,
                       final int    nx, final int    ny,
                       final ParameterDescriptorGroup descriptor,
-                      final URI... files) throws NoninvertibleTransformException
+                      final GridFile... files) throws NoninvertibleTransformException
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
             offsets = new double[dim][Math.multiplyExact(nx, ny)];

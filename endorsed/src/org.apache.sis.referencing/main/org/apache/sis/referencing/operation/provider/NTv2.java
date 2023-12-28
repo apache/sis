@@ -46,6 +46,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
 import org.apache.sis.referencing.operation.gridded.GridLoader;
 import org.apache.sis.referencing.operation.gridded.GridGroup;
+import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.internal.Resources;
@@ -56,7 +57,6 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.measure.Units;
-import org.apache.sis.system.DataDirectory;
 
 
 /**
@@ -145,13 +145,12 @@ public final class NTv2 extends AbstractProvider {
             final MathTransformFactory factory, final ParameterValueGroup values, final int version)
             throws ParameterNotFoundException, FactoryException
     {
-        final Parameters pg = Parameters.castOrWrap(values);
-        final URI file = pg.getMandatoryValue(FILE);
+        final GridFile file = new GridFile(Parameters.castOrWrap(values), FILE);
         final LoadedGrid<Angle,Angle> grid;
         try {
             grid = getOrLoad(provider, file, version);
         } catch (Exception e) {
-            throw GridLoader.canNotLoad(provider, provider.getSimpleName(), file, e);
+            throw file.canNotLoad(provider, provider.getSimpleName(), e);
         }
         return LoadedGrid.createGeodeticTransformation(provider, factory, grid);
     }
@@ -169,13 +168,12 @@ public final class NTv2 extends AbstractProvider {
      * @see GridLoader#canNotLoad(String, URI, Exception)
      */
     static LoadedGrid<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
-            final URI file, final int version) throws Exception
+            final GridFile file, final int version) throws Exception
     {
-        final URI resolved = DataDirectory.DATUM_CHANGES.toAbsolutePath(file);
-        return LoadedGrid.getOrLoad(resolved, null, () -> {
+        return LoadedGrid.getOrLoad(file, null, () -> {
             final LoadedGrid<?,?> grid;
-            try (ReadableByteChannel in = GridLoader.newByteChannel(resolved)) {
-                GridLoader.startLoading(provider, file);
+            try (ReadableByteChannel in = file.newByteChannel()) {
+                file.startLoading(provider);
                 final Loader loader = new Loader(in, file, version);
                 grid = loader.readAllGrids();
                 loader.report(provider);
@@ -318,7 +316,7 @@ public final class NTv2 extends AbstractProvider {
          * @param  version  the expected version (1 or 2).
          * @throws FactoryException if a data record cannot be parsed.
          */
-        Loader(final ReadableByteChannel channel, final URI file, int version) throws IOException, FactoryException {
+        Loader(final ReadableByteChannel channel, final GridFile file, int version) throws IOException, FactoryException {
             super(channel, ByteBuffer.allocate(4096), file);
             header = new LinkedHashMap<>();
             ensureBufferContains(RECORD_LENGTH);

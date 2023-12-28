@@ -25,8 +25,9 @@ import java.nio.file.Files;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.gridded.LoadedGrid;
+import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.GridLoader;
+import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
@@ -120,7 +121,7 @@ public final class NADCONTest extends DatumShiftTestCase {
      * @param  longitudeShifts  path to the official {@code "conus.los"} file.
      * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
-    public static void testNADCON(final URI latitudeShifts, final URI longitudeShifts) throws Exception {
+    public static void testNADCON(final GridFile latitudeShifts, final GridFile longitudeShifts) throws Exception {
         testNADCON(latitudeShifts, longitudeShifts, -131, -63, 20, 50);
     }
 
@@ -132,7 +133,7 @@ public final class NADCONTest extends DatumShiftTestCase {
      * @param  ymin  southmost latitude.
      * @param  ymax  northmost latitude.
      */
-    private static void testNADCON(final URI latitudeShifts, final URI longitudeShifts,
+    private static void testNADCON(final GridFile latitudeShifts, final GridFile longitudeShifts,
             final double xmin, final double xmax, final double ymin, final double ymax)
             throws Exception
     {

@@ -19,7 +19,9 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
+import java.net.URI;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
@@ -511,6 +513,28 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      */
     boolean isKnownImplementation() {
         return false;
+    }
+
+    /**
+     * {@return the URI of the GML document or WKT file from which a parameter value has been read}.
+     * This information can be used together with {@code getValue(ParameterDescriptor<URI>)} for
+     * resolving a parameter value as a path relative to the GML or WKT file declaring the parameter.
+     * Note that the source file is not necessarily the same for all parameters in a group, because a GML
+     * document could define parameters in files referenced by different {@code xlink:href} attribute values.
+     *
+     * @see DefaultParameterValue#getSourceFile()
+     * @see org.apache.sis.io.wkt.WKTFormat#getSourceFile()
+     * @see org.apache.sis.xml.MarshalContext#getDocumentURI()
+     * @see URI#resolve(URI)
+     *
+     * @since 1.5
+     */
+    public Optional<URI> getSourceFile(final ParameterDescriptor<?> parameter) throws ParameterNotFoundException {
+        final ParameterValue<?> p = getParameter(parameter);
+        if (p instanceof DefaultParameterValue<?>) {
+            return ((DefaultParameterValue<?>) p).getSourceFile();
+        }
+        return Optional.empty();
     }
 
     /**

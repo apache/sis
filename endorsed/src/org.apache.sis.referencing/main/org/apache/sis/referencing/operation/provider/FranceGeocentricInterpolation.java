@@ -28,7 +28,6 @@ import java.util.concurrent.Callable;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import static java.lang.Float.parseFloat;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
@@ -47,6 +46,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.gridded.GridLoader;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
@@ -59,7 +59,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.system.DataDirectory;
 import static org.apache.sis.util.internal.Constants.DIM;
 
 
@@ -268,14 +267,14 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Returns {@code true} if the given path seems to be a grid published by the French mapping agency for France.
      * In principle this <q>France geocentric interpolation</q> is designed specifically for use with the
-     * {@code "gr3df97a.txt"} grid, but in fact the Apache SIS implementation should be flexible enough for use
-     * with other area.
+     * {@code "gr3df97a.txt"} grid, but in fact the Apache SIS implementation should be flexible enough
+     * for use with other area.
      *
      * @param  file  the grid file.
      * @return {@code true} if the given file looks like a fie from the French mapping agency.
      */
-    public static boolean isRecognized(final URI file) {
-        final String filename = file.getPath();
+    public static boolean isRecognized(final GridFile file) {
+        final String filename = file.resolved().getPath();
         final int s = filename.lastIndexOf('/') + 1;
         return filename.regionMatches(true, s, DEFAULT, 0, 5);
     }
@@ -344,13 +343,13 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
             default: throw new InvalidParameterValueException(Errors.format(
                             Errors.Keys.IllegalArgumentValue_2, DIM, dim), DIM, dim);
         }
-        final URI file = pg.getMandatoryValue(FILE);
+        final GridFile file = new GridFile(pg, FILE);
         final LoadedGrid<Angle,Length> grid;
         try {
             grid = getOrLoad(file, isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
         } catch (Exception e) {
             // NumberFormatException, ArithmeticException, NoSuchElementException, and more.
-            throw GridLoader.canNotLoad(FranceGeocentricInterpolation.class, HEADER, file, e);
+            throw file.canNotLoad(FranceGeocentricInterpolation.class, HEADER, e);
         }
         MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
@@ -377,11 +376,10 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
      *
      * @see GridLoader#canNotLoad(Class, String, URI, Exception)
      */
-    static LoadedGrid<Angle,Length> getOrLoad(final URI file, final double[] averages, final double scale)
+    static LoadedGrid<Angle,Length> getOrLoad(final GridFile file, final double[] averages, final double scale)
             throws Exception
     {
-        final URI resolved = DataDirectory.DATUM_CHANGES.toAbsolutePath(file);
-        return LoadedGrid.getOrLoad(resolved, null, new Loader(resolved, averages, scale))
+        return LoadedGrid.getOrLoad(file, null, new Loader(file, averages, scale))
                                  .castTo(Angle.class, Length.class);
     }
 
@@ -391,7 +389,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
      */
     static final class Loader implements Callable<LoadedGrid<?,?>> {
         /** The file to load. */
-        private final URI file;
+        private final GridFile file;
 
         /** An "average" value for the offset in each dimension, or {@code null} if unknown. */
         private final double[] averages;
@@ -400,15 +398,10 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
         private final double scale;
 
         /** Creates a new loader for the given file. */
-        Loader(final URI file, final double[] averages, final double scale) {
+        Loader(final GridFile file, final double[] averages, final double scale) {
             this.file     = file;
             this.averages = averages;
             this.scale    = scale;
-        }
-
-        /** Returns the reader for the specified URI. */
-        static BufferedReader newBufferedReader(final URI file) throws IOException {
-            return new BufferedReader(new InputStreamReader(file.toURL().openStream()));
         }
 
         /**
@@ -423,8 +416,8 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
         @Override
         public LoadedGrid<?,?> call() throws Exception {
             final LoadedGrid<?,?> grid;
-            try (BufferedReader in = newBufferedReader(file)) {
-                GridLoader.startLoading(FranceGeocentricInterpolation.class, file);
+            try (BufferedReader in = file.newBufferedReader()) {
+                file.startLoading(FranceGeocentricInterpolation.class);
                 final LoadedGrid.Float<Angle,Length> g = load(in, file);
                 grid = CompressedGrid.compress(g, averages, scale);
             }
@@ -442,7 +435,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
          * @throws FactoryException if an problem is found with the file content.
          * @throws ArithmeticException if the width or the height exceed the integer capacity.
          */
-        static LoadedGrid.Float<Angle,Length> load(final BufferedReader in, final URI file)
+        static LoadedGrid.Float<Angle,Length> load(final BufferedReader in, final GridFile file)
                 throws IOException, FactoryException, NoninvertibleTransformException
         {
             LoadedGrid.Float<Angle,Length> grid = null;

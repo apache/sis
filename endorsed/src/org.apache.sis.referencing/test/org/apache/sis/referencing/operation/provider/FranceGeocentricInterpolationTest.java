@@ -25,6 +25,7 @@ import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
 
@@ -101,10 +102,10 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      */
     @Test
     public void testIsRecognized() throws URISyntaxException {
-        assertTrue (FranceGeocentricInterpolation.isRecognized(new URI("GR3DF97A.txt")));
-        assertTrue (FranceGeocentricInterpolation.isRecognized(new URI("gr3df")));
-        assertFalse(FranceGeocentricInterpolation.isRecognized(new URI("gr3d")));
-        assertTrue (FranceGeocentricInterpolation.isRecognized(new URI(TEST_FILE)));
+        assertTrue (FranceGeocentricInterpolation.isRecognized(new GridFile(new URI("GR3DF97A.txt"))));
+        assertTrue (FranceGeocentricInterpolation.isRecognized(new GridFile(new URI("gr3df"))));
+        assertFalse(FranceGeocentricInterpolation.isRecognized(new GridFile(new URI("gr3d"))));
+        assertTrue (FranceGeocentricInterpolation.isRecognized(new GridFile(new URI(TEST_FILE))));
     }
 
     /**
@@ -144,9 +145,9 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     private static LoadedGrid<Angle,Length> testGridAsFloats()
             throws URISyntaxException, IOException, FactoryException, TransformException
     {
-        final URI file = getResource(TEST_FILE);
+        final GridFile file = getResource(TEST_FILE);
         final LoadedGrid.Float<Angle,Length> grid;
-        try (BufferedReader in = FranceGeocentricInterpolation.Loader.newBufferedReader(file)) {
+        try (BufferedReader in = file.newBufferedReader()) {
             grid = FranceGeocentricInterpolation.Loader.load(in, file);
         }
         assertEquals("cellPrecision",   0.005, grid.getCellPrecision(), STRICT);

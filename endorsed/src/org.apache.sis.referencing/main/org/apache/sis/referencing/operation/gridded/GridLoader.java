@@ -16,27 +16,13 @@
  */
 package org.apache.sis.referencing.operation.gridded;
 
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.FileSystemNotFoundException;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.Channels;
-import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.system.DataDirectory;
-import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.factory.FactoryDataException;
-import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 
 
@@ -72,7 +58,7 @@ public abstract class GridLoader {
     /**
      * The file to load, used for parameter declaration and if we have errors to report.
      */
-    protected final URI file;
+    protected final GridFile file;
 
     /**
      * The channel opened on the file.
@@ -85,19 +71,13 @@ public abstract class GridLoader {
     protected final ByteBuffer buffer;
 
     /**
-     * Whether the tip about the location of datum shift files has been logged.
-     * We log this tip only once, and only if we failed to load at least one grid.
-     */
-    private static final AtomicBoolean datumDirectoryLogged = new AtomicBoolean();
-
-    /**
      * Creates a new loader for the given channel and an existing buffer.
      *
      * @param  channel  where to read data from.
      * @param  buffer   the buffer to use.
      * @param  file     path to the longitude or latitude difference file. Used for parameter declaration and error reporting.
      */
-    protected GridLoader(final ReadableByteChannel channel, final ByteBuffer buffer, final URI file) throws IOException {
+    protected GridLoader(final ReadableByteChannel channel, final ByteBuffer buffer, final GridFile file) throws IOException {
         this.file    = file;
         this.buffer  = buffer;
         this.channel = channel;
@@ -150,35 +130,6 @@ public abstract class GridLoader {
     }
 
     /**
-     * Creates a channel for reading bytes from the file at the specified path.
-     * This method tries to open using the file system before to open from the URL.
-     *
-     * @param  path  the path from where to read bytes.
-     * @return a channel for reading bytes from the given path.
-     * @throws IOException if the channel cannot be created.
-     */
-    public static ReadableByteChannel newByteChannel(final URI path) throws IOException {
-        try {
-            return Files.newByteChannel(Path.of(path));
-        } catch (FileSystemNotFoundException e) {
-            Logging.ignorableException(AbstractProvider.LOGGER, GridLoader.class, "newByteChannel", e);
-        }
-        return Channels.newChannel(path.toURL().openStream());
-    }
-
-    /**
-     * Logs a message about a grid which is about to be loaded.
-     * The logger will be {@code "org.apache.sis.referencing.operation"} and the originating
-     * method will be {@code "createMathTransform"} in the specified {@code caller} class.
-     *
-     * @param  caller  the provider to logs as the source class.
-     * @param  file    the grid file, as a {@link String} or a {@link URI}.
-     */
-    public static void startLoading(final Class<?> caller, final Object file) {
-        log(caller, Resources.forLocale(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file));
-    }
-
-    /**
      * Logs the given record.
      * The logger will be {@code "org.apache.sis.referencing.operation"} and the originating
      * method will be {@code "createMathTransform"} in the specified {@code caller} class.
@@ -188,31 +139,5 @@ public abstract class GridLoader {
      */
     protected static void log(final Class<?> caller, final LogRecord record) {
         Logging.completeAndLog(AbstractProvider.LOGGER, caller, "createMathTransform", record);
-    }
-
-    /**
-     * Creates the exception to throw when the provider failed to load the grid file.
-     *
-     * @param  caller  the provider to logs as the source class if a warning occurs.
-     * @param  format  the format name (e.g. "NTv2" or "NADCON").
-     * @param  file    the grid file that the subclass tried to load.
-     * @param  cause   the cause of the failure to load the grid file.
-     */
-    public static FactoryException canNotLoad(final Class<?> caller, final String format, final URI file, final Exception cause) {
-        if (!datumDirectoryLogged.get()) {
-            final Path directory = DataDirectory.DATUM_CHANGES.getDirectory();
-            if (directory != null && !datumDirectoryLogged.getAndSet(true)) {
-                log(caller, Resources.forLocale(null).getLogRecord(Level.INFO,
-                            Resources.Keys.DatumChangesDirectory_1, directory));
-            }
-        }
-        final boolean notFound = (cause instanceof NoSuchFileException) || (cause instanceof FileNotFoundException);
-        final String message = Resources.format(notFound ? Resources.Keys.FileNotFound_2
-                                                         : Resources.Keys.FileNotReadable_2, format, file);
-        if (notFound) {
-            return new MissingFactoryResourceException(message, cause);
-        } else {
-            return new FactoryDataException(message, cause);
-        }
     }
 }

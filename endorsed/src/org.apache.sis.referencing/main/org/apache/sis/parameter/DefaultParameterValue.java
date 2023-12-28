@@ -258,6 +258,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *     }
      *
      * @see #setSourceFile(URI)
+     * @see Parameters#getSourceFile(ParameterDescriptor)
      * @see org.apache.sis.io.wkt.WKTFormat#getSourceFile()
      * @see org.apache.sis.xml.MarshalContext#getDocumentURI()
      * @see URI#resolve(URI)

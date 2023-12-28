@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.provider;
 import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
+import org.apache.sis.referencing.operation.gridded.GridFile;
 
 // Test dependencies
 import static org.junit.Assert.*;
@@ -64,11 +65,11 @@ public abstract class DatumShiftTestCase extends TestCase {
      * @param  name  name of the resource to get.
      * @return the requested resources.
      */
-    static URI getResource(final String name) throws URISyntaxException {
+    static GridFile getResource(final String name) throws URISyntaxException {
         final URL file = getResourceAsConvertibleURL(name);
         if (file == null) {
             assumeFalse("Cannot read grid data in a JAR file.", "jar".equals(file.getProtocol()));
         }
-        return file.toURI();
+        return new GridFile(file.toURI());
     }
 }
