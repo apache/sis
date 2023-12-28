@@ -274,7 +274,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
      * @return {@code true} if the given file looks like a fie from the French mapping agency.
      */
     public static boolean isRecognized(final GridFile file) {
-        final String filename = file.resolved().getPath();
+        final String filename = file.parameter.getPath();
         final int s = filename.lastIndexOf('/') + 1;
         return filename.regionMatches(true, s, DEFAULT, 0, 5);
     }

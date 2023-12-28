@@ -195,13 +195,16 @@ public abstract class FormattableObject implements Printable {
         final String wkt;
         try {
             formatter.append(this);
-            if (strict) {
-                /*
-                 * If a warning occurred, consider the object as non-formattable.
-                 * We take the last message since it is more likely to be about the enclosing element.
-                 */
-                final Warnings warnings = formatter.getWarnings();
-                if (warnings != null) {
+            final Warnings warnings = formatter.getWarnings();
+            if (warnings != null) {
+                if (warnings.getRootElement() == null) {
+                    warnings.setRoot(this);
+                }
+                if (strict) {
+                    /*
+                     * If a warning occurred, consider the object as non-formattable.
+                     * We take the last message since it is more likely to be about the enclosing element.
+                     */
                     final int n = warnings.getNumMessages() - 1;
                     throw new UnformattableObjectException(warnings.getMessage(n), warnings.getException(n));
                 }

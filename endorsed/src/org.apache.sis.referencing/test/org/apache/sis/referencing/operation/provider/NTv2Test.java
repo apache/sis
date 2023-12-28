@@ -193,7 +193,7 @@ public final class NTv2Test extends DatumShiftTestCase {
         final Parameters pg = Parameters.castOrWrap(new NTv2().getParameters().createValue());
         pg.getOrCreate(NTv2.FILE).setValue(new URI(MULTIGRID_TEST_FILE));
         final GridFile file = new GridFile(pg, NTv2.FILE);
-        assumeTrue(Files.exists(Path.of(file.resolved())));
+        assumeTrue(Files.exists(file.path().orElseThrow()));
 
         final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf("Should contain many grids.", GridGroup.class, grid);

@@ -938,6 +938,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
                     throw new InvalidParameterValueException(Errors.format(
                             Errors.Keys.IllegalArgumentValue_2, name, v), name, v);
                 }
+                if (source instanceof DefaultParameterValue<?> && target instanceof DefaultParameterValue<?>) {
+                    ((DefaultParameterValue<?>) source).getSourceFile().ifPresent((file) ->
+                            ((DefaultParameterValue<?>) target).setSourceFile(file));
+                }
             }
             occurrences.put(name, occurrence + 1);
         }

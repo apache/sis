@@ -136,6 +136,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      */
     @XmlElementRef
     public AbstractParameterDescriptor getElement() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final GeneralParameterDescriptor metadata = this.metadata;
         if (metadata instanceof AbstractParameterDescriptor) {
             return (AbstractParameterDescriptor) metadata;

@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.FileSystemNotFoundException;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opengis.util.FactoryException;
@@ -201,6 +202,14 @@ public final class GridFile {
      */
     public URI resolved() {
         return resolved;
+    }
+
+    /**
+     * {@return the resolved URI as a path if possible}.
+     * A use case for this method is grids to open as a {@link org.apache.sis.storage.DataStore}.
+     */
+    public Optional<Path> path() {
+        return Optional.ofNullable(asPath);
     }
 
     /**
