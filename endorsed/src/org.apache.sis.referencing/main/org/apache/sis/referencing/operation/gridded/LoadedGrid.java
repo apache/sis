@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation.provider;
+package org.apache.sis.referencing.operation.gridded;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,6 +49,7 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
@@ -56,7 +57,7 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 
 /**
- * A datum shift grid loaded from a file.
+ * A datum shift grid fully loaded in memory from a file.
  * The filename is usually a parameter defined in the EPSG database.
  * This class should not be in public API because it requires implementation to expose internal mechanic:
  * Subclasses need to give an access to their internal data (not a copy) through the {@link #getData()}
@@ -71,7 +72,7 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
  *
  * @see org.apache.sis.referencing.operation.transform.InterpolatedTransform
  */
-abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
+public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -89,14 +90,14 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      *
      * @see #getOrLoad(URI, URI, Callable)
      */
-    private static final Cache<Object, DatumShiftGridFile<?,?>> CACHE = new Cache<Object, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
-        @Override protected int cost(final DatumShiftGridFile<?,?> grid) {
+    private static final Cache<Object, LoadedGrid<?,?>> CACHE = new Cache<Object, LoadedGrid<?,?>>(4, 32*1024, true) {
+        @Override protected int cost(final LoadedGrid<?,?> grid) {
             int p = 1;
             for (final Object data : grid.getData()) {
-                if (data instanceof DatumShiftGridFile<?,?>) {
-                    p += cost((DatumShiftGridFile<?,?>) data);          // When `grid` is a DatumShiftGridGroup.
+                if (data instanceof LoadedGrid<?,?>) {
+                    p += cost((LoadedGrid<?,?>) data);      // When `grid` is a GridGroup.
                 } else {
-                    p *= Array.getLength(data);                         // short[], float[] or double[].
+                    p *= Array.getLength(data);             // short[], float[] or double[].
                 }
             }
             return p;
@@ -140,11 +141,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * The unit of measurement depends on {@link #isCellValueRatio()}.
      *
      * <p>This field is initialized to zero. It is loader responsibility to assign
-     * a value to this field after {@code DatumShiftGridFile} construction.</p>
+     * a value to this field after {@code LoadedGrid} construction.</p>
      *
      * @see #getCellPrecision()
      */
-    double accuracy;
+    public double accuracy;
 
     /**
      * The sub-grids, or {@code null} if none. The domain of validity of each sub-grid should be contained
@@ -155,14 +156,14 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * we do not provide sub-grids functionality in the {@link DatumShiftGrid} parent class because
      * the {@link MathTransform} tree will depend on assumptions about {@link #getCoordinateToGrid()},
      * in particular that it contains only translations and scales (no rotation, no shear).
-     * Those assumptions are enforced by the {@link DatumShiftGridFile} constructor.
+     * Those assumptions are enforced by the {@link LoadedGrid} constructor.
      *
-     * <p>This field has protected access for usage by {@link DatumShiftGridGroup} subclass only.
+     * <p>This field has package access for usage by {@link GridGroup} subclass only.
      * No access to this field should be done except by subclasses.</p>
      *
      * @see #setSubGrids(Collection)
      */
-    protected DatumShiftGridFile<C,T>[] subgrids;
+    LoadedGrid<C,T>[] subgrids;
 
     /**
      * Creates a new datum shift grid for the given grid geometry.
@@ -180,14 +181,14 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @param descriptor        the parameter descriptor of the provider that created this grid.
      * @param files             the file(s) from which the grid has been loaded. This array is not cloned.
      */
-    DatumShiftGridFile(final Unit<C> coordinateUnit,
-                       final Unit<T> translationUnit,
-                       final boolean isCellValueRatio,
-                       final double x0, final double y0,
-                       final double Δx, final double Δy,
-                       final int    nx, final int    ny,
-                       final ParameterDescriptorGroup descriptor,
-                       final URI... files) throws NoninvertibleTransformException
+    LoadedGrid(final Unit<C> coordinateUnit,
+               final Unit<T> translationUnit,
+               final boolean isCellValueRatio,
+               final double x0, final double y0,
+               final double Δx, final double Δy,
+               final int    nx, final int    ny,
+               final ParameterDescriptorGroup descriptor,
+               final URI... files) throws NoninvertibleTransformException
     {
         super(coordinateUnit, new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(),
               new int[] {nx, ny}, isCellValueRatio, translationUnit);
@@ -208,11 +209,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
     /**
      * Creates a new datum shift grid with the same grid geometry than the given grid.
-     * This is used by {@link DatumShiftGridCompressed} for replacing a grid by another one.
+     * This is used by {@link CompressedGrid} for replacing a grid by another one.
      *
      * @param  other  the other datum shift grid from which to copy the grid geometry.
      */
-    protected DatumShiftGridFile(final DatumShiftGridFile<C,T> other) {
+    LoadedGrid(final LoadedGrid<C,T> other) {
         super(other);
         descriptor     = other.descriptor;
         files          = other.files;
@@ -225,7 +226,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     /**
      * Creates a new datum shift grid with the same configuration than the given grid,
      * except the size and transform which are set to the given values.
-     * This is used for creating a {@link DatumShiftGridGroup} containing many grids,
+     * This is used for creating a {@link GridGroup} containing many grids,
      * using one grid as a template for setting parameter values.
      * The {@link #accuracy} is initialized to zero and should be updated by the caller.
      *
@@ -234,7 +235,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @param  nx         number of cells along the <var>x</var> axis in the grid.
      * @param  ny         number of cells along the <var>y</var> axis in the grid.
      */
-    DatumShiftGridFile(final DatumShiftGridFile<C,T> other, final AffineTransform2D gridToCRS, final int nx, final int ny)
+    LoadedGrid(final LoadedGrid<C,T> other, final AffineTransform2D gridToCRS, final int nx, final int ny)
             throws NoninvertibleTransformException
     {
         super(other.getCoordinateUnit(), gridToCRS.inverse(), new int[] {nx, ny},
@@ -257,9 +258,9 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @throws Exception if an error occurred while loading the grid.
      *         Caller should handle the exception with {@code canNotLoad(…)}.
      *
-     * @see DatumShiftGridLoader#canNotLoad(Class, String, URI, Exception)
+     * @see GridLoader#canNotLoad(Class, String, URI, Exception)
      */
-    static DatumShiftGridFile<?,?> getOrLoad(final URI f1, final URI f2, final Callable<DatumShiftGridFile<?,?>> loader)
+    public static LoadedGrid<?,?> getOrLoad(final URI f1, final URI f2, final Callable<LoadedGrid<?,?>> loader)
             throws Exception
     {
         final Object key = (f2 != null) ? new AbstractMap.SimpleImmutableEntry<>(f1, f2) : f1;
@@ -269,23 +270,27 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     /**
      * Sets the sub-grids that are direct children of this grid.
      * This method can be invoked only once.
+     *
+     * @param  children  the sub-grids that are direct children of this grid.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    final void setSubGrids(final Collection<DatumShiftGridFile<C,T>> children) {
+    public final void setSubGrids(final Collection<LoadedGrid<C,T>> children) {
         if (subgrids != null) throw new IllegalStateException();
-        subgrids = children.toArray(DatumShiftGridFile[]::new);
+        subgrids = children.toArray(LoadedGrid[]::new);
     }
 
     /**
      * Returns the number of grids, including this grid and all sub-grids counted recursively.
      * This is used for information purpose only.
      *
+     * @return number of grids, including children.
+     *
      * @see #toTree(TreeTable.Node)
      */
     private int getGridCount() {
         int n = 1;
         if (subgrids != null) {
-            for (final DatumShiftGridFile<C,T> subgrid : subgrids) {
+            for (final LoadedGrid<C,T> subgrid : subgrids) {
                 n += subgrid.getGridCount();
             }
         }
@@ -293,8 +298,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     }
 
     /**
-     * Returns a string representation of this grid for debugging purpose.
-     * If this grid has children, then it will be formatted as a tree.
+     * {@return a string representation of this grid for debugging purpose}.
+     * If this grid has children, then they will be formatted as a tree.
      */
     @Override
     public final String toString() {
@@ -309,12 +314,14 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     /**
      * Formats this grid as a tree with its children.
      * Used for building a tree representation of children nodes.
+     *
+     * @param  branch  destination where to format the tree.
      */
     private void toTree(final TreeTable.Node branch) {
         String label = super.toString();
         if (subgrids != null) {
             label = label + " (" + getGridCount() + " grids)";
-            for (final DatumShiftGridFile<C,T> subgrid : subgrids) {
+            for (final LoadedGrid<C,T> subgrid : subgrids) {
                 subgrid.toTree(branch.newChild());
             }
         }
@@ -323,16 +330,19 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
     /**
      * Returns {@code this} casted to the given type, after verification that those types are valid.
-     * This method is invoked after {@link NADCON}, {@link NTv2} or other providers got an existing
-     * {@code DatumShiftGridFile} instance from the {@link #CACHE}.
+     * This method is invoked after NADCON, NTv2 or other providers got an existing {@code LoadedGrid}
+     * instance from the {@link #CACHE}.
+     *
+     * @param  coordinateType   desired type (angle or length) of coordinate values.
+     * @param  translationType  desired type (angle or length) of translation vectors.
      */
     @SuppressWarnings("unchecked")
-    final <NC extends Quantity<NC>, NT extends Quantity<NT>> DatumShiftGridFile<NC,NT> castTo(
+    public final <NC extends Quantity<NC>, NT extends Quantity<NT>> LoadedGrid<NC,NT> castTo(
             final Class<NC> coordinateType, final Class<NT> translationType)
     {
         super.getCoordinateUnit() .asType(coordinateType);
         super.getTranslationUnit().asType(translationType);
-        return (DatumShiftGridFile<NC,NT>) this;
+        return (LoadedGrid<NC,NT>) this;
     }
 
     /**
@@ -344,9 +354,9 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @see #getData()
      * @see #setData(Object[])
      */
-    protected final DatumShiftGridFile<C,T> useSharedData() {
+    public final LoadedGrid<C,T> useSharedData() {
         final Object[] data = getData();
-        for (final DatumShiftGridFile<?,?> grid : CACHE.values()) {
+        for (final LoadedGrid<?,?> grid : CACHE.values()) {
             final Object[] other = grid.getData();
             if (Arrays.deepEquals(data, other)) {
                 return setData(other);
@@ -362,10 +372,10 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * reference the same grid (e.g. symbolic link, lower case versus upper case in a case-insensitive file
      * system).
      *
-     * @param  other  data from another {@code DatumShiftGridFile} that we can share.
-     * @return a new {@code DatumShiftGridFile} using the given data reference.
+     * @param  other  data from another {@code LoadedGrid} that we can share.
+     * @return a new {@code LoadedGrid} using the given data reference.
      */
-    protected abstract DatumShiftGridFile<C,T> setData(Object[] other);
+    protected abstract LoadedGrid<C,T> setData(Object[] other);
 
     /**
      * Returns the data for each shift dimensions. This method is for cache management, {@link #equals(Object)}
@@ -389,7 +399,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
             return true;
         }
         if (super.equals(other)) {
-            final DatumShiftGridFile<?,?> that = (DatumShiftGridFile<?,?>) other;
+            final LoadedGrid<?,?> that = (LoadedGrid<?,?>) other;
             return Arrays.equals(files, that.files) && Arrays.deepEquals(getData(), that.getData());
         }
         return false;
@@ -473,19 +483,19 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @see InterpolatedTransform#createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
     public static MathTransform createGeodeticTransformation(final Class<? extends AbstractProvider> provider,
-            final MathTransformFactory factory, final DatumShiftGridFile<Angle,Angle> grid) throws FactoryException
+            final MathTransformFactory factory, final LoadedGrid<Angle,Angle> grid) throws FactoryException
     {
         MathTransform global = InterpolatedTransform.createGeodeticTransformation(factory, grid);
-        final DatumShiftGridFile<Angle,Angle>[] subgrids = grid.subgrids;
+        final LoadedGrid<Angle,Angle>[] subgrids = grid.subgrids;
         if (subgrids == null) {
             return global;
         }
         final Map<Envelope,MathTransform> specializations = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.length));
-        for (final DatumShiftGridFile<Angle,Angle> sg : subgrids) try {
+        for (final LoadedGrid<Angle,Angle> sg : subgrids) try {
             final Envelope domain = sg.getDomainOfValidity(Units.DEGREE);
             final MathTransform st = createGeodeticTransformation(provider, factory, sg);
             if (specializations.putIfAbsent(domain, st) != null) {
-                DatumShiftGridLoader.log(provider, Errors.getResources((Locale) null)
+                GridLoader.log(provider, Errors.getResources((Locale) null)
                         .getLogRecord(Level.FINE, Errors.Keys.DuplicatedElement_1, domain));
             }
         } catch (TransformException e) {
@@ -498,7 +508,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
 
     /**
-     * An implementation of {@link DatumShiftGridFile} which stores the offset values in {@code float[]} arrays.
+     * An implementation of {@link LoadedGrid} which stores the offset values in {@code float[]} arrays.
      * This class is in internal package (not public API) because it makes the following assumptions:
      * <ul>
      *   <li>Values <var>x₀</var>, <var>y₀</var>, <var>Δx</var> and <var>Δy</var>
@@ -513,7 +523,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @param <C>  dimension of the coordinate unit (usually angular).
      * @param <T>  dimension of the translation unit (usually angular or linear).
      */
-    static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
+    public static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends LoadedGrid<C,T> {
         /**
          * Serial number for inter-operability with different versions.
          */
@@ -524,7 +534,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
          * shall be the same for all {@code dim} value. Component {@code dim} of the translation vector at coordinate
          * {@code gridX}, {@code gridY} is {@code offsets[dim][gridX + gridY*scanlineStride]}.
          */
-        final float[][] offsets;
+        public final float[][] offsets;
 
         /**
          * Creates a new datum shift grid with the given grid geometry, filename and number of shift dimensions.
@@ -532,15 +542,15 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
          *
          * @param  dim  number of dimensions of translation vectors.
          */
-        Float(final int dim,
-              final Unit<C> coordinateUnit,
-              final Unit<T> translationUnit,
-              final boolean isCellValueRatio,
-              final double x0, final double y0,
-              final double Δx, final double Δy,
-              final int    nx, final int    ny,
-              final ParameterDescriptorGroup descriptor,
-              final URI... files) throws NoninvertibleTransformException
+        public Float(final int dim,
+                     final Unit<C> coordinateUnit,
+                     final Unit<T> translationUnit,
+                     final boolean isCellValueRatio,
+                     final double x0, final double y0,
+                     final double Δx, final double Δy,
+                     final int    nx, final int    ny,
+                     final ParameterDescriptorGroup descriptor,
+                     final URI... files) throws NoninvertibleTransformException
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
             offsets = new float[dim][Math.multiplyExact(nx, ny)];
@@ -549,7 +559,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         /**
          * Creates a new grid of the same geometry than the given grid but using a different data array.
          */
-        private Float(final DatumShiftGridFile<C,T> grid, final float[][] offsets) {
+        private Float(final LoadedGrid<C,T> grid, final float[][] offsets) {
             super(grid);
             this.offsets = offsets;
         }
@@ -561,7 +571,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
          * so we can share existing data.
          */
         @Override
-        protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
+        protected final LoadedGrid<C,T> setData(final Object[] other) {
             return new Float<>(this, (float[][]) other);
         }
 
@@ -622,38 +632,38 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
 
     /**
-     * An implementation of {@link DatumShiftGridFile} which stores the offset values in {@code double[]} arrays.
-     * See {@link DatumShiftGridFile.Float} for more information (most comments apply to this class as well).
+     * An implementation of {@link LoadedGrid} which stores the offset values in {@code double[]} arrays.
+     * See {@link LoadedGrid.Float} for more information (most comments apply to this class as well).
      *
      * @author  Martin Desruisseaux (Geomatys)
      *
      * @param <C>  dimension of the coordinate unit (usually angular).
      * @param <T>  dimension of the translation unit (usually angular or linear).
      */
-    static final class Double<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
+    public static final class Double<C extends Quantity<C>, T extends Quantity<T>> extends LoadedGrid<C,T> {
         /**
          * Serial number for inter-operability with different versions.
          */
         private static final long serialVersionUID = 3999271636016362364L;
 
         /**
-         * The translation values. See {@link DatumShiftGridFile.Float#offsets} for more documentation.
+         * The translation values. See {@link LoadedGrid.Float#offsets} for more documentation.
          */
-        final double[][] offsets;
+        public final double[][] offsets;
 
         /**
          * Creates a new datum shift grid with the given grid geometry, filename and number of shift dimensions.
          * All {@code double} values given to this constructor will be converted from degrees to radians.
          */
-        Double(final int dim,
-               final Unit<C> coordinateUnit,
-               final Unit<T> translationUnit,
-               final boolean isCellValueRatio,
-               final double x0, final double y0,
-               final double Δx, final double Δy,
-               final int    nx, final int    ny,
-               final ParameterDescriptorGroup descriptor,
-               final URI... files) throws NoninvertibleTransformException
+        public Double(final int dim,
+                      final Unit<C> coordinateUnit,
+                      final Unit<T> translationUnit,
+                      final boolean isCellValueRatio,
+                      final double x0, final double y0,
+                      final double Δx, final double Δy,
+                      final int    nx, final int    ny,
+                      final ParameterDescriptorGroup descriptor,
+                      final URI... files) throws NoninvertibleTransformException
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
             offsets = new double[dim][Math.multiplyExact(nx, ny)];
@@ -662,23 +672,23 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         /**
          * Creates a new grid of the same geometry than the given grid but using a different data array.
          */
-        private Double(final DatumShiftGridFile<C,T> grid, final double[][] offsets) {
+        private Double(final LoadedGrid<C,T> grid, final double[][] offsets) {
             super(grid);
             this.offsets = offsets;
         }
 
         /**
          * Returns a new grid with the same geometry than this grid but different data arrays.
-         * See {@link DatumShiftGridFile.Float#setData(Object[])} for more documentation.
+         * See {@link LoadedGrid.Float#setData(Object[])} for more documentation.
          */
         @Override
-        protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
+        protected final LoadedGrid<C,T> setData(final Object[] other) {
             return new Double<>(this, (double[][]) other);
         }
 
         /**
          * Returns direct references (not cloned) to the data arrays.
-         * See {@link DatumShiftGridFile.Float#getData()} for more documentation.
+         * See {@link LoadedGrid.Float#getData()} for more documentation.
          */
         @Override
         @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -696,7 +706,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
         /**
          * Returns the cell value at the given dimension and grid index.
-         * See {@link DatumShiftGridFile.Float#getCellValue(int, int, int)} for more documentation.
+         * See {@link LoadedGrid.Float#getCellValue(int, int, int)} for more documentation.
          */
         @Override
         public final double getCellValue(final int dim, final int gridX, final int gridY) {

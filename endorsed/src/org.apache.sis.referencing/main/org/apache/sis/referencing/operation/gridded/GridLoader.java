@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation.provider;
+package org.apache.sis.referencing.operation.gridded;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -37,6 +37,7 @@ import org.apache.sis.system.DataDirectory;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 
 
 /**
@@ -45,11 +46,11 @@ import org.apache.sis.referencing.factory.MissingFactoryResourceException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class DatumShiftGridLoader {
+public abstract class GridLoader {
     /**
      * Conversion factor from degrees to seconds.
      */
-    protected static final double DEGREES_TO_SECONDS = 3600;
+    public static final double DEGREES_TO_SECONDS = 3600;
 
     /**
      * Possible precision for offset values in seconds of angle. This value is used only as a hint
@@ -96,7 +97,7 @@ abstract class DatumShiftGridLoader {
      * @param  buffer   the buffer to use.
      * @param  file     path to the longitude or latitude difference file. Used for parameter declaration and error reporting.
      */
-    DatumShiftGridLoader(final ReadableByteChannel channel, final ByteBuffer buffer, final URI file) throws IOException {
+    protected GridLoader(final ReadableByteChannel channel, final ByteBuffer buffer, final URI file) throws IOException {
         this.file    = file;
         this.buffer  = buffer;
         this.channel = channel;
@@ -160,7 +161,7 @@ abstract class DatumShiftGridLoader {
         try {
             return Files.newByteChannel(Path.of(path));
         } catch (FileSystemNotFoundException e) {
-            Logging.ignorableException(AbstractProvider.LOGGER, DatumShiftGridLoader.class, "newByteChannel", e);
+            Logging.ignorableException(AbstractProvider.LOGGER, GridLoader.class, "newByteChannel", e);
         }
         return Channels.newChannel(path.toURL().openStream());
     }

@@ -36,6 +36,9 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
+import org.apache.sis.referencing.operation.gridded.CompressedGrid;
+import org.apache.sis.referencing.operation.gridded.GridLoader;
+import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.CharSequences;
@@ -140,7 +143,7 @@ public final class NADCON extends AbstractProvider {
     {
         final Parameters pg = Parameters.castOrWrap(values);
         try {
-            return DatumShiftGridFile.createGeodeticTransformation(NADCON.class, factory,
+            return LoadedGrid.createGeodeticTransformation(NADCON.class, factory,
                     getOrLoad(pg.getMandatoryValue(LATITUDE), pg.getMandatoryValue(LONGITUDE)));
         } catch (NoSuchFileException e) {
             throw new MissingFactoryResourceException(e.getMessage(), e);
@@ -157,28 +160,28 @@ public final class NADCON extends AbstractProvider {
      * @param  longitudeShifts  relative or absolute path name of the grid file for longitude shifts.
      * @throws Exception if an error occurred while loading the grid.
      */
-    static DatumShiftGridFile<Angle,Angle> getOrLoad(final URI latitudeShifts, final URI longitudeShifts)
+    static LoadedGrid<Angle,Angle> getOrLoad(final URI latitudeShifts, final URI longitudeShifts)
             throws Exception
     {
         final URI rlat = DataDirectory.DATUM_CHANGES.toAbsolutePath(latitudeShifts);
         final URI rlon = DataDirectory.DATUM_CHANGES.toAbsolutePath(longitudeShifts);
-        return DatumShiftGridFile.getOrLoad(rlat, rlon, () -> {
+        return LoadedGrid.getOrLoad(rlat, rlon, () -> {
             final Loader loader;
             URI file = latitudeShifts;
-            final DatumShiftGridFile<?,?> grid;
+            final LoadedGrid<?,?> grid;
             try {
                 // Note: buffer size must be divisible by the size of `float` data type.
                 final ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
                 final FloatBuffer fb = buffer.asFloatBuffer();
-                try (ReadableByteChannel in = DatumShiftGridLoader.newByteChannel(rlat)) {
-                    DatumShiftGridLoader.startLoading(NADCON.class, CharSequences.commonPrefix(
+                try (ReadableByteChannel in = GridLoader.newByteChannel(rlat)) {
+                    GridLoader.startLoading(NADCON.class, CharSequences.commonPrefix(
                             latitudeShifts.toString(), longitudeShifts.toString()).toString() + '…');
                     loader = new Loader(in, buffer, file);
                     loader.readGrid(fb, null, longitudeShifts);
                 }
                 buffer.clear();
                 file = longitudeShifts;
-                try (ReadableByteChannel in = DatumShiftGridLoader.newByteChannel(rlon)) {
+                try (ReadableByteChannel in = GridLoader.newByteChannel(rlon)) {
                     new Loader(in, buffer, file).readGrid(fb, loader, null);
                 }
             } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
@@ -186,9 +189,9 @@ public final class NADCON extends AbstractProvider {
                  * Handle the exception here instead of by the caller
                  * because we know which of the 2 files is problematic.
                  */
-                throw DatumShiftGridLoader.canNotLoad(NADCON.class, "NADCON", file, e);
+                throw GridLoader.canNotLoad(NADCON.class, "NADCON", file, e);
             }
-            grid = DatumShiftGridCompressed.compress(loader.grid, null, loader.grid.accuracy);
+            grid = CompressedGrid.compress(loader.grid, null, loader.grid.accuracy);
             return grid.useSharedData();
         }).castTo(Angle.class, Angle.class);
     }
@@ -217,7 +220,7 @@ public final class NADCON extends AbstractProvider {
      * @author  Martin Desruisseaux (Geomatys)
      * @author  Rueben Schulz (UBC)
      */
-    private static final class Loader extends DatumShiftGridLoader {
+    private static final class Loader extends GridLoader {
         /**
          * The length of the description in the header, in bytes.
          * <ul>
@@ -256,7 +259,7 @@ public final class NADCON extends AbstractProvider {
         /**
          * The grid created by {@link #readGrid(FloatBuffer, Loader, URI)}.
          */
-        DatumShiftGridFile.Float<Angle,Angle> grid;
+        LoadedGrid.Float<Angle,Angle> grid;
 
         /**
          * Creates a new reader for the given channel. The file can be binary or ASCII.
@@ -390,7 +393,7 @@ public final class NADCON extends AbstractProvider {
             if (latitudeShifts == null) {
                 dim   = 1;                                              // Dimension of latitudes.
                 scale = DEGREES_TO_SECONDS * Δy;                        // NADCON shifts are positive north.
-                grid  = new DatumShiftGridFile.Float<>(2, Units.DEGREE, Units.DEGREE,
+                grid  = new LoadedGrid.Float<>(2, Units.DEGREE, Units.DEGREE,
                         true, x0, y0, Δx, Δy, nx, ny, PARAMETERS, file, longitudeShifts);
                 grid.accuracy = SECOND_PRECISION / DEGREES_TO_SECONDS;
             } else {

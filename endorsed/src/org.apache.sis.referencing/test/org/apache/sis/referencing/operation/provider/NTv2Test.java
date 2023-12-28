@@ -28,13 +28,15 @@ import java.nio.charset.StandardCharsets;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.gridded.LoadedGrid;
+import org.apache.sis.referencing.operation.gridded.GridGroup;
+import static org.apache.sis.referencing.operation.gridded.GridLoader.DEGREES_TO_SECONDS;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.system.DataDirectory;
-import static org.apache.sis.referencing.operation.provider.DatumShiftGridLoader.DEGREES_TO_SECONDS;
 
 // Test dependencies
 import org.junit.Test;
@@ -42,6 +44,7 @@ import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.referencing.operation.gridded.LoadedGridTest;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;
@@ -49,14 +52,14 @@ import static org.opengis.test.Assert.assertMatrixEquals;
 
 /**
  * Tests the {@link NTv2} grid loader.
- * It will also indirectly tests {@link DatumShiftGridGroup} class.
+ * It will also indirectly tests {@link GridGroup} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  */
-@DependsOn(DatumShiftGridFileTest.class)
+@DependsOn(LoadedGridTest.class)
 public final class NTv2Test extends DatumShiftTestCase {
     /**
      * Name of the file containing a small extract of the "{@code NTF_R93.gsb}" file.
@@ -122,8 +125,8 @@ public final class NTv2Test extends DatumShiftTestCase {
             final double ymin, final double ymax) throws Exception
     {
         final double cellSize = 360;
-        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
-        assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);
+        final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
+        assertInstanceOf("Should not be compressed.", LoadedGrid.Float.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
         assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
         assertEquals("translationDimensions", 2,          grid.getTranslationDimensions());
@@ -187,8 +190,8 @@ public final class NTv2Test extends DatumShiftTestCase {
         assumeTrue(DataDirectory.getenv() != null);
         final URI file = DataDirectory.DATUM_CHANGES.toAbsolutePath(new URI(MULTIGRID_TEST_FILE));
         assumeTrue(Files.exists(Path.of(file)));
-        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
-        assertInstanceOf("Should contain many grids.", DatumShiftGridGroup.class, grid);
+        final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
+        assertInstanceOf("Should contain many grids.", GridGroup.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
         assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
         assertEquals("translationDimensions", 2,          grid.getTranslationDimensions());
@@ -238,7 +241,7 @@ public final class NTv2Test extends DatumShiftTestCase {
         result[1] = position[1] + result[1] * cellSize;
         assertArrayEquals("interpolateInCell", expected, result, Formulas.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
         /*
-         * Verify that the caching mechanism works for DatumShiftGridGroup too.
+         * Verify that the caching mechanism works for GridGroup too.
          */
         assertSame("Grid should be cached.", grid, NTv2.getOrLoad(NTv2.class, file, 2));
     }
@@ -285,7 +288,7 @@ public final class NTv2Test extends DatumShiftTestCase {
      * @throws TransformException if an error occurred while computing the envelope.
      * @throws IOException if an error occurred while writing the test file.
      */
-    public static void writeSubGrid(final DatumShiftGridFile<Angle,Angle> grid, final Path out,
+    public static void writeSubGrid(final LoadedGrid<Angle,Angle> grid, final Path out,
             final int gridX, final int gridY, final int nx, final int ny) throws IOException, TransformException
     {
         Envelope envelope = new Envelope2D(null, gridX, gridY, nx - 1, ny - 1);

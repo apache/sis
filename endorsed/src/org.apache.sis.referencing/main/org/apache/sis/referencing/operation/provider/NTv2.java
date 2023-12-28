@@ -43,6 +43,10 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.gridded.CompressedGrid;
+import org.apache.sis.referencing.operation.gridded.GridLoader;
+import org.apache.sis.referencing.operation.gridded.GridGroup;
+import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -143,13 +147,13 @@ public final class NTv2 extends AbstractProvider {
     {
         final Parameters pg = Parameters.castOrWrap(values);
         final URI file = pg.getMandatoryValue(FILE);
-        final DatumShiftGridFile<Angle,Angle> grid;
+        final LoadedGrid<Angle,Angle> grid;
         try {
             grid = getOrLoad(provider, file, version);
         } catch (Exception e) {
-            throw DatumShiftGridLoader.canNotLoad(provider, provider.getSimpleName(), file, e);
+            throw GridLoader.canNotLoad(provider, provider.getSimpleName(), file, e);
         }
-        return DatumShiftGridFile.createGeodeticTransformation(provider, factory, grid);
+        return LoadedGrid.createGeodeticTransformation(provider, factory, grid);
     }
 
     /**
@@ -162,16 +166,16 @@ public final class NTv2 extends AbstractProvider {
      * @throws Exception if an error occurred while loading the grid.
      *         Caller should handle the exception with {@code canNotLoad(…)}.
      *
-     * @see DatumShiftGridLoader#canNotLoad(String, URI, Exception)
+     * @see GridLoader#canNotLoad(String, URI, Exception)
      */
-    static DatumShiftGridFile<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
+    static LoadedGrid<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
             final URI file, final int version) throws Exception
     {
         final URI resolved = DataDirectory.DATUM_CHANGES.toAbsolutePath(file);
-        return DatumShiftGridFile.getOrLoad(resolved, null, () -> {
-            final DatumShiftGridFile<?,?> grid;
-            try (ReadableByteChannel in = DatumShiftGridLoader.newByteChannel(resolved)) {
-                DatumShiftGridLoader.startLoading(provider, file);
+        return LoadedGrid.getOrLoad(resolved, null, () -> {
+            final LoadedGrid<?,?> grid;
+            try (ReadableByteChannel in = GridLoader.newByteChannel(resolved)) {
+                GridLoader.startLoading(provider, file);
                 final Loader loader = new Loader(in, file, version);
                 grid = loader.readAllGrids();
                 loader.report(provider);
@@ -200,7 +204,7 @@ public final class NTv2 extends AbstractProvider {
      * @author  Simon Reynard (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
      */
-    private static final class Loader extends DatumShiftGridLoader {
+    private static final class Loader extends GridLoader {
         /**
          * Size of a record. This value applies to both the header records and the data records.
          * In the case of header records, this is the size of the key plus the size of the value.
@@ -438,9 +442,9 @@ public final class NTv2 extends AbstractProvider {
          * them in a child-parent relationship. The result is a tree with a single root containing
          * sub-grids (if any) as children.
          */
-        final DatumShiftGridFile<Angle,Angle> readAllGrids() throws IOException, FactoryException, NoninvertibleTransformException {
-            final Map<String,      DatumShiftGridFile<Angle,Angle>>  grids    = new HashMap<>(Containers.hashMapCapacity(numGrids));
-            final Map<String, List<DatumShiftGridFile<Angle,Angle>>> children = new LinkedHashMap<>();   // Should have few entries.
+        final LoadedGrid<Angle,Angle> readAllGrids() throws IOException, FactoryException, NoninvertibleTransformException {
+            final Map<String,      LoadedGrid<Angle,Angle>>  grids    = new HashMap<>(Containers.hashMapCapacity(numGrids));
+            final Map<String, List<LoadedGrid<Angle,Angle>>> children = new LinkedHashMap<>();   // Should have few entries.
             while (grids.size() < numGrids) {
                 readGrid(grids, children);
             }
@@ -452,10 +456,10 @@ public final class NTv2 extends AbstractProvider {
              *        the grids in cycles will be lost. This is because we need a grid without parent for getting the
              *        graph added in the roots list. There is currently no mechanism for detecting those problems.
              */
-            final List<DatumShiftGridFile<Angle,Angle>> roots = new ArrayList<>();
-            for (final Map.Entry<String, List<DatumShiftGridFile<Angle,Angle>>> entry : children.entrySet()) {
-                final DatumShiftGridFile<Angle,Angle> parent = grids.get(entry.getKey());
-                final List<DatumShiftGridFile<Angle,Angle>> subgrids = entry.getValue();
+            final List<LoadedGrid<Angle,Angle>> roots = new ArrayList<>();
+            for (final Map.Entry<String, List<LoadedGrid<Angle,Angle>>> entry : children.entrySet()) {
+                final LoadedGrid<Angle,Angle> parent = grids.get(entry.getKey());
+                final List<LoadedGrid<Angle,Angle>> subgrids = entry.getValue();
                 if (parent != null) {
                     /*
                      * Verify that the children does not declare themselves as their parent.
@@ -479,7 +483,7 @@ public final class NTv2 extends AbstractProvider {
             switch (roots.size()) {
                 case 0:  throw new FactoryException(Errors.format(Errors.Keys.CanNotRead_1, file));
                 case 1:  return roots.get(0);
-                default: return DatumShiftGridGroup.create(file, roots);
+                default: return GridGroup.create(file, roots);
             }
         }
 
@@ -495,8 +499,8 @@ public final class NTv2 extends AbstractProvider {
          * @param  addTo     the map where to add the grid with the grid name as the key.
          * @param  children  the map where to add children with the parent name as the key.
          */
-        private void readGrid(final Map<String, DatumShiftGridFile<Angle,Angle>> addTo,
-                final Map<String, List<DatumShiftGridFile<Angle,Angle>>> children)
+        private void readGrid(final Map<String, LoadedGrid<Angle,Angle>> addTo,
+                final Map<String, List<LoadedGrid<Angle,Angle>>> children)
                 throws IOException, FactoryException, NoninvertibleTransformException
         {
             if (isV2) {
@@ -540,16 +544,16 @@ public final class NTv2 extends AbstractProvider {
             /*
              * Construct the grid. The sign of longitude translations will need to be reversed in order to have
              * longitudes increasing toward East. We set isCellValueRatio = true (by the arguments given to the
-             * DatumShiftGridFile constructor) because this is required by InterpolatedTransform implementation.
+             * LoadedGrid constructor) because this is required by InterpolatedTransform implementation.
              * This setting implies that we divide translation values by dx or dy at reading time. Note that this
              * free us from reversing the sign of longitude translations in the code below; instead, this reversal
              * will be handled by grid.coordinateToGrid MathTransform and its inverse.
              */
             final double size = Math.max(dx, dy);
-            final DatumShiftGridFile<Angle,Angle> grid;
+            final LoadedGrid<Angle,Angle> grid;
             if (isV2) {
-                final DatumShiftGridFile.Float<Angle,Angle> data;
-                data = new DatumShiftGridFile.Float<>(2, unit, unit, true,
+                final LoadedGrid.Float<Angle,Angle> data;
+                data = new LoadedGrid.Float<>(2, unit, unit, true,
                         -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
                 @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] tx = data.offsets[0];
                 @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] ty = data.offsets[1];
@@ -563,13 +567,13 @@ public final class NTv2 extends AbstractProvider {
                         data.accuracy = accuracy;                           // Smallest non-zero accuracy.
                     }
                 }
-                grid = DatumShiftGridCompressed.compress(data, null, precision / size);
+                grid = CompressedGrid.compress(data, null, precision / size);
             } else {
                 /*
                  * NTv1: same as NTv2 but using double precision and without accuracy information.
                  */
-                final DatumShiftGridFile.Double<Angle,Angle> data;
-                grid = data = new DatumShiftGridFile.Double<>(2, unit, unit, true,
+                final LoadedGrid.Double<Angle,Angle> data;
+                grid = data = new LoadedGrid.Double<>(2, unit, unit, true,
                         -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
                 @SuppressWarnings("MismatchedReadAndWriteOfArray") final double[] tx = data.offsets[0];
                 @SuppressWarnings("MismatchedReadAndWriteOfArray") final double[] ty = data.offsets[1];

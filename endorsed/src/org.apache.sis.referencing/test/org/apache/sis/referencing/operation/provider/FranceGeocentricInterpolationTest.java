@@ -25,6 +25,8 @@ import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.gridded.LoadedGrid;
+import org.apache.sis.referencing.operation.gridded.CompressedGrid;
 
 // Test dependencies
 import org.junit.Test;
@@ -130,7 +132,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      * Tests a small grid file with interpolations in geocentric coordinates as {@code float} values.
      *
      * <p>This method is part of a chain.
-     * The next method is {@link #testGridAsShorts(DatumShiftGridFile)}.</p>
+     * The next method is {@link #testGridAsShorts(LoadedGrid)}.</p>
      *
      * @return the loaded grid with values as {@code float}.
      * @throws URISyntaxException if the URL to the test file is not valid.
@@ -139,11 +141,11 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      * @throws TransformException if an error occurred while computing the envelope.
      */
     @TestStep
-    private static DatumShiftGridFile<Angle,Length> testGridAsFloats()
+    private static LoadedGrid<Angle,Length> testGridAsFloats()
             throws URISyntaxException, IOException, FactoryException, TransformException
     {
         final URI file = getResource(TEST_FILE);
-        final DatumShiftGridFile.Float<Angle,Length> grid;
+        final LoadedGrid.Float<Angle,Length> grid;
         try (BufferedReader in = FranceGeocentricInterpolation.Loader.newBufferedReader(file)) {
             grid = FranceGeocentricInterpolation.Loader.load(in, file);
         }
@@ -166,15 +168,15 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      * @throws TransformException if an error occurred while computing the envelope.
      */
     @TestStep
-    private static DatumShiftGridFile<Angle,Length> testGridAsShorts(DatumShiftGridFile<Angle,Length> grid)
+    private static LoadedGrid<Angle,Length> testGridAsShorts(LoadedGrid<Angle,Length> grid)
             throws TransformException
     {
-        grid = DatumShiftGridCompressed.compress((DatumShiftGridFile.Float<Angle,Length>) grid, new double[] {
+        grid = CompressedGrid.compress((LoadedGrid.Float<Angle,Length>) grid, new double[] {
                 FranceGeocentricInterpolation.TX,           //  168 metres
                 FranceGeocentricInterpolation.TY,           //   60 metres
                 FranceGeocentricInterpolation.TZ},          // -320 metres
                 FranceGeocentricInterpolation.PRECISION);
-        assertInstanceOf("Failed to compress 'float' values into 'short' values.", DatumShiftGridCompressed.class, grid);
+        assertInstanceOf("Failed to compress 'float' values into 'short' values.", CompressedGrid.class, grid);
         assertEquals("cellPrecision", 0.0005, grid.getCellPrecision(), STRICT);
         assertEquals("getCellMean",  168, grid.getCellMean(0), STRICT);
         assertEquals("getCellMean",   60, grid.getCellMean(1), STRICT);
@@ -188,7 +190,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      *
      * @throws TransformException if an error occurred while computing the envelope.
      */
-    private static void verifyGrid(final DatumShiftGridFile<Angle,Length> grid) throws TransformException {
+    private static void verifyGrid(final LoadedGrid<Angle,Length> grid) throws TransformException {
         final Envelope envelope = grid.getDomainOfValidity();
         assertEquals("xmin",  2.2, envelope.getMinimum(0), 1E-12);
         assertEquals("xmax",  2.5, envelope.getMaximum(0), 1E-12);
@@ -231,7 +233,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     @Test
     @DependsOnMethod("testGrid")
     public void testGetOrLoad() throws Exception {
-        final DatumShiftGridFile<Angle,Length> grid = FranceGeocentricInterpolation.getOrLoad(
+        final LoadedGrid<Angle,Length> grid = FranceGeocentricInterpolation.getOrLoad(
                 getResource(TEST_FILE), new double[] {
                         FranceGeocentricInterpolation.TX,
                         FranceGeocentricInterpolation.TY,

@@ -16,12 +16,9 @@
  */
 
 /**
- * Math transform provider implementations.
- * See {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} for a discussion of parameters.
+ * Support classes for loading of gridded data.
+ * This package is for Apache SIS internal purposes only and may change without notice in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Matthieu Bastianelli (Geomatys)
- *
- * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  */
-package org.apache.sis.referencing.operation.provider;
+package org.apache.sis.referencing.operation.gridded;

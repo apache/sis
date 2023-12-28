@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation.provider;
+package org.apache.sis.referencing.operation.gridded;
 
 import java.util.Random;
 import java.awt.geom.Point2D;
@@ -34,12 +34,12 @@ import org.apache.sis.test.DependsOnMethod;
 
 
 /**
- * Tests {@link DatumShiftGridFile}. This class creates a grid using values computed by an affine transform,
+ * Tests {@link LoadedGrid}. This class creates a grid using values computed by an affine transform,
  * and compare values computed by the grid using the affine transform as a reference.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class DatumShiftGridFileTest extends TestCase {
+public class LoadedGridTest extends TestCase {
     /**
      * Size of the grid created for testing purpose.
      */
@@ -64,12 +64,12 @@ public class DatumShiftGridFileTest extends TestCase {
     /**
      * The grid wrapping computed from affine transform.
      */
-    DatumShiftGridFile<Dimensionless,Dimensionless> grid;
+    LoadedGrid<Dimensionless,Dimensionless> grid;
 
     /**
      * Creates a new test case.
      */
-    public DatumShiftGridFileTest() {
+    public LoadedGridTest() {
     }
 
     /**
@@ -81,7 +81,7 @@ public class DatumShiftGridFileTest extends TestCase {
     void init(final double rotation) throws NoninvertibleTransformException {
         reference = AffineTransform.getRotateInstance(StrictMath.toRadians(rotation), WIDTH/2, HEIGHT/2);
         reference.scale(2, 5);
-        final DatumShiftGridFile.Float<Dimensionless,Dimensionless> grid = new DatumShiftGridFile.Float<>(
+        final LoadedGrid.Float<Dimensionless,Dimensionless> grid = new LoadedGrid.Float<>(
                 2, Units.UNITY, Units.UNITY, true, 0, 0, 1, 1, WIDTH, HEIGHT, null);
         assertEquals(2, grid.offsets.length);
         final Point2D.Float point = new Point2D.Float();
@@ -102,7 +102,7 @@ public class DatumShiftGridFileTest extends TestCase {
     }
 
     /**
-     * Tests {@link DatumShiftGridFile#interpolateInCell(double, double, double[])}.
+     * Tests {@link LoadedGrid#interpolateInCell(double, double, double[])}.
      * This test does not perform interpolations and does not compute derivatives.
      *
      * @throws TransformException if an error occurred while transforming a coordinates.
@@ -132,7 +132,7 @@ public class DatumShiftGridFileTest extends TestCase {
     }
 
     /**
-     * Tests {@link DatumShiftGridFile#interpolateAt(double...)}.
+     * Tests {@link LoadedGrid#interpolateAt(double...)}.
      * This tests include interpolations.
      *
      * @throws TransformException if an error occurred while transforming a coordinates.
@@ -163,7 +163,7 @@ public class DatumShiftGridFileTest extends TestCase {
     }
 
     /**
-     * Tests {@link DatumShiftGridFile#interpolateAt(double...)} with opportunistic derivative calculations.
+     * Tests {@link LoadedGrid#interpolateAt(double...)} with opportunistic derivative calculations.
      * Since the grid is computed from an affine transform, the derivative should be constant everywhere.
      *
      * @throws TransformException if an error occurred while transforming a coordinates.
@@ -200,7 +200,7 @@ public class DatumShiftGridFileTest extends TestCase {
     }
 
     /**
-     * Tests {@link DatumShiftGridFile#interpolateAt(double...)} with some values outside the grid.
+     * Tests {@link LoadedGrid#interpolateAt(double...)} with some values outside the grid.
      * Derivatives outside the grid have different coefficients than derivatives inside the grid.
      * This test verifies that methods computing derivatives are self-consistent.
      *
@@ -229,7 +229,7 @@ public class DatumShiftGridFileTest extends TestCase {
     }
 
     /**
-     * Verifies that the matrix returned by {@link DatumShiftGridFile#derivativeInCell(double, double)}
+     * Verifies that the matrix returned by {@link LoadedGrid#derivativeInCell(double, double)}
      * contains coefficients identical to the ones in the given vector.
      */
     private void assertSameDerivative(final int x, final int y, final double[] vector) {
