@@ -37,13 +37,11 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.After;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
@@ -175,7 +173,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      */
     @After
     public final void clearContext() {
-        assertSame("Unexpected context. Is this method invoked from the right thread?", context, Context.current());
+        assertSame(context, Context.current(), "Unexpected context. Is this method invoked from the right thread?");
         if (context != null) {
             context.finish();
             context = null;
@@ -210,7 +208,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
     protected final void assertMarshalEqualsFile(final InputStream expected, final Object object,
             final String... ignoredAttributes) throws JAXBException
     {
-        assertNotNull("Test resource is not found or not accessible.", expected);
+        assertNotNull(expected, "Test resource is not found or not accessible.");
         try (expected) {
             assertXmlEquals(expected, marshal(object), ignoredAttributes);
         } catch (IOException e) {
@@ -233,7 +231,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
     protected final void assertMarshalEqualsFile(final InputStream expected, final Object object,
             final Version metadataVersion, final String... ignoredAttributes) throws JAXBException
     {
-        assertNotNull("Test resource is not found or not accessible.", expected);
+        assertNotNull(expected, "Test resource is not found or not accessible.");
         try (expected) {
             assertXmlEquals(expected, marshal(object, metadataVersion), ignoredAttributes);
         } catch (IOException e) {
@@ -261,7 +259,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
     protected final void assertMarshalEqualsFile(final InputStream expected, final Object object, final Version metadataVersion,
             final double tolerance, final String[] ignoredNodes, final String[] ignoredAttributes) throws JAXBException
     {
-        assertNotNull("Test resource is not found or not accessible.", expected);
+        assertNotNull(expected, "Test resource is not found or not accessible.");
         try (expected) {
             assertXmlEquals(expected, marshal(object, metadataVersion), tolerance, ignoredNodes, ignoredAttributes);
         } catch (IOException e) {
@@ -316,8 +314,8 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @see #unmarshal(Unmarshaller, String)
      */
     protected final String marshal(final Marshaller marshaller, final Object object) throws JAXBException {
-        ArgumentChecks.ensureNonNull("marshaller", marshaller);
-        ArgumentChecks.ensureNonNull("object", object);
+        assertNotNull(marshaller, "marshaller");
+        assertNotNull(object, "object");
         if (buffer == null) {
             buffer = new StringWriter();
         }
@@ -340,7 +338,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @see #assertMarshalEqualsFile(String, Object, String...)
      */
     protected final <T> T unmarshalFile(final Class<T> type, final InputStream input) throws JAXBException {
-        assertNotNull("Test resource is not found or not accessible.", input);
+        assertNotNull(input, "Test resource is not found or not accessible.");
         try (input) {
             final MarshallerPool pool = getMarshallerPool();
             final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
@@ -368,7 +366,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshal(unmarshaller, xml);
         pool.recycle(unmarshaller);
-        assertInstanceOf("unmarshal", type, object);
+        assertInstanceOf(type, object, "unmarshal");
         return type.cast(object);
     }
 
@@ -383,8 +381,8 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @see #marshal(Marshaller, Object)
      */
     protected final Object unmarshal(final Unmarshaller unmarshaller, final String xml) throws JAXBException {
-        ArgumentChecks.ensureNonNull("unmarshaller", unmarshaller);
-        ArgumentChecks.ensureNonNull("xml", xml);
+        assertNotNull(unmarshaller, "unmarshaller");
+        assertNotNull(xml, "xml");
         return unmarshaller.unmarshal(new StringReader(xml));
     }
 
@@ -396,7 +394,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @return the date as a {@link Date}.
      */
     protected static Date xmlDate(final String date) {
-        ArgumentChecks.ensureNonNull("date", date);
+        assertNotNull(date, "date");
         try {
             synchronized (dateFormat) {
                 return dateFormat.parse(date);

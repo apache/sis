@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.io.InputStream;
@@ -32,23 +31,26 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.measure.Units;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
-import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.XML;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.measure.Units;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.XML;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
+import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.After;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -69,6 +71,21 @@ import static org.opengis.test.Assert.assertMatrixEquals;
     org.apache.sis.parameter.ParameterMarshallingTest.class
 })
 public final class SingleOperationMarshallingTest extends TestCase {
+    /**
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
+     */
+    @Rule
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
+
     /**
      * Creates a new test case.
      */
@@ -91,7 +108,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
      * Creates the test operation method.
      */
     private static DefaultOperationMethod createMercatorMethod() {
-        final ParameterBuilder builder = new ParameterBuilder();
+        final var builder = new ParameterBuilder();
         builder.setCodeSpace(EPSG, "EPSG").setRequired(true);
         ParameterDescriptor<?>[] parameters = {
             builder.addIdentifier("8801").addName("Latitude of natural origin" ).create(0, Units.DEGREE),
@@ -100,7 +117,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
         };
         builder.addName(null, "Mercator (1SP)");
         final ParameterDescriptorGroup descriptor = builder.createGroup(parameters);
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(DefaultOperationMethod.NAME_KEY, descriptor.getName());
         properties.put(DefaultOperationMethod.FORMULA_KEY, new DefaultFormula("See EPSG guide."));
         return new DefaultOperationMethod(properties, descriptor);
@@ -131,7 +148,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
                         "  </gml:parameter>\n" +
                         "</gml:OperationMethod>", xml, "xmlns:*");
 
-        final OperationMethod method = (OperationMethod) XML.unmarshal(xml);
+        final var method = (OperationMethod) XML.unmarshal(xml);
         verifyMethod(method);
         Validators.validate(method);
     }
@@ -141,13 +158,13 @@ public final class SingleOperationMarshallingTest extends TestCase {
      */
     private static void verifyMethod(final OperationMethod method) {
         assertIdentifierEquals("name", null, null, null, "Mercator (1SP)", method.getName());
-        assertEquals("formula", "See EPSG guide.", method.getFormula().getFormula().toString());
+        assertEquals("See EPSG guide.", method.getFormula().getFormula().toString(), "formula");
         final ParameterDescriptorGroup parameters = method.getParameters();
-        assertEquals("parameters.name", "Mercator (1SP)", parameters.getName().getCode());
+        assertEquals("Mercator (1SP)", parameters.getName().getCode(), "parameters.name");
         final Iterator<GeneralParameterDescriptor> it = parameters.descriptors().iterator();
         CC_OperationParameterGroupTest.verifyMethodParameter(Mercator1SP.LATITUDE_OF_ORIGIN,  (ParameterDescriptor<?>) it.next());
         CC_OperationParameterGroupTest.verifyMethodParameter(Mercator1SP.LONGITUDE_OF_ORIGIN, (ParameterDescriptor<?>) it.next());
-        assertFalse("Unexpected parameter.", it.hasNext());
+        assertFalse(it.hasNext());
     }
 
     /**
@@ -159,36 +176,41 @@ public final class SingleOperationMarshallingTest extends TestCase {
     @DependsOnMethod("testOperationMethod")
     public void testConversionUnmarshalling() throws JAXBException {
         final DefaultConversion c = unmarshalFile(DefaultConversion.class, openTestFile(false));
-        assertEquals("name", "World Mercator", c.getName().getCode());
-        assertEquals("identifier", "3395", getSingleton(c.getIdentifiers()).getCode());
-        assertEquals("scope", "Very small scale mapping.", String.valueOf(c.getScope()));
-        assertNull  ("operationVersion", c.getOperationVersion());
+        assertEquals("World Mercator", c.getName().getCode(), "name");
+        assertEquals("3395", getSingleton(c.getIdentifiers()).getCode(), "identifier");
+        assertEquals("Very small scale mapping.", String.valueOf(c.getScope()), "scope");
+        assertNull  (c.getOperationVersion(), "operationVersion");
 
-        final GeographicBoundingBox e = (GeographicBoundingBox) getSingleton(c.getDomainOfValidity().getGeographicElements());
-        assertEquals("eastBoundLongitude", +180, e.getEastBoundLongitude(), STRICT);
-        assertEquals("westBoundLongitude", -180, e.getWestBoundLongitude(), STRICT);
-        assertEquals("northBoundLatitude",   84, e.getNorthBoundLatitude(), STRICT);
-        assertEquals("southBoundLatitude",  -80, e.getSouthBoundLatitude(), STRICT);
+        final var e = (GeographicBoundingBox) getSingleton(c.getDomainOfValidity().getGeographicElements());
+        assertEquals(+180, e.getEastBoundLongitude(), "eastBoundLongitude");
+        assertEquals(-180, e.getWestBoundLongitude(), "westBoundLongitude");
+        assertEquals(  84, e.getNorthBoundLatitude(), "northBoundLatitude");
+        assertEquals( -80, e.getSouthBoundLatitude(), "southBoundLatitude");
 
         // This is a defining conversion, so we do not expect CRS.
-        assertNull("sourceCRS",        c.getSourceCRS());
-        assertNull("targetCRS",        c.getTargetCRS());
-        assertNull("interpolationCRS", c.getInterpolationCRS());
-        assertNull("mathTransform",    c.getMathTransform());
+        assertNull(c.getSourceCRS(),        "sourceCRS");
+        assertNull(c.getTargetCRS(),        "targetCRS");
+        assertNull(c.getInterpolationCRS(), "interpolationCRS");
+        assertNull(c.getMathTransform(),    "mathTransform");
 
         // The most difficult part.
         final OperationMethod method = c.getMethod();
-        assertNotNull("method", method);
+        assertNotNull(method, "method");
         verifyMethod(method);
 
         final ParameterValueGroup parameters = c.getParameterValues();
-        assertNotNull("parameters", parameters);
+        assertNotNull(parameters, "parameters");
         final Iterator<GeneralParameterValue> it = parameters.values().iterator();
         verifyParameter(method, parameters,  -0.0, (ParameterValue<?>) it.next());
         verifyParameter(method, parameters, -90.0, (ParameterValue<?>) it.next());
-        assertFalse("Unexpected parameter.", it.hasNext());
-
+        assertFalse(it.hasNext());
+        /*
+         * Validate object, then discard warnings caused by duplicated identifiers.
+         * Those duplications are intentional, see comment in `Conversion.xml`.
+         */
         Validators.validate(c);
+        loggings.assertNextLogContains("EPSG::8801");
+        loggings.assertNextLogContains("EPSG::8802");
     }
 
     /**
@@ -205,9 +227,9 @@ public final class SingleOperationMarshallingTest extends TestCase {
     {
         final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
         final String name = descriptor.getName().getCode();
-        assertSame("parameterValues.descriptor", descriptor,  group.getDescriptor().descriptor(name));
-        assertSame("method.descriptor",          descriptor, method.getParameters().descriptor(name));
-        assertEquals("value", expectedValue, parameter.doubleValue(), STRICT);
+        assertSame(descriptor,  group.getDescriptor().descriptor(name), "parameterValues.descriptor");
+        assertSame(descriptor, method.getParameters().descriptor(name), "method.descriptor");
+        assertEquals(expectedValue, parameter.doubleValue(), "value");
     }
 
     /**
@@ -219,50 +241,54 @@ public final class SingleOperationMarshallingTest extends TestCase {
     @DependsOnMethod("testConversionUnmarshalling")
     public void testTransformationUnmarshalling() throws JAXBException {
         final DefaultTransformation c = unmarshalFile(DefaultTransformation.class, openTestFile(true));
-        assertEquals("name",             "NTF (Paris) to NTF (1)",    c.getName().getCode());
-        assertEquals("identifier",       "1763",                      getSingleton(c.getIdentifiers()).getCode());
-        assertEquals("scope",            "Change of prime meridian.", String.valueOf(c.getScope()));
-        assertEquals("operationVersion", "IGN-Fra",                   c.getOperationVersion());
+        assertEquals("NTF (Paris) to NTF (1)", c.getName().getCode(), "name");
+        assertEquals("1763", getSingleton(c.getIdentifiers()).getCode(), "identifier");
+        assertEquals("Change of prime meridian.", String.valueOf(c.getScope()), "scope");
+        assertEquals("IGN-Fra", c.getOperationVersion(), "operationVersion");
 
         final OperationMethod method = c.getMethod();
-        assertNotNull("method", method);
-        assertEquals ("method.name", "Longitude rotation", method.getName().getCode());
-        assertEquals ("method.identifier", "9601", getSingleton(method.getIdentifiers()).getCode());
-        assertEquals ("method.formula", "Target_longitude = Source_longitude + longitude_offset.", method.getFormula().getFormula().toString());
+        assertNotNull(method, "method");
+        assertEquals("Longitude rotation", method.getName().getCode(), "method.name");
+        assertEquals("9601", getSingleton(method.getIdentifiers()).getCode(), "method.identifier");
+        assertEquals("Target_longitude = Source_longitude + longitude_offset.", method.getFormula().getFormula().toString(), "method.formula");
 
-        final ParameterDescriptor<?> descriptor = (ParameterDescriptor<?>) getSingleton(method.getParameters().descriptors());
-        assertEquals("descriptor.name",       "Longitude offset", descriptor.getName().getCode());
-        assertEquals("descriptor.identifier", "8602", getSingleton(descriptor.getIdentifiers()).getCode());
-        assertEquals("descriptor.valueClass", Double.class, descriptor.getValueClass());
+        final var descriptor = (ParameterDescriptor<?>) getSingleton(method.getParameters().descriptors());
+        assertEquals("Longitude offset", descriptor.getName().getCode(), "descriptor.name");
+        assertEquals("8602", getSingleton(descriptor.getIdentifiers()).getCode(), "descriptor.identifier");
+        assertEquals(Double.class, descriptor.getValueClass(), "descriptor.valueClass");
 
         final ParameterValueGroup parameters = c.getParameterValues();
-        assertNotNull("parameters", parameters);
-        assertSame("parameters.descriptors", method.getParameters(), parameters.getDescriptor());
+        assertNotNull(parameters, "parameters");
+        assertSame(method.getParameters(), parameters.getDescriptor(), "parameters.descriptors");
 
-        final ParameterValue<?> parameter = (ParameterValue<?>) getSingleton(parameters.values());
-        assertSame  ("parameters.descriptor", descriptor, parameter.getDescriptor());
-        assertEquals("parameters.unit",       Units.GRAD, parameter.getUnit());
-        assertEquals("parameters.value",      2.5969213,  parameter.getValue());
+        final var parameter = (ParameterValue<?>) getSingleton(parameters.values());
+        assertSame  (descriptor, parameter.getDescriptor(), "parameters.descriptor");
+        assertEquals(Units.GRAD, parameter.getUnit(),       "parameters.unit");
+        assertEquals(2.5969213,  parameter.getValue(),      "parameters.value");
 
         final CoordinateReferenceSystem sourceCRS = c.getSourceCRS();
-        assertInstanceOf("sourceCRS",            GeodeticCRS.class,  sourceCRS);
-        assertEquals    ("sourceCRS.name",       "NTF (Paris)",      sourceCRS.getName().getCode());
-        assertEquals    ("sourceCRS.scope",      "Geodetic survey.", sourceCRS.getScope().toString());
-        assertEquals    ("sourceCRS.identifier", "4807",             getSingleton(sourceCRS.getIdentifiers()).getCode());
+        assertInstanceOf(GeodeticCRS.class, sourceCRS, "sourceCRS");
+        assertEquals("NTF (Paris)", sourceCRS.getName().getCode(), "sourceCRS.name");
+        assertEquals("Geodetic survey.", sourceCRS.getScope().toString(), "sourceCRS.scope");
+        assertEquals("4807", getSingleton(sourceCRS.getIdentifiers()).getCode(), "sourceCRS.identifier");
 
         final CoordinateReferenceSystem targetCRS = c.getTargetCRS();
-        assertInstanceOf("targetCRS",            GeodeticCRS.class,  targetCRS);
-        assertEquals    ("targetCRS.name",       "NTF",              targetCRS.getName().getCode());
-        assertEquals    ("targetCRS.scope",      "Geodetic survey.", targetCRS.getScope().toString());
-        assertEquals    ("targetCRS.identifier", "4275",             getSingleton(targetCRS.getIdentifiers()).getCode());
+        assertInstanceOf(GeodeticCRS.class,  targetCRS, "targetCRS");
+        assertEquals("NTF", targetCRS.getName().getCode(), "targetCRS.name");
+        assertEquals("Geodetic survey.", targetCRS.getScope().toString(), "targetCRS.scope");
+        assertEquals("4275", getSingleton(targetCRS.getIdentifiers()).getCode(), "targetCRS.identifier");
 
         final MathTransform tr = c.getMathTransform();
-        assertInstanceOf("mathTransform", LinearTransform.class, tr);
+        assertInstanceOf(LinearTransform.class, tr, "mathTransform");
         assertMatrixEquals("mathTransform.matrix",
                 new Matrix3(1, 0, 0,
                             0, 1, 2.33722917,
                             0, 0, 1), ((LinearTransform) tr).getMatrix(), STRICT);
-
+        /*
+         * Validate object, then discard warnings caused by duplicated identifiers.
+         * Those duplications are intentional, see comment in `Transformation.xml`.
+         */
         Validators.validate(c);
+        loggings.assertNextLogContains("EPSG::8602");
     }
 }

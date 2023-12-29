@@ -176,23 +176,24 @@ public final class Context extends MarshalContext {
 
     /**
      * The objects associated to XML identifiers in the current document.
+     * Map keys are {@code gml:id} attribute values, and map values are the identified objects.
      * At marhalling time, this map is used for avoiding duplicated identifiers in the same XML document.
      * At unmarshalling time, this is used for getting a previously unmarshalled object from its identifier.
      *
      * @see #getObjectForID(Context, String)
      */
-    private final Map<String,Object> identifiers;
+    private final Map<String,Object> xmlidToObject;
 
     /**
      * The identifiers used for marshalled objects in the current document.
-     * This is the converse of the {@link #identifiers} map, used in order to identify which {@code gml:id} to use
+     * This is the converse of the {@link #xmlidToObject} map, used in order to identify which {@code gml:id} to use
      * for a given object. The {@code gml:id} values to use are not necessarily the same than the values associated
      * to {@link IdentifierSpace#ID} if some identifiers were already used for other objects in the same XML document.
      */
-    private final Map<Object,String> identifiedObjects;
+    private final Map<Object,String> objectToXmlid;
 
     /**
-     * The {@link #identifiers} map for each document being unmarshalled.
+     * The {@link #xmlidToObject} map for each document being unmarshalled.
      * This cache is populated if the document contains {@code xlink:href} to other documents.
      * This cache contains only the documents seen by following the references since the root document.
      * This is not a system-wide cache.
@@ -201,10 +202,20 @@ public final class Context extends MarshalContext {
      * from a file or an URL, {@code systemId} should be the value of {@link java.net.URI#toASCIIString()} for
      * consistency with {@link javax.xml.transform.stream.StreamSource}.  However, URI instances are preferred
      * in this map because the {@link URI#equals(Object)} method applies some rules regarding case-sensitivity
-     * that {@link String#equals(Object)} cannot know. Values of the map are the {@link #identifiers} maps of
+     * that {@link String#equals(Object)} cannot know. Values of the map are the {@link #xmlidToObject} maps of
      * the corresponding document. By convention, the object associated to the null key is the whole document.</p>
      */
-    private final Map<Object, Map<String,Object>> identifiersPerDocuments;
+    private final Map<Object, Map<String,Object>> documentToXmlids;
+
+    /**
+     * All identified objects associated to a global identifier (not {@code gml:id}).
+     * This map differs from {@link #xmlidToObject} in that it is not local to the current document,
+     * but instead contains all identified objects in all documents parsed since the root document.
+     * The keys of this map cannot be {@code gml:id} attribute values, because the latter are local.
+     * Instead, keys are typically {@link org.opengis.referencing.IdentifiedObject#getIdentifiers()}.
+     * The map may contain many entries for the same object if that object has many identifiers.
+     */
+    final Map<ScopedIdentifier<?>, Object> identifiedObjects;
 
     /**
      * The object to inform about warnings, or {@code null} if none.
@@ -270,19 +281,20 @@ public final class Context extends MarshalContext {
         if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.VERSION_2014) < 0) {
             bitMasks |= LEGACY_METADATA;
         }
-        this.pool               = pool;
-        this.locale             = locale;
-        this.timezone           = timezone;
-        this.schemas            = schemas;              // No clone, because this class is internal.
-        this.versionGML         = versionGML;
-        this.linkHandler        = linkHandler;
-        this.resolver           = resolver;
-        this.converter          = converter;
-        this.logFilter          = logFilter;
-        identifiers             = new HashMap<>();
-        identifiersPerDocuments = new HashMap<>();
-        identifiedObjects       = new IdentityHashMap<>();
-        previous                = CURRENT.get();
+        this.pool         = pool;
+        this.locale       = locale;
+        this.timezone     = timezone;
+        this.schemas      = schemas;            // No clone, because this class is internal.
+        this.versionGML   = versionGML;
+        this.linkHandler  = linkHandler;
+        this.resolver     = resolver;
+        this.converter    = converter;
+        this.logFilter    = logFilter;
+        xmlidToObject     = new HashMap<>();
+        objectToXmlid     = new IdentityHashMap<>();
+        documentToXmlids  = new HashMap<>();
+        identifiedObjects = new HashMap<>();
+        previous          = CURRENT.get();
         if ((bitMasks & MARSHALLING) != 0) {
             /*
              * Set global semaphore last after our best effort to ensure that construction
@@ -310,6 +322,8 @@ public final class Context extends MarshalContext {
     private Context(final Context parent, final Locale locale, final ExternalLinkHandler linkHandler,
                     final boolean inline)
     {
+        assert parent == CURRENT.get();
+        this.previous    = parent;
         this.locale      = locale;
         this.linkHandler = linkHandler;
         this.pool        = parent.pool;
@@ -321,15 +335,14 @@ public final class Context extends MarshalContext {
         this.logFilter   = parent.logFilter;
         this.bitMasks    = parent.bitMasks & ~CLEAR_SEMAPHORE;
         if (inline) {
-            identifiers       = parent.identifiers;
-            identifiedObjects = parent.identifiedObjects;
+            xmlidToObject = parent.xmlidToObject;
+            objectToXmlid = parent.objectToXmlid;
         } else {
-            identifiers       = new HashMap<>();
-            identifiedObjects = new IdentityHashMap<>();
+            xmlidToObject = new HashMap<>();
+            objectToXmlid = new IdentityHashMap<>();
         }
-        identifiersPerDocuments = parent.identifiersPerDocuments;
-        previous = parent;
-        assert parent == CURRENT.get();
+        documentToXmlids  = parent.documentToXmlids;
+        identifiedObjects = parent.identifiedObjects;
     }
 
     /**
@@ -433,7 +446,7 @@ public final class Context extends MarshalContext {
     public final Context createChild(final Object systemId, final ExternalLinkHandler linkHandler) {
         // Use Map.put(…) instead of putIfAbsent(…) because maybe the previous map is unmodifiable.
         final Context context = new Context(this, locale, linkHandler, false);
-        identifiersPerDocuments.put(systemId, context.identifiers);
+        documentToXmlids.put(systemId, context.xmlidToObject);
         CURRENT.set(context);
         return context;
     }
@@ -614,7 +627,7 @@ public final class Context extends MarshalContext {
      * @return the identifier used in the current XML document for the given object, or {@code null} if none.
      */
     public static String getObjectID(final Context context, final Object object) {
-        return (context != null) ? context.identifiedObjects.get(object) : null;
+        return (context != null) ? context.objectToXmlid.get(object) : null;
     }
 
     /**
@@ -627,7 +640,7 @@ public final class Context extends MarshalContext {
      * @return the object associated to the given identifier, or {@code null} if none.
      */
     public static Object getObjectForID(final Context context, final String id) {
-        return (context != null) ? context.identifiers.get(id) : null;
+        return (context != null) ? context.xmlidToObject.get(id) : null;
     }
 
     /**
@@ -643,11 +656,11 @@ public final class Context extends MarshalContext {
      */
     public static boolean setObjectForID(final Context context, final Object object, final String id) {
         if (context != null) {
-            final Object existing = context.identifiers.putIfAbsent(id, object);
+            final Object existing = context.xmlidToObject.putIfAbsent(id, object);
             if (existing != null) {
                 return existing == object;
             }
-            if (context.identifiedObjects.put(object, id) != null) {
+            if (context.objectToXmlid.put(object, id) != null) {
                 throw new CorruptedObjectException(id);    // Should never happen since all put calls are in this method.
             }
         }
@@ -670,7 +683,7 @@ public final class Context extends MarshalContext {
      * @return the object associated to the given identifier, or {@code null} if none.
      */
     public final Object getExternalObjectForID(final Object systemId, final String id) {
-        final Map<String,Object> cache = identifiersPerDocuments.get(systemId);
+        final Map<String,Object> cache = documentToXmlids.get(systemId);
         return (cache != null) ? cache.get(id) : null;
     }
 
@@ -683,9 +696,9 @@ public final class Context extends MarshalContext {
      * @param  document  the document to cache.
      */
     public final void cacheDocument(final Object systemId, final Object document) {
-        final Map<String, Object> cache = identifiersPerDocuments.get(systemId);
+        final Map<String, Object> cache = documentToXmlids.get(systemId);
         if (cache == null || cache.isEmpty()) {
-            identifiersPerDocuments.put(systemId, Collections.singletonMap(null, document));
+            documentToXmlids.put(systemId, Collections.singletonMap(null, document));
         } else {
             cache.put(null, document);
         }
