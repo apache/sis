@@ -17,9 +17,9 @@
 package org.apache.sis.console;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.EnumSet;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;

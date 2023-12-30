@@ -20,8 +20,8 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.internal.Resources;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
