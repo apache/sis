@@ -39,9 +39,11 @@ import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.util.ArraysExt;
 
 
 /**

@@ -20,11 +20,11 @@ import java.io.IOException;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 

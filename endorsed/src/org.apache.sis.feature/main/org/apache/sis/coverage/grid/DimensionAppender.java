@@ -20,13 +20,13 @@ import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
