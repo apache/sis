@@ -16,13 +16,14 @@
  */
 package org.apache.sis.xml.bind;
 
+import java.net.URI;
 import java.util.Map;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.LinkedList;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -30,15 +31,18 @@ import java.util.logging.Filter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.MarshalContext;
+import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.util.ExternalLinkHandler;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.Loggers;
 
@@ -119,14 +123,19 @@ public final class Context extends MarshalContext {
     public static final Logger LOGGER = Logger.getLogger(Loggers.XML);
 
     /**
+     * The pool that produced the marshaller or unmarshaller.
+     */
+    private final MarshallerPool pool;
+
+    /**
      * Various boolean attributes determines by the above static constants.
      */
     final int bitMasks;
 
     /**
-     * The locale to use for marshalling, or an empty queue if no locale were explicitly specified.
+     * The locale to use for marshalling, or {@code null} if no locale was explicitly specified.
      */
-    private final Deque<Locale> locales;
+    private final Locale locale;
 
     /**
      * The timezone, or {@code null} if unspecified.
@@ -135,8 +144,8 @@ public final class Context extends MarshalContext {
     private final TimeZone timezone;
 
     /**
-     * The base URL of ISO 19115-3 (or other standards) schemas. The valid values
-     * are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
+     * The base URL of ISO 19115-3 (or other standards) schemas.
+     * The valid values are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      */
     private final Map<String,String> schemas;
 
@@ -147,7 +156,16 @@ public final class Context extends MarshalContext {
     private final Version versionGML;
 
     /**
+     * The {@code XLink} reference resolver for converting relative URL to absolute URL.
+     * Contrarily to {@link #resolver}, this instance depends on the document being read.
+     * If {@code null}, then {@link ExternalLinkHandler#DEFAULT} is assumed.
+     */
+    private final ExternalLinkHandler linkHandler;
+
+    /**
      * The reference resolver currently in use, or {@code null} for {@link ReferenceResolver#DEFAULT}.
+     * This class does not necessarily parses XML document. It may returns objects from a database.
+     * The same instance may be used for many documents to parse.
      */
     private final ReferenceResolver resolver;
 
@@ -157,18 +175,47 @@ public final class Context extends MarshalContext {
     private final ValueConverter converter;
 
     /**
-     * The objects associated to XML identifiers. At marhalling time, this is used for avoiding duplicated identifiers
-     * in the same XML document. At unmarshalling time, this is used for getting a previous object from its identifier.
+     * The objects associated to XML identifiers in the current document.
+     * Map keys are {@code gml:id} attribute values, and map values are the identified objects.
+     * At marhalling time, this map is used for avoiding duplicated identifiers in the same XML document.
+     * At unmarshalling time, this is used for getting a previously unmarshalled object from its identifier.
+     *
+     * @see #getObjectForID(Context, String)
      */
-    private final Map<String,Object> identifiers;
+    private final Map<String,Object> xmlidToObject;
 
     /**
-     * The identifiers used for marshalled objects. This is the converse of {@link #identifiers}, used in order to
-     * identify which {@code gml:id} to use for the given object. The {@code gml:id} to use are not necessarily the
-     * same than the one associated to {@link IdentifierSpace#ID} if the identifier was already used for another
-     * object in the same XML document.
+     * The identifiers used for marshalled objects in the current document.
+     * This is the converse of the {@link #xmlidToObject} map, used in order to identify which {@code gml:id} to use
+     * for a given object. The {@code gml:id} values to use are not necessarily the same than the values associated
+     * to {@link IdentifierSpace#ID} if some identifiers were already used for other objects in the same XML document.
      */
-    private final Map<Object,String> identifiedObjects;
+    private final Map<Object,String> objectToXmlid;
+
+    /**
+     * The {@link #xmlidToObject} map for each document being unmarshalled.
+     * This cache is populated if the document contains {@code xlink:href} to other documents.
+     * This cache contains only the documents seen by following the references since the root document.
+     * This is not a system-wide cache.
+     *
+     * <p>Keys are {@code systemId} as instances of {@link URI} or {@link String}. For documents that are read
+     * from a file or an URL, {@code systemId} should be the value of {@link java.net.URI#toASCIIString()} for
+     * consistency with {@link javax.xml.transform.stream.StreamSource}.  However, URI instances are preferred
+     * in this map because the {@link URI#equals(Object)} method applies some rules regarding case-sensitivity
+     * that {@link String#equals(Object)} cannot know. Values of the map are the {@link #xmlidToObject} maps of
+     * the corresponding document. By convention, the object associated to the null key is the whole document.</p>
+     */
+    private final Map<Object, Map<String,Object>> documentToXmlids;
+
+    /**
+     * All identified objects associated to a global identifier (not {@code gml:id}).
+     * This map differs from {@link #xmlidToObject} in that it is not local to the current document,
+     * but instead contains all identified objects in all documents parsed since the root document.
+     * The keys of this map cannot be {@code gml:id} attribute values, because the latter are local.
+     * Instead, keys are typically {@link org.opengis.referencing.IdentifiedObject#getIdentifiers()}.
+     * The map may contain many entries for the same object if that object has many identifiers.
+     */
+    final Map<ScopedIdentifier<?>, Object> identifiedObjects;
 
     /**
      * The object to inform about warnings, or {@code null} if none.
@@ -207,42 +254,47 @@ public final class Context extends MarshalContext {
      *     }
      *
      * @param  bitMasks         a combination of {@link #MARSHALLING}, {@code SUBSTITUTE_*} or other bit masks.
+     * @param  pool             the pool that produced the marshaller or unmarshaller.
      * @param  locale           the locale, or {@code null} if unspecified.
      * @param  timezone         the timezone, or {@code null} if unspecified.
      * @param  schemas          the schemas root URL, or {@code null} if none.
      * @param  versionGML       the GML version, or {@code null}.
      * @param  versionMetadata  the metadata version, or {@code null}.
+     * @param  linkHandler      the document-dependent resolver of relative URIs, or {@code null}.
      * @param  resolver         the resolver in use.
      * @param  converter        the converter in use.
      * @param  logFilter        the object to inform about warnings.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public Context(int                      bitMasks,
-                   final Locale             locale,
-                   final TimeZone           timezone,
-                   final Map<String,String> schemas,
-                   final Version            versionGML,
-                   final Version            versionMetadata,
-                   final ReferenceResolver  resolver,
-                   final ValueConverter     converter,
-                   final Filter             logFilter)
+    public Context(int                       bitMasks,
+                   final MarshallerPool      pool,
+                   final Locale              locale,
+                   final TimeZone            timezone,
+                   final Map<String,String>  schemas,
+                   final Version             versionGML,
+                   final Version             versionMetadata,
+                   final ExternalLinkHandler linkHandler,
+                   final ReferenceResolver   resolver,
+                   final ValueConverter      converter,
+                   final Filter              logFilter)
     {
         if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.VERSION_2014) < 0) {
             bitMasks |= LEGACY_METADATA;
         }
-        this.locales           = new LinkedList<>();
-        this.timezone          = timezone;
-        this.schemas           = schemas;               // No clone, because this class is internal.
-        this.versionGML        = versionGML;
-        this.resolver          = resolver;
-        this.converter         = converter;
-        this.logFilter         = logFilter;
-        this.identifiers       = new HashMap<>();
-        this.identifiedObjects = new IdentityHashMap<>();
-        if (locale != null) {
-            locales.add(locale);
-        }
-        previous = CURRENT.get();
+        this.pool         = pool;
+        this.locale       = locale;
+        this.timezone     = timezone;
+        this.schemas      = schemas;            // No clone, because this class is internal.
+        this.versionGML   = versionGML;
+        this.linkHandler  = linkHandler;
+        this.resolver     = resolver;
+        this.converter    = converter;
+        this.logFilter    = logFilter;
+        xmlidToObject     = new HashMap<>();
+        objectToXmlid     = new IdentityHashMap<>();
+        documentToXmlids  = new HashMap<>();
+        identifiedObjects = new HashMap<>();
+        previous          = CURRENT.get();
         if ((bitMasks & MARSHALLING) != 0) {
             /*
              * Set global semaphore last after our best effort to ensure that construction
@@ -258,13 +310,59 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns the locale to use for marshalling, or {@code null} if no locale were explicitly specified.
+     * Creates a new context with different properties than the current context.
+     * The old context shall be restored by a call to {@link #pull()} in a {@code finally} block.
+     *
+     * @param parent       the context from which to inherit.
+     * @param locale       the locale in the new context.
+     * @param linkHandler  the document-dependent resolver of relative URIs, or {@code null}.
+     * @param inline       {@code true} if the context is for reading the same document, or
+     *                     {@code false} for reading a separated document.
+     */
+    private Context(final Context parent, final Locale locale, final ExternalLinkHandler linkHandler,
+                    final boolean inline)
+    {
+        assert parent == CURRENT.get();
+        this.previous    = parent;
+        this.locale      = locale;
+        this.linkHandler = linkHandler;
+        this.pool        = parent.pool;
+        this.timezone    = parent.timezone;
+        this.schemas     = parent.schemas;
+        this.versionGML  = parent.versionGML;
+        this.resolver    = parent.resolver;
+        this.converter   = parent.converter;
+        this.logFilter   = parent.logFilter;
+        this.bitMasks    = parent.bitMasks & ~CLEAR_SEMAPHORE;
+        if (inline) {
+            xmlidToObject = parent.xmlidToObject;
+            objectToXmlid = parent.objectToXmlid;
+        } else {
+            xmlidToObject = new HashMap<>();
+            objectToXmlid = new IdentityHashMap<>();
+        }
+        documentToXmlids  = parent.documentToXmlids;
+        identifiedObjects = parent.identifiedObjects;
+    }
+
+    /**
+     * Returns the marshaller pool that produced the marshaller or unmarshaller in use.
+     *
+     * @return the pool in the context of current (un)marshalling process.
+     */
+    @Override
+    public final MarshallerPool getPool() {
+        return pool;
+    }
+
+    /**
+     * Returns the locale to use for marshalling, or {@code null} if no locale was explicitly specified.
      *
      * @return the locale in the context of current (un)marshalling process.
      */
     @Override
     public final Locale getLocale() {
-        return locales.peekLast();
+        return locale;
     }
 
     /**
@@ -296,18 +394,28 @@ public final class Context extends MarshalContext {
         return null;
     }
 
+    /**
+     * Returns the URI of the document being (un)marshalled, if this URI is known.
+     */
+    @Override
+    public final Optional<URI> getDocumentURI() {
+        return (linkHandler != null) ? Optional.ofNullable(linkHandler.getURI()) : Optional.empty();
+    }
 
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                        ////////
-    ////////    END OF PUBLIC (non-internal) API.                                   ////////
-    ////////                                                                        ////////
-    ////////    Following are internal API. They are provided as static methods     ////////
-    ////////    with a Context argument rather than normal member methods           ////////
-    ////////    in order to accept null context.                                    ////////
-    ////////                                                                        ////////
-    ////////////////////////////////////////////////////////////////////////////////////////
+
+    /*
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                        ┃
+     ┃    END OF PUBLIC (non-internal) API.                                   ┃
+     ┃                                                                        ┃
+     ┃    Following are internal API. They are provided as static methods     ┃
+     ┃    with a Context argument rather than normal member methods           ┃
+     ┃    in order to accept null context.                                    ┃
+     ┃                                                                        ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
 
     /**
      * Returns the context of the XML (un)marshalling currently progressing in the current thread,
@@ -317,6 +425,30 @@ public final class Context extends MarshalContext {
      */
     public static Context current() {
         return CURRENT.get();
+    }
+
+    /**
+     * Creates the context for following a {@code xlink:href} to a separated document.
+     * Because the separated document may be in a different directory, the new context
+     * will use a different {@link ExternalLinkHandler}. The returned context shall be
+     * used in the same way as a context created from the public constructor.
+     *
+     * <p>The {@code systemId} argument is the key to use for caching the result of (un)marshalling a document
+     * in the new context. This is usually the same value than the {@link String}, {@link File} or {@link URL}
+     * specified at {@code linkHandler} construction time, but as an {@link URI} or {@link String} instance.</p>
+     *
+     * @param  systemId     {@link URI} or {@link String} identifier of the document to (un)marshal.
+     * @param  linkHandler  the document-dependent resolver of relative URIs, or {@code null}.
+     * @return the context as a child of current context, never {@code null}.
+     *
+     * @see Context#getExternalObjectForID(Object, String)
+     */
+    public final Context createChild(final Object systemId, final ExternalLinkHandler linkHandler) {
+        // Use Map.put(…) instead of putIfAbsent(…) because maybe the previous map is unmodifiable.
+        final Context context = new Context(this, locale, linkHandler, false);
+        documentToXmlids.put(systemId, context.xmlidToObject);
+        CURRENT.set(context);
+        return context;
     }
 
     /**
@@ -341,20 +473,27 @@ public final class Context extends MarshalContext {
         final Context current = current();
         if (current != null) {
             if (locale == null) {
-                locale = current.getLocale();
+                locale = current.locale;
             }
-            current.locales.addLast(locale);
+            CURRENT.set(new Context(current, locale, current.linkHandler, true));
         }
     }
 
     /**
-     * Restores the locale which was used prior the call to {@link #push(Locale)}.
-     * It is not necessary to invoke this method in a {@code finally} block.
+     * Restores the locale which was used prior the call to {@code push(…)}.
+     * It is not necessary to invoke this method in a {@code finally} block,
+     * provided that {@link #finish()} is invoked in a finally block by some
+     * enclosing method calls.
      */
     public static void pull() {
-        final Context current = current();
-        if (current != null) {
-            current.locales.removeLast();
+        Context c = current();
+        if (c != null) {
+            c = c.previous;
+            if (c != null) {
+                CURRENT.set(c);
+            } else {
+                CURRENT.remove();       // For more robustness, but should not happen.
+            }
         }
     }
 
@@ -488,11 +627,12 @@ public final class Context extends MarshalContext {
      * @return the identifier used in the current XML document for the given object, or {@code null} if none.
      */
     public static String getObjectID(final Context context, final Object object) {
-        return (context != null) ? context.identifiedObjects.get(object) : null;
+        return (context != null) ? context.objectToXmlid.get(object) : null;
     }
 
     /**
      * Returns the object for the given {@code gml:id}, or {@code null} if none.
+     * GML identifiers can be referenced by the fragment part of URI in XLinks.
      * This association is valid only for the current XML document.
      *
      * @param  context  the current context, or {@code null} if none.
@@ -500,14 +640,14 @@ public final class Context extends MarshalContext {
      * @return the object associated to the given identifier, or {@code null} if none.
      */
     public static Object getObjectForID(final Context context, final String id) {
-        return (context != null) ? context.identifiers.get(id) : null;
+        return (context != null) ? context.xmlidToObject.get(id) : null;
     }
 
     /**
-     * Returns {@code true} if the given identifier is available, or {@code false} if it is used by another object.
-     * If this method returns {@code true}, then the given identifier is associated to the given object for future
-     * invocation of {@code Context} methods. If this method returns {@code false}, then the caller is responsible
-     * for computing another identifier candidate.
+     * Associates the given object to the given identifier if that identifier is available.
+     * Returns {@code true} if the given identifier was available, or {@code false} if used by another object.
+     * In the latter case, this method does nothing (the existing object is not replaced) and the caller should
+     * try again with another identifier candidate.
      *
      * @param  context  the current context, or {@code null} if none.
      * @param  object   the object for which to assign the {@code gml:id}.
@@ -516,11 +656,11 @@ public final class Context extends MarshalContext {
      */
     public static boolean setObjectForID(final Context context, final Object object, final String id) {
         if (context != null) {
-            final Object existing = context.identifiers.putIfAbsent(id, object);
+            final Object existing = context.xmlidToObject.putIfAbsent(id, object);
             if (existing != null) {
                 return existing == object;
             }
-            if (context.identifiedObjects.put(object, id) != null) {
+            if (context.objectToXmlid.put(object, id) != null) {
                 throw new CorruptedObjectException(id);    // Should never happen since all put calls are in this method.
             }
         }
@@ -528,8 +668,65 @@ public final class Context extends MarshalContext {
     }
 
     /**
+     * Returns the object for the given {@code gml:id} in the specified document, or {@code null} if none.
+     * GML identifiers can be referenced by the fragment part of URI in XLinks. This association is valid
+     * only for documents referenced in {@code xlink:href} attributes since the root document of current
+     * unmarshalling process. This is not a system-wide cache.
+     *
+     * <p>For documents that are read from a file or an URL, the {@code systemId} argument should be the value of
+     * {@link java.net.URI#toASCIIString()} for consistency with {@link javax.xml.transform.stream.StreamSource}.
+     * However, the original URI instances should be used instead when they are available.
+     * By convention, a null {@code id} returns the whole document.</p>
+     *
+     * @param  systemId  document identifier (without the fragment part) as an {@link URI} or a {@link String}.
+     * @param  id        the fragment part of the URI identifying the object to get.
+     * @return the object associated to the given identifier, or {@code null} if none.
+     */
+    public final Object getExternalObjectForID(final Object systemId, final String id) {
+        final Map<String,Object> cache = documentToXmlids.get(systemId);
+        return (cache != null) ? cache.get(id) : null;
+    }
+
+    /**
+     * Adds in the cache the result of unmarshalling a document referenced by {@code xlink:href}.
+     * This method cache the whole document, ignoring the fragment in the {@code xlink:href}.
+     * The fragment part is obtained by {@link #getExternalObjectForID(Object, String)}.
+     *
+     * @param  systemId  document identifier (without the fragment part) as an {@link URI} or a {@link String}.
+     * @param  document  the document to cache.
+     */
+    public final void cacheDocument(final Object systemId, final Object document) {
+        final Map<String, Object> cache = documentToXmlids.get(systemId);
+        if (cache == null || cache.isEmpty()) {
+            documentToXmlids.put(systemId, Collections.singletonMap(null, document));
+        } else {
+            cache.put(null, document);
+        }
+    }
+
+    /**
+     * Returns the {@code XLink} reference resolver for the current marshalling or unmarshalling process.
+     * If no link handler has been explicitly set, then this method returns {@link ExternalLinkHandler#DEFAULT}.
+     *
+     * <div class="note"><b>API note:</b>
+     * This method is static for the convenience of performing the check for null context.</div>
+     *
+     * @param  context  the current context, or {@code null} if none.
+     * @return the current link handler (never null).
+     */
+    public static ExternalLinkHandler linkHandler(final Context context) {
+        if (context != null) {
+            final ExternalLinkHandler linkHandler = context.linkHandler;
+            if (linkHandler != null) {
+                return linkHandler;
+            }
+        }
+        return ExternalLinkHandler.DEFAULT;
+    }
+
+    /**
      * Returns the reference resolver in use for the current marshalling or unmarshalling process.
-     * If no resolver were explicitly set, then this method returns {@link ReferenceResolver#DEFAULT}.
+     * If no resolver has been explicitly set, then this method returns {@link ReferenceResolver#DEFAULT}.
      *
      * <div class="note"><b>API note:</b>
      * This method is static for the convenience of performing the check for null context.</div>
@@ -587,7 +784,7 @@ public final class Context extends MarshalContext {
             final Level level, final Class<?> classe, final String method, final Throwable exception,
             final Class<? extends IndexedResourceBundle> resources, final short key, final Object... arguments)
     {
-        final Locale locale = (context != null) ? context.getLocale() : null;
+        final Locale locale = (context != null) ? context.locale : null;
         final LogRecord record;
         if (resources != null) {
             final IndexedResourceBundle bundle;
@@ -656,7 +853,11 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Invoked in a {@code finally} block when a unmarshalling process is finished.
+     * Invoked in a {@code finally} block when a (un)marshalling process is finished.
+     * This method should be invoked on the instance created by the constructor or
+     * on the instance returned by the {@link #push(ExternalLinkHandler)} method,
+     * <em>not</em> on the instance returned by {@link #current()} because the latter
+     * may cause a memory leak if some calls to the {@link #pull()} method are missing.
      */
     public final void finish() {
         if ((bitMasks & CLEAR_SEMAPHORE) != 0) {
@@ -667,5 +868,15 @@ public final class Context extends MarshalContext {
         } else {
             CURRENT.remove();
         }
+    }
+
+    /**
+     * {@return a string representation of this context for debugging purposes}.
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(), "operation", (bitMasks & MARSHALLING) != 0 ? "marshal" : "unmarshal",
+                "locale", locale, "timezone", timezone,
+                null, (bitMasks & LENIENT_UNMARSHAL) != 0 ? "lenient"  : null);
     }
 }

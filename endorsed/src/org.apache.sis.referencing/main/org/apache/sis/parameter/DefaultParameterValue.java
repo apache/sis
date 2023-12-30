@@ -18,6 +18,7 @@ package org.apache.sis.parameter;
 
 import java.lang.reflect.Array;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import java.io.File;
@@ -41,37 +42,38 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.xml.bind.gml.MeasureList;
+import org.apache.sis.xml.util.ExternalLinkHandler;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.metadata.internal.ImplementationHelper;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.system.Loggers;
-import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.Utilities.deepEquals;
 
 
 /**
- * A single parameter value used by an operation method. {@code ParameterValue} instances are elements in
- * a {@linkplain DefaultParameterValueGroup parameter value group}, in a way similar to {@code Map.Entry}
- * instances in a {@code java.util.Map}.
- *
- * <p>In the context of coordinate operations, most parameter values are numeric and can be obtained by the
+ * A single parameter value used by an operation method. Each {@code ParameterValue} is a
+ * (<var>key</var>, <var>value</var>) pair, and an arbitrary number of those pairs can be
+ * stored in a a {@linkplain DefaultParameterValueGroup parameter value group}.
+ * In the context of coordinate operations, parameter values are often numeric and can be obtained by the
  * {@link #intValue()} or {@link #doubleValue()} methods. But other types of parameter values are possible
  * and can be handled by the more generic {@link #getValue()} and {@link #setValue(Object)} methods.
  * All {@code xxxValue()} methods in this class are convenience methods converting the value from {@code Object}
  * to some commonly used types. Those types are specified in ISO 19111 as an union of attributes, listed below with
- * the corresponding getter and setter methods:</p>
+ * the corresponding getter and setter methods:
  *
  * <table class="sis">
  *   <caption>Mapping from ISO attributes to getters and setters</caption>
@@ -96,28 +98,44 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
  *     }
  *
+ * <h2>Absolute paths of value files</h2>
+ * Parameters that are too complex for being expressed as an {@code int[]}, {@code double[]} or {@code String} type
+ * may be encoded in auxiliary files. It is the case, for example, of gridded data such as datum shift grids.
+ * The name of an auxiliary file is given by {@link #valueFile()}, but often as a <em>relative</em> path.
+ * The directory where that file is located depends on the operation using the parameter.
+ * For example, datum shift grids used by coordinate transformations are searched in the
+ * {@code $SIS_DATA/DatumChanges} directory, where {@code $SIS_DATA} is the value of the environment variable.
+ * However, the latest approach requires that all potentially used auxiliary files are preexisting on the local machine.
+ * This assumption may be applicable for parameters coming from a well-known registry such as EPSG, but cannot work
+ * with arbitrary operations where the auxiliary files need to be transferred together with the parameter values.
+ * For the latter case, an alternative is to consider the auxiliary files as relative to the GML document or WKT file
+ * that provides the parameter values. For allowing users to resolve or download auxiliary files in that way,
+ * a {@link #getSourceFile()} method is provided. Operations can then use {@link URI#resolve(URI)} for getting the
+ * absolute path of an auxiliary file from the same server or directory than the GML or WKT file of parameter values.
+ *
  * <h2>Instantiation</h2>
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
- * Descriptors are usually predefined by map projection or process providers. Given a descriptor, a parameter value can
- * be created by a call to the {@link #DefaultParameterValue(ParameterDescriptor)} constructor or by a call to the
- * {@link ParameterDescriptor#createValue()} method. The latter is recommended since it allows descriptors to return
- * specialized implementations.
+ * Descriptors are usually predefined (often hard-coded) by map projection or process providers. Given a descriptor,
+ * the preferred way to create a parameter value is to invoke the {@link ParameterDescriptor#createValue()} method.
+ * It is also possible to invoke the {@linkplain #DefaultParameterValue(ParameterDescriptor) constructor} directly,
+ * but the former is recommended because it allows descriptors to return specialized implementations.
  *
  * <h2>Implementation note for subclasses</h2>
- * All read and write operations (except constructors, {@link #equals(Object)} and {@link #hashCode()})
+ * All read and write operations except constructors, {@link #equals(Object)} and {@link #hashCode()},
  * ultimately delegates to the following methods:
  *
  * <ul>
- *   <li>All getter methods will invoke {@link #getValue()} and {@link #getUnit()} (if needed),
+ *   <li>The source file property is accessed by {@link #getSourceFile()} and {@link #setSourceFile(URI)}.</li>
+ *   <li>All other getter methods will invoke {@link #getValue()} and {@link #getUnit()} (if needed),
  *       then perform their processing on the values returned by those methods.</li>
- *   <li>All setter methods delegate to the {@link #setValue(Object, Unit)} method.</li>
+ *   <li>All other setter methods delegate to the {@link #setValue(Object, Unit)} method.</li>
  * </ul>
  *
  * Consequently, the above-cited methods provide single points that subclasses can override
  * for modifying the behavior of all getter and setter methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @param  <T>  the type of the value stored in this parameter.
  *
@@ -176,13 +194,24 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     protected Unit<?> unit;
 
     /**
+     * If the parameter value is a relative path, the base URI to use for resolving that path.
+     * This field is {@code null} by default, unless this parameter value has been read from a
+     * GML document or a WKT file, in which case this field contains the URI of that document.
+     * This information allows to interpret {@link #valueFile()} as relative to the GML or WKT file.
+     *
+     * @see #getSourceFile()
+     * @see URI#resolve(URI)
+     */
+    private URI sourceFile;
+
+    /**
      * Creates a parameter value from the specified descriptor.
      * The value will be initialized to the default value, if any.
      *
      * @param  descriptor  the abstract definition of this parameter.
      */
     public DefaultParameterValue(final ParameterDescriptor<T> descriptor) {
-        ensureNonNull("descriptor", descriptor);
+        ArgumentChecks.ensureNonNull("descriptor", descriptor);
         this.descriptor = descriptor;
         this.value      = descriptor.getDefaultValue();
         this.unit       = descriptor.getUnit();
@@ -190,8 +219,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Creates a new instance initialized with the values from the specified parameter object.
-     * This is a <em>shallow</em> copy constructor, since the value contained in the given
-     * object is not cloned.
+     * This is a <em>shallow</em> copy constructor, since the {@linkplain #getValue() value}
+     * contained in the given object is not cloned.
      *
      * @param  parameter  the parameter to copy values from.
      *
@@ -199,21 +228,45 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see #unmodifiable(ParameterValue)
      */
     public DefaultParameterValue(final ParameterValue<T> parameter) {
-        ensureNonNull("parameter", parameter);
+        ArgumentChecks.ensureNonNull("parameter", parameter);
         descriptor = parameter.getDescriptor();
         value      = parameter.getValue();
         unit       = parameter.getUnit();
+        if (parameter instanceof DefaultParameterValue<?>) {
+            sourceFile = ((DefaultParameterValue<?>) parameter).getSourceFile().orElse(null);
+        }
     }
 
     /**
-     * Returns the definition of this parameter.
-     *
-     * @return the definition of this parameter.
+     * {@return the definition of this parameter}.
      */
     @Override
     @XmlElement(name = "operationParameter", required = true)
     public ParameterDescriptor<T> getDescriptor() {
         return descriptor;
+    }
+
+    /**
+     * {@return the URI of the GML document or WKT file from which this parameter value has been read}.
+     * This information allows to interpret {@link #valueFile()} as a path relative to the file that defined
+     * this parameter value. For example, the following snippet gets the file, then tries to make it absolute:
+     *
+     * {@snippet lang="java" :
+     *     DefaultParameterValue<?> pv = ...;
+     *     URI file = pv.valueFile();
+     *     file = pv.getSourceFile().map((base) -> base.resolve(file)).orElse(file);
+     *     }
+     *
+     * @see #setSourceFile(URI)
+     * @see Parameters#getSourceFile(ParameterDescriptor)
+     * @see org.apache.sis.io.wkt.WKTFormat#getSourceFile()
+     * @see org.apache.sis.xml.MarshalContext#getDocumentURI()
+     * @see URI#resolve(URI)
+     *
+     * @since 1.5
+     */
+    public Optional<URI> getSourceFile() {
+        return Optional.ofNullable(sourceFile);
     }
 
     /**
@@ -272,6 +325,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public boolean booleanValue() throws IllegalStateException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final T value = getValue();
         if (value instanceof Boolean) {
             return (Boolean) value;
@@ -296,6 +350,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public int intValue() throws IllegalStateException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final T value = getValue();
         if (value instanceof Number) {
             final int integer = ((Number) value).intValue();
@@ -323,6 +378,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public int[] intValueList() throws IllegalStateException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final T value = getValue();
         if (value instanceof int[]) {
             return ((int[]) value).clone();
@@ -349,6 +405,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public double doubleValue() throws IllegalStateException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final T value = getValue();
         if (value instanceof Number) {
             return ((Number) value).doubleValue();
@@ -374,6 +431,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public double[] doubleValueList() throws IllegalStateException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final T value = getValue();
         if (value instanceof double[]) {
             return ((double[]) value).clone();
@@ -384,20 +442,20 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     /**
      * Returns the converter to be used by {@link #doubleValue(Unit)} and {@link #doubleValueList(Unit)}.
      */
-    private UnitConverter getConverterTo(final Unit<?> unit) {
+    private UnitConverter getConverterTo(final Unit<?> target) {
         final Unit<?> source = getUnit();
         if (source == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnitlessParameter_1, Verifier.getDisplayName(descriptor)));
         }
-        ensureNonNull("unit", unit);
+        ArgumentChecks.ensureNonNull("unit", target);
         final short expectedID = Verifier.getUnitMessageID(source);
-        if (Verifier.getUnitMessageID(unit) != expectedID) {
-            throw new IllegalArgumentException(Errors.format(expectedID, unit));
+        if (Verifier.getUnitMessageID(target) != expectedID) {
+            throw new IllegalArgumentException(Errors.format(expectedID, target));
         }
         try {
-            return source.getConverterToAny(unit);
+            return source.getConverterToAny(target);
         } catch (IncommensurableException e) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, source, unit), e);
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, source, target), e);
         }
     }
 
@@ -422,6 +480,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public double doubleValue(final Unit<?> unit) throws IllegalArgumentException, IllegalStateException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final double value = doubleValue();                 // Invoke first in case it throws an exception.
         return getConverterTo(unit).convert(value);
     }
@@ -469,6 +528,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public String stringValue() throws IllegalStateException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final T value = getValue();
         if (value instanceof CharSequence) {
             return value.toString();
@@ -481,6 +541,12 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * The default implementation can convert the following value types:
      * {@link URI}, {@link URL}, {@link Path}, {@link File}.
      *
+     * <h4>Relative paths to absolute paths</h4>
+     * This parameter value is often a path relative to an unspecified directory. The base directory
+     * depends on the context. For example, it may be a directory where all datum grids are cached.
+     * Sometime, it is convenient to interpret the path as relative to the GML document or WKT file
+     * that defined this parameter value. For such resolution, see {@link #getSourceFile()}.
+     *
      * @return the reference to a file containing parameter values.
      * @throws InvalidParameterTypeException if the value is not a reference to a file or a URI.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -490,6 +556,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public URI valueFile() throws IllegalStateException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final T value = getValue();
         if (value instanceof URI)  return   (URI) value;
         if (value instanceof File) return ((File) value).toURI();
@@ -526,6 +593,23 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                    || File.class.isAssignableFrom(type);
         }
         return isFile(newValue);
+    }
+
+    /**
+     * Sets the URI of the GML document or WKT file from which this parameter value has been read.
+     * The given URI is a hint to be returned by {@link #getSourceFile()} for allowing callers to
+     * {@linkplain URI#resolve(URI) resolve} relative {@linkplain #valueFile() value files}.
+     *
+     * @param document  URI of the document from which this parameter value has been read, or {@code null} if none.
+     *
+     * @see #getSourceFile()
+     * @see org.apache.sis.io.wkt.WKTFormat#setSourceFile(URI)
+     * @see URI#resolve(URI)
+     *
+     * @see 1.5
+     */
+    public void setSourceFile(final URI document) {
+        sourceFile = document;
     }
 
     /**
@@ -723,8 +807,8 @@ convert:            if (componentType != null) {
         setValue(n, unit);
         /*
          * Above code used `unit` instead of `getUnit()` despite class Javadoc claim because units are not expected
-         * to be involved in this method. We access this field only as a matter of principle, for making sure that no
-         * property other than the value is altered by this method call.
+         * to be involved in this method. We access this field only as a matter of principle, for making sure that
+         * no property other than the value is altered by this method call.
          */
     }
 
@@ -841,15 +925,16 @@ convert:            if (componentType != null) {
             if (mode == ComparisonMode.STRICT) {
                 if (getClass() == object.getClass()) {
                     final DefaultParameterValue<?> that = (DefaultParameterValue<?>) object;
-                    return Objects.equals(descriptor, that.descriptor) &&
-                           Objects.deepEquals(value,  that.value) &&
-                           Objects.equals(unit,       that.unit);
+                    return Objects.equals    (descriptor, that.descriptor) &&
+                           Objects.deepEquals(sourceFile, that.sourceFile) &&
+                           Objects.deepEquals(value,      that.value) &&
+                           Objects.equals    (unit,       that.unit);
                 }
             } else if (object instanceof ParameterValue<?>) {
                 final ParameterValue<?> that = (ParameterValue<?>) object;
-                return deepEquals(getDescriptor(), that.getDescriptor(), mode) &&
-                       deepEquals(getValue(),      that.getValue(),      mode) &&
-                       deepEquals(getUnit(),       that.getUnit(),       mode);
+                return Utilities.deepEquals(getDescriptor(), that.getDescriptor(), mode) &&
+                       Utilities.deepEquals(getValue(),      that.getValue(),      mode) &&
+                       Utilities.deepEquals(getUnit(),       that.getUnit(),       mode);
             }
         }
         return false;
@@ -1162,6 +1247,7 @@ convert:            if (componentType != null) {
         @XmlElement(name = "valueList",         type = MeasureList.class)
     })
     private Object getXmlValue() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Object value = getValue();                        // Give to user a chance to override.
         if (value != null) {
             if (value instanceof Number) {
@@ -1196,6 +1282,10 @@ convert:            if (componentType != null) {
      */
     @SuppressWarnings("unchecked")
     private void setXmlValue(Object xmlValue) {
+        ExternalLinkHandler linkHandler = Context.linkHandler(Context.current());
+        if (linkHandler != null) {
+            sourceFile = linkHandler.getURI();
+        }
         if (value == null && unit == null) {
             if (xmlValue instanceof Measure) {
                 final Measure measure = (Measure) xmlValue;

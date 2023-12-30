@@ -28,7 +28,6 @@ import java.util.concurrent.Callable;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import static java.lang.Float.parseFloat;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
@@ -46,6 +45,12 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.operation.gridded.GridFile;
+import org.apache.sis.referencing.operation.gridded.LoadedGrid;
+import org.apache.sis.referencing.operation.gridded.GridLoader;
+import org.apache.sis.referencing.operation.gridded.CompressedGrid;
+import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
 import org.apache.sis.referencing.util.NilReferencingObject;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -54,8 +59,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.referencing.datum.DefaultEllipsoid;
-import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
 import static org.apache.sis.util.internal.Constants.DIM;
 
 
@@ -264,14 +267,14 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Returns {@code true} if the given path seems to be a grid published by the French mapping agency for France.
      * In principle this <q>France geocentric interpolation</q> is designed specifically for use with the
-     * {@code "gr3df97a.txt"} grid, but in fact the Apache SIS implementation should be flexible enough for use
-     * with other area.
+     * {@code "gr3df97a.txt"} grid, but in fact the Apache SIS implementation should be flexible enough
+     * for use with other area.
      *
      * @param  file  the grid file.
      * @return {@code true} if the given file looks like a fie from the French mapping agency.
      */
-    public static boolean isRecognized(final URI file) {
-        final String filename = file.getPath();
+    public static boolean isRecognized(final GridFile file) {
+        final String filename = file.parameter.getPath();
         final int s = filename.lastIndexOf('/') + 1;
         return filename.regionMatches(true, s, DEFAULT, 0, 5);
     }
@@ -340,13 +343,13 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
             default: throw new InvalidParameterValueException(Errors.format(
                             Errors.Keys.IllegalArgumentValue_2, DIM, dim), DIM, dim);
         }
-        final URI file = pg.getMandatoryValue(FILE);
-        final DatumShiftGridFile<Angle,Length> grid;
+        final GridFile file = new GridFile(pg, FILE);
+        final LoadedGrid<Angle,Length> grid;
         try {
             grid = getOrLoad(file, isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
         } catch (Exception e) {
             // NumberFormatException, ArithmeticException, NoSuchElementException, and more.
-            throw DatumShiftGridLoader.canNotLoad(HEADER, file, e);
+            throw file.canNotLoad(FranceGeocentricInterpolation.class, HEADER, e);
         }
         MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
@@ -371,13 +374,12 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
      * @throws Exception if an error occurred while loading the grid.
      *         Caller should handle the exception with {@code canNotLoad(…)}.
      *
-     * @see DatumShiftGridLoader#canNotLoad(String, URI, Exception)
+     * @see GridLoader#canNotLoad(Class, String, URI, Exception)
      */
-    static DatumShiftGridFile<Angle,Length> getOrLoad(final URI file, final double[] averages, final double scale)
+    static LoadedGrid<Angle,Length> getOrLoad(final GridFile file, final double[] averages, final double scale)
             throws Exception
     {
-        final URI resolved = DatumShiftGridLoader.toAbsolutePath(file);
-        return DatumShiftGridFile.getOrLoad(resolved, null, new Loader(resolved, averages, scale))
+        return LoadedGrid.getOrLoad(file, null, new Loader(file, averages, scale))
                                  .castTo(Angle.class, Length.class);
     }
 
@@ -385,9 +387,9 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
      * Temporary object created for loading gridded data if not present in the cache.
      * The data are provided in a text file, which is read with {@link BufferedReader}.
      */
-    static final class Loader implements Callable<DatumShiftGridFile<?,?>> {
+    static final class Loader implements Callable<LoadedGrid<?,?>> {
         /** The file to load. */
-        private final URI file;
+        private final GridFile file;
 
         /** An "average" value for the offset in each dimension, or {@code null} if unknown. */
         private final double[] averages;
@@ -396,15 +398,10 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
         private final double scale;
 
         /** Creates a new loader for the given file. */
-        Loader(final URI file, final double[] averages, final double scale) {
+        Loader(final GridFile file, final double[] averages, final double scale) {
             this.file     = file;
             this.averages = averages;
             this.scale    = scale;
-        }
-
-        /** Returns the reader for the specified URI. */
-        static BufferedReader newBufferedReader(final URI file) throws IOException {
-            return new BufferedReader(new InputStreamReader(file.toURL().openStream()));
         }
 
         /**
@@ -417,12 +414,12 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
          *         {@link NoSuchElementException}, {@link NoninvertibleTransformException}, <i>etc</i>.
          */
         @Override
-        public DatumShiftGridFile<?,?> call() throws Exception {
-            final DatumShiftGridFile<?,?> grid;
-            try (BufferedReader in = newBufferedReader(file)) {
-                DatumShiftGridLoader.startLoading(FranceGeocentricInterpolation.class, file);
-                final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
-                grid = DatumShiftGridCompressed.compress(g, averages, scale);
+        public LoadedGrid<?,?> call() throws Exception {
+            final LoadedGrid<?,?> grid;
+            try (BufferedReader in = file.newBufferedReader()) {
+                file.startLoading(FranceGeocentricInterpolation.class);
+                final LoadedGrid.Float<Angle,Length> g = load(in, file);
+                grid = CompressedGrid.compress(g, averages, scale);
             }
             return grid.useSharedData();
         }
@@ -438,10 +435,10 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
          * @throws FactoryException if an problem is found with the file content.
          * @throws ArithmeticException if the width or the height exceed the integer capacity.
          */
-        static DatumShiftGridFile.Float<Angle,Length> load(final BufferedReader in, final URI file)
+        static LoadedGrid.Float<Angle,Length> load(final BufferedReader in, final GridFile file)
                 throws IOException, FactoryException, NoninvertibleTransformException
         {
-            DatumShiftGridFile.Float<Angle,Length> grid = null;
+            LoadedGrid.Float<Angle,Length> grid = null;
             double x0 = 0;
             double xf = 0;
             double y0 = 0;
@@ -494,7 +491,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
                                 Δy = gridGeometry[5];
                                 nx = Math.toIntExact(Math.round((xf - x0) / Δx + 1));
                                 ny = Math.toIntExact(Math.round((yf - y0) / Δy + 1));
-                                grid = new DatumShiftGridFile.Float<>(3,
+                                grid = new LoadedGrid.Float<>(3,
                                         Units.DEGREE, Units.METRE, false,
                                         x0, y0, Δx, Δy, nx, ny, PARAMETERS, file);
                                 grid.accuracy = Double.NaN;

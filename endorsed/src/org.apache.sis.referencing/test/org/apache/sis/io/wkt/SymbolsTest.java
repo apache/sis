@@ -21,8 +21,9 @@ import org.apache.sis.util.StringBuilders;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -58,12 +59,12 @@ public final class SymbolsTest extends TestCase {
      * the standard {@code '"'} quotation mark after we tested the given string.
      */
     private static void assertContainsAxis(final String message, final boolean expected, final String wkt) {
-        assertEquals(message, expected, Symbols.getDefault().containsElement(wkt, "AXIS"));
+        assertEquals(expected, Symbols.getDefault().containsElement(wkt, "AXIS"), message);
         final StringBuilder buffer = new StringBuilder(wkt);
         StringBuilders.replace(buffer, '“', '"');
         StringBuilders.replace(buffer, '”', '"');
         assertFalse(wkt.contentEquals(buffer));
-        assertEquals(message, expected, Symbols.getDefault().containsElement(buffer, "AXIS"));
+        assertEquals(expected, Symbols.getDefault().containsElement(buffer, "AXIS"), message);
     }
 
     /**
@@ -71,22 +72,14 @@ public final class SymbolsTest extends TestCase {
      */
     @Test
     public void testImmutability() {
-        try {
-            Symbols.SQUARE_BRACKETS.setPairedBrackets("()", "[]");
-            fail("Constant shall be immutable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Symbols"));
-        }
-        try {
-            Symbols.CURLY_BRACKETS.setLocale(Locale.FRENCH);
-            fail("Constant shall be immutable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Symbols"));
-        }
+        UnsupportedOperationException exception;
+        exception = assertThrows(UnsupportedOperationException.class,
+                () -> Symbols.SQUARE_BRACKETS.setPairedBrackets("()", "[]"), "Constant shall be immutable.");
+        assertMessageContains(exception, "Symbols");
+
+        exception = assertThrows(UnsupportedOperationException.class,
+                () -> Symbols.CURLY_BRACKETS.setLocale(Locale.FRENCH), "Constant shall be immutable.");
+        assertMessageContains(exception, "Symbols");
     }
 
     /**
@@ -101,11 +94,11 @@ public final class SymbolsTest extends TestCase {
          * This is necessary in order to ensure that the symbol is recomputed correctly.
          */
         final Symbols symbols = new Symbols(Symbols.CURLY_BRACKETS);
-        assertEquals("quote", "\"", symbols.getQuote());
+        assertEquals("\"", symbols.getQuote(), "quote");
         symbols.setPairedQuotes("“”", "\"\"");
-        assertEquals("quote", "”", symbols.getQuote());
+        assertEquals("”", symbols.getQuote(), "quote");
         final Symbols c = assertSerializedEquals(symbols);
-        assertNotSame("Expected a new instance.", symbols, c);
-        assertEquals("quote", "”", c.getQuote());               // Verify the recomputed value.
+        assertNotSame(symbols, c, "Expected a new instance.");
+        assertEquals("”", c.getQuote(), "quote");               // Verify the recomputed value.
     }
 }

@@ -568,7 +568,7 @@ public class GridCoverageBuilder {
     }
 
     /**
-     * Returns an error message for the exception to thrown when a mandatory property is missing.
+     * Returns an error message for the exception to throw when a mandatory property is missing.
      *
      * @param  name  name of the missing property.
      * @return message for the exception to throw.

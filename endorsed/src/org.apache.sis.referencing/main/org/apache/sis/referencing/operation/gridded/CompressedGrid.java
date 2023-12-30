@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation.provider;
+package org.apache.sis.referencing.operation.gridded;
 
 import java.util.Arrays;
 import javax.measure.Quantity;
@@ -34,7 +34,7 @@ import org.apache.sis.util.internal.Numerics;
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
  *             or {@link javax.measure.quantity.Length}).
  */
-final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
+public final class CompressedGrid<C extends Quantity<C>, T extends Quantity<T>> extends LoadedGrid<C,T> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -61,7 +61,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     /**
      * Creates a new datum shift grid for the same geometry than the given grid but different data.
      */
-    private DatumShiftGridCompressed(final DatumShiftGridFile<C,T> grid, final double[] averages,
+    private CompressedGrid(final LoadedGrid<C,T> grid, final double[] averages,
             final short[][] data, final double scale)
     {
         super(grid);
@@ -79,8 +79,8 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      * @param  scale     the factor by which to multiply each compressed value before to add to the average value.
      * @return the grid to use (may or may not be compressed).
      */
-    static <C extends Quantity<C>, T extends Quantity<T>> DatumShiftGridFile<C,T> compress(
-            final DatumShiftGridFile.Float<C,T> grid, double[] averages, final double scale)
+    public static <C extends Quantity<C>, T extends Quantity<T>> LoadedGrid<C,T> compress(
+            final LoadedGrid.Float<C,T> grid, double[] averages, final double scale)
     {
         final short[][] data = new short[grid.offsets.length][];
         final boolean computeAverages = (averages == null);
@@ -109,7 +109,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
             }
             data[dim] = compressed;
         }
-        return new DatumShiftGridCompressed<>(grid, averages, data, scale);
+        return new CompressedGrid<>(grid, averages, data, scale);
     }
 
     /**
@@ -119,8 +119,8 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      * so we can share existing data.
      */
     @Override
-    protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
-        return new DatumShiftGridCompressed<>(this, averages, (short[][]) other, scale);
+    protected final LoadedGrid<C,T> setData(final Object[] other) {
+        return new CompressedGrid<>(this, averages, (short[][]) other, scale);
     }
 
     /**
@@ -243,13 +243,13 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      * Returns {@code true} if the given object is a grid containing the same data than this grid.
      *
      * @param  other  the other object to compare with this datum shift grid.
-     * @return {@code true} if the given object is non-null, an instance of {@code DatumShiftGridCompressed}
+     * @return {@code true} if the given object is non-null, an instance of {@code CompressedGrid}
      *         and contains the same data.
      */
     @Override
     public boolean equals(final Object other) {
         if (super.equals(other)) {
-            final DatumShiftGridCompressed<?,?> that = (DatumShiftGridCompressed<?,?>) other;
+            final CompressedGrid<?,?> that = (CompressedGrid<?,?>) other;
             return Numerics.equals(scale, that.scale) && Arrays.equals(averages, that.averages);
         }
         return false;

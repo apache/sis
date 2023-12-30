@@ -19,7 +19,9 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
+import java.net.URI;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
@@ -514,6 +516,28 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
     }
 
     /**
+     * {@return the URI of the GML document or WKT file from which a parameter value has been read}.
+     * This information can be used together with {@code getValue(ParameterDescriptor<URI>)} for
+     * resolving a parameter value as a path relative to the GML or WKT file declaring the parameter.
+     * Note that the source file is not necessarily the same for all parameters in a group, because a GML
+     * document could define parameters in files referenced by different {@code xlink:href} attribute values.
+     *
+     * @see DefaultParameterValue#getSourceFile()
+     * @see org.apache.sis.io.wkt.WKTFormat#getSourceFile()
+     * @see org.apache.sis.xml.MarshalContext#getDocumentURI()
+     * @see URI#resolve(URI)
+     *
+     * @since 1.5
+     */
+    public Optional<URI> getSourceFile(final ParameterDescriptor<?> parameter) throws ParameterNotFoundException {
+        final ParameterValue<?> p = getParameter(parameter);
+        if (p instanceof DefaultParameterValue<?>) {
+            return ((DefaultParameterValue<?>) p).getSourceFile();
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Returns the value of the parameter identified by the given descriptor, or {@code null} if none.
      * This method uses the following information from the given {@code parameter} descriptor:
      *
@@ -913,6 +937,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
                 } else if (v != target.getValue()) {    // Accept null value if the target value is already null.
                     throw new InvalidParameterValueException(Errors.format(
                             Errors.Keys.IllegalArgumentValue_2, name, v), name, v);
+                }
+                if (source instanceof DefaultParameterValue<?> && target instanceof DefaultParameterValue<?>) {
+                    ((DefaultParameterValue<?>) source).getSourceFile().ifPresent((file) ->
+                            ((DefaultParameterValue<?>) target).setSourceFile(file));
                 }
             }
             occurrences.put(name, occurrence + 1);

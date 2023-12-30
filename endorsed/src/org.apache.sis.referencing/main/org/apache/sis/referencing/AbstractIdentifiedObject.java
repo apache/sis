@@ -46,6 +46,7 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.bind.ScopedIdentifier;
 import org.apache.sis.xml.bind.UseLegacyMetadata;
 import org.apache.sis.xml.bind.referencing.Code;
 import org.apache.sis.xml.bind.metadata.EX_Extent;
@@ -128,7 +129,7 @@ import org.opengis.referencing.ObjectDomain;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @XmlType(name = "IdentifiedObjectType", propOrder = {
@@ -1060,6 +1061,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Invoked by JAXB at unmarshalling time for setting the identifier.
+     * The identifier is temporarily stored in a map local to the unmarshalling process.
      */
     private void setIdentifier(final Code identifier) {
         if (identifiers != null) {
@@ -1068,6 +1070,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             final ReferenceIdentifier id = identifier.getIdentifier();
             if (id != null) {
                 identifiers = Collections.singleton(id);
+                ScopedIdentifier<IdentifiedObject> key = new ScopedIdentifier<>(getInterface(), identifier.toString());
+                key.store(IdentifiedObject.class, this, AbstractIdentifiedObject.class, "setIdentifier");
+                if (key != (key = key.rename(identifier.code))) {
+                    key.store(IdentifiedObject.class, this, null, null);        // Shorter form without codespace.
+                }
             }
         }
     }

@@ -66,7 +66,7 @@ public final class TimePeriodTest extends TestCase {
      * Set the marshalling context to a fixed locale and timezone before to create the
      * JAXB wrappers for temporal objects.
      */
-    private void createContext() {
+    private void createContext() throws JAXBException {
         createContext(true, Locale.FRANCE, "CET");
     }
 

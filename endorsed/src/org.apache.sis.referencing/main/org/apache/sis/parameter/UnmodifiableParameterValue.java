@@ -16,6 +16,7 @@
  */
 package org.apache.sis.parameter;
 
+import java.net.URI;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterValue;
@@ -92,6 +93,7 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
      */
     @Override
     public T getValue() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         T value = super.getValue();
         if (value instanceof Cloneable) {
             final Class<T> type = getDescriptor().getValueClass();      // May be null after GML unmarshalling.
@@ -109,6 +111,14 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
      */
     @Override
     protected void setValue(final Object value, final Unit<?> unit) {
+        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
+    }
+
+    /**
+     * Do not allow modification of the parameter value.
+     */
+    @Override
+    public void setSourceFile(final URI source) {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
     }
 

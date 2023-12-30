@@ -27,7 +27,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -63,13 +63,13 @@ public final class MathTransformParserTest extends TestCase {
      */
     @Test
     public void testCompleteUnitFactor() {
-        assertEquals(0.017453292519943295, MathTransformParser.completeUnitFactor(Units.RADIAN, 0.01745329252), STRICT);    // SIS-377
-        assertEquals(0.01745329252,        MathTransformParser.completeUnitFactor(Units.METRE,  0.01745329252), STRICT);    // Not the right kind of units.
-        assertEquals(0.3048,               MathTransformParser.completeUnitFactor(Units.METRE,  0.3048),        STRICT);    // Check there is no confusion with US survey foot.
-        assertEquals(0.30480060960121924,  MathTransformParser.completeUnitFactor(Units.METRE,  0.3048006096),  STRICT);    // US survey foot.
-        assertEquals(0.3048007491,         MathTransformParser.completeUnitFactor(Units.METRE,  0.3048007491),  STRICT);    // British foot (1936).
-        assertEquals(0.30479841,           MathTransformParser.completeUnitFactor(Units.METRE,  0.30479841),    STRICT);    // Indian foot (1937).
-        assertEquals(0.3047,               MathTransformParser.completeUnitFactor(Units.METRE,  0.3047),        STRICT);
+        assertEquals(0.017453292519943295, MathTransformParser.completeUnitFactor(Units.RADIAN, 0.01745329252));  // SIS-377
+        assertEquals(0.01745329252,        MathTransformParser.completeUnitFactor(Units.METRE,  0.01745329252));  // Not the right kind of units.
+        assertEquals(0.3048,               MathTransformParser.completeUnitFactor(Units.METRE,  0.3048));         // Check there is no confusion with US survey foot.
+        assertEquals(0.30480060960121924,  MathTransformParser.completeUnitFactor(Units.METRE,  0.3048006096));   // US survey foot.
+        assertEquals(0.3048007491,         MathTransformParser.completeUnitFactor(Units.METRE,  0.3048007491));   // British foot (1936).
+        assertEquals(0.30479841,           MathTransformParser.completeUnitFactor(Units.METRE,  0.30479841));     // Indian foot (1937).
+        assertEquals(0.3047,               MathTransformParser.completeUnitFactor(Units.METRE,  0.3047));
     }
 
     /**
@@ -84,8 +84,8 @@ public final class MathTransformParserTest extends TestCase {
         }
         final ParsePosition position = new ParsePosition(0);
         final MathTransform mt = (MathTransform) parser.createFromWKT(text, position);
-        assertEquals("errorIndex", -1, position.getErrorIndex());
-        assertEquals("index", text.length(), position.getIndex());
+        assertEquals(-1, position.getErrorIndex(), "errorIndex");
+        assertEquals(text.length(), position.getIndex(), "index");
         return mt;
     }
 

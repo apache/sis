@@ -25,9 +25,8 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.DefinitionURI;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.metadata.internal.Identifiers;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
-import static org.apache.sis.metadata.iso.citation.Citations.toCodeSpace;
+import org.apache.sis.referencing.NamedIdentifier;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -239,7 +238,7 @@ public final class Code {
                                 }
                             }
                         } else {
-                            code.codeSpace = toCodeSpace(authority);
+                            code.codeSpace = Citations.toCodeSpace(authority);
                         }
                         code.code = urn;
                         return code;
@@ -249,5 +248,28 @@ public final class Code {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a string representation of the code in the form {@code codeSpace:code}.
+     * If the {@link #codeSpace} or the {@link #code} is absent, that part is omitted.
+     * If the code seems already qualified, e.g., a code in URN or HTTP name space,
+     * then the code space is also omitted. The intent for the latter condition is to
+     * avoid spurious components as in {@code "IOGP:urn:ogc:def:parameter:EPSG::8801"}.
+     *
+     * <p>This string representation is used as keys in a map of identified objects.</p>
+     *
+     * @return {@code codeSpace:code}.
+     *
+     * @see org.apache.sis.xml.bind.ScopedIdentifier
+     */
+    @Override
+    public String toString() {
+        if (code == null) return codeSpace;
+        if (codeSpace == null || DefinitionURI.isAbsolute(code)) {
+            // Above condition may be refined in any future version.
+            return code;
+        }
+        return codeSpace + DefinitionURI.SEPARATOR + code;
     }
 }

@@ -33,6 +33,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -434,7 +435,7 @@ public final class FeatureQueryTest extends TestCase {
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
                             virtualProjection(ff.property("valueMissing", Integer.class), "renamed1"));
 
-        DataStoreContentException ex = assertThrows(DataStoreContentException.class, this::executeAndGetFirst);
-        assertNotNull(ex.getMessage());
+        DataStoreContentException exception = assertThrows(DataStoreContentException.class, this::executeAndGetFirst);
+        assertMessageContains(exception);
     }
 }

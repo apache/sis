@@ -39,7 +39,7 @@ public final class PoleRotationTest extends MathTransformTestCase {
      * This mock supports only the "affine" and "concatenate" operations.
      */
     private static MathTransformFactory factory() {
-        return new MathTransformFactoryMock(null);
+        return new MathTransformFactoryMock();
     }
 
     /**

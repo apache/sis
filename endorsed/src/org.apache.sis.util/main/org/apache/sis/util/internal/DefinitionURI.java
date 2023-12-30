@@ -455,10 +455,10 @@ public final class DefinitionURI {
      * Returns {@code true} if a sub-region of {@code urn} matches the given {@code part},
      * ignoring case, leading and trailing whitespaces.
      *
-     * @param  part       the expected part ({@code "urn"}, {@code "ogc"}, {@code "def"}, <i>etc.</i>)
-     * @param  urn        the URN for which to test a subregion.
-     * @param  lower      index of the first character in {@code urn} to compare, after skipping whitespaces.
-     * @param  upper      index after the last character in {@code urn} to compare, ignoring whitespaces.
+     * @param  part   the expected part ({@code "urn"}, {@code "ogc"}, {@code "def"}, <i>etc.</i>)
+     * @param  urn    the URN for which to test a subregion.
+     * @param  lower  index of the first character in {@code urn} to compare, after skipping whitespaces.
+     * @param  upper  index after the last character in {@code urn} to compare, ignoring whitespaces.
      * @return {@code true} if the given sub-region of {@code urn} match the given part.
      */
     public static boolean regionMatches(final String part, final String urn, int lower, int upper) {
@@ -483,6 +483,20 @@ public final class DefinitionURI {
             lower += Character.charCount(c);
         }
         return -1;
+    }
+
+    /**
+     * Returns {@code true} if the given URI is recognized as an URN or URL.
+     * The details of this check may change in any future Apache SIS version.
+     *
+     * @param  uri  the URI to check.
+     * @return whether the given URI seems to be an URN or URL.
+     */
+    public static boolean isAbsolute(final String uri) {
+        final int s = uri.indexOf(SEPARATOR);
+        if (s <= 0) return false;
+        final String c = CharSequences.trimWhitespaces(uri, 0, s).toString();
+        return c.equalsIgnoreCase("urn") || c.equalsIgnoreCase(Constants.HTTP) || c.equalsIgnoreCase(Constants.HTTPS);
     }
 
     /**

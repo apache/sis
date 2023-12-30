@@ -64,7 +64,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     /**
      * The logger for coordinate operations.
      */
-    static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
+    public static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
 
     /**
      * The base interface of the {@code CoordinateOperation} instances that use this method.

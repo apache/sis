@@ -28,7 +28,7 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
@@ -162,7 +162,7 @@ public final class ComparisonWithEPSG extends TestCase {
     private static void compare(final String wkt, final int epsg) throws FactoryException {
         final CoordinateReferenceSystem crs = CRS.fromWKT(wkt);
         final EPSGFactory factory = TestFactorySource.factory;
-        assumeNotNull(factory);
+        assumeTrue(factory != null);
         final CoordinateReferenceSystem reference = factory.createProjectedCRS(Integer.toString(epsg));
         assertEqualsIgnoreMetadata(reference, crs);
     }
@@ -178,7 +178,7 @@ public final class ComparisonWithEPSG extends TestCase {
     @Test
     public void testCoordinateOperation() throws FactoryException, ParseException {
         final EPSGFactory factory = TestFactorySource.factory;
-        assumeNotNull(factory);
+        assumeTrue(factory != null);
         CoordinateOperation opFromCode = factory.createCoordinateOperation("5630");
         String wkt = opFromCode.toWKT();
         WKTFormat parser = new WKTFormat(null, null);

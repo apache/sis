@@ -38,6 +38,7 @@ import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.UseLegacyMetadata;
+import org.apache.sis.xml.util.ExternalLinkHandler;
 
 
 /**
@@ -152,15 +153,16 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * This method is invoked when the user asked to marshal to a different GML or metadata version than the
      * one supported natively by SIS, i.e. when {@link #getTransformVersion()} returns a non-null value.
      *
-     * @param object   the object to marshal.
-     * @param output   the writer created by SIS (<b>not</b> the writer given by the user).
-     * @param version  identifies the namespace substitutions to perform.
+     * @param object       the object to marshal.
+     * @param output       the writer created by SIS (<b>not</b> the writer given by the user).
+     * @param version      identifies the namespace substitutions to perform.
+     * @param linkHandler  the document-dependent creator of relative URIs, or {@code null}.
      */
-    private void marshal(Object object, XMLEventWriter output, final TransformVersion version)
+    private void marshal(Object object, XMLEventWriter output, final TransformVersion version, final ExternalLinkHandler linkHandler)
             throws XMLStreamException, JAXBException
     {
         output = new TransformingWriter(output, version);
-        final Context context = begin();
+        final Context context = begin(linkHandler);
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -175,14 +177,15 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public void marshal(Object object, final Result output) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final var linkHandler = new ExternalLinkHandler(output);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLEventWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 marshaller.marshal(object, output);
             } finally {
@@ -197,14 +200,15 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public void marshal(Object object, final OutputStream output) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final var linkHandler = ExternalLinkHandler.forStream(output);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLEventWriter(output, getEncoding()), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output, getEncoding()), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 marshaller.marshal(object, output);
             } finally {
@@ -219,16 +223,17 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public void marshal(Object object, final File output) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final var linkHandler = new ExternalLinkHandler(output);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
             try (OutputStream s = new BufferedOutputStream(new FileOutputStream(output))) {
-                marshal(object, OutputFactory.createXMLEventWriter(s, getEncoding()), version);
+                marshal(object, OutputFactory.createXMLEventWriter(s, getEncoding()), version, linkHandler);
             }
         } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 marshaller.marshal(object, output);
             } finally {
@@ -243,14 +248,15 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public void marshal(Object object, final Writer output) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final var linkHandler = ExternalLinkHandler.forStream(output);
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLEventWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 marshaller.marshal(object, output);
             } finally {
@@ -265,14 +271,15 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public void marshal(Object object, final ContentHandler output) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final ExternalLinkHandler linkHandler = null;               // We don't know how to get the base URI.
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLEventWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 marshaller.marshal(object, output);
             } finally {
@@ -287,14 +294,15 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public void marshal(Object object, final Node output) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final var linkHandler = new ExternalLinkHandler(output.getBaseURI());
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLEventWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 marshaller.marshal(object, output);
             } finally {
@@ -309,14 +317,15 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public void marshal(Object object, final XMLStreamWriter output) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final ExternalLinkHandler linkHandler = null;               // We don't know how to get the base URI.
         final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLEventWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version, linkHandler);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 marshaller.marshal(object, output);
             } finally {
@@ -331,11 +340,12 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public void marshal(Object object, XMLEventWriter output) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final ExternalLinkHandler linkHandler = null;               // We don't know how to get the base URI.
         final TransformVersion version = getTransformVersion();
         if (version != null) {
             output = new TransformingWriter(output, version);
         }
-        final Context context = begin();
+        final Context context = begin(linkHandler);
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -349,12 +359,13 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     @Override
     public Node getNode(Object object) throws JAXBException {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final ExternalLinkHandler linkHandler = null;               // We don't know how to get the base URI.
         final TransformVersion version = getTransformVersion();
         if (version != null) {
             // This exception is thrown by jakarta.xml.bind.helpers.AbstractMarshallerImpl anyway.
             throw new UnsupportedOperationException();
         } else {
-            final Context context = begin();
+            final Context context = begin(linkHandler);
             try {
                 return marshaller.getNode(object);
             } finally {

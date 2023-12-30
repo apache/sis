@@ -19,13 +19,20 @@ package org.apache.sis.xml;
 import java.net.URI;
 import java.util.UUID;
 import java.lang.reflect.Proxy;
+import javax.xml.transform.Source;
+import javax.xml.transform.URIResolver;
+import jakarta.xml.bind.Unmarshaller;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gcx.Anchor;
-import static org.apache.sis.util.ArgumentChecks.*;
+import org.apache.sis.xml.util.ExternalLinkHandler;
+import org.apache.sis.xml.util.URISource;
+import org.apache.sis.xml.util.XmlUtilities;
 
 
 /**
@@ -39,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * to a unmarshaller.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.5
  * @since   0.3
  */
 public class ReferenceResolver {
@@ -50,9 +57,35 @@ public class ReferenceResolver {
     public static final ReferenceResolver DEFAULT = new ReferenceResolver();
 
     /**
+     * Provider of sources to use for unmarshalling objects referenced by links to another document.
+     * It provides the {@code source} argument in {@link #resolveExternal(MarshalContext, Source)}.
+     * If {@code null}, a default resolution is done.
+     *
+     * @since 1.5
+     */
+    protected final URIResolver externalSourceResolver;
+
+    /**
      * Creates a default {@code ReferenceResolver}. This constructor is for subclasses only.
      */
     protected ReferenceResolver() {
+        externalSourceResolver = null;
+    }
+
+    /**
+     * Creates a new resolver which will use the specified provider of sources for unmarshalling external documents.
+     * The specified resolver is invoked when a {@code xlink:href} attribute is found, and the associated URI value
+     * has a path to an external document. The resolver provides the {@code source} argument which will be given to
+     * {@link #resolveExternal(MarshalContext, Source)}. If the specified resolver returns {@code null} for a given
+     * {@code xlink:href}, then {@code ReferenceResolver} will try to resolve the URI itself.
+     *
+     * @param externalSourceResolver  resolver of sources, or {@code null} for letting {@code ReferenceResolver}
+     *        resolving the URIs itself.
+     *
+     * @since 1.5
+     */
+    public ReferenceResolver(final URIResolver externalSourceResolver) {
+        this.externalSourceResolver = externalSourceResolver;
     }
 
     /**
@@ -99,21 +132,32 @@ public class ReferenceResolver {
      * @return an object of the given type for the given {@code uuid} attribute, or {@code null} if none.
      */
     public <T> T resolve(final MarshalContext context, final Class<T> type, final UUID uuid) {
-        ensureNonNull("type", type);
-        ensureNonNull("uuid", uuid);
+        ArgumentChecks.ensureNonNull("type", type);
+        ArgumentChecks.ensureNonNull("uuid", uuid);
         return null;
     }
 
     /**
      * Returns an object of the given type for the given {@code xlink} attribute, or {@code null} if none.
-     * The default implementation performs the following lookups:
+     * The default implementation fetches the {@link XLink#getHRef() xlink:href} attribute, then:
      *
      * <ul>
-     *   <li>If the {@link XLink#getHRef() xlink:href} attribute is a {@linkplain URI#getFragment() URI fragment}
-     *       of the form {@code "#foo"} and if an object of class {@code type} with the {@code gml:id="foo"} attribute
-     *       has previously been seen in the same XML document, then that object is returned.</li>
-     *   <li>Otherwise returns {@code null}.</li>
+     *   <li>If {@code xlink:href} is null or {@linkplain URI#isOpaque() opaque}, returns {@code null}.</li>
+     *   <li>Otherwise, if the {@code xlink:href} URI is {@linkplain URI#isAbsolute() is absolute} or has a
+     *       {@linkplain URI#getPath() path}, delegates to {@link #resolveExternal(MarshalContext, Source)}.</li>
+     *   <li>Otherwise, the URI is a {@linkplain URI#getFragment() fragment} such as {@code "#foo"}. Then:
+     *     <ul>
+     *       <li>If an object of class {@code type} with an identifier attribute such as {@code gml:id="foo"}
+     *           has previously been seen in the same XML document (i.e., "foo" is a backward reference),
+     *           returns that object.</li>
+     *       <li>Otherwise, emits a warning and returns {@code null}.
+     *           Note that it may happen if the {@code xlink:href} is a forward reference.</li>
+     *     </ul>
+     *   </li>
      * </ul>
+     *
+     * If an object is found but is not of the class declared in {@code type},
+     * then this method emits a warning and returns {@code null}.
      *
      * @param  <T>      the compile-time type of the {@code type} argument.
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
@@ -122,29 +166,159 @@ public class ReferenceResolver {
      * @return an object of the given type for the given {@code xlink} attribute, or {@code null} if none.
      */
     public <T> T resolve(final MarshalContext context, final Class<T> type, final XLink link) {
-        ensureNonNull("type",  type);
-        ensureNonNull("xlink", link);
+        ArgumentChecks.ensureNonNull("type",  type);
+        ArgumentChecks.ensureNonNull("xlink", link);
         final URI href = link.getHRef();
-        if (href != null && href.toString().startsWith("#")) {
-            final String id = href.getFragment();
-            final Context c = (context instanceof Context) ? (Context) context : Context.current();
-            final Object object = Context.getObjectForID(c, id);
-            if (type.isInstance(object)) {
-                return type.cast(object);
-            } else {
-                final short key;
-                final Object[] args;
-                if (object == null) {
-                    key = Errors.Keys.NotABackwardReference_1;
-                    args = new Object[] {id};
-                } else {
-                    key = Errors.Keys.UnexpectedTypeForReference_3;
-                    args = new Object[] {id, type, object.getClass()};
-                }
-                Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
+        if (href == null || href.isOpaque()) {
+            return null;
+        }
+        final Object object;
+        final Context c = (context instanceof Context) ? (Context) context : Context.current();
+        if (!href.isAbsolute() && Strings.isNullOrEmpty(href.getPath())) {
+            /*
+             * URI defined only by an anchor in the same document. There is nothing to load,
+             * we just check for previously unmarshalled objects in the same marshal context.
+             * Current implementation supports only backward references.
+             *
+             * For forward references, see https://issues.apache.org/jira/browse/SIS-420
+             */
+            final String fragment = Strings.trimOrNull(href.getFragment());
+            if (fragment == null) {
+                return null;
             }
+            object = Context.getObjectForID(c, fragment);
+        } else try {
+            /*
+             * URI to an external document. We let `ExternalLinkHandler` decide how to replace relative URI
+             * by absolute URI. It may depend on whether user has specified a `javax.xml.stream.XMLResolver`
+             */
+            final ExternalLinkHandler handler = Context.linkHandler(c);
+            Source source = null;
+            if (externalSourceResolver != null) {
+                Object base = handler.getBase();
+                if (base != null) {
+                    source = externalSourceResolver.resolve(href.toString(), base.toString());
+                }
+            }
+            if (source == null) {
+                source = handler.openReader(href);
+            }
+            object = (source != null) ? resolveExternal(context, source) : null;
+        } catch (Exception e) {
+            ExternalLinkHandler.warningOccured(href, e);
+            return null;
+        }
+        /*
+         * At this point, the referenced object has been fetched.
+         * Verify its validity.
+         */
+        if (type.isInstance(object)) {
+            return type.cast(object);
+        } else {
+            final short key;
+            final Object[] args;
+            if (object == null) {
+                key = Errors.Keys.NotABackwardReference_1;
+                args = new Object[] {href.toString()};
+            } else {
+                key = Errors.Keys.UnexpectedTypeForReference_3;
+                args = new Object[] {href.toString(), type, object.getClass()};
+            }
+            Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
         }
         return null;
+    }
+
+    /**
+     * Returns an object defined in an external document, or {@code null} if none.
+     * This method is invoked automatically by {@link #resolve(MarshalContext, Class, XLink)}
+     * when the {@code xlink:href} attribute is absolute or contains the path to a document.
+     * The default implementation loads the file from the given source if it is not in the cache,
+     * then returns the object identified by the fragment part of the URI.
+     *
+     * <p>The {@code source} argument should have been determined by the caller has below:</p>
+     * <ul>
+     *   <li>If an {@link URIResolver} has been specified at construction time, delegates to it.</li>
+     *   <li>Otherwise or if the above returned {@code null}, then if the source of the current document
+     *       is associated to a {@link javax.xml.stream.XMLResolver}, delegates to it.</li>
+     *   <li>Otherwise, the caller tries to resolve the URI itself.</li>
+     * </ul>
+     * The resolved URL, if known, should be available in {@link Source#getSystemId()}.
+     *
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  source   source of the document specified by the {@code xlink:href} attribute value.
+     * @return an object for the given source, or {@code null} if none.
+     * @throws Exception if an error occurred while opening or parsing the document.
+     *
+     * @since 1.5
+     */
+    protected Object resolveExternal(final MarshalContext context, final Source source) throws Exception {
+        final Object document;
+        final String fragment;
+        final URI uri;
+        if (source instanceof URISource) {
+            final var s = (URISource) source;
+            uri = s.getReadableURI();
+            document = s.document;
+            fragment = s.fragment;
+        } else {
+            uri = null;
+            final int s;
+            final String systemId = source.getSystemId();
+            if (systemId != null && (s = systemId.lastIndexOf('#')) >= 0) {
+                document = Strings.trimOrNull(systemId.substring(0,s));
+                fragment = Strings.trimOrNull(systemId.substring(s+1));
+            } else {
+                document = systemId;
+                fragment = null;
+            }
+        }
+        /*
+         * At this point, we got the system identifier (usually as a resolved URI, but not necessarily)
+         * and the URI fragment to use as a GML identifier. Check if the document is in the cache.
+         * Note that if the fragment is null, then by convention we lookup for the whole document.
+         */
+        final Context c = Context.current();
+        if (c != null) {
+            final Object object = c.getExternalObjectForID(document, fragment);
+            if (object != null) {
+                XmlUtilities.close(source);
+                return object;
+            }
+        }
+        /*
+         * Object not found in the cache. Parse it. As a side-effect of unmarshalling the document,
+         * a map of fragments found in the document will be populated. We use that map at the end
+         * for extracting the requested object.
+         */
+        final MarshallerPool pool = context.getPool();
+        final Unmarshaller m = pool.acquireUnmarshaller();
+        if (m instanceof Pooled) {
+            ((Pooled) m).forIncludedDocument(document);
+        }
+        final Object object;
+        if (uri != null) {
+            object = m.unmarshal(uri.toURL());
+        } else {
+            object = m.unmarshal(source);
+        }
+        pool.recycle(m);
+        /*
+         * All fragments in the referenced document should be in the cache now.
+         * Cache the whole document, then request the fragment from the cache.
+         */
+        if (c != null) {
+            c.cacheDocument(document, object);
+            if (fragment != null) {
+                Object part = c.getExternalObjectForID(document, fragment);
+                if (part != null || uri != null) return part;
+                /*
+                 * Fragment not found. The source was not built by ourselves (`uri == null`),
+                 * so maybe the user provided a source which was returning directly the fragment.
+                 */
+            }
+        }
+        return object;
     }
 
     /**

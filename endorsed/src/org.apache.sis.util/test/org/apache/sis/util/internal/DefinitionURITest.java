@@ -193,6 +193,16 @@ public final class DefinitionURITest extends TestCase {
     }
 
     /**
+     * Tests {@link DefinitionURI#isAbsolute(String)}.
+     */
+    @Test
+    public void testIsAbsolute() {
+        assertTrue (DefinitionURI.isAbsolute("http://www.opengis.net/def/crs/EPSG/0/4326"));
+        assertTrue (DefinitionURI.isAbsolute("urn:ogc:def:crs:EPSG:8.2:4326"));
+        assertFalse(DefinitionURI.isAbsolute("EPSG:4326"));
+    }
+
+    /**
      * Convenience method invoking {@link DefinitionURI#codeOf(String, String[], CharSequence)}
      * with a single authority.
      */

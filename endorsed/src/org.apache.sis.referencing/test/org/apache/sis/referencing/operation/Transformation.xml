@@ -69,8 +69,8 @@
           <gml:scope>Topographic mapping.</gml:scope>
           <gml:primeMeridian>
             <gml:PrimeMeridian gml:id="ParisMeridian">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
-              <gml:name>Greenwich</gml:name>
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8903</gml:identifier>
+              <gml:name>Paris</gml:name>
               <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:greenwichLongitude>
             </gml:PrimeMeridian>
           </gml:primeMeridian>

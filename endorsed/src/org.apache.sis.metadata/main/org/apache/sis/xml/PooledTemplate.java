@@ -36,10 +36,14 @@ final class PooledTemplate extends Pooled {
     /**
      * Creates a new template.
      *
+     * @param pool            the pool that produced this template.
      * @param properties      the properties to be given to JAXB (un)marshallers, or {@code null} if none.
      * @param implementation  the JAXB implementation used.
      */
-    PooledTemplate(final Map<String,?> properties, final Implementation implementation) throws PropertyException {
+    PooledTemplate(final MarshallerPool pool, final Map<String,?> properties, final Implementation implementation)
+            throws PropertyException
+    {
+        super(pool);
         if (properties != null) {
             for (final Map.Entry<String,?> entry : properties.entrySet()) {
                 final String key = entry.getKey();

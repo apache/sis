@@ -17,6 +17,7 @@
 package org.apache.sis.system;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.InvalidPathException;
@@ -93,6 +94,13 @@ public enum DataDirectory {
      * @see #getDirectory()
      */
     private Path directory;
+
+    /**
+     * The directory as an URI, or {@code null} if none or not yet determined.
+     *
+     * @see #getDirectoryAsURI()
+     */
+    private URI directoryAsURI;
 
     /**
      * Prevents the log message about {@code SIS_DATA} environment variable not set.
@@ -190,7 +198,7 @@ public enum DataDirectory {
      *
      * @return the sub-directory, or {@code null} if unspecified.
      */
-    public synchronized Path getDirectory() {
+    public final synchronized Path getDirectory() {
         if (directory == null) {
             final Path root = getRootDirectory();
             if (root != null) {
@@ -218,5 +226,28 @@ public enum DataDirectory {
             }
         }
         return directory;
+    }
+
+    /**
+     * Returns the sub-directory as an {@code URI}, or {@code null} if none.
+     * The URI form is useful when the file to resolve it itself expressed as an URI.
+     * The use of {@link URI#resolve(URI)} instead of {@link Path#resolve(Path)} preserves
+     * URI-specific components such as fragment and query.
+     *
+     * @return the sub-directory, or {@code null} if unspecified.
+     */
+    public final synchronized URI getDirectoryAsURI() {
+        if (directoryAsURI == null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final Path directory = getDirectory();
+            if (directory != null) {
+                directoryAsURI = directory.toUri();
+                if (!directoryAsURI.getPath().endsWith("/")) {
+                    directoryAsURI = null;
+                    warning(null, Messages.Keys.DataDirectoryNotAccessible_2, ENV, directory);
+                }
+            }
+        }
+        return directoryAsURI;
     }
 }
