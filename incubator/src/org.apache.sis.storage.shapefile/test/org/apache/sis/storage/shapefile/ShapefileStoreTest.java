@@ -29,11 +29,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.util.Utilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CommonCRS;
@@ -51,7 +51,6 @@ import org.junit.Test;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Filter;
 
 

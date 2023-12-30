@@ -25,8 +25,8 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 
 // Specific to the main branch:
-import org.apache.sis.coverage.CannotEvaluateException;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.coverage.CannotEvaluateException;
 
 
 /**

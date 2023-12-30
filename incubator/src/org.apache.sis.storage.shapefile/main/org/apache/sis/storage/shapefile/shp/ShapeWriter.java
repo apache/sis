@@ -17,10 +17,10 @@
 package org.apache.sis.storage.shapefile.shp;
 
 import java.io.IOException;
+import org.locationtech.jts.geom.Geometry;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.locationtech.jts.geom.Geometry;
 
 
 /**

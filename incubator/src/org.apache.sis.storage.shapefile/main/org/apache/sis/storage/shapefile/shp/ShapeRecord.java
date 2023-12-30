@@ -24,6 +24,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 
+
 /**
  * A record in a shape file.
  * Contains a unique record number and it's associated geometry.

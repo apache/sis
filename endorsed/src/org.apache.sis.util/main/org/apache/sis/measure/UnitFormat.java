@@ -42,10 +42,10 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.DefinitionURI;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.logging.Logging;
 

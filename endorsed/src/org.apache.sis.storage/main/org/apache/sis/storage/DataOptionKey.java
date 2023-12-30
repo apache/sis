@@ -16,8 +16,8 @@
  */
 package org.apache.sis.storage;
 
-import java.nio.file.Path;
 import java.io.ObjectStreamException;
+import java.nio.file.Path;
 import static java.util.logging.Logger.getLogger;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
