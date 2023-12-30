@@ -47,11 +47,11 @@ import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_D
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
@@ -91,8 +91,8 @@ public final class GeodeticObjectParserTest extends TestCase {
      * Instantiates the parser to test.
      */
     private void newParser(final Convention convention) {
-        parser = new GeodeticObjectParser(Symbols.getDefault(), Map.of(),
-                null, null, null, convention, Transliterator.DEFAULT, null, new ReferencingFactoryContainer());
+        parser = new GeodeticObjectParser(null, Map.of(), Symbols.getDefault(), null, null, null,
+                        convention, Transliterator.DEFAULT, null, new ReferencingFactoryContainer());
         assertEquals(GeodeticObjectFactory.class.getCanonicalName(), parser.getPublicFacade());
     }
 
@@ -110,9 +110,9 @@ public final class GeodeticObjectParserTest extends TestCase {
         }
         final ParsePosition position = new ParsePosition(0);
         final Object obj = parser.createFromWKT(text, position);
-        assertEquals("errorIndex", -1, position.getErrorIndex());
-        assertEquals("index", text.length(), position.getIndex());
-        assertInstanceOf("GeodeticObjectParser.parseObject", type, obj);
+        assertEquals(-1, position.getErrorIndex(), "errorIndex");
+        assertEquals(text.length(), position.getIndex(), "index");
+        assertInstanceOf(type, obj, "GeodeticObjectParser.parseObject");
         return type.cast(obj);
     }
 
@@ -126,8 +126,8 @@ public final class GeodeticObjectParserTest extends TestCase {
      */
     private <T> T parse(final Class<T> type, final String text) throws ParseException {
         final T obj = parseIgnoreWarnings(type, text);
-        assertNull("warnings", parser.getAndClearWarnings(obj));
-        assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
+        assertNull(parser.getAndClearWarnings(obj), "warnings");
+        assertTrue(parser.ignoredElements.isEmpty(), "ignoredElements");
         return obj;
     }
 
@@ -145,11 +145,11 @@ public final class GeodeticObjectParserTest extends TestCase {
      */
     static void assertNameAndIdentifierEqual(final String name, final int epsg, final IdentifiedObject object) {
         final String message = object.getClass().getSimpleName();
-        assertEquals(message, name, object.getName().getCode());
+        assertEquals(name, object.getName().getCode(), message);
         if (epsg != 0) {
-            assertEquals(message, String.valueOf(epsg), getSingleton(object.getIdentifiers()).getCode());
+            assertEquals(String.valueOf(epsg), getSingleton(object.getIdentifiers()).getCode(), message);
         } else {
-            assertTrue(message, object.getIdentifiers().isEmpty());
+            assertTrue(object.getIdentifiers().isEmpty(), message);
         }
     }
 
@@ -188,40 +188,40 @@ public final class GeodeticObjectParserTest extends TestCase {
     @Test
     public void testAxis() throws ParseException {
         CoordinateSystemAxis axis = parse(CoordinateSystemAxis.class, "AXIS[“(Y)”, geocentricY]");
-        assertEquals("name", "Y", axis.getName().getCode());
-        assertEquals("abbreviation", "Y", axis.getAbbreviation());
-        assertEquals("direction", AxisDirection.GEOCENTRIC_Y, axis.getDirection());
-        assertEquals("unit", Units.METRE, axis.getUnit());
+        assertEquals("Y", axis.getName().getCode(), "name");
+        assertEquals("Y", axis.getAbbreviation(), "abbreviation");
+        assertEquals(AxisDirection.GEOCENTRIC_Y, axis.getDirection(), "direction");
+        assertEquals(Units.METRE, axis.getUnit(), "unit");
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“latitude”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]]");
-        assertEquals("name", "Latitude", axis.getName().getCode());
-        assertEquals("abbreviation", "φ", axis.getAbbreviation());
-        assertEquals("direction", AxisDirection.NORTH, axis.getDirection());
-        assertEquals("unit", Units.DEGREE, axis.getUnit());
+        assertEquals("Latitude", axis.getName().getCode(), "name");
+        assertEquals("φ", axis.getAbbreviation(), "abbreviation");
+        assertEquals(AxisDirection.NORTH, axis.getDirection(), "direction");
+        assertEquals(Units.DEGREE, axis.getUnit(), "unit");
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“longitude”,EAST,order[2],UNIT[“degree”,0.0174532925199433]]");
-        assertEquals("name", "Longitude", axis.getName().getCode());
-        assertEquals("abbreviation", "λ", axis.getAbbreviation());
-        assertEquals("direction", AxisDirection.EAST, axis.getDirection());
-        assertEquals("unit", Units.DEGREE, axis.getUnit());
+        assertEquals("Longitude", axis.getName().getCode(), "name");
+        assertEquals("λ", axis.getAbbreviation(), "abbreviation");
+        assertEquals(AxisDirection.EAST, axis.getDirection(), "direction");
+        assertEquals(Units.DEGREE, axis.getUnit(), "unit");
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“ellipsoidal height (h)”,up,ORDER[3],LengthUnit[“kilometre”,1000]]");
-        assertEquals("name", "Ellipsoidal height", axis.getName().getCode());
-        assertEquals("abbreviation", "h", axis.getAbbreviation());
-        assertEquals("direction", AxisDirection.UP, axis.getDirection());
-        assertEquals("unit", Units.KILOMETRE, axis.getUnit());
+        assertEquals("Ellipsoidal height", axis.getName().getCode(), "name");
+        assertEquals("h", axis.getAbbreviation(), "abbreviation");
+        assertEquals(AxisDirection.UP, axis.getDirection(), "direction");
+        assertEquals(Units.KILOMETRE, axis.getUnit(), "unit");
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“time (t)”,future,TimeUnit[“hour”,3600]]");
-        assertEquals("name", "Time", axis.getName().getCode());
-        assertEquals("abbreviation", "t", axis.getAbbreviation());
-        assertEquals("direction", AxisDirection.FUTURE, axis.getDirection());
-        assertEquals("unit", Units.HOUR, axis.getUnit());
+        assertEquals("Time", axis.getName().getCode(), "name");
+        assertEquals("t", axis.getAbbreviation(), "abbreviation");
+        assertEquals(AxisDirection.FUTURE, axis.getDirection(), "direction");
+        assertEquals(Units.HOUR, axis.getUnit(), "unit");
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“easting (X)”,south,MERIDIAN[90,UNIT[“degree”,0.0174532925199433]]]");
-        assertEquals("name", "Easting", axis.getName().getCode());
-        assertEquals("abbreviation", "X", axis.getAbbreviation());
-        assertEquals("direction", CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 90), axis.getDirection());
-        assertEquals("unit", Units.METRE, axis.getUnit());
+        assertEquals("Easting", axis.getName().getCode(), "name");
+        assertEquals("X", axis.getAbbreviation(), "abbreviation");
+        assertEquals(CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 90), axis.getDirection(), "direction");
+        assertEquals(Units.METRE, axis.getUnit(), "unit");
     }
 
     /**
@@ -237,14 +237,14 @@ public final class GeodeticObjectParserTest extends TestCase {
                 "  ANCHOR[“Tananarive observatory”]]");
 
         assertNameAndIdentifierEqual("Tananarive 1925", 0, datum);
-        assertEquals("anchor", "Tananarive observatory", String.valueOf(datum.getAnchorPoint()));
+        assertEquals("Tananarive observatory", String.valueOf(datum.getAnchorPoint()));
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("International 1924", 0, ellipsoid);
-        assertEquals("unit", Units.KILOMETRE, ellipsoid.getAxisUnit());
-        assertEquals("semiMajor", 6378.388, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 297, ellipsoid.getInverseFlattening(), STRICT);
-        assertEquals("greenwichLongitude", 0, datum.getPrimeMeridian().getGreenwichLongitude(), STRICT);
+        assertEquals(Units.KILOMETRE, ellipsoid.getAxisUnit(), "unit");
+        assertEquals(6378.388, ellipsoid.getSemiMajorAxis(), "semiMajor");
+        assertEquals(297, ellipsoid.getInverseFlattening(), "inverseFlattening");
+        assertEquals(0, datum.getPrimeMeridian().getGreenwichLongitude(), "greenwichLongitude");
     }
 
     /**
@@ -276,12 +276,12 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("WGS84", 7030, ellipsoid);
-        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 298.257223563, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals(6378137, ellipsoid.getSemiMajorAxis(), "semiMajor");
+        assertEquals(298.257223563, ellipsoid.getInverseFlattening(), "inverseFlattening");
 
         // Verify that the OGC 01-009 axes have been relaced by ISO 19111 axes.
         final CartesianCS cs = (CartesianCS) crs.getCoordinateSystem();
-        assertEquals("dimension", 3, cs.getDimension());
+        assertEquals(3, cs.getDimension(), "dimension");
         assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_X, "X", AxisDirection.GEOCENTRIC_X, Units.METRE, cs.getAxis(0));
         assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_Y, "Y", AxisDirection.GEOCENTRIC_Y, Units.METRE, cs.getAxis(1));
         assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_Z, "Z", AxisDirection.GEOCENTRIC_Z, Units.METRE, cs.getAxis(2));
@@ -367,24 +367,24 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("GRS 1980", 0, ellipsoid);
-        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 298.257222101, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals(6378137, ellipsoid.getSemiMajorAxis(), "semiMajor");
+        assertEquals(298.257222101, ellipsoid.getInverseFlattening(), "inverseFlattening");
 
         final EllipsoidalCS cs = crs.getCoordinateSystem();
         final double secondsIn90 = 90*60*60;
         CoordinateSystemAxis axis = cs.getAxis(0);
-        assertEquals("name", AxisNames.GEODETIC_LONGITUDE, axis.getName().getCode());
-        assertEquals("abbreviation", "λ",                  axis.getAbbreviation());
-        assertEquals("direction",    AxisDirection.EAST,   axis.getDirection());
-        assertEquals("minimumValue", -secondsIn90*2,       axis.getMinimumValue(), 1E-9);
-        assertEquals("maximumValue", +secondsIn90*2,       axis.getMaximumValue(), 1E-9);
+        assertEquals(AxisNames.GEODETIC_LONGITUDE, axis.getName().getCode());
+        assertEquals("λ",                  axis.getAbbreviation());
+        assertEquals(AxisDirection.EAST,   axis.getDirection());
+        assertEquals(-secondsIn90*2,       axis.getMinimumValue(), 1E-9);
+        assertEquals(+secondsIn90*2,       axis.getMaximumValue(), 1E-9);
 
         axis = cs.getAxis(1);
-        assertEquals("name", AxisNames.GEODETIC_LATITUDE,  axis.getName().getCode());
-        assertEquals("abbreviation", "φ",                  axis.getAbbreviation());
-        assertEquals("direction",    AxisDirection.NORTH,  axis.getDirection());
-        assertEquals("minimumValue", -secondsIn90,         axis.getMinimumValue(), 1E-9);
-        assertEquals("maximumValue", +secondsIn90,         axis.getMaximumValue(), 1E-9);
+        assertEquals(AxisNames.GEODETIC_LATITUDE,  axis.getName().getCode());
+        assertEquals("φ",                  axis.getAbbreviation());
+        assertEquals(AxisDirection.NORTH,  axis.getDirection());
+        assertEquals(-secondsIn90,         axis.getMinimumValue(), 1E-9);
+        assertEquals(+secondsIn90,         axis.getMaximumValue(), 1E-9);
     }
 
     /**
@@ -428,10 +428,10 @@ public final class GeodeticObjectParserTest extends TestCase {
         GeographicCRS crs = parse(GeographicCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
         PrimeMeridian pm = verifyNTF(crs.getDatum(), false);
-        assertEquals("angularUnit", Units.GRAD, pm.getAngularUnit());
-        assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
+        assertEquals(Units.GRAD, pm.getAngularUnit(), "angularUnit");
+        assertEquals(2.5969213, pm.getGreenwichLongitude(), "greenwichLongitude");
         EllipsoidalCS cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals(2, cs.getDimension(), "dimension");
         assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, -100, +100, Units.GRAD, RangeMeaning.EXACT,      cs.getAxis(0));
         assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -200, +200, Units.GRAD, RangeMeaning.WRAPAROUND, cs.getAxis(1));
         /*
@@ -450,10 +450,10 @@ public final class GeodeticObjectParserTest extends TestCase {
         crs = parse(GeographicCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
         pm = verifyNTF(crs.getDatum(), false);
-        assertEquals("angularUnit", Units.DEGREE, pm.getAngularUnit());
-        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
+        assertEquals(Units.DEGREE, pm.getAngularUnit(), "angularUnit");
+        assertEquals(2.33722917, pm.getGreenwichLongitude(), "greenwichLongitude");
         cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals(2, cs.getDimension(), "dimension");
         assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -200, +200, Units.GRAD, RangeMeaning.WRAPAROUND, cs.getAxis(0));
         assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, -100, +100, Units.GRAD, RangeMeaning.EXACT,      cs.getAxis(1));
     }
@@ -486,16 +486,16 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         GeographicCRS crs = parseIgnoreWarnings(GeographicCRS.class, wkt);
         final Warnings warnings = parser.getAndClearWarnings(crs);
-        assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
-        assertNotNull("warnings", warnings);
-        assertEquals("warnings.numMessages", 1, warnings.getNumMessages());
+        assertTrue(parser.ignoredElements.isEmpty());
+        assertNotNull(warnings);
+        assertEquals(1, warnings.getNumMessages());
 
         assertNameAndIdentifierEqual("NTF (Paris)", 4807, crs);
         PrimeMeridian pm = crs.getDatum().getPrimeMeridian();
-        assertEquals("angularUnit", Units.DEGREE, pm.getAngularUnit());
-        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
+        assertEquals(Units.DEGREE, pm.getAngularUnit(), "angularUnit");
+        assertEquals(2.33722917, pm.getGreenwichLongitude(), "greenwichLongitude");
         EllipsoidalCS cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals(2, cs.getDimension(), "dimension");
         assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH,  -90,  +90, Units.DEGREE, RangeMeaning.EXACT,      cs.getAxis(0));
         assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -180, +180, Units.DEGREE, RangeMeaning.WRAPAROUND, cs.getAxis(1));
     }
@@ -515,11 +515,11 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("WGS84", 0, ellipsoid);
-        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 298.257223563, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals(6378137, ellipsoid.getSemiMajorAxis(), "semiMajor");
+        assertEquals(298.257223563, ellipsoid.getInverseFlattening(), "inverseFlattening");
 
         final EllipsoidalCS cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals(2, cs.getDimension(), "dimension");
         assertLongitudeAxisEquals(cs.getAxis(0 ^ swap));
         assertLatitudeAxisEquals (cs.getAxis(1 ^ swap));
     }
@@ -529,7 +529,7 @@ public final class GeodeticObjectParserTest extends TestCase {
      * with (East, North) axis directions.
      */
     private static void verifyProjectedCS(final CartesianCS cs, final Unit<Length> unit) {
-        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals(2, cs.getDimension(), "dimension");
         assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  unit, cs.getAxis(0));
         assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, unit, cs.getAxis(1));
     }
@@ -570,17 +570,17 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("WGS84", 0, ellipsoid);
-        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 298.257223563, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals(6378137, ellipsoid.getSemiMajorAxis(), "semiMajor");
+        assertEquals(298.257223563, ellipsoid.getInverseFlattening(), "inverseFlattening");
 
         assertEquals("Mercator (variant A)", crs.getConversionFromBase().getMethod().getName().getCode());
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
-        assertEquals("semi_major",   6378137.0, param.parameter("semi_major"      ).doubleValue(Units.METRE),  STRICT);
-        assertEquals("semi_minor",   6356752.3, param.parameter("semi_minor"      ).doubleValue(Units.METRE),  0.1);
-        assertEquals("central_meridian", -20.0, param.parameter("central_meridian").doubleValue(Units.DEGREE), STRICT);
-        assertEquals("scale_factor",       1.0, param.parameter("scale_factor"    ).doubleValue(Units.UNITY),    STRICT);
-        assertEquals("false_easting", 500000.0, param.parameter("false_easting"   ).doubleValue(Units.METRE),  STRICT);
-        assertEquals("false_northing",     0.0, param.parameter("false_northing"  ).doubleValue(Units.METRE),  STRICT);
+        assertEquals(6378137.0, param.parameter("semi_major"      ).doubleValue(Units.METRE));
+        assertEquals(6356752.3, param.parameter("semi_minor"      ).doubleValue(Units.METRE), 0.1);
+        assertEquals(    -20.0, param.parameter("central_meridian").doubleValue(Units.DEGREE));
+        assertEquals(      1.0, param.parameter("scale_factor"    ).doubleValue(Units.UNITY));
+        assertEquals( 500000.0, param.parameter("false_easting"   ).doubleValue(Units.METRE));
+        assertEquals(      0.0, param.parameter("false_northing"  ).doubleValue(Units.METRE));
     }
 
     /**
@@ -619,17 +619,17 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
         assertEquals("Transverse Mercator", crs.getConversionFromBase().getMethod().getName().getCode());
-        assertEquals("semi_major",   6377563.396, param.parameter("semi_major"        ).doubleValue(), 1E-4);
-        assertEquals("semi_minor",   6356256.909, param.parameter("semi_minor"        ).doubleValue(), 1E-3);
-        assertEquals("latitude_of_origin",  49.0, param.parameter("latitude_of_origin").doubleValue(), 1E-8);
-        assertEquals("central_meridian",    -2.0, param.parameter("central_meridian"  ).doubleValue(), 1E-8);
-        assertEquals("scale_factor",      0.9996, param.parameter("scale_factor"      ).doubleValue(), 1E-5);
-        assertEquals("false_easting",   400000.0, param.parameter("false_easting"     ).doubleValue(), 1E-4);
-        assertEquals("false_northing", -100000.0, param.parameter("false_northing"    ).doubleValue(), 1E-4);
+        assertEquals(6377563.396, param.parameter("semi_major"        ).doubleValue(), 1E-4);
+        assertEquals(6356256.909, param.parameter("semi_minor"        ).doubleValue(), 1E-3);
+        assertEquals(       49.0, param.parameter("latitude_of_origin").doubleValue(), 1E-8);
+        assertEquals(       -2.0, param.parameter("central_meridian"  ).doubleValue(), 1E-8);
+        assertEquals(     0.9996, param.parameter("scale_factor"      ).doubleValue(), 1E-5);
+        assertEquals(   400000.0, param.parameter("false_easting"     ).doubleValue(), 1E-4);
+        assertEquals(  -100000.0, param.parameter("false_northing"    ).doubleValue(), 1E-4);
 
         final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
-        assertEquals("BursaWolfParameters", 1, bwp.length);
-        assertArrayEquals("BursaWolfParameters", new double[] {375, -111, 431}, bwp[0].getValues(), STRICT);
+        assertEquals(1, bwp.length, "BursaWolfParameters");
+        assertArrayEquals(new double[] {375, -111, 431}, bwp[0].getValues(), "BursaWolfParameters");
     }
 
     /**
@@ -668,13 +668,13 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
         assertEquals("Transverse Mercator", crs.getConversionFromBase().getMethod().getName().getCode());
-        assertEquals("semi_major",     6370997.0, param.parameter("semi_major"        ).doubleValue(), 1E-5);
-        assertEquals("semi_minor",     6370997.0, param.parameter("semi_minor"        ).doubleValue(), 1E-5);
-        assertEquals("latitude_of_origin",  50.0, param.parameter("latitude_of_origin").doubleValue(), 1E-8);
-        assertEquals("central_meridian",   170.0, param.parameter("central_meridian"  ).doubleValue(), 1E-8);
-        assertEquals("scale_factor",        0.95, param.parameter("scale_factor"      ).doubleValue(), 1E-8);
-        assertEquals("false_easting",        0.0, param.parameter("false_easting"     ).doubleValue(), 1E-8);
-        assertEquals("false_northing",       0.0, param.parameter("false_northing"    ).doubleValue(), 1E-8);
+        assertEquals(6370997.0, param.parameter("semi_major"        ).doubleValue(), 1E-5);
+        assertEquals(6370997.0, param.parameter("semi_minor"        ).doubleValue(), 1E-5);
+        assertEquals(     50.0, param.parameter("latitude_of_origin").doubleValue(), 1E-8);
+        assertEquals(    170.0, param.parameter("central_meridian"  ).doubleValue(), 1E-8);
+        assertEquals(     0.95, param.parameter("scale_factor"      ).doubleValue(), 1E-8);
+        assertEquals(      0.0, param.parameter("false_easting"     ).doubleValue(), 1E-8);
+        assertEquals(      0.0, param.parameter("false_northing"    ).doubleValue(), 1E-8);
     }
 
     /**
@@ -716,11 +716,11 @@ public final class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), Units.KILOMETRE);
         final PrimeMeridian pm = verifyNTF(crs.getDatum(), true);
-        assertEquals("angularUnit", Units.DEGREE, pm.getAngularUnit());
-        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
+        assertEquals(Units.DEGREE, pm.getAngularUnit(), "angularUnit");
+        assertEquals(2.33722917, pm.getGreenwichLongitude(), "greenwichLongitude");
         final ParameterValue<?> param = verifyNTF(crs.getConversionFromBase().getParameterValues());
-        assertEquals("angularUnit", Units.DEGREE, param.getUnit());
-        assertEquals("latitude_of_origin",  46.8, param.doubleValue(), STRICT);
+        assertEquals(Units.DEGREE, param.getUnit(), "angularUnit");
+        assertEquals(46.8, param.doubleValue(), "latitude_of_origin");
     }
 
     /**
@@ -757,7 +757,7 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
         validateParisFranceII(crs, 27572, false);
-        assertNull("Identifier shall not have a version.", getSingleton(crs.getIdentifiers()).getVersion());
+        assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
     }
 
     /**
@@ -767,11 +767,11 @@ public final class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", identifier, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), Units.KILOMETRE);
         final PrimeMeridian pm = verifyNTF(crs.getDatum(), hasToWGS84);
-        assertEquals("angularUnit", Units.GRAD, pm.getAngularUnit());
-        assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
+        assertEquals(Units.GRAD, pm.getAngularUnit(), "angularUnit");
+        assertEquals(2.5969213, pm.getGreenwichLongitude(), "greenwichLongitude");
         final ParameterValue<?> param = verifyNTF(crs.getConversionFromBase().getParameterValues());
-        assertEquals("angularUnit", Units.GRAD, param.getUnit());
-        assertEquals("latitude_of_origin",  52.0, param.doubleValue(), STRICT);
+        assertEquals(Units.GRAD, param.getUnit(), "angularUnit");
+        assertEquals(52.0, param.doubleValue(), "latitude_of_origin");
     }
 
     /**
@@ -787,15 +787,14 @@ public final class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("Nouvelle Triangulation Française (Paris)", 0, datum);
 
         final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) datum).getBursaWolfParameters();
-        assertEquals("BursaWolfParameters", hasToWGS84 ? 1 : 0, bwp.length);
+        assertEquals(hasToWGS84 ? 1 : 0, bwp.length, "BursaWolfParameters");
         if (hasToWGS84) {
-            assertArrayEquals("BursaWolfParameters", new double[] {-168, -60, 320}, bwp[0].getValues(), STRICT);
+            assertArrayEquals(new double[] {-168, -60, 320}, bwp[0].getValues(), "BursaWolfParameters");
         }
-
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("Clarke 1880 (IGN)", 0, ellipsoid);
-        assertEquals("semiMajor", 6378249.2, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 293.4660212936269, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals(6378249.2, ellipsoid.getSemiMajorAxis(), "semiMajor");
+        assertEquals(293.4660212936269, ellipsoid.getInverseFlattening(), "inverseFlattening");
 
         final PrimeMeridian pm = datum.getPrimeMeridian();
         assertNameAndIdentifierEqual("Paris", 8903, pm);
@@ -810,12 +809,12 @@ public final class GeodeticObjectParserTest extends TestCase {
      */
     private static ParameterValue<?> verifyNTF(final ParameterValueGroup param) {
         assertEquals("Lambert Conic Conformal (1SP)", param.getDescriptor().getName().getCode());
-        assertEquals("semi_major",     6378249.2, param.parameter("semi_major"      ).doubleValue(Units.METRE),  STRICT);
-        assertEquals("semi_minor",     6356515.0, param.parameter("semi_minor"      ).doubleValue(Units.METRE),  1E-12);
-        assertEquals("central_meridian",     0.0, param.parameter("central_meridian").doubleValue(Units.DEGREE), STRICT);
-        assertEquals("scale_factor",  0.99987742, param.parameter("scale_factor"    ).doubleValue(Units.UNITY),    STRICT);
-        assertEquals("false_easting",   600000.0, param.parameter("false_easting"   ).doubleValue(Units.METRE),  STRICT);
-        assertEquals("false_northing", 2200000.0, param.parameter("false_northing"  ).doubleValue(Units.METRE),  STRICT);
+        assertEquals( 6378249.2, param.parameter("semi_major"      ).doubleValue(Units.METRE));
+        assertEquals( 6356515.0, param.parameter("semi_minor"      ).doubleValue(Units.METRE), 1E-12);
+        assertEquals(       0.0, param.parameter("central_meridian").doubleValue(Units.DEGREE));
+        assertEquals(0.99987742, param.parameter("scale_factor"    ).doubleValue(Units.UNITY));
+        assertEquals(  600000.0, param.parameter("false_easting"   ).doubleValue(Units.METRE));
+        assertEquals( 2200000.0, param.parameter("false_northing"  ).doubleValue(Units.METRE));
         return param.parameter("latitude_of_origin");
     }
 
@@ -859,28 +858,29 @@ public final class GeodeticObjectParserTest extends TestCase {
         final GeodeticDatum datum = geoCRS.getDatum();
         assertNameAndIdentifierEqual("NTF=GR3DF97A", 0, datum);
         assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
-        assertArrayEquals("BursaWolfParameters", new double[] {-168, -60, 320},
-                ((DefaultGeodeticDatum) datum).getBursaWolfParameters()[0].getValues(), STRICT);
+        assertArrayEquals(new double[] {-168, -60, 320},
+                assertInstanceOf(DefaultGeodeticDatum.class, datum).getBursaWolfParameters()[0].getValues(),
+                "BursaWolfParameters");
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("Clarke 1880 (IGN)", 0, ellipsoid);
-        assertEquals("semiMajor", 6378249.2, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 293.4660212936269, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals(6378249.2, ellipsoid.getSemiMajorAxis(),"semiMajor");
+        assertEquals(293.4660212936269, ellipsoid.getInverseFlattening(), "inverseFlattening");
 
         final EllipsoidalCS cs = geoCRS.getCoordinateSystem();
-        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals(2, cs.getDimension(), "dimension");
         assertLongitudeAxisEquals(cs.getAxis(0));
         assertLatitudeAxisEquals (cs.getAxis(1));
 
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
         assertEquals("Lambert Conic Conformal (1SP)", param.getDescriptor().getName().getCode());
-        assertEquals("semi_major",        6378249.2, param.parameter("semi_major"        ).doubleValue(Units.METRE),  STRICT);
-        assertEquals("semi_minor",        6356515.0, param.parameter("semi_minor"        ).doubleValue(Units.METRE),  1E-12);
-        assertEquals("latitude_of_origin",     44.1, param.parameter("latitude_of_origin").doubleValue(Units.DEGREE), STRICT);
-        assertEquals("central_meridian", 2.33722917, param.parameter("central_meridian"  ).doubleValue(Units.DEGREE), STRICT);
-        assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Units.UNITY),    STRICT);
-        assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(Units.METRE),  STRICT);
-        assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(Units.METRE),  STRICT);
+        assertEquals(  6378249.2, param.parameter("semi_major"        ).doubleValue(Units.METRE));
+        assertEquals(  6356515.0, param.parameter("semi_minor"        ).doubleValue(Units.METRE), 1E-12);
+        assertEquals(       44.1, param.parameter("latitude_of_origin").doubleValue(Units.DEGREE));
+        assertEquals( 2.33722917, param.parameter("central_meridian"  ).doubleValue(Units.DEGREE));
+        assertEquals(0.999877499, param.parameter("scale_factor"      ).doubleValue(Units.UNITY));
+        assertEquals(   600000.0, param.parameter("false_easting"     ).doubleValue(Units.METRE));
+        assertEquals(   200000.0, param.parameter("false_northing"    ).doubleValue(Units.METRE));
     }
 
     /**
@@ -924,8 +924,7 @@ public final class GeodeticObjectParserTest extends TestCase {
         final MathTransform transform = MathTransforms.concatenate(
                 north.getConversionFromBase().getMathTransform().inverse(),
                 south.getConversionFromBase().getMathTransform());
-        assertInstanceOf("North to South", LinearTransform.class, transform);
-        return ((LinearTransform) transform).getMatrix();
+        return assertInstanceOf(LinearTransform.class, transform).getMatrix();
     }
 
     /**
@@ -955,10 +954,10 @@ public final class GeodeticObjectParserTest extends TestCase {
         assertEquals(AxisDirection.SOUTH, south.getCoordinateSystem().getAxis(1).getDirection());
 
         Matrix matrix = conversion(north, south);
-        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), STRICT);
-        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), STRICT);
-        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), STRICT);
-        assertEquals("No northing expected.",                      0, matrix.getElement(1,2), STRICT);
+        assertEquals(+1, matrix.getElement(0,0), "West direction should be unchanged. ");
+        assertEquals(-1, matrix.getElement(1,1), "North-South direction should be reverted.");
+        assertEquals( 0, matrix.getElement(0,2), "No easting expected.");
+        assertEquals( 0, matrix.getElement(1,2), "No northing expected.");
         assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix, STRICT);
         /*
          * Test "Transverse Mercator South Orientated". In this projection, the "False Northing" parameter
@@ -972,10 +971,10 @@ public final class GeodeticObjectParserTest extends TestCase {
         assertEquals(AxisDirection.WEST,  south.getCoordinateSystem().getAxis(0).getDirection());
         assertEquals(AxisDirection.SOUTH, south.getCoordinateSystem().getAxis(1).getDirection());
         matrix = conversion(north, south);
-        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), STRICT);
-        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), STRICT);
-        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), STRICT);
-        assertEquals("Northing expected.",                      2000, matrix.getElement(1,2), STRICT);
+        assertEquals(  +1, matrix.getElement(0,0), "West direction should be unchanged.");
+        assertEquals(  -1, matrix.getElement(1,1), "North-South direction should be reverted.");
+        assertEquals(   0, matrix.getElement(0,2), "No easting expected.");
+        assertEquals(2000, matrix.getElement(1,2), "Northing expected.");
     }
 
     /**
@@ -1007,8 +1006,8 @@ public final class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("EPSG topocentric example B", 5820, crs);
         assertNameAndIdentifierEqual("EPSG topocentric example B", 0, crs.getConversionFromBase());
         CoordinateSystem cs = crs.getCoordinateSystem();
-        assertInstanceOf("coordinateSystem", CartesianCS.class, cs);
-        assertEquals("dimension", 3, cs.getDimension());
+        assertInstanceOf(CartesianCS.class, cs, "coordinateSystem");
+        assertEquals(3, cs.getDimension(), "dimension");
         assertUnboundedAxisEquals("Topocentric East",   "U", AxisDirection.EAST,  Units.METRE, cs.getAxis(0));
         assertUnboundedAxisEquals("Topocentric North",  "V", AxisDirection.NORTH, Units.METRE, cs.getAxis(1));
         assertUnboundedAxisEquals("Topocentric height", "W", AxisDirection.UP,    Units.METRE, cs.getAxis(2));
@@ -1018,8 +1017,8 @@ public final class GeodeticObjectParserTest extends TestCase {
          * that the expected type for “Geocentric/topocentric conversions” is Cartesian.
          */
         cs = crs.getBaseCRS().getCoordinateSystem();
-        assertInstanceOf("coordinateSystem", CartesianCS.class, cs);
-        assertEquals("dimension", 3, cs.getDimension());
+        assertInstanceOf(CartesianCS.class, cs, "coordinateSystem");
+        assertEquals(3, cs.getDimension(), "dimension");
         assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_X, "X", AxisDirection.GEOCENTRIC_X, Units.METRE, cs.getAxis(0));
         assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_Y, "Y", AxisDirection.GEOCENTRIC_Y, Units.METRE, cs.getAxis(1));
         assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_Z, "Z", AxisDirection.GEOCENTRIC_Z, Units.METRE, cs.getAxis(2));
@@ -1044,8 +1043,8 @@ public final class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("A building-centred CRS", 0, crs);
         assertNameAndIdentifierEqual("Building reference point", 0, crs.getDatum());
         final CoordinateSystem cs = crs.getCoordinateSystem();
-        assertInstanceOf("coordinateSystem", CartesianCS.class, cs);
-        assertEquals("dimension", 3, cs.getDimension());
+        assertInstanceOf(CartesianCS.class, cs, "coordinateSystem");
+        assertEquals(3, cs.getDimension(), "dimension");
 
         // Axis names are arbitrary and could change in future SIS versions.
         assertUnboundedAxisEquals("Easting",  "x", AxisDirection.EAST,  Units.METRE, cs.getAxis(0));
@@ -1096,14 +1095,14 @@ public final class GeodeticObjectParserTest extends TestCase {
         final TemporalDatum timeDatum = timeCRS.getDatum();
         assertNameAndIdentifierEqual("Time", 0, timeCRS);
         assertNameAndIdentifierEqual("Modified Julian", 0, timeDatum);
-        assertEquals("epoch", new Date(-40587L * MILLISECONDS_PER_DAY), timeDatum.getOrigin());
+        assertEquals(new Date(-40587L * MILLISECONDS_PER_DAY), timeDatum.getOrigin(), "epoch");
 
         // No more CRS.
         assertFalse(components.hasNext());
 
         // Axes: we verify only the CompoundCRS ones, which should include all others.
         final CoordinateSystem cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 4, cs.getDimension());
+        assertEquals(4, cs.getDimension(), "dimension");
         assertLongitudeAxisEquals(cs.getAxis(0));
         assertLatitudeAxisEquals (cs.getAxis(1));
         assertUnboundedAxisEquals("Gravity-related height", "H", AxisDirection.UP, Units.METRE, cs.getAxis(2));
@@ -1136,7 +1135,7 @@ public final class GeodeticObjectParserTest extends TestCase {
                 "    AXIS[“Ellipsoidal height”, UP]]]");
 
         final CoordinateSystem cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 3, cs.getDimension());
+        assertEquals(3, cs.getDimension(), "dimension");
         assertLongitudeAxisEquals(cs.getAxis(0));
         assertLatitudeAxisEquals (cs.getAxis(1));
         assertUnboundedAxisEquals("Ellipsoidal height", "h", AxisDirection.UP, Units.METRE, cs.getAxis(2));
@@ -1184,18 +1183,15 @@ public final class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     public void testIncompatibleUnits() {
-        try {
-            parse(GeographicCRS.class,
+        ParseException exception;
+        exception = assertThrows(ParseException.class, () -> parse(GeographicCRS.class,
                     "GEOGCS[“NAD83”,\n" +
                     "  DATUM[“North American Datum 1983”,\n" +
                     "    SPHEROID[“GRS 1980”, 6378137.0, 298.257222]],\n" +
                     "  PRIMEM[“Greenwich”, 0],\n" +
-                    "  UNIT[“kilometre”, 1000]]");                                      // Wrong unit
-            fail("Should not have parsed a CRS with wrong unit of measurement.");
-        } catch (ParseException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("km"));
-        }
+                    "  UNIT[“kilometre”, 1000]]"));                                      // Wrong unit);
+
+        assertMessageContains(exception, "km");
     }
 
     /**
@@ -1215,29 +1211,13 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         verifyGeographicCRS(0, crs);
         final Warnings warnings = parser.getAndClearWarnings(crs);
-        assertNotNull("warnings", warnings);
-
-        assertTrue("warnings.getExceptions()",
-                warnings.getExceptions().isEmpty());
-
-        assertEquals("warnings.getRootElement()", "WGS 84",
-                warnings.getRootElement());
-
-        assertArrayEquals("warnings.getUnknownElements()",
-                new String[] {"Intruder", "Ext1", "Ext2"},
-                warnings.getUnknownElements().toArray());
-
-        assertArrayEquals("warnings.getUnknownElementLocations(…)",
-                new String[] {"PRIMEM", "GEOGCS"},
-                warnings.getUnknownElementLocations("Intruder").toArray());
-
-        assertArrayEquals("warnings.getUnknownElementLocations(…)",
-                new String[] {"SPHEROID"},
-                warnings.getUnknownElementLocations("Ext1").toArray());
-
-        assertArrayEquals("warnings.getUnknownElementLocations(…)",
-                new String[] {"SPHEROID"},
-                warnings.getUnknownElementLocations("Ext2").toArray());
+        assertNotNull(warnings, "warnings");
+        assertTrue(warnings.getExceptions().isEmpty());
+        assertEquals("WGS 84", warnings.getRootElement());
+        assertArrayEquals(new String[] {"Intruder", "Ext1", "Ext2"}, warnings.getUnknownElements().toArray());
+        assertArrayEquals(new String[] {"PRIMEM", "GEOGCS"},         warnings.getUnknownElementLocations("Intruder").toArray());
+        assertArrayEquals(new String[] {"SPHEROID"},                 warnings.getUnknownElementLocations("Ext1").toArray());
+        assertArrayEquals(new String[] {"SPHEROID"},                 warnings.getUnknownElementLocations("Ext2").toArray());
 
         assertMultilinesEquals("Parsing of “WGS 84” done, but some elements were ignored.\n" +
                                " • Unexpected scale factor 0.01746 for unit of measurement “°”.\n" +

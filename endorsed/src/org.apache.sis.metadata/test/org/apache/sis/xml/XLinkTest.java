@@ -24,6 +24,7 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -108,10 +109,10 @@ public final class XLinkTest extends TestCase {
          */
         link.freeze();
         assertEquals(hashCode, link.hashCode(), "hashCode");
-        String message;
-        message = assertThrows(UnsupportedOperationException.class, () -> link.setType(null),
-                               "The XLink should be unmodifiable.").getMessage();
-        assertTrue(message.contains("XLink"));
+
+        UnsupportedOperationException exception;
+        exception = assertThrows(UnsupportedOperationException.class, () -> link.setType(null), "The XLink should be unmodifiable.");
+        assertMessageContains(exception, "XLink");
     }
 
     /**
@@ -124,20 +125,19 @@ public final class XLinkTest extends TestCase {
         final XLink link = new XLink();
         link.setType(XLink.Type.SIMPLE);
         link.setHRef(new URI("org:apache:sis:href"));
-        String message;
         /*
          * Should not be allowed to set the label.
          */
+        IllegalStateException exception;
         assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
-        message = assertThrows(IllegalStateException.class, () -> link.setLabel("SomeLabel")).getMessage();
-        assertTrue(message.contains("label"));
-        assertTrue(message.contains("simple"));
+        exception = assertThrows(IllegalStateException.class, () -> link.setLabel("SomeLabel"));
+        assertMessageContains(exception, "label", "simple");
         /*
          * Should not be allowed to set a type that does not include HREF.
          */
         assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
-        message = assertThrows(IllegalStateException.class, () -> link.setType(XLink.Type.EXTENDED)).getMessage();
-        assertTrue(message.contains("extended"));
+        exception = assertThrows(IllegalStateException.class, () -> link.setType(XLink.Type.EXTENDED));
+        assertMessageContains(exception, "extended");
         /*
          * The Locator type contains the HREF attribute, so the following operation should be allowed.
          */
@@ -148,8 +148,9 @@ public final class XLinkTest extends TestCase {
          * Now freezes the XLink and ensures that it is really immutable.
          */
         link.freeze();
-        message = assertThrows(UnsupportedOperationException.class, () -> link.setHRef(null)).getMessage();
-        assertTrue(message.contains("XLink"));
+        UnsupportedOperationException e;
+        e = assertThrows(UnsupportedOperationException.class, () -> link.setHRef(null));
+        assertMessageContains(e, "XLink");
     }
 
     /**

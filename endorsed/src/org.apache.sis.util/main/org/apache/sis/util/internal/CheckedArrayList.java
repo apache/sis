@@ -127,7 +127,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      *       XML elements (see SIS-139 and SIS-157).</li>
      *   <li>If no unmarshalling process is under way, then this method returns a {@code String} containing the
      *       error message to give to the exception to be thrown. The {@code add(E)} caller method is responsible
-     *       to thrown an exception with that message. We let the caller throw the exception for reducing the
+     *       to throw an exception with that message. We let the caller throws the exception for reducing the
      *       stack trace depth, so the first element on the stack trace is the public {@code add(E)} method.</li>
      * </ul>
      *

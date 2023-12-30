@@ -16,9 +16,12 @@
  */
 package org.apache.sis.xml;
 
+import java.net.URI;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.TimeZone;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 
 
@@ -26,10 +29,10 @@ import org.apache.sis.util.Version;
  * Context of a marshalling or unmarshalling process.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  * @since   0.3
  */
-public abstract class MarshalContext {
+public abstract class MarshalContext implements Localized {
     /**
      * Creates a new (un)marshalling context.
      */
@@ -37,7 +40,18 @@ public abstract class MarshalContext {
     }
 
     /**
-     * Returns the locale to use for (un)marshalling, or {@code null} if no locale were explicitly specified.
+     * Returns the marshaller pool that produced the marshaller or unmarshaller in use.
+     * This pool may be used for creating new (un)marshaller when a document contains
+     * {@code xlink:href} to another document.
+     *
+     * @return the marshaller pool that produced the marshaller or unmarshaller in use.
+     *
+     * @since 1.5
+     */
+    public abstract MarshallerPool getPool();
+
+    /**
+     * Returns the locale to use for (un)marshalling, or {@code null} if no locale was explicitly specified.
      * The locale returned by this method can be used for choosing a language in an {@link InternationalString}.
      *
      * <p>This locale may vary in different fragments of the same XML document.
@@ -58,6 +72,7 @@ public abstract class MarshalContext {
      *
      * @see org.apache.sis.util.DefaultInternationalString#toString(Locale)
      */
+    @Override
     public abstract Locale getLocale();
 
     /**
@@ -90,5 +105,16 @@ public abstract class MarshalContext {
      * @param  prefix  one of the above-cited prefix.
      * @return the version for the given schema, or {@code null} if unknown.
      */
-    public abstract Version getVersion(final String prefix);
+    public abstract Version getVersion(String prefix);
+
+    /**
+     * Returns the URI of the document being (un)marshalled, if this URI is known.
+     * The URI is generally unknown if the source of the XML document is,
+     * for example, an {@link java.io.InputStream}.
+     *
+     * @return the URI of the document being marshalled or unmarshalled.
+     *
+     * @since 1.5
+     */
+    public abstract Optional<URI> getDocumentURI();
 }

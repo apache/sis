@@ -39,10 +39,10 @@ import org.apache.sis.storage.internal.InputStreamAdapter;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -198,19 +198,18 @@ public final class StorageConnectorTest extends TestCase {
         final StorageConnector connector = create(asStream);
         assertEquals(asStream, connector.getStorageAs(URI.class)  == null);
         assertEquals(asStream, connector.getStorageAs(Path.class) == null);
-        final DataInput input = connector.getStorageAs(DataInput.class);
+        final ChannelDataInput input = assertInstanceOf(ChannelDataInput.class,
+                connector.getStorageAs(DataInput.class), "Needs the SIS implementation.");
         assertSame(input, connector.getStorageAs(DataInput.class), "Value shall be cached.");
-        assertInstanceOf("Needs the SIS implementation.", ChannelDataInput.class, input);
         assertSame(input, connector.getStorageAs(ChannelDataInput.class), "Instance shall be shared.");
         /*
          * Reads a single integer for checking that the stream is at the right position, then close the stream.
          * Since the file is a compiled Java class, the integer that we read shall be the Java magic number.
          */
-        final ReadableByteChannel channel = ((ChannelDataInput) input).channel;
-        assertTrue(channel.isOpen(), "channel.isOpen()");
+        assertTrue(input.channel.isOpen(), "channel.isOpen()");
         assertEquals(MAGIC_NUMBER, input.readInt(), "First 4 bytes");
         connector.closeAllExcept(null);
-        assertFalse(channel.isOpen(), "channel.isOpen()");
+        assertFalse(input.channel.isOpen(), "channel.isOpen()");
     }
 
     /**
@@ -278,13 +277,12 @@ public final class StorageConnectorTest extends TestCase {
         final InputStream in = connector.getStorageAs(InputStream.class);
         assertNotSame(connector.getStorage(), in);
         assertSame(in, connector.getStorageAs(InputStream.class), "Expected cached value.");
-        assertInstanceOf("Expected Channel backend.", InputStreamAdapter.class, in);
-        final ImageInputStream input = ((InputStreamAdapter) in).input;
-        assertInstanceOf("Expected Channel backend.", ChannelImageInputStream.class, input);
+
+        final ImageInputStream input = assertInstanceOf(InputStreamAdapter.class, in).input;
         assertSame(input, connector.getStorageAs(DataInput.class));
         assertSame(input, connector.getStorageAs(ImageInputStream.class));
 
-        final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
+        final ReadableByteChannel channel = assertInstanceOf(ChannelImageInputStream.class, input).channel;
         assertTrue(channel.isOpen());
         connector.closeAllExcept(null);
         assertFalse(channel.isOpen());
@@ -310,7 +308,7 @@ public final class StorageConnectorTest extends TestCase {
          * This operation should force StorageConnector to discard the previous Reader.
          */
         final ImageInputStream im = connector.getStorageAs(ImageInputStream.class);
-        assertInstanceOf("Needs the SIS implementation.", ChannelImageInputStream.class, im);
+        assertInstanceOf(ChannelImageInputStream.class, im, "Needs the SIS implementation.");
         im.mark();
         assertEquals(MAGIC_NUMBER, im.readInt(), "First 4 bytes");
         im.reset();
@@ -342,11 +340,11 @@ public final class StorageConnectorTest extends TestCase {
         /*
          * Get as an image input stream and ensure that the cached value has been replaced.
          */
-        final ImageInputStream stream = connector.getStorageAs(ImageInputStream.class);
-        assertInstanceOf("Needs the SIS implementation", ChannelImageInputStream.class, stream);
+        final ChannelImageInputStream stream = assertInstanceOf(ChannelImageInputStream.class,
+                connector.getStorageAs(ImageInputStream.class), "Needs the SIS implementation");
         assertNotSame(input, stream, "Expected a new instance.");
-        assertSame(input.channel, ((ChannelDataInput) stream).channel, "Shall share the channel.");
-        assertSame(input.buffer,  ((ChannelDataInput) stream).buffer,  "Shall share the buffer.");
+        assertSame(input.channel, stream.channel, "Shall share the channel.");
+        assertSame(input.buffer,  stream.buffer,  "Shall share the buffer.");
         assertSame(stream, connector.getStorageAs(ChannelDataInput.class), "Cached valud shall have been replaced.");
         connector.closeAllExcept(null);
     }
@@ -419,10 +417,9 @@ public final class StorageConnectorTest extends TestCase {
         assertNull   (connector.getStorageAs(URI.class));
         assertNull   (connector.getStorageAs(String.class));
 
-        String message;
-        message = assertThrows(UnconvertibleObjectException.class, () -> connector.getStorageAs(Float.class),
-                               "Should not have accepted Float.class").getMessage();
-        assertTrue(message.contains("Float"), message);
+        UnconvertibleObjectException exception = assertThrows(UnconvertibleObjectException.class,
+                () -> connector.getStorageAs(Float.class), "Should not accept Float.class");
+        assertMessageContains(exception, "Float");
         connector.closeAllExcept(null);
     }
 
@@ -437,11 +434,10 @@ public final class StorageConnectorTest extends TestCase {
     public void testCloseAllExcept() throws DataStoreException, IOException {
         final StorageConnector connector = create(true);
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
-        final ReadableByteChannel channel = input.channel;
-        assertTrue(channel.isOpen(), "channel.isOpen()");
+        assertTrue(input.channel.isOpen());
         connector.closeAllExcept(input);
-        assertTrue(channel.isOpen(), "channel.isOpen()");
-        channel.close();
+        assertTrue(input.channel.isOpen());
+        input.channel.close();      // No "try-with-resource" for easier debugging if needed.
     }
 
     /**
@@ -456,10 +452,9 @@ public final class StorageConnectorTest extends TestCase {
         final StorageConnector connector = create(false);
         final InputStream stream = connector.commit(InputStream.class, "Test");
 
-        String message;
-        message = assertThrows(IllegalStateException.class, () -> connector.getStorageAs(ByteBuffer.class),
-                               "Connector should be closed.").getMessage();
-        assertNotNull(message);
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> connector.getStorageAs(ByteBuffer.class), "Connector should be closed.");
+        assertMessageContains(exception);
         assertExpectedBytes(stream);
         stream.close();                 // No "try-with-resource" for easier debugging if needed.
     }

@@ -213,8 +213,8 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
             final GeneralParameterDescriptor replacement = replacements.get(p.getDescriptor());
             if (replacement != null) {
                 if (p instanceof ParameterValue<?>) {
-                    final ParameterValue<?> source = (ParameterValue<?>) p;
-                    final ParameterValue<?> target = new DefaultParameterValue<>((ParameterDescriptor<?>) replacement);
+                    final var source = (ParameterValue<?>) p;
+                    final var target = new DefaultParameterValue<>((ParameterDescriptor<?>) replacement);
                     final Object value = source.getValue();
                     final Unit<?> unit = source.getUnit();
                     if (unit == null) {
@@ -223,6 +223,9 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
                         target.setValue((double[]) value, unit);
                     } else {
                         target.setValue(((Number) value).doubleValue(), unit);
+                    }
+                    if (source instanceof DefaultParameterValue<?>) {
+                        ((DefaultParameterValue<?>) source).getSourceFile().ifPresent(target::setSourceFile);
                     }
                     p = target;
                 } else if (p instanceof ParameterValueGroup) {

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Locale;
@@ -40,13 +41,13 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -134,28 +135,28 @@ class MathTransformParser extends AbstractParser {
      * @param  mtFactory  the factory to use for creating {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), Map.of(), null, null, null,
+        this(null, Map.of(), Symbols.getDefault(), null, null, null,
                 new ReferencingFactoryContainer(null, null, null, null, null, mtFactory), null);
     }
 
     /**
      * Creates a parser using the specified set of symbols and factories.
      *
-     * @param  symbols       the set of symbols to use.
+     * @param  sourceFile    URI to declare as the source of the WKT definitions, or {@code null} if unknown.
      * @param  fragments     reference to the {@link WKTFormat#fragments} map, or an empty map if none.
+     * @param  symbols       the set of symbols to use. Cannot be null.
      * @param  numberFormat  the number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  dateFormat    the date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  unitFormat    the unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  factories     the factories to use for creating math transforms and geodetic objects.
      * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    MathTransformParser(final Symbols symbols, final Map<String,StoredTree> fragments,
+    MathTransformParser(final URI sourceFile, final Map<String,StoredTree> fragments, final Symbols symbols,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
             final ReferencingFactoryContainer factories, final Locale errorLocale)
     {
-        super(symbols, fragments, numberFormat, dateFormat, unitFormat, errorLocale);
+        super(sourceFile, fragments, symbols, numberFormat, dateFormat, unitFormat, errorLocale);
         this.factories = factories;
-        ensureNonNull("factories", factories);
     }
 
     /**
@@ -347,7 +348,7 @@ class MathTransformParser extends AbstractParser {
         final Unit<?> defaultSI = (defaultUnit != null) ? defaultUnit.getSystemUnit() : null;
         Element param = element;
         try {
-            while ((param = element.pullElement(OPTIONAL, WKTKeywords.Parameter)) != null) {
+            while ((param = element.pullElement(OPTIONAL, WKTKeywords.Parameter, WKTKeywords.ParameterFile)) != null) {
                 final String name = param.pullString("name");
                 Unit<?> unit = parseUnit(param);
                 param.pullElement(OPTIONAL, ID_KEYWORDS);
@@ -385,6 +386,9 @@ class MathTransformParser extends AbstractParser {
                     parameter.setValue(param.pullBoolean("booleanValue"));
                 } else {
                     parameter.setValue(param.pullString("stringValue"));
+                }
+                if (sourceFile != null && parameter instanceof DefaultParameterValue<?>) {
+                    ((DefaultParameterValue<?>) parameter).setSourceFile(sourceFile);
                 }
                 param.close(ignoredElements);
             }

@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation.provider;
+package org.apache.sis.referencing.operation.gridded;
 
 import java.util.Map;
 import java.util.List;
 import java.util.LinkedHashMap;
-import java.net.URI;
 import java.io.IOException;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -48,10 +47,10 @@ import org.apache.sis.util.collection.Containers;
  *       most appropriate grid for given coordinates. This is the class where to put our optimization efforts,
  *       for example by checking the last used grid before to check all other grids.</li>
  *   <li>Only if {@code SpecializableTransform} did not found a better transform, it will fallback on a transform
- *       backed by this {@code DatumShiftGridGroup}. In such case, {@link InterpolatedTransform} will perform its
+ *       backed by this {@code GridGroup}. In such case, {@link InterpolatedTransform} will perform its
  *       calculation by invoking {@link #interpolateInCell(double, double, double[])}. That method tries again to
  *       locate the best grid, but performance is less important there since that method is only a fallback.</li>
- *   <li>The default {@link DatumShiftGridFile#interpolateInCell(double, double, double[])} implementation invokes
+ *   <li>The default {@link LoadedGrid#interpolateInCell(double, double, double[])} implementation invokes
  *       {@link #getCellValue(int, int, int)}. We provide that method for consistency, but it should not be invoked
  *       since we overrode {@link #interpolateInCell(double, double, double[])}.</li>
  * </ol>
@@ -61,7 +60,7 @@ import org.apache.sis.util.collection.Containers;
  * @param <C>  dimension of the coordinate unit (usually angular).
  * @param <T>  dimension of the translation unit (usually angular or linear).
  */
-final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
+public final class GridGroup<C extends Quantity<C>, T extends Quantity<T>> extends LoadedGrid<C,T> {
     /**
      * For cross-version compatibility.
      */
@@ -70,7 +69,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
     /**
      * The bounds of a sub-grid, together with the subsampling level compared to the grid having the finest resolution.
      * All values in this class are integers, but nevertheless stored as {@code double} for avoiding to cast them every
-     * time {@link DatumShiftGridGroup#interpolateInCell(double, double, double[])} is executed.
+     * time {@link GridGroup#interpolateInCell(double, double, double[])} is executed.
      */
     @SuppressWarnings("CloneableImplementsClone")
     private static final class Region extends IntervalRectangle {
@@ -125,19 +124,19 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})                        // For generic array creation.
-    private DatumShiftGridGroup(final Tile[] tiles,
-                                final Map<Tile,DatumShiftGridFile<C,T>> grids,
-                                final AffineTransform2D gridToCRS,
-                                final Dimension gridSize)
+    private GridGroup(final Tile[] tiles,
+                      final Map<Tile,LoadedGrid<C,T>> grids,
+                      final AffineTransform2D gridToCRS,
+                      final Dimension gridSize)
             throws IOException, NoninvertibleTransformException
     {
         super(grids.get(tiles[0]), gridToCRS, gridSize.width, gridSize.height);
         final int n = grids.size();
         regions  = new Region[n];
-        subgrids = new DatumShiftGridFile[n];
+        subgrids = new LoadedGrid[n];
         for (int i=0; i<n; i++) {
             final Tile tile = tiles[i];
-            final DatumShiftGridFile<C,T> grid = grids.get(tile);
+            final LoadedGrid<C,T> grid = grids.get(tile);
             regions [i] = new Region(tile);
             subgrids[i] = grid;
             if (grid.accuracy > accuracy) {
@@ -155,13 +154,13 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * @throws FactoryException if the sub-grid cannot be combined in a single mosaic or pyramid.
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.
      */
-    static <C extends Quantity<C>, T extends Quantity<T>> DatumShiftGridGroup<C,T> create(
-            final URI file, final List<DatumShiftGridFile<C,T>> subgrids)
+    public static <C extends Quantity<C>, T extends Quantity<T>> GridGroup<C,T> create(
+            final GridFile file, final List<LoadedGrid<C,T>> subgrids)
             throws IOException, FactoryException, NoninvertibleTransformException
     {
         final TileOrganizer mosaic = new TileOrganizer(null);
-        final Map<Tile,DatumShiftGridFile<C,T>> grids = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.size()));
-        for (final DatumShiftGridFile<C,T> grid : subgrids) {
+        final Map<Tile,LoadedGrid<C,T>> grids = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.size()));
+        for (final LoadedGrid<C,T> grid : subgrids) {
             final int[] size = grid.getGridSize();
             final Tile  tile = new Tile(new Rectangle(size[0], size[1]),
                     (AffineTransform) grid.getCoordinateToGrid().inverse());
@@ -182,17 +181,17 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
          */
         final Map.Entry<Tile,Tile[]> result = CollectionsExt.singletonOrNull(mosaic.tiles().entrySet());
         if (result == null) {
-            throw new FactoryException(Resources.format(Resources.Keys.MisalignedDatumShiftGrid_1, file));
+            throw new FactoryException(Resources.format(Resources.Keys.MisalignedDatumShiftGrid_1, file.parameter));
         }
         final Tile global = result.getKey();
-        return new DatumShiftGridGroup<>(result.getValue(), grids, global.getGridToCRS(), global.getSize());
+        return new GridGroup<>(result.getValue(), grids, global.getGridToCRS(), global.getSize());
     }
 
     /**
      * Creates a new grid sharing the same data than an existing grid.
      * This constructor is for {@link #setData(Object[])} usage only.
      */
-    private DatumShiftGridGroup(final DatumShiftGridGroup<C,T> other, final DatumShiftGridFile<C,T>[] data) {
+    private GridGroup(final GridGroup<C,T> other, final LoadedGrid<C,T>[] data) {
         super(other);
         subgrids = data;
         regions  = other.regions;
@@ -206,8 +205,8 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      */
     @Override
     @SuppressWarnings("unchecked")
-    protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
-        return new DatumShiftGridGroup<>(this, (DatumShiftGridFile<C,T>[]) other);
+    protected final LoadedGrid<C,T> setData(final Object[] other) {
+        return new GridGroup<>(this, (LoadedGrid<C,T>[]) other);
     }
 
     /**
@@ -265,7 +264,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
             }
         }
         /*
-         * May be in the valid range of this DatumShiftGridGroup but not in the range of a subgrid.
+         * May be in the valid range of this GridGroup but not in the range of a subgrid.
          * This situation may happen if there is holes in the data coverage provided by subgrids.
          */
         throw new IllegalArgumentException();

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<mri:MD_DataIdentification
+    xmlns:mri   = "http://standards.iso.org/iso/19115/-3/mri/1.0"
+    xmlns:cit   = "http://standards.iso.org/iso/19115/-3/cit/1.0"
+    xmlns:gco   = "http://standards.iso.org/iso/19115/-3/gco/1.0"
+    xmlns:xsi   = "http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xlink = "http://www.w3.org/1999/xlink"
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/mri/1.0
+                          https://schemas.isotc211.org/19115/-3/mri/1.0/mri.xsd">
+
+  <mri:citation xlink:href="Citation.xml"/>
+  <mri:abstract>
+    <gco:CharacterString>Test the use of XLink to an external document.</gco:CharacterString>
+  </mri:abstract>
+  <mri:pointOfContact>
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode"
+                         codeListValue="pointOfContact">pointOfContact</cit:CI_RoleCode>
+      </cit:role>
+      <cit:party>
+        <cit:CI_Individual>
+          <cit:name>
+            <gco:CharacterString>Little John</gco:CharacterString>
+          </cit:name>
+          <cit:contactInfo xlink:href="Citation.xml#ip-protocol"/>
+        </cit:CI_Individual>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </mri:pointOfContact>
+
+</mri:MD_DataIdentification>

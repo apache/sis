@@ -161,6 +161,8 @@ public final class Warnings implements Localized, Serializable {
      * parsed or formatted. Defined as a separated method instead of as an argument for the constructor
      * because this information is more easily provided by {@link WKTFormat} rather than by the parser or
      * formatter that created the {@code Warnings} object.
+     *
+     * @see #getRootElement()
      */
     final void setRoot(final Object obj) {
         if (obj instanceof IdentifiedObject) {

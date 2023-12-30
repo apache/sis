@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.List;
 import java.util.Date;
@@ -35,11 +36,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
-import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -82,6 +82,13 @@ abstract class AbstractParser implements Parser {
      * thrown if no element has a name matching one of the requested names.
      */
     static final int MANDATORY = 2;
+
+    /**
+     * The URI to declare as the source of the WKT definitions, or {@code null} if unknown.
+     * This information is not used directly by the parser, but will be stored in parameter values
+     * as a hint for resolving relative paths as absolute paths.
+     */
+    final URI sourceFile;
 
     /**
      * The locale for formatting error messages if parsing fails, or {@code null} for system default.
@@ -151,22 +158,24 @@ abstract class AbstractParser implements Parser {
     /**
      * Constructs a parser using the specified set of symbols.
      *
-     * @param  symbols       the set of symbols to use.
+     * @param  sourceFile    URI to declare as the source of the WKT definitions, or {@code null} if unknown.
      * @param  fragments     reference to the {@link WKTFormat#fragments} map, or an empty map if none.
+     * @param  symbols       the set of symbols to use. Cannot be null.
      * @param  numberFormat  the number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  dateFormat    the date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  unitFormat    the unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    AbstractParser(final Symbols symbols, final Map<String,StoredTree> fragments, NumberFormat numberFormat,
-                   final DateFormat dateFormat, final UnitFormat unitFormat, final Locale errorLocale)
+    AbstractParser(final URI sourceFile, final Map<String,StoredTree> fragments, final Symbols symbols,
+                   NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
+                   final Locale errorLocale)
     {
-        ensureNonNull("symbols", symbols);
         if (numberFormat == null) {
             numberFormat = symbols.createNumberFormat();
         }
-        this.symbols     = symbols;
+        this.sourceFile  = sourceFile;
         this.fragments   = fragments;
+        this.symbols     = symbols;
         this.dateFormat  = dateFormat;
         this.unitFormat  = unitFormat;
         this.errorLocale = errorLocale;

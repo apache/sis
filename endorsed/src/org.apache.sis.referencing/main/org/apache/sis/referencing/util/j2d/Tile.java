@@ -513,7 +513,7 @@ public class Tile implements Serializable {
      * Intentionally no implementation for `equals()` and `hashCode()`. Tile is an "almost immutable" class
      * which can still be modified (only once) by MocaicCalculator, or by read operations during `getSize()`
      * or `getRegion()` execution. This causes confusing behavior when used in an HashMap. We are better to
-     * rely on system identity. For example, `DatumShiftGridGroup` rely on the capability to locate Tiles in
+     * rely on system identity. For example, `GridGroup` relies on the capability to locate Tiles in
      * HashMap before and after they have been processed by `TileOrganizer`.
      */
 
@@ -670,7 +670,7 @@ public class Tile implements Serializable {
         /*
          * Table completed. Flushs to the writer and appends additional text if we have
          * not formatted every tiles. IOException may be thrown starting from this point
-         * (the above code is not expected to thrown any IOException).
+         * (the above code is not expected to throw any IOException).
          */
         table.flush();
         if (remaining < 0) {

@@ -27,6 +27,7 @@ import javax.imageio.stream.ImageOutputStream;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -194,23 +195,24 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
     @Test
     public void testArgumentChecks() throws IOException {
         initialize("testArgumentChecks", 20, 10);
-        String message;
 
         // Shall not accept invalid bitOffset.
-        message = assertThrows(IllegalArgumentException.class, () -> testedStream.setBitOffset(9)).getMessage();
-        assertTrue(message.contains("bitOffset"), message);
+        Exception exception;
+        exception = assertThrows(IllegalArgumentException.class, () -> testedStream.setBitOffset(9));
+        assertMessageContains(exception, "bitOffset");
 
         // Shall not accept reset without mark.
-        message = assertThrows(IOException.class, () -> testedStream.reset()).getMessage();
-        assertNotNull(message);
+        exception = assertThrows(IOException.class, () -> testedStream.reset());
+        assertMessageContains(exception);
 
         // Shall not flush at a position greater than buffer limit.
         final int v = random.nextInt();
         referenceStream.writeShort(v);
         testedStream.writeShort(v);
         testedStream.flushBefore(0);        // Valid.
-        message = assertThrows(IndexOutOfBoundsException.class, () -> testedStream.flushBefore(3)).getMessage();
-        assertTrue(message.contains("position"), message);
+
+        exception = assertThrows(IndexOutOfBoundsException.class, () -> testedStream.flushBefore(3));
+        assertMessageContains(exception, "position");
 
         testedStream.flush();
         testedStream.flushBefore(0);        // Should be a no-operation.
@@ -351,8 +353,8 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
         /*
          * Verify that we have no remaining marks, and finally compare stream content.
          */
-        String message = assertThrows(IOException.class, () -> testedStream.reset()).getMessage();
-        assertNotNull(message);
+        IOException exception = assertThrows(IOException.class, () -> testedStream.reset());
+        assertMessageContains(exception);
         assertStreamContentEquals();
     }
 

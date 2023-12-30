@@ -25,6 +25,9 @@ import java.nio.file.Files;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.gridded.GridFile;
+import org.apache.sis.referencing.operation.gridded.GridLoader;
+import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
@@ -87,7 +90,7 @@ public final class NADCONTest extends DatumShiftTestCase {
      * The tolerance when comparing coordinates in degrees.
      * This tolerance is determined by the precision of the tools used for computing NAD83 coordinates.
      */
-    public static final double ANGULAR_TOLERANCE = 0.5E-5 / DatumShiftGridLoader.DEGREES_TO_SECONDS;
+    public static final double ANGULAR_TOLERANCE = 0.5E-5 / GridLoader.DEGREES_TO_SECONDS;
 
     /**
      * Name of the file without extension containing a small extract of the NADCON grid.
@@ -118,7 +121,7 @@ public final class NADCONTest extends DatumShiftTestCase {
      * @param  longitudeShifts  path to the official {@code "conus.los"} file.
      * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
-    public static void testNADCON(final URI latitudeShifts, final URI longitudeShifts) throws Exception {
+    public static void testNADCON(final GridFile latitudeShifts, final GridFile longitudeShifts) throws Exception {
         testNADCON(latitudeShifts, longitudeShifts, -131, -63, 20, 50);
     }
 
@@ -130,12 +133,12 @@ public final class NADCONTest extends DatumShiftTestCase {
      * @param  ymin  southmost latitude.
      * @param  ymax  northmost latitude.
      */
-    private static void testNADCON(final URI latitudeShifts, final URI longitudeShifts,
+    private static void testNADCON(final GridFile latitudeShifts, final GridFile longitudeShifts,
             final double xmin, final double xmax, final double ymin, final double ymax)
             throws Exception
     {
-        final DatumShiftGridFile<Angle,Angle> grid = NADCON.getOrLoad(latitudeShifts, longitudeShifts);
-        assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);
+        final LoadedGrid<Angle,Angle> grid = NADCON.getOrLoad(latitudeShifts, longitudeShifts);
+        assertInstanceOf("Should not be compressed.", LoadedGrid.Float.class, grid);
         assertEquals("coordinateUnit",  Units.DEGREE, grid.getCoordinateUnit());
         assertEquals("translationUnit", Units.DEGREE, grid.getTranslationUnit());
         assertEquals("translationDimensions", 2, grid.getTranslationDimensions());
@@ -170,13 +173,13 @@ public final class NADCONTest extends DatumShiftTestCase {
         final double[] vector   = new double[2];
         grid.getCoordinateToGrid().transform(position, 0, indices, 0, 1);
         grid.interpolateInCell(indices[0], indices[1], vector);
-        vector[0] *= cellSize * DatumShiftGridLoader.DEGREES_TO_SECONDS;
-        vector[1] *= cellSize * DatumShiftGridLoader.DEGREES_TO_SECONDS;
+        vector[0] *= cellSize * GridLoader.DEGREES_TO_SECONDS;
+        vector[1] *= cellSize * GridLoader.DEGREES_TO_SECONDS;
         assertArrayEquals("interpolateInCell", expected, vector, 0.5E-5);
 
         // Same test than above, but let DatumShiftGrid do the conversions for us.
-        expected[0] /= DatumShiftGridLoader.DEGREES_TO_SECONDS;
-        expected[1] /= DatumShiftGridLoader.DEGREES_TO_SECONDS;
+        expected[0] /= GridLoader.DEGREES_TO_SECONDS;
+        expected[1] /= GridLoader.DEGREES_TO_SECONDS;
         assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position), ANGULAR_TOLERANCE);
         assertSame("Grid should be cached.", grid, NADCON.getOrLoad(latitudeShifts, longitudeShifts));
     }
@@ -220,7 +223,7 @@ public final class NADCONTest extends DatumShiftTestCase {
      * @throws TransformException if an error occurred while computing the envelope.
      * @throws IOException if an error occurred while writing the test file.
      */
-    public static void writeSubGrid(final DatumShiftGridFile<Angle,Angle> grid, final Path file, final int dim,
+    public static void writeSubGrid(final LoadedGrid<Angle,Angle> grid, final Path file, final int dim,
             final int gridX, final int gridY, final int nx, final int ny) throws IOException, TransformException
     {
         Envelope envelope = new Envelope2D(null, gridX, gridY, nx - 1, ny - 1);

@@ -29,11 +29,12 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -78,14 +79,14 @@ public final class DefaultParameterValueTest extends TestCase {
 
         /** Asserts that the value and the converted value are equal to the expected one. */
         void assertValueEquals(final Object expected) {
-            assertEquals("value",          expected, getValue());
-            assertEquals("convertedValue", expected, convertedValue);
+            assertEquals(expected, getValue());
+            assertEquals(expected, convertedValue);
         }
 
         /** Asserts that the value and the converted value are equal to the expected ones. */
         void assertValueEquals(final Object expected, final Object converted) {
-            assertEquals("value",          expected,  getValue());
-            assertEquals("convertedValue", converted, convertedValue);
+            assertEquals(expected,  getValue());
+            assertEquals(converted, convertedValue);
         }
     }
 
@@ -130,40 +131,32 @@ public final class DefaultParameterValueTest extends TestCase {
         final ParameterDescriptor<Integer> descriptor = parameter.getDescriptor();
         validate(parameter);
 
-        assertEquals("name",        "Integer param",     descriptor.getName().getCode());
-        assertEquals("type",        Integer.class,       descriptor.getValueClass());
-        assertNull  ("defaultUnit",                      descriptor.getUnit());
-        assertNull  ("unit",                             parameter .getUnit());
-        assertNull  ("defaultValue",                     descriptor.getDefaultValue());
-        assertEquals("value",       Integer.valueOf(14), parameter .getValue());
-        assertEquals("intValue",    14,                  parameter .intValue());
-        assertEquals("doubleValue", 14,                  parameter .doubleValue(), STRICT);
-        assertNull  ("minimum",                          descriptor.getMinimumValue());
-        assertNull  ("maximum",                          descriptor.getMaximumValue());
-        assertNull  ("validValues",                      descriptor.getValidValues());
+        assertEquals("Integer param", descriptor.getName().getCode());
+        assertEquals(Integer.class,   descriptor.getValueClass());
+        assertNull  (                 descriptor.getUnit());
+        assertNull  (                 parameter .getUnit());
+        assertNull  (                 descriptor.getDefaultValue());
+        assertEquals((Integer) 14,    parameter .getValue());
+        assertEquals(14,              parameter .intValue());
+        assertEquals(14,              parameter .doubleValue());
+        assertNull  (                 descriptor.getMinimumValue());
+        assertNull  (                 descriptor.getMaximumValue());
+        assertNull  (                 descriptor.getValidValues());
         /*
          * Invalid operation: this parameter does not have unit of measurement.
          */
-        try {
-            parameter.doubleValue(Units.METRE);
-            fail("doubleValue(METRE)");
-        } catch (IllegalStateException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Integer param"));
-        }
+        IllegalStateException ipt;
+        ipt = assertThrows(IllegalStateException.class, () -> parameter.doubleValue(Units.METRE));
+        assertMessageContains(ipt, "Integer param");
         /*
          * Invalid operation: this parameter is an integer, not a string.
          * While we could convert the integer to a string, in the context
          * of map projection parameters this is usually an error.
          */
-        try {
-            parameter.stringValue();
-            fail("stringValue()");
-        } catch (InvalidParameterTypeException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Integer"));
-            assertEquals("Integer param", exception.getParameterName());
-        }
+        InvalidParameterTypeException exception;
+        exception = assertThrows(InvalidParameterTypeException.class, () -> parameter.stringValue());
+        assertMessageContains(exception, "Integer");
+        assertEquals("Integer param", exception.getParameterName());
         /*
          * Set values. In the case of null value, since this parameter is optional
          * the value should stay null (not substituted by the default value).
@@ -186,69 +179,51 @@ public final class DefaultParameterValueTest extends TestCase {
         final Watcher<Integer> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30, +40, 15));
         assertEquals(Integer.class, parameter.getDescriptor().getValueClass());
-        assertEquals(      "value", Integer.valueOf(15), parameter.getValue());
-        assertEquals(   "intValue", 15, parameter.intValue());
-        assertEquals("doubleValue", 15, parameter.doubleValue(), STRICT);
+        assertEquals(Integer.valueOf(15), parameter.getValue());
+        assertEquals(15, parameter.intValue());
+        assertEquals(15, parameter.doubleValue());
         validate(parameter);
         /*
          * Set a value inside the range of valid values.
          */
         parameter.setValue(12);
         parameter.assertValueEquals(Integer.valueOf(12));
-        assertEquals(   "intValue", 12, parameter.intValue());
-        assertEquals("doubleValue", 12, parameter.doubleValue(), STRICT);
+        assertEquals(12, parameter.intValue());
+        assertEquals(12, parameter.doubleValue());
         validate(parameter);
         /*
          * Invalid operations: attempt to set values out of range.
          */
-        try {
-            parameter.setValue(50);
-            fail("setValue(> max)");
-        } catch (InvalidParameterValueException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Bounded param"));
-            assertEquals("Bounded param", exception.getParameterName());
-        }
-        try {
-            parameter.setValue(-40);
-            fail("setValue(< min)");
-        } catch (InvalidParameterValueException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Bounded param"));
-            assertEquals("Bounded param", exception.getParameterName());
-        }
+        InvalidParameterValueException exception;
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(50), "setValue(> max)");
+        assertMessageContains(exception, "Bounded param");
+        assertEquals("Bounded param", exception.getParameterName());
+
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(-40), "setValue(< min)");
+        assertMessageContains(exception, "Bounded param");
+        assertEquals("Bounded param", exception.getParameterName());
         /*
          * Invalid operation: attempt to set a floating point value.
          */
-        try {
-            parameter.setValue(10.5);
-            fail("setValue(double)");
-        } catch (InvalidParameterValueException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Integer"));
-            assertEquals("Bounded param", exception.getParameterName());
-        }
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(10.5), "setValue(double)");
+        assertMessageContains(exception, "Integer");
+        assertEquals("Bounded param", exception.getParameterName());
         /*
          * Try again to set a floating point value, but this time
          * the value can be converted to an integer.
          */
         parameter.setValue(10.0);
         parameter.assertValueEquals(Integer.valueOf(10));
-        assertEquals(   "intValue", 10, parameter.intValue());
-        assertEquals("doubleValue", 10, parameter.doubleValue(), STRICT);
+        assertEquals(10, parameter.intValue());
+        assertEquals(10, parameter.doubleValue());
         validate(parameter);
         /*
          * Invalid operation: set the same value than above, but with a unit of measurement.
          * This shall be an invalid operation since we created a unitless parameter.
          */
-        try {
-            parameter.setValue(10.0, Units.METRE);
-            fail("setValue(double,Unit)");
-        } catch (InvalidParameterValueException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Bounded param"));
-            assertEquals("Bounded param", exception.getParameterName());
-        }
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(10.0, Units.METRE), "setValue(double,Unit)");
+        assertMessageContains(exception, "Bounded param");
+        assertEquals("Bounded param", exception.getParameterName());
     }
 
     /**
@@ -260,39 +235,35 @@ public final class DefaultParameterValueTest extends TestCase {
         final ParameterDescriptor<Double> descriptor = parameter.getDescriptor();
         validate(parameter);
 
-        assertEquals("name",        "Numerical param", descriptor.getName().getCode());
-        assertEquals("defaultUnit", Units.METRE,          descriptor.getUnit());
-        assertEquals("unit",        Units.METRE,          parameter .getUnit());
-        assertNull  ("defaultValue",                   descriptor.getDefaultValue());
-        assertEquals("value",       Double.valueOf(3), parameter .getValue());
-        assertEquals("intValue",      3,               parameter .intValue());
-        assertEquals("doubleValue",   3,               parameter .doubleValue(), STRICT);
-        assertEquals("doubleValue", 300,               parameter .doubleValue(Units.CENTIMETRE), STRICT);
-        assertNull  ("minimum",                        descriptor.getMinimumValue());
-        assertNull  ("maximum",                        descriptor.getMaximumValue());
-        assertNull  ("validValues",                    descriptor.getValidValues());
+        assertEquals("Numerical param", descriptor.getName().getCode());
+        assertEquals(Units.METRE,       descriptor.getUnit());
+        assertEquals(Units.METRE,       parameter .getUnit());
+        assertNull  (                   descriptor.getDefaultValue());
+        assertEquals(Double.valueOf(3), parameter .getValue());
+        assertEquals(  3,               parameter .intValue());
+        assertEquals(  3,               parameter .doubleValue());
+        assertEquals(300,               parameter .doubleValue(Units.CENTIMETRE));
+        assertNull  (                   descriptor.getMinimumValue());
+        assertNull  (                   descriptor.getMaximumValue());
+        assertNull  (                   descriptor.getValidValues());
         /*
          * Invalid operation: this parameter is a real number, not a string.
          * While we could convert the number to a string, in the context of
          * map projection parameters this is usually an error.
          */
-        try {
-            parameter.stringValue();
-            fail("stringValue()");
-        } catch (InvalidParameterTypeException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Double"));
-            assertEquals("Numerical param", exception.getParameterName());
-        }
+        InvalidParameterTypeException exception;
+        exception = assertThrows(InvalidParameterTypeException.class, () -> parameter.stringValue());
+        assertMessageContains(exception, "Double");
+        assertEquals("Numerical param", exception.getParameterName());
         /*
          * Sets a value in centimetres.
          */
         parameter.setValue(400, Units.CENTIMETRE);
         parameter.assertValueEquals(Double.valueOf(400), Double.valueOf(4));
-        assertEquals("unit",        Units.CENTIMETRE, parameter.getUnit());
-        assertEquals("doubleValue", 400, parameter.doubleValue(),                 STRICT);
-        assertEquals("doubleValue", 400, parameter.doubleValue(Units.CENTIMETRE), STRICT);
-        assertEquals("doubleValue",   4, parameter.doubleValue(Units.METRE),      STRICT);
+        assertEquals(Units.CENTIMETRE, parameter.getUnit());
+        assertEquals(400, parameter.doubleValue());
+        assertEquals(400, parameter.doubleValue(Units.CENTIMETRE));
+        assertEquals(  4, parameter.doubleValue(Units.METRE));
         validate(parameter);
     }
 
@@ -306,39 +277,27 @@ public final class DefaultParameterValueTest extends TestCase {
         final Watcher<Double> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30.0, +40.0, 15.0, null));
         assertEquals(Double.class, parameter.getDescriptor().getValueClass());
-        assertEquals(      "value", Double.valueOf(15), parameter.getValue());
-        assertEquals(   "intValue", 15, parameter.intValue());
-        assertEquals("doubleValue", 15, parameter.doubleValue(), STRICT);
+        assertEquals(Double.valueOf(15), parameter.getValue());
+        assertEquals(15, parameter.intValue());
+        assertEquals(15, parameter.doubleValue());
         validate(parameter);
 
         parameter.setValue(12.0);
         parameter.assertValueEquals(Double.valueOf(12));
-        assertEquals(   "intValue", 12, parameter.intValue());
-        assertEquals("doubleValue", 12, parameter.doubleValue(), STRICT);
+        assertEquals(12, parameter.intValue());
+        assertEquals(12, parameter.doubleValue());
         validate(parameter);
 
-        try {
-            parameter.setValue(50.0);
-            fail("setValue(> max)");
-        } catch (InvalidParameterValueException exception) {
-            // This is the expected exception.
-            assertEquals("Bounded param", exception.getParameterName());
-        }
-        try {
-            parameter.setValue(-40.0);
-            fail("setValue(< min)");
-        } catch (InvalidParameterValueException exception) {
-            // This is the expected exception.
-            assertEquals("Bounded param", exception.getParameterName());
-        }
-        try {
-            parameter.setValue("12");
-            fail("setValue(String)");
-        } catch (InvalidParameterValueException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Bounded param"));
-            assertEquals("Bounded param", exception.getParameterName());
-        }
+        InvalidParameterValueException exception;
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(50.0), "setValue(> max)");
+        assertEquals("Bounded param", exception.getParameterName());
+
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(-40.0), "setValue(< min)");
+        assertEquals("Bounded param", exception.getParameterName());
+
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue("12"), "setValue(String)");
+        assertMessageContains(exception, "Bounded param");
+        assertEquals("Bounded param", exception.getParameterName());
     }
 
     /**
@@ -349,42 +308,36 @@ public final class DefaultParameterValueTest extends TestCase {
     public void testBoundedMeasure() {
         final Watcher<Double> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Length measure", 4, 20, 12, Units.METRE));
-        assertEquals("value",    Double.valueOf(12), parameter.getValue());
-        assertEquals("intValue", 12,                 parameter.intValue());
-        assertEquals("unit",     Units.METRE,        parameter.getUnit());
+        assertEquals(Double.valueOf(12), parameter.getValue());
+        assertEquals(12,                 parameter.intValue());
+        assertEquals(Units.METRE,        parameter.getUnit());
         validate(parameter);
 
         for (int i=4; i<=20; i++) {
             parameter.setValue(i);
             parameter.assertValueEquals(Double.valueOf(i));
-            assertEquals("unit",  Units.METRE,  parameter.getUnit());
-            assertEquals("value", i,            parameter.doubleValue(Units.METRE), STRICT);
-            assertEquals("value", 100*i,        parameter.doubleValue(Units.CENTIMETRE), STRICT);
+            assertEquals(Units.METRE,  parameter.getUnit());
+            assertEquals(i,            parameter.doubleValue(Units.METRE));
+            assertEquals(100*i,        parameter.doubleValue(Units.CENTIMETRE));
         }
-        try {
-            parameter.setValue(3.0);
-            fail("setValue(< min)");
-        } catch (InvalidParameterValueException exception) {
-            assertEquals("Length measure", exception.getParameterName());
-        }
-        try {
-            parameter.setValue(10.0, Units.KILOMETRE);          // Out of range only after unit conversion.
-            fail("setValue(> max)");
-        } catch (InvalidParameterValueException exception) {
-            assertEquals("Length measure", exception.getParameterName());
-        }
-        try {
-            parameter.setValue("12");
-            fail("setValue(Sring)");
-        } catch (InvalidParameterValueException exception) {
-            assertEquals("Length measure", exception.getParameterName());
-        }
+
+        InvalidParameterValueException exception;
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(3.0), "setValue(< min)");
+        assertEquals("Length measure", exception.getParameterName());
+
+        // Out of range only after unit conversion.
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(10.0, Units.KILOMETRE), "setValue(> max)");
+        assertEquals("Length measure", exception.getParameterName());
+
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue("12"), "setValue(Sring)");
+        assertEquals("Length measure", exception.getParameterName());
+
         for (int i=400; i<=2000; i+=100) {
             final double metres = i / 100.0;
             parameter.setValue(i, Units.CENTIMETRE);
             parameter.assertValueEquals(Double.valueOf(i), Double.valueOf(metres));
-            assertEquals("unit",  Units.CENTIMETRE, parameter.getUnit());
-            assertEquals("value", metres,           parameter.doubleValue(Units.METRE), EPS);
+            assertEquals(Units.CENTIMETRE, parameter.getUnit());
+            assertEquals(metres, parameter.doubleValue(Units.METRE), EPS);
         }
     }
 
@@ -411,19 +364,15 @@ public final class DefaultParameterValueTest extends TestCase {
         assertArrayEquals(metres, parameter.convertedValue, 0);
         assertArrayEquals(values, parameter.doubleValueList(), 0);
         assertArrayEquals(metres, parameter.doubleValueList(Units.METRE), 0);
-        /*
-         * Values out of range.
-         */
-        try {
-            parameter.setValue(new double[] {5, 10, -5}, Units.METRE);
-        } catch (InvalidParameterValueException e) {
-            assertTrue(e.getMessage().contains("myValues[2]"));
-        }
-        try {
-            parameter.setValue(new double[] {4, 5}, Units.KILOMETRE);   // Out of range only after unit conversion.
-        } catch (InvalidParameterValueException e) {
-            assertTrue(e.getMessage().contains("myValues[1]"));
-        }
+
+        // Values out of range.
+        InvalidParameterValueException exception;
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(new double[] {5, 10, -5}, Units.METRE));
+        assertMessageContains(exception, "myValues[2]");
+
+        // Values out of range only after unit conversion.
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(new double[] {4, 5}, Units.KILOMETRE));
+        assertMessageContains(exception, "myValues[1]");
     }
 
     /**
@@ -442,55 +391,40 @@ public final class DefaultParameterValueTest extends TestCase {
         final DefaultParameterValue<AxisDirection> parameter = new DefaultParameterValue<>(descriptor);
         validate(parameter);
 
-        assertEquals     ("name",         "Direction",         descriptor.getName().getCode());
-        assertEquals     ("defaultValue", AxisDirection.NORTH, descriptor.getDefaultValue());
-        assertEquals     ("value",        AxisDirection.NORTH, parameter .getValue());
-        assertNull       ("defaultUnit",                       descriptor.getUnit());
-        assertNull       ("unit",                              parameter .getUnit());
-        assertNull       ("minimum",                           descriptor.getMinimumValue());
-        assertNull       ("maximum",                           descriptor.getMaximumValue());
-        assertArrayEquals("validValues", directions,           descriptor.getValidValues().toArray());
+        assertEquals     ("Direction",         descriptor.getName().getCode());
+        assertEquals     (AxisDirection.NORTH, descriptor.getDefaultValue());
+        assertEquals     (AxisDirection.NORTH, parameter .getValue());
+        assertNull       (                     descriptor.getUnit());
+        assertNull       (                     parameter .getUnit());
+        assertNull       (                     descriptor.getMinimumValue());
+        assertNull       (                     descriptor.getMaximumValue());
+        assertArrayEquals(directions,          descriptor.getValidValues().toArray());
         /*
-         * Invalid operation: attempt to get the value as a 'double' is not allowed.
+         * Invalid operation: attempt to get the value as a `double` is not allowed.
          */
-        try {
-            parameter.doubleValue();
-            fail("doubleValue shall not be allowed on AxisDirection");
-        } catch (InvalidParameterTypeException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("AxisDirection"));
-            assertEquals("Direction", exception.getParameterName());
-        }
+        InvalidParameterTypeException ipt;
+        ipt = assertThrows(InvalidParameterTypeException.class, () -> parameter.doubleValue(),
+                           "doubleValue() shall not be allowed on AxisDirection");
+        assertMessageContains(ipt, "AxisDirection");
+        assertEquals("Direction", ipt.getParameterName());
         /*
          * Set a valid value.
          */
         parameter.setValue(AxisDirection.PAST);
-        assertEquals("value", AxisDirection.PAST, parameter.getValue());
+        assertEquals(AxisDirection.PAST, parameter.getValue());
         /*
          * Invalid operation: set a value of valid type but not in the list of valid values.
          */
-        try {
-            parameter.setValue(AxisDirection.GEOCENTRIC_X);
-            fail("setValue(AxisDirection.UP)");
-        } catch (InvalidParameterValueException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Direction"));
-            assertTrue(message, message.contains("Geocentric X"));
-            assertEquals("Direction", exception.getParameterName());
-        }
+        InvalidParameterValueException exception;
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(AxisDirection.GEOCENTRIC_X));
+        assertMessageContains(exception, "Direction", "Geocentric X");
+        assertEquals("Direction", exception.getParameterName());
         /*
          * Invalid operation: attempt to set a value of wrong type.
          */
-        try {
-            parameter.setValue(VerticalDatumType.BAROMETRIC);
-            fail("setValue(VerticalDatumType)");
-        } catch (InvalidParameterValueException exception) {
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Direction"));
-            assertTrue(message, message.contains("VerticalDatumType"));
-            assertTrue(message, message.contains("AxisDirection"));
-            assertEquals("Direction", exception.getParameterName());
-        }
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(VerticalDatumType.BAROMETRIC));
+        assertMessageContains(exception, "Direction", "VerticalDatumType", "AxisDirection");
+        assertEquals("Direction", exception.getParameterName());
     }
 
     /**
@@ -509,62 +443,62 @@ public final class DefaultParameterValueTest extends TestCase {
             d = p.getDescriptor();
             validate(p);
 
-            assertNotNull("Expected a descriptor.",       d);
-            assertNull   ("Expected no default value.",   d.getDefaultValue());
-            assertNull   ("Expected no minimal value.",   d.getMinimumValue());
-            assertNull   ("Expected no maximal value.",   d.getMaximumValue());
-            assertNull   ("Expected no enumeration.",     d.getValidValues());
-            assertEquals ("Expected integer type.",       Integer.class, d.getValueClass());
-            assertTrue   ("Expected integer type.",       p.getValue() instanceof Integer);
-            assertNull   ("Expected unitless parameter.", p.getUnit());
-            assertEquals ("Expected integer value", i,    p.intValue());
-            assertEquals ("Expected integer value", i,    p.doubleValue(), STRICT);
+            assertNotNull   (d);
+            assertNull      (d.getDefaultValue());
+            assertNull      (d.getMinimumValue());
+            assertNull      (d.getMaximumValue());
+            assertNull      (d.getValidValues());
+            assertEquals    (Integer.class, d.getValueClass());
+            assertInstanceOf(Integer.class, p.getValue());
+            assertNull      (p.getUnit());
+            assertEquals    (i, p.intValue());
+            assertEquals    (i, p.doubleValue());
 
             p = create("Unitlesss double value", i, null);
             d = p.getDescriptor();
             validate(p);
 
-            assertNotNull("Expected a descriptor.",       d);
-            assertNull   ("Expected no default value.",   d.getDefaultValue());
-            assertNull   ("Expected no minimal value.",   d.getMinimumValue());
-            assertNull   ("Expected no maximal value.",   d.getMaximumValue());
-            assertNull   ("Expected no enumeration.",     d.getValidValues());
-            assertEquals ("Expected double type.",        Double.class, d.getValueClass());
-            assertTrue   ("Expected double type.",        p.getValue() instanceof Double);
-            assertNull   ("Expected unitless parameter.", p.getUnit());
-            assertEquals ("Expected integer value", i,    p.intValue());
-            assertEquals ("Expected integer value", i,    p.doubleValue(), STRICT);
+            assertNotNull   (d);
+            assertNull      (d.getDefaultValue());
+            assertNull      (d.getMinimumValue());
+            assertNull      (d.getMaximumValue());
+            assertNull      (d.getValidValues());
+            assertEquals    (Double.class, d.getValueClass());
+            assertInstanceOf(Double.class, p.getValue());
+            assertNull      (p.getUnit());
+            assertEquals    (i, p.intValue());
+            assertEquals    (i, p.doubleValue());
 
             p = create("Dimensionless double value", i, Units.UNITY);
             d = p.getDescriptor();
             validate(p);
 
-            assertNotNull("Expected a descriptor.",       d);
-            assertNull   ("Expected no default value.",   d.getDefaultValue());
-            assertNull   ("Expected no minimal value.",   d.getMinimumValue());
-            assertNull   ("Expected no maximal value.",   d.getMaximumValue());
-            assertNull   ("Expected no enumeration.",     d.getValidValues());
-            assertEquals ("Expected double type.",        Double.class, d.getValueClass());
-            assertTrue   ("Expected double type.",        p.getValue() instanceof Double);
-            assertEquals ("Expected dimensionless.",      Units.UNITY, p.getUnit());
-            assertEquals ("Expected integer value", i,    p.intValue());
-            assertEquals ("Expected integer value", i,    p.doubleValue(), STRICT);
+            assertNotNull   (d);
+            assertNull      (d.getDefaultValue());
+            assertNull      (d.getMinimumValue());
+            assertNull      (d.getMaximumValue());
+            assertNull      (d.getValidValues());
+            assertEquals    (Double.class, d.getValueClass());
+            assertInstanceOf(Double.class, p.getValue());
+            assertEquals    (Units.UNITY, p.getUnit());
+            assertEquals    (i, p.intValue());
+            assertEquals    (i, p.doubleValue());
 
             p = create("Angular double value", i, Units.DEGREE);
             d = p.getDescriptor();
             validate(p);
 
-            assertNotNull("Expected a descriptor.",       d);
-            assertNull   ("Expected no default value.",   d.getDefaultValue());
-            assertNull   ("Expected no minimal value.",   d.getMinimumValue());
-            assertNull   ("Expected no maximal value.",   d.getMaximumValue());
-            assertNull   ("Expected no enumeration.",     d.getValidValues());
-            assertEquals ("Expected double type.",        Double.class, d.getValueClass());
-            assertTrue   ("Expected double type.",        p.getValue() instanceof Double);
-            assertEquals ("Expected angular unit.",       Units.DEGREE, p.getUnit());
-            assertEquals ("Expected integer value", i,    p.intValue());
-            assertEquals ("Expected integer value", i,    p.doubleValue(), STRICT);
-            assertEquals ("Expected unit conversion.",    toRadians(i), p.doubleValue(Units.RADIAN), EPS);
+            assertNotNull   (d);
+            assertNull      (d.getDefaultValue());
+            assertNull      (d.getMinimumValue());
+            assertNull      (d.getMaximumValue());
+            assertNull      (d.getValidValues());
+            assertEquals    (Double.class, d.getValueClass());
+            assertInstanceOf(Double.class, p.getValue());
+            assertEquals    (Units.DEGREE, p.getUnit());
+            assertEquals    (i, p.intValue());
+            assertEquals    (i, p.doubleValue());
+            assertEquals    (toRadians(i), p.doubleValue(Units.RADIAN), EPS, "Require unit conversion.");
         }
     }
 
@@ -573,8 +507,8 @@ public final class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testClone() {
-        final DefaultParameterValue<Double> parameter = create("Clone test", 3, Units.METRE);
-        assertEquals("equals(clone)", parameter, parameter.clone());
+        DefaultParameterValue<Double> parameter = create("Clone test", 3, Units.METRE);
+        assertEquals(parameter, parameter.clone());
     }
 
     /**
@@ -582,7 +516,7 @@ public final class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final DefaultParameterValue<Double> parameter = create("Serialization test", 3, Units.METRE);
+        DefaultParameterValue<Double> parameter = create("Serialization test", 3, Units.METRE);
         assertNotSame(parameter, assertSerializedEquals(parameter));
     }
 

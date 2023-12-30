@@ -40,6 +40,7 @@ import org.apache.sis.util.internal.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.TypeRegistration;
 import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.util.ExternalLinkHandler;
 
 
 /**
@@ -59,6 +60,11 @@ abstract class Pooled {
     private static final String[] SCHEMA_KEYS = {"cat", "gmd", "gmi", "gml"};
 
     /**
+     * The pool that produced this marshaller or unmarshaller.
+     */
+    private final MarshallerPool pool;
+
+    /**
      * The initial state of the (un)marshaller. Will be filled only as needed,
      * often with null values (which must be supported by the map implementation).
      *
@@ -71,12 +77,13 @@ abstract class Pooled {
      *
      * This map is never {@code null}.
      */
-    final Map<Object,Object> initialProperties;
+    final Map<Object,Object> initialProperties = new LinkedHashMap<>();
 
     /**
      * Bit masks for various boolean attributes. This include whatever the language codes
      * or the country codes should be substituted by a simpler character string elements.
      * Those bits are determined by the {@link XML#STRING_SUBSTITUTES} property.
+     * The meaning of the bits are defined by constants in {@link Context} class.
      */
     private int bitMasks;
 
@@ -116,6 +123,16 @@ abstract class Pooled {
     private Version versionMetadata;
 
     /**
+     * If the document to (un)marshal is included inside a larger document,
+     * the {@code systemId} of the included document. Otherwise {@code null}.
+     * This is used for caching the map of fragments (identified by {@code gml:id} attributes)
+     * included inside a document referenced by an {@code xlink:href} attribute.
+     *
+     * @see Context#getObjectForID(Context, Object, String)
+     */
+    private Object includedDocumentSystemId;
+
+    /**
      * The reference resolver to use during unmarshalling.
      * Can be set by the {@link XML#RESOLVER} property.
      */
@@ -149,9 +166,11 @@ abstract class Pooled {
 
     /**
      * Creates a {@link PooledTemplate}.
+     *
+     * @param pool  the pool that produced this template.
      */
-    Pooled() {
-        initialProperties = new LinkedHashMap<>();
+    Pooled(final MarshallerPool pool) {
+        this.pool = pool;
     }
 
     /**
@@ -161,7 +180,7 @@ abstract class Pooled {
      * @param template the {@link PooledTemplate} from which to get the initial values.
      */
     Pooled(final Pooled template) {
-        initialProperties = new LinkedHashMap<>();
+        pool = template.pool;
     }
 
     /**
@@ -192,6 +211,7 @@ abstract class Pooled {
             reset(entry.getKey(), entry.getValue());
         }
         initialProperties.clear();
+        includedDocumentSystemId = null;
         bitMasks         = template.bitMasks;
         locale           = template.locale;
         timezone         = template.timezone;
@@ -512,11 +532,21 @@ abstract class Pooled {
     }
 
     /**
-     * Must be invoked by subclasses before a {@code try} block performing a (un)marshalling
-     * operation. Must be followed by a call to {@code finish()} in a {@code finally} block.
+     * Notifies this object that it will be used for marshalling or unmarshalling a document
+     * included in a larger document. It happens when following {@code xlink:href}.
+     *
+     * @param  systemId  key to use for caching the parsing result in the marshal {@link Context}.
+     */
+    final void forIncludedDocument(final Object systemId) {
+        includedDocumentSystemId = systemId;
+    }
+
+    /**
+     * Must be invoked by subclasses before a {@code try} block performing a (un)marshalling operation.
+     * Must be followed by a call to {@code finish()} in a {@code finally} block.
      *
      * {@snippet lang="java" :
-     *     Context context = begin();
+     *     Context context = begin(linkHandler);
      *     try {
      *         ...
      *     } finally {
@@ -525,9 +555,30 @@ abstract class Pooled {
      *     }
      *
      * @see Context#finish()
+     *
+     * @param  linkHandler  the document-dependent resolver or relativizer of URIs, or {@code null}.
      */
-    final Context begin() {
-        return new Context(bitMasks | specificBitMasks(), locale, timezone,
-                schemas, versionGML, versionMetadata, resolver, converter, logFilter);
+    final Context begin(final ExternalLinkHandler linkHandler) {
+        if (includedDocumentSystemId != null) {
+            final Context current = Context.current();
+            if (current != null) {
+                return current.createChild(includedDocumentSystemId, linkHandler);
+            }
+        }
+        return new Context(bitMasks | specificBitMasks(), pool, locale, timezone,
+                           schemas, versionGML, versionMetadata,
+                           linkHandler, resolver, converter, logFilter);
+    }
+
+    /**
+     * {@return a string representation of this (un)marshaller for debugging purposes}.
+     */
+    @Override
+    public String toString() {
+        final Context current = Context.current();
+        return Strings.toString(getClass(),
+                "baseURI", Context.linkHandler(current).getBase(),
+                "locale", locale, "timezone", timezone,
+                "versionGML", versionGML, "versionMetadata", versionMetadata);
     }
 }

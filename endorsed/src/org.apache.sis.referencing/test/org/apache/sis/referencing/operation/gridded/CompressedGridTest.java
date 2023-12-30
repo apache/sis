@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation.provider;
+package org.apache.sis.referencing.operation.gridded;
 
 import javax.measure.quantity.Dimensionless;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -24,16 +24,16 @@ import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**
- * Tests {@link DatumShiftGridCompressed}. This class creates a grid using values computed by an affine transform,
+ * Tests {@link CompressedGrid}. This class creates a grid using values computed by an affine transform,
  * and compare values computed by the grid using the affine transform as a reference.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class DatumShiftGridCompressedTest extends DatumShiftGridFileTest {
+public final class CompressedGridTest extends LoadedGridTest {
     /**
      * Creates a new test case.
      */
-    public DatumShiftGridCompressedTest() {
+    public CompressedGridTest() {
     }
 
     /**
@@ -44,7 +44,7 @@ public final class DatumShiftGridCompressedTest extends DatumShiftGridFileTest {
     @Override
     void init(final double rotation) throws NoninvertibleTransformException {
         super.init(0);      // No rotation in order to have integer values.
-        grid = DatumShiftGridCompressed.compress((DatumShiftGridFile.Float<Dimensionless,Dimensionless>) grid, null, 0.5);
-        assertInstanceOf("grid", DatumShiftGridCompressed.class, grid);
+        grid = CompressedGrid.compress((LoadedGrid.Float<Dimensionless,Dimensionless>) grid, null, 0.5);
+        assertInstanceOf("grid", CompressedGrid.class, grid);
     }
 }

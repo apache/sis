@@ -55,19 +55,16 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.system.Modules;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.ScopedIdentifier;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.DefinitionVerifier;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.system.Modules;
-import org.apache.sis.system.Loggers;
-import org.apache.sis.util.OptionalCandidate;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Static;
-import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
@@ -84,6 +81,11 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.OptionalCandidate;
+import org.apache.sis.util.Static;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
@@ -197,6 +199,15 @@ public final class CRS extends Static {
      * If the EPSG geodetic dataset has been used, the {@linkplain NamedIdentifier#getAuthority() authority} title
      * will be something like <q>EPSG geodetic dataset</q>, otherwise it will be <q>Subset of EPSG</q>.
      *
+     * <h4>Extended set of codes</h4>
+     * If this method is invoked during the parsing of a GML document,
+     * then the set of known codes temporarily includes the {@code <gml:identifier>} values
+     * of all {@link CoordinateReferenceSystem} definitions which have been parsed before this method call.
+     * Those codes are local to the document being parsed (many documents can be parsed concurrently without conflict),
+     * and are discarded after the parsing is completed (e.g., on {@link org.apache.sis.xml.XML#unmarshal(String)} return).
+     * This feature allows embedded or linked data to references a CRS definition
+     * in the same file or a file included by an {@code xlink:href} attribute.
+     *
      * <h4>URI forms</h4>
      * This method accepts also the URN and URL syntaxes.
      * For example, the following codes are considered equivalent to {@code "EPSG:4326"}:
@@ -248,9 +259,24 @@ public final class CRS extends Static {
     {
         ArgumentChecks.ensureNonNull("code", code);
         try {
-            return AuthorityFactories.ALL.createCoordinateReferenceSystem(code);
-        } catch (UnavailableFactoryException e) {
-            return AuthorityFactories.fallback(e).createCoordinateReferenceSystem(code);
+            /*
+             * Gives precedence to the database for consistency reasons.
+             * The GML definitions are checked only in last resort.
+             */
+            try {
+                return AuthorityFactories.ALL.createCoordinateReferenceSystem(code);
+            } catch (UnavailableFactoryException e) {
+                return AuthorityFactories.fallback(e).createCoordinateReferenceSystem(code);
+            }
+        } catch (NoSuchAuthorityCodeException e) {
+            final Context context = Context.current();
+            if (context != null) {
+                var crs = new ScopedIdentifier<>(CoordinateReferenceSystem.class, code).get(context);
+                if (crs != null) {
+                    return crs;
+                }
+            }
+            throw e;
         }
     }
 
@@ -303,7 +329,7 @@ public final class CRS extends Static {
      * Applications which need to parse a large amount of WKT strings should consider to use
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
-     * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
+     * @param  wkt  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @return the parsed Coordinate Reference System.
      * @throws FactoryException if the given WKT cannot be parsed.
      *
@@ -314,9 +340,8 @@ public final class CRS extends Static {
      *
      * @since 0.6
      */
-    public static CoordinateReferenceSystem fromWKT(final String text) throws FactoryException {
-        ArgumentChecks.ensureNonNull("text", text);
-        final CoordinateReferenceSystem crs = GeodeticObjectFactory.provider().createFromWKT(text);
+    public static CoordinateReferenceSystem fromWKT(final String wkt) throws FactoryException {
+        final CoordinateReferenceSystem crs = GeodeticObjectFactory.provider().createFromWKT(wkt);
         DefinitionVerifier.withAuthority(crs, Loggers.WKT, CRS.class, "fromWKT");
         return crs;
     }

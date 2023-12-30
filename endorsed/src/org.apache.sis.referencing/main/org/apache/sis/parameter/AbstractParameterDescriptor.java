@@ -48,8 +48,7 @@ import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.D
  *     <th class="sep">WPS</th>
  *     <th class="sep">ISO 19115</th>
  *     <th class="sep">Remarks</th>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@link #getName() getName()}</td>
  *     <td class="sep">{@code name}</td>
  *     <td class="sep">{@code Identifier}</td>
@@ -63,22 +62,19 @@ import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.D
  *     <td class="sep">{@code Abstract}</td>
  *     <td class="sep">{@code description}</td>
  *     <td class="sep">Also known as “definition”.</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code getDirection()}</td>
  *     <td class="sep"></td>
  *     <td class="sep"></td>
  *     <td class="sep">{@code direction}</td>
  *     <td class="sep">Tells if the parameter is a WPS {@code Input} or {@code Output} structure.</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@link #getMinimumOccurs()}</td>
  *     <td class="sep">{@code minimumOccurs}</td>
  *     <td class="sep">{@code MinOccurs}</td>
  *     <td class="sep">{@code optionality}</td>
  *     <td class="sep">{@code optionality   = (minimumOccurs > 0)}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@link #getMaximumOccurs()}</td>
  *     <td class="sep">{@code maximumOccurs}</td>
  *     <td class="sep">{@code MaxOccurs}</td>
@@ -167,6 +163,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * @param maximumOccurs  the {@linkplain #getMaximumOccurs() maximum number of times} that values
      *                       for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
      */
+    @SuppressWarnings("this-escape")
     protected AbstractParameterDescriptor(final Map<String,?> properties,
             final int minimumOccurs, final int maximumOccurs)
     {

@@ -162,8 +162,7 @@
       <name>Gregory D. Reddin</name>
       <id>greddin</id>
       <roles>
-        <role>PMC member</role>
-        <role>mentor</role>
+        <role>PMC emeritus</role>
       </roles>
     </developer>
     <developer>
@@ -244,7 +243,7 @@
       <organization>AT&amp;T Interactive</organization>
       <timezone>-8</timezone>
       <roles>
-        <role>PMC member</role>
+        <role>PMC emeritus</role>
       </roles>
     </developer>
     <developer>
@@ -256,7 +255,7 @@
       <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
-        <role>PMC member</role>
+        <role>PMC emeritus</role>
       </roles>
     </developer>
     <developer>
@@ -305,7 +304,7 @@
       <id>tlpinney</id>
       <email>travis.pinney@gmail.com</email>
       <roles>
-        <role>PMC member</role>
+        <role>PMC emeritus</role>
       </roles>
     </developer>
   </developers>

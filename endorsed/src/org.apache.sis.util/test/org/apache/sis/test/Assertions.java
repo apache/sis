@@ -40,7 +40,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Static;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -64,13 +64,13 @@ public final class Assertions extends Static {
      * @param  o2  the second object.
      */
     public static void assertNotDeepEquals(final Object o1, final Object o2) {
-        assertNotSame("same", o1, o2);
-        assertFalse("equals",                      Objects  .equals    (o1, o2));
-        assertFalse("deepEquals",                  Objects  .deepEquals(o1, o2));
-        assertFalse("deepEquals(STRICT)",          Utilities.deepEquals(o1, o2, ComparisonMode.STRICT));
-        assertFalse("deepEquals(BY_CONTRACT)",     Utilities.deepEquals(o1, o2, ComparisonMode.BY_CONTRACT));
-        assertFalse("deepEquals(IGNORE_METADATA)", Utilities.deepEquals(o1, o2, ComparisonMode.IGNORE_METADATA));
-        assertFalse("deepEquals(APPROXIMATE)",     Utilities.deepEquals(o1, o2, ComparisonMode.APPROXIMATE));
+        assertNotSame(o1, o2, "same");
+        assertFalse(Objects  .equals    (o1, o2), "equals");
+        assertFalse(Objects  .deepEquals(o1, o2), "deepEquals");
+        assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.STRICT),          "deepEquals(STRICT)");
+        assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.BY_CONTRACT),     "deepEquals(BY_CONTRACT)");
+        assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.IGNORE_METADATA), "deepEquals(IGNORE_METADATA)");
+        assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.APPROXIMATE),     "deepEquals(APPROXIMATE)");
     }
 
     /**
@@ -83,10 +83,10 @@ public final class Assertions extends Static {
      * @param  actual    the actual object.
      */
     public static void assertAlmostEquals(final Object expected, final Object actual) {
-        assertFalse("Shall not be strictly equals",        Utilities.deepEquals(expected, actual, ComparisonMode.STRICT));
-        assertFalse("Shall be slightly different",         Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("Shall be approximately equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
-        assertTrue ("DEBUG inconsistent with APPROXIMATE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATE));
+        assertFalse(Utilities.deepEquals(expected, actual, ComparisonMode.STRICT),          "Shall not be strictly equal.");
+        assertFalse(Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA), "Shall be slightly different.");
+        assertTrue (Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG),           "Shall be approximately equal.");
+        assertTrue (Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATE),     "DEBUG inconsistent with APPROXIMATE.");
     }
 
     /**
@@ -97,9 +97,9 @@ public final class Assertions extends Static {
      * @param  actual    the actual object.
      */
     public static void assertEqualsIgnoreMetadata(final Object expected, final Object actual) {
-        assertTrue("Shall be approximately equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
-        assertTrue("DEBUG inconsistent with APPROXIMATE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATE));
-        assertTrue("Shall be equal, ignoring metadata",   Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
+        assertTrue(Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG),           "Shall be approximately equal.");
+        assertTrue(Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATE),     "DEBUG inconsistent with APPROXIMATE.");
+        assertTrue(Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA), "Shall be equal, ignoring metadata.");
     }
 
     /**
@@ -112,9 +112,9 @@ public final class Assertions extends Static {
     public static void assertArrayEqualsIgnoreMetadata(final Object[] expected, final Object[] actual) {
         if (expected != actual) {
             if (expected == null) {
-                assertNull("Expected null array.", actual);
+                assertNull(actual, "Expected null array.");
             } else {
-                assertNotNull("Expected non-null array.", actual);
+                assertNotNull(actual, "Expected non-null array.");
                 final int length = StrictMath.min(expected.length, actual.length);
                 for (int i=0; i<length; i++) try {
                     assertEqualsIgnoreMetadata(expected[i], actual[i]);
@@ -122,7 +122,7 @@ public final class Assertions extends Static {
                     throw new AssertionError(Exceptions.formatChainedMessages(null, "Comparison failure at index "
                             + i + " (a " + Classes.getShortClassName(actual[i]) + ").", e), e);
                 }
-                assertEquals("Unexpected array length.", expected.length, actual.length);
+                assertEquals(expected.length, actual.length, "Unexpected array length.");
             }
         }
     }
@@ -152,14 +152,15 @@ public final class Assertions extends Static {
         final CharSequence[] expectedLines = CharSequences.splitOnEOL(expected);
         final CharSequence[] actualLines   = CharSequences.splitOnEOL(actual);
         final int length = StrictMath.min(expectedLines.length, actualLines.length);
-        final StringBuilder buffer = new StringBuilder(message != null ? message : "Line").append('[');
-        final int base = buffer.length();
+        final var buffer = new StringBuilder(message != null ? message : "Line").append('[');
+        final int base   = buffer.length();
         for (int i=0; i<length; i++) {
+            buffer.append(i).append(']');
             CharSequence e = expectedLines[i];
             CharSequence a = actualLines[i];
             e = e.subSequence(0, CharSequences.skipTrailingWhitespaces(e, 0, e.length()));
             a = a.subSequence(0, CharSequences.skipTrailingWhitespaces(a, 0, a.length()));
-            assertEquals(buffer.append(i).append(']').toString(), e, a);
+            assertEquals(e, a, () -> buffer.toString());
             buffer.setLength(base);
         }
         if (expectedLines.length > actualLines.length) {
@@ -167,6 +168,22 @@ public final class Assertions extends Static {
         }
         if (expectedLines.length < actualLines.length) {
             fail(buffer.append(length).append("] extraneous line: ").append(actualLines[length]).toString());
+        }
+    }
+
+    /**
+     * Asserts that the message of the given exception contains all the given keywords.
+     * We do not test the exact exception message because it is locale-dependent.
+     * If the list of keywords is empty, then this method only verifies that the message is non-null.
+     *
+     * @param  exception  the exception for which to validate the message.
+     * @param  keywords   the keywords which should be present in the exception.
+     */
+    public static void assertMessageContains(final Throwable exception, final String... keywords) {
+        final String message = exception.getMessage();
+        assertNotNull(message, "Missing exception message.");
+        for (final String keyword : keywords) {
+            assertTrue(message.contains(keyword), () -> "Missing \"" + keyword + "\" in exception message: " + message);
         }
     }
 
@@ -194,7 +211,7 @@ public final class Assertions extends Static {
                 count++;
             }
         });
-        assertFalse("Unexpected end of stream.", expected.hasNext());
+        assertFalse(expected.hasNext(), "Unexpected end of stream.");
     }
 
     /**
@@ -249,15 +266,15 @@ public final class Assertions extends Static {
     public static void assertSetEquals(final Collection<?> expected, final Collection<?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
             final Set<Object> r = new LinkedHashSet<>(expected);
-            assertTrue("The two sets are disjoint.",                 r.removeAll(actual));
-            assertTrue("The set is missing elements: " + r,          r.isEmpty());
-            assertTrue("The set unexpectedly became empty.",         r.addAll(actual));
-            assertTrue("The two sets are disjoint.",                 r.removeAll(expected));
-            assertTrue("The set contains unexpected elements: " + r, r.isEmpty());
+            assertTrue(r.removeAll(actual),   "The two sets are disjoint.");
+            assertTrue(r.isEmpty(),           "The set is missing elements: " + r);
+            assertTrue(r.addAll(actual),      "The set unexpectedly became empty.");
+            assertTrue(r.removeAll(expected), "The two sets are disjoint.");
+            assertTrue(r.isEmpty(),     () -> "The set contains unexpected elements: " + r);
         }
         if (expected instanceof Set<?> && actual instanceof Set<?>) {
-            assertEquals("Set.equals(Object) failed:", expected, actual);
-            assertEquals("Unexpected hash code value.", expected.hashCode(), actual.hashCode());
+            assertEquals(expected, actual, "Set.equals(Object) failed:");
+            assertEquals(expected.hashCode(), actual.hashCode(), "Unexpected hash code value.");
         }
     }
 
@@ -301,7 +318,7 @@ public final class Assertions extends Static {
                 fail("The map contains unexpected elements:" + r);
             }
         }
-        assertEquals("Map.equals(Object) failed:", expected, actual);
+        assertEquals(expected, actual, "Map.equals(Object) failed:");
     }
 
     /**
@@ -335,15 +352,14 @@ public final class Assertions extends Static {
         } catch (IOException e) {
             throw new AssertionError(e.toString(), e);
         }
-        assertNotNull("Deserialized object shall not be null.", deserialized);
+        assertNotNull(deserialized, "Deserialized object shall not be null.");
         /*
          * Compare with the original object and return it.
          */
         @SuppressWarnings("unchecked")
         final Class<? extends T> type = (Class<? extends T>) object.getClass();
-        assertEquals("Deserialized object not equal to the original one.", object, deserialized);
-        assertEquals("Deserialized object has a different hash code.",
-                object.hashCode(), deserialized.hashCode());
+        assertEquals(object, deserialized, "Deserialized object not equal to the original one.");
+        assertEquals(object.hashCode(), deserialized.hashCode(), "Deserialized object has a different hash code.");
         return type.cast(deserialized);
     }
 }

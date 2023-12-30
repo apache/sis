@@ -1668,7 +1668,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Applications which need to parse a large amount of WKT strings should consider to use
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
-     * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
+     * @param  wkt  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @throws FactoryException if the object creation failed.
      *
      * @see org.apache.sis.io.wkt
@@ -1677,8 +1677,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     @Override
-    public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
-        ArgumentChecks.ensureNonEmpty("text", text);
+    public CoordinateReferenceSystem createFromWKT(final String wkt) throws FactoryException {
+        ArgumentChecks.ensureNonEmpty("wkt", wkt);
         Parser p = parser.getAndSet(null);
         if (p == null) try {
             Constructor<? extends Parser> c = parserConstructor;
@@ -1694,7 +1694,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         }
         final Object object;
         try {
-            object = p.createFromWKT(text);
+            object = p.createFromWKT(wkt);
         } catch (FactoryException e) {
             /*
              * In the case of map projection, the parsing may fail because a projection parameter is not known to SIS.

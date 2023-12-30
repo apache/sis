@@ -39,11 +39,12 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -91,8 +92,8 @@ public final class WKTDictionaryTest extends TestCase {
         /*
          * Codes can be in any order. Code spaces are omitted when there is no ambiguity.
          */
-        assertArrayEquals("getCodeSpaces()", new String[] {"TEST"}, factory.getCodeSpaces().toArray());
-        assertEquals("getAuthority()", "TEST", factory.getAuthority().getTitle().toString());
+        assertArrayEquals(new String[] {"TEST"}, factory.getCodeSpaces().toArray(), "getCodeSpaces()");
+        assertEquals("TEST", factory.getAuthority().getTitle().toString(), "getAuthority()");
         Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
         assertSame( codes,  factory.getAuthorityCodes(SingleCRS.class));
         assertSame( codes,  factory.getAuthorityCodes(GeodeticCRS.class));
@@ -107,13 +108,9 @@ public final class WKTDictionaryTest extends TestCase {
         /*
          * Test non-existing CRS.
          */
-        try {
-            factory.createGeographicCRS("84");
-            fail("Expected exception for non-existent CRS.");
-        } catch (NoSuchAuthorityCodeException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("84"));
-        }
+        NoSuchAuthorityCodeException exception;
+        exception = assertThrows(NoSuchAuthorityCodeException.class, () -> factory.createGeographicCRS("84"));
+        assertMessageContains(exception, "84");
     }
 
     /**
@@ -141,8 +138,8 @@ public final class WKTDictionaryTest extends TestCase {
          * in the test file. The authority should be "TEST" for the same reason.
          * Codes can be in any order. Code spaces are omitted when there is no ambiguity.
          */
-        assertArrayEquals("getCodeSpaces()", new String[] {"TEST", "ESRI"}, factory.getCodeSpaces().toArray());
-        assertEquals("getAuthority()", "TEST", factory.getAuthority().getTitle().toString());
+        assertArrayEquals(new String[] {"TEST", "ESRI"}, factory.getCodeSpaces().toArray(), "getCodeSpaces()");
+        assertEquals("TEST", factory.getAuthority().getTitle().toString(), "getAuthority()");
         Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
         assertSame( codes,  factory.getAuthorityCodes(IdentifiedObject.class));     // Test caching.
         assertSame( codes,  factory.getAuthorityCodes(SingleCRS.class));            // Test sharing.
@@ -197,8 +194,8 @@ public final class WKTDictionaryTest extends TestCase {
          */
         final void verify(final WKTDictionary factory) {
             factory.forEachValue(this);
-            assertEquals("Some values are equal but distinct instances. A single instance should be shared.",
-                         new HashSet<>(counts.keySet()).size(), counts.size());
+            assertEquals(new HashSet<>(counts.keySet()).size(), counts.size(),
+                    "Some values are equal but distinct instances. A single instance should be shared.");
             /*
              * Verify the number of occurrences of a few values. Note that the same string representation of keys
              * value may appear twice: once because the value was already a `String`, and once because the value
@@ -224,7 +221,7 @@ public final class WKTDictionaryTest extends TestCase {
                     }
                     default: continue;
                 }
-                assertEquals(key, expected, entry.getValue().intValue());
+                assertEquals(expected, entry.getValue().intValue(), key);
             }
         }
 
@@ -253,11 +250,11 @@ public final class WKTDictionaryTest extends TestCase {
      * @param  φ0    expected latitude of origin.
      */
     private static void verifyCRS(final ProjectedCRS crs, final String name, final double φ0) {
-        assertEquals("name", name, crs.getName().getCode());
+        assertEquals(name, crs.getName().getCode(), "name");
         assertAxisDirectionsEqual(name, crs.getCoordinateSystem(),
                                   AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals("φ0", φ0, crs.getConversionFromBase().getParameterValues()
-                                  .parameter("Latitude of natural origin").doubleValue(), STRICT);
+        assertEquals(φ0, crs.getConversionFromBase().getParameterValues()
+                            .parameter("Latitude of natural origin").doubleValue(), "φ0");
     }
 
     /**
@@ -267,7 +264,7 @@ public final class WKTDictionaryTest extends TestCase {
      * @param  name  expected CRS name.
      */
     private static void verifyCRS(final GeographicCRS crs, final String name) {
-        assertEquals("name", name, crs.getName().getCode());
+        assertEquals(name, crs.getName().getCode(), "name");
         assertAxisDirectionsEqual(name, crs.getCoordinateSystem(),
                                   AxisDirection.NORTH, AxisDirection.EAST);
     }
@@ -280,41 +277,31 @@ public final class WKTDictionaryTest extends TestCase {
      * @param  errorOffset  expected error index.
      */
     private static void verifyErroneousCRS(final WKTDictionary factory, final String code, final int errorOffset) {
-        String details = null;
-        try {
-            factory.createGeographicCRS(code);
-            fail("Parsing should have failed.");
-        } catch (FactoryException e) {
-            /*
-             * Expect a message like: Cannot create a geodetic object for "E1".
-             * The exact message is locale-dependent, so we cannot test fully.
-             */
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(code));
-            /*
-             * Expect a message like: Missing "semiMajorAxis" component in "Ellipsoid" element.
-             * The error offset (zero-based) should point to the character after "Ellipsoid" in
-             * the following WKT:
-             *
-             *     Datum["Erroneous", Ellipsoid["Missing axis length"]]
-             */
-            final UnparsableObjectException cause = (UnparsableObjectException) e.getCause();
-            details = cause.getMessage();
-            assertTrue(message, details.contains("Ellipsoid"));
-            assertTrue(message, details.contains("semiMajorAxis"));
-            assertEquals("errorOffset", errorOffset, cause.getErrorOffset());
-        }
+        FactoryException exception;
+        exception = assertThrows(FactoryException.class, () -> factory.createGeographicCRS(code));
+        /*
+         * Expect a message like: Cannot create a geodetic object for "E1".
+         * The exact message is locale-dependent, so we cannot test fully.
+         */
+        assertMessageContains(exception, code);
+        /*
+         * Expect a message like: Missing "semiMajorAxis" component in "Ellipsoid" element.
+         * The error offset (zero-based) should point to the character after "Ellipsoid" in
+         * the following WKT:
+         *
+         *     Datum["Erroneous", Ellipsoid["Missing axis length"]]
+         */
+        final UnparsableObjectException cause = assertInstanceOf(UnparsableObjectException.class, exception.getCause());
+        assertMessageContains(cause, "Ellipsoid", "semiMajorAxis");
+        assertEquals(errorOffset, cause.getErrorOffset(), "errorOffset");
         /*
          * Try parsing again. The exception message should have been saved,
          * i.e. the parsing process is not repeated.
          */
-        try {
-            factory.createGeographicCRS(code);
-            fail("Parsing should have failed.");
-        } catch (FactoryException e) {
-            assertEquals(details, e.getMessage());
-            assertNull(e.getCause());
-        }
+        final String details = cause.getMessage();
+        exception = assertThrows(FactoryException.class, () -> factory.createGeographicCRS(code));
+        assertEquals(details, exception.getMessage());
+        assertNull(exception.getCause());
     }
 
     /**
@@ -324,24 +311,18 @@ public final class WKTDictionaryTest extends TestCase {
      */
     @Test
     public void testLoadMalformed() throws IOException {
-        FactoryException ex;
+        FactoryException exception;
         final WKTDictionary factory = new WKTDictionary(null);
         try (BufferedReader source = new BufferedReader(new InputStreamReader(
                 WKTFormatTest.class.getResourceAsStream("Malformed.txt"), "UTF-8")))
         {
-            factory.load(source);
-            fail("Should not have accepted to load the file.");
-            return;
-        } catch (FactoryException e) {
-            ex = e;
+            exception = assertThrows(FactoryException.class, () -> factory.load(source));
         }
         /*
          * Except a message like: Cannot read file at line 13. Cause is: missing ']' in "GeodCRS" element.
          * The exact message is locale-dependent, so we test for a few keywords only.
          */
-        final String message = ex.getMessage();
-        assertTrue(message, message.contains("GeodCRS"));
-        assertTrue(message, message.contains("‘]’"));
+        assertMessageContains(exception, "GeodCRS", "‘]’");
     }
 
     /**
@@ -398,12 +379,8 @@ public final class WKTDictionaryTest extends TestCase {
         /*
          * Test non-existent code.
          */
-        try {
-            factory.createGeographicCRS("21");
-            fail("Parsing should have failed.");
-        } catch (FactoryException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("21"));
-        }
+        FactoryException exception;
+        exception = assertThrows(FactoryException.class, () -> factory.createGeographicCRS("21"));
+        assertMessageContains(exception, "21");
     }
 }

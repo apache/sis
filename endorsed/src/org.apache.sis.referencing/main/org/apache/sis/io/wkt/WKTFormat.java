@@ -25,10 +25,12 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.function.Function;
+import java.net.URI;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -119,7 +121,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @version 1.4
+ * @version 1.5
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -235,6 +237,15 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @see #fragments(boolean)
      */
     private TreeMap<String,StoredTree> fragments;
+
+    /**
+     * The URI to declare as the source of the WKT definitions, or {@code null} if unknown.
+     * This information is not used directly by the parser, but will be stored in parameter values
+     * as a hint for resolving relative paths as absolute paths.
+     *
+     * @see #getSourceFile()
+     */
+    private URI sourceFile;
 
     /**
      * {@code true} if the {@link #fragments} map is shared by two or more {@code WKTFormat} instances.
@@ -386,12 +397,11 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets the symbols used for parsing and formatting WKT.
      *
-     * @param  symbols  the new set of symbols to use for parsing and formatting WKT.
+     * @param  style  the new set of symbols to use for parsing and formatting WKT.
      */
-    public void setSymbols(final Symbols symbols) {
-        ArgumentChecks.ensureNonNull("symbols", symbols);
-        if (!symbols.equals(this.symbols)) {
-            this.symbols = symbols.immutable();
+    public void setSymbols(final Symbols style) {
+        if (!style.equals(symbols)) {               // Intentional NullPointerException.
+            symbols = style.immutable();
             formatter = null;
             parser = null;
         }
@@ -428,13 +438,13 @@ public class WKTFormat extends CompoundFormat<Object> {
      * then the default mapper is {@link Transliterator#DEFAULT} except for WKT formatted according
      * the {@linkplain Convention#INTERNAL internal convention}.</p>
      *
-     * @param  transliterator  the new mapper to use, or {@code null} for restoring the default value.
+     * @param  map  the new mapper to use, or {@code null} for restoring the default value.
      *
      * @since 0.6
      */
-    public void setTransliterator(final Transliterator transliterator) {
-        if (this.transliterator != transliterator) {
-            this.transliterator = transliterator;
+    public void setTransliterator(final Transliterator map) {
+        if (transliterator != map) {
+            transliterator = map;
             updateFormatter(formatter);
             parser = null;
         }
@@ -452,11 +462,10 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets whether WKT keywords should be written with upper cases or camel cases.
      *
-     * @param  keywordCase  the case to use for formatting keywords.
+     * @param  style  the case to use for formatting keywords.
      */
-    public void setKeywordCase(final KeywordCase keywordCase) {
-        ArgumentChecks.ensureNonNull("keywordCase", keywordCase);
-        this.keywordCase = keywordCase;
+    public void setKeywordCase(final KeywordCase style) {
+        keywordCase = Objects.requireNonNull(style);
         updateFormatter(formatter);
     }
 
@@ -474,13 +483,12 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets whether to use short or long WKT keywords.
      *
-     * @param  keywordStyle  the style to use for formatting keywords.
+     * @param  style  the style to use for formatting keywords.
      *
      * @since 0.6
      */
-    public void setKeywordStyle(final KeywordStyle keywordStyle) {
-        ArgumentChecks.ensureNonNull("keywordStyle", keywordStyle);
-        this.keywordStyle = keywordStyle;
+    public void setKeywordStyle(final KeywordStyle style) {
+        keywordStyle = Objects.requireNonNull(style);
         updateFormatter(formatter);
     }
 
@@ -505,13 +513,13 @@ public class WKTFormat extends CompoundFormat<Object> {
      * method tries to highlight most of the elements that are relevant to
      * {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)}.</p>
      *
-     * @param  colors  the colors for syntax coloring, or {@code null} if none.
+     * @param  emphasis  the colors for syntax coloring, or {@code null} if none.
      */
-    public void setColors(Colors colors) {
-        if (colors != null) {
-            colors = colors.immutable();
+    public void setColors(Colors emphasis) {
+        if (emphasis != null) {
+            emphasis = emphasis.immutable();
         }
-        this.colors = colors;
+        colors = emphasis;
         updateFormatter(formatter);
     }
 
@@ -528,12 +536,11 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets the convention for parsing and formatting WKT elements.
      *
-     * @param  convention  the new convention to use for parsing and formatting WKT elements.
+     * @param  variant  the new convention to use for parsing and formatting WKT elements.
      */
-    public void setConvention(final Convention convention) {
-        ArgumentChecks.ensureNonNull("convention", convention);
-        if (this.convention != convention) {
-            this.convention = convention;
+    public void setConvention(final Convention variant) {
+        if (convention != variant) {
+            convention = Objects.requireNonNull(variant);
             updateFormatter(formatter);
             parser = null;
         }
@@ -625,13 +632,13 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Sets a new indentation to be used for formatting objects.
      * The {@value #SINGLE_LINE} value means that the whole WKT is to be formatted on a single line.
      *
-     * @param  indentation  the new indentation to use.
+     * @param  numSpaces  the new indentation to use in number of spaces.
      *
      * @see org.apache.sis.setup.OptionKey#INDENTATION
      */
-    public void setIndentation(final int indentation) {
-        ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, indentation);
-        this.indentation = (byte) indentation;
+    public void setIndentation(final int numSpaces) {
+        ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, numSpaces);
+        indentation = (byte) numSpaces;
         updateFormatter(formatter);
     }
 
@@ -658,7 +665,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @since 1.0
      */
     public void setMaximumListElements(final int limit) {
-        ArgumentChecks.ensureStrictlyPositive("limit", limit);
+        ArgumentChecks.ensureStrictlyPositive("listSizeLimit", limit);
         listSizeLimit = limit;
         updateFormatter(formatter);
     }
@@ -668,7 +675,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * explicit {@code ID[…]} or {@code AUTHORITY[…]} element. The main use case is for implementing
      * a {@link org.opengis.referencing.crs.CRSAuthorityFactory} backed by definitions in WKT format.
      *
-     * <p>Note that this identifier apply to all objects to be created, which is generally not desirable.
+     * <p>Note that this identifier applies to all objects to be created, which is generally not desirable.
      * Callers should invoke {@code setDefaultIdentifier(null)} in a {@code finally} block.</p>
      *
      * <p>This is not a publicly committed API. If we want to make this functionality public in a future
@@ -748,8 +755,46 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Returns the URI to declare as the source of the WKT definitions. This value is not used directly by the parser,
+     * but stored as a hint for allowing users to interpret the {@code PARAMETERFILE[…]} value as a file relative to
+     * the file containing the WKT. The default value is {@code null}.
+     *
+     * @return the URI to declare as the source of the WKT definitions, or {@code null} if none.
+     *
+     * @see #setSourceFile(URI)
+     * @see org.apache.sis.parameter.DefaultParameterValue#getSourceFile()
+     * @see org.apache.sis.xml.MarshalContext#getDocumentURI()
+     * @see URI#resolve(URI)
+     *
+     * @since 1.5
+     */
+    public URI getSourceFile() {
+        return sourceFile;
+    }
+
+    /**
+     * Sets the URI to declare as the source of the WKT definitions. This information will be stored in
+     * {@link org.apache.sis.parameter.DefaultParameterValue#getSourceFile()} at WKT parsing time as a
+     * hint for resolving relative paths as absolute paths. This value has no effect at formatting time.
+     *
+     * @param  document  URI to the file that contains the WKT definitions to parse, or {@code null} if none.
+     *
+     * @see #getSourceFile()
+     * @see org.apache.sis.parameter.DefaultParameterValue#setSourceFile(URI)
+     * @see URI#resolve(URI)
+     *
+     * @since 1.5
+     */
+    public void setSourceFile(final URI document) {
+        if (!Objects.equals(sourceFile, document)) {
+            sourceFile = document;
+            parser = null;
+        }
+    }
+
+    /**
      * Returns the type of objects formatted by this class. This method has to return {@code Object.class}
-     * since it is the only common parent to all object types accepted by this formatter.
+     * because it is the only common parent to all object types accepted by this formatter.
      *
      * @return {@code Object.class}
      */
@@ -947,14 +992,12 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @param  modifiable  whether the caller intents to modify the {@link #fragments} map.
      */
     private AbstractParser parser(final boolean modifiable) {
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        AbstractParser parser = this.parser;
         /*
          * `parser` is always null on a fresh clone. However, the `fragments`
          * map may need to be cloned if the caller intents to modify it.
          */
         if (parser == null || (isCloned & modifiable)) {
-            this.parser = parser = new Parser(symbols, fragments(modifiable),
+            parser = new Parser(sourceFile, fragments(modifiable), symbols,
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class),
@@ -973,12 +1016,12 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     private final class Parser extends GeodeticObjectParser implements Function<Object,Object> {
         /** Creates a new parser. */
-        Parser(final Symbols symbols, final Map<String,StoredTree> fragments,
-                final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
-                final Convention convention, final Transliterator transliterator, final Locale errorLocale,
-                final ReferencingFactoryContainer factories)
+        Parser(final URI sourceFile, final Map<String,StoredTree> fragments, final Symbols symbols,
+               final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
+               final Convention convention, final Transliterator transliterator, final Locale errorLocale,
+               final ReferencingFactoryContainer factories)
         {
-            super(symbols, fragments, numberFormat, dateFormat, unitFormat, convention, transliterator, errorLocale, factories);
+            super(sourceFile, fragments, symbols, numberFormat, dateFormat, unitFormat, convention, transliterator, errorLocale, factories);
         }
 
         /** Returns the source class and method to declare in log records. */

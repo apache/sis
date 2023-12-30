@@ -16,9 +16,8 @@
  */
 
 /**
- * {@linkplain org.apache.sis.referencing.operation.transform.MathTransformProvider Math transform provider}
- * implementations. See {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} for a
- * discussion of parameters.
+ * Math transform provider implementations.
+ * See {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} for a discussion of parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Matthieu Bastianelli (Geomatys)

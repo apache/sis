@@ -32,16 +32,19 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
 
 // Test dependencies
+import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.After;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
@@ -58,6 +61,21 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
     DefaultParameterValueGroupTest.class
 })
 public final class ParameterMarshallingTest extends TestCase {
+    /**
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
+     */
+    @Rule
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
+
     /**
      * Creates a new test case.
      */
@@ -114,23 +132,25 @@ public final class ParameterMarshallingTest extends TestCase {
         assertXmlEquals(expected, xml, "xmlns:*");
         final DefaultParameterValue<?> r = (DefaultParameterValue<?>) XML.unmarshal(xml);
         if (!Objects.deepEquals(parameter.getValue(), r.getValue())) {
-            // If we enter in this block, then the line below should always fail.
-            // But we use this assertion for getting a better error message.
-            assertEquals("value", parameter.getValue(), r.getValue());
+            /*
+             * If we enter in this block, then the line below should always fail.
+             * But we use this assertion for getting a better error message.
+             */
+            assertEquals(parameter.getValue(), r.getValue(), "value");
         }
-        assertEquals("unit", parameter.getUnit(), r.getUnit());
+        assertEquals(parameter.getUnit(), r.getUnit(), "unit");
         /*
          * Verify the descriptor, especially the 'valueClass' property. That property is not part of GML,
          * so Apache SIS has to rely on some tricks for finding this information (see CC_OperationParameter).
          */
         final ParameterDescriptor<?> reference = parameter.getDescriptor();
         final ParameterDescriptor<?> descriptor = r.getDescriptor();
-        assertNotNull("descriptor",                                             descriptor);
-        assertEquals ("descriptor.name",          reference.getName(),          descriptor.getName());
-        assertEquals ("descriptor.unit",          reference.getUnit(),          descriptor.getUnit());
-        assertEquals ("descriptor.valueClass",    reference.getValueClass(),    descriptor.getValueClass());
-        assertEquals ("descriptor.minimumOccurs", reference.getMinimumOccurs(), descriptor.getMinimumOccurs());
-        assertEquals ("descriptor.maximumOccurs", reference.getMaximumOccurs(), descriptor.getMaximumOccurs());
+        assertNotNull(                              descriptor,                    "descriptor");
+        assertEquals (reference.getName(),          descriptor.getName(),          "descriptor.name");
+        assertEquals (reference.getUnit(),          descriptor.getUnit(),          "descriptor.unit");
+        assertEquals (reference.getValueClass(),    descriptor.getValueClass(),    "descriptor.valueClass");
+        assertEquals (reference.getMinimumOccurs(), descriptor.getMinimumOccurs(), "descriptor.minimumOccurs");
+        assertEquals (reference.getMaximumOccurs(), descriptor.getMaximumOccurs(), "descriptor.maximumOccurs");
         Validators.validate(r);
     }
 
@@ -144,24 +164,26 @@ public final class ParameterMarshallingTest extends TestCase {
         final DefaultParameterDescriptor<Double> descriptor = new DefaultParameterDescriptor<>(
                 Map.of(DefaultParameterDescriptor.NAME_KEY, "A descriptor"),
                 0, 1, Double.class, null, null, null);
+
         final String xml = XML.marshal(descriptor);
         assertXmlEquals(
                 "<gml:OperationParameter xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:name>A descriptor</gml:name>\n"
               + "  <gml:minimumOccurs>0</gml:minimumOccurs>\n"
               + "</gml:OperationParameter>", xml, "xmlns:*");
-        final DefaultParameterDescriptor<?> r = (DefaultParameterDescriptor<?>) XML.unmarshal(xml);
-        assertEquals("name", "A descriptor", r.getName().getCode());
-        assertEquals("minimumOccurs", 0, r.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1, r.getMaximumOccurs());
+
+        final var r = (DefaultParameterDescriptor<?>) XML.unmarshal(xml);
+        assertEquals("A descriptor", r.getName().getCode(), "name");
+        assertEquals(0, r.getMinimumOccurs(), "minimumOccurs");
+        assertEquals(1, r.getMaximumOccurs(), "maximumOccurs");
         /*
          * A DefaultParameterDescriptor with null 'valueClass' is illegal, but there is no way we can guess
          * this information if the <gml:OperationParameter> element was not a child of <gml:ParameterValue>.
          * The current implementation leaves 'valueClass' to null despite being illegal. This behavior may
          * change in any future Apache SIS version.
          */
-        assertNull("valueDomain", r.getValueDomain());
-        assertNull("valueClass",  r.getValueClass());               // May change in any future SIS release.
+        assertNull(r.getValueDomain(), "valueDomain");
+        assertNull(r.getValueClass(),  "valueClass");               // May change in any future SIS release.
     }
 
     /**
@@ -346,7 +368,7 @@ public final class ParameterMarshallingTest extends TestCase {
         verifyDescriptor(8805, "Scale factor at natural origin", "scale_factor",       true,  it.next());
         verifyDescriptor(8806, "False easting",                  "false_easting",      false, it.next());
         verifyDescriptor(8807, "False northing",                 "false_northing",     false, it.next());
-        assertFalse("Unexpected parameter.", it.hasNext());
+        assertFalse(it.hasNext());
     }
 
     /**
@@ -363,8 +385,8 @@ public final class ParameterMarshallingTest extends TestCase {
     {
         assertEpsgNameAndIdentifierEqual(name, code, descriptor);
         assertAliasTipEquals(alias, descriptor);
-        assertEquals("maximumOccurs", 1, descriptor.getMaximumOccurs());
-        assertEquals("minimumOccurs", required ? 1 : 0, descriptor.getMinimumOccurs());
+        assertEquals(1, descriptor.getMaximumOccurs(), "maximumOccurs");
+        assertEquals(required ? 1 : 0, descriptor.getMinimumOccurs(), "minimumOccurs");
     }
 
     /**
@@ -382,15 +404,15 @@ public final class ParameterMarshallingTest extends TestCase {
             final double value, final Unit<?> unit, final GeneralParameterDescriptor descriptor,
             final GeneralParameterValue parameter)
     {
-        assertInstanceOf(name, ParameterValue.class, parameter);
+        assertInstanceOf(ParameterValue.class, parameter, name);
         final ParameterValue<?> p = (ParameterValue<?>) parameter;
         final ParameterDescriptor<?> d = p.getDescriptor();
         verifyDescriptor(code, name, alias, true, d);
-        assertSame  ("descriptor", descriptor,   d);
-        assertEquals("value",      value,        p.doubleValue(), STRICT);
-        assertEquals("unit",       unit,         p.getUnit());
-        assertEquals("valueClass", Double.class, d.getValueClass());
-        assertEquals("unit",       unit,         d.getUnit());
+        assertSame  (descriptor,   d,                 "descriptor");
+        assertEquals(value,        p.doubleValue(),   "value");
+        assertEquals(unit,         p.getUnit(),       "unit");
+        assertEquals(Double.class, d.getValueClass(), "valueClass");
+        assertEquals(unit,         d.getUnit(),       "unit");
     }
 
     /**
@@ -429,6 +451,9 @@ public final class ParameterMarshallingTest extends TestCase {
     @DependsOnMethod("testValueGroupUnmarshalling")
     public void testDuplicatedParametersUnmarshalling() throws JAXBException {
         testValueGroupUnmarshalling(TestFile.DUPLICATED);
+        loggings.assertNextLogContains("EPSG::8801");
+        loggings.assertNextLogContains("EPSG::8802");
+        loggings.assertNextLogContains("EPSG::8805");
     }
 
     /**
@@ -442,6 +467,6 @@ public final class ParameterMarshallingTest extends TestCase {
         verifyParameter(8801, "Latitude of natural origin",     "latitude_of_origin", 40, Units.DEGREE, itd.next(), it.next());
         verifyParameter(8802, "Longitude of natural origin",    "central_meridian",  -60, Units.DEGREE, itd.next(), it.next());
         verifyParameter(8805, "Scale factor at natural origin", "scale_factor",        1, Units.UNITY,    itd.next(), it.next());
-        assertFalse("Unexpected parameter.", it.hasNext());
+        assertFalse(it.hasNext());
     }
 }
