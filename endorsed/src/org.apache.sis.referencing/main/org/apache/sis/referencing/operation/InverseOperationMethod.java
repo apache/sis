@@ -112,11 +112,11 @@ final class InverseOperationMethod extends DefaultOperationMethod {
 
     /**
      * Infers the properties to give to an inverse coordinate operation.
-     * The returned map will contain three kind of information:
+     * The returned map will contain the following kinds of information:
      *
      * <ul>
-     *   <li>Metadata (domain of validity, accuracy)</li>
-     *   <li>Parameter values, if possible</li>
+     *   <li>Metadata (domain of validity, accuracy).</li>
+     *   <li>Parameter values, if possible.</li>
      * </ul>
      *
      * If the inverse of the given operation can be represented by inverting the sign of all numerical
@@ -132,7 +132,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
      * see ISO 19111 for more information).
      *
      * @param source  the operation for which to get the inverse parameters.
-     * @param target  where to store the inverse parameters.
+     * @param target  where to store the properties of the inverse operation.
      */
     static void properties(final SingleOperation source, final Map<String,Object> target) {
         target.put(SingleOperation.DOMAIN_OF_VALIDITY_KEY, source.getDomainOfValidity());

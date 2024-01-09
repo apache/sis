@@ -351,6 +351,12 @@ public class Resources extends IndexedResourceBundle {
         public static final short MismatchedPrimeMeridian_2 = 36;
 
         /**
+         * Invalid coordinate operation step {0}, because the reference system “{1}” cannot be followed
+         * by “{2}”.
+         */
+        public static final short MismatchedSourceTargetCRS_3 = 100;
+
+        /**
          * Despite its name, this parameter is effectively “{0}”.
          */
         public static final short MisnamedParameter_1 = 38;

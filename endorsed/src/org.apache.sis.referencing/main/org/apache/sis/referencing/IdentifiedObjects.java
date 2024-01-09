@@ -32,15 +32,18 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
+import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.DefinitionURI;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+import org.apache.sis.pending.jdk.JDK21;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.metadata.internal.NameToIdentifier;
@@ -48,7 +51,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
-import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
@@ -472,7 +474,15 @@ public final class IdentifiedObjects extends Static {
         if (object instanceof CompoundCRS) {
             components = CRS.getSingleComponents((CompoundCRS) object);
         } else if (object instanceof ConcatenatedOperation) {
-            components = ((ConcatenatedOperation) object).getOperations();
+            final var cop = (ConcatenatedOperation) object;
+            final List<? extends CoordinateOperation> steps = cop.getOperations();
+            if (equalsIgnoreMetadata(cop.getSourceCRS(), JDK21.getFirst(steps).getSourceCRS()) &&
+                equalsIgnoreMetadata(cop.getTargetCRS(), JDK21.getLast (steps).getTargetCRS()))
+            {
+                components = steps;
+            } else {
+                return null;
+            }
         } else {
             return null;
         }

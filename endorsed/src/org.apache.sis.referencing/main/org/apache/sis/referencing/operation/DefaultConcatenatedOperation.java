@@ -20,11 +20,11 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Locale;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -32,15 +32,19 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
-import static org.apache.sis.util.Utilities.deepEquals;
 
 
 /**
@@ -59,6 +63,23 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 4199619838029045700L;
+
+    /**
+     * Optional key for specifying the {@link #transform} value.
+     * This property should generally not be specified, as the constructor builds the transform itself.
+     * It may be useful if the resulting transform is already known and we want to avoid the construction cost.
+     */
+    public static final String TRANSFORM_KEY = "transform";
+
+    /**
+     * The comparison modes to use for determining if two CRS are equal, in preference order.
+     * This is used for determining if an operation need to be inverted.
+     */
+    private static final ComparisonMode[] CRS_ORDER_CRITERIA = {
+        ComparisonMode.BY_CONTRACT,
+        ComparisonMode.IGNORE_METADATA,
+        ComparisonMode.APPROXIMATE
+    };
 
     /**
      * The sequence of operations.
@@ -84,6 +105,12 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      *     <th>Value type</th>
      *     <th>Returned by</th>
      *   </tr><tr>
+     *     <td>{@value #TRANSFORM_KEY}</td>
+     *     <td>{@link MathTransform}</td>
+     *     <td>{@link #getMathTransform()}</td>
+     *   </tr><tr>
+     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
@@ -91,13 +118,21 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#COORDINATE_OPERATION_ACCURACY_KEY}</td>
+     *     <td>{@link PositionalAccuracy} (optionally as array)</td>
+     *     <td>{@link #getCoordinateOperationAccuracy()}</td>
      *   </tr>
      * </table>
+     *
+     * The {@value #TRANSFORM_KEY} property should generally not be provided, as it is automatically computed.
+     * That property is available for saving computation cost when the concatenated transform is known in advance,
+     * or for overriding the automatic concatenation.
      *
      * @param  properties  the properties to be given to the identified object.
      * @param  operations  the sequence of operations. Shall contain at least two operations.
      * @param  mtFactory   the math transform factory to use for math transforms concatenation.
-     * @throws FactoryException if the factory cannot concatenate the math transforms.
+     * @throws FactoryException if this constructor or the factory cannot concatenate the operation steps.
      */
     public DefaultConcatenatedOperation(final Map<String,?> properties, final CoordinateOperation[] operations,
             final MathTransformFactory mtFactory) throws FactoryException
@@ -105,10 +140,11 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
         super(properties);
         ArgumentChecks.ensureNonNull("operations", operations);
         if (operations.length < 2) {
-            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+            throw new InvalidGeodeticParameterException(Errors.getResources(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));
         }
-        initialize(properties, operations, mtFactory);
+        transform = Containers.property(properties, TRANSFORM_KEY, MathTransform.class);
+        initialize(properties, operations, (transform == null) ? mtFactory : null);
         checkDimensions(properties);
     }
 
@@ -120,7 +156,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  properties   the properties specified at construction time, or {@code null} if unknown.
      * @param  operations   the operations to concatenate.
      * @param  mtFactory    the math transform factory to use, or {@code null} for not performing concatenation.
-     * @throws FactoryException if the factory cannot concatenate the math transforms.
+     * @throws FactoryException if this constructor or the factory cannot concatenate the operation steps.
      */
     private void initialize(final Map<String,?>         properties,
                             final CoordinateOperation[] operations,
@@ -129,7 +165,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     {
         final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
         final CoordinateReferenceSystem crs = initialize(properties, operations, flattened, mtFactory,
-                (sourceCRS == null), (coordinateOperationAccuracy == null));
+                sourceCRS, (sourceCRS == null), (coordinateOperationAccuracy == null));
         if (targetCRS == null) {
             targetCRS = crs;
         }
@@ -175,6 +211,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  operations   the operations to concatenate.
      * @param  flattened    the destination list in which to add the {@code SingleOperation} instances.
      * @param  mtFactory    the math transform factory to use, or {@code null} for not performing concatenation.
+     * @param  previous     target CRS of the step before the first {@code operations} step, or {@code null}.
      * @param  setSource    {@code true} for setting the {@link #sourceCRS} on the very first CRS (regardless if null or not).
      * @param  setAccuracy  {@code true} for setting the {@link #coordinateOperationAccuracy} field.
      * @return the last target CRS, regardless if null or not.
@@ -185,51 +222,60 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             final CoordinateOperation[]     operations,
             final List<CoordinateOperation> flattened,
             final MathTransformFactory      mtFactory,
+            CoordinateReferenceSystem       previous,
             boolean setSource,
             boolean setAccuracy) throws FactoryException
     {
-        CoordinateReferenceSystem previous = null;
+        CoordinateReferenceSystem source;                   // Source CRS of current iteration.
+        CoordinateReferenceSystem target = null;            // Target CRS of current and last iteration.
         for (int i=0; i<operations.length; i++) {
             final CoordinateOperation op = operations[i];
             ArgumentChecks.ensureNonNullElement("operations", i, op);
             /*
-             * Verify consistency of user argument: for each coordinate operation, the number of dimensions of the
-             * source CRS shall be equal to the number of dimensions of the target CRS in the previous operation.
+             * Verify consistency of user argument: for each coordinate operation, the source CRS
+             * should be equal (ignoring metadata) to the target CRS of the previous operation.
+             * An exception to this rule is when source and target CRS need to be swapped.
              */
-            final CoordinateReferenceSystem next = op.getSourceCRS();
-            if (previous != null && next != null) {
-                final int dim1 = previous.getCoordinateSystem().getDimension();
-                final int dim2 = next.getCoordinateSystem().getDimension();
-                if (dim1 != dim2) {
-                    throw new MismatchedDimensionException(Errors.getResources(properties).getString(
-                            Errors.Keys.MismatchedDimension_3, "operations[" + i + "].sourceCRS", dim1, dim2));
-                }
+            source = op.getSourceCRS();
+            target = op.getTargetCRS();
+            final boolean inverse = verifyStepChaining(properties, i, previous, source, target);
+            if (inverse) {
+                var t  = source;
+                source = target;
+                target = t;
             }
             if (setSource) {
                 setSource = false;
-                sourceCRS = next;                                               // Take even if null.
+                sourceCRS = source;                                             // Take even if null.
             }
-            previous = op.getTargetCRS();                                       // For next iteration cycle.
             /*
-             * Now that we have verified the CRS dimensions, we should be able to concatenate the transforms.
-             * If an operation is a nested ConcatenatedOperation (not allowed by ISO 19111, but we try to be
-             * safe), we will first try to use the ConcatenatedOperation.transform as a whole.  Only if that
-             * concatenated operation does not provide a transform we will concatenate its components.  Note
-             * however that we traverse nested concatenated operations unconditionally at least for checking
-             * its consistency.
+             * Now that we have verified the CRS chaining, we should be able to concatenate the transforms.
+             * If an operation is a nested `ConcatenatedOperation` (not allowed by ISO 19111, but we try to
+             * be safe), we will first try to use the `ConcatenatedOperation.transform` as a whole. Only if
+             * that concatenated operation does not provide a transform, we will concatenate its components.
+             * Note however that we traverse nested concatenated operations unconditionally at least for
+             * checking its consistency.
              */
-            final MathTransform step = op.getMathTransform();
+            NoninvertibleTransformException cause = null;
+            MathTransform step = op.getMathTransform();
+            if (step != null && inverse) try {
+                step = step.inverse();
+            } catch (NoninvertibleTransformException e) {
+                step = null;
+                cause = e;
+            }
             if (step == null) {
                 // May happen if the operation is a defining operation.
-                throw new IllegalArgumentException(Resources.format(
-                        Resources.Keys.OperationHasNoTransform_2, op.getClass(), op.getName()));
+                throw new InvalidGeodeticParameterException(Resources.format(
+                        Resources.Keys.OperationHasNoTransform_2, op.getClass(), op.getName()), cause);
             }
             if (op instanceof ConcatenatedOperation) {
-                final List<? extends CoordinateOperation> children = ((ConcatenatedOperation) op).getOperations();
-                final CoordinateOperation[] asArray = children.toArray(CoordinateOperation[]::new);
-                initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, false, setAccuracy);
+                final var nested = ((ConcatenatedOperation) op).getOperations().toArray(CoordinateOperation[]::new);
+                previous = initialize(properties, nested, flattened, null, previous, false, setAccuracy);
             } else if (!step.isIdentity()) {
+                // Note: operation (source, target) may be in reverse order, but it should be taken as metadata.
                 flattened.add(op);
+                previous = target;          // For next iteration cycle.
             }
             if (mtFactory != null) {
                 transform = (transform != null) ? mtFactory.createConcatenatedTransform(transform, step) : step;
@@ -253,7 +299,40 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 }
             }
         }
+        verifyStepChaining(properties, operations.length, target, targetCRS, null);
         return previous;
+    }
+
+    /**
+     * Verifies if a step of a concatenated operation can be chained after the previous step.
+     *
+     * @param  properties  user-specified properties (for the locale of error message), or {@code null} if none.
+     * @param  step        index of the operation step, used only in case an exception it thrown.
+     * @param  previous    Target CRS of the previous step.
+     * @param  source      Source CRS of the current step.
+     * @param  target      Target CRS of the current step, or {@code null} if none.
+     * @return whether the math transform needs to be inverted.
+     * @throws FactoryException if the current operation cannot be chained after the previous operation.
+     */
+    static boolean verifyStepChaining(
+            final Map<String,?> properties, final int step,
+            final CoordinateReferenceSystem previous,
+            final CoordinateReferenceSystem source,
+            final CoordinateReferenceSystem target) throws FactoryException
+    {
+        if (previous == null || source == null) {
+            return false;
+        }
+        for (final ComparisonMode mode : CRS_ORDER_CRITERIA) {
+            if (Utilities.deepEquals(previous, source, mode)) return false;
+            if (Utilities.deepEquals(previous, target, mode)) return true;
+        }
+        Resources resources = Resources.forProperties(properties);
+        Locale locale = resources.getLocale();
+        throw new InvalidGeodeticParameterException(resources.getString(
+                Resources.Keys.MismatchedSourceTargetCRS_3, step,
+                IdentifiedObjects.getDisplayName(previous, locale),
+                IdentifiedObjects.getDisplayName(source, locale)));
     }
 
     /**
@@ -333,7 +412,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             if (mode == ComparisonMode.STRICT) {
                 return Objects.equals(operations, ((DefaultConcatenatedOperation) object).operations);
             } else {
-                return deepEquals(getOperations(), ((ConcatenatedOperation) object).getOperations(), mode);
+                return Utilities.deepEquals(getOperations(), ((ConcatenatedOperation) object).getOperations(), mode);
             }
         }
         return false;
@@ -398,6 +477,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      */
     @XmlElement(name = "coordOperation", required = true)
     private CoordinateOperation[] getSteps() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final List<? extends CoordinateOperation> operations = getOperations();
         return (operations != null) ? operations.toArray(CoordinateOperation[]::new) : null;
     }

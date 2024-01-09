@@ -114,7 +114,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
  *
@@ -238,7 +238,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                             CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
                                                                targetCRS.getCoordinateSystem())));
         } catch (IllegalArgumentException | IncommensurableException e) {
-            throw new FactoryException(Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS)), e);
+            final CRSPair key = new CRSPair(sourceCRS, targetCRS);
+            throw new FactoryException(resources().getString(Resources.Keys.CanNotInstantiateGeodeticObject_1, key), e);
         }
         /*
          * If this method is invoked recursively, verify if the requested operation is already in the cache.
@@ -253,7 +254,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             if (op != null) return asList(op);      // Must be a modifiable list as per this method contract.
         }
         if (previousSearches.put(key, Boolean.TRUE) != null) {
-            throw new FactoryException(Resources.format(Resources.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
+            throw new FactoryException(resources().getString(Resources.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
         }
         /*
          * If the user did not specified an area of interest, use the domain of validity of the CRS.
@@ -1237,8 +1238,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
 
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(IdentifiedObject.NAME_KEY, newID);
-        properties.put(IdentifiedObject.REMARKS_KEY, Vocabulary.formatInternational(
-                            Vocabulary.Keys.DerivedFrom_1, CRSPair.label(object)));
+        properties.put(IdentifiedObject.REMARKS_KEY, Vocabulary.formatInternational(Vocabulary.Keys.DerivedFrom_1, label(object)));
         return properties;
     }
 
@@ -1268,8 +1268,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  target  the target CRS.
      * @return a default error message.
      */
-    private static String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
-        return Resources.format(Resources.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
+    private String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
+        return resources().getString(Resources.Keys.CoordinateOperationNotFound_2, label(source), label(target));
     }
 
     /**
@@ -1279,7 +1279,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  crs  the CRS having a conversion that cannot be inverted.
      * @return a default error message.
      */
-    private static String canNotInvert(final GeneralDerivedCRS crs) {
-        return Resources.format(Resources.Keys.NonInvertibleOperation_1, crs.getConversionFromBase().getName().getCode());
+    private String canNotInvert(final GeneralDerivedCRS crs) {
+        return resources().getString(Resources.Keys.NonInvertibleOperation_1, label(crs.getConversionFromBase()));
     }
 }

@@ -662,12 +662,7 @@ next:   for (int i=components.size(); --i >= 0;) {
         if (operations != null && operations.length == 1) {
             return operations[0];
         }
-        final ConcatenatedOperation op;
-        try {
-            op = new DefaultConcatenatedOperation(properties, operations, getMathTransformFactory());
-        } catch (IllegalArgumentException exception) {
-            throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
-        }
+        final var op = new DefaultConcatenatedOperation(properties, operations, getMathTransformFactory());
         /*
          * Verifies again the number of single operations.  We may have a singleton if some operations
          * were omitted because their associated math transform were identity. This happen for example
@@ -678,17 +673,22 @@ next:   for (int i=components.size(); --i >= 0;) {
             return pool.unique(op);
         }
         final CoordinateOperation single = co.get(0);
-        assert op.getMathTransform().equals(single.getMathTransform()) : op;
-        if (!Objects.equals(single.getSourceCRS(), op.getSourceCRS()) ||
-            !Objects.equals(single.getTargetCRS(), op.getTargetCRS()))
+        if (Objects.equals(single.getSourceCRS(), op.getSourceCRS()) &&
+            Objects.equals(single.getTargetCRS(), op.getTargetCRS()))
         {
+            // Verify only if CRS are equal because otherwise, `op` transform may be the inverse.
+            assert single.getMathTransform().equals(op.getMathTransform()) : op;
+        } else {
             /*
              * The CRS of the single operation may be different than the CRS of the concatenated operation
-             * if the first or the last operation was an identity operation. It happens for example if the
-             * sole purpose of an operation step was to change the longitude range from [-180 … +180]° to
-             * [0 … 360]°: the MathTransform is identity (because Apache SIS does not handle those changes
-             * in MathTransform; we handle that elsewhere, for example in the Envelopes utility class),
-             * but omitting the transform should not cause the lost of the CRS with desired longitude range.
+             * for two reasons: optimization when the first or the last operation was an identity operation,
+             * or when the operation to apply is the inverse of the single operation (swapped source/target).
+             *
+             * The first case (optimization) happens, for example, if the sole purpose of an operation step was
+             * to change the longitude range from [-180 … +180]° to [0 … 360]°. In such case, the `MathTransform`
+             * is identity (because Apache SIS does not handle those changes in `MathTransform`; we handle that
+             * elsewhere, for example in the Envelopes utility class), but omitting the transform should not
+             * cause the lost of the original CRS with the desired longitude range.
              */
             if (single instanceof SingleOperation) {
                 final Map<String,Object> merge = new HashMap<>(
@@ -700,7 +700,7 @@ next:   for (int i=components.size(); --i >= 0;) {
                 merge.putAll(properties);
                 return createSingleOperation(merge, op.getSourceCRS(), op.getTargetCRS(),
                         AbstractCoordinateOperation.getInterpolationCRS(op),
-                        ((SingleOperation) single).getMethod(), single.getMathTransform());
+                        ((SingleOperation) single).getMethod(), op.getMathTransform());
             }
         }
         return single;

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 
 /**
@@ -33,6 +34,36 @@ public final class JDK21 {
      * Do not allow instantiation of this class.
      */
     private JDK21() {
+    }
+
+    /**
+     * Placeholder for {@code SequencedCollection.getFirst()}.
+     *
+     * @param  <E>        type of elements in the collection.
+     * @param  sequenced  the sequenced collection for which to get elements in reverse order.
+     * @return elements of the given collection in reverse order.
+     */
+    public static <E> E getFirst(final List<E> sequenced) {
+        try {
+            return sequenced.get(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new NoSuchElementException();
+        }
+    }
+
+    /**
+     * Placeholder for {@code SequencedCollection.getLast()}.
+     *
+     * @param  <E>        type of elements in the collection.
+     * @param  sequenced  the sequenced collection for which to get elements in reverse order.
+     * @return elements of the given collection in reverse order.
+     */
+    public static <E> E getLast(final List<E> sequenced) {
+        try {
+            return sequenced.get(sequenced.size() - 1);
+        } catch (IndexOutOfBoundsException e) {
+            throw new NoSuchElementException();
+        }
     }
 
     /**
