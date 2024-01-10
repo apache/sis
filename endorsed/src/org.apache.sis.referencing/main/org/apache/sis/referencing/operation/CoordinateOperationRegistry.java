@@ -721,6 +721,10 @@ class CoordinateOperationRegistry {
      * see ISO 19111 for more information).
      */
     final CoordinateOperation inverse(final SingleOperation op) throws NoninvertibleTransformException, FactoryException {
+        CoordinateOperation inverse = AbstractCoordinateOperation.getCachedInverse(op);
+        if (inverse != null) {
+            return inverse;
+        }
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
         final MathTransform transform = op.getMathTransform().inverse();
@@ -735,7 +739,9 @@ class CoordinateOperationRegistry {
         Class<? extends CoordinateOperation> type = null;
         if (op instanceof Transformation)  type = Transformation.class;
         else if (op instanceof Conversion) type = Conversion.class;
-        return createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, type);
+        inverse = createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, type);
+        AbstractCoordinateOperation.setCachedInverse(op, inverse);
+        return inverse;
     }
 
     /**
@@ -758,6 +764,10 @@ class CoordinateOperationRegistry {
         if (operation instanceof SingleOperation) {
             return inverse((SingleOperation) operation);
         }
+        CoordinateOperation inverse = AbstractCoordinateOperation.getCachedInverse(operation);
+        if (inverse != null) {
+            return inverse;
+        }
         if (operation instanceof ConcatenatedOperation) {
             final CoordinateOperation[] inverted = getSteps((ConcatenatedOperation) operation, true);
             ArraysExt.reverse(inverted);
@@ -766,9 +776,10 @@ class CoordinateOperationRegistry {
             if (transform != null) {
                 properties.put(DefaultConcatenatedOperation.TRANSFORM_KEY, transform.inverse());
             }
-            return factory.createConcatenatedOperation(properties, inverted);
+            inverse = factory.createConcatenatedOperation(properties, inverted);
+            AbstractCoordinateOperation.setCachedInverse(operation, inverse);
         }
-        return null;
+        return inverse;
     }
 
     /**

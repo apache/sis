@@ -37,6 +37,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
+import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -229,7 +230,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
         CoordinateReferenceSystem source;                   // Source CRS of current iteration.
         CoordinateReferenceSystem target = null;            // Target CRS of current and last iteration.
         for (int i=0; i<operations.length; i++) {
-            final CoordinateOperation op = operations[i];
+            CoordinateOperation op = operations[i];
             ArgumentChecks.ensureNonNullElement("operations", i, op);
             /*
              * Verify consistency of user argument: for each coordinate operation, the source CRS
@@ -243,10 +244,15 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 var t  = source;
                 source = target;
                 target = t;
+                // Inverse the operation only if it produces a more natural definition.
+                if (CoordinateOperations.getMethod(op) instanceof InverseOperationMethod) {
+                    CoordinateOperation natural = getCachedInverse(op);
+                    if (natural != null) op = natural;
+                }
             }
             if (setSource) {
                 setSource = false;
-                sourceCRS = source;                                             // Take even if null.
+                sourceCRS = source;         // Take even if null.
             }
             /*
              * Now that we have verified the CRS chaining, we should be able to concatenate the transforms.

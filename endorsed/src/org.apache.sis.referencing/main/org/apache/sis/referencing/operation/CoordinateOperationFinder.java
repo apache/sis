@@ -1178,12 +1178,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * Returns {@code true} if the given operation is non-null and use the affine operation method.
      */
     private static boolean isAffine(final CoordinateOperation operation) {
-        if (operation instanceof SingleOperation) {
-            if (IdentifiedObjects.isHeuristicMatchForName(((SingleOperation) operation).getMethod(), Constants.AFFINE)) {
-                return true;
-            }
-        }
-        return false;
+        return IdentifiedObjects.isHeuristicMatchForName(CoordinateOperations.getMethod(operation), Constants.AFFINE);
     }
 
     /**

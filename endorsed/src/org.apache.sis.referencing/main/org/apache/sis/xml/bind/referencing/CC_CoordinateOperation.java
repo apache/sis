@@ -19,8 +19,8 @@ package org.apache.sis.xml.bind.referencing;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
-import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.xml.bind.gco.PropertyType;
+import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 
 
@@ -98,7 +98,7 @@ public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOper
             if (((PassThroughOperation) operation).getOperation() == null) {
                 incomplete("coordOperation");
             }
-        } else if ((operation instanceof SingleOperation) && ((SingleOperation) operation).getMethod() == null) {
+        } else if (CoordinateOperations.getMethod(operation) == null) {
             incomplete("method");
         }
     }

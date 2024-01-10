@@ -31,6 +31,7 @@ import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -136,6 +137,19 @@ public final class CoordinateOperations extends Static {
         p.putIfAbsent(ReferencingFactoryContainer.CS_FACTORY,  csFactory);
         properties = p;
         return new DefaultCoordinateOperationFactory(properties, mtFactory);
+    }
+
+    /**
+     * Returns the method of the given coordinate operation, or {@code null} if none.
+     *
+     * @param  operation  the operation from which to get the method, or {@code null}.
+     * @return the coordinate operation method, or {@code null} if none.
+     */
+    public static OperationMethod getMethod(final CoordinateOperation operation) {
+        if (operation instanceof SingleOperation) {
+            return ((SingleOperation) operation).getMethod();
+        }
+        return null;
     }
 
     /**
