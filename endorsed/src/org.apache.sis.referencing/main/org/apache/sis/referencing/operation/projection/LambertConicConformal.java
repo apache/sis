@@ -75,7 +75,7 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * Variants of Lambert Conical Conformal projection. Those variants modify the way the projections are constructed
      * (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
-     * Those variants are not exactly the same than variants 1SP and 2SP used by EPSG, but they are closely related.
+     * Those variants are not exactly the same as variants 1SP and 2SP used by EPSG, but they are closely related.
      *
      * <p>We do not provide such codes in public API because they duplicate the functionality of
      * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
@@ -149,7 +149,7 @@ public class LambertConicConformal extends ConformalProjection {
      *       This limiting case is the Mercator projection, but we cannot use this class because
      *       {@code n=0} causes indetermination like 0 × ∞ in the equations of this class.</li>
      *   <li>If φ₁ = φ₂ = ±90°, then this {@code n} value become ±1. The formulas in the transform and
-     *       inverse transform methods become basically the same than the ones in {@link PolarStereographic},
+     *       inverse transform methods become basically the same as the ones in {@link PolarStereographic},
      *       but (de)normalization matrices contain NaN values.</li>
      *   <li>Depending on how the formulas are written, <var>n</var> may be positive in the South hemisphere and
      *       negative in the North hemisphere (or conversely). However, Apache SIS adjusts the coefficients of the
@@ -358,7 +358,7 @@ public class LambertConicConformal extends ConformalProjection {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     LambertConicConformal(final LambertConicConformal other) {
         super(other);

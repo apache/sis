@@ -217,7 +217,7 @@ public final class Strings extends Static {
     }
 
     /**
-     * Returns a string with the same content than the given string, but in upper case and containing only the
+     * Returns a string with the same content as the given string, but in upper case and containing only the
      * filtered characters. If the given string already matches the criterion, then it is returned unchanged
      * without creation of any temporary object.
      *
@@ -264,7 +264,7 @@ public final class Strings extends Static {
     /**
      * Inserts a continuation character after each line separator except the last one.
      * The intent is to show that a block of lines are part of the same element.
-     * The characters are the same than {@link org.apache.sis.util.logging.MonolineFormatter}.
+     * The characters are the same as {@link org.apache.sis.util.logging.MonolineFormatter}.
      *
      * @param buffer         the buffer where to insert a continuation character in the left margin.
      * @param lineSeparator  the line separator.

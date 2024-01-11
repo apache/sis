@@ -270,7 +270,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
 
     /**
      * Returns the display coordinates of the Point Of Interest (POI) in source canvas.
-     * This method provides the same information than {@link #getSourceObjectivePOI()},
+     * This method provides the same information as {@link #getSourceObjectivePOI()},
      * but in units that are more convenient for expressing the location of mouse cursor
      * for example.
      *

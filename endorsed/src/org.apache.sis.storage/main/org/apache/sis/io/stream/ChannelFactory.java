@@ -273,7 +273,7 @@ public abstract class ChannelFactory {
          * at reading time. See https://bugs.openjdk.java.net/browse/JDK-8080629 for more information.
          *
          * If the file does not exist, we let NoSuchFileException to be thrown by the code below because non-existant
-         * file is probably an error. This is not the same situation than a directory, which cannot be opened by this
+         * file is probably an error. This is not the same situation as a directory, which cannot be opened by this
          * class but may be opened by some specialized DataStore implementations.
          */
         if (storage instanceof Path) {

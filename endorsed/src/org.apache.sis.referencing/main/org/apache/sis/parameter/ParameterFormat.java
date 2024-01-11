@@ -96,7 +96,7 @@ import org.opengis.util.ControlledVocabulary;
  *   <tr><th>Class</th> <th>Remarks</th></tr>
  *   <tr><td>{@link ParameterValueGroup}</td><td><cite>Default values</cite> column is replaced by a column of the actual values.</td></tr>
  *   <tr><td>{@link ParameterDescriptorGroup}</td><td>Table caption is the parameter group name.</td></tr>
- *   <tr><td>{@link OperationMethod}</td><td>Table caption is the method name (not necessarily the same than parameter group name).</td></tr>
+ *   <tr><td>{@link OperationMethod}</td><td>Table caption is the method name (not necessarily the same as parameter group name).</td></tr>
  *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td><td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>
  * </table>
  *
@@ -526,7 +526,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             if (descriptor instanceof ParameterDescriptor<?>) {
                 final ParameterTableRow row = entry.getValue();
                 /*
-                 * Verify if all rows use the same codespace than the header, in which case we can omit
+                 * Verify if all rows use the same codespace as the header, in which case we can omit
                  * row codespace formatting.
                  */
                 if (!writeCodespaces && !groupCodespace.equals(entry.getValue().getCodeSpace())) {

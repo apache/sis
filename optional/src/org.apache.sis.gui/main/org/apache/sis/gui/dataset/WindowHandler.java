@@ -142,7 +142,7 @@ public abstract class WindowHandler {
     }
 
     /**
-     * Prepares a new window with the same content than the window managed by this handler.
+     * Prepares a new window with the same content as the window managed by this handler.
      * This method can be used for creating many windows over the same data.
      * Each window can do pans, zooms and rotations independently of other windows,
      * or be synchronized with other windows, at user's choice.
@@ -385,7 +385,7 @@ public abstract class WindowHandler {
         }
 
         /**
-         * Prepares (without showing) a new window with the same content than the window managed by this handler.
+         * Prepares (without showing) a new window with the same content as the window managed by this handler.
          */
         @Override
         public WindowHandler duplicate() {
@@ -453,7 +453,7 @@ public abstract class WindowHandler {
         }
 
         /**
-         * Prepares (without showing) a new window with the same content than the window managed by this handler.
+         * Prepares (without showing) a new window with the same content as the window managed by this handler.
          */
         @Override
         public WindowHandler duplicate() {

@@ -343,7 +343,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertEquals("method", "Geocentric translations (geog2D domain)",
                 ((SingleOperation) operation).getMethod().getName().getCode());
         /*
-         * Same test point than the one used in FranceGeocentricInterpolationTest:
+         * Same test point as the one used in FranceGeocentricInterpolationTest:
          *
          * NTF: 48°50′40.2441″N  2°25′32.4187″E
          * RGF: 48°50′39.9967″N  2°25′29.8273″E     (close to WGS84)
@@ -389,7 +389,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertEquals    ("method", "Geocentric translations (geocentric domain)",
                 ((SingleOperation) operation).getMethod().getName().getCode());
         /*
-         * Same test point than the one used in FranceGeocentricInterpolationTest:
+         * Same test point as the one used in FranceGeocentricInterpolationTest:
          *
          * ┌────────────────────────────────────────────┬──────────────────────────────────────────────────────────┐
          * │         Geographic coordinates (°)         │                  Geocentric coordinates (m)              │
@@ -992,7 +992,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         verifyTransform(new double[] {
             -5, -8, CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getTime() / 1000
         }, new double[] {
-            -5, -8, 0, 15019.5              // Same value than in testTemporalConversion().
+            -5, -8, 0, 15019.5              // Same value as in testTemporalConversion().
         });
         validate();
     }

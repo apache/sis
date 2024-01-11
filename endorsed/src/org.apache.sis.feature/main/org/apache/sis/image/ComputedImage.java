@@ -150,7 +150,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * Weak reference to this image, also used as a cleaner when the image is garbage-collected.
      * This reference is retained in {@link TileCache#GLOBAL}. Note that if that cache does not
      * cache any tile for this image, then that {@link ComputedTiles} may be garbage-collected
-     * at the same time than this image and its {@link ComputedTiles#dispose()} method may never
+     * at the same time as this image and its {@link ComputedTiles#dispose()} method may never
      * be invoked.
      */
     private final ComputedTiles reference;
@@ -247,7 +247,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
             }
             /*
              * If `count` is 0, then `ws` is null while `sources` is non-null. This is intentional:
-             * a null `sources` array does not have the same meaning than an empty `sources` array.
+             * a null `sources` array does not have the same meaning as an empty `sources` array.
              * In the case of `ws` however, the difference does not matter so we keep it to null.
              */
             if (count != 0) {
@@ -258,7 +258,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                 }
             }
         }
-        this.sources = sources;                     // Note: null value does not have same meaning than empty array.
+        this.sources = sources;                     // Note: null value does not have same meaning as empty array.
         reference = new ComputedTiles(this, ws);    // Create cleaner last after all arguments have been validated.
     }
 

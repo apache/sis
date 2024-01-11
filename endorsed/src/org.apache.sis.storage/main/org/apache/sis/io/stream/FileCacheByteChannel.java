@@ -89,7 +89,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
 
         /**
          * The input stream without filtering, as specified at construction time.
-         * This is the same instance than {@link #input} when no filtering is applied.
+         * This is the same instance as {@link #input} when no filtering is applied.
          */
         public final InputStream rawInput;
 

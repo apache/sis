@@ -333,7 +333,7 @@ public class BufferedGridCoverage extends GridCoverage {
         /**
          * Returns a sequence of double values for a given point in the coverage.
          * The CRS of the given point may be any coordinate reference system,
-         * or {@code null} for the same CRS than the coverage.
+         * or {@code null} for the same CRS as the coverage.
          */
         @Override
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {

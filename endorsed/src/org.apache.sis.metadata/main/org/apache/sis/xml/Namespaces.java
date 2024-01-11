@@ -29,7 +29,7 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPAC
  * Lists some namespaces URLs used by JAXB when (un)marshalling.
  *
  * <p><strong>Warning: string constants in this class may change in any SIS version.</strong>
- * Those constants are made available for applications who wish to use the same URLs than SIS
+ * Those constants are made available for applications who wish to use the same URLs as SIS
  * in their own JAXB annotations. Note that applications using those constants will have their
  * URLs determined by the SIS version available at compile-time, not runtime, because the
  * {@code javac} compiler inlines string constants.</p>

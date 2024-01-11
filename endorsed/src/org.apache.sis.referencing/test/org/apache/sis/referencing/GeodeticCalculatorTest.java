@@ -230,7 +230,7 @@ public class GeodeticCalculatorTest extends TestCase {
     /**
      * Tests geodetic calculator involving a coordinate operation.
      * This test uses a simple CRS with only the axis order interchanged.
-     * The coordinates are the same than {@link #testGeodesicDistanceAndAzimuths()}.
+     * The coordinates are the same as {@link #testGeodesicDistanceAndAzimuths()}.
      */
     @Test
     @DependsOnMethod("testGeodesicDistanceAndAzimuths")

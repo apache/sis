@@ -271,7 +271,7 @@ public final class RangeArgument {
      *
      * @param  areaOfInterest  the extent to which to add a new dimension for bands.
      * @param  bandDimension   index of the band dimension.
-     * @return a new extent with the same values than the given extent plus one dimension for bands.
+     * @return a new extent with the same values as the given extent plus one dimension for bands.
      */
     public GridExtent insertBandDimension(final GridExtent areaOfInterest, final int bandDimension) {
         first = getSourceIndex(0);
@@ -294,7 +294,7 @@ public final class RangeArgument {
      *
      * @param  subsampling    the subsampling to which to add a new dimension for bands.
      * @param  bandDimension  index of the band dimension.
-     * @return a new subsampling array with the same values than the given array plus one dimension for bands.
+     * @return a new subsampling array with the same values as the given array plus one dimension for bands.
      */
     public int[] insertSubsampling(int[] subsampling, final int bandDimension) {
         final int[] delta = new int[packed.length - 1];

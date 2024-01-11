@@ -40,7 +40,7 @@ import org.opengis.geometry.Envelope;
  * {@link org.opengis.metadata.maintenance.ScopeCode#DATASET}.
  * If this datasets is part of a series or an {@link Aggregate}, the aggregate name should be declared
  * as the {@linkplain org.apache.sis.metadata.iso.DefaultMetadata#getParentMetadata() parent metadata}.
- * That parent metadata is often the same instance than {@link DataStore#getMetadata()}.
+ * That parent metadata is often the same instance as {@link DataStore#getMetadata()}.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0

@@ -140,7 +140,7 @@ public final class Formulas extends Static {
     }
 
     /**
-     * Returns the radius of a hypothetical sphere having the same surface than the given ellipsoid.
+     * Returns the radius of a hypothetical sphere having the same surface as the given ellipsoid.
      *
      * @param  ellipsoid  the ellipsoid for which to get the radius, or {@code null}.
      * @return the authalic radius, or {@link Double#NaN} if the given ellipsoid is null.
@@ -157,12 +157,12 @@ public final class Formulas extends Static {
     }
 
     /**
-     * Returns the radius of a hypothetical sphere having the same surface than the ellipsoid
+     * Returns the radius of a hypothetical sphere having the same surface as the ellipsoid
      * specified by the given axis length.
      *
      * @param  a  the semi-major axis length.
      * @param  b  the semi-minor axis length.
-     * @return the radius of a sphere having the same surface than the specified ellipsoid.
+     * @return the radius of a sphere having the same surface as the specified ellipsoid.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */

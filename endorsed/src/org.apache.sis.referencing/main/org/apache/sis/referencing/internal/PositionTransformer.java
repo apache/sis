@@ -89,7 +89,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
 
     /**
      * The default CRS to assume when {@link #transform(DirectPosition)} has been invoked without associated CRS.
-     * This is often the same than the {@linkplain #getCoordinateReferenceSystem() target CRS}, but not necessarily.
+     * This is often the same as the {@linkplain #getCoordinateReferenceSystem() target CRS}, but not necessarily.
      */
     public final CoordinateReferenceSystem defaultCRS;
 
@@ -213,7 +213,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
                 userCRS = defaultCRS;
             }
             /*
-             * A projection may be required. Check if it is the same one than the one used last time this method
+             * A projection may be required. Check if it is the same one as the one used last time this method
              * has been invoked. If the specified position uses a new CRS, then get the transformation and save
              * it in case the next call to this method would use again the same transformation.
              */
@@ -241,7 +241,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
     }
 
     /**
-     * Returns a new point with the same coordinates than this one, but transformed to the default CRS.
+     * Returns a new point with the same coordinates as this one, but transformed to the default CRS.
      * This method never returns {@code this}, so the returned point does not need to be cloned.
      *
      * @return the same position as {@code this}, but transformed to the default CRS.

@@ -229,7 +229,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             String name = variable.getStandardName();
             /*
              * At this point we found a variable for which to create a resource. Most of the time, there is nothing else to do;
-             * the resource will have a single variable and the same name than that unique variable. The resulting raster will
+             * the resource will have a single variable and the same name as that unique variable. The resulting raster will
              * have only one band (sample dimension). However, in some cases the raster should have more than one band:
              *
              *   1) if the variable has an extra dimension compared to the grid geometry;

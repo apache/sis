@@ -66,7 +66,7 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
             new WeakHashSet<>(UnmodifiableParameterValue.class);
 
     /**
-     * Creates a new parameter with the same value than the given one.
+     * Creates a new parameter with the same value as the given one.
      */
     private UnmodifiableParameterValue(final ParameterValue<T> value) {
         super(value);

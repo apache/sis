@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * An image which delegate all tile requests to another image except for some tiles that are fetched in advance.
- * This image has the same coordinate systems than the source image.
+ * This image has the same coordinate systems as the source image.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

@@ -77,7 +77,7 @@ public final class PostgresTest extends TestCase {
     }
 
     /**
-     * Provides a stream for a resource in the same package than this class.
+     * Provides a stream for a resource in the same package as this class.
      * The implementation invokes {@code getResourceAsStream(filename)}.
      * This invocation must be done in this module because the invoked
      * method is caller-sensitive.

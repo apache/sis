@@ -440,7 +440,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             }
             for (int j=0; j<k; j++) {
                 final int upRowOffset = j*innerSize;        // Offset of a row before (locate upper) the current row.
-                sum = LU[j*size + k];                       // Same column than the diagonal element, but in the upper row.
+                sum = LU[j*size + k];                       // Same column as the diagonal element, but in the upper row.
                 for (int i=0; i<innerSize; i++) {           // Apply to all columns in the upper row.
                     final int t = upRowOffset + i;
                     elements[t] = subtract(elements[t], multiply(elements[rowOffset + i], sum));

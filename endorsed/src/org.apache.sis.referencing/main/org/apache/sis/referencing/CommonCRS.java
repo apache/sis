@@ -469,7 +469,7 @@ public enum CommonCRS {
      *       with an {@linkplain CRS#getHorizontalComponent horizontal component}.</li>
      *   <li>The {@code crs} or the horizontal component of {@code crs} is associated to a {@link GeodeticDatum}.</li>
      *   <li>The geodetic datum either<ul>
-     *     <li>has the same EPSG code than one of the {@code CommonCRS} enumeration values, or</li>
+     *     <li>has the same EPSG code as one of the {@code CommonCRS} enumeration values, or</li>
      *     <li>has no EPSG code but is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
      *       to the {@link #datum()} value of one of the {@code CommonCRS} enumeration values.</li>
      *   </ul></li>
@@ -2031,7 +2031,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the same properties than the given object, except for the identifier which is set to the given code.
+     * Returns the same properties as the given object, except for the identifier which is set to the given code.
      */
     private static Map<String,?> properties(final IdentifiedObject template, final short code) {
         final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, exclude()));

@@ -1141,7 +1141,7 @@ convert:            if (componentType != null) {
             /*
              * In the WKT 2 specification, the unit and the identifier are optional but recommended.
              * We follow that recommendation in strict WKT2 mode, but omit them in non-strict modes.
-             * The only exception is when the parameter unit is not the same than the contextual unit,
+             * The only exception is when the parameter unit is not the same as the contextual unit,
              * in which case we have no choice: we must format that unit, unless the numerical value
              * is identical in both units (typically the 0 value).
              */

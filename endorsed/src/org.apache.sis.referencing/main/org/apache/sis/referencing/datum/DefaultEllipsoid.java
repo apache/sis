@@ -222,7 +222,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Creates a new ellipsoid with the same values than the specified one.
+     * Creates a new ellipsoid with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -295,7 +295,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Returns a SIS ellipsoid implementation with the same values than the given arbitrary implementation.
+     * Returns a SIS ellipsoid implementation with the same values as the given arbitrary implementation.
      * If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
@@ -366,10 +366,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Returns the radius of a hypothetical sphere having the same surface than this ellipsoid.
+     * Returns the radius of a hypothetical sphere having the same surface as this ellipsoid.
      * The radius is expressed in {@linkplain #getAxisUnit() axis linear unit}.
      *
-     * @return the radius of a sphere having the same surface than this ellipsoid.
+     * @return the radius of a sphere having the same surface as this ellipsoid.
      *
      * @see org.apache.sis.referencing.CommonCRS#SPHERE
      */
@@ -822,7 +822,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Ensures that the semi-minor axis uses the same unit than the semi-major one.
+     * Ensures that the semi-minor axis uses the same unit as the semi-major one.
      * The {@link #unit} field shall be set to the semi-major axis unit before this method call.
      *
      * @param  uom  the semi-minor axis unit.

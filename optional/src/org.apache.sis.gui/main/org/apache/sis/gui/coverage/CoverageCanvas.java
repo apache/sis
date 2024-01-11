@@ -1100,7 +1100,7 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Returns the region of source image which is currently shown, in units of source coverage pixels.
-     * This method performs the same work than {@link Worker#getVisibleImageBounds()} in a less efficient way.
+     * This method performs the same work as {@link Worker#getVisibleImageBounds()} in a less efficient way.
      * It is used when no worker is available.
      *
      * @see Worker#getVisibleImageBounds()

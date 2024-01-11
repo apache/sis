@@ -217,7 +217,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     }
 
     /**
-     * Returns a descriptor with the same properties than the {@code provided} one, but completed with information
+     * Returns a descriptor with the same properties as the {@code provided} one, but completed with information
      * not found in GML. Those missing information are given by the {@code complete} descriptor, which may come from
      * two sources:
      *
@@ -380,7 +380,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     }
 
     /**
-     * Creates a new descriptor with the same properties than the {@code provided} one, but completed with
+     * Creates a new descriptor with the same properties as the {@code provided} one, but completed with
      * information not found in GML. Those extra information are given by the {@code complete} descriptor.
      *
      * <p>It is the caller's responsibility to construct the {@code merged} properties as a merge of the properties
@@ -451,7 +451,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
             if (complete != null) {
                 /*
                  * Add the `provided` values before `complete` for two reasons:
-                 *   1) Use the same insertion order than the declaration order in the GML file.
+                 *   1) Use the same insertion order as the declaration order in the GML file.
                  *   2) Replace `provided` instances by `complete` instances, since the latter
                  *      are sometimes predefined instances defined as static final constants.
                  */

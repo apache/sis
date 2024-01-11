@@ -577,7 +577,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     /**
      * Converts the (λ,φ) or (λ,φ,<var>h</var>) geodetic coordinates to
      * to (<var>X</var>,<var>Y</var>,<var>Z</var>) geocentric coordinates.
-     * This method performs the same conversion than {@link #transform(double[], int, double[], int, boolean)},
+     * This method performs the same conversion as {@link #transform(double[], int, double[], int, boolean)},
      * but the formulas are repeated here for performance reasons.
      *
      * @throws TransformException if a point cannot be transformed.
@@ -638,7 +638,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @param  srcPts  the array containing the source point coordinates.
      * @param  srcOff  the offset to the first point to be transformed in the source array.
      * @param  dstPts  the array into which the transformed point coordinates are returned.
-     *                 May be the same than {@code srcPts}.
+     *                 May be the same as {@code srcPts}.
      * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if the calculation does not converge.
@@ -803,7 +803,7 @@ next:   while (--numPts >= 0) {
         }
 
         /**
-         * Returns the same contextual parameters than in the enclosing class,
+         * Returns the same contextual parameters as in the enclosing class,
          * but with a different method name and the (de)normalization matrices inverted.
          */
         @Override
@@ -1030,7 +1030,7 @@ next:   while (--numPts >= 0) {
     }
 
     /**
-     * Creates a transform with the same parameters than this transform,
+     * Creates a transform with the same parameters as this transform,
      * but expecting two-dimensional inputs instead of three-dimensional.
      */
     final EllipsoidToCentricTransform create2D() {

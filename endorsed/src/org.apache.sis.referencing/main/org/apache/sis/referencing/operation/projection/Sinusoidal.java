@@ -131,7 +131,7 @@ public class Sinusoidal extends MeridianArcBased {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     Sinusoidal(final Sinusoidal other) {
         super(other);
@@ -253,7 +253,7 @@ public class Sinusoidal extends MeridianArcBased {
         }
 
         /**
-         * Converts a list of coordinate tuples. This method performs the same calculation than above
+         * Converts a list of coordinate tuples. This method performs the same calculation as above
          * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
          */
         @Override

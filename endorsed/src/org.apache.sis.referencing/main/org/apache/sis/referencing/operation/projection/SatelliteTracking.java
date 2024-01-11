@@ -343,7 +343,7 @@ public class SatelliteTracking extends NormalizedProjection {
                  * if λpm does not have the sign than n, the (x,y) values computed below would suddenly
                  * change their sign. The y values lower or greater (depending of n sign) than -s0/n can
                  * not be plotted. Snyder suggests to use another projection if cosmetic output is wanted.
-                 * For now, we just set the results to NaN (meaning "no result", which is not the same than
+                 * For now, we just set the results to NaN (meaning "no result", which is not the same as
                  * TransformException which means that a result exists but cannot be computed).
                  */
                 λpm = Double.NaN;

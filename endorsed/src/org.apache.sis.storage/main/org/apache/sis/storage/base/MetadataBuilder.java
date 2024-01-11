@@ -952,7 +952,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a data and/or metadata identifier. This method performs the same work than
+     * Adds a data and/or metadata identifier. This method performs the same work as
      * {@link #addIdentifier(CharSequence, String, Scope)} for situations where the
      * identifier instance is already available.
      *
@@ -1506,7 +1506,7 @@ public class MetadataBuilder {
 
     /**
      * Adds a means of communication with person(s) and organizations(s) associated with the resource(s).
-     * This is often the same party than the above cited responsibly party, with only the role changed.
+     * This is often the same party as the above cited responsibly party, with only the role changed.
      * Storage locations are:
      *
      * <ul>
@@ -1526,7 +1526,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a distributor. This is often the same than the above responsible party.
+     * Adds a distributor. This is often the same as the above responsible party.
      * Storage location is:
      *
      * <ul>
@@ -1735,7 +1735,7 @@ parse:      for (int i = 0; i < length;) {
             }
             if (i != 0) {
                 buffer.setLength(i);
-                // Same limitation than MetadataBuilder.party().
+                // Same limitation as MetadataBuilder.party().
                 final AbstractParty party = new AbstractParty(buffer, null);
                 final DefaultResponsibility r = new DefaultResponsibility(Role.OWNER, null, party);
                 c.setCitedResponsibleParties(Collections.singleton(r));
@@ -2068,7 +2068,7 @@ parse:      for (int i = 0; i < length;) {
      *                        Can also be specified later by a call to {@link #setGridToCRS(CharSequence)}.
      * @param  grid           the grid extent, "grid to CRS" transform and target CRS, or {@code null} if none.
      * @param  addResolution  whether to declare the resolutions. Callers should set this argument to {@code false} if they intend
-     *                        to provide the resolution themselves, or if grid axes are not in the same order than CRS axes.
+     *                        to provide the resolution themselves, or if grid axes are not in the same order as CRS axes.
      * @return whether a "spatial representation info" node has been added.
      */
     public final boolean addSpatialRepresentation(final String description, final GridGeometry grid, final boolean addResolution) {
@@ -3244,7 +3244,7 @@ parse:      for (int i = 0; i < length;) {
      *
      * <ul>
      *   <li>The aggregated resource {@linkplain #addTitle(CharSequence) title}.</li>
-     *   <li>The {@linkplain #addFormatName format} (may not be the same than component format).</li>
+     *   <li>The {@linkplain #addFormatName format} (may not be the same as component format).</li>
      * </ul>
      *
      * This method applies the following heuristic rules (may change in any future version).

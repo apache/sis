@@ -179,7 +179,7 @@ public final class Classes extends Static {
      * If the given method is a getter or a setter for a parameterized property,
      * returns the upper bounds of the parameterized type.
      * Otherwise returns {@code null}.
-     * This method provides the same semantic than {@link #boundOfParameterizedProperty(Field)},
+     * This method provides the same semantic as {@link #boundOfParameterizedProperty(Field)},
      * but works on a getter or setter method rather than a field.
      * See {@link #boundOfParameterizedProperty(Field)} javadoc for details.
      *

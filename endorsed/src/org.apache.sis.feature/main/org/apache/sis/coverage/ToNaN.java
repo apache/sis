@@ -46,7 +46,7 @@ final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {
     }
 
     /**
-     * Sets this function to the same state than after construction.
+     * Sets this function to the same state as after construction.
      * This method is invoked when the same builder is reused for creating many sample dimensions.
      */
     @Override

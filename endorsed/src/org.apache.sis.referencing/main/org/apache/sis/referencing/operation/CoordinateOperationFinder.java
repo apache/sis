@@ -964,7 +964,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         /*
          * For each sub-operation, create a PassThroughOperation for the (stepSourceCRS → stepTargetCRS) operation.
          * Each source CRS inside this loop will be for dimensions at indices [startAtDimension … endAtDimension-1].
-         * Note that those indices are not necessarily the same than the indices in the fields of the same name in
+         * Note that those indices are not necessarily the same as the indices in the fields of the same name in
          * SubOperationInfo, because those indices are not relative to the same CompoundCRS.
          */
         int endAtDimension = 0;

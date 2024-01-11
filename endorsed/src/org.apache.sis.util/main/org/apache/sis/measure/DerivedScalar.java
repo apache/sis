@@ -79,7 +79,7 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
 
     /**
      * Creates a new scalar resulting from an arithmetic operation performed on the given scalar.
-     * The arithmetic operation result is in the same unit than the original scalar.
+     * The arithmetic operation result is in the same unit as the original scalar.
      *
      * @param  value  the arithmetic result in system unit.
      */
@@ -91,8 +91,8 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
     }
 
     /**
-     * Creates a new quantity of same type than this quantity but with a different value.
-     * The unit of measurement shall be the same than the system unit of this quantity.
+     * Creates a new quantity of same type as this quantity but with a different value.
+     * The unit of measurement shall be the same as the system unit of this quantity.
      * Implementation in subclasses should be like below:
      *
      * {@snippet lang="java" :
@@ -226,7 +226,7 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
         }
 
         /**
-         * Creates a new quantity of the same type than this quantity but a different value and/or unit.
+         * Creates a new quantity of the same type as this quantity but a different value and/or unit.
          *
          * @see ScalarFallback#create(double, Unit)
          */

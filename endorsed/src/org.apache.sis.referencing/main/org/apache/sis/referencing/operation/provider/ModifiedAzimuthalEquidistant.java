@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * <h2>Relationship with "Azimuthal Equidistant"</h2>
  * The <cite>Modified Azimuthal Equidistant</cite> projection is an approximation of a theoretically
  * more generic oblique Azimuthal Equidistant projection. But Snyder's <u>Map Projection — a working
- * manual</u> book actually gives formulas for the same scope than the one given by EPSG, namely for
+ * manual</u> book actually gives formulas for the same scope as the one given by EPSG, namely for
  * islands in Micronesia. Consequently, we assume that what is commonly presented by other libraries
  * as a "generic" Azimuthal Equidistant projection is actually the Modified Azimuthal Equidistant
  * approximation.

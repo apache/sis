@@ -878,7 +878,7 @@ class CoordinateOperationRegistry {
 
     /**
      * Appends or prepends the specified math transforms to the transform of the given operation.
-     * The new coordinate operation (if any) will share the same metadata than the original operation,
+     * The new coordinate operation (if any) will share the same metadata as the original operation,
      * except the authority code.
      *
      * <p>This method is used in order to change axis order when the user-specified CRS disagree
@@ -938,7 +938,7 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * Creates a new coordinate operation with the same method than the given operation, but different CRS.
+     * Creates a new coordinate operation with the same method as the given operation, but different CRS.
      * The CRS may differ either in the number of dimensions (i.e. let the vertical coordinate pass through),
      * or in axis order (i.e. axis order in user CRS were not compliant with authority definition).
      *

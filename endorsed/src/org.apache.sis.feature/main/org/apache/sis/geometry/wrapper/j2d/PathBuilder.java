@@ -82,7 +82,7 @@ public class PathBuilder {
 
     /**
      * Appends the given coordinates to current polyline, omitting repetitive points.
-     * Coordinates are added to the same polyline than the one updated by previous calls
+     * Coordinates are added to the same polyline as the one updated by previous calls
      * to this method, unless {@link #createPolyline(boolean)} has been invoked before.
      * The {@link #filterChunk(double[], int, int)} method is invoked after the points have been added
      * for allowing subclasses to apply customized filtering in addition to the above-cited removal

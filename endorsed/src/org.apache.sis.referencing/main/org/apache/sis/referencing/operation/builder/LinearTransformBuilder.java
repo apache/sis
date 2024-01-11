@@ -619,7 +619,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * <p>All source positions shall have the same number of dimensions (the <cite>source dimension</cite>),
      * and all target positions shall have the same number of dimensions (the <cite>target dimension</cite>).
-     * However, the source dimension does not need to be the same than the target dimension.
+     * However, the source dimension does not need to be the same as the target dimension.
      * Apache SIS currently supports only one- or two-dimensional source positions,
      * together with arbitrary target dimension.</p>
      *

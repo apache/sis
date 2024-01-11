@@ -88,7 +88,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      *
      * <p>The first array element is the dimension during forward transforms, and the second
      * array element is the dimension during inverse transforms (can be omitted if the latter
-     * is the same than the dimension during forward transforms).</p>
+     * is the same as the dimension during forward transforms).</p>
      */
     protected int[] λDimension;
 
@@ -98,7 +98,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      *
      * <p>The first array element is the dimension during forward transforms, and the second
      * array element is the dimension during inverse transforms (can be omitted if the latter
-     * is the same than the dimension during forward transforms).</p>
+     * is the same as the dimension during forward transforms).</p>
      */
     protected int[] zDimension;
 

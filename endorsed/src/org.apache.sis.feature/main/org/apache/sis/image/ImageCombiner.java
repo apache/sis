@@ -244,7 +244,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
                 Math.toIntExact(maxY - minY));
         /*
          * Values of (minTileX, minTileY) computed above will cause `ResampledImage.getTileGridOffset()`
-         * to return the exact same value than `destination.getTileGridOffset()`. This is a requirement
+         * to return the exact same value as `destination.getTileGridOffset()`. This is a requirement
          * of `setDestination(…)` method.
          */
         final RenderedImage result;

@@ -54,7 +54,7 @@ final class QuadTreeNode extends PointTreeNode {
     }
 
     /**
-     * Creates a new instance of the same class than this node.
+     * Creates a new instance of the same class as this node.
      */
     @Override
     final PointTreeNode newInstance() {

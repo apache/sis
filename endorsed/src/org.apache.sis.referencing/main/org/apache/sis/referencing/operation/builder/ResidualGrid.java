@@ -381,7 +381,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     }
 
     /**
-     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * Returns {@code true} if the given object is a grid containing the same data as this grid.
      */
     @Override
     public boolean equals(final Object other) {

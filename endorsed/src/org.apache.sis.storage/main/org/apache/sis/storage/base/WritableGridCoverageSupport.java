@@ -102,7 +102,7 @@ public final class WritableGridCoverageSupport implements Localized {
     /**
      * Returns the writable channel positioned at the beginning of the stream.
      * The returned channel should <em>not</em> be closed
-     * because it is the same channel than the one used by {@code input}.
+     * because it is the same channel as the one used by {@code input}.
      * Caller should invoke {@link ChannelDataOutput#flush()} after usage.
      *
      * @param  input  the input from which to get the writable channel.

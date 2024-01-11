@@ -218,7 +218,7 @@ public final class DefaultParameterValueTest extends TestCase {
         assertEquals(10, parameter.doubleValue());
         validate(parameter);
         /*
-         * Invalid operation: set the same value than above, but with a unit of measurement.
+         * Invalid operation: set the same value as above, but with a unit of measurement.
          * This shall be an invalid operation since we created a unitless parameter.
          */
         exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(10.0, Units.METRE), "setValue(double,Unit)");
@@ -545,7 +545,7 @@ public final class DefaultParameterValueTest extends TestCase {
         DefaultParameterValue<Double> p = create("Angle", 10.3, degreesAndMinutes);
         assertWktEquals(Convention.WKT1,     "PARAMETER[“Angle”, 10.3]", p);  // 10.3 DM  ==  10.5°
         assertWktEquals(Convention.WKT2,     "PARAMETER[“Angle”, 10.5, ANGLEUNIT[“degree”, 0.017453292519943295]]", p);
-        assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3]", p);   // Value in same unit than descriptor.
+        assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3]", p);   // Value in same unit as descriptor.
 
         p = create("Angle", 0, Units.DEGREE);
         p.setValue(10.3, degreesAndMinutes);  // Cannot be formatted in WKT1.

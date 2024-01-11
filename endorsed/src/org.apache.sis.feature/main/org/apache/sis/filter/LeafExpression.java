@@ -235,7 +235,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         @Override
         @SuppressWarnings("unchecked")
         public <N> Expression<R,N> toValueType(final Class<N> target) {
-            // Same implementation than `super.toValueType(type)` except for exception handling.
+            // Same implementation as `super.toValueType(type)` except for exception handling.
             try {
                 final N c = ObjectConverters.convert(value, target);
                 return (c != value) ? new Literal<>(c) : (Literal<R,N>) this;

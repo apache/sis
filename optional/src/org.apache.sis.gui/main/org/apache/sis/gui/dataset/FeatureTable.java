@@ -126,7 +126,7 @@ public class FeatureTable extends TableView<Feature> {
     }
 
     /**
-     * Creates a new table initialized to the same data than the specified table.
+     * Creates a new table initialized to the same data as the specified table.
      * The two tables will share the same list as long as they are viewing the same data source:
      * as the data loading progresses, new features will appear in both tables.
      *

@@ -836,7 +836,7 @@ public final class Citations extends Static {
      * <ul class="verbose">
      *   <li>If the given citation is an instance of {@code IdentifierSpace},
      *       returns {@link IdentifierSpace#getName()}.</li>
-     *   <li>Otherwise, performs the same work than {@link #getIdentifier(Citation)} except that {@code '_'}
+     *   <li>Otherwise, performs the same work as {@link #getIdentifier(Citation)} except that {@code '_'}
      *       is used instead of {@link org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR ':'}
      *       as the separator between the codespace and the code.</li>
      *   <li>If the result of above method call is {@code null} or is not a
@@ -880,7 +880,7 @@ public final class Citations extends Static {
      * Removes characters that are ignorable according Unicode specification.
      *
      * @param  identifier  the character sequence from which to remove ignorable characters, or {@code null}.
-     * @return a character sequence with ignorable character removed. May be the same instance than the given argument.
+     * @return a character sequence with ignorable character removed. May be the same instance as the given argument.
      */
     private static String removeIgnorableCharacters(final String identifier) {
         if (identifier != null) {

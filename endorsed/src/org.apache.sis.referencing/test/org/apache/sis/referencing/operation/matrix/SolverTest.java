@@ -67,7 +67,7 @@ public final class SolverTest extends TestCase {
 
     /**
      * A matrix to use as the reference implementation.
-     * Contains the same value than {@link #matrix}.
+     * Contains the same value as {@link #matrix}.
      */
     private Matrix reference;
 

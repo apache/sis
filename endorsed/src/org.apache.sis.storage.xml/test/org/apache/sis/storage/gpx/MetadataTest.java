@@ -74,7 +74,7 @@ public final class MetadataTest extends TestCase {
     }
 
     /**
-     * Creates a metadata instance with the same data than the one in the {@code "1.1/metadata.xml"} test file.
+     * Creates a metadata instance with the same data as the one in the {@code "1.1/metadata.xml"} test file.
      */
     static Metadata create() throws URISyntaxException {
         final Person person = new Person();

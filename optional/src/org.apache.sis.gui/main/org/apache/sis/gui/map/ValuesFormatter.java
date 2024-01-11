@@ -164,7 +164,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         evaluator.setNullIfOutside(true);
         evaluator.setWraparoundEnabled(true);
         if (inherit != null) {
-            // Same configuration than previous coverage.
+            // Same configuration as previous coverage.
             synchronized (inherit.buffer) {
                 units         = inherit.units;
                 nodata        = inherit.nodata;
@@ -273,7 +273,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
      * This method invocation sometimes needs to be delayed because calculation of text width may be wrong
      * (produce 0 values) if invoked before {@link StatusBar#sampleValues} label is added in the scene graph.</p>
      *
-     * <p>This method uses the same synchronization lock than {@link #evaluate(DirectPosition)}.
+     * <p>This method uses the same synchronization lock as {@link #evaluate(DirectPosition)}.
      * Consequently, this method may block if data loading are in progress in another thread.</p>
      *
      * @param  selection  copy of {@link ValuesFromCoverage#selectedBands} made by the caller in JavaFX thread.
@@ -331,7 +331,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
      * The given slice will apply to all positions formatted after this method call,
      * until this method is invoked again for a new slice.
      *
-     * <p>This method shall be synchronized on the same lock than {@link #copy(DirectPosition)},
+     * <p>This method shall be synchronized on the same lock as {@link #copy(DirectPosition)},
      * which is the lock used by {@link #evaluateLater(DirectPosition)}.</p>
      *
      * @param  slice  grid coverage slice where to evaluate the sample values.

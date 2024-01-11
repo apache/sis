@@ -194,7 +194,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
 
     /**
      * Tests a transformation from a three-dimensional CRS where the range of longitude axis is changed.
-     * This is the same test than {@link #testAxisRangeChange()} but using a compound CRS as the source.
+     * This is the same test as {@link #testAxisRangeChange()} but using a compound CRS as the source.
      * Internally, this results in the concatenation of transforms. We want to ensure that information
      * about axis range changes are not lost in this process.
      *

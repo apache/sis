@@ -245,7 +245,7 @@ public final class GridDerivationTest extends TestCase {
 
     /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} using an envelope in a CRS different than the
-     * grid geometry CRS. This test constructs the same grid geometry than {@link #testSubgridFromEnvelope()}
+     * grid geometry CRS. This test constructs the same grid geometry as {@link #testSubgridFromEnvelope()}
      * and tests the same request with only axis order flipped.
      */
     @Test
@@ -259,12 +259,12 @@ public final class GridDerivationTest extends TestCase {
                 0.5, 0,  -180,
                 0,   0,     1));
         /*
-         * Same grid geometry than `testSubgridFromEnvelope()` with consistency checks omitted.
+         * Same grid geometry as `testSubgridFromEnvelope()` with consistency checks omitted.
          */
         GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
         /*
-         * Same request than the one used by `testSubgridFromEnvelope()` but with different axis order.
-         * The resulting subgrid should have the same extent than the one in `testSubgridFromEnvelope()`.
+         * Same request as the one used by `testSubgridFromEnvelope()` but with different axis order.
+         * The resulting subgrid should have the same extent as the one in `testSubgridFromEnvelope()`.
          */
         envelope.setCoordinateReferenceSystem(HardCodedCRS.WGS84);
         envelope.setRange(1, -50, +30);
@@ -387,7 +387,7 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testSubgridWithMarginAndTiling() {
-        // Same data than above test, but using only 2 dimensions.
+        // Same data as above test, but using only 2 dimensions.
         GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70, +80);
         envelope.setRange(1,   5,  15);
@@ -773,7 +773,7 @@ public final class GridDerivationTest extends TestCase {
         final GeneralEnvelope e2 = new GeneralEnvelope(areaOfInterest.getGeographicExtent().get());
         assertTrue(e2.contains(e1));
         /*
-         * Expect the same longitude range than `grid` since it is fully included in `areaOfInterest`.
+         * Expect the same longitude range as `grid` since it is fully included in `areaOfInterest`.
          */
         final GridGeometry result = grid.derive().subgrid(areaOfInterest).build();
         assertEnvelopeEquals(new Envelope2D(null, 100, -21, 240 - 100, 60 - -21),
@@ -890,7 +890,7 @@ public final class GridDerivationTest extends TestCase {
         assertEnvelopeEquals(expected, subgrid.getEnvelope(), STRICT);
         /*
          * Test same envelope but with different axis order. The request uses a different CRS,
-         * but the result shall stay in the same CRS than the initial grid geometry.
+         * but the result shall stay in the same CRS as the initial grid geometry.
          */
         request.setCoordinateReferenceSystem(HardCodedCRS.WGS84_LATITUDE_FIRST);
         request.setRect(25, -5, 90, 100);

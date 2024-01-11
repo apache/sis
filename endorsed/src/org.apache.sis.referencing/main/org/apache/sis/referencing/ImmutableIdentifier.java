@@ -345,7 +345,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
 
     /**
      * The person or party responsible for maintenance of the namespace.
-     * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace() code space},
+     * The organization's abbreviation is often the same as this identifier {@linkplain #getCodeSpace() code space},
      * but not necessarily.
      *
      * @return the authority, or {@code null} if not available.

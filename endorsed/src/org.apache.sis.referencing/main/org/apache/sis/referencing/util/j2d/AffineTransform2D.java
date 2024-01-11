@@ -82,7 +82,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
     private transient volatile AffineTransform2D inverse;
 
     /**
-     * Creates a new affine transform with the same coefficients than the specified transform.
+     * Creates a new affine transform with the same coefficients as the specified transform.
      *
      * @param transform  the affine transform to copy.
      */

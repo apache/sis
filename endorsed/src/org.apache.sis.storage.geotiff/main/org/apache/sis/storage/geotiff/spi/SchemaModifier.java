@@ -60,7 +60,7 @@ public interface SchemaModifier {
      *
      * @param  image     index of the image for which to compute metadata, or -1 for the whole store.
      * @param  metadata  metadata pre-filled by {@code GeoTiffStore} (never null). Can be modified in-place.
-     * @return the metadata to return to user. This is often the same instance than the given {@code metadata}.
+     * @return the metadata to return to user. This is often the same instance as the given {@code metadata}.
      *         Should never be null.
      * @throws DataStoreException if an exception occurred while updating metadata.
      */

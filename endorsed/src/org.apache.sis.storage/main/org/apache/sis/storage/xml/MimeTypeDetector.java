@@ -145,7 +145,7 @@ abstract class MimeTypeDetector {
      *
      * <p>For the purpose of this method, a "space" is considered to be the {@code ' '} character
      * and all control characters (character below 32, which include tabulations and line feeds).
-     * This is the same criterion than {@link String#trim()}, but does not include Unicode spaces.</p>
+     * This is the same criterion as {@link String#trim()}, but does not include Unicode spaces.</p>
      *
      * @return the first non-space character, or -1 on end of stream window.
      * @throws IOException if an error occurred while reading the bytes or characters.

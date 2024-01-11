@@ -45,7 +45,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
     private final double cf0, cf1, cf2, cf3, cf4;
 
     /**
-     * Coefficients used in inverse transform. Same comment than for {@link #cf0}… applies.
+     * Coefficients used in inverse transform. Same comment as for {@link #cf0}… applies.
      */
     private final double ci1, ci2, ci3, ci4;
 
@@ -146,7 +146,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     MeridianArcBased(final MeridianArcBased other) {
         super(null, other);

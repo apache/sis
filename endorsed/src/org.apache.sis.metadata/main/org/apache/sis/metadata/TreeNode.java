@@ -142,7 +142,7 @@ class TreeNode implements Node {
      * This value is cached on the assumption that users will ask for value or for children soon
      * after they iterated over this node. The cached value is cleared after its first use.
      *
-     * <p>This value shall be either {@code null}, or the exact same value than what a call to
+     * <p>This value shall be either {@code null}, or the exact same value as what a call to
      * {@link #getUserObject()} would return, assuming that the underlying {@linkplain #metadata}
      * object didn't changed.</p>
      *
@@ -340,7 +340,7 @@ class TreeNode implements Node {
     }
 
     /**
-     * Returns {@code true} if the given object is of the same class than this node and contains a reference
+     * Returns {@code true} if the given object is of the same class as this node and contains a reference
      * to the same metadata object. Since {@code TreeNode} generates all content from the wrapped metadata,
      * this condition should ensure that two equal nodes have the same values and children.
      */
@@ -720,7 +720,7 @@ class TreeNode implements Node {
             final Class<?> targetType;
             if (values instanceof CheckedContainer<?>) {
                 /*
-                 * Typically the same than getElementType(), but let be safe
+                 * Typically the same as getElementType(), but let be safe
                  * in case some implementations have stricter requirements.
                  */
                 targetType = ((CheckedContainer<?>) values).getElementType();
@@ -738,7 +738,7 @@ class TreeNode implements Node {
                 // No @SuppressWarnings because this is a real hole.
                 ((List) values).set(indexInList, value);
             } catch (IndexOutOfBoundsException e) {
-                // Same rational than in the getUserObject() method.
+                // Same rational as in the getUserObject() method.
                 throw new ConcurrentModificationException(e);
             }
         }

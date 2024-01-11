@@ -65,7 +65,7 @@ public abstract class Grid extends NamedElement {
     /**
      * The axes, created when first needed.
      * The ordering of axes is based on the order in which dimensions are declared for variables using this grid.
-     * This is not necessarily the same order than the order in which variables are listed in the netCDF file.
+     * This is not necessarily the same order as the order in which variables are listed in the netCDF file.
      *
      * @see #getAxes(Decoder)
      */
@@ -112,7 +112,7 @@ public abstract class Grid extends NamedElement {
     }
 
     /**
-     * Returns a localization grid having the same dimensions than this grid but in a different order.
+     * Returns a localization grid having the same dimensions as this grid but in a different order.
      * This method is invoked by {@link Variable#findGrid(GridAdjustment)} when the localization grids created by
      * {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
      * Subclasses shall verify that the given {@code dimensions} array met the following conditions:
@@ -123,7 +123,7 @@ public abstract class Grid extends NamedElement {
      *       Additional elements, if any, are ignored (they may be considered as bands by the caller).</li>
      * </ul>
      *
-     * If elements in the given array are in same order than elements in {@link #getDimensions()} list,
+     * If elements in the given array are in same order as elements in {@link #getDimensions()} list,
      * then this method returns {@code this}. If the given array does not contain all grid dimensions,
      * then this method returns {@code null}. Otherwise a grid with reordered dimensions is returned.
      * It is caller's responsibility to verify if the grid has less dimensions than the given argument.
@@ -371,7 +371,7 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns an object containing the grid size, the CRS and the conversion from grid indices to CRS coordinates.
      * {@code GridGeometry} is the public object exposed to users. It uses the dimensions given by axes, which are
-     * usually the same dimensions than the ones of the variable using this grid geometry but not always.
+     * usually the same dimensions as the ones of the variable using this grid geometry but not always.
      * Caller may need to call {@link GridExtent#resize(long...)} for adjusting.
      *
      * @param   decoder   the decoder for which grid geometries are constructed.

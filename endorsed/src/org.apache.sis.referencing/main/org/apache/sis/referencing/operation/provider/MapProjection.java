@@ -174,7 +174,7 @@ public abstract class MapProjection extends AbstractProvider {
 
     /**
      * Constructs a math transform provider from a set of parameters. The provider
-     * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
+     * {@linkplain #getIdentifiers() identifiers} will be the same as the parameter ones.
      *
      * @param  operationType  interface of the {@code CoordinateOperation} instances that use this projection.
      * @param  parameters     the set of parameters (never {@code null}).

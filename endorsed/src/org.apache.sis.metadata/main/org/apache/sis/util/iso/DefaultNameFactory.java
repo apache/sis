@@ -185,7 +185,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *   <tr>
      *     <td>{@code "separator.head"}</td>
      *     <td>The separator to insert between the namespace and the {@linkplain AbstractName#head() head}.<br>
-     *         If omitted, then the default is the same value than {@code "separator"}.</td>
+     *         If omitted, then the default is the same value as {@code "separator"}.</td>
      *   </tr>
      * </table>
      *

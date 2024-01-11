@@ -64,12 +64,12 @@ public abstract class CascadedStoreEvent<E extends CascadedStoreEvent<E>> extend
     }
 
     /**
-     * Creates a new event of the same type than this event but with a different source.
+     * Creates a new event of the same type as this event but with a different source.
      * This method is invoked for creating the event to be fired by the children of the
      * resource where the original event occurred.
      *
      * @param  child  the child resource for which to create the event to cascade.
-     * @return an event of the same type than this event but with the given resource.
+     * @return an event of the same type as this event but with the given resource.
      */
     protected abstract E forSource(Resource child);
 

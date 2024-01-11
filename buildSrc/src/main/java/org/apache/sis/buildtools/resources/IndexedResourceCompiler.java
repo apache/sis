@@ -593,7 +593,7 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
         /*
          * Copies everything up to (including) the constructor of the Keys inner class.
          * The declaration must follow Sun's convention on brace location (i.e. must be
-         * on the same line than the class declaration).
+         * on the same line as the class declaration).
          */
         boolean modified;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING))) {

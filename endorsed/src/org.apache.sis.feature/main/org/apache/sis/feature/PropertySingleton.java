@@ -183,7 +183,7 @@ final class PropertySingleton<V> extends AbstractList<V> {
     }
 
     /**
-     * Same contract than {@link AbstractList}, just slightly more efficient for this particular class.
+     * Same contract as {@link AbstractList}, just slightly more efficient for this particular class.
      */
     @Override
     public int hashCode() {
@@ -194,7 +194,7 @@ final class PropertySingleton<V> extends AbstractList<V> {
     }
 
     /**
-     * Same contract than {@link AbstractList}, just slightly more efficient for this particular class.
+     * Same contract as {@link AbstractList}, just slightly more efficient for this particular class.
      */
     @Override
     public boolean equals(final Object other) {

@@ -533,7 +533,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 
     /**
      * Sets the number at the given index.
-     * The given number should be an instance of the same type than the number returned by {@link #get(int)}.
+     * The given number should be an instance of the same type as the number returned by {@link #get(int)}.
      * If not, the stored value may lost precision as a result of the cast.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
@@ -740,7 +740,7 @@ search:     for (;;) {
      */
     final long subtract(final long a, final long b) {
         final long inc = a - b;
-        // The sign of the difference shall be the same than the sign of Long.compare(…).
+        // The sign of the difference shall be the same as the sign of Long.compare(…).
         if ((((isUnsigned() ? Long.compareUnsigned(a, b) : Long.compare(a, b)) ^ inc) & Long.MIN_VALUE) != 0) {
             throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
         }
@@ -771,7 +771,7 @@ search:     for (;;) {
             /*
              * For integer types, verify if the increment is constant. We do not use the "first + inc*i"
              * formula because some `long` values cannot be represented accurately as `double` values.
-             * The result will be converted to the same type than the vector element type if possible,
+             * The result will be converted to the same type as the vector element type if possible,
              * or the next wider type if the increment is an unsigned value too big for the element type.
              */
             if (type >= Numbers.BYTE && type <= Numbers.LONG && tolerance < 0.5) {
@@ -790,7 +790,7 @@ search:     for (;;) {
                 }
             }
             /*
-             * For floating point types, we must use the same formula than the one used by SequenceVector:
+             * For floating point types, we must use the same formula as the one used by SequenceVector:
              *
              *     doubleValue(i)  =  first + increment*i
              *
@@ -1388,7 +1388,7 @@ search:     for (;;) {
     }
 
     /**
-     * Returns a vector with the same data than this vector but encoded in a more compact way,
+     * Returns a vector with the same data as this vector but encoded in a more compact way,
      * or {@code this} if this method cannot do better than current {@code Vector} instance.
      * Examples:
      *
@@ -1408,7 +1408,7 @@ search:     for (;;) {
      * values in that vector is small compared to the calculation performed with the values.
      *
      * @param  tolerance  maximal difference allowed between original and compressed vectors (can be zero).
-     * @return a more compact vector with the same data than this vector, or {@code this}.
+     * @return a more compact vector with the same data as this vector, or {@code this}.
      */
     @SuppressWarnings({"fallthrough", "ReturnOfCollectionOrArrayField"})
     public Vector compress(final double tolerance) {
@@ -1612,9 +1612,9 @@ search:     for (;;) {
     }
 
     /**
-     * The prime number used in hash code computation. Must be the same than the prime number used
+     * The prime number used in hash code computation. Must be the same as the prime number used
      * in {@link Arrays#hashCode(Object[])} computation. More generally, or {@link #hashCode()}
-     * implementations must be the same than {@code hashCode(…)} implementations in {@link Arrays}.
+     * implementations must be the same as {@code hashCode(…)} implementations in {@link Arrays}.
      */
     static final int PRIME = 31;
 
@@ -1638,12 +1638,12 @@ search:     for (;;) {
     }
 
     /**
-     * Returns {@code true} if the given object is a vector containing the same values than this vector.
+     * Returns {@code true} if the given object is a vector containing the same values as this vector.
      * This method performs the comparison as if the two vectors where converted to arrays of {@link Number}s,
      * then the {@link Arrays#equals(Object[], Object[])} method invoked for those arrays.
      *
      * @param  object  the other object to compare with this vector.
-     * @return {@code true} if the given object is a vector containing the same values than this vector.
+     * @return {@code true} if the given object is a vector containing the same values as this vector.
      *
      * @since 1.0
      */

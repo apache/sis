@@ -111,7 +111,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     }
 
     /**
-     * Provides a stream for a resource in the same package than this class.
+     * Provides a stream for a resource in the same package as this class.
      * The implementation invokes {@code getResourceAsStream(filename)}.
      * This invocation must be done in this module because the invoked
      * method is caller-sensitive.
@@ -190,7 +190,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
 
     /**
      * Verifies the feature types of the "Cities" resource and its dependencies.
-     * Feature properties should be in same order than columns in the database table, except for
+     * Feature properties should be in same order as columns in the database table, except for
      * the generated identifier. Note that the country is an association to another feature.
      *
      * @param  isCyclicAssociationAllowed  whether dependencies are allowed to have an association

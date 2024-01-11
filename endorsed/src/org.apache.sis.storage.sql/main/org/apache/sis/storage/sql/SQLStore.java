@@ -221,7 +221,7 @@ public class SQLStore extends DataStore implements Aggregate {
 
     /**
      * Returns the database model, analyzing the database schema when first needed.
-     * This method performs the same work than {@link #model()}, but using an existing connection.
+     * This method performs the same work as {@link #model()}, but using an existing connection.
      * Callers must own a synchronization lock on {@code this}.
      *
      * @param c  connection to the database.

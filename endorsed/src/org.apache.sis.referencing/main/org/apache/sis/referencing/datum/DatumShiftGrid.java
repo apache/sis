@@ -425,9 +425,9 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * <ul>
      *   <li>For {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}, the translation
-     *       unit shall be the same than the {@linkplain #getCoordinateUnit() coordinate unit}.</li>
+     *       unit shall be the same as the {@linkplain #getCoordinateUnit() coordinate unit}.</li>
      *   <li>For {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform},
-     *       the translation unit shall be the same than the unit of source ellipsoid axis lengths.</li>
+     *       the translation unit shall be the same as the unit of source ellipsoid axis lengths.</li>
      * </ul>
      *
      * @return the unit of measurement of output values interpolated by {@code interpolateAt(…)}.
@@ -481,7 +481,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     /**
      * Interpolates the translation to apply for the given two-dimensional grid indices. The result is stored in
      * the given {@code vector} array, which shall have a length of at least {@link #getTranslationDimensions()}.
-     * The output unit of measurement is the same than the one documented in {@link #getCellValue(int, int, int)}.
+     * The output unit of measurement is the same as the one documented in {@link #getCellValue(int, int, int)}.
      *
      * <h4>Extrapolations</h4>
      * If the given coordinates are outside this grid, then this method computes the translation vector at the
@@ -491,7 +491,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * <h4>Derivative (Jacobian matrix)</h4>
      * If the length of the given array is at least <var>n</var> + 4 where <var>n</var> = {@link #getTranslationDimensions()},
-     * then this method appends the derivative (approximated) at the given grid indices. This is the same derivative than the
+     * then this method appends the derivative (approximated) at the given grid indices. This is the same derivative as the
      * one computed by {@link #derivativeInCell(double, double)}, opportunistically computed here for performance reasons.
      * The matrix layout is as below, where <var>t₀</var> and <var>t₁</var> are the coordinates after translation.
      *
@@ -558,7 +558,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
             vector[dim] = gridY * (r1x - r0x) + r0x;
             if (derivative) {
                 /*
-                 * Following code appends the same values than the ones computed by derivativeInCell(gridX, gridY),
+                 * Following code appends the same values as the ones computed by derivativeInCell(gridX, gridY),
                  * but reusing some of the values that we already fetched for computing the interpolation.
                  */
                 if (skipX) {
@@ -725,7 +725,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *       best accuracy found in the grid. Accuracy are often specified on a cell-by-cell basis in grid files.</li>
      * </ul>
      *
-     * The output unit of measurement is the same than the one documented in {@link #getCellValue}.
+     * The output unit of measurement is the same as the one documented in {@link #getCellValue}.
      * In particular if {@link #isCellValueRatio()} returns {@code true}, then the accuracy is in
      * units of grid cell size.
      *
@@ -893,13 +893,13 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * Returns {@code true} if the given object is a grid containing the same data as this grid.
      * Default implementation compares only the properties known to this abstract class like
      * {@linkplain #getGridSize() grid size}, {@linkplain #getCoordinateUnit() coordinate unit}, <i>etc.</i>
      * Subclasses need to override for adding comparison of the actual values.
      *
      * @param  other  the other object to compare with this datum shift grid.
-     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
+     * @return {@code true} if the given object is non-null, of the same class as this {@code DatumShiftGrid}
      *         and contains the same data.
      */
     @Override

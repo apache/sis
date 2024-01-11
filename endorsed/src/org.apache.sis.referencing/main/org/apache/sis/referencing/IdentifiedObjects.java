@@ -128,7 +128,7 @@ public final class IdentifiedObjects extends Static {
 
     /**
      * Returns every object names and aliases according the given authority. This method performs
-     * the same work than {@link #getName(IdentifiedObject, Citation)}, except that it does not
+     * the same work as {@link #getName(IdentifiedObject, Citation)}, except that it does not
      * stop at the first match. This method is useful in the rare cases where the same authority
      * declares more than one name, and all those names are of interest.
      *
@@ -600,7 +600,7 @@ public final class IdentifiedObjects extends Static {
      *
      * <h4>Example 1: be lenient regarding axis order</h4>
      * By default, {@code lookup(…)} methods require that objects in the dataset have their axes in the
-     * same order than the given object. For relaxing this condition, one can use the following Java code.
+     * same order as the given object. For relaxing this condition, one can use the following Java code.
      * This example assumes that at most one object from the dataset will match the given object.
      * If more than one object may match, then the call to {@code findSingleton(…)} should be replaced
      * by {@code find(…)}.

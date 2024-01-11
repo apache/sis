@@ -416,7 +416,7 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
-     * Creates a raster with the same sample model than this image and with the given size and location.
+     * Creates a raster with the same sample model as this image and with the given size and location.
      * This method does not verify argument validity.
      */
     private WritableRaster createWritableRaster(final Rectangle aoi) {

@@ -210,7 +210,7 @@ walk:   for (final T search : path) {
     }
 
     /**
-     * Sets the selected value or {@code target} to the same item than the selected item of {@code source}.
+     * Sets the selected value or {@code target} to the same item as the selected item of {@code source}.
      *
      * @param <T>     type of items.
      * @param source  the control from which to copy the selected item.

@@ -123,7 +123,7 @@ public final class PlaneTest extends TestCase {
     }
 
     /**
-     * Verifies that {@link Plane#fit(int, int, Vector)} produces the same result than
+     * Verifies that {@link Plane#fit(int, int, Vector)} produces the same result as
      * {@link Plane#fit(double[], double[], double[])}.
      */
     @Test
@@ -155,7 +155,7 @@ public final class PlaneTest extends TestCase {
         assertEquals("z₀", reference.z0(),     fitted.z0(),     0.1);
         final double ep = pearson;
         /*
-         * Verify that the optimized code path for a grid produces the exact same result than the
+         * Verify that the optimized code path for a grid produces the exact same result as the
          * generic code path.
          */
         final Plane gf = new Plane();

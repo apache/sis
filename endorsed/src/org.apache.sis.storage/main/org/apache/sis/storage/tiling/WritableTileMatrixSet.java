@@ -55,11 +55,11 @@ public interface WritableTileMatrixSet extends TileMatrixSet {
      * If the {@code TileMatrix} is not empty, then the tiles that it contains are written immediately.
      *
      * <p>The {@linkplain TileMatrix#getTilingScheme() tiling scheme} of the given tile matrix must
-     * be compatible with this set. In particular, it must use the same CRS than the value returned
+     * be compatible with this set. In particular, it must use the same CRS as the value returned
      * by {@link #getCoordinateReferenceSystem()}. If not, an {@link IncompatibleResourceException}
      * is thrown.</p>
      *
-     * <p>This method returns a writable tile matrix with the same tiles than the given {@code TileMatrix}.
+     * <p>This method returns a writable tile matrix with the same tiles as the given {@code TileMatrix}.
      * However, the identifier of the returned tile matrix may be different.</p>
      *
      * @param  tiles  the (potentially empty) tile matrix to create.

@@ -585,7 +585,7 @@ public class ConverterRegistry {
                      *     Number      ← String             (the ClassPair key)
                      *       └─Integer ← String             (the ObjectConverter value)
                      *
-                     * This is the same idea than the formatting done by FallbackConverter,
+                     * This is the same idea as the formatting done by FallbackConverter,
                      * except that there is only one child. Actually this can be though as
                      * a lightweight fallback converter.
                      */

@@ -26,7 +26,7 @@ import org.apache.sis.measure.Units;
 
 /**
  * The provider for <q>Geographic2D with Height Offsets</q> (EPSG:9618).
- * This is not the same than a <q>Geographic3D offsets</q> because this
+ * This is not the same as a <q>Geographic3D offsets</q> because this
  * operation also performs a simplified transformation from ellipsoidal height
  * to geoidal height, as can be seen from the difference in parameter name.
  * For a "Geographic3D offsets" with ellipsoidal heights, see the parent class.

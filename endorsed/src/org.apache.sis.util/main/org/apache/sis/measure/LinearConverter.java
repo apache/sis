@@ -31,7 +31,7 @@ import org.apache.sis.util.internal.DoubleDouble;
 
 /**
  * Conversions between units that can be represented by a linear operation (scale or offset).
- * Note that the "linear" word in this class does not have the same meaning than the same word
+ * Note that the "linear" word in this class does not have the same meaning as the same word
  * in the {@link #isLinear()} method inherited from JSR-385.
  *
  * <h2>Implementation note</h2>
@@ -432,7 +432,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
     }
 
     /**
-     * Returns {@code true} if the given converter perform the same conversion than this converter,
+     * Returns {@code true} if the given converter perform the same conversion as this converter,
      * except for rounding errors.
      */
     final boolean equivalent(final LinearConverter other) {

@@ -47,7 +47,7 @@ abstract class StaxStreamIO implements AutoCloseable {
 
     /**
      * The underlying stream to close when this {@code StaxStreamIO} reader or writer is closed,
-     * or {@code null} if none. This may be the same reference than {@link StaxDataStore#stream},
+     * or {@code null} if none. This may be the same reference as {@link StaxDataStore#stream},
      * but not necessarily if we had to create a new stream for reading the data one more time.
      */
     Closeable stream;

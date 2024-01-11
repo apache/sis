@@ -25,7 +25,7 @@ import org.opengis.util.FactoryException;
 
 /**
  * The three-dimensional counter-part of a map projection.
- * This is the same than two-dimensional map projections with only the ellipsoidal height which pass through.
+ * This is the same as two-dimensional map projections with only the ellipsoidal height which pass through.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

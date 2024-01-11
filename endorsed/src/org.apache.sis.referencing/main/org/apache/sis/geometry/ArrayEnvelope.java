@@ -157,7 +157,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     }
 
     /**
-     * Constructs a new envelope with the same data than the specified envelope.
+     * Constructs a new envelope with the same data as the specified envelope.
      *
      * @param envelope  the envelope to copy.
      */
@@ -181,7 +181,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     }
 
     /**
-     * Constructs a new envelope with the same data than the specified geographic bounding box.
+     * Constructs a new envelope with the same data as the specified geographic bounding box.
      * The coordinate reference system is set to the
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).

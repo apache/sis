@@ -70,7 +70,7 @@ import org.opengis.feature.FeatureType;
  * delegate to the methods defined in above-cited interfaces, with safety guards against infinite recursivity.
  *
  * <h2>Behavioral changes</h2>
- * Optimized filters shall produce the same results than non-optimized filters.
+ * Optimized filters shall produce the same results as non-optimized filters.
  * However side-effects may differ, in particular regarding exceptions that may be thrown.
  * For example if a filter tests {@code A & B} and if {@code Optimization} determines that the {@code B}
  * condition will always evaluate to {@code false}, then the {@code A} condition will never be tested.
@@ -397,7 +397,7 @@ public class Optimization {
         }
 
         /**
-         * Creates a new expression of the same type than this expression, but with optimized parameters.
+         * Creates a new expression of the same type as this expression, but with optimized parameters.
          * The expressions given to this method shall be equivalent to the expressions used by this instance,
          * potentially more efficient.
          *

@@ -129,7 +129,7 @@ public final class GeographicOffsetsTest extends TransformTestCase {
          * Now create the MathTransform. But at the difference of the above testVerticalOffset() method,
          * we supply information about axis directions. The operation parameter shall have the same sign
          * than in the EPSG database (which is positive), and the source and target coordinates shall have
-         * the same sign than in the EPSG example (positive too). However, we do not test unit conversion
+         * the same sign as in the EPSG example (positive too). However, we do not test unit conversion
          * in this method (EPSG sample point uses feet units), only axis direction.
          */
         final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
@@ -139,7 +139,7 @@ public final class GeographicOffsetsTest extends TransformTestCase {
         tolerance = Formulas.LINEAR_TOLERANCE;
         final double[] source = new double[transform.getSourceDimensions()];
         final double[] target = new double[transform.getTargetDimensions()];
-        source[0] = 2.55;              // 2.55 metres up, same sign than in EPSG example (positive).
+        source[0] = 2.55;              // 2.55 metres up, same sign as in EPSG example (positive).
         target[0] = 7.18 * 0.3048;     // 7.18 feet down.
         verifyTransform(source, target);
     }

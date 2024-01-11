@@ -172,7 +172,7 @@ public class GridDerivation {
     /**
      * The conversion from the derived grid to the original grid, or {@code null} if no subsampling is applied.
      * A non-null conversion exists only in case of subsampling,
-     * because otherwise the derived grid shares the same coordinate space than the {@linkplain #base} grid.
+     * because otherwise the derived grid shares the same coordinate space as the {@linkplain #base} grid.
      * If non-null, the transform has the following properties:
      *
      * <ul>
@@ -325,7 +325,7 @@ public class GridDerivation {
      * then the grid extent computed by {@link #build()} will span an integer amount of chunks.
      * The grid coordinates (0, 0, …) locate the corner of a chunk.
      *
-     * <p>This property operates on the same methods than the {@linkplain #margin(int...) margin}.
+     * <p>This property operates on the same methods as the {@linkplain #margin(int...) margin}.
      * If both a margin and a chunk size are specified, then margins are added first
      * and the resulting grid coordinates are rounded to chunk size.
      * This calculation is done in units of the {@linkplain #base} grid cells, i.e. before subsampling.
@@ -551,7 +551,7 @@ public class GridDerivation {
      * coordinate conversions or transformations will be applied as needed.
      * That envelope CRS may have fewer dimensions than the base grid geometry CRS,
      * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
-     * The target resolution, if provided, shall be in same units and same order than the given envelope axes.
+     * The target resolution, if provided, shall be in same units and same order as the given envelope axes.
      * If the length of {@code resolution} array is less than the number of dimensions of {@code areaOfInterest},
      * then no subsampling will be applied on the missing dimensions.
      *
@@ -565,7 +565,7 @@ public class GridDerivation {
      *   <li>{@linkplain #slice(DirectPosition) Slicing} can be applied after this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
      *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
-     *   <li>If the given envelope is known to be expressed in the same CRS than the grid geometry,
+     *   <li>If the given envelope is known to be expressed in the same CRS as the grid geometry,
      *       then the {@linkplain Envelope#getCoordinateReferenceSystem() CRS of the envelope}
      *       can be left unspecified ({@code null}). It may give a slight performance improvement
      *       by avoiding the check for coordinate transformation.</li>
@@ -975,7 +975,7 @@ public class GridDerivation {
      *       before to invoke this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
      *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
-     *   <li>If the given point is known to be expressed in the same CRS than the grid geometry,
+     *   <li>If the given point is known to be expressed in the same CRS as the grid geometry,
      *       then the {@linkplain DirectPosition#getCoordinateReferenceSystem() CRS of the point}
      *       can be left unspecified ({@code null}). It may give a slight performance improvement
      *       by avoiding the check for coordinate transformation.</li>
@@ -1021,7 +1021,7 @@ public class GridDerivation {
             gridToCRS = dropUnusedDimensions(gridToCRS, dimension);
             /*
              * Take in account the case where the point could be inside the grid if we apply a ±360° longitude shift.
-             * This is the same adjustment than for `subgrid(Envelope)`, but applied on a DirectPosition. Calculation
+             * This is the same adjustment as for `subgrid(Envelope)`, but applied on a DirectPosition. Calculation
              * is done in units of cells of the GridGeometry to be created by GridDerivation.
              */
             DirectPosition gridPoint = wraparound(baseToPOI, gridToCRS).shift(slicePoint);

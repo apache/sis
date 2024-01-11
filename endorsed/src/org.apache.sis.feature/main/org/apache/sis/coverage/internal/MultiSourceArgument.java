@@ -404,7 +404,7 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
 
     /**
      * For each source which is repeated in consecutive positions, merges the repetition in a single reference.
-     * This method does the same work than {@link #mergeDuplicatedSources()}, except that it is restricted to
+     * This method does the same work as {@link #mergeDuplicatedSources()}, except that it is restricted to
      * repetitions in consecutive positions. Because of this restriction, the band order is never modified by
      * this method call.
      */
@@ -430,7 +430,7 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
      * Caller must perform a "band select" operation using the array returned by this method
      * in order to reconstitute the band order specified by the user.
      *
-     * <p>This method does the same work than {@link #mergeConsecutiveSources()} except that this method can merge
+     * <p>This method does the same work as {@link #mergeConsecutiveSources()} except that this method can merge
      * sources that are not necessarily at consecutive positions. The sources can be repeated at random positions.
      * But the cost of this flexibility is the possible modification of band order.</p>
      *

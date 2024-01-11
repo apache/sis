@@ -1068,7 +1068,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         }
 
         /**
-         * Returns the comparator, which is the same than the enclosing class.
+         * Returns the comparator, which is the same as the enclosing class.
          */
         @Override
         public Comparator<Range<E>> comparator() {

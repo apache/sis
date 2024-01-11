@@ -25,7 +25,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * The "help" subcommand.
- * This sub-command prints the same text than when {@code SIS} is invoked on the command-line without arguments.
+ * This sub-command prints the same text as when {@code SIS} is invoked on the command-line without arguments.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

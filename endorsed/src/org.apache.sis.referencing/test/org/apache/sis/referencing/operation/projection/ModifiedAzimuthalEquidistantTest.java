@@ -56,7 +56,7 @@ public final class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistant
     @Test
     @Override
     public void testSpherical() throws FactoryException, TransformException {
-        tolerance = 20;                     // Same tolerance than in parent class.
+        tolerance = 20;                     // Same tolerance as in parent class.
         final double r = 6357767.51;        // Conformal sphere radius at the latitude being tested.
         testWithEPSG(r, r);
     }

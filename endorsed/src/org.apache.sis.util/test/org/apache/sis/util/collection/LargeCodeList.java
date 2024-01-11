@@ -66,7 +66,7 @@ public final class LargeCodeList  extends CodeList<LargeCodeList> {
     }
 
     /**
-     * Returns the list of codes of the same kind than this code list element.
+     * Returns the list of codes of the same kind as this code list element.
      *
      * @return list of codes of {@code LargeCodeList} kind.
      */

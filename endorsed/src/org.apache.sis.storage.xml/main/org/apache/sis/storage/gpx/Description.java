@@ -35,7 +35,7 @@ final class Description extends ResourceInternationalString {
     /**
      * The name of the resource bundle, as a fully qualified class name.
      * This value is given at construction time and cannot be {@code null}.
-     * It must be a resource in the same module than this class.
+     * It must be a resource in the same module as this class.
      */
     private final String resources;
 

@@ -58,7 +58,7 @@ public abstract class OptionalDependency extends SystemListener {
      * @param  <T>         compile-time type of the {@code type} argument.
      * @param  type        the service type, used only if a warning needs to be logged.
      * @param  loader      the service loader created in the module that needs the service.
-     * @param  dependency  same argument value than the one given to the {@linkplain #OptionalDependency constructor}.
+     * @param  dependency  same argument value as the one given to the {@linkplain #OptionalDependency constructor}.
      * @return an instance of the {@code implementation} class, or {@code null} if not found.
      */
     protected static <T extends OptionalDependency> T getInstance(final Class<T> type,

@@ -334,7 +334,7 @@ public final class MathFunctions extends Static {
 
     /**
      * Computes the result of {@code base} argument raised to the power given by {@code exponent} argument.
-     * This method computes the same value than {@link Math#pow(double, double)} but using only integer arithmetic.
+     * This method computes the same value as {@link Math#pow(double, double)} but using only integer arithmetic.
      * The result must be representable as a 64 bits integers ({@code long} primitive type),
      * otherwise an {@link ArithmeticException} is thrown. The result is guaranteed exact,
      * in contrast to results represented as {@code double} floating point values
@@ -601,7 +601,7 @@ public final class MathFunctions extends Static {
      * or</cite> operation instead of being copied.
      *
      * <p>This method makes no guarantee about whether {@code NaN} values are handled as positive
-     * or negative numbers. This is the same policy than {@link Math#copySign(double, double)}.</p>
+     * or negative numbers. This is the same policy as {@link Math#copySign(double, double)}.</p>
      *
      * @param  value  the parameter providing the value that may need a sign change.
      * @param  sign   the parameter providing the sign to <cite>xor</cite> with the value.

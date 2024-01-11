@@ -47,7 +47,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     private static final long serialVersionUID = 7236779710212360309L;
 
     /**
-     * Multiplication factors, to be applied in the same order than coordinate values.
+     * Multiplication factors, to be applied in the same order as coordinate values.
      * The length of this array is the number of target dimensions.
      */
     private final double[] factors;

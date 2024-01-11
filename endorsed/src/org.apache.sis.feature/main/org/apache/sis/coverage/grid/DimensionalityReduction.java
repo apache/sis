@@ -119,7 +119,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
 
     /**
      * The part of the "grid to CRS" transform which has been removed in the reduced grid geometry.
-     * The number of source and target dimensions are the same than in the source grid geometry.
+     * The number of source and target dimensions are the same as in the source grid geometry.
      * The dimensions identified by {@link #gridAxesToPass} are pass-through dimensions.
      *
      * @see #getRemovedGridToCRS(PixelInCell)
@@ -166,7 +166,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
 
     /**
      * Reduces the dimension of the specified grid geometry by retaining the axes specified in the given bitset.
-     * Axes in the reduced grid geometry will be in the same order than in the source geometry:
+     * Axes in the reduced grid geometry will be in the same order as in the source geometry:
      *
      * @param  source    the grid geometry on which to select a subset of its grid dimensions.
      * @param  gridAxes  bitmask of indices of source grid dimensions to keep in the reduced grid.
@@ -201,7 +201,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
             reducedGeometry = helper.reduce(null, dimSubCRS);
             /*
              * Get the sequence of CRS axes to remove. The result will often be
-             * the same indices than `gridAxesToRemove`, but not necessarily.
+             * the same indices as `gridAxesToRemove`, but not necessarily.
              */
             final BitSet crsAxes = bitmask(helper.getTargetDimensions(), targetDim);
             crsAxes.flip(0, targetDim);
@@ -311,7 +311,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
 
     /**
      * Reduces the dimension of the specified grid geometry by retaining only the specified axes.
-     * Axes in the reduced grid geometry will be in the same order than in the source geometry:
+     * Axes in the reduced grid geometry will be in the same order as in the source geometry:
      * change of axis order and duplicated values in the {@code gridAxesToPass} argument are ignored.
      *
      * @param  source          the grid geometry to reduce.
@@ -352,7 +352,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
 
     /**
      * Reduces the dimension of the specified grid geometry by removing the specified axes.
-     * Axes in the reduced grid geometry will be in the same order than in the source geometry:
+     * Axes in the reduced grid geometry will be in the same order as in the source geometry:
      * axis order and duplicated values in the {@code gridAxesToRemove} argument are not significant.
      *
      * @param  source            the grid geometry to reduce.
@@ -375,7 +375,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
 
     /**
      * Automatically reduces a grid geometry by removing all grid dimensions with an extent size of 1.
-     * Axes in the reduced grid geometry will be in the same order than in the source geometry.
+     * Axes in the reduced grid geometry will be in the same order as in the source geometry.
      *
      * @param  source  the grid geometry to reduce.
      * @return reduced grid geometry together with other information.
@@ -504,7 +504,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * Returns the part of the "grid to CRS" transform which has been removed in the reduced grid geometry.
      * This is a pass-through transform (potentially, but not necessarily, implemented
      * by {@link org.apache.sis.referencing.operation.transform.PassThroughTransform}).
-     * The number of source dimensions is the same than in the source grid geometry.
+     * The number of source dimensions is the same as in the source grid geometry.
      * The dimensions that are passed-through are the dimensions on which the reduced grid geometry operates.
      *
      * @param  anchor  the cell part to map (center or corner).
@@ -591,7 +591,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
     }
 
     /**
-     * Ensures that {@code source} has the same number of dimensions and the same axes than {@code expected}.
+     * Ensures that {@code source} has the same number of dimensions and the same axes as {@code expected}.
      * Only axis names that are specified in both extents are compared.
      * If the {@code source} to validate is null, it defaults to the {@code expected} extent.
      *

@@ -147,11 +147,11 @@ abstract class ImageAdapter extends PlanarImage {
      * how images compute their values from their sources; it should not compare the actual pixel values.
      *
      * <p>The default implementation returns {@code true} if the given object is non-null, is an instance
-     * of the exact same class than this image and the {@linkplain #source} of both images are equal.
+     * of the exact same class as this image and the {@linkplain #source} of both images are equal.
      * Subclasses should override this method if more properties need to be compared.</p>
      *
      * @param  object  the object to compare with this image.
-     * @return {@code true} if the given object is an image performing the same calculation than this image.
+     * @return {@code true} if the given object is an image performing the same calculation as this image.
      */
     @Override
     public boolean equals(final Object object) {

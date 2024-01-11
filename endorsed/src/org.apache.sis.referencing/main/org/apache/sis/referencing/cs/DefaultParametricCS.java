@@ -111,7 +111,7 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
     }
 
     /**
-     * Creates a new coordinate system with the same values than the specified one.
+     * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -126,7 +126,7 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
     }
 
     /**
-     * Returns a SIS coordinate system implementation with the same values than the given arbitrary implementation.
+     * Returns a SIS coordinate system implementation with the same values as the given arbitrary implementation.
      * If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.

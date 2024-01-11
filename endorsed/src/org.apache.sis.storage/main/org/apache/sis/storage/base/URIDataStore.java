@@ -435,7 +435,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
             } catch (ParameterNotFoundException e) {
                 /*
                  * This exception should not happen often since the "location" parameter is recommended.
-                 * Note that it does not mean the same thing than "parameter provided but value is null".
+                 * Note that it does not mean the same thing as "parameter provided but value is null".
                  * In that later case we want to return the null value as specified in the parameters.
                  */
                 Logging.recoverableException(StoreUtilities.LOGGER, URIDataStore.class, "location", e);

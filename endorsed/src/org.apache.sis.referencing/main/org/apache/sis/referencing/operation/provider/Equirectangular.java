@@ -278,7 +278,7 @@ public final class Equirectangular extends AbstractProvider {
 
     /**
      * Gets a parameter value identified by the given descriptor and stores it only if different than zero.
-     * This method performs the same work than {@code Initializer.getAndStore(ParameterDescriptor)} in the
+     * This method performs the same work as {@code Initializer.getAndStore(ParameterDescriptor)} in the
      * {@link org.apache.sis.referencing.operation.projection} package.
      *
      * @param  source      the parameters from which to read the value.

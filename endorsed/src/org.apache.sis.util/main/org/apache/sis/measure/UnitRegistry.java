@@ -106,7 +106,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     /**
      * Units defined by the user. Accesses to this map implies synchronization.
      * Values are stored by weak references and garbage collected when no longer used.
-     * Key and value types are the same than the one described in {@link #HARD_CODED}.
+     * Key and value types are the same as the one described in {@link #HARD_CODED}.
      *
      * <h4>Dimension order</h4>
      * Contrarily to {@link #HARD_CODED}, the user-specified map of units is sensitive to dimension order.

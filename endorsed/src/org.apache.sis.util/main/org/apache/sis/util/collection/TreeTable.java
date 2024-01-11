@@ -166,7 +166,7 @@ public interface TreeTable {
         Collection<Node> getChildren();
 
         /**
-         * Creates a new child with the same columns than the other children, and adds it to
+         * Creates a new child with the same columns as the other children, and adds it to
          * the {@linkplain #getChildren() children collection}. The new child is typically added at
          * the end of the collection, but this is not mandatory: implementations can add the child
          * at whatever position they see fit.
@@ -234,7 +234,7 @@ public interface TreeTable {
         Object getUserObject();
 
         /**
-         * Returns {@code true} if the given object is a node with the same content than this node.
+         * Returns {@code true} if the given object is a node with the same content as this node.
          * For this method, the meaning of <cite>same content</cite> is defined as below:
          *
          * <ul>
@@ -259,7 +259,7 @@ public interface TreeTable {
          * <tr><th>Node 1:</th><td>{@code  }{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}</td></tr>
          * <tr><th>Node 2:</th><td>{@code   └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}</td></tr>
          * <tr><th>Node 3:</th><td>{@code      └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}</td></tr>
-         * <tr><th>Node 4:</th><td>{@code         └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform} (same instance than above)</td></tr>
+         * <tr><th>Node 4:</th><td>{@code         └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform} (same instance as above)</td></tr>
          * <tr><th>Node 5:</th><td>{@code            └─}<i>etc…</i></td></tr>
          * </table>
          *

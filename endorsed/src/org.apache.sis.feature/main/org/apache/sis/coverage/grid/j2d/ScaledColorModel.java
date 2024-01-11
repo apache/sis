@@ -47,7 +47,7 @@ final class ScaledColorModel extends ComponentColorModel {
 
     /**
      * The object from which to get the coefficients for converting values to colors.
-     * This is a reference to the same object than {@link #getColorSpace()}, but stored
+     * This is a reference to the same object as {@link #getColorSpace()}, but stored
      * as a {@link ScaledColorSpace} for avoiding the need to perform casts.
      */
     private final ScaledColorSpace cs;

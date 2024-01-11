@@ -97,7 +97,7 @@ public class UnparsableObjectException extends ParseException implements Localiz
 
     /**
      * Returns a localized version of the exception message, typically for final user.
-     * This is often the same message than the one returned by {@link #getMessage()},
+     * This is often the same message as the one returned by {@link #getMessage()},
      * but may in some occasions be in a different language if {@code WKTFormat} has been
      * {@linkplain WKTFormat#WKTFormat(java.util.Locale, java.util.TimeZone) constructed}
      * with a different locale.

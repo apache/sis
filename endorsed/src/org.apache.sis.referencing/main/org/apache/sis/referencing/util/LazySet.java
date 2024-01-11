@@ -215,7 +215,7 @@ public abstract class LazySet<E> extends SetOfUnknownSize<E> {
 
     /**
      * Returns an iterator over the elements contained in this set.
-     * This is not the same iterator than the one given to the constructor.
+     * This is not the same iterator as the one given to the constructor.
      *
      * @return an iterator over the elements in this set.
      */

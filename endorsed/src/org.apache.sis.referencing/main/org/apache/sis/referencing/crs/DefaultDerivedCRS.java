@@ -114,7 +114,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Creates a derived CRS from a defining conversion.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractCRS#AbstractCRS(Map, CoordinateSystem) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
      *
@@ -233,7 +233,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     }
 
     /**
-     * Constructs a new coordinate reference system with the same values than the specified one.
+     * Constructs a new coordinate reference system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -249,7 +249,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Creates a derived CRS from a defining conversion and a type inferred from the given arguments.
-     * This method expects the same arguments and performs the same work than the
+     * This method expects the same arguments and performs the same work as the
      * {@linkplain #DefaultDerivedCRS(Map, SingleCRS, Conversion, CoordinateSystem) above constructor},
      * except that the {@code DerivedCRS} instance returned by this method may additionally implement
      * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS}, {@link ParametricCRS} or
@@ -302,7 +302,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Creates a derived CRS from a math transform and a type inferred from the given arguments.
-     * This method expects the same arguments and performs the same work than the
+     * This method expects the same arguments and performs the same work as the
      * {@linkplain #DefaultDerivedCRS(Map, SingleCRS, CoordinateReferenceSystem, OperationMethod, MathTransform,
      * CoordinateSystem) above constructor},
      * except that the {@code DerivedCRS} instance returned by this method may additionally implement
@@ -349,7 +349,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     }
 
     /**
-     * Returns a SIS coordinate reference system implementation with the same values than the given
+     * Returns a SIS coordinate reference system implementation with the same values as the given
      * arbitrary implementation. If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
@@ -467,7 +467,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     }
 
     /**
-     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     * Returns a coordinate reference system of the same type as this CRS but with different axes.
      */
     @Override
     AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
@@ -644,7 +644,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (GeodeticDatum) super.getDatum();
         }
 
-        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
         @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
             final Conversion conversionFromBase = getConversionFromBase();
             return new Geodetic(properties, (GeodeticCRS) conversionFromBase.getSourceCRS(),
@@ -697,7 +697,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (VerticalCS) super.getCoordinateSystem();
         }
 
-        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
         @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
             final Conversion conversionFromBase = getConversionFromBase();
             return new Vertical(properties, (VerticalCRS) conversionFromBase.getSourceCRS(),
@@ -750,7 +750,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (TimeCS) super.getCoordinateSystem();
         }
 
-        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
         @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
             final Conversion conversionFromBase = getConversionFromBase();
             return new Temporal(properties, (TemporalCRS) conversionFromBase.getSourceCRS(),
@@ -803,7 +803,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (ParametricCS) super.getCoordinateSystem();
         }
 
-        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
         @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
             final Conversion conversionFromBase = getConversionFromBase();
             return new Parametric(properties, (ParametricCRS) conversionFromBase.getSourceCRS(),
@@ -854,7 +854,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (EngineeringDatum) super.getDatum();
         }
 
-        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
         @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
             final Conversion conversionFromBase = getConversionFromBase();
             return new Engineering(properties, (EngineeringCRS) conversionFromBase.getSourceCRS(), conversionFromBase, derivedCS);

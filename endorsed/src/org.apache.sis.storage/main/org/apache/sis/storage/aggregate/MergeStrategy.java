@@ -157,7 +157,7 @@ public final class MergeStrategy {
     }
 
     /**
-     * Returns a resource with same data than specified resource but using this merge strategy.
+     * Returns a resource with same data as specified resource but using this merge strategy.
      * If the given resource is an instance created by {@link CoverageAggregator} and uses a different strategy,
      * then a new resource using this merge strategy is returned. Otherwise the given resource is returned as-is.
      * The returned resource will share the same resources and caches than the given resource.

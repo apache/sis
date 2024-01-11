@@ -209,7 +209,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * <h4>Requirements</h4>
      * {@code MultiAuthoritiesFactory} may iterate over the same {@code Iterable} more than once.
-     * Each iteration <strong>shall</strong> return the same instances than previous iterations,
+     * Each iteration <strong>shall</strong> return the same instances as previous iterations,
      * unless {@link #reload()} has been invoked.
      *
      * <p>The {@code Iterable}s do not need to be thread-safe.

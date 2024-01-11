@@ -187,7 +187,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
 
     /**
      * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the
-     * same module than this class, so we will hopefully not have security issues.  But we have to
+     * same module as this class, so we will hopefully not have security issues.  But we have to
      * use reflection because the parser class is not yet public (because we do not want to commit
      * its API yet).
      */

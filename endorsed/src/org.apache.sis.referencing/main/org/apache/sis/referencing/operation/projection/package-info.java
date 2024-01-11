@@ -27,7 +27,7 @@
  * package and use a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory math
  * transform factory} instead.
  * The {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
- * createParameterizedTransform(…)} method of that factory is subjects to the same rules than this package,
+ * createParameterizedTransform(…)} method of that factory is subjects to the same rules as this package,
  * namely input coordinates must be (<var>longitude</var>, <var>latitude</var>) in decimal degrees
  * and output coordinates must be (<var>easting</var>, <var>northing</var>) in metres.
  * More on this convention is explained below.</p>

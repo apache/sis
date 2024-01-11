@@ -124,7 +124,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
      *
      * <h4>Accuracy metadata</h4>
      * This method copies accuracy and domain of validity metadata from the given operation.
-     * We presume that the inverse operation has the same accuracy than the direct operation.
+     * We presume that the inverse operation has the same accuracy as the direct operation.
      * In many cases, the inverse operation is numerically less accurate than the direct operation because it
      * uses approximations like series expansions or iterative methods. However, the numerical errors caused by
      * those approximations are not of interest here, because they are usually much smaller than the inaccuracy

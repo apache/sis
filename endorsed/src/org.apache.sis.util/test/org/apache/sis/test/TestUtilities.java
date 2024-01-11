@@ -402,7 +402,7 @@ public final class TestUtilities extends Static {
      * @throws InterruptedException if this thread has been interrupted while waiting.
      */
     public static void waitForBlockedState(final Thread thread) throws IllegalThreadStateException, InterruptedException {
-        int retry = MAXIMAL_WAIT_TIME / 5;              // 5 shall be the same number than in the call to Thread.sleep.
+        int retry = MAXIMAL_WAIT_TIME / 5;              // 5 shall be the same number as in the call to Thread.sleep.
         do {
             Thread.sleep(5);
             switch (thread.getState()) {
@@ -431,7 +431,7 @@ public final class TestUtilities extends Static {
      */
     public static boolean waitForGarbageCollection(final Callable<Boolean> stopCondition) throws InterruptedException {
         assertTrue("GC-dependent tests not allowed in this run.", TestConfiguration.allowGarbageCollectorDependentTests());
-        int retry = MAXIMAL_WAIT_TIME / 50;             // 50 shall be the same number than in the call to Thread.sleep.
+        int retry = MAXIMAL_WAIT_TIME / 50;             // 50 shall be the same number as in the call to Thread.sleep.
         boolean stop;
         do {
             if (--retry == 0) {

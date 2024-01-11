@@ -192,7 +192,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     private String separator;
 
     /**
-     * Same value than {@link #separator} but without leading and trailing spaces.
+     * Same value as {@link #separator} but without leading and trailing spaces.
      */
     private transient String trimmedSeparator;
 

@@ -87,7 +87,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     final boolean isConverted;
 
     /**
-     * The slices of this resource, in the same order than {@link GridSliceLocator#sliceLows}.
+     * The slices of this resource, in the same order as {@link GridSliceLocator#sliceLows}.
      * Each slice is not necessarily 1 cell tick; larger slices are accepted.
      * This array shall be read-only.
      */
@@ -154,7 +154,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
      * @param  listeners  listeners of the parent resource, or {@code null} if none.
      * @param  domain     value to be returned by {@link #getGridGeometry()}.
      * @param  ranges     value to be returned by {@link #getSampleDimensions()}.
-     * @param  slices     the slices of this resource, in the same order than {@link GridSliceLocator#sliceLows}.
+     * @param  slices     the slices of this resource, in the same order as {@link GridSliceLocator#sliceLows}.
      */
     ConcatenatedGridResource(final String                 name,
                              final StoreListeners         listeners,
@@ -182,7 +182,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     }
 
     /**
-     * Creates a new resource with the same data than given resource but a different merge strategy.
+     * Creates a new resource with the same data as given resource but a different merge strategy.
      * The two resources will share the same cache of loaded coverages.
      *
      * @param  source    the resource to copy.
@@ -204,7 +204,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     }
 
     /**
-     * Returns a coverage with the same data than this coverage but a different merge strategy.
+     * Returns a coverage with the same data as this coverage but a different merge strategy.
      * This is the implementation of {@link MergeStrategy#apply(Resource)} public method.
      */
     @Override

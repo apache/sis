@@ -70,7 +70,7 @@ import org.apache.sis.math.Vector;
 final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * The names of attributes where to look for the description to be returned by {@link #getDescription()}.
-     * We use the same attributes than the one documented in the {@link ucar.nc2.Variable#getDescription()}
+     * We use the same attributes as the one documented in the {@link ucar.nc2.Variable#getDescription()}
      * javadoc, in same order.
      */
     private static final String[] DESCRIPTION_ATTRIBUTES = {

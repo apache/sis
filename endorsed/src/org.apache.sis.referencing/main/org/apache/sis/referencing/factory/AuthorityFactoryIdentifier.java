@@ -157,7 +157,7 @@ final class AuthorityFactoryIdentifier {
     }
 
     /**
-     * Returns an identifier for a factory of the same type than this identifier,
+     * Returns an identifier for a factory of the same type as this identifier,
      * but a different authority and no version.
      */
     AuthorityFactoryIdentifier unversioned(final String newAuthority) {
@@ -227,7 +227,7 @@ final class AuthorityFactoryIdentifier {
     }
 
     /**
-     * Returns {@code true} if the given identifier is for the same authority than this identifier.
+     * Returns {@code true} if the given identifier is for the same authority as this identifier.
      */
     boolean isSameAuthority(final AuthorityFactoryIdentifier other) {
         return authority.equals(other.authority);

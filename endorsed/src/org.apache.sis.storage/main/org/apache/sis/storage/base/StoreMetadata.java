@@ -40,7 +40,7 @@ public @interface StoreMetadata {
      * Returns a name for the data store format.
      * <b>This is not guaranteed to be a unique identifier!</b>
      * Should not be used as a way to uniquely identify a provider.
-     * In many cases, this is the same than {@link DataStoreProvider#getShortName()}.
+     * In many cases, this is the same as {@link DataStoreProvider#getShortName()}.
      *
      * @return a name for the data store format.
      *

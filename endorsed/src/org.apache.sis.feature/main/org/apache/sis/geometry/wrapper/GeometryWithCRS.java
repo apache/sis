@@ -61,7 +61,7 @@ public abstract class GeometryWithCRS extends GeometryWrapper {
     }
 
     /**
-     * Returns {@code true} if the given geometry use the same CRS than this geometry, or conservatively
+     * Returns {@code true} if the given geometry use the same CRS as this geometry, or conservatively
      * returns {@code false} in case of doubt. This method should perform only a cheap test; it is used
      * as a way to filter rapidly if {@link #transform(CoordinateReferenceSystem)} needs to be invoked.
      *

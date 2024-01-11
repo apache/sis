@@ -124,7 +124,7 @@ abstract class Transformer {
      * namespace, but the {@code citation} and {@code abstract} properties inherited from {@code Identification} are
      * defined in the {@code http://standards.iso.org/iso/19115/-3/mri/1.0} namespace (note: using {@link #EXTENDS}
      * is a better way to achieve the same result for this particular example). If the {@value} flag is not present,
-     * then the type is assumed in the same namespace than the properties (this is the most common case).
+     * then the type is assumed in the same namespace as the properties (this is the most common case).
      */
     static final char NO_NAMESPACE = '!';
 

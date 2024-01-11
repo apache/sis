@@ -414,7 +414,7 @@ public final class GridGeometryTest extends TestCase {
                 new long[] {-25, -20},
                 new long[] { 15,  10}, false);
         /*
-         * Same case than the one tested by `testFromExtentAndEnvelope()`,
+         * Same case as the one tested by `testFromExtentAndEnvelope()`,
          * but with axis order swapped.
          */
         GridGeometry grid = new GridGeometry(extent, aoi, GridOrientation.DISPLAY);

@@ -173,7 +173,7 @@ public abstract class Variable extends Node {
 
     /**
      * The {@linkplain #values} vector as a list of element of any type (not restricted to {@link Number} instances).
-     * This is usually the same instance than {@link #values} because {@link Vector} implements {@code List<Number>}.
+     * This is usually the same instance as {@link #values} because {@link Vector} implements {@code List<Number>}.
      * This is a different instance if this variable is a two-dimensional character array, in which case this field
      * is an instance of {@code List<String>}.
      *
@@ -357,7 +357,7 @@ public abstract class Variable extends Node {
     protected abstract Unit<?> parseUnit(String symbols) throws Exception;
 
     /**
-     * Sets the unit of measurement and the epoch to the same value than the given variable.
+     * Sets the unit of measurement and the epoch to the same value as the given variable.
      * This method is not used in CF-compliant files; it is reserved for the handling of some
      * particular conventions, for example {@link HYCOM}.
      *
@@ -541,9 +541,9 @@ public abstract class Variable extends Node {
      * as a fallback. The default implementation tries to build a grid in the following ways:</p>
      *
      * <ol class="verbose">
-     *   <li><b>Grid of same dimension than this variable:</b>
+     *   <li><b>Grid of same dimension as this variable:</b>
      *     iterate over {@link Decoder#getGridCandidates() all localization grids} and search for an element having
-     *     the same dimensions than this variable, i.e. where {@link Grid#getDimensions()} contains the same elements
+     *     the same dimensions as this variable, i.e. where {@link Grid#getDimensions()} contains the same elements
      *     than {@link #getGridDimensions()} (not necessarily in the same order). The {@link Grid#forDimensions(Dimension[])}
      *     method will be invoked for reordering dimensions in the right order.</li>
      *
@@ -592,7 +592,7 @@ public abstract class Variable extends Node {
         /*
          * Get all dimensions of this variable in netCDF order, then replace them by dimensions from an axis variable.
          * If we are in the situation #1 documented in javadoc, `isIncomplete` will be `false` after execution of this
-         * loop and all dimensions should be the same than the values returned by `Variable.getGridDimensions()`.
+         * loop and all dimensions should be the same as the values returned by `Variable.getGridDimensions()`.
          */
         boolean isIncomplete = false;
         final List<Dimension> fromVariable = getGridDimensions();
@@ -627,7 +627,7 @@ public abstract class Variable extends Node {
                     /*
                      * Remembers which dimension from the variable corresponds to a dimension from the grid.
                      * Those dimensions would have been the same if we were not in a situation where size of
-                     * localization grid is not the same than the data variable size.
+                     * localization grid is not the same as the data variable size.
                      */
                     final Dimension  varDimension = fromVariable.get(i);
                     final Dimension gridDimension = domain.remove(label);
@@ -1041,7 +1041,7 @@ public abstract class Variable extends Node {
      * </ul>
      *
      * If the variable has more than one dimension, then the data are packed in a one-dimensional vector
-     * in the same way than {@link #read()}. If {@link #hasRealValues()} returns {@code true}, then this
+     * in the same way as {@link #read()}. If {@link #hasRealValues()} returns {@code true}, then this
      * method shall {@linkplain #replaceNaN(Object) replace fill/missing values by NaN values}.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.

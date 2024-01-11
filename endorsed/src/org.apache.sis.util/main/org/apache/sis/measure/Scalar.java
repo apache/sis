@@ -70,8 +70,8 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
-     * Creates a new quantity of same type than this quantity but with a different value and/or unit.
-     * This method performs the same work than {@link Quantities#create(double, Unit)}, but without
+     * Creates a new quantity of same type as this quantity but with a different value and/or unit.
+     * This method performs the same work as {@link Quantities#create(double, Unit)}, but without
      * the need to check for the Apache SIS specific {@link SystemUnit} implementation.
      *
      * <p>This method is invoked (indirectly) in only two situations:</p>
@@ -93,8 +93,8 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
-     * Returns a quantity quantity of same type than this quantity but with a different value and/or unit.
-     * If the new value and unit are the same than this quantity, then {@code this} instance is returned.
+     * Returns a quantity quantity of same type as this quantity but with a different value and/or unit.
+     * If the new value and unit are the same as this quantity, then {@code this} instance is returned.
      * Positive and negative zeros are considered two different values.
      */
     private Quantity<?> of(final double newValue, final Unit<?> newUnit) {
@@ -105,7 +105,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
-     * Returns a quantity with the same units than this quantity. If the new value is the same
+     * Returns a quantity with the same units as this quantity. If the new value is the same
      * than current value, then {@code this} instance is returned. Positive and negative zeros
      * are considered two different values.
      */

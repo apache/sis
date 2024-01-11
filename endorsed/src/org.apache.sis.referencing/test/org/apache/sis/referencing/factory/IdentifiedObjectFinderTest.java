@@ -73,7 +73,7 @@ public final class IdentifiedObjectFinderTest extends TestCase {
         assertSame("Allowing scanning should not make any difference for this CRS84 instance.",
                    CRS84, finder.findSingleton(CRS84));
         /*
-         * Same test than above, using a CRS without identifier.
+         * Same test as above, using a CRS without identifier.
          * The intent is to force a full scan.
          */
         final CoordinateReferenceSystem search = new DefaultGeographicCRS(

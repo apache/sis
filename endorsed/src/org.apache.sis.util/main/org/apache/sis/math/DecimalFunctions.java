@@ -233,7 +233,7 @@ public final class DecimalFunctions extends Static {
         assert Math.scalb((double) m, e) == Math.abs(value) : value;
         final int e10 = -Numerics.toExp10(e);           // Range: [0 … 324] inclusive.
         /*
-         * If we were continuing with the same strategy than in floatToDouble(float), we would compute:
+         * If we were continuing with the same strategy as in floatToDouble(float), we would compute:
          *
          *    c = Math.scalb(pow10(e10), e);            // Range: (1 … 10) exclusive.
          *

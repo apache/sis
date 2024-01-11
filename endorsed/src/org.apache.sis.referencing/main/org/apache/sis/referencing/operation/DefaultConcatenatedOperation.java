@@ -94,7 +94,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     /**
      * Constructs a concatenated operation from a set of properties and a
      * {@linkplain MathTransformFactory math transform factory}.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -288,7 +288,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             }
             /*
              * Optionally copy the coordinate operation accuracy from the transformation (or from a concatenated
-             * operation on the assumption that its accuracy was computed by the same algorithm than this method).
+             * operation on the assumption that its accuracy was computed by the same algorithm as this method).
              * See javadoc for a rational about why we take only transformations in account. If more than one
              * transformation is found, clear the collection and abandon the attempt to set the accuracy information.
              * Instead, the user will get a better result by invoking PositionalAccuracyConstant.getLinearAccuracy(…)
@@ -342,7 +342,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * Creates a new coordinate operation with the same values than the specified one.
+     * Creates a new coordinate operation with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *

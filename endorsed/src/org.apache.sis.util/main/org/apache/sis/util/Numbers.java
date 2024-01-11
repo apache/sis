@@ -788,7 +788,7 @@ asLong: if (mapping != null) {
     /**
      * Returns a {@code NaN}, zero, empty or {@code null} value of the given type. This method
      * tries to return the closest value that can be interpreted as <q>none</q>, which
-     * is usually not the same than <q>zero</q>. More specifically:
+     * is usually not the same as <q>zero</q>. More specifically:
      *
      * <ul>
      *   <li>If the given type is a floating point <strong>primitive</strong> type ({@code float}

@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  * <ul>
  *   <li>When {@link Iter#hasNext()} finds a null or empty collection,
  *       it may needs to simulate a singleton with a null value.</li>
- *   <li>In {@link TreeNode#getUserObject()}, we need the same check than above
+ *   <li>In {@link TreeNode#getUserObject()}, we need the same check as above
  *       for simulating a singleton collection with a null value if the node is
  *       for the element at index 0.</li>
  * </ul>
@@ -76,7 +76,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
     /**
      * The accessor to use for accessing the property names, types and values of the {@link #metadata} object.
-     * This is given at construction time and shall be the same than the following code:
+     * This is given at construction time and shall be the same as the following code:
      *
      * {@snippet lang="java" :
      *     accessor = parent.table.standard.getAccessor(metadata.getClass(), true);
@@ -95,7 +95,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
     /**
      * Index of the property to write in the parent node instead of as a child.
-     * If a property has the same name than the parent property that contains it,
+     * If a property has the same name as the parent property that contains it,
      * we write its value in that parent property. For example, instead of:
      *
      * <pre class="text">

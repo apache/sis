@@ -115,7 +115,7 @@ final class Wrapper extends GeometryWrapper {
     /**
      * Returns the Spatial Reference System Identifier (SRID) if available.
      * This is <em>not</em> necessarily an EPSG code, even it is common practice to use
-     * the same numerical values than EPSG. Note that the absence of SRID does not mean
+     * the same numerical values as EPSG. Note that the absence of SRID does not mean
      * that {@link #getCoordinateReferenceSystem()} would return no CRS.
      */
     @Override
@@ -707,7 +707,7 @@ add:    for (Geometry next = geometry;;) {
 
     /**
      * Transforms this geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS is null or is the same CRS than current one, the geometry is returned unchanged.
+     * If the given CRS is null or is the same CRS as current one, the geometry is returned unchanged.
      * If the geometry has no Coordinate Reference System, then the geometry is returned unchanged.
      *
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
@@ -728,7 +728,7 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Returns {@code true} if the given geometry use the same CRS than this geometry, or conservatively
+     * Returns {@code true} if the given geometry use the same CRS as this geometry, or conservatively
      * returns {@code false} in case of doubt. This method should perform only a cheap test; it is used
      * as a way to filter rapidly if {@link #transform(CoordinateReferenceSystem)} needs to be invoked.
      *

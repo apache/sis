@@ -159,7 +159,7 @@ public class AlbersEqualArea extends AuthalicConversion {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     AlbersEqualArea(final AlbersEqualArea other) {
         super(other);

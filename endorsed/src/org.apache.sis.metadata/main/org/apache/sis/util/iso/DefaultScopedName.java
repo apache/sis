@@ -227,7 +227,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      *
      * @param path       the first part to concatenate.
      * @param separator  the separator between the head and the tail,
-     *                   or {@code null} for inheriting the same separator than the given path.
+     *                   or {@code null} for inheriting the same separator as the given path.
      * @param tail       the second part to concatenate.
      *
      * @see Names#createScopedName(GenericName, String, CharSequence)
@@ -236,7 +236,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      */
     protected DefaultScopedName(final GenericName path, final String separator, final CharSequence tail) {
         /*
-         * Following is the same code than DefaultScopedName(GenericName, GenericName)
+         * Following is the same code as DefaultScopedName(GenericName, GenericName)
          * after simplification we can do because we create the LocalName ourselves.
          */
         ArgumentChecks.ensureNonNull("path", path);

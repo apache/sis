@@ -83,7 +83,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
 
     /**
      * Number of dimensions used for interpolating in the datum shift grid.
-     * This is not necessarily the same than the number of dimensions of interpolated values.
+     * This is not necessarily the same as the number of dimensions of interpolated values.
      * In current SIS implementation, this number of dimensions is fixed by the {@link DatumShiftGrid} API.
      */
     private static final int GRID_DIMENSION = 2;
@@ -104,7 +104,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * Creates a transform for the given interpolation grid.
      * This {@code InterpolatedTransform} class works with coordinate values in <em>units of grid cell</em>
      * For example, input coordinates (4,5) is the position of the center of the cell at grid index (4,5).
-     * The output units are the same than the input units.
+     * The output units are the same as the input units.
      *
      * <p>For converting geodetic coordinates, {@code InterpolatedTransform} instances need to be concatenated
      * with the following affine transforms:
@@ -174,7 +174,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
         }
         /*
          * Denormalization is the inverse of all above conversions in the usual case (NADCON and NTv2) where the
-         * source coordinate system is the same than the target coordinate system, for example with axis unit in
+         * source coordinate system is the same as the target coordinate system, for example with axis unit in
          * degrees. However, we also use this InterpolatedTransform implementation for other operations, like the
          * one created by LocalizationGridBuilder. Those later operations may require a different denormalization
          * matrix. Consequently, the call to `getParameterValues(…)` may overwrite the denormalization matrix as

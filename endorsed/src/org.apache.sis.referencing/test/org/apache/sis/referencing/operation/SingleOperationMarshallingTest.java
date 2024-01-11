@@ -214,7 +214,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
     }
 
     /**
-     * Verify a parameter value. The descriptor is expected to be the same instance than the descriptors
+     * Verify a parameter value. The descriptor is expected to be the same instance as the descriptors
      * defined in the {@link ParameterValueGroup} and in the {@link OperationMethod}.
      *
      * @param  method         the method of the enclosing operation.

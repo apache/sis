@@ -706,7 +706,7 @@ public class GridCoverageProcessor implements Cloneable {
 
     /**
      * Automatically reduces a grid coverage dimensionality by removing all grid axes with an extent size of 1.
-     * Axes in the reduced grid coverage will be in the same order than in the source coverage.
+     * Axes in the reduced grid coverage will be in the same order as in the source coverage.
      *
      * @param  source  the coverage to reduce to a lower number of dimensions.
      * @return the reduced grid coverage, or {@code source} if no grid dimensions can be removed.
@@ -724,7 +724,7 @@ public class GridCoverageProcessor implements Cloneable {
      * Creates a coverage trimmed from the specified grid dimensions.
      * This is a <cite>dimensionality reduction</cite> operation applied to the coverage domain.
      * The dimensions to remove are specified as indices of <em>grid extent</em> axes.
-     * It may be the same indices than the indices of the CRS axes which will be removed,
+     * It may be the same indices as the indices of the CRS axes which will be removed,
      * but not necessarily.
      *
      * <h4>Constraints</h4>
@@ -771,7 +771,7 @@ public class GridCoverageProcessor implements Cloneable {
      * Creates a coverage containing only the specified grid dimensions.
      * This is a <cite>dimensionality reduction</cite> operation applied to the coverage domain.
      * The dimensions to keep are specified as indices of <em>grid extent</em> axes.
-     * It may be the same indices than the indices of the CRS axes which will pass through,
+     * It may be the same indices as the indices of the CRS axes which will pass through,
      * but not necessarily.
      *
      * <p>The axis order in the returned coverage is always the same as in the given {@code source} coverage,
@@ -862,7 +862,7 @@ public class GridCoverageProcessor implements Cloneable {
 
     /**
      * Aggregates in a single coverage the specified bands of a sequence of source coverages, in order.
-     * This method performs the same work than {@link #aggregateRanges(GridCoverage...)},
+     * This method performs the same work as {@link #aggregateRanges(GridCoverage...)},
      * but with the possibility to specify the sample dimensions to retain in each source coverage.
      * The {@code bandsPerSource} argument specifies the sample dimensions to keep, in order.
      * That array can be {@code null} for selecting all sample dimensions in all source coverages,
@@ -997,7 +997,7 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
-     * Returns a coverage processor with the same configuration than this processor.
+     * Returns a coverage processor with the same configuration as this processor.
      *
      * @return a clone of this coverage processor.
      */

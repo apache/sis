@@ -236,7 +236,7 @@ public class LocationFormat extends TabularFormat<Location> {
         }
         /*
          * Extents (temporal and geographic). If an envelope exists and the CRS is not geographic,
-         * then the envelope bounds will be appended on the same lines than the geographic bounds.
+         * then the envelope bounds will be appended on the same lines as the geographic bounds.
          * But before writing the bounding box and/or the envelope, check if they are redundant.
          * We may also need to change axis order (but not unit) of the envelope in order to match
          * the axis order of the geographic bounding box.

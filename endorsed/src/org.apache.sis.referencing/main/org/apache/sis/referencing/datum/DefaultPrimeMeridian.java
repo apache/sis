@@ -162,7 +162,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Creates a new prime meridian with the same values than the specified one.
+     * Creates a new prime meridian with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -179,7 +179,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Returns a SIS prime meridian implementation with the same values than the given arbitrary implementation.
+     * Returns a SIS prime meridian implementation with the same values as the given arbitrary implementation.
      * If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
@@ -338,7 +338,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *
      * <h4>Rational</h4>
      * According the ISO 19162 standard, it is legal to omit the {@code PrimeMeridian} angular unit when
-     * that unit is the same than the unit of the axes of the enclosing {@code GeographicCRS}. However, the
+     * that unit is the same as the unit of the axes of the enclosing {@code GeographicCRS}. However, the
      * relationship between the CRS axes and the prime meridian is less obvious in WKT2 than it was in WKT1,
      * because the WKT2 {@code UNIT[…]} element is far from the {@code PRIMEM[…]} element while it was just
      * below it in WKT1. Furthermore, the {@code PRIMEM[…]} unit is one source of incompatibility between

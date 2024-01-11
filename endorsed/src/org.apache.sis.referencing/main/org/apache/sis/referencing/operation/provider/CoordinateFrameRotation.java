@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 /**
  * The provider for <q>Coordinate Frame rotation (geocentric domain)</q> (EPSG:1032).
- * This is the same transformation than "{@link PositionVector7Param}"
+ * This is the same transformation as "{@link PositionVector7Param}"
  * except that the rotation angles have the opposite sign.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

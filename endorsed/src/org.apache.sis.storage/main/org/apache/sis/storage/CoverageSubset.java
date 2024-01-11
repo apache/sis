@@ -135,7 +135,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
 
     /**
      * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
-     * In absence of dimensionality reduction, this is the same resolution than the source resource.
+     * In absence of dimensionality reduction, this is the same resolution as the source resource.
      *
      * @return preferred resolutions for read operations in this data store, or an empty array if none.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.

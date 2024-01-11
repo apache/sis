@@ -831,7 +831,7 @@ public class AngleFormat extends Format implements Localized {
         ArgumentChecks.ensureFinite("resolution", resolution);
         resolution = Math.abs(resolution);
         if (resolution == 0) {
-            // Restore same setting than constructor.
+            // Restore same setting as constructor.
             resolution = 1E-16;                                                     // Math.ulp(1) ≈ 2E-16.
         }
         final int significandFractionDigits;
@@ -1415,7 +1415,7 @@ public class AngleFormat extends Format implements Localized {
 
     /**
      * Returns the index of the first non-space character in the given string.
-     * This method performs the same work than {@code CharSequences.skipLeadingWhitespaces},
+     * This method performs the same work as {@code CharSequences.skipLeadingWhitespaces},
      * except that it tests for spaces using the {@link Character#isSpaceChar(int)} method
      * instead of {@link Character#isWhitespace(int)}. The reason is that we really want
      * to skip no-break spaces, since they are often used inside a single entity (e.g. the

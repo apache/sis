@@ -122,7 +122,7 @@ public final class DefaultLineageTest extends TestCase {
 
     /**
      * Tests the marshalling of a {@code "mrl:LE_Source"} element.
-     * This test starts with the same metadata than {@link #testSource()} and adds an
+     * This test starts with the same metadata as {@link #testSource()} and adds an
      * ISO 19115-2 specific property. Consequently, the XML name, which was originally
      * {@code "mrl:LI_Source"}, shall become {@code "mrl:LE_Source"}.
      *
@@ -157,7 +157,7 @@ public final class DefaultLineageTest extends TestCase {
 
     /**
      * Tests the marshalling of a legacy {@code "gmi:LE_Source"} element.
-     * This test starts with the same metadata than {@link #testLegacySource()} and adds
+     * This test starts with the same metadata as {@link #testLegacySource()} and adds
      * an ISO 19115-2 specific property. Consequently, the XML name, which was originally
      * {@code "gmd:LI_Source"}, shall become {@code "gmi:LE_Source"}.
      *

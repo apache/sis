@@ -163,7 +163,7 @@ public final class CoverageQueryTest extends TestCase {
     private void verifyRead(final GridCoverageResource subset, final int expansion) throws DataStoreException {
         /*
          * Test reading the whole image. The grid geometry of returned coverage
-         * must be the same than the grid geometry of the GridCoverageResource,
+         * must be the same as the grid geometry of the GridCoverageResource,
          * which has been verified by the caller to contain the expansion.
          */
         assertEquals(subset.getGridGeometry(), subset.read(null).getGridGeometry());

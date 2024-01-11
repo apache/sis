@@ -113,7 +113,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Mapping from a upper-case letter symbols to its numerical value.
-         * This is the same array than {@link #decodingLowerCase} if the format is case-insensitive.
+         * This is the same array as {@link #decodingLowerCase} if the format is case-insensitive.
          */
         final byte[] decodingUpperCase;
 

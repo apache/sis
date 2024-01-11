@@ -109,7 +109,7 @@ public interface LinearTransform extends MathTransform {
      *
      * @param  srcPts  the array containing the source vectors.
      * @param  srcOff  the offset to the first vector to be transformed in the source array.
-     * @param  dstPts  the array into which the transformed vectors are returned. Can be the same than {@code srcPts}.
+     * @param  dstPts  the array into which the transformed vectors are returned. Can be the same as {@code srcPts}.
      * @param  dstOff  the offset to the location of the first transformed vector that is stored in the destination array.
      * @param  numPts  the number of vector objects to be transformed.
      * @throws TransformException if a vector cannot be transformed.

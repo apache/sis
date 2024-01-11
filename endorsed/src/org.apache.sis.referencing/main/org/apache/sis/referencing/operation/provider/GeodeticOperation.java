@@ -99,7 +99,7 @@ abstract class GeodeticOperation extends AbstractProvider {
 
     /**
      * Constructs a math transform provider from a set of parameters. The provider name and
-     * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
+     * {@linkplain #getIdentifiers() identifiers} will be the same as the parameter ones.
      * This method expects an array either {@code null} or of length 4 with methods of the
      * following dimensions:
      *

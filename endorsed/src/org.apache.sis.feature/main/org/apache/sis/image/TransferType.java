@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * The type of data used to transfer pixels. Data transfers happen in various {@link Raster} methods and in
  * {@link PixelIterator#createWindow(TransferType)}. The type used for transferring data is not necessarily
- * the same than the type used by the raster for storing data. In particular, {@code byte} and {@code short}
+ * the same as the type used by the raster for storing data. In particular, {@code byte} and {@code short}
  * (both signed and unsigned) are converted to {@code int} during the transfer.
  *
  * <p>{@link Raster} and {@link PixelIterator} transfer data in {@code int[]}, {@code float[]} and {@code double[]} arrays.

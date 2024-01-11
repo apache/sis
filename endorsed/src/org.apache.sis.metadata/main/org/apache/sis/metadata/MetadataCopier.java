@@ -33,7 +33,7 @@ import org.apache.sis.metadata.internal.Resources;
 
 /**
  * Performs deep copies of given metadata instances. This class performs <em>copies</em>, not clones,
- * since the copied metadata may not be instances of the same class than the original metadata.
+ * since the copied metadata may not be instances of the same class as the original metadata.
  * This class performs the following steps:
  *
  * <ul>
@@ -123,7 +123,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
 
     /**
      * Performs a potentially deep copy of a metadata object of unknown type.
-     * The return value does not need to be of the same class than the argument.
+     * The return value does not need to be of the same class as the argument.
      *
      * @param  metadata  the metadata object to copy, or {@code null}.
      * @return a copy of the given metadata object, or {@code null} if the given argument is {@code null}.

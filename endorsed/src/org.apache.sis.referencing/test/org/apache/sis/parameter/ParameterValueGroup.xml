@@ -67,7 +67,7 @@
       <gml:name codeSpace="OGC">Mercator_1SP</gml:name>
       <gml:minimumOccurs>0</gml:minimumOccurs>
       <!--
-        The first three parameters below this point are the same than the parameters defined above.
+        The first three parameters below this point are the same as the parameters defined above.
         The xlink:href attribute allows to reference existing instances instead of repeating them.
         Repetition will be tested with another file: DuplicatedParameters.xml
       -->

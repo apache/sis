@@ -103,8 +103,8 @@ public abstract class FeatureTestCase extends TestCase {
         if (getValuesFromProperty) {
             /*
              * Verifies consistency with the Attribute instance:
-             *   - The AttributeType shall be the same than the one provided by FeatureType for the given name.
-             *   - Attribute value shall be the same than the one we got at the beginning of this method.
+             *   - The AttributeType shall be the same as the one provided by FeatureType for the given name.
+             *   - Attribute value shall be the same as the one we got at the beginning of this method.
              *   - Attribute values (as a collection) is either empty or contains the same value.
              */
             final Attribute<?> property = (Attribute<?>) feature.getProperty(name);

@@ -221,7 +221,7 @@ public final class JTS extends Static {
 
     /**
      * Transforms the given geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS or the given geometry is null or is the same than current CRS,
+     * If the given CRS or the given geometry is null or is the same as current CRS,
      * then the geometry is returned unchanged.
      * If the geometry has no Coordinate Reference System, then the geometry is returned unchanged.
      *

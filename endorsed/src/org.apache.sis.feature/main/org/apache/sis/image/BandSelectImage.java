@@ -205,7 +205,7 @@ class BandSelectImage extends SourceAlignedImage {
     }
 
     /**
-     * Creates a raster sharing the same data buffer than the source image but showing only a subset of the bands.
+     * Creates a raster sharing the same data buffer as the source image but showing only a subset of the bands.
      *
      * @param  tileX     the column index of the tile to compute.
      * @param  tileY     the row index of the tile to compute.
@@ -229,7 +229,7 @@ class BandSelectImage extends SourceAlignedImage {
 
     /**
      * Applies the band selection on the given writable raster.
-     * The child is created in the same way than {@code computeTile(…)}.
+     * The child is created in the same way as {@code computeTile(…)}.
      */
     final WritableRaster apply(final WritableRaster parent) {
         final int x = parent.getMinX();

@@ -164,7 +164,7 @@ final class FormatTableCell<S,T> extends TableCell<S,T> {
      * Future version may be extended to more keys if there is a need for that.
      *
      * <p>Note: for making easier to edit current row instead of insertion row, it is recommended to register
-     * also a listener for the F2 key (same key than Excel and OpenOffice). The {@link #registerTo(TableView)}
+     * also a listener for the F2 key (same key as Excel and OpenOffice). The {@link #registerTo(TableView)}
      * convenience method does that.</p>
      *
      * @param  <S>  the type of elements contained in {@link javafx.scene.control.TableView}.

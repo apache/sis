@@ -73,7 +73,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Creates the same transformation than <q>France geocentric interpolation</q> transform
+     * Creates the same transformation as <q>France geocentric interpolation</q> transform
      * (approximately), but using shifts in geographic domain instead of in geocentric domain.
      *
      * @throws FactoryException if an error occurred while loading the grid.
@@ -119,7 +119,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
                         Arrays.copyOf(samplePoints[1], SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE));
         /*
          * For non-integer coordinates, we need to relax the tolerance threshold because the linear interpolations
-         * computed by InterpolatedTransform do not give the same results than the calculation done with cosine by
+         * computed by InterpolatedTransform do not give the same results as the calculation done with cosine by
          * SinudoisalShiftGrid. The result of tested point is about (81.96 22.89).
          */
         tolerance = 0.01;
@@ -143,7 +143,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
                         Arrays.copyOf(samplePoints[0], SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE));
         /*
          * For non-integer coordinates, we need to relax the tolerance threshold because the linear interpolations
-         * computed by InterpolatedTransform do not give the same results than the calculation done with cosine by
+         * computed by InterpolatedTransform do not give the same results as the calculation done with cosine by
          * SinudoisalShiftGrid.
          */
         tolerance = 0.01;
@@ -166,7 +166,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
         for (int i=0; i < samplePoints[0].length; i += SinusoidalShiftGrid.DIMENSION) {
             /*
              * The tolerance threshold must be relaxed for derivative at a position having factional digits
-             * for the same reason than in `testForwardTransform()`. The matrix values are close to ±1.
+             * for the same reason as in `testForwardTransform()`. The matrix values are close to ±1.
              */
             System.arraycopy(samplePoints[0], i, point, 0, SinusoidalShiftGrid.DIMENSION);
             tolerance = (i < SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE) ? 1E-10 : 0.01;
@@ -213,7 +213,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Performs the tests using the same transformation than <q>France geocentric interpolation</q>
+     * Performs the tests using the same transformation as <q>France geocentric interpolation</q>
      * transform (approximately), but using shifts in geographic domain instead of in geocentric domain.
      *
      * @throws FactoryException if an error occurred while creating a transform.

@@ -299,7 +299,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * The source and target dimensions may be {@code null} if the method can work
      * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
      *
-     * <p>The properties given in argument follow the same rules than for the
+     * <p>The properties given in argument follow the same rules as for the
      * {@linkplain DefaultOperationMethod#DefaultOperationMethod(Map, ParameterDescriptorGroup)
      * operation method} constructor. The following table is a reminder of main (not all) properties:</p>
      *
@@ -369,7 +369,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}
      * construction time.
      *
-     * <p>The properties given in argument follow the same rules than for the
+     * <p>The properties given in argument follow the same rules as for the
      * {@linkplain DefaultConversion#DefaultConversion(Map, CoordinateReferenceSystem, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, OperationMethod, MathTransform) coordinate conversion} constructor.
      * The following table is a reminder of main (not all) properties:</p>
@@ -459,7 +459,7 @@ next:   for (int i=components.size(); --i >= 0;) {
      * ({@link CylindricalProjection}, {@link ConicProjection} or {@link PlanarProjection})
      * using the {@linkplain DefaultOperationMethod#getOperationType() information provided by the given method}.
      *
-     * <p>The properties given in argument follow the same rules than for the
+     * <p>The properties given in argument follow the same rules as for the
      * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) coordinate operation} constructor.
      * The following table is a reminder of main (not all) properties:</p>
@@ -621,7 +621,7 @@ next:   for (int i=components.size(); --i >= 0;) {
      * The source coordinate reference system of the first step and the target coordinate reference system of the
      * last step are the source and target coordinate reference system associated with the concatenated operation.
      *
-     * <p>The properties given in argument follow the same rules than for any other
+     * <p>The properties given in argument follow the same rules as for any other
      * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) coordinate operation} constructor.
      * The following table is a reminder of main (not all) properties:</p>

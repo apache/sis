@@ -398,7 +398,7 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Creates a new metadata source with the same configuration than the given source.
+     * Creates a new metadata source with the same configuration as the given source.
      * The two {@code MetadataSource} instances will share the same {@code DataSource}
      * but will use their own {@link Connection}.
      * This constructor is useful when concurrency is desired.

@@ -168,7 +168,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * <ol>
      *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in <strong>radians</strong>,</li>
-     *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoid axes.</li>
+     *   <li>optionally heights above the ellipsoid, in same units as the source ellipsoid axes.</li>
      * </ol>
      *
      * For converting geographic coordinates in degrees, {@code InterpolatedGeocentricTransform} instances
@@ -320,7 +320,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * <ol>
      *   <li>longitudes in <strong>degrees</strong> relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in <strong>degrees</strong>,</li>
-     *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoids axes.</li>
+     *   <li>optionally heights above the ellipsoid, in same units as the source ellipsoids axes.</li>
      * </ol>
      *
      * Note however that the given {@code grid} instance shall expect geographic coordinates (λ,φ)

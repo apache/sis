@@ -326,7 +326,7 @@ public class StorageConnector implements Serializable {
      * an {@link InputStream}).
      *
      * Another purpose is to determine which views need to be synchronized if {@link StorageConnector#storage} is
-     * used independently. They are views that may advance {@code storage} position, but not at the same time than the
+     * used independently. They are views that may advance {@code storage} position, but not at the same time as the
      * {@link #view} position (typically because the view reads some bytes in advance and stores them in a buffer).
      * Such coupling may occur when the storage is an {@link InputStream}, an {@link java.io.OutputStream} or a
      * {@link Channel}. The coupled {@link #view} can be:
@@ -911,7 +911,7 @@ public class StorageConnector implements Serializable {
         }
         /*
          * If the storage is already an instance of the requested type, returns the storage as-is.
-         * We check if the storage needs to be reset in the same way than in getStorage() method.
+         * We check if the storage needs to be reset in the same way as in getStorage() method.
          * As a special case, we ensure that InputStream and Reader can be marked.
          */
         if (type.isInstance(storage)) {

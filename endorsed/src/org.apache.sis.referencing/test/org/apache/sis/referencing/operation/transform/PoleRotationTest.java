@@ -66,7 +66,7 @@ public final class PoleRotationTest extends MathTransformTestCase {
 
     /**
      * Creates a new transform which should be the inverse of current transform according
-     * the parameters declared in {@link PoleRotation#context}. This is the same work than
+     * the parameters declared in {@link PoleRotation#context}. This is the same work as
      * {@link #inverseSouthPoleTransform()} but for the other transform.
      */
     private void inverseNorthPoleTransform() throws FactoryException, TransformException {

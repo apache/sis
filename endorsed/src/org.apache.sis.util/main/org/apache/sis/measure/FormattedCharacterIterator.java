@@ -163,7 +163,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     /**
      * Appends all characters and attributes from the given iterator.
      *
-     * @param  toAppendTo  shall be the same instance than {@link #text}.
+     * @param  toAppendTo  shall be the same instance as {@link #text}.
      */
     final void append(final AttributedCharacterIterator it, final StringBuffer toAppendTo) {
         final int offset = toAppendTo.length();

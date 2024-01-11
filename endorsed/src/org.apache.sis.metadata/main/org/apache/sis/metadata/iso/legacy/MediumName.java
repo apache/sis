@@ -135,7 +135,7 @@ public final class MediumName extends CodeList<MediumName> implements Citation {
     }
 
     /**
-     * Returns the list of codes of the same kind than this code list element.
+     * Returns the list of codes of the same kind as this code list element.
      *
      * @return all code {@linkplain #values() values} for this code list.
      */

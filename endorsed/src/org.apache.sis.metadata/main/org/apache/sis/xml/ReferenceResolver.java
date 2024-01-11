@@ -437,7 +437,7 @@ public class ReferenceResolver {
      * Subclasses can override this method if they can provide a mapping from some text values to anchors.
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value    the value for which an anchor is requested. Often the same instance than {@code text},
+     * @param  value    the value for which an anchor is requested. Often the same instance as {@code text},
      *                  but can also be the {@link java.net.URI} or {@link java.util.Locale} instance for which
      *                  {@code text} is a string representation.
      * @param  text     the textual representation of the value for which to get the anchor.

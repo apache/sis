@@ -1432,7 +1432,7 @@ public class Vocabulary extends IndexedResourceBundle {
 
     /**
      * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
+     * the resource file of the same name as this class.
      */
     public Vocabulary() {
     }
@@ -1440,7 +1440,7 @@ public class Vocabulary extends IndexedResourceBundle {
     /**
      * Opens the binary file containing the localized resources to load.
      * This method delegates to {@link Class#getResourceAsStream(String)},
-     * but this delegation must be done from the same module than the one
+     * but this delegation must be done from the same module as the one
      * that provides the binary file.
      */
     @Override

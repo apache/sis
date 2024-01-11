@@ -309,7 +309,7 @@ final class Verifier {
 
     /**
      * Converts the information about an "value out of range" error. The range in the error message will be formatted
-     * in the unit given by the user, which is not necessarily the same than the unit of the parameter descriptor.
+     * in the unit given by the user, which is not necessarily the same as the unit of the parameter descriptor.
      *
      * @param converter  the conversion from user unit to descriptor unit, or {@code null} if none.
      *        This method uses the inverse of that conversion for converting the given minimum and maximum values.

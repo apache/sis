@@ -258,10 +258,10 @@ final class PackageVerifier {
          * Get the type name and namespace from the @XmlType or @XmlRootElement annotations.
          * If both of them are present, verify that they are consistent (same namespace and
          * same name with "_Type" suffix in @XmlType). If the type name is not declared, we
-         * assume that it is the same than the class name (this is what Apache SIS 1.0 does
+         * assume that it is the same as the class name (this is what Apache SIS 1.0 does
          * in its org.apache.sis.xml.bind.metadata.code package for CodeList adapters).
          */
-        final String isoName;       // ISO class name (not the same than Java class name).
+        final String isoName;       // ISO class name (not the same as Java class name).
         if (xmlRoot != null) {
             classNS = xmlRoot.namespace();
             isoName = xmlRoot.name();

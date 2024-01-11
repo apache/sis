@@ -64,7 +64,7 @@ import org.apache.sis.util.iso.Names;
  * In this example, sample values in range [10…210] define a quantitative category, while all others categories are qualitative.
  *
  * <h2>Relationship with metadata</h2>
- * This class provides the same information than ISO 19115 {@link org.opengis.metadata.content.SampleDimension},
+ * This class provides the same information as ISO 19115 {@link org.opengis.metadata.content.SampleDimension},
  * but organized in a different way. The use of the same name may seem a risk, but those two types are typically
  * not used at the same time.
  *
@@ -113,7 +113,7 @@ public class SampleDimension implements Serializable {
 
     /**
      * The transform from samples to real values. May be {@code null} if this sample dimension
-     * does not define any transform (which is not the same than defining an identity transform).
+     * does not define any transform (which is not the same as defining an identity transform).
      *
      * @see #getTransferFunction()
      */
@@ -1241,7 +1241,7 @@ defName:    if (name == null) {
         }
 
         /**
-         * Reset this builder to the same state than after construction.
+         * Reset this builder to the same state as after construction.
          * The sample dimension name, background values and all categories are discarded.
          * This method can be invoked when the same builder is reused for creating more than one sample dimension.
          */

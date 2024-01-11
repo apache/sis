@@ -69,7 +69,7 @@ public final class CodeListSetTest extends TestCase {
 
     /**
      * Creates a code list of another kind. The returned set contains a code list having
-     * the same ordinal value than {@link AxisDirection#NORTH}, so we can detect if the
+     * the same ordinal value as {@link AxisDirection#NORTH}, so we can detect if the
      * {@code SortedSet} confuses the code list types.
      */
     private CodeListSet<OnLineFunction> createOtherKind() {

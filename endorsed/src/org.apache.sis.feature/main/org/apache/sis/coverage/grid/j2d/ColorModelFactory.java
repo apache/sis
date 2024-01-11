@@ -233,7 +233,7 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Creates a new instance with the same colors than the specified one but different type and number of bands.
+     * Creates a new instance with the same colors as the specified one but different type and number of bands.
      * The color arrays are shared, not cloned.
      *
      * @param  dataType     one of the {@link DataBuffer} constants.
@@ -649,7 +649,7 @@ public final class ColorModelFactory {
     /**
      * Creates a color model with only a subset of the bands of the given color model. The returned color model
      * is compatible with a {@linkplain SampleModel#createSubsetSampleModel(int[]) subset sample model} created
-     * with the same argument than the {@code bands} argument given to this method.
+     * with the same argument as the {@code bands} argument given to this method.
      * This method might not produce a result in following cases:
      *
      * <ul>

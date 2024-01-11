@@ -244,7 +244,7 @@ public class TransformChangeEvent extends PropertyChangeEvent {
      *
      * <div class="note"><b>Example:</b>
      * if the map is shifted 10 metres toward the right side of the canvas, then (assuming no rotation or axis flip)
-     * the <var>x</var> translation coefficient of the change is +10 (same sign than {@link #getDisplayChange()}).
+     * the <var>x</var> translation coefficient of the change is +10 (same sign as {@link #getDisplayChange()}).
      * Note that it may correspond to any amount of pixels, depending on the zoom factor.</div>
      *
      * The {@link #getObjectiveChange2D()} method gives the same transform as a Java2D object.

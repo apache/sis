@@ -188,7 +188,7 @@ public final class CharSequences extends Static {
      * or 0 if {@code null}. Unpaired surrogates within the text count as one code
      * point each.
      *
-     * <p>This method performs the same work than the standard
+     * <p>This method performs the same work as the standard
      * {@link Character#codePointCount(CharSequence, int, int)} method, except that it tries
      * to delegate to the optimized methods from the {@link String}, {@link StringBuilder},
      * {@link StringBuffer} or {@link CharBuffer} classes if possible.</p>
@@ -642,7 +642,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             }
             return splitted;
         }
-        // 'excludeEmpty' must use the same criterion than trimWhitespaces(…).
+        // 'excludeEmpty' must use the same criterion as trimWhitespaces(…).
         final boolean excludeEmpty = isWhitespace(separator);
         CharSequence[] splitted = createSplitArray(text);
         final int length = text.length();
@@ -1624,7 +1624,7 @@ cmp:    while (ia < lga) {
                     i2 += charCount(c2);
                 } while (!filter.contains(c2));
 
-                // Compare the characters in the same way than String.equalsIgnoreCase(String).
+                // Compare the characters in the same way as String.equalsIgnoreCase(String).
                 if (c1 != c2 && !(ignoreCase && equalsIgnoreCase(c1, c2))) {
                     return false;
                 }
@@ -1643,7 +1643,7 @@ cmp:    while (ia < lga) {
 
     /**
      * Returns {@code true} if the given code points are equal, ignoring case.
-     * This method implements the same comparison algorithm than String#equalsIgnoreCase(String).
+     * This method implements the same comparison algorithm as String#equalsIgnoreCase(String).
      *
      * <p>This method does not verify if {@code c1 == c2}. This check should have been done
      * by the caller, since the caller code is a more optimal place for this check.</p>
@@ -1995,8 +1995,8 @@ cmp:    while (ia < lga) {
             }
         }
         /*
-         * Same process than for the prefix above. The condition before the loop checks the character before suffix
-         * for the same reason than above, but using only `isLetterOrDigit` ignoring camel-case. The reason is that
+         * Same process as for the prefix above. The condition before the loop checks the character before suffix
+         * for the same reason as above, but using only `isLetterOrDigit` ignoring camel-case. The reason is that
          * if the character before was a word separator according camel-case convention (i.e. an upper-case letter),
          * we would need to include it in the common suffix.
          */
@@ -2085,7 +2085,7 @@ cmp:    while (ia < lga) {
      *   <li>If <var>c</var> is a dash punctuation of a connector punctuation, then all following punctuation
      *       characters of the same type followed by all characters that are Unicode identifier part.</li>
      *   <li>Otherwise any character for which {@link Character#getType(int)} returns
-     *       the same value than for <var>c</var>.</li>
+     *       the same value as for <var>c</var>.</li>
      * </ul>
      *
      * @param  text       the text for which to get the token.
