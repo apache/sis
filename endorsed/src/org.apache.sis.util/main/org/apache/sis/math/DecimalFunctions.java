@@ -537,7 +537,7 @@ public final class DecimalFunctions extends Static {
              * For example if the numbers are 0.123 and 0.12378, then the first digit to differ
              * is 7 at position 10⁻⁴. Consequently, the position of the last same digit is 10⁻³.
              * Dividing numbers by that last position result in numbers where all the different
-             * digits are fraction digits (123 and 123.78 in above example).
+             * digits are fraction digits (123 and 123.78 in the above example).
              */
             int p = Numerics.toExp10(MathFunctions.getExponent(delta));     // Rounded twice toward floor (may be too low).
             p = Math.max(p - (EXPONENT_FOR_ZERO + 1), 0);                   // Convert to index in POW10 array.

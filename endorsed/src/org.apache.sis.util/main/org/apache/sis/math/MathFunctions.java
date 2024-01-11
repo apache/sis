@@ -1154,8 +1154,8 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
      * Duplicated values should be very rare and occur mostly as a consequence of rounding errors while computing the
      * roots of polynomial equations. Because if the algebraic solution has less roots than what we would expect from
      * the largest exponent (for example ax² + bx = 0 has only one root instead of two), then {@link #polynomialRoots}
-     * should have reduced the equation to a lower degrees (ax + b = 0 in above example), in which case there are no
-     * duplicated roots to remove.
+     * should have reduced the equation to a lower degrees (ax + b = 0 in the above example), in which case there are
+     * no duplicated roots to remove.
      */
     private static double[] removeDuplicated(double[] roots) {
         int i = 1;

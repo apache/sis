@@ -51,7 +51,7 @@ import org.opengis.metadata.Identifier;
  * }
  *
  * In such case this class takes the codespace as the {@linkplain Identifier#getAuthority() authority}
- * ("IOGP" in above example), and the 3 last URI elements are parsed as the codespace, version (optional)
+ * ("IOGP" in the above example), and the 3 last URI elements are parsed as the codespace, version (optional)
  * and code values respectively.
  *
  * @author  Guilhem Legal (Geomatys)

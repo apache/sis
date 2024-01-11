@@ -366,7 +366,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * Invoked when the name of this resource needs to be changed because it collides with the name of another resource.
      * This method uses the variable name, which should be unique in each netCDF file. If this resource wraps more than
      * one variable (for example "eastward_velocity" and "northward_velocity"), then this method takes the common part
-     * of all variable names ("velocity" in above example).
+     * of all variable names ("velocity" in the above example).
      *
      * @return whether this resource has been renamed as an effect of this method call.
      */

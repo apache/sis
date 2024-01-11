@@ -801,8 +801,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                      * If reading the second tile, then `tileBase` = 10 and `offset` = -10.
                      * The first pixel to read in the second tile has a subsampling offset.
                      * We usually try to avoid this situation because it causes a variable
-                     * number of white squares in tiles (4,3,3,4 in above example), except
-                     * when there is only 1 tile to read in which case offset is tolerated.
+                     * number of white squares in tiles (4,3,3,4 in the above example),
+                     * except when there is only 1 tile to read in which case offset is tolerated.
                      */
                     final int s = coverage.subsampling[dimension];
                     offset %= s;
