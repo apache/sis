@@ -66,7 +66,7 @@ import org.apache.sis.util.collection.TreeTable;
  */
 public class NetcdfStore extends DataStore implements Aggregate {
     /**
-     * The object to use for decoding the netCDF file content. There is two different implementations,
+     * The object to use for decoding the netCDF file content. There are two different implementations,
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
      * This is set to {@code null} when the data store is closed.
      *

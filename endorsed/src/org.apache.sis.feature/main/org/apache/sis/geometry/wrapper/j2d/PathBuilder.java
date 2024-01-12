@@ -198,7 +198,7 @@ public class PathBuilder {
         assert isValidSize(coordinates.length) : size;
         /*
          * If the point would be alone, discard the lonely point because it would be invisible
-         * (a "move to" operation without "line to"). If there is two points, they should not
+         * (a "move to" operation without "line to"). If there are two points, they should not
          * be equal because `append(…)` filtered repetitive points.
          */
         if (size >= 2*DIMENSION) {

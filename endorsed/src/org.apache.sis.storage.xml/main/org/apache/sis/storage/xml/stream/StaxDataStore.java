@@ -469,7 +469,7 @@ public abstract class StaxDataStore extends URIDataStore {
          * At this point we verified there is no write operation in progress and that the input stream (if not null)
          * is available for our use. Now we need to build a XMLStreamReader from that input. This is InputType work,
          * but that type may be null if the storage given by the user was not an InputStream, Reader or other types
-         * recognized by InputType. In such case there is two possibilities:
+         * recognized by InputType. In such case there are two possibilities:
          *
          *   - It may be an OutputStream, Writer or other types recognized by OutputType.
          *   - It may be a Path, File, URL or URI, which are intentionally not handled by Input/OutputType.

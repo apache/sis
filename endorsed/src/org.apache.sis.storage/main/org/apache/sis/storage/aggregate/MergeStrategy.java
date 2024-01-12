@@ -89,7 +89,7 @@ public final class MergeStrategy {
      * <div class="note"><b>Rational:</b>
      * the "smallest time outside" criterion (rule 2) is before "best centered" criterion (rule 3)
      * because of the following scenario: if a user specifies a "time of interest" (TOI) of 1 day
-     * and if there is two slices intersecting the TOI, with one slice being a raster of monthly
+     * and if there are two slices intersecting the TOI, with one slice being a raster of monthly
      * averages the other slice being a raster of daily data, we want the daily data to be selected
      * even if by coincidence the monthly averages is better centered.</div>
      *

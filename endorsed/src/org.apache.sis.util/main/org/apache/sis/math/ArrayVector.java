@@ -141,7 +141,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         if (!Float.class.equals(source.getElementType())) {
             /*
              * For floating point types, verify if values are equivalent to `float` values.
-             * There is two different ways to pad extra fraction digits in `double` values:
+             * There are two different ways to pad extra fraction digits in `double` values:
              * with zero fraction digits in base 2 representation (the standard Java cast),
              * or with zero fraction digits in base 10 representation.
              */

@@ -1369,7 +1369,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * Conversely if the source CS is missing a height, add a height with NaN values.
          * After this block, the dimensions of `step1` and `step2` should match.
          *
-         * When adding an ellipsoidal height, there is two scenarios: the ellipsoidal height may be used by the
+         * When adding an ellipsoidal height, there are two scenarios: the ellipsoidal height may be used by the
          * parameterized operation, or it may be passed through (in which case the operation ignores the height).
          * If the height is expected as operation input, set the height to 0. Otherwise (the pass through case),
          * set the height to NaN. We do that way because the given `parameterized` transform may be a Molodensky

@@ -644,7 +644,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
 
     /**
      * Returns whether any tile is under computation or is checked out for writing.
-     * There is two reasons why this method may return {@code true}:
+     * There are two reasons why this method may return {@code true}:
      *
      * <ul>
      *   <li>At least one {@link #computeTile(int, int, WritableRaster) computeTile(…)}
@@ -666,7 +666,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
 
     /**
      * Returns whether the specified tile is currently under computation or checked out for writing.
-     * There is two reasons why this method may return {@code true}:
+     * There are two reasons why this method may return {@code true}:
      *
      * <ul>
      *   <li><code>{@linkplain #computeTile(int, int, WritableRaster) computeTile}(tileX, tileY, …)</code>

@@ -522,7 +522,7 @@ public final class GridDerivationTest extends TestCase {
                         0,   0,   2,    3,
                         0,   0,   0,    1)), HardCodedCRS.WGS84_3D);
         /*
-         * There is two ways to ask for a slice. The first way is to set some coordinates to NaN.
+         * There are two ways to ask for a slice. The first way is to set some coordinates to NaN.
          */
         GridGeometry slice = grid.derive().slice(new GeneralDirectPosition(Double.NaN, Double.NaN, 15)).build();
         assertNotSame(grid, slice);

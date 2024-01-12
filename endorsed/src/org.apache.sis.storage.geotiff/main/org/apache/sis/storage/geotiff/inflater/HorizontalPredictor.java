@@ -180,7 +180,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
             }
         }
         /*
-         * Save the last bytes for next invocation of this method. There is two cases:
+         * Save the last bytes for next invocation of this method. There are two cases:
          *
          *   - In the usual case where the above call to `applyOnFirst(…)` used all `savedValues` elements
          *     (this is true when at least `pixelStride` bytes have been used), the `keep` value below will

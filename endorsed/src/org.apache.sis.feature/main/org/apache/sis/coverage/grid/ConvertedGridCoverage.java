@@ -38,7 +38,7 @@ import org.opengis.coverage.CannotEvaluateException;
 
 /**
  * Decorates a {@link GridCoverage} in order to convert sample values on the fly.
- * There is two strategies about when to convert sample values:
+ * There are two strategies about when to convert sample values:
  *
  * <ul>
  *   <li>In calls to {@link #render(GridExtent)}, sample values are converted when first needed

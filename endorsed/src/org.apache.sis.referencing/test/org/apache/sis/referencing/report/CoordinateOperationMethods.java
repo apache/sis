@@ -157,7 +157,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
         println("h1", "Apache SIS™ Coordinate Operation Methods");
         int item = openTag("p");
         println("The following tables summarize the coordinate operation methods known to Apache SIS " + Version.SIS);
-        println("together with the recognized parameters. There is three kinds of parameters:");
+        println("together with the recognized parameters. There are three kinds of parameters:");
         closeTags(item);
         openTag("ul", "verbose");
         openTag("li");

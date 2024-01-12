@@ -169,7 +169,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
      * Tests the concatenation of transforms that would result in rounding errors
      * in extended-precision matrix operations were not used.
      *
-     * Actually there is two sources of rounding errors tested by this method.
+     * Actually there are two sources of rounding errors tested by this method.
      * The first source is rounding errors caused by matrix multiplications.
      * The other source is rounding errors inside the {@code transform(…)} methods,
      * which is reduced by a denominator column in {@link ProjectiveTransform#elt}.

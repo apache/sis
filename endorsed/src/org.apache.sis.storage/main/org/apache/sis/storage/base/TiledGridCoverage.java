@@ -644,7 +644,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * Returns the origin to assign to the tile at current iterator position.
          * Note that the subsampling should be a divisor of tile size,
          * otherwise a drift in pixel coordinates will appear.
-         * There is two exceptions to this rule:
+         * There are two exceptions to this rule:
          *
          * <ul>
          *   <li>If image is untiled (i.e. there is only one tile),

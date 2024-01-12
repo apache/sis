@@ -2154,7 +2154,7 @@ parse:                  switch (part) {
                 /*
                  * Update the LocationType according the precision.
                  * This update is mostly for documentation purpose.
-                 * There is three levels:
+                 * There are three levels:
                  *
                  *   - Grid zone designator         (if hasSquareIdentification == false)
                  *   - 100 km square identifier     (if resolution == 100 km)

@@ -29,7 +29,7 @@ import org.apache.sis.math.Vector;
 
 /**
  * Cache management of localization grids. {@code GridCache} are used as keys in {@code HashMap}.
- * There is two level of caches:
+ * There are two level of caches:
  *
  * <ul>
  *   <li>Local to the {@link Decoder}. This avoid the need to compute MD5 sum of coordinate vectors.</li>

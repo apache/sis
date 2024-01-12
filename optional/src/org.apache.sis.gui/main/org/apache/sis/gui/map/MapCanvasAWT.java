@@ -330,7 +330,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * It may be because the map has new content, or because the viewed region moved or
      * has been zoomed.
      *
-     * <p>There is two possible situations:</p>
+     * <p>There are two possible situations:</p>
      * <ul class="verbose">
      *   <li>If the current buffers are not suitable, then we clear everything related to Java2D buffered images.
      *     Those resources will be recreated from scratch in background thread. There is no need for double-buffering

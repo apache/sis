@@ -583,7 +583,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
 
     /**
      * Invoked by {@link DefaultParameterValue} when the descriptor is set after the value at unmarshalling time.
-     * There is two scenarios in a valid GML document. The first scenario is when the descriptor is defined inside
+     * There are two scenarios in a valid GML document. The first scenario is when the descriptor is defined inside
      * the parameter value element, like below. In such case, {@link #valueClass} is defined at construction time
      * by {@link #DefaultParameterDescriptor()} because the value is before the descriptor.
      *

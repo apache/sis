@@ -34,7 +34,7 @@ import org.apache.sis.referencing.factory.IdentifiedObjectSet;
 /**
  * A lazy set of {@link CoordinateOperation} objects to be returned by the
  * {@link EPSGDataAccess#createFromCoordinateReferenceSystemCodes(String, String)} method.
- * There is two different ways in which {@link EPSGDataAccess} get coordinate operations:
+ * There are two different ways in which {@link EPSGDataAccess} get coordinate operations:
  *
  * <ol>
  *   <li>The coordinate operation may be the <cite>conversion from base</cite> property of a projected CRS.

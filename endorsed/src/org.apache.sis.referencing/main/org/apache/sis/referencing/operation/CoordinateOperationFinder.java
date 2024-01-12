@@ -565,7 +565,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * Conceptually, all transformations below could done by first converting from the source coordinate
          * system to geocentric Cartesian coordinates (X,Y,Z), apply an affine transform represented by the
          * datum shift matrix, then convert from the (X′,Y′,Z′) coordinates to the target coordinate system.
-         * However, there is two exceptions to this path:
+         * However, there are two exceptions to this path:
          *
          *   1) In the particular where both the source and target CS are ellipsoidal, we may use the
          *      Molodensky approximation as a shortcut (if the desired accuracy allows).

@@ -136,7 +136,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     /**
      * If one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
      * This is an index in a list of dimensions in "natural" order (reverse of netCDF order).
-     * There is three ways to read the data, determined by this {@code bandDimension} value:
+     * There are three ways to read the data, determined by this {@code bandDimension} value:
      *
      * <ul>
      *   <li>{@code (bandDimension < 0)}: one variable per band (usual case).</li>
@@ -635,7 +635,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         }
         /*
          * At this point the arguments and the state of this resource have been validated.
-         * There is three ways to read the data, determined by `bandDimension` value:
+         * There are three ways to read the data, determined by `bandDimension` value:
          *
          *   • (bandDimension < 0): one variable per band (usual case).
          *   • (bandDimension = 0): one variable containing all bands, with bands in the first dimension.

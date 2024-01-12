@@ -476,7 +476,7 @@ public final class ColorModelBuilder {
      * The {@link SampleDimension#getTransferFunction()} returns the conversion from original ranges
      * to ranges of pixel values in the colorized image.
      *
-     * <p>There is two outputs: the {@link #target} sample dimension, and modifications done in-place in the
+     * <p>There are two outputs: the {@link #target} sample dimension, and modifications done in-place in the
      * {@link #entries} array. For each {@link ColorsForRange} instance, the {@link ColorsForRange#sampleRange}
      * range is replaced by range of indexed colors. In addition {@code entries} elements may be reordered.</p>
      *
