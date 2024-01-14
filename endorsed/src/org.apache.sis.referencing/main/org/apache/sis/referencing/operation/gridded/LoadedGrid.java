@@ -211,7 +211,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
     }
 
     /**
-     * Creates a new datum shift grid with the same grid geometry than the given grid.
+     * Creates a new datum shift grid with the same grid geometry as the given grid.
      * This is used by {@link CompressedGrid} for replacing a grid by another one.
      *
      * @param  other  the other datum shift grid from which to copy the grid geometry.
@@ -227,7 +227,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
     }
 
     /**
-     * Creates a new datum shift grid with the same configuration than the given grid,
+     * Creates a new datum shift grid with the same configuration as the given grid,
      * except the size and transform which are set to the given values.
      * This is used for creating a {@link GridGroup} containing many grids,
      * using one grid as a template for setting parameter values.
@@ -355,7 +355,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
      * If a grid exists in the cache for the same data, returns a new grid sharing the same data arrays.
      * Otherwise returns {@code this}.
      *
-     * @return a grid using the same data than this grid, or {@code this}.
+     * @return a grid using the same data as this grid, or {@code this}.
      *
      * @see #getData()
      * @see #setData(Object[])
@@ -372,9 +372,9 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
     }
 
     /**
-     * Returns a new grid with the same geometry than this grid but different data arrays.
+     * Returns a new grid with the same geometry as this grid but different data arrays.
      * This method is invoked by {@link #useSharedData()} when it detected that a newly created grid uses
-     * the same data than an existing grid. The typical use case is when a filename is different but still
+     * the same data as an existing grid. The typical use case is when a filename is different but still
      * reference the same grid (e.g. symbolic link, lower case versus upper case in a case-insensitive file
      * system).
      *
@@ -392,11 +392,11 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
     protected abstract Object[] getData();
 
     /**
-     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * Returns {@code true} if the given object is a grid containing the same data as this grid.
      * This method compares the data provided by {@link #getData()}.
      *
      * @param  other  the other object to compare with this datum shift grid.
-     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
+     * @return {@code true} if the given object is non-null, of the same class as this {@code DatumShiftGrid}
      *         and contains the same data.
      */
     @Override
@@ -563,7 +563,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
         }
 
         /**
-         * Creates a new grid of the same geometry than the given grid but using a different data array.
+         * Creates a new grid of the same geometry as the given grid but using a different data array.
          */
         private Float(final LoadedGrid<C,T> grid, final float[][] offsets) {
             super(grid);
@@ -571,9 +571,9 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
         }
 
         /**
-         * Returns a new grid with the same geometry than this grid but different data arrays.
+         * Returns a new grid with the same geometry as this grid but different data arrays.
          * This method is invoked by {@link #useSharedData()} when it detects that a newly created
-         * grid uses the same data than an existing grid. The {@code other} object is the old grid,
+         * grid uses the same data as an existing grid. The {@code other} object is the old grid,
          * so we can share existing data.
          */
         @Override
@@ -676,7 +676,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
         }
 
         /**
-         * Creates a new grid of the same geometry than the given grid but using a different data array.
+         * Creates a new grid of the same geometry as the given grid but using a different data array.
          */
         private Double(final LoadedGrid<C,T> grid, final double[][] offsets) {
             super(grid);
@@ -684,7 +684,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
         }
 
         /**
-         * Returns a new grid with the same geometry than this grid but different data arrays.
+         * Returns a new grid with the same geometry as this grid but different data arrays.
          * See {@link LoadedGrid.Float#setData(Object[])} for more documentation.
          */
         @Override

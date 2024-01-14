@@ -91,7 +91,7 @@ final class TypeNames {
     /**
      * Infers the type name from the given class.
      *
-     * @param  factory     the same factory than the one given to the constructor.
+     * @param  factory     the same factory as the one given to the constructor.
      * @param  valueClass  the value class for which to get a type name.
      * @return a type name for the given class (never {@code null}).
      */

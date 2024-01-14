@@ -621,7 +621,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Returns a new matrix with the same elements than this matrix except for the specified rows.
+     * Returns a new matrix with the same elements as this matrix except for the specified rows.
      * This method is useful for removing a range of <em>target</em> dimensions in an affine transform.
      *
      * @param  lower  index of the first row to remove (inclusive).
@@ -650,7 +650,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Returns a new matrix with the same elements than this matrix except for the specified columns.
+     * Returns a new matrix with the same elements as this matrix except for the specified columns.
      * This method is useful for removing a range of <em>source</em> dimensions in an affine transform.
      * Coordinates will be converted as if the values in the removed dimensions were zeros.
      *
@@ -690,7 +690,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Returns {@code true} if the specified object is of the same class than this matrix and
+     * Returns {@code true} if the specified object is of the same class as this matrix and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
      * @param  object  the object to compare with this matrix for equality.
@@ -718,7 +718,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
 
     /**
      * Compares the given matrices for equality, using the given absolute tolerance threshold.
-     * The given matrix does not need to be the same implementation class than this matrix.
+     * The given matrix does not need to be the same implementation class as this matrix.
      *
      * <p>The matrix elements are compared as below:</p>
      * <ul>
@@ -768,7 +768,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Returns a clone of this matrix.
      *
-     * @return a new matrix of the same class and with the same values than this matrix.
+     * @return a new matrix of the same class and with the same values as this matrix.
      *
      * @see Matrices#copy(Matrix)
      */

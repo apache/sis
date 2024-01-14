@@ -421,7 +421,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
 
     /**
      * Returns for information purpose only the Coordinate Reference Systems present in this file.
-     * The CRS returned by this method may not be exactly the same than the ones used by variables.
+     * The CRS returned by this method may not be exactly the same as the ones used by variables.
      * For example, axis order is not guaranteed. This method is provided for metadata purposes.
      *
      * @return coordinate reference systems present in this file.

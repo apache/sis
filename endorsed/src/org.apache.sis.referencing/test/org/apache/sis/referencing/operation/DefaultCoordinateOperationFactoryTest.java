@@ -203,7 +203,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
 
     /**
      * Tests a transformation from a 4D projection to a 2D projection which imply a change of
-     * prime meridian. This is the same test than {@link #testProjectionAndLongitudeRotation()},
+     * prime meridian. This is the same test as {@link #testProjectionAndLongitudeRotation()},
      * with extra dimension which should be just dropped.
      *
      * <p>This tests requires the EPSG database, because it requires the coordinate operation
@@ -247,7 +247,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
         transform = operation.getMathTransform();
         isInverseTransformSupported = false;
         /*
-         * Same coordinates than testProjectionAndLongitudeRotation(),
+         * Same coordinates as testProjectionAndLongitudeRotation(),
          * but with random elevation and time which should be dropped.
          */
         verifyTransform(new double[] {
@@ -332,7 +332,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
 
     /**
      * Tests a datum shift applied as a position vector transformation in geocentric domain.  This method performs
-     * the same test than {@link CoordinateOperationFinderTest#testPositionVectorTransformation()} except that the
+     * the same test as {@link CoordinateOperationFinderTest#testPositionVectorTransformation()} except that the
      * EPSG geodetic dataset may be used. The result however should be the same because of the {@code TOWGS84}
      * parameter in the WKT used for the test.
      *

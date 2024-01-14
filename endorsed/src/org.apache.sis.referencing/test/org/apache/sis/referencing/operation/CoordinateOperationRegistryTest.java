@@ -184,7 +184,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
         final CoordinateOperation operation = createOperation(sourceCRS, targetCRS);
         verifyNTF(operation, "geog2D domain", true);
         /*
-         * Same test point than the one used in FranceGeocentricInterpolationTest:
+         * Same test point as the one used in FranceGeocentricInterpolationTest:
          *
          * NTF: 48°50′40.2441″N  2°25′32.4187″E
          * RGF: 48°50′39.9967″N  2°25′29.8273″E     (close to WGS84)

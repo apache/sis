@@ -32,7 +32,7 @@ import java.awt.image.WritableRenderedImage;
 
 /**
  * A pixel iterator reading values directly from a {@link DataBuffer} instead of using {@link Raster} API.
- * This iterator has the same behavior than the default implementation and is provided only for performance reasons.
+ * This iterator has the same behavior as the default implementation and is provided only for performance reasons.
  * It can bring performance benefits when reading values as {@code float} or {@code double} values, but the benefits
  * are more dubious for {@code int} values because Java2D has optimizations for that specific type.
  *
@@ -59,7 +59,7 @@ final class BandedIterator extends WritablePixelIterator {
 
     /**
      * The buffer where to write data, or {@code null} if none.
-     * May be the same instance than {@link #buffer}.
+     * May be the same instance as {@link #buffer}.
      */
     private DataBuffer destBuffer;
 

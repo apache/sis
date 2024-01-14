@@ -191,7 +191,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * The selected reference system, or {@code null} if there is no such property. This property is provided
-     * by {@link RecentReferenceSystems}. It usually has the same value than {@link #positionReferenceSystem},
+     * by {@link RecentReferenceSystems}. It usually has the same value as {@link #positionReferenceSystem},
      * but the values may temporarily differ between the time a CRS is selected and when it became applied.
      *
      * @see #positionReferenceSystem
@@ -212,7 +212,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * The {@linkplain CoordinateOperation#getSourceCRS() source CRS} is {@link #objectiveCRS} and
      * the {@linkplain CoordinateOperation#getTargetCRS() target CRS} is {@link CoordinateFormat#getDefaultCRS()}.
      * This transform may be null if there is no CRS change to apply
-     * (in which case {@link #localToPositionCRS} is the same instance than {@link #localToObjectiveCRS})
+     * (in which case {@link #localToPositionCRS} is the same instance as {@link #localToObjectiveCRS})
      * or if the target is not a CRS (for example it may be a Military Grid Reference System (MGRS) code).
      *
      * @see #localToObjectiveCRS
@@ -272,7 +272,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * The result is a transform to the user-selected CRS for coordinates shown in the status bar.
      * That transform target CRS shall correspond to {@link CoordinateFormat#getDefaultCRS()}.
      * This transform shall never be null but may be the identity transform.
-     * It is usually non-affine if the display CRS is not the same than the objective CRS.
+     * It is usually non-affine if the display CRS is not the same as the objective CRS.
      * This transform may have a {@linkplain CoordinateOperation#getCoordinateOperationAccuracy() limited accuracy}.
      *
      * @see #localToObjectiveCRS
@@ -300,7 +300,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * The source local indices before conversion to geospatial coordinates (never {@code null}).
-     * The number of dimensions is often {@value #BIDIMENSIONAL}. May be the same array than
+     * The number of dimensions is often {@value #BIDIMENSIONAL}. May be the same array as
      * <code>{@linkplain #targetCoordinates}.coordinates</code> if both are two-dimensional
      * (if more than 2 dimensions, we need to avoid overwriting values in extra dimensions).
      *
@@ -1158,7 +1158,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * Sets the conversion from local coordinates to geographic or projected coordinates of rendered data.
          *
          * @param  newValue  the new conversion from local coordinates to "real world" coordinates of rendered data.
-         * @throws MismatchedDimensionException if the number of dimensions is not the same than previous conversion.
+         * @throws MismatchedDimensionException if the number of dimensions is not the same as previous conversion.
          */
         @Override public void set(MathTransform newValue) {
             ArgumentChecks.ensureNonNull("newValue", newValue);

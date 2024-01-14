@@ -57,7 +57,7 @@ public final class ScopedIdentifier<T> {
     }
 
     /**
-     * Returns an identifier with the same scope than this identifier by a different character string.
+     * Returns an identifier with the same scope as this identifier by a different character string.
      *
      * @param  alt  the new identifier.
      * @return the new identifier, or {@code this} if no change.

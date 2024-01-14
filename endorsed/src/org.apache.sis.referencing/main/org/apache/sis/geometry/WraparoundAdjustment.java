@@ -128,7 +128,7 @@ public class WraparoundAdjustment {
      *
      * @param  domain  the region where a given area or point of interest should be located.
      * @param  target  the coordinate reference system of objects returned by {@code shift(…)} methods,
-     *                 or {@code null} for the same CRS than the {@code domain} CRS..
+     *                 or {@code null} for the same CRS as the {@code domain} CRS..
      */
     public WraparoundAdjustment(final Envelope domain, final CoordinateReferenceSystem target) {
         ArgumentChecks.ensureNonNull("domain", domain);
@@ -152,7 +152,7 @@ public class WraparoundAdjustment {
      * @param  domainToInput   if the AOI or POI will use a different CRS than {@code domain}, the transform from
      *                         {@code domain} to the input CRS. Otherwise {@code null} for same CRS as the domain.
      * @param  inputToResult   a transform from the {@code domain} CRS to any user space at caller choice.
-     *                         If {@code null}, the results will be expressed in same CRS than the inputs.
+     *                         If {@code null}, the results will be expressed in same CRS as the inputs.
      */
     public WraparoundAdjustment(final Envelope domain, MathTransform domainToInput, MathTransform inputToResult) {
         ArgumentChecks.ensureNonNull("domain", domain);
@@ -201,7 +201,7 @@ public class WraparoundAdjustment {
 
     /**
      * Initializes this {@code WraparoundAdjustment} for an AOI or POI having the given coordinate reference system.
-     * If the given CRS is the same than the CRS given in last call to this method, then this method does nothing as
+     * If the given CRS is the same as the CRS given in last call to this method, then this method does nothing as
      * this {@code WraparoundAdjustment} is assumed already initialized. Otherwise this method performs those steps:
      *
      * <ul>
@@ -460,7 +460,7 @@ public class WraparoundAdjustment {
                             lowerCycles += cycles;
                         } else {
                             /*
-                             * Same reasoning than above with sign reverted and lower/upper variables interchanged.
+                             * Same reasoning as above with sign reverted and lower/upper variables interchanged.
                              * In this block, `upperToValidEnd` and `lowerToValidEnd` are negative, contrarily to
                              * above block where they were positive.
                              */

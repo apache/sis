@@ -716,7 +716,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
         }
 
         /**
-         * Performs the same work than {@link #accept(double)}, but with greater precision for
+         * Performs the same work as {@link #accept(double)}, but with greater precision for
          * very large integer values (greater than 2<sup>52</sup> in magnitude),
          */
         @Override

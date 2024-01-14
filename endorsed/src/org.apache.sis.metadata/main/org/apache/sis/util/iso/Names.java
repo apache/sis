@@ -163,7 +163,7 @@ public final class Names extends Static {
      *
      * @param  scope      the first part to concatenate.
      * @param  separator  the separator between the head and the tail,
-     *                    or {@code null} for inheriting the same separator than the given scope.
+     *                    or {@code null} for inheriting the same separator as the given scope.
      * @param  name       the second part to concatenate.
      * @return a scoped name in the given namespace.
      *

@@ -411,7 +411,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     /**
      * The virtual flow used by {@link GridViewSkin}. We define that class
      * mostly for getting access to the protected {@link #getHbar()} method.
-     * There is two main properties that we want:
+     * There are two main properties that we want:
      *
      * <ul>
      *   <li>{@link #getHorizontalPosition()} for the position of the horizontal scroll bar.</li>

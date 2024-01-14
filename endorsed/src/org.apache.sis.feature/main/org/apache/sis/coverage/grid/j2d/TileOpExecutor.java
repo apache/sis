@@ -133,7 +133,7 @@ public class TileOpExecutor {
     /**
      * Sets the area of interest as an irregular shape.
      * This executor will skip calculations in all tiles that do not intersect the given AOI.
-     * There is no benefit if this AOI is the same than the rectangle given to the constructor.
+     * There is no benefit if this AOI is the same as the rectangle given to the constructor.
      * But if the AOI is non-rectangular, then specifying it may help to skip a few more tiles.
      * Skipping tiles saves not only {@code TileOpExecutor} computation time, but can save also
      * computation time of source image if the source is itself the result of another computation.
@@ -237,7 +237,7 @@ public class TileOpExecutor {
 
     /**
      * Executes the read action sequentially on tiles of the specified source image.
-     * The given source should be the same than the image specified at construction time.
+     * The given source should be the same as the image specified at construction time.
      * Only tiles intersecting the area of interest will be processed.
      * For each tile, the {@link #readFrom(Raster)} method will be invoked in current thread.
      *
@@ -269,7 +269,7 @@ public class TileOpExecutor {
 
     /**
      * Executes the write action sequentially on tiles of the specified target image.
-     * The given target should be the same than the image specified at construction time.
+     * The given target should be the same as the image specified at construction time.
      * Only tiles intersecting the area of interest will be processed.
      * For each tile, the {@link #writeTo(WritableRaster)} method will be invoked in current thread.
      *
@@ -308,7 +308,7 @@ public class TileOpExecutor {
 
     /**
      * Executes the read action in parallel on tiles of the specified source image.
-     * The given source should be the same than the image specified at construction time.
+     * The given source should be the same as the image specified at construction time.
      * Only tiles intersecting the area of interest will be processed.
      * For each tile, the {@link #readFrom(Raster)} method will be invoked
      * in an arbitrary thread (may be the current one).
@@ -345,7 +345,7 @@ public class TileOpExecutor {
 
     /**
      * Executes the write action in parallel on tiles of the specified target image.
-     * The given target should be the same than the image specified at construction time.
+     * The given target should be the same as the image specified at construction time.
      * Only tiles intersecting the area of interest will be processed.
      * For each tile, the {@link #writeTo(WritableRaster)} method will be invoked
      * in an arbitrary thread (may be the current one).
@@ -690,7 +690,7 @@ public class TileOpExecutor {
          * tile to complete). After all threads completed, this method computes the final result and reports
          * the errors if any.
          *
-         * @param  <R>           the final type of the result. This is often the same type than <var>A</var>.
+         * @param  <R>           the final type of the result. This is often the same type as <var>A</var>.
          * @param  workers       handlers of all worker threads other than the current threads.
          *                       Content of this array may be modified by this method.
          * @param  collector     provides the finisher to use for computing final result of type <var>R</var>.

@@ -77,7 +77,7 @@ public final class DefaultConversionTest extends TestCase {
     }
 
     /**
-     * Creates a CRS using the same ellipsoid than the "Nouvelle Triangulation Française (Paris)" datum (EPSG:6807),
+     * Creates a CRS using the same ellipsoid as the "Nouvelle Triangulation Française (Paris)" datum (EPSG:6807),
      * but with the prime meridian optionally set to Greenwich. Such CRS is not in real usage, but this is convenient
      * for testing a conversion consisting of only a longitude rotation, which is a very simple operation easy to test.
      *

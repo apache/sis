@@ -68,7 +68,7 @@ public final class StatisticsFormatTest extends TestCase {
 
     /**
      * Tests the formatting of {@code Statistics} with column headers and a border.
-     * This test uses the same numerical values than {@link #testFormattingWithoutHeader()}.
+     * This test uses the same numerical values as {@link #testFormattingWithoutHeader()}.
      */
     @Test
     @DependsOnMethod("testFormattingWithoutHeader")

@@ -364,7 +364,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Creates a new array of the same kind than the given array.
+     * Creates a new array of the same kind as the given array.
      * This is used for creating {@code float[]} or {@code double[]} arrays.
      */
     private static Object newArray(final Object array, final int length) {
@@ -376,7 +376,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      *
      * @param  srcPts  the point to transform, as a {@code float[]} or {@code double[]} array.
      * @param  srcOff  the offset to the point to be transformed in the array.
-     * @param  dstPts  where to store the transformed points, as an array of same type than {@code srcPts}.
+     * @param  dstPts  where to store the transformed points, as an array of same type as {@code srcPts}.
      * @param  dstOff  the offset to the location of the transformed point that is stored in the destination array.
      * @param  numPts  number of points to transform.
      */

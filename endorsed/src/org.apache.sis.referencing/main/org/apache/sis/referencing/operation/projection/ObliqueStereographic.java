@@ -174,7 +174,7 @@ public class ObliqueStereographic extends NormalizedProjection {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     ObliqueStereographic(final ObliqueStereographic other) {
         super(null, other);
@@ -283,7 +283,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double sinΛ = sin(Λ);
         /*
          * Now apply the stereographic projection on the conformal sphere using the (χ,Λ) coordinates.
-         * Note that the formulas below are the same than the formulas in the Spherical inner class.
+         * Note that the formulas below are the same as the formulas in the Spherical inner class.
          * The only significant difference is that the spherical case does not contain all the above
          * code which converted (φ,λ) into (χ,Λ).
          */
@@ -313,7 +313,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double dχ_dφ = (1/cosφ - cosφ*eccentricitySquared/(1 - ℯsinφ*ℯsinφ)) * 2*n*sqrt(w) / (w + 1);
         /*
          * Above ∂χ/∂φ is equal to 1 in the spherical case.
-         * Remaining formulas below are the same than in the spherical case.
+         * Remaining formulas below are the same as in the spherical case.
          */
         final double B2 = B * B;
         final double d = (cosχcosχ0 + cosΛ * (sinχsinχ0 + 1)) / B2;     // Matrix diagonal
@@ -389,7 +389,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         private static final long serialVersionUID = -1454098847621943639L;
 
         /**
-         * Creates a new projection initialized to the same parameters than the given one.
+         * Creates a new projection initialized to the same parameters as the given one.
          */
         protected Spherical(ObliqueStereographic other) {
             super(other);
@@ -407,10 +407,10 @@ public class ObliqueStereographic extends NormalizedProjection {
             final double λ = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
             /*
-             * Formulas below are the same than the elliptical formulas after the geodetic coordinates
+             * Formulas below are the same as the elliptical formulas after the geodetic coordinates
              * have been converted to conformal coordinates.  In this spherical case we do not need to
              * perform such conversion. Instead, we have directly   χ = φ  and  Λ = λ.  The simplified
-             * EPSG formulas then become the same than Snyder formulas for the spherical case.
+             * EPSG formulas then become the same as Snyder formulas for the spherical case.
              */
             final double sinφ      = sin(φ);
             final double cosφ      = cos(φ);

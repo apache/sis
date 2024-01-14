@@ -161,14 +161,14 @@ class PropertyAccessor {
 
     /**
      * The corresponding setter methods, or {@code null} if none. This array must have
-     * the same length than {@link #getters}. For every {@code getters[i]} element,
+     * the same length as {@link #getters}. For every {@code getters[i]} element,
      * {@code setters[i]} is the corresponding setter or {@code null} if there is none.
      */
     private final Method[] setters;
 
     /**
      * The JavaBeans property names. They are computed at construction time, {@linkplain String#intern() interned}
-     * then cached. Those names are often the same than field names (at least in SIS implementation), so it is
+     * then cached. Those names are often the same as field names (at least in SIS implementation), so it is
      * reasonable to intern them in order to share {@code String} instances.
      *
      * <p>This array shall not contains any {@code null} elements.</p>
@@ -230,7 +230,7 @@ class PropertyAccessor {
      * @param  type            the interface implemented by the metadata class.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
      * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
-     *                         This is the same than {@code implementation} unless a custom implementation is used.
+     *                         This is the same as {@code implementation} unless a custom implementation is used.
      */
     PropertyAccessor(final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
         assert type.isAssignableFrom(implementation) : implementation;
@@ -278,7 +278,7 @@ class PropertyAccessor {
             }
             /*
              * Now try to infer the setter from the getter. We replace the "get" prefix by
-             * "set" and look for a parameter of the same type than the getter return type.
+             * "set" and look for a parameter of the same type as the getter return type.
              */
             Class<?> returnType = getter.getReturnType();
             arguments[0] = returnType;
@@ -304,7 +304,7 @@ class PropertyAccessor {
                 setter = implementation.getMethod(name, arguments);
             } catch (NoSuchMethodException e) {
                 /*
-                 * If we found no setter method expecting an argument of the same type than the
+                 * If we found no setter method expecting an argument of the same type as the
                  * argument returned by the GeoAPI method,  try again with the type returned by
                  * the implementation class. It is typically the same type, but sometimes it may
                  * be a parent type.
@@ -1054,7 +1054,7 @@ class PropertyAccessor {
              * We now have objects of the appropriate type. If we have a singleton to be added
              * in an existing collection, add it now. In that case the `newValue` should refer
              * to the `addTo` collection. We rely on the ModifiableMetadata.writeCollection(…)
-             * optimization for detecting that the new collection is the same instance than
+             * optimization for detecting that the new collection is the same instance as
              * the old one so there is nothing to do. We could exit from the method, but let
              * it continues in case the user override the `setFoo(…)` method.
              */
@@ -1262,7 +1262,7 @@ class PropertyAccessor {
      * then {@code target} is assumed empty. The intent is to skip easily null or empty properties.
      *
      * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
-     * @param  source    the metadata from which to read properties. May be the same than {@code target}.
+     * @param  source    the metadata from which to read properties. May be the same as {@code target}.
      * @param  target    the metadata instance where to write properties.
      * @throws Exception if an error occurred while visiting a property.
      */

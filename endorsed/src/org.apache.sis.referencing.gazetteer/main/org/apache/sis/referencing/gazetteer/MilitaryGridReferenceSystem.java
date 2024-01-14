@@ -423,7 +423,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
-         * Creates a new coder initialized to the same setting than the given separator.
+         * Creates a new coder initialized to the same setting as the given separator.
          * The new instance will share the same {@link #encoders} map than the original instance.
          * This is okay only if all calls to {@link #encoder(CoordinateReferenceSystem)} are done
          * in the same thread before any call to {@link IteratorAllZones#trySplit()}.
@@ -847,7 +847,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                         zoneEnd = zoneCount;
                     } else {
                         /*
-                         * Use of lower and upper corners below are not the same than calls to Envelope.getMinimum(0)
+                         * Use of lower and upper corners below are not the same as calls to Envelope.getMinimum(0)
                          * or Envelope.getMaximum(0) if the envelope crosses the anti-meridian.
                          */
                         zoneStart = ZONER.zone(0, geographicArea.getLowerCorner().getOrdinate(0)) - 1;  // Inclusive.
@@ -1364,7 +1364,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                                 normalized.setOrdinate(1, y + (downward ? +1 : -1));
                                 ref = encoder.encode(this, normalized, false, separator, digits, 0);
                                 if (ref == null || encoder.latitudeBand == previous) {
-                                    ref = pending;  // No result or same result than previous iteration - cancel.
+                                    ref = pending;  // No result or same result as previous iteration - cancel.
                                     pending = null;
                                 }
                             }
@@ -1453,7 +1453,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         /**
          * UTM zone of position CRS (negative for South hemisphere), or {@value #POLE} (negative of positive)
          * if the CRS is a Universal Polar Stereographic projection, or 0 if the CRS is not a recognized projection.
-         * Note that this is not necessarily the same zone than the one to use for formatting any given coordinate
+         * Note that this is not necessarily the same zone as the one to use for formatting any given coordinate
          * in that projected CRS, since the {@link TransverseMercator.Zoner#zone(double, double)} method has special
          * rules for some latitudes.
          */
@@ -1486,7 +1486,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         private MathTransform toActualZone;
 
         /**
-         * The actual zone where the position to encode is located. Legal values are the same than {@link #crsZone}.
+         * The actual zone where the position to encode is located. Legal values are the same as {@link #crsZone}.
          * If non-zero, then this is the zone of the {@link #toActualZone} transform. This field is updated only when
          * a given position is not located in the zone of the CRS given at construction time.
          */
@@ -1596,7 +1596,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Encodes the given position into a MGRS reference. It is caller responsibility to ensure that
-         * the position CRS is the same than the CRS specified at this {@code Encoder} creation time.
+         * the position CRS is the same as the CRS specified at this {@code Encoder} creation time.
          *
          * @param  owner      the {@code Coder} which own this {@code Encoder}.
          * @param  position   the direct position to format as a MGRS reference.
@@ -1715,7 +1715,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                      */
                     final byte[] columns = POLAR_COLUMNS;
                     col -= PolarStereographicA.UPS_SHIFT / GRID_SQUARE_SIZE;
-                    if (!(λ >= 0)) {                    // Same condition than in GZD block. Use of ! is for NaN.
+                    if (!(λ >= 0)) {                    // Same condition as in GZD block. Use of ! is for NaN.
                         col += columns.length;          // Letters Z to A from right to left.
                     }
                     if (col < 0 || col >= columns.length) {
@@ -1981,7 +1981,7 @@ parse:                  switch (part) {
                     /*
                      * At this point, 'c' is a valid letter. First, applies a correction for the fact that 'I' and 'O'
                      * letters were excluded. Next, the conversion to latitude or 100 000 meters grid indices depends
-                     * on which part we are parsing. The formulas used below are about the same than in Encoder class,
+                     * on which part we are parsing. The formulas used below are about the same as in Encoder class,
                      * with terms moved on the other side of the equations.
                      */
                     if (c >= EXCLUDE_O) c--;
@@ -2147,7 +2147,7 @@ parse:                  switch (part) {
                 /*
                  * Update the LocationType according the precision.
                  * This update is mostly for documentation purpose.
-                 * There is three levels:
+                 * There are three levels:
                  *
                  *   - Grid zone designator         (if hasSquareIdentification == false)
                  *   - 100 km square identifier     (if resolution == 100 km)

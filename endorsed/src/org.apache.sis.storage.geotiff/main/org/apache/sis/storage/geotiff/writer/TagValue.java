@@ -86,7 +86,7 @@ public abstract class TagValue {
     }
 
     /**
-     * Writes again the values at the same offset than previously.
+     * Writes again the values at the same offset as previously.
      * This is used when those values have changed.
      *
      * @param  output  the stream where to write tag values.

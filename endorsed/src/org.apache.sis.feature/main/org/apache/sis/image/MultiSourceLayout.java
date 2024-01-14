@@ -105,7 +105,7 @@ final class MultiSourceLayout extends ImageLayout {
 
     /**
      * Whether to use the preferred tile size exactly as specified, without trying to compute a better size.
-     * This field may be {@code true} if the tiles of the destination image are at exact same location than
+     * This field may be {@code true} if the tiles of the destination image are at exact same location as
      * the tiles of a source image having the preferred tile size. In such case, keeping the same size will
      * reduce the amount of tiles requested in that source image.
      */
@@ -262,7 +262,7 @@ final class MultiSourceLayout extends ImageLayout {
     /**
      * Chooses the preferred tile size (width or height) between two alternatives.
      * The alternatives are {@code current} and {@code tile}. Note that having the
-     * same tile size than source image is desirable but not mandatory.
+     * same tile size as source image is desirable but not mandatory.
      *
      * <p>The ideal situation is to have aligned tiles, so that computing one tile of combined image
      * will always cause the computation of only one tile of source image. For approaching that goal,

@@ -39,7 +39,7 @@ public class KeyConstants {
     private final Class<?> keysClass;
 
     /**
-     * The key names in the exact same order than {@link IndexedResourceBundle#values}.
+     * The key names in the exact same order as {@link IndexedResourceBundle#values}.
      * This is usually not needed, but may be created from the {@code Keys} inner class in some occasions.
      *
      * @see #getKeyNames()

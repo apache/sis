@@ -171,7 +171,7 @@ public final class MathTransformsTest extends TestCase {
             0,  0,  2, -7,
             0,  0,  0,  1), affine, STRICT);
         /*
-         * Transformation using above approximation shall produce the same result than the original
+         * Transformation using above approximation shall produce the same result as the original
          * transform if we do the comparison at the position where the approximation has been computed.
          */
         DirectPosition expected = tr.transform(pos, null);
@@ -232,7 +232,7 @@ public final class MathTransformsTest extends TestCase {
         linear = MathTransforms.tangent(tr, pos);
         assertNotSame(tr, linear);
         /*
-         * Transformation using above approximation shall produce the same result than the original
+         * Transformation using above approximation shall produce the same result as the original
          * transform if we do the comparison at the position where the approximation has been computed.
          */
         DirectPosition expected = tr.transform(pos, null);

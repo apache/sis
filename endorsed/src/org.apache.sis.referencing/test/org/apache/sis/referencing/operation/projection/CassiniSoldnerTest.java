@@ -101,7 +101,7 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
 
     /**
      * Tests the point given in EPSG example for the usual "Cassini-Soldner" projection.
-     * This is the same test than {@link #runGeoapiTest()} but is repeated here for easier debugging.
+     * This is the same test as {@link #runGeoapiTest()} but is repeated here for easier debugging.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
@@ -133,7 +133,7 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
 
     /**
      * Tests the point given in EPSG example for the "Hyperbolic Cassini-Soldner" projection.
-     * This is the same test than {@link #runGeoapiHyperbolicTest()} but is repeated here for
+     * This is the same test as {@link #runGeoapiHyperbolicTest()} but is repeated here for
      * easier debugging.
      *
      * @throws FactoryException if an error occurred while creating the map projection.

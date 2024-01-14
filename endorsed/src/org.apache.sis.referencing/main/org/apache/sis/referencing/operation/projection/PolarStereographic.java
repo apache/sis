@@ -72,7 +72,7 @@ public class PolarStereographic extends ConformalProjection {
     /**
      * Variants of Polar Stereographic projection. Those variants modify the way the projections are constructed
      * (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
-     * Those variants are not exactly the same than variants A, B and C used by EPSG, but they are closely related.
+     * Those variants are not exactly the same as variants A, B and C used by EPSG, but they are closely related.
      *
      * <p>We do not provide such codes in public API because they duplicate the functionality of
      * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
@@ -198,7 +198,7 @@ public class PolarStereographic extends ConformalProjection {
             φ1 = initializer.getAndStore(PolarStereographicB.STANDARD_PARALLEL, φ0);    // Optional
         }
         /*
-         * At this point we should ensure that the sign of φ0 is the same than the sign of φ1,
+         * At this point we should ensure that the sign of φ0 is the same as the sign of φ1,
          * since opposite signs produce too large deformations. But we do not verify because
          * it is normally not possible to specify both φ0 and φ1 with the SIS parameter descriptors.
          * It may be possible to specify φ0 and φ1 if the caller used his own parameter descriptor,
@@ -271,7 +271,7 @@ public class PolarStereographic extends ConformalProjection {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     PolarStereographic(final PolarStereographic other) {
         super(other);

@@ -373,7 +373,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
@@ -381,7 +381,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -403,7 +403,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
@@ -411,7 +411,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -424,7 +424,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged,
      * except for {@linkplain #EMPTY_DOUBLE empty} arrays. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.
@@ -432,7 +432,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -446,7 +446,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged,
      * except for {@linkplain #EMPTY_FLOAT empty} arrays. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.
@@ -454,7 +454,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -468,7 +468,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged,
      * except for {@linkplain #EMPTY_LONG empty} arrays. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.
@@ -476,7 +476,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -490,7 +490,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged,
      * except for {@linkplain #EMPTY_INT empty} arrays. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.
@@ -498,7 +498,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -512,7 +512,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged,
      * except for {@linkplain #EMPTY_SHORT empty} arrays. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.
@@ -520,7 +520,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -534,7 +534,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged,
      * except for {@linkplain #EMPTY_BYTE empty} arrays. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.
@@ -542,7 +542,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -556,7 +556,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged,
      * except for {@linkplain #EMPTY_CHAR empty} arrays. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.
@@ -564,7 +564,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -578,7 +578,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array except for the given range.
+     * Returns an array containing the same elements as the given array except for the given range.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged,
      * except for {@linkplain #EMPTY_BOOLEAN empty} arrays. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.
@@ -586,7 +586,7 @@ public final class ArraysExt extends Static {
      * @param  array   array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param  first   index of the first element to remove from the given {@code array}.
      * @param  length  number of elements to remove.
-     * @return array with the same elements than the given {@code array} except for the removed elements,
+     * @return array with the same elements as the given {@code array} except for the removed elements,
      *         or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullPointerException if {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException if {@code length} is negative.
@@ -600,7 +600,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional
+     * Returns an array containing the same elements as the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of {@code null} elements.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -634,7 +634,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional
+     * Returns an array containing the same elements as the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of {@code null} elements.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -659,7 +659,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional "spaces"
+     * Returns an array containing the same elements as the given array, with additional "spaces"
      * in the given range. These "spaces" will be made up of elements initialized to zero.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -683,7 +683,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional "spaces"
+     * Returns an array containing the same elements as the given array, with additional "spaces"
      * in the given range. These "spaces" will be made up of elements initialized to zero.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -707,7 +707,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional "spaces"
+     * Returns an array containing the same elements as the given array, with additional "spaces"
      * in the given range. These "spaces" will be made up of elements initialized to zero.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -731,7 +731,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional "spaces"
+     * Returns an array containing the same elements as the given array, with additional "spaces"
      * in the given range. These "spaces" will be made up of elements initialized to zero.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -755,7 +755,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional "spaces"
+     * Returns an array containing the same elements as the given array, with additional "spaces"
      * in the given range. These "spaces" will be made up of elements initialized to zero.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -778,7 +778,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional "spaces"
+     * Returns an array containing the same elements as the given array, with additional "spaces"
      * in the given range. These "spaces" will be made up of elements initialized to zero.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -802,7 +802,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional "spaces"
+     * Returns an array containing the same elements as the given array, with additional "spaces"
      * in the given range. These "spaces" will be made up of elements initialized to zero.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -826,7 +826,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array, with additional "spaces"
+     * Returns an array containing the same elements as the given array, with additional "spaces"
      * in the given range. These "spaces" will be made up of elements initialized to {@code false}.
      * If the {@code length} argument is 0, then this method returns the {@code array} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
@@ -850,7 +850,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -889,7 +889,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -915,7 +915,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -940,7 +940,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -965,7 +965,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -990,7 +990,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -1015,7 +1015,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -1040,7 +1040,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -1065,7 +1065,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -1090,7 +1090,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns an array containing the same elements than the given array,
+     * Returns an array containing the same elements as the given array,
      * with the content of another array inserted at the given index.
      * If the {@code length} argument is 0, then this method returns the {@code dst} reference unchanged.
      * Otherwise this method creates a new array. In every cases, the given arrays are never modified.
@@ -1312,7 +1312,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Removes the duplicated elements in the first elements of the given array.
-     * This method performs the same work than {@link #removeDuplicated(Object[])},
+     * This method performs the same work as {@link #removeDuplicated(Object[])},
      * but taking in account only the first {@code length} elements. The latter argument
      * is convenient for chaining this method after {@link #removeNulls(Object[])} as below:
      *
@@ -1378,7 +1378,7 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns the ordered values in the range from {@code start} inclusive to {@code end} exclusive.
-     * This method performs the same work than {@link java.util.stream.IntStream#range(int, int)} but
+     * This method performs the same work as {@link java.util.stream.IntStream#range(int, int)} but
      * returning values in an array instead of in a stream. This method is okay for small sequences;
      * for large sequences the stream approach should be preferred.
      *
@@ -1902,7 +1902,7 @@ public final class ArraysExt extends Static {
      * A common usage for this method is to replace pad values by {@link Double#NaN} in the
      * sample values of a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}.
      * This method does nothing if the given array is {@code null} or if {@code search} is the
-     * same bits pattern than {@code replacement}.
+     * same bits pattern as {@code replacement}.
      *
      * @param  array        the array where to perform the search and replace, or {@code null}.
      * @param  search       the value to search.
@@ -1936,7 +1936,7 @@ public final class ArraysExt extends Static {
      * A common usage for this method is to replace pad values by {@link Float#NaN} in the
      * sample values of a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}.
      * This method does nothing if the given array is {@code null} or if {@code search} is the
-     * same bits pattern than {@code replacement}.
+     * same bits pattern as {@code replacement}.
      *
      * @param  array        the array where to perform the search and replace, or {@code null}.
      * @param  search       the value to search.

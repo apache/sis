@@ -357,7 +357,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @param  targets    the elements in this {@code DefaultExtent}. Also the collection where results will be stored.
      * @param  sources    the elements from the other {@code Extent} to intersect with this extent.
      * @param  intersect  the function computing intersections.
-     * @return the intersection results. May be the same instance than {@code targets} with elements replaced.
+     * @return the intersection results. May be the same instance as {@code targets} with elements replaced.
      */
     private <T> Collection<T> intersect(final Class<T> type, Collection<T> targets, Collection<? extends T> sources, final BinaryOperator<T> intersect) {
         if (!Containers.isNullOrEmpty(sources)) {

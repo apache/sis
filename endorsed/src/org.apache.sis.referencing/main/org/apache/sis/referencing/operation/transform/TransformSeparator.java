@@ -127,7 +127,7 @@ public class TransformSeparator {
     }
 
     /**
-     * Resets this transform separator in the same state than after construction. This method clears any
+     * Resets this transform separator in the same state as after construction. This method clears any
      * {@linkplain #getSourceDimensions() source} and {@linkplain #getTargetDimensions() target dimensions}
      * settings and disables {@linkplain #isSourceExpandable() source expansion}.
      * This method can be invoked when the same {@code MathTransform} needs to be separated in more than one part,
@@ -498,7 +498,7 @@ public class TransformSeparator {
     }
 
     /**
-     * Creates a transform for the same mathematic than the given {@code step}
+     * Creates a transform for the same mathematic as the given {@code step}
      * but expecting only the given dimensions as inputs.
      * This method is invoked by {@link #separate()} when user-specified source dimensions need to be taken in account.
      * The given {@code step} and {@code dimensions} are typically the values of
@@ -675,7 +675,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
     }
 
     /**
-     * Creates a transform for the same mathematic than the given {@code step}
+     * Creates a transform for the same mathematic as the given {@code step}
      * but producing only the given dimensions as outputs.
      * This method is invoked by {@link #separate()} when user-specified target dimensions need to be taken in account.
      * The given {@code step} and {@code dimensions} are typically the values of

@@ -97,7 +97,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
 
     /**
      * Returns a copy of the matrix that user can modify.
-     * The object returned by this method is not of the same class than this object.
+     * The object returned by this method is not of the same class as this object.
      */
     @Override
     @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})

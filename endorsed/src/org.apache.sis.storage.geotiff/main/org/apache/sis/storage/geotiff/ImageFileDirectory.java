@@ -93,7 +93,7 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Possible value for {@link #sampleFormat} specifying how to interpret each data sample in a pixel.
-     * Those values are not necessarily the same than the ones documented in {@code TAG_SAMPLE_FORMAT}.
+     * Those values are not necessarily the same as the ones documented in {@code TAG_SAMPLE_FORMAT}.
      * Default value is {@link #UNSIGNED}.
      */
     private static final byte SIGNED = 1, UNSIGNED = 0, FLOAT = 3;
@@ -182,7 +182,7 @@ final class ImageFileDirectory extends DataCube {
      *
      * <h4>Strips considered as tiles</h4>
      * The TIFF specification also defines a {@code RowsPerStrip} tag, which is equivalent to the
-     * height of tiles having the same width than the image. While the TIFF specification handles
+     * height of tiles having the same width as the image. While the TIFF specification handles
      * "tiles" and "strips" separately, Apache SIS handles strips as a special kind of tiles where
      * only {@code tileHeight} is specified and {@code tileWidth} defaults to {@link #imageWidth}.
      *

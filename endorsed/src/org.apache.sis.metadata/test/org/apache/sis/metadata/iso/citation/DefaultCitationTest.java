@@ -211,7 +211,7 @@ public final class DefaultCitationTest extends TestUsingFile {
      */
     private static <T> void assertCopy(final Collection<T> expected, final Collection<T> actual) {
         assertNotSame("ModifiableMetadata.transitionTo(FINAL) shall have copied the collection.", expected, actual);
-        assertEquals("The copied collection shall have the same content than the original.", expected, actual);
+        assertEquals("The copied collection shall have the same content as the original.", expected, actual);
         try {
             actual.add(null);
             fail("The copied collection shall be unmodifiable.");

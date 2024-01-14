@@ -412,7 +412,7 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
             /*
              * Iterate over the requested bands in increasing index order.
              * The `source` value is guaranteed to be always increasing.
-             * This is not necessarily the same order than the one specified by the user.
+             * This is not necessarily the same order as the one specified by the user.
              * User order is taken in account later, with the call to `getTargetIndex(…)`.
              */
             final int source = (i != numBands) ? validator.getSourceIndex(i) : sampleDimensions.size();

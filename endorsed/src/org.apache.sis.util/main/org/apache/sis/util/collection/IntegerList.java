@@ -417,7 +417,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
         } else {
             /*
              * The general case, when the packed values after the range
-             * removal don't have the same offset than the original values.
+             * removal don't have the same offset as the original values.
              */
             while (upper < size) {
                 setUnchecked(lower++, getUnchecked(upper++));

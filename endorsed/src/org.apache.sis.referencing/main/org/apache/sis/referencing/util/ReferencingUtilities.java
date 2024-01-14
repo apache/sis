@@ -77,7 +77,7 @@ public final class ReferencingUtilities extends Static {
 
     /**
      * Returns the longitude value relative to the Greenwich Meridian, expressed in the specified units.
-     * This method provides the same functionality than {@link DefaultPrimeMeridian#getGreenwichLongitude(Unit)},
+     * This method provides the same functionality as {@link DefaultPrimeMeridian#getGreenwichLongitude(Unit)},
      * but on arbitrary implementation.
      *
      * @param  primeMeridian  the prime meridian from which to get the Greenwich longitude, or {@code null}.

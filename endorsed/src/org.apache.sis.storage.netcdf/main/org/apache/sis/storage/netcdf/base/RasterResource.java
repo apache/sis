@@ -136,7 +136,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     /**
      * If one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
      * This is an index in a list of dimensions in "natural" order (reverse of netCDF order).
-     * There is three ways to read the data, determined by this {@code bandDimension} value:
+     * There are three ways to read the data, determined by this {@code bandDimension} value:
      *
      * <ul>
      *   <li>{@code (bandDimension < 0)}: one variable per band (usual case).</li>
@@ -229,7 +229,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             String name = variable.getStandardName();
             /*
              * At this point we found a variable for which to create a resource. Most of the time, there is nothing else to do;
-             * the resource will have a single variable and the same name than that unique variable. The resulting raster will
+             * the resource will have a single variable and the same name as that unique variable. The resulting raster will
              * have only one band (sample dimension). However, in some cases the raster should have more than one band:
              *
              *   1) if the variable has an extra dimension compared to the grid geometry;
@@ -366,7 +366,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * Invoked when the name of this resource needs to be changed because it collides with the name of another resource.
      * This method uses the variable name, which should be unique in each netCDF file. If this resource wraps more than
      * one variable (for example "eastward_velocity" and "northward_velocity"), then this method takes the common part
-     * of all variable names ("velocity" in above example).
+     * of all variable names ("velocity" in the above example).
      *
      * @return whether this resource has been renamed as an effect of this method call.
      */
@@ -635,7 +635,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         }
         /*
          * At this point the arguments and the state of this resource have been validated.
-         * There is three ways to read the data, determined by `bandDimension` value:
+         * There are three ways to read the data, determined by `bandDimension` value:
          *
          *   • (bandDimension < 0): one variable per band (usual case).
          *   • (bandDimension = 0): one variable containing all bands, with bands in the first dimension.

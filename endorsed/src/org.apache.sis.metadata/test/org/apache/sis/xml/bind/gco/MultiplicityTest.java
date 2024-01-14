@@ -87,7 +87,7 @@ public final class MultiplicityTest extends TestUsingFile {
     }
 
     /**
-     * Creates a multiplicity instance with the same content than in {@value #FILENAME} file.
+     * Creates a multiplicity instance with the same content as in {@value #FILENAME} file.
      *
      * @param  requireInclusive  0 if we are allowed to create range with exclusive bounds, or
      *                           1 if all bounds shall be inclusive.

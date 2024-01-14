@@ -201,7 +201,7 @@ public final class UUIDMarshallingTest extends TestCase {
     }
 
     /**
-     * The same test than {@link #testReference()}, except that the {@code <cit:CI_Series>} element is empty.
+     * The same test as {@link #testReference()}, except that the {@code <cit:CI_Series>} element is empty.
      * This situation shall force the creation of a new, empty, element for storing the {@code uuidref} information.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.

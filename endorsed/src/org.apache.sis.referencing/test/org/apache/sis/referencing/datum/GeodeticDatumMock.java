@@ -73,7 +73,7 @@ public final class GeodeticDatumMock extends IdentifiedObjectMock implements Geo
 
     /**
      * The "Nouvelle Triangulation Française" (EPSG:6807) datum with "Clarke 1880 (IGN)" ellipsoid.
-     * This is the same datum than "Nouvelle Triangulation Française (Paris)" (EPSG:6275) except
+     * This is the same datum as "Nouvelle Triangulation Française (Paris)" (EPSG:6275) except
      * for the prime meridian, which is Greenwich instead of Paris.
      */
     public static final GeodeticDatum NTF = new GeodeticDatumMock("NTF", 6378249.2, 6356515, 293.4660212936269, false);

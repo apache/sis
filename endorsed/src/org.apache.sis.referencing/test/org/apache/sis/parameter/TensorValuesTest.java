@@ -211,7 +211,7 @@ public final class TensorValuesTest extends TestCase {
         assertDescriptorEquals("elt_2_1", N0, d.descriptor("elt_2_1"));
         assertDescriptorEquals("elt_2_2", N1, d.descriptor("elt_2_2"));
         /*
-         * Same test than above, but using the EPSG or pseudo-EPSG names.
+         * Same test as above, but using the EPSG or pseudo-EPSG names.
          */
         assertDescriptorEquals("elt_0_0", N1, d.descriptor("A0"));
         assertDescriptorEquals("elt_0_1", N0, d.descriptor("A1"));

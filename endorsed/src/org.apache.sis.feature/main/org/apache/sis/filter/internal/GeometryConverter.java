@@ -86,7 +86,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
     }
 
     /**
-     * Creates a new expression of the same type than this expression, but with an optimized geometry.
+     * Creates a new expression of the same type as this expression, but with an optimized geometry.
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override

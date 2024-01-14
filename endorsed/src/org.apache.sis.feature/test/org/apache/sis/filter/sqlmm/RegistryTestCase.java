@@ -360,7 +360,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
 
     /**
      * Test SQL/MM {@code ST_Intersects} function with reprojection.
-     * This test uses the same polygon than {@link #testIntersects()}.
+     * This test uses the same polygon as {@link #testIntersects()}.
      */
     @Test
     public void testIntersectsWithReprojection() {

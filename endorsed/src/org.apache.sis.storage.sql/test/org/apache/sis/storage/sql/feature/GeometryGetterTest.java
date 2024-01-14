@@ -152,7 +152,7 @@ public final class GeometryGetterTest extends TestCase {
     /**
      * Returns the expected CRS for the given SRID. Note that a SRID is not necessary an EPSG code.
      * This method accepts only the SRID used in the {@code "SpatialFeatures"} test schema.
-     * The mapping from SRID to CRS is hard-coded to the same mapping than the spatial database
+     * The mapping from SRID to CRS is hard-coded to the same mapping as the spatial database
      * used for the test. Other databases may have different mapping.
      *
      * @param  srid  the SRID for which to get the CRS.

@@ -262,7 +262,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      *
      * <h4>Hiding namespace</h4>
      * The {@code hideNS} argument, if non-null, gives a namespace to remove in the marshalling result.
-     * There is two reasons why we may want to hide a namespace. The most straightforward reason is to
+     * There are two reasons why we may want to hide a namespace. The most straightforward reason is to
      * simplify the XML document when the {@linkplain jakarta.xml.bind.annotation.XmlElement#namespace()
      * namespace of elements} to marshal is the {@linkplain XMLStreamWriter#setDefaultNamespace(String)
      * default namespace}. Since some JAXB implementation systematically inserts a prefix no matter if

@@ -695,7 +695,7 @@ public final class XML extends Static {
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller(properties);
         final JAXBElement<T> element;
-        if (input instanceof StAXSource) {                  // Same workaround than the one documented in above method.
+        if (input instanceof StAXSource) {                  // Same workaround as the one documented in above method.
             @Workaround(library = "JDK", version = "1.8")
             final XMLStreamReader reader = ((StAXSource) input).getXMLStreamReader();
             if (reader != null) {

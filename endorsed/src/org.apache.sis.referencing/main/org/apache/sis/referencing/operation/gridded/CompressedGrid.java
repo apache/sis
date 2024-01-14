@@ -59,7 +59,7 @@ public final class CompressedGrid<C extends Quantity<C>, T extends Quantity<T>> 
     private final double scale;
 
     /**
-     * Creates a new datum shift grid for the same geometry than the given grid but different data.
+     * Creates a new datum shift grid for the same geometry as the given grid but different data.
      */
     private CompressedGrid(final LoadedGrid<C,T> grid, final double[] averages,
             final short[][] data, final double scale)
@@ -113,9 +113,9 @@ public final class CompressedGrid<C extends Quantity<C>, T extends Quantity<T>> 
     }
 
     /**
-     * Returns a new grid with the same geometry than this grid but different data arrays.
+     * Returns a new grid with the same geometry as this grid but different data arrays.
      * This method is invoked by {@link #useSharedData()} when it detects that a newly created
-     * grid uses the same data than an existing grid. The {@code other} object is the old grid,
+     * grid uses the same data as an existing grid. The {@code other} object is the old grid,
      * so we can share existing data.
      */
     @Override
@@ -240,7 +240,7 @@ public final class CompressedGrid<C extends Quantity<C>, T extends Quantity<T>> 
     }
 
     /**
-     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * Returns {@code true} if the given object is a grid containing the same data as this grid.
      *
      * @param  other  the other object to compare with this datum shift grid.
      * @return {@code true} if the given object is non-null, an instance of {@code CompressedGrid}

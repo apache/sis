@@ -124,7 +124,7 @@ final class PathIteratorAdapter implements PathIterator {
 
     /**
      * Returns the winding rule for determining the interior of the path.
-     * Current implementation returns the same rule than the one returned
+     * Current implementation returns the same rule as the one returned
      * by {@link org.locationtech.jts.awt.ShapeCollectionPathIterator}.
      */
     @Override

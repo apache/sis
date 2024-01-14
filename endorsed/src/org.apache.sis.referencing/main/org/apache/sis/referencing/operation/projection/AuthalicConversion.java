@@ -174,7 +174,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
      * <ul>
      *   <li>Input in the [-1 … +1] range</li>
      *   <li>Output multiplied by {@code (1 - ℯ²)} in the [-2 … +2] range</li>
-     *   <li>Output of the same sign than input</li>
+     *   <li>Output of the same sign as input</li>
      *   <li>q(-sinφ) = -q(sinφ)</li>
      *   <li>q(0) = 0</li>
      * </ul>

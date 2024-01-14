@@ -76,7 +76,7 @@ class DefaultProjection extends DefaultConversion implements Projection {
     }
 
     /**
-     * Creates a new projection with the same values than the specified one, together with the
+     * Creates a new projection with the same values as the specified one, together with the
      * specified source and target CRS. While the source conversion can be an arbitrary one, it
      * is typically a defining conversion.
      *
@@ -98,7 +98,7 @@ class DefaultProjection extends DefaultConversion implements Projection {
     }
 
     /**
-     * Creates a new coordinate operation with the same values than the specified one.
+     * Creates a new coordinate operation with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *

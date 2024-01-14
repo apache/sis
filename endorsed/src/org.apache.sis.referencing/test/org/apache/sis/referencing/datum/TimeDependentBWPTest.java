@@ -150,7 +150,7 @@ public final class TimeDependentBWPTest extends TestCase {
         final double rZ = -1.230844E-07;
         final double dS = +0.01188;
         /*
-         * The source coordinates. This is the same coordinates than testSetPositionVectorTransformation().
+         * The source coordinates. This is the same coordinates as testSetPositionVectorTransformation().
          */
         final double Xs = -3789470.702;
         final double Ys =  4841770.411;

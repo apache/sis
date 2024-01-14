@@ -218,7 +218,7 @@ public class GeodeticCalculator {
 
     /**
      * The shortest distance from the starting point ({@link #φ1},{@link #λ1}) to the end point ({@link #φ2},{@link #λ2}).
-     * The distance is in the same units than ellipsoid axes and the azimuth is in radians.
+     * The distance is in the same units as ellipsoid axes and the azimuth is in radians.
      *
      * @see #GEODESIC_DISTANCE
      * @see #getDistanceUnit()
@@ -227,7 +227,7 @@ public class GeodeticCalculator {
 
     /**
      * Length of the rhumb line from the starting point ({@link #φ1},{@link #λ1}) to the end point ({@link #φ2},{@link #λ2}).
-     * The distance is in the same units than ellipsoid axes.
+     * The distance is in the same units as ellipsoid axes.
      *
      * @see #RHUMBLINE_LENGTH
      * @see #getDistanceUnit()

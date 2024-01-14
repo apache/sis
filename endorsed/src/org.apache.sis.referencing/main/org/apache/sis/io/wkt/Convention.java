@@ -86,9 +86,9 @@ public enum Convention {
      *     <li>{@code Ellipsoid} and {@code VerticalExtent} elements omit the {@code LengthUnit} sub-element
      *         if that unit is {@link org.apache.sis.measure.Units#METRE}.</li>
      *     <li>{@code Parameter} elements omit the {@code LengthUnit} sub-element
-     *         if that unit is the same than the unit of the {@code ProjectedCRS} axes.</li>
+     *         if that unit is the same as the unit of the {@code ProjectedCRS} axes.</li>
      *     <li>{@code Parameter} and {@code PrimeMeridian} elements omit the {@code AngleUnit} sub-element
-     *         if that unit is the same than the unit of the {@code GeodeticCRS} axes.</li>
+     *         if that unit is the same as the unit of the {@code GeodeticCRS} axes.</li>
      *     <li>Axes unit is declared only once after the axes instead of repeated for each axis
      *         if the unit is the same for all axes.</li>
      *     <li>{@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit}

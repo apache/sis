@@ -825,7 +825,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
         /*
          * If a linearizer has been applied, all target coordinates in this builder have been projected using
          * that transform. We will need to apply the inverse transform in order to get back the original values.
-         * The way that we get the transform below should be the same way than in `create(…)`, except that we
+         * The way that we get the transform below should be the same way as in `create(…)`, except that we
          * apply the inverse transform unconditionally.
          */
         final MathTransform complete, inverse;

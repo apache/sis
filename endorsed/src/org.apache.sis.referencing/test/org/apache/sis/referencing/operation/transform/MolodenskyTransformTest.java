@@ -151,7 +151,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests using the same EPSG example than the one provided in {@link EllipsoidToCentricTransformTest}.
+     * Tests using the same EPSG example as the one provided in {@link EllipsoidToCentricTransformTest}.
      *
      * <ul>
      *   <li>Source point in WGS84: 53°48'33.820"N, 02°07'46.380"E, 73.00 metres.</li>

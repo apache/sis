@@ -144,7 +144,7 @@ abstract class PointTreeNode implements Cloneable {
     abstract void setChild(int quadrant, Object child);
 
     /**
-     * Creates a new instance of the same class than this node.
+     * Creates a new instance of the same class as this node.
      */
     abstract PointTreeNode newInstance();
 
@@ -205,7 +205,7 @@ abstract class PointTreeNode implements Cloneable {
         }
 
         /**
-         * Creates a new instance of the same class than this node.
+         * Creates a new instance of the same class as this node.
          */
         @Override
         final PointTreeNode newInstance() {

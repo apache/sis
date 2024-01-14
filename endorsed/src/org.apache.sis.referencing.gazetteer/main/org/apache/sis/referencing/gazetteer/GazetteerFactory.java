@@ -84,7 +84,7 @@ public class GazetteerFactory extends AbstractFactory {
 
     /**
      * Optionally returns a shared instance of the reference system identified by the given name.
-     * This method performs the same work than {@link #forName(String)} but without throwing an
+     * This method performs the same work as {@link #forName(String)} but without throwing an
      * exception if the given name is unknown.
      *
      * @param  name  name of the reference system to obtain.

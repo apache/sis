@@ -281,7 +281,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * The format instances given by {@link #getFormat(Class)}, to use by default when we have
-     * not been able to configure the precision. This is the same array than {@link #formats},
+     * not been able to configure the precision. This is the same array as {@link #formats},
      * unless {@link #setPrecisions(double...)} has been invoked.
      * Values at different indices may reference the same {@link Format} instance.
      *
@@ -1684,7 +1684,7 @@ skipSep:    if (i != 0) {
                 opposite  = directionSymbols[i*2 + 1];
             }
             /*
-             * The unit written after the coordinate value may not be the same than the unit declared
+             * The unit written after the coordinate value may not be the same as the unit declared
              * in the CRS axis, so we have to parse the unit and convert the value before to apply the
              * change of sign.
              */

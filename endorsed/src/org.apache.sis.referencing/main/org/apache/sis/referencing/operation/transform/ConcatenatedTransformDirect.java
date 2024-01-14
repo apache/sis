@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.TransformException;
 
 
 /**
- * Concatenated transform where the transfer dimension is the same than source and target dimension.
+ * Concatenated transform where the transfer dimension is the same as source and target dimension.
  * This fact allows some optimizations, the most important one being the possibility to avoid the use
  * of an intermediate buffer in some case.
  *

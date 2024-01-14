@@ -101,7 +101,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
 
     /**
      * Tests conversion of a single point from geocentric to geographic coordinates.
-     * This method uses the same point than {@link #testGeographicToGeocentric()}.
+     * This method uses the same point as {@link #testGeographicToGeocentric()}.
      *
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException if conversion of the sample point failed.
@@ -216,7 +216,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
     }
 
     /**
-     * Tests serialization. This method performs the same test than {@link #testGeographicToGeocentric()}
+     * Tests serialization. This method performs the same test as {@link #testGeographicToGeocentric()}
      * and {@link #testGeocentricToGeographic()}, but on the deserialized instance. This allow us to verify
      * that transient fields have been correctly restored.
      *

@@ -173,7 +173,7 @@ final class ModularCompilation extends Conventions {
      * @todo Reduce this list to IDL and Markdown by converting HTML and text files.
      */
     private static final Set<String> EXCLUDE_RESOURCES = Set.of(
-            "tmp", "bak", "log",    // Same extensions than in `.gitignore`.
+            "tmp", "bak", "log",    // Same extensions as in `.gitignore`.
             "idl",                  // Source code for OpenOffice add-in.
             "md",                   // Notes in Markdown format.
             "html");                // Richer alternative to Markdown.

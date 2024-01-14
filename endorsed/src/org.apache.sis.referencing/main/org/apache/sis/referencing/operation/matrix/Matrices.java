@@ -640,7 +640,7 @@ public final class Matrices extends Static {
      * @param  firstAffectedCoordinate  the lowest index of the affected coordinates.
      * @param  subMatrix                the matrix to use for affected coordinates.
      * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
-     * @return a matrix for the same transform than the given matrix,
+     * @return a matrix for the same transform as the given matrix,
      *         augmented with leading and trailing pass-through coordinates.
      *
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
@@ -762,7 +762,7 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Returns a matrix with the same content than the given matrix but a different size, assuming an affine transform.
+     * Returns a matrix with the same content as the given matrix but a different size, assuming an affine transform.
      * This method can be invoked for adding or removing the <strong>last</strong> dimensions of an affine transform.
      * More specifically:
      *

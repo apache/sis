@@ -100,7 +100,7 @@ final class ParameterTableRow {
     final List<Object> values;
 
     /**
-     * The units of measurement. The size of this list shall be the same than {@link #values}.
+     * The units of measurement. The size of this list shall be the same as {@link #values}.
      * The list may contain null elements.
      *
      * <p>This list is initially filled with {@link Unit} instance. Later in the formatting process,

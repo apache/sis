@@ -60,13 +60,13 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
  * Compressed data are handled by specialized subclasses.
  *
  * <h2>Cell Coordinates</h2>
- * When there is no subsampling, {@code DataSubset} uses the same cell coordinates than {@link DataCube}.
+ * When there is no subsampling, {@code DataSubset} uses the same cell coordinates as {@link DataCube}.
  * When there is a subsampling, cell coordinates in this subset are divided by the subsampling factors.
  * Conversion is done by {@link #toFullResolution(long, int)}.
  *
  * <h2>Tile Matrix Coordinates</h2>
  * In each {@code DataSubset}, indices of tiles starts at (0, 0, …). This class does not use
- * the same tile indices than {@link DataCube} in order to avoid integer overflow.
+ * the same tile indices as {@link DataCube} in order to avoid integer overflow.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -90,7 +90,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
 
     /**
      * For each tile, the number of (compressed) bytes in that tile.
-     * Elements are in the same order than {@link #tileOffsets}.
+     * Elements are in the same order as {@link #tileOffsets}.
      *
      * @see ImageFileDirectory#tileByteCounts
      * @see #indexOfFirstTile

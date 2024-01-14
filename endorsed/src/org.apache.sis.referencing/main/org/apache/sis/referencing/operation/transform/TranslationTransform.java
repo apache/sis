@@ -43,7 +43,7 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     private static final long serialVersionUID = -3713820636959453961L;
 
     /**
-     * Translation terms, to be applied in the same order than coordinate values.
+     * Translation terms, to be applied in the same order as coordinate values.
      * The length of this array is the number of target dimensions.
      */
     private final double[] offsets;

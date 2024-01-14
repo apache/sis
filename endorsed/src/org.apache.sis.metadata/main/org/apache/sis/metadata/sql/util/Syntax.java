@@ -68,7 +68,7 @@ public class Syntax {
     }
 
     /**
-     * Creates a new {@code Syntax} initialized to the same metadata than the given template.
+     * Creates a new {@code Syntax} initialized to the same metadata as the given template.
      *
      * @param  other  the template from which to copy metadata.
      */

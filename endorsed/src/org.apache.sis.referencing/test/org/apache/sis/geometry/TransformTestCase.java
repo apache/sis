@@ -110,7 +110,7 @@ public abstract class TransformTestCase<G> extends TestCase {
         assertEquals("Conversion should produce the same result.", rectXY, transform(conversion, rectλφ));
         /*
          * Expected values are determined empirically by projecting many points.
-         * Those values are the same than in EnvelopesTest.testTransform().
+         * Those values are the same as in EnvelopesTest.testTransform().
          */
         final G expected = createFromExtremums(targetCRS, 166021.56, -2214294.03,
                                                           833978.44,  4432069.06);

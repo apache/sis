@@ -770,7 +770,7 @@ public abstract class Builder<B extends Builder<B>> {
      * </ul>
      *
      * This method could also be understood as a {@code setNames(Citation, ...)} method, except that it modifies
-     * only the names associated to the given authority and preserves the same order than previous names.
+     * only the names associated to the given authority and preserves the same order as previous names.
      *
      * @param  authority     the authority of the names to replaces.
      * @param  replacements  the new local parts for the names to replace,
@@ -869,7 +869,7 @@ public abstract class Builder<B extends Builder<B>> {
      * </ul>
      *
      * This method could also be understood as a {@code setIdentifiers(Citation, ...)} method, except that it modifies
-     * only the identifiers associated to the given authority and preserves the same order than previous identifiers.
+     * only the identifiers associated to the given authority and preserves the same order as previous identifiers.
      *
      * @param  authority     the authority of the names to replaces.
      * @param  replacements  the new local parts for the names to replace,

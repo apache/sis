@@ -101,7 +101,7 @@ public final class TransformerTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testIdentity()} except that the height values are dropped.
+     * Same test as {@link #testIdentity()} except that the height values are dropped.
      *
      * @throws FactoryException if an error occurred while creating the object.
      * @throws DataStoreException if an error occurred while reading a data file.

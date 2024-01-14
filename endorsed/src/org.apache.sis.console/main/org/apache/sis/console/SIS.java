@@ -28,7 +28,7 @@ import org.apache.sis.system.Environment;
 
 /**
  * Entry point for {@code SIS} commands from JShell.
- * This class provides the same commands than the {@code SIS} shell script, but from Java code.
+ * This class provides the same commands as the {@code SIS} shell script, but from Java code.
  * Each method accepts an arbitrary number of arguments of type {@link Object}.
  * The actual argument values should be instances of {@link String},
  * but the arguments that are input or output files can also be instances of
@@ -228,7 +228,7 @@ public final class SIS extends Static {
 
     /**
      * Shows a help overview.
-     * This sub-command prints the same text than when {@code SIS} is invoked on the command-line without arguments.
+     * This sub-command prints the same text as when {@code SIS} is invoked on the command-line without arguments.
      * Usage example:
      *
      * {@snippet lang="java" :

@@ -304,7 +304,7 @@ public class MetadataWriter extends MetadataSource {
                  */
                 String addTo = table;
                 if (helper.dialect.supportsTableInheritance) {
-                    @SuppressWarnings("null")     // `colTables` is initialized in same time than `colTypes`.
+                    @SuppressWarnings("null")     // `colTables` is initialized in same time as `colTypes`.
                     final Class<?> declaring = colTables.get(column);
                     if (!interfaceType.isAssignableFrom(declaring)) {
                         addTo = getTableName(declaring);
@@ -574,7 +574,7 @@ public class MetadataWriter extends MetadataSource {
     /**
      * Creates a table for the given type, if the table does not already exists.
      * This method may call itself recursively for creating parent tables, if they do not exist neither.
-     * This method opportunistically computes the same return value than {@link #isChildTable(Class)}.
+     * This method opportunistically computes the same return value as {@link #isChildTable(Class)}.
      *
      * @param  stmt     the statement to use for creating tables.
      * @param  type     the interface class.

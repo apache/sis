@@ -86,7 +86,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * geographic bounding box of the data shown on screen, are inferred from above properties.
  *
  * <h2>Coordinate Reference Systems</h2>
- * There is three {@linkplain CoordinateReferenceSystem Coordinate Reference Systems}
+ * There are three {@linkplain CoordinateReferenceSystem Coordinate Reference Systems}
  * involved in the rendering of geospatial data:
  *
  * <ol class="verbose">

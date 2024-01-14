@@ -1933,7 +1933,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
         /**
          * Looks up an object from this authority factory which is approximately equal to the specified object.
-         * The default implementation performs the same lookup than the Data Access Object and caches the result.
+         * The default implementation performs the same lookup as the Data Access Object and caches the result.
          */
         @Override
         public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {

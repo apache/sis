@@ -117,7 +117,7 @@ final class DimensionWrapper extends org.apache.sis.storage.netcdf.base.Dimensio
     }
 
     /**
-     * Returns {@code true} if the given object represents the same dimension than this object.
+     * Returns {@code true} if the given object represents the same dimension as this object.
      * If the dimension is shared, then it has a unique name and {@link Dimension#equals(Object)}
      * can distinguish dimensions based on their name. But if the dimension is private to a variable,
      * then the dimension name can be null and the only remaining discriminant is the dimension length.
@@ -125,7 +125,7 @@ final class DimensionWrapper extends org.apache.sis.storage.netcdf.base.Dimensio
      * Consequently, for non-shared dimensions we need to add {@link #index} in the comparison.
      *
      * @param  obj  the other object to compare with this dimension.
-     * @return whether the other object wraps the same netCDF dimension than this object.
+     * @return whether the other object wraps the same netCDF dimension as this object.
      */
     @Override
     public boolean equals(final Object obj) {

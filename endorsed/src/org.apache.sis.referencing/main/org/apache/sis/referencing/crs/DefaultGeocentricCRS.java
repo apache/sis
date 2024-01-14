@@ -95,7 +95,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
      *
@@ -143,7 +143,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
-     * The properties given in argument are the same than for the
+     * The properties given in argument are the same as for the
      * {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) above constructor}.
      *
      * @param  properties  the properties to be given to the coordinate reference system.
@@ -160,7 +160,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     }
 
     /**
-     * Constructs a new coordinate reference system with the same values than the specified one.
+     * Constructs a new coordinate reference system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -175,7 +175,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     }
 
     /**
-     * Returns a SIS coordinate reference system implementation with the same values than the given
+     * Returns a SIS coordinate reference system implementation with the same values as the given
      * arbitrary implementation. If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
@@ -227,7 +227,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     }
 
     /**
-     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     * Returns a coordinate reference system of the same type as this CRS but with different axes.
      */
     @Override
     final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {

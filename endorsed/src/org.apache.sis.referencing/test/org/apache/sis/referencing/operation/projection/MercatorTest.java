@@ -328,7 +328,7 @@ public final class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Performs the same tests than {@link #testSpecialLatitudes()} and {@link #testDerivative()},
+     * Performs the same tests as {@link #testSpecialLatitudes()} and {@link #testDerivative()},
      * but using spherical formulas.
      *
      * @throws FactoryException if an error occurred while creating the map projection.

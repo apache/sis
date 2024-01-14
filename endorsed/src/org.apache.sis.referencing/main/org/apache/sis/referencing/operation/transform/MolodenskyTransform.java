@@ -71,7 +71,7 @@ import org.apache.sis.util.internal.Numerics;
  * <ul>
  *   <li>{@code MolodenskyTransform} instances created directly by the constructor work with angular values in radians.</li>
  *   <li>Transforms created by the {@link #createGeodeticTransformation createGeodeticTransformation(…)} static method
- *       work with angular values in degrees and heights in the same units than the <strong>source</strong> ellipsoid
+ *       work with angular values in degrees and heights in the same units as the <strong>source</strong> ellipsoid
  *       axes (usually metres).</li>
  * </ul>
  *
@@ -200,7 +200,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * <ol>
      *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in <strong>radians</strong>,</li>
-     *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoid axes.</li>
+     *   <li>optionally heights above the ellipsoid, in same units as the source ellipsoid axes.</li>
      * </ol>
      *
      * For converting geographic coordinates in degrees, {@code MolodenskyTransform} instances
@@ -224,9 +224,9 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * @param isSource3D   {@code true} if the source coordinates have a height.
      * @param target       the target ellipsoid.
      * @param isTarget3D   {@code true} if the target coordinates have a height.
-     * @param tX           the geocentric <var>X</var> translation in same units than the source ellipsoid axes.
-     * @param tY           the geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
-     * @param tZ           the geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
+     * @param tX           the geocentric <var>X</var> translation in same units as the source ellipsoid axes.
+     * @param tY           the geocentric <var>Y</var> translation in same units as the source ellipsoid axes.
+     * @param tZ           the geocentric <var>Z</var> translation in same units as the source ellipsoid axes.
      * @param isAbridged   {@code true} for the abridged formula, or {@code false} for the complete one.
      *
      * @see #createGeodeticTransformation(MathTransformFactory, Ellipsoid, boolean, Ellipsoid, boolean, double, double, double, boolean)
@@ -273,9 +273,9 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * @param isSource3D  {@code true} if the source coordinates have a height.
      * @param target      the target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param tX          the geocentric <var>X</var> translation in same units than the source ellipsoid axes.
-     * @param tY          the geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
-     * @param tZ          the geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
+     * @param tX          the geocentric <var>X</var> translation in same units as the source ellipsoid axes.
+     * @param tY          the geocentric <var>Y</var> translation in same units as the source ellipsoid axes.
+     * @param tZ          the geocentric <var>Z</var> translation in same units as the source ellipsoid axes.
      * @param grid        interpolation grid in geocentric coordinates, or {@code null} if none.
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
      * @param descriptor  the contextual parameter descriptor.
@@ -379,7 +379,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * <ol>
      *   <li>longitudes in <strong>degrees</strong> relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in <strong>degrees</strong>,</li>
-     *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoids axes.</li>
+     *   <li>optionally heights above the ellipsoid, in same units as the source ellipsoids axes.</li>
      * </ol>
      *
      * @param  factory      the factory to use for creating the transform.
@@ -387,9 +387,9 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * @param  isSource3D   {@code true} if the source coordinates have a height.
      * @param  target       the target ellipsoid.
      * @param  isTarget3D   {@code true} if the target coordinates have a height.
-     * @param  tX           the geocentric <var>X</var> translation in same units than the source ellipsoid axes.
-     * @param  tY           the geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
-     * @param  tZ           the geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
+     * @param  tX           the geocentric <var>X</var> translation in same units as the source ellipsoid axes.
+     * @param  tY           the geocentric <var>Y</var> translation in same units as the source ellipsoid axes.
+     * @param  tZ           the geocentric <var>Z</var> translation in same units as the source ellipsoid axes.
      * @param  isAbridged   {@code true} for the abridged formula, or {@code false} for the complete one.
      * @return the transformation between geographic coordinates in degrees.
      * @throws FactoryException if an error occurred while creating a transform.
@@ -586,7 +586,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
 
     /**
      * Transforms the (λ,φ) or (λ,φ,<var>h</var>) coordinates between two geographic CRS.
-     * This method performs the same transformation than {@link #transform(double[], int, double[], int, boolean)},
+     * This method performs the same transformation as {@link #transform(double[], int, double[], int, boolean)},
      * but the formulas are repeated here for performance reasons.
      *
      * @throws TransformException if a point cannot be transformed.

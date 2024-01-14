@@ -89,7 +89,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     }
 
     /**
-     * Creates a new expression of the same type than this expression, but with optimized parameters.
+     * Creates a new expression of the same type as this expression, but with optimized parameters.
      */
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -182,7 +182,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     }
 
     /**
-     * Returns an expression doing the same evaluation than this method, but returning results as values
+     * Returns an expression doing the same evaluation as this method, but returning results as values
      * of the specified type. The result may be {@code this}.
      *
      * @param  <N>     compile-time value of {@code type}.

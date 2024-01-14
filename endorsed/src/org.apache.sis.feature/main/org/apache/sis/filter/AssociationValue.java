@@ -80,7 +80,7 @@ final class AssociationValue<V> extends LeafExpression<AbstractFeature, V>
 
     /**
      * Creates a new expression retrieving values from a property at the given path.
-     * This constructor is used for creating new expression with the same path than
+     * This constructor is used for creating new expression with the same path as
      * a previous expression but a different accessor.
      *
      * @param  path      components of the path, not cloned (we share arrays).

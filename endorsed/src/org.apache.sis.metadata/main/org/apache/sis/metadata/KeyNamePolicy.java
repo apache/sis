@@ -60,7 +60,7 @@ public enum KeyNamePolicy {
 
     /**
      * The keys in the map are sentences inferred from the UML identifiers. This policy starts
-     * with the same names than {@link #UML_IDENTIFIER}, searches for word boundaries (defined
+     * with the same names as {@link #UML_IDENTIFIER}, searches for word boundaries (defined
      * as a lower case letter followed by a upper case letter) and inserts a space between the
      * words found. The first letter in the sentence is made upper-case. The first letters of
      * following words are made lower-case.

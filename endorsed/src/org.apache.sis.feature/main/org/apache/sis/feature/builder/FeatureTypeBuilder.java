@@ -693,7 +693,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Creates a new {@code AttributeType} builder initialized to the same characteristics than the given template.
+     * Creates a new {@code AttributeType} builder initialized to the same characteristics as the given template.
      * If the new attribute duplicates an existing one (for example if the same template is used many times),
      * caller should use the returned builder for modifying some attributes.
      *

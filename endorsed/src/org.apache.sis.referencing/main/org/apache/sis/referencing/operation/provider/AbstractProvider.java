@@ -123,7 +123,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
 
     /**
      * Constructs a math transform provider from a set of parameters. The provider name and
-     * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
+     * {@linkplain #getIdentifiers() identifiers} will be the same as the parameter ones.
      *
      * @param operationType      base interface of the {@code CoordinateOperation} instances that use this method.
      * @param parameters         description of parameters expected by this operation.

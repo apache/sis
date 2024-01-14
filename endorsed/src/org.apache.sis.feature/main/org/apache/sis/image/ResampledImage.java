@@ -180,7 +180,7 @@ public class ResampledImage extends ComputedImage {
      * <p>The {@code sampleModel} determines the tile size and the target data type. This is often the same sample
      * model than the one used by the {@code source} image, but may also be different for forcing a different tile
      * size or a different data type (e.g. {@code byte} versus {@code float}) for storing resampled values.
-     * If the specified sample model is not the same than the one used by the source image,
+     * If the specified sample model is not the same as the one used by the source image,
      * then subclass should override {@link #getColorModel()} for returning a color model which is
      * {@linkplain ColorModel#isCompatibleSampleModel(SampleModel) compatible with the sample model}.</p>
      *
@@ -465,7 +465,7 @@ public class ResampledImage extends ComputedImage {
 
     /**
      * Returns the color model of this resampled image.
-     * Default implementation assumes that this image has the same color model than the source image.
+     * Default implementation assumes that this image has the same color model as the source image.
      *
      * @return the color model, or {@code null} if unspecified.
      */
@@ -777,7 +777,7 @@ public class ResampledImage extends ComputedImage {
                  * between 0 inclusive and 1 exclusive except on the image borders: on the left and upper
                  * sides the fractional parts can go down to -0.5, because 0 is for pixel center and -0.5
                  * is at image border. On the right and bottom sides the fractional parts are constrained
-                 * to +0.5 in nearest-neighbor interpolation case, for the same reason than other borders.
+                 * to +0.5 in nearest-neighbor interpolation case, for the same reason as other borders.
                  * However if the interpolation is bilinear, then the fractional parts on the bottom and
                  * right borders can go up to 1.5 because `PixelIterator` has reduced the (xmax, ymax)
                  * values by 1 (for taking in account the padding needed for interpolation support).
@@ -897,12 +897,12 @@ public class ResampledImage extends ComputedImage {
 
     /**
      * Compares the given object with this image for equality. This method returns {@code true}
-     * if the given object is non-null, is an instance of the exact same class than this image,
+     * if the given object is non-null, is an instance of the exact same class as this image,
      * has equal sources and do the same resampling operation (same interpolation method,
      * same fill values, same coordinates).
      *
      * @param  object  the object to compare with this image.
-     * @return {@code true} if the given object is an image performing the same resampling than this image.
+     * @return {@code true} if the given object is an image performing the same resampling as this image.
      */
     @Override
     public boolean equals(final Object object) {

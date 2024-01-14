@@ -62,11 +62,11 @@ import org.apache.sis.setup.OptionKey;
 
 /**
  * A data store which creates grid coverages from Image I/O readers using <cite>World File</cite> convention.
- * Georeferencing is defined by two auxiliary files having the same name than the image file but different suffixes:
+ * Georeferencing is defined by two auxiliary files having the same name as the image file but different suffixes:
  *
  * <ul class="verbose">
  *   <li>A text file containing the coefficients of the affine transform mapping pixel coordinates to geodesic coordinates.
- *     The reader expects one coefficient per line, in the same order than the order expected by the
+ *     The reader expects one coefficient per line, in the same order as the order expected by the
  *     {@link java.awt.geom.AffineTransform#AffineTransform(double[]) AffineTransform(double[])} constructor, which is
  *     <var>scaleX</var>, <var>shearY</var>, <var>shearX</var>, <var>scaleY</var>, <var>translateX</var>, <var>translateY</var>.
  *     The reader looks for a file having the following suffixes, in preference order:

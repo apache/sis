@@ -188,7 +188,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the
-     * same module than this class, so we will hopefully not have security issues.  But we have to
+     * same module as this class, so we will hopefully not have security issues.  But we have to
      * use reflection because the parser class is not yet public (because we do not want to commit
      * its API yet).
      */
@@ -320,7 +320,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Creates a new factory with the same configuration than given factory but without caching.
+     * Creates a new factory with the same configuration as given factory but without caching.
      */
     private DefaultMathTransformFactory(final DefaultMathTransformFactory parent) {
         methods       = parent.methods;
@@ -333,7 +333,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Returns a factory for the same transforms than this factory, but with caching potentially disabled.
+     * Returns a factory for the same transforms as this factory, but with caching potentially disabled.
      * By default, {@code DefaultMathTransformFactory} caches the {@link MathTransform} instances for sharing
      * existing instances when transforms are created many times with the same set of parameters.
      * However, this caching may be unnecessarily costly when the transforms to create are known to be short lived.
@@ -368,10 +368,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * A factory performing no caching.
-     * This factory shares the same operation methods than the parent factory.
+     * This factory shares the same operation methods as the parent factory.
      */
     private static final class NoCache extends DefaultMathTransformFactory {
-        /** Creates a new factory with the same configuration than given factory. */
+        /** Creates a new factory with the same configuration as given factory. */
         NoCache(final DefaultMathTransformFactory parent) {
             super(parent);
         }
@@ -767,7 +767,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
         /**
          * Returns the operation method used for the math transform creation.
-         * This is the same information than {@link #getLastMethodUsed()} but more stable
+         * This is the same information as {@link #getLastMethodUsed()} but more stable
          * (not affected by transforms created with other contexts).
          *
          * @return the operation method used by the factory.
@@ -1369,7 +1369,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * Conversely if the source CS is missing a height, add a height with NaN values.
          * After this block, the dimensions of `step1` and `step2` should match.
          *
-         * When adding an ellipsoidal height, there is two scenarios: the ellipsoidal height may be used by the
+         * When adding an ellipsoidal height, there are two scenarios: the ellipsoidal height may be used by the
          * parameterized operation, or it may be passed through (in which case the operation ignores the height).
          * If the height is expected as operation input, set the height to 0. Otherwise (the pass through case),
          * set the height to NaN. We do that way because the given `parameterized` transform may be a Molodensky

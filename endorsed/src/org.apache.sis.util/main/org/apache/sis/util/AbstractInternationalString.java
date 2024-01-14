@@ -61,7 +61,7 @@ public abstract class AbstractInternationalString implements InternationalString
      *
      * <h4>Serialization</h4>
      * This field is not serialized because serialization is often used for data transmission
-     * between a server and a client, and the client may not use the same locale than the server.
+     * between a server and a client, and the client may not use the same locale as the server.
      * We want the locale to be examined again on the client side.
      */
     transient String defaultValue;
@@ -114,7 +114,7 @@ public abstract class AbstractInternationalString implements InternationalString
     /**
      * Returns this string in the given locale. If no string is available in the given locale,
      * then some fallback locale is used. The fallback locale is implementation-dependent, and
-     * is not necessarily the same than the default locale used by the {@link #toString()} method.
+     * is not necessarily the same as the default locale used by the {@link #toString()} method.
      *
      * <h4>Handling of <code>Locale.ROOT</code> argument value</h4>
      * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,

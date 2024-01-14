@@ -32,7 +32,7 @@ import org.apache.sis.util.ArgumentChecks;
 public abstract class BaseStreamWrapper<T, S extends BaseStream<T,S>> implements BaseStream<T,S> {
     /**
      * The stream to close, or {@code null} if none. This is set at construction time
-     * (typically to the same stream than the source) and should not be modified after
+     * (typically to the same stream as the source) and should not be modified after
      * that point.
      */
     S toClose;

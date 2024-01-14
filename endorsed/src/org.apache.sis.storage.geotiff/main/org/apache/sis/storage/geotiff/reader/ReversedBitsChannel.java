@@ -57,7 +57,7 @@ public final class ReversedBitsChannel implements ReadableByteChannel, SeekableB
     }
 
     /**
-     * Creates a new input channel at the same position and with the same content than the given channel,
+     * Creates a new input channel at the same position and with the same content as the given channel,
      * but with bits order reversed in every byte. The new channel uses a temporary buffer of relatively
      * small size because invoking {@link #read(ByteBuffer)} is presumed not too costly for this class,
      * and because a new buffer is created for each strip or tile to read.

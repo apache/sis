@@ -199,7 +199,7 @@ public abstract class Transliterator implements Serializable {
      *   <li>Replace <q>Geodetic latitude</q> (case insensitive) by <q>Latitude</q>.</li>
      *   <li>Replace <q>Geodetic longitude</q> (case insensitive) by <q>Longitude</q>.</li>
      *   <li>Return {@code null} if the axis direction is {@link AxisDirection#GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
-     *       or {@code GEOCENTRIC_Z} and the name is the same than the axis direction (ignoring case).</li>
+     *       or {@code GEOCENTRIC_Z} and the name is the same as the axis direction (ignoring case).</li>
      * </ul>
      *
      * @param  cs         the enclosing coordinate system, or {@code null} if unknown.

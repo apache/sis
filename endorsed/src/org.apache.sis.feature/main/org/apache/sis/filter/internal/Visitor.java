@@ -89,7 +89,7 @@ public abstract class Visitor<R,A> {
     }
 
     /**
-     * Creates a new visitor initialized to the same handlers than the specified visitor.
+     * Creates a new visitor initialized to the same handlers as the specified visitor.
      * This constructor can be used for creating a copy from a template before to add or remove handlers.
      * If any of the {@code copy} argument is {@code false}, it is caller's responsibility to not modify
      * the corresponding map of handlers because it will be an instance shared with the {@code source}.

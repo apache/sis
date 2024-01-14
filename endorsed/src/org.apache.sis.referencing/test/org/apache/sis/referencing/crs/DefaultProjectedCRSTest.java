@@ -215,7 +215,7 @@ public final class DefaultProjectedCRSTest extends TestCase {
 
     /**
      * Tests WKT 1 formatting with a somewhat convolved case where the units of the prime meridian is not
-     * the same than the unit of axes. Since the axis units is what we write in the {@code UNIT[…]} element,
+     * the same as the unit of axes. Since the axis units is what we write in the {@code UNIT[…]} element,
      * the WKT formatter need to convert the unit of prime meridian and all parameter angular values.
      *
      * @throws FactoryException if the CRS creation failed.

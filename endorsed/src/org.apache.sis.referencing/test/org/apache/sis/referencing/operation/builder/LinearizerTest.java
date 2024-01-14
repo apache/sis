@@ -63,7 +63,7 @@ public final class LinearizerTest extends TestCase {
         final LinearTransformBuilder points = new LinearTransformBuilder(3, 5);
         points.setControlPoints(HardCodedConversions.mercator().getConversionFromBase().getMathTransform());
 
-        // Non-linear transform producing the same values than the set of points;
+        // Non-linear transform producing the same values as the set of points;
         final LocalizationGridBuilder builder = new LocalizationGridBuilder(points);
         final MathTransform transform = builder.create(null);
         assertFalse(transform instanceof LinearTransform);

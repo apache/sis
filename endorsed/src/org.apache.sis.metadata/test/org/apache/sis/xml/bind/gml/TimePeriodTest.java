@@ -199,7 +199,7 @@ public final class TimePeriodTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testPeriodGML3()}, but with simplified date format (omit the hours and timezone)
+     * Same test as {@link #testPeriodGML3()}, but with simplified date format (omit the hours and timezone)
      * The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException if an error occurred while marshalling.
@@ -217,7 +217,7 @@ public final class TimePeriodTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testSimplifiedPeriodGML3()}, but without beginning boundary.
+     * Same test as {@link #testSimplifiedPeriodGML3()}, but without beginning boundary.
      * The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException if an error occurred while marshalling.
@@ -235,7 +235,7 @@ public final class TimePeriodTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testSimplifiedPeriodGML3()}, but without end boundary.
+     * Same test as {@link #testSimplifiedPeriodGML3()}, but without end boundary.
      * The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException if an error occurred while marshalling.

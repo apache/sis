@@ -45,7 +45,7 @@ final class ExtendedClauseWriter extends SelectionClauseWriter {
     }
 
     /**
-     * Creates a new converter initialized to the same handlers than the specified converter.
+     * Creates a new converter initialized to the same handlers as the specified converter.
      *
      * @param  source  the converter from which to copy the handlers.
      */
@@ -54,7 +54,7 @@ final class ExtendedClauseWriter extends SelectionClauseWriter {
     }
 
     /**
-     * Creates a new converter of the same class than {@code this} and initialized with the same data.
+     * Creates a new converter of the same class as {@code this} and initialized with the same data.
      *
      * @return a converter initialized to a copy of {@code this}.
      */

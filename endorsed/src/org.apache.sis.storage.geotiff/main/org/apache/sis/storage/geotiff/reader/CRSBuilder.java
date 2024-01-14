@@ -244,7 +244,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * <p>The given element is removed from the map so that each element is used only once
      * (for example it would be redundant to have the {@code verify(…)} methods to compare
-     * the same values than the ones we used at geodetic object construction time). It also
+     * the same values as the ones we used at geodetic object construction time). It also
      * allow us to check which {@link GeoKeys} were ignored by looking at what is remaining
      * in the map after CRS creation.</p>
      *
@@ -579,7 +579,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns a coordinate system (CS) with the same axis directions than the given CS but potentially different units.
+     * Returns a coordinate system (CS) with the same axis directions as the given CS but potentially different units.
      * If a coordinate system exists in the EPSG database with the requested characteristics, that CS will be returned
      * in order to have a richer set of metadata (name, minimal and maximal values, <i>etc</i>). Otherwise an CS with
      * an arbitrary name will be returned.
@@ -597,7 +597,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     }
 
     /**
-     * Returns a coordinate system (CS) with the same axis directions than the given CS but potentially different units.
+     * Returns a coordinate system (CS) with the same axis directions as the given CS but potentially different units.
      * If a coordinate system exists in the EPSG database with the requested characteristics, that CS will be returned
      * in order to have a richer set of metadata (name, minimal and maximal values, <i>etc</i>). Otherwise an CS with
      * an arbitrary name will be returned.
@@ -1106,7 +1106,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
 
     /**
      * Creates a geocentric CRS from user-defined parameters.
-     * The GeoTIFF values used by this method are the same than the ones used by {@code createGeographicCRS(…)}.
+     * The GeoTIFF values used by this method are the same as the ones used by {@code createGeographicCRS(…)}.
      *
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.

@@ -148,7 +148,7 @@ public final class NTv2Test extends DatumShiftTestCase {
                             0,          0,    1),
                 grid.getCoordinateToGrid().inverse().getMatrix(), STRICT);
         /*
-         * Test the same point than FranceGeocentricInterpolationTest, which is itself derived from the
+         * Test the same point as FranceGeocentricInterpolationTest, which is itself derived from the
          * NTG_88 guidance note.  If we were using the official NTF_R93.gsb file, we would obtain after
          * conversion the grid indices listed on the left side. But since we are using a sub-set of the
          * grid, we rather obtain the grid indices on the right side.
@@ -172,7 +172,7 @@ public final class NTv2Test extends DatumShiftTestCase {
         assertArrayEquals("interpolateInCell", expected, vector,
                 FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
 
-        // Same test than above, but let DatumShiftGrid do the conversions for us.
+        // Same test as above, but let DatumShiftGrid do the conversions for us.
         assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position),
                 FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
         assertSame("Grid should be cached.", grid, NTv2.getOrLoad(NTv2.class, file, 2));

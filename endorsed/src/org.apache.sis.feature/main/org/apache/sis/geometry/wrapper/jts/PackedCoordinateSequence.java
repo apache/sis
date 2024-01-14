@@ -30,7 +30,7 @@ import org.apache.sis.util.ArgumentChecks;
 
 /**
  * A JTS coordinate sequence which stores coordinates in a single {@code float[]} or {@code double[]} array.
- * This class serves the same purpose than {@link org.locationtech.jts.geom.impl.PackedCoordinateSequence}
+ * This class serves the same purpose as {@link org.locationtech.jts.geom.impl.PackedCoordinateSequence}
  * but without caching the {@code Coordinate[]} array.
  *
  * @author  Martin Desruisseaux (Geomatys)

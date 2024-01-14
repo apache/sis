@@ -72,7 +72,7 @@ import org.apache.sis.cloud.aws.internal.Resources;
  * Keys can be paths with components separated by the {@code '/'} separator.
  * The password and the region can be specified at {@linkplain #newFileSystem file system initialization time}.
  * The endpoint (e.g. {@code "s3.eu-central-1.amazonaws.com"}) shall <em>not</em> be specified in the URI.
- * In particular the region ({@code "eu-central-1"} in above example) can depend on the server location
+ * In particular the region ({@code "eu-central-1"} in the above example) can depend on the server location
  * instead of the data to access, and can be a global configuration for the server.
  *
  * @author  Martin Desruisseaux (Geomatys)

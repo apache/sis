@@ -84,7 +84,7 @@ public final class AboutCommandTest extends TestCase {
 
     /**
      * Tests the sub-command with the {@code --verbose} option.
-     * Current implementation performs the same test than {@link #testDefault()}.
+     * Current implementation performs the same test as {@link #testDefault()}.
      * We do not check the extra information because they depend on the environment.
      *
      * @throws Exception should never happen.

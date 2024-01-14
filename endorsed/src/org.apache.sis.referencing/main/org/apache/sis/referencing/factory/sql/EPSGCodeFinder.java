@@ -269,7 +269,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
     }
 
     /**
-     * Returns a set of authority codes that <strong>may</strong> identify the same object than the specified one.
+     * Returns a set of authority codes that <strong>may</strong> identify the same object as the specified one.
      * This implementation tries to get a smaller set than what {@link EPSGDataAccess#getAuthorityCodes(Class)}
      * would produce. Deprecated objects must be last in iteration order.
      */

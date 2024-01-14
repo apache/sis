@@ -192,7 +192,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Constructs a new envelope with the same data than the specified geographic bounding box.
+     * Constructs a new envelope with the same data as the specified geographic bounding box.
      * The coordinate reference system is set to the
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).
@@ -710,7 +710,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * {@code false}.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian in the same way than
+     * This method supports anti-meridian in the same way as
      * {@link AbstractEnvelope#contains(DirectPosition)}.
      *
      * @param  px  the first coordinate value of the point to text.
@@ -738,7 +738,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * then this method returns {@code false}.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian in the same way than
+     * This method supports anti-meridian in the same way as
      * {@link AbstractEnvelope#contains(Envelope)}.
      *
      * @param  rect  the rectangle to test for inclusion.
@@ -760,7 +760,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * then this method returns {@code false}.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian in the same way than
+     * This method supports anti-meridian in the same way as
      * {@link AbstractEnvelope#contains(Envelope)}.
      *
      * @param  rx  the <var>x</var> coordinate of the lower corner of the rectangle to test for inclusion.
@@ -810,7 +810,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * method returns {@code false}.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian in the same way than
+     * This method supports anti-meridian in the same way as
      * {@link AbstractEnvelope#intersects(Envelope)}.
      *
      * @param  rect  the rectangle to test for intersection.
@@ -832,7 +832,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * method returns {@code false}.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian in the same way than
+     * This method supports anti-meridian in the same way as
      * {@link AbstractEnvelope#intersects(Envelope)}.
      *
      * @param  rx  the <var>x</var> coordinate of the lower corner of the rectangle to test for intersection.
@@ -879,7 +879,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * method returns an {@linkplain #isEmpty() empty} envelope.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian in the same way than
+     * This method supports anti-meridian in the same way as
      * {@link GeneralEnvelope#intersect(Envelope)}.
      *
      * @param  rect  the rectangle to be intersected with this envelope.
@@ -969,7 +969,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * two {@code Rectangle} objects.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian in the same way than {@link GeneralEnvelope#add(Envelope)},
+     * This method supports anti-meridian in the same way as {@link GeneralEnvelope#add(Envelope)},
      * except if the result is a rectangle expanding to infinities. In that later case, the field values
      * are set to {@code NaN} because infinite values are a problematic in {@link Rectangle2D} objects.
      *
@@ -1066,7 +1066,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * {@link java.lang.Double#NaN} in which case the corresponding coordinate has been ignored.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian in the same way than
+     * This method supports anti-meridian in the same way as
      * {@link GeneralEnvelope#add(DirectPosition)}.
      *
      * @param  px  the first coordinate of the point to add.

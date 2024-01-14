@@ -325,7 +325,7 @@ public final class Envelopes extends Static {
     /**
      * Transforms the given envelope to the specified CRS. If any argument is null, or if the
      * {@linkplain GeneralEnvelope#getCoordinateReferenceSystem() envelope CRS} is null or the
-     * same instance than the given target CRS, then the given envelope is returned unchanged.
+     * same instance as the given target CRS, then the given envelope is returned unchanged.
      * Otherwise a new transformed envelope is returned.
      *
      * <h4>Performance tip</h4>
@@ -389,7 +389,7 @@ public final class Envelopes extends Static {
             /*
              * Slight optimization: Just copy the envelope. Note that we need to set the CRS
              * to null because we don't know what the target CRS was supposed to be. Even if
-             * an identity transform often implies that the target CRS is the same one than the
+             * an identity transform often implies that the target CRS is the same one as the
              * source CRS, it is not always the case. The metadata may be differents, or the
              * transform may be a datum shift without Bursa-Wolf parameters, etc.
              */
@@ -598,7 +598,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
      *
      * <h4>Usage note</h4>
      * If the envelope CRS is non-null, then the caller should ensure that the operation source CRS
-     * is the same than the envelope CRS. In case of mismatch, this method transforms the envelope
+     * is the same as the envelope CRS. In case of mismatch, this method transforms the envelope
      * to the operation source CRS before to apply the operation. This extra step may cause a lost
      * of accuracy. In order to prevent this method from performing such pre-transformation (if not desired),
      * callers can ensure that the envelope CRS is {@code null} before to call this method.
@@ -728,7 +728,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
          *
          * 3) For each singularity point found at step #2, check if there is a wraparound axis
          *    in a dimension other than the dimension that was set to an axis bounds value.
-         *    If such wraparound axis is found, test for inclusion of the same point than the
+         *    If such wraparound axis is found, test for inclusion of the same point as the
          *    point tested at step #1, except for the coordinate of the wraparound axis which
          *    is set to the minimal and maximal values (reminder: step #1 used the center value).
          *

@@ -543,7 +543,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     private void freeze() {
         isFrozen = true;
         /*
-         * Sort the parameter values in the same order than the parameter descriptor. This is not essential,
+         * Sort the parameter values in the same order as the parameter descriptor. This is not essential,
          * but makes easier to read `toString()` output by ensuring a consistent order for most projections.
          * Some WKT parsers other than SIS may also require the parameter values to be listed in that specific
          * order. We proceed by first copying all parameters in a temporary HashMap:
@@ -904,7 +904,7 @@ public class ContextualParameters extends Parameters implements Serializable {
             userDefined = Matrices.multiply(after, userDefined);
         }
         /*
-         * Note on rounding error: same discussion than the "note on rounding error" of the `before` matrix,
+         * Note on rounding error: same discussion as the "note on rounding error" of the `before` matrix,
          * with the following differences:
          *
          *   - For forward map projections, unit of measurements of translation terms are conceptually
@@ -917,7 +917,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          *     by the scale factor. Note that the multiplication step does not exist in the `before` case.
          *
          * Since we are seeking for the identity matrix, the scale factor is 1. We do not bother to distinguish
-         * the ANGULAR_TOLERANCE and LINEAR_TOLERANCE cases for the same reasons than for the `before` matrix.
+         * the ANGULAR_TOLERANCE and LINEAR_TOLERANCE cases for the same reasons as for the `before` matrix.
          */
         after = Matrices.isIdentity(userDefined, Formulas.ANGULAR_TOLERANCE) ? null : userDefined;
         /*

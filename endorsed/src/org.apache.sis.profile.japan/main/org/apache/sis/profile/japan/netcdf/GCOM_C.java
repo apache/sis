@@ -100,7 +100,7 @@ import org.apache.sis.util.Workaround;
  * Observations:
  * <ul class="verbose">
  *   <li>There is no {@code convention} attribute, so we have to rely on something else for detecting this convention.</li>
- *   <li>The size of latitude and longitude variables is not the same than the size of image data.
+ *   <li>The size of latitude and longitude variables is not the same as the size of image data.
  *       This particularity is handled by {@link #gridToDataIndices(Variable)}.</li>
  *   <li>The {@code dim0} and {@code dim1} attribute names in image data have a different case
  *       than the attributes in longitude and latitude variables. Furthermore, a value contains a typo.
@@ -416,7 +416,7 @@ public final class GCOM_C extends Convention {
      * This method is invoked after call to {@link #projection(Node)} resulted in creation of a projected CRS.
      * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} shall have (latitude, longitude) axes in degrees.
      *
-     * @param  node       the same node than the one given to {@link #projection(Node)}.
+     * @param  node       the same node as the one given to {@link #projection(Node)}.
      * @param  baseToCRS  conversion from (latitude, longitude) in degrees to the projected CRS.
      * @return the "grid corner to CRS" transform, or {@code null} if none or unknown.
      * @throws TransformException if a coordinate operation was required but failed.

@@ -336,7 +336,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *     Metadata copy = copier.copy(Metadata.class, source);
      *     }
      *
-     * The {@code Metadata} type in above example can be replaced by any other ISO 19115 type.
+     * The {@code Metadata} type in the above example can be replaced by any other ISO 19115 type.
      * Types from other standards can also be used if the {@link MetadataStandard#ISO_19115} constant
      * is replaced accordingly.
      *

@@ -92,7 +92,7 @@ public final class FeatureNamingTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testSimple()}, with the addition of an ambiguous name.
+     * Same test as {@link #testSimple()}, with the addition of an ambiguous name.
      *
      * @throws IllegalNameException if an unexpected error occurred while adding or getting an element.
      */

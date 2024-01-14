@@ -167,7 +167,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
             changes[dimY] = Math.addExact(oy - intersection.getLow(dimY), data.getMinX());
             intersection  = intersection.translate(changes);
             /*
-             * If the result is the same intersection than the source coverage,
+             * If the result is the same intersection as the source coverage,
              * we can return that coverage directly.
              */
             if (intersection.equals(source.getExtent())) {

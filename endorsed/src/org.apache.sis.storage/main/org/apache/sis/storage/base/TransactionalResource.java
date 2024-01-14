@@ -34,7 +34,7 @@ import org.apache.sis.storage.Resource;
 public interface TransactionalResource extends Resource {
     /**
      * Starts a new transaction on this resource.
-     * The returned resource should have the same capabilities than this resource
+     * The returned resource should have the same capabilities as this resource
      * with the addition of write capabilities.
      *
      * @return a new writable resource that can be changed in a all-or-nothing way.

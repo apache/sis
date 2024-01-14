@@ -106,7 +106,7 @@ import org.apache.sis.referencing.internal.Legacy;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.6
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {
@@ -213,6 +213,19 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     private transient Set<Integer> wrapAroundChanges;
 
     /**
+     * The inverse of this coordinate operation, computed when first needed. This is stored for making
+     * possible to find the original operation when the inverse of an inverse operation is requested.
+     * Serialized for avoiding information lost if the inverse is requested after deserialization.
+     *
+     * <p>This field is not formally part of coordinate operation definition,
+     * so it is not compared by {@link #equals(Object, ComparisonMode)}.</p>
+     *
+     * @see #getCachedInverse(CoordinateOperation)
+     */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
+    private volatile CoordinateOperation inverse;
+
+    /**
      * Creates a new coordinate operation initialized from the given properties.
      * It is caller's responsibility to:
      *
@@ -240,7 +253,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
 
     /**
      * Creates a coordinate operation from the given properties.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * Additionally, the following properties are understood by this constructor:
      *
@@ -333,6 +346,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * are consistent with {@link #transform} input and output dimensions.
      */
     final void checkDimensions(final Map<String,?> properties) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final MathTransform transform = this.transform;                     // Protect from changes.
         if (transform != null) {
             final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
@@ -388,7 +402,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
-     * Creates a new coordinate operation with the same values than the specified one.
+     * Creates a new coordinate operation with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -770,6 +784,38 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
+     * Returns the inverse of the given coordinate operation, or {@code null} if unspecified.
+     * This method only checks the cached value and does not compute a new value if none is present.
+     *
+     * @param  forward  the operation for which to get the inverse.
+     * @return the cached inverse operation, or {@code null} if none.
+     */
+    static CoordinateOperation getCachedInverse(final CoordinateOperation forward) {
+        if (forward instanceof AbstractCoordinateOperation) {
+            final CoordinateOperation inverse = ((AbstractCoordinateOperation) forward).inverse;
+            if (inverse != null) {
+                return inverse;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Caches the inverse of the given coordinate operation.
+     *
+     * @param  forward  the operation for which to cache the inverse.
+     * @param  inverse  the inverse operation to cache.
+     */
+    static void setCachedInverse(final CoordinateOperation forward, final CoordinateOperation inverse) {
+        if (inverse instanceof AbstractCoordinateOperation) {
+            ((AbstractCoordinateOperation) inverse).inverse = forward;
+        }
+        if (forward instanceof AbstractCoordinateOperation) {
+            ((AbstractCoordinateOperation) forward).inverse = inverse;
+        }
+    }
+
+    /**
      * Compares this coordinate operation with the specified object for equality. If the {@code mode} argument
      * is {@link ComparisonMode#STRICT} or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available
      * properties are compared including the {@linkplain #getDomainOfValidity() domain of validity} and the
@@ -911,6 +957,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.newLine();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final CoordinateReferenceSystem sourceCRS = getSourceCRS();
         final CoordinateReferenceSystem targetCRS = getTargetCRS();
         final Convention convention = formatter.getConvention();

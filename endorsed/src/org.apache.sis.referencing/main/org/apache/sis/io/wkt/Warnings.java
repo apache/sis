@@ -83,7 +83,7 @@ public final class Warnings implements Localized, Serializable {
 
     /**
      * The locale in which warning messages are reported.
-     * Not necessarily the same than the locale for number and date parsing or formatting.
+     * Not necessarily the same as the locale for number and date parsing or formatting.
      *
      * @see #getLocale()
      */
@@ -205,7 +205,7 @@ public final class Warnings implements Localized, Serializable {
 
     /**
      * Returns the locale in which warning messages are reported by the default {@link #toString()} method.
-     * This is not necessarily the same locale than the one used for parsing and formatting dates and numbers
+     * This is not necessarily the same locale as the one used for parsing and formatting dates and numbers
      * in the WKT.
      *
      * @return the locale or warning messages are reported.

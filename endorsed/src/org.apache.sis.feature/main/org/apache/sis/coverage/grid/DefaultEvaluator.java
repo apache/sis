@@ -75,7 +75,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
 
     /**
      * The coordinate reference system of input points given to this converter,
-     * or {@code null} if assumed the same than the coverage CRS.
+     * or {@code null} if assumed the same as the coverage CRS.
      * This is used by {@link #toGridPosition(DirectPosition)} for checking if {@link #inputToGrid} needs
      * to be recomputed. As long at the evaluated points have the same CRS, the same transform is reused.
      */
@@ -126,7 +126,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
 
     /**
      * Transform from grid coordinates to the CRS where wraparound axes may exist.
-     * It is sometimes the same transform than {@code gridToCRS} but not always.
+     * It is sometimes the same transform as {@code gridToCRS} but not always.
      * It may differ for example if a projected CRS has been replaced by a geographic CRS.
      */
     private MathTransform gridToWraparound;
@@ -495,7 +495,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
             assert wraparoundExtent.length == j : j;
             /*
              * If a coordinate was found outside the grid, transform to a CRS where we can apply shift.
-             * It may be the same CRS than the coverage CRS or the source CRS, but not necessarily.
+             * It may be the same CRS as the coverage CRS or the source CRS, but not necessarily.
              * For example if the CRS is projected, then we need to use a geographic intermediate CRS.
              * In the common case where the source CRS is already geographic, the second point in the
              * `coordinates` array after `transform(…)` will contain the same coordinates as `point`,

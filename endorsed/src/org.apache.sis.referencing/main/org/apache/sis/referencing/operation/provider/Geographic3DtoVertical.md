@@ -11,7 +11,7 @@ CoordinateOperationFinder.createOperationStep(GeodeticCRS, VerticalCRS)
 
 The above method does inline the work of what would have been a
 "Geographic 3D to ellipsoidal height" operation if it existed.
-The algorithm is the same than the one in `Geographic3Dto2D.java`:
+The algorithm is the same as the one in `Geographic3Dto2D.java`:
 just drop dimensions with a non-square matrix like below and don't
 do unit conversion at this place (unit conversions are the job
 of another method):

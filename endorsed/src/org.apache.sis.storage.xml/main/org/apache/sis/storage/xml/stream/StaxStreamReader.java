@@ -400,7 +400,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     }
 
     /**
-     * Parses the given text as a XML floating point number. This method performs the same parsing than
+     * Parses the given text as a XML floating point number. This method performs the same parsing as
      * {@link Double#valueOf(String)} with the addition of {@code INF} and {@code -INF} values.
      * The following summarizes the special values (note that parsing is case-sensitive):
      *
@@ -440,7 +440,7 @@ parse:  switch (value.length()) {
     }
 
     /**
-     * Parses the given string as a boolean value. This method performs the same parsing than
+     * Parses the given string as a boolean value. This method performs the same parsing as
      * {@link Boolean#parseBoolean(String)} with one extension: the "0" value is considered
      * as {@code false} and the "1" value as {@code true}.
      *

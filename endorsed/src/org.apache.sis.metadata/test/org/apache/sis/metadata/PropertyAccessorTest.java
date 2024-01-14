@@ -594,7 +594,7 @@ public final class PropertyAccessorTest extends TestCase {
         assertFalse(accessor.equals(citation, HardCodedCitations.SIS,  ComparisonMode.STRICT));
         assertTrue (accessor.equals(citation, HardCodedCitations.EPSG, ComparisonMode.STRICT));
 
-        // Same test than above, but on a copy of the EPSG constant.
+        // Same test as above, but on a copy of the EPSG constant.
         citation = new DefaultCitation(HardCodedCitations.EPSG);
         assertFalse(accessor.equals(citation, HardCodedCitations.SIS,  ComparisonMode.STRICT));
         assertTrue (accessor.equals(citation, HardCodedCitations.EPSG, ComparisonMode.STRICT));

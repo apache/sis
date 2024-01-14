@@ -139,7 +139,7 @@ import org.apache.sis.referencing.internal.Legacy;
     "names",
     "remarks",
     "domainExtent", // GML defines "domainOfValidity" in Datum, AbstractCRS and AbstractCoordinateOperation.
-    "domainScope"   // GML defines "scope" in same classes than above.
+    "domainScope"   // GML defines "scope" in same classes as above.
 })
 @XmlSeeAlso({
     org.apache.sis.referencing.crs.AbstractCRS.class,
@@ -453,7 +453,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Constructs a new identified object with the same values than the specified one.
+     * Constructs a new identified object with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
      * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -816,7 +816,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns {@code true} if the given object implements the same GeoAPI interface than this object.
+     * Returns {@code true} if the given object implements the same GeoAPI interface as this object.
      */
     private boolean implementsSameInterface(final Object object) {
         final Class<? extends IdentifiedObject> type = getInterface();

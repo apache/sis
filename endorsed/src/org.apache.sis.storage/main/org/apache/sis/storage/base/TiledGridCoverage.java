@@ -58,13 +58,13 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * Tiles are read from the storage only when first needed.
  *
  * <h2>Cell Coordinates</h2>
- * When there is no subsampling, this coverage uses the same cell coordinates than the originating resource.
+ * When there is no subsampling, this coverage uses the same cell coordinates as the originating resource.
  * When there is a subsampling, cell coordinates in this coverage are divided by the subsampling factors.
  * Conversions are done by {@link #toFullResolution(long, int)}.
  *
  * <h2>Tile coordinate matrix</h2>
  * In each {@code TiledGridCoverage}, indices of tiles starts at (0, 0, …).
- * This class does not use the same tile indices than the coverage resource
+ * This class does not use the same tile indices as the coverage resource
  * in order to avoid integer overflow.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -289,7 +289,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Converts a cell coordinate from this {@code TiledGridCoverage} coordinate space to full resolution.
      * This method removes the subsampling effect. Note that since this {@code TiledGridCoverage} uses the
-     * same coordinate space than {@link TiledGridResource}, the converted coordinates should be valid in
+     * same coordinate space as {@link TiledGridResource}, the converted coordinates should be valid in
      * the full resource as well.
      *
      * @param  coordinate  coordinate in this {@code TiledGridCoverage} domain.
@@ -359,7 +359,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     static int getPixelsPerElement(final SampleModel model) {
         if (model instanceof MultiPixelPackedSampleModel) {
             /*
-             * The following code performs the same computation than `MultiPixelPackedSampleModel`
+             * The following code performs the same computation as `MultiPixelPackedSampleModel`
              * constructor when computing its package-private field `pixelsPerDataElement`.
              * That constructor ensured that `sampleSize` is a divisor of `typeSize`.
              */
@@ -644,7 +644,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * Returns the origin to assign to the tile at current iterator position.
          * Note that the subsampling should be a divisor of tile size,
          * otherwise a drift in pixel coordinates will appear.
-         * There is two exceptions to this rule:
+         * There are two exceptions to this rule:
          *
          * <ul>
          *   <li>If image is untiled (i.e. there is only one tile),
@@ -801,8 +801,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                      * If reading the second tile, then `tileBase` = 10 and `offset` = -10.
                      * The first pixel to read in the second tile has a subsampling offset.
                      * We usually try to avoid this situation because it causes a variable
-                     * number of white squares in tiles (4,3,3,4 in above example), except
-                     * when there is only 1 tile to read in which case offset is tolerated.
+                     * number of white squares in tiles (4,3,3,4 in the above example),
+                     * except when there is only 1 tile to read in which case offset is tolerated.
                      */
                     final int s = coverage.subsampling[dimension];
                     offset %= s;

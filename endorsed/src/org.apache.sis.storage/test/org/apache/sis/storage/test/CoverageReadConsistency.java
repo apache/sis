@@ -475,7 +475,7 @@ nextSlice:  for (;;) {
             return null;
         }
         /*
-         * Same extent than `areaOfInterest` but in two dimensions and with (0,0) origin.
+         * Same extent as `areaOfInterest` but in two dimensions and with (0,0) origin.
          * We use that for clipping iteration to the area that we requested even if the
          * coverage gave us a larger area.
          */

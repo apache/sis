@@ -182,7 +182,7 @@ public class Category implements Serializable {
      *       This is used only if a user specifies a {@code ConvertedCategory} to {@link SampleDimension} constructor.
      *       Such converted category can only come from another {@code SampleDimension} and may have inconsistent
      *       information for the new sample dimension that the user is creating.</li>
-     *   <li>If {@code caller} is non-null, then {@link #toConverse} is set to the same transform than {@code copy} and
+     *   <li>If {@code caller} is non-null, then {@link #toConverse} is set to the same transform as {@code copy} and
      *       {@link #converse} is set to {@code caller}. This is used only as a complement for the copy constructor.</li>
      * </ul>
      *

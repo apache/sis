@@ -77,7 +77,7 @@ public final class MercatorMethodComparison {
     private final ConformalProjection implementation;
 
     /**
-     * Creates a new instance for the same eccentricity than the given projection.
+     * Creates a new instance for the same eccentricity as the given projection.
      *
      * @param  projection  the projection from which to take the eccentricity.
      */
@@ -305,7 +305,7 @@ public final class MercatorMethodComparison {
 
         out.println();
         out.println("Comparison of the errors for the WGS84 eccentricity.");
-        out.println("The 'ConformalProjection' errors should be the same than the series expansion errors:");
+        out.println("The 'ConformalProjection' errors should be the same as the series expansion errors:");
         out.println();
         c = new MercatorMethodComparison(new NoOp(true));
         c.compare(1000000, null);

@@ -50,7 +50,7 @@ public interface WritableTiledResource extends TiledResource {
      * Typically the given {@link TileMatrixSet} instance contains no tile and is used only as a template.
      * If the {@code TileMatrixSet} is not empty, then the tiles that it contains are written immediately.
      *
-     * <p>This method returns a writable tile matrix set with the same tiles than the given {@code TileMatrixSet}.
+     * <p>This method returns a writable tile matrix set with the same tiles as the given {@code TileMatrixSet}.
      * The identifier and the envelope of the returned set may be different, but the CRS and tiling scheme shall
      * be equivalent with a tolerance for rounding errors.</p>
      *

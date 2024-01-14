@@ -75,7 +75,7 @@ public class RTreeNode extends GeneralEnvelope {
     private RTreeNode firstChild;
 
     /**
-     * The next node having the same parent than this node. This is used for creating a linked list of nodes
+     * The next node having the same parent as this node. This is used for creating a linked list of nodes
      * that are the children of the {@linkplain #parent}.
      *
      * <h4>Design note</h4>

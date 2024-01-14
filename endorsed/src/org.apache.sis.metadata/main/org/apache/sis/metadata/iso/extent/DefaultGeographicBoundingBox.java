@@ -162,7 +162,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * Creates a geographic bounding box initialized to the specified values.
      * The {@linkplain #getInclusion() inclusion} property is set to {@code true}.
      *
-     * <p><strong>Caution:</strong> Arguments are expected in the same order than they appear
+     * <p><strong>Caution:</strong> Arguments are expected in the same order as they appear
      * in the ISO 19115 specification. This is different than the order commonly found in the
      * Java2D world, which is rather (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>,
      * <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>).</p>
@@ -463,7 +463,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * Sets the bounding box to the specified values.
      * The {@linkplain #getInclusion() inclusion} property is left unchanged.
      *
-     * <p><strong>Caution:</strong> Arguments are expected in the same order than they appear
+     * <p><strong>Caution:</strong> Arguments are expected in the same order as they appear
      * in the ISO 19115 specification. This is different than the order commonly found in the
      * Java2D world, which is rather (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>,
      * <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>).</p>
@@ -522,7 +522,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     }
 
     /**
-     * Sets the bounding box to the same values than the specified box.
+     * Sets the bounding box to the same values as the specified box.
      *
      * @param  box  the geographic bounding box to use for setting the values of this box.
      */
@@ -603,7 +603,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
             return (left < right) ? -1 : +1;
         }
         /*
-         * Same algorithm than above, but with the sign of `left` an `right` inversed.
+         * Same algorithm as above, but with the sign of `left` an `right` inversed.
          * The "if" statements have been combined for avoiding to repeat the +/- operations.
          */
         if (!(left <= 0) && right <= 0 || left > right) {

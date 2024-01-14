@@ -342,7 +342,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
-     * Sets the operation method, parameters, conversion name and datum for the same projection than the given CRS.
+     * Sets the operation method, parameters, conversion name and datum for the same projection as the given CRS.
      * Metadata such as domain of validity are inherited, except identifiers.
      *
      * @param  crs  the projected CRS from which to inherit the properties.
@@ -468,7 +468,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         onCreate(false);
         try {
             /*
-             * Create a conversion with the same properties than the ProjectedCRS properties,
+             * Create a conversion with the same properties as the ProjectedCRS properties,
              * except the aliases and identifiers. The name defaults to the ProjectedCRS name,
              * but can optionally be different.
              */
@@ -565,7 +565,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         }
         /*
          * Create the datum and coordinate system before the CRS if we were not able to use a predefined object.
-         * In the datum case, we will use the same metadata than the CRS (domain of validity, scope, etc.) except
+         * In the datum case, we will use the same metadata as the CRS (domain of validity, scope, etc.) except
          * the identifier and the remark.
          */
         onCreate(false);

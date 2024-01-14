@@ -67,7 +67,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     }
 
     /**
-     * Creates an identified object with the same identifier than the given one.
+     * Creates an identified object with the same identifier as the given one.
      *
      * @param  object  the identified object to partially copy.
      */

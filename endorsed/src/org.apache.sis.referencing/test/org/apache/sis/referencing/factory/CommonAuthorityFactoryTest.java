@@ -235,7 +235,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         assertSame("With explicit unit.", crs, factory.createProjectedCRS("AUTO1 :  42001, 9001, -122 , 10 "));
         assertSame("Legacy namespace.",   crs, factory.createProjectedCRS("AUTO:42001,9001,-122,10"));
         assertSame("When the given parameters match exactly the UTM central meridian and latitude of origin,"
-                + " the CRS created by AUTO:42002 should be the same than the CRS created by AUTO:42001.",
+                + " the CRS created by AUTO:42002 should be the same as the CRS created by AUTO:42001.",
                 crs, factory.createProjectedCRS("AUTO2:42002,1,-123,0"));
         /*
          * Do not use `assertEpsgNameAndIdentifierEqual(…)` because the "EPSG" authority is missing

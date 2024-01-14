@@ -351,6 +351,12 @@ public class Resources extends IndexedResourceBundle {
         public static final short MismatchedPrimeMeridian_2 = 36;
 
         /**
+         * Invalid coordinate operation step {0}, because the reference system “{1}” cannot be followed
+         * by “{2}”.
+         */
+        public static final short MismatchedSourceTargetCRS_3 = 100;
+
+        /**
          * Despite its name, this parameter is effectively “{0}”.
          */
         public static final short MisnamedParameter_1 = 38;
@@ -570,7 +576,7 @@ public class Resources extends IndexedResourceBundle {
 
     /**
      * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
+     * the resource file of the same name as this class.
      */
     public Resources() {
     }
@@ -578,7 +584,7 @@ public class Resources extends IndexedResourceBundle {
     /**
      * Opens the binary file containing the localized resources to load.
      * This method delegates to {@link Class#getResourceAsStream(String)},
-     * but this delegation must be done from the same module than the one
+     * but this delegation must be done from the same module as the one
      * that provides the binary file.
      */
     @Override

@@ -186,7 +186,7 @@ final class Initializer {
             }
         }
         /*
-         * Scale factor is assumed more accurate in base 10 than in base 2 for the same reason than for the
+         * Scale factor is assumed more accurate in base 10 than in base 2 for the same reason as for the
          * ellipsoid parameters (i.e. is a value given by authority as part of map projection definition).
          * Again, DoubleDouble constructor will take care of computing a correction.
          */
@@ -223,7 +223,7 @@ final class Initializer {
         /*
          * Get the parameter value, or its default value if the parameter was not set. That default value
          * (which is specified by the descriptor of the user supplied parameters) is not necessarily the
-         * same than the default value of the map projection implementation (which is specified by the
+         * same as the default value of the map projection implementation (which is specified by the
          * descriptor given in argument to this method).
          */
         final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
@@ -274,7 +274,7 @@ final class Initializer {
     }
 
     /**
-     * Returns the radius of a hypothetical sphere having the same surface than the ellipsoid.
+     * Returns the radius of a hypothetical sphere having the same surface as the ellipsoid.
      */
     final double authalicRadius() {
         return Formulas.getAuthalicRadius(1, axisLengthRatio().doubleValue());

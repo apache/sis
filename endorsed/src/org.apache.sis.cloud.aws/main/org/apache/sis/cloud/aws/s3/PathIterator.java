@@ -176,7 +176,7 @@ verify:     do if (directories == null || !nextDirectory()) {
 
     /**
      * Returns whether the given path can be accepted. We need to exclude empty paths (not supported by our wrappers)
-     * and the path with the same name than {@link #directory} (for avoiding never-empty loop if an S3 object of that
+     * and the path with the same name as {@link #directory} (for avoiding never-empty loop if an S3 object of that
      * name exists). User-specified filter is tested last.
      */
     private boolean accept() throws IOException {

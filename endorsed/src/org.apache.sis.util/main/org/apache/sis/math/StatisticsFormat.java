@@ -72,7 +72,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
 
     /**
      * The locale for row and column headers.
-     * This is usually the same than the format locale, but not necessarily.
+     * This is usually the same as the format locale, but not necessarily.
      */
     private final Locale headerLocale;
 
@@ -246,7 +246,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             format((Statistics[]) object, toAppendTo);
             return toAppendTo;
         } catch (IOException e) {
-            // Same exception handling than in the super-class.
+            // Same exception handling as in the super-class.
             throw new BackingStoreException(e);
         } else {
             return super.format(object, toAppendTo, pos);

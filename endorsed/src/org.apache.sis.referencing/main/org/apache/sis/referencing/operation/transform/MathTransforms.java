@@ -262,7 +262,7 @@ public final class MathTransforms extends Static {
      * This is a bridge between Unit API and referencing API.
      *
      * @param  converter  the unit converter.
-     * @return a transform doing the same computation than the given unit converter.
+     * @return a transform doing the same computation as the given unit converter.
      *
      * @since 1.4
      */

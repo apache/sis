@@ -112,7 +112,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Test writing GPX 1.0 metadata. This test creates programmatically the same metadata than the ones
+     * Test writing GPX 1.0 metadata. This test creates programmatically the same metadata as the ones
      * found in {@code 1.0/metadata.xml} file, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
@@ -123,7 +123,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Test writing GPX 1.1 metadata. This test creates programmatically the same metadata than the ones
+     * Test writing GPX 1.1 metadata. This test creates programmatically the same metadata as the ones
      * found in {@code 1.1/metadata.xml} file, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
@@ -152,7 +152,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing various GPX 1.0 way points. This test creates programmatically the same features than
+     * Tests writing various GPX 1.0 way points. This test creates programmatically the same features as
      * the ones found in {@code 1.0/waypoint.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
@@ -164,7 +164,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing various GPX 1.1 way points. This test creates programmatically the same features than
+     * Tests writing various GPX 1.1 way points. This test creates programmatically the same features as
      * the ones found in {@code 1.1/waypoint.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
@@ -176,7 +176,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing various GPX 1.0 routes. This test creates programmatically the same features than
+     * Tests writing various GPX 1.0 routes. This test creates programmatically the same features as
      * the ones found in {@code 1.0/route.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
@@ -188,7 +188,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing various GPX 1.1 routes. This test creates programmatically the same features than
+     * Tests writing various GPX 1.1 routes. This test creates programmatically the same features as
      * the ones found in {@code 1.1/route.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
@@ -200,7 +200,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing various GPX 1.0 tracks. This test creates programmatically the same features than
+     * Tests writing various GPX 1.0 tracks. This test creates programmatically the same features as
      * the ones found in {@code 1.0/track.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
@@ -212,7 +212,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing various GPX 1.1 tracks. This test creates programmatically the same features than
+     * Tests writing various GPX 1.1 tracks. This test creates programmatically the same features as
      * the ones found in {@code 1.1/track.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.

@@ -310,7 +310,7 @@ public final class CRS extends Static {
      * <h4>Logging</h4>
      * If the parsing produced warnings, they will be reported in a logger named {@code "org.apache.sis.io.wkt"}.
      * In particular, this method verifies if the description provided by the WKT matches the description provided
-     * by the authority ({@code "EPSG:5641"} in above example) and reports discrepancies.
+     * by the authority ({@code "EPSG:5641"} in the above example) and reports discrepancies.
      * Note that this comparison between parsed CRS and authoritative CRS is specific to this convenience method;
      * other APIs documented in <cite>see also</cite> section do not perform this comparison automatically.
      * Should the WKT description and the authoritative description be in conflict, the WKT description prevails

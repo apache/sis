@@ -127,7 +127,7 @@ public abstract class TypeRegistration {
 
     /**
      * Opens a stream on the {@code "RenameOnImport.lst"} or {@code "RenameOnExport.lst"} file if present.
-     * Those files are typically located in the same directory than this {@code TypeRegistration} subclass.
+     * Those files are typically located in the same directory as this {@code TypeRegistration} subclass.
      *
      * <h4>Design note</h4>
      * If a modularized project, the call to {@link Class#getResourceAsStream(String)} must be done in the

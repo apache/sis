@@ -30,13 +30,13 @@ package org.apache.sis.util;
  *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class
  *           and all attributes must be equal, including {@code xlink} and others
  *           {@linkplain org.apache.sis.metadata.iso.ISOMetadata#getIdentifiers() identifiers}.</li>
- *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – The same attributes than the above
+ *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – The same attributes as the above
  *           {@code STRICT} mode must be equal, but the metadata object don't need to be implemented
  *           by the same class provided that they implement the same GeoAPI interface.</li>
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Only the attributes defined
  *           in the GeoAPI interfaces are compared. The above-cited identifiers and {@code xlinks}
  *           attributes are ignored.</li>
- *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
+ *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
@@ -45,7 +45,7 @@ package org.apache.sis.util;
  *     <ol>
  *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class
  *           and all attributes must be equal.</li>
- *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – The same attributes than the above
+ *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – The same attributes as the above
  *           {@code STRICT} mode must be equal, but the referencing object don't need to be
  *           implemented by the same class provided that they implement the same GeoAPI interface.</li>
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – The
@@ -57,7 +57,7 @@ package org.apache.sis.util;
  *           are ignored because they have no incidence on the coordinate values to be computed by
  *           {@linkplain org.opengis.referencing.operation.ConcatenatedOperation coordinate operations}.
  *           All other attributes that are relevant to coordinate calculations, must be equal.</li>
- *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
+ *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
@@ -73,9 +73,9 @@ package org.apache.sis.util;
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Objects must be of the same class,
  *           but the parameter values can be different if they are different way to formulate the same transform.
  *           For example, a <q>Mercator (2SP)</q> projection on a sphere with a <cite>standard parallel</cite>
- *           value of 60° produces the same results than a <q>Mercator (1SP)</q> projection on the same sphere
+ *           value of 60° produces the same results as a <q>Mercator (1SP)</q> projection on the same sphere
  *           with a <cite>scale factor</cite> value of 0.5.</li>
- *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
+ *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
@@ -90,7 +90,7 @@ package org.apache.sis.util;
  *           same implementation class (any {@link org.opengis.referencing.operation.Matrix} is okay).</li>
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Synonymous to the
  *           {@code BY_CONTRACT} mode, because matrixes don't have metadata.</li>
- *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
+ *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
  *           {@code BY_CONTRACT} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>

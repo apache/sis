@@ -32,7 +32,7 @@ import org.apache.sis.test.DependsOn;
 
 /**
  * Tests {@link CoordinateFrameRotation} and {@link CoordinateFrameRotation3D}.
- * This test uses the same sample point than {@link PositionVector7ParamTest},
+ * This test uses the same sample point as {@link PositionVector7ParamTest},
  * but with the rotation in the opposite direction.
  *
  * @author  Martin Desruisseaux (Geomatys)

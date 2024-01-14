@@ -726,7 +726,7 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Returns the type of all properties, or their declaring type, defined in the given metadata type.
-     * The keys in the returned map are the same than the keys in the above {@linkplain #asNameMap name map}.
+     * The keys in the returned map are the same as the keys in the above {@linkplain #asNameMap name map}.
      * The values are determined by the {@code valuePolicy} argument, which can be
      * {@linkplain TypeValuePolicy#ELEMENT_TYPE element type} or the
      * {@linkplain TypeValuePolicy#DECLARING_INTERFACE declaring interface} among others.
@@ -760,7 +760,7 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Returns information about all properties defined in the given metadata type.
-     * The keys in the returned map are the same than the keys in the above
+     * The keys in the returned map are the same as the keys in the above
      * {@linkplain #asNameMap name map}. The values contain information inferred from
      * the ISO names, the {@link org.opengis.annotation.Obligation} enumeration and the
      * {@link org.apache.sis.measure.ValueRange} annotations.
@@ -812,7 +812,7 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Returns indices for all properties defined in the given metadata type.
-     * The keys in the returned map are the same than the keys in the above {@linkplain #asNameMap name map}.
+     * The keys in the returned map are the same as the keys in the above {@linkplain #asNameMap name map}.
      * The values are arbitrary indices numbered from 0 inclusive to <var>n</var> exclusive, where <var>n</var>
      * is the number of properties declared in the given metadata type.
      *

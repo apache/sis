@@ -462,7 +462,7 @@ public final class CollectionsExt extends Static {
                          * We use UnmodifiableArrayList for avoiding one level of indirection. The fact that it
                          * implements CheckedContainer is not a goal here, and is actually unsafe since we have
                          * no guarantee (except Javadoc contract) that the <E> in CheckedContainer<E> is really
-                         * the same than in Collection<E>.  We tolerate this hole for now because we documented
+                         * the same as in Collection<E>.  We tolerate this hole for now because we documented
                          * the restriction in CheckedContainer javadoc.
                          */
                         @SuppressWarnings("unchecked")       // Okay if collection is compliant with CheckedContainer contract.
@@ -811,7 +811,7 @@ public final class CollectionsExt extends Static {
      * <p>Code searching in the returned map shall ask for the original (non lower-case) name
      * <strong>before</strong> to ask for the lower-cases version of that name.</p>
      *
-     * <p>Iteration order in map entries is the same than iteration order in the given collection.
+     * <p>Iteration order in map entries is the same as iteration order in the given collection.
      * If lower-case names have been generated, they appear immediately after the original names.</p>
      *
      * @param  <E>           the type of elements.

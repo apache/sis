@@ -54,7 +54,7 @@ import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
  *
  * <ul>
  *   <li>The image has exactly one source.</li>
- *   <li>Image layout (minimum coordinates, image size, tile grid) is the same than source image layout,
+ *   <li>Image layout (minimum coordinates, image size, tile grid) is the same as source image layout,
  *     unless the source has too large tiles in which case {@link ImageLayout} automatically subdivides
  *     the tile grid in smaller tiles.</li>
  *   <li>Image is computed and stored on a band-by-band basis using a {@link BandedSampleModel}.</li>
@@ -315,7 +315,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the width (in pixels) of this image.
-     * This is the same value than the source image (not necessarily zero).
+     * This is the same value as the source image (not necessarily zero).
      *
      * @return the width (number of columns) of this image.
      */
@@ -326,7 +326,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the height (in pixels) of this image.
-     * This is the same value than the source image (not necessarily zero).
+     * This is the same value as the source image (not necessarily zero).
      *
      * @return the height (number of rows) of this image.
      */
@@ -337,7 +337,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the minimum <var>x</var> coordinate (inclusive) of this image.
-     * This is the same value than the source image (not necessarily zero).
+     * This is the same value as the source image (not necessarily zero).
      *
      * @return the minimum <var>x</var> coordinate (column) of this image.
      */
@@ -348,7 +348,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the minimum <var>y</var> coordinate (inclusive) of this image.
-     * This is the same value than the source image (not necessarily zero).
+     * This is the same value as the source image (not necessarily zero).
      *
      * @return the minimum <var>y</var> coordinate (row) of this image.
      */
@@ -359,7 +359,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the minimum tile index in the <var>x</var> direction.
-     * This is the same value than the source image (not necessarily zero).
+     * This is the same value as the source image (not necessarily zero).
      *
      * @return the minimum tile index in the <var>x</var> direction.
      */
@@ -370,7 +370,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Returns the minimum tile index in the <var>y</var> direction.
-     * This is the same value than the source image (not necessarily zero).
+     * This is the same value as the source image (not necessarily zero).
      *
      * @return the minimum tile index in the <var>y</var> direction.
      */

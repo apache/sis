@@ -236,7 +236,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * </ul>
      *
      * <div class="note"><b>Note:</b>
-     * if a {@code ParseException} is thrown, its error offset is usually the same than the {@code ParsePosition}
+     * if a {@code ParseException} is thrown, its error offset is usually the same as the {@code ParsePosition}
      * error index, but implementations are free to adopt a slightly different policy. For example
      * if parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
      * {@linkplain ParsePosition#getErrorIndex() error index} may be set to 5 (the beginning of the {@code "40.0"}

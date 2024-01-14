@@ -137,7 +137,7 @@ public final class CommonDomainFinder {
      * but the translations shall be an integer number of grid cells.
      *
      * <h4>Coordinate reference system</h4>
-     * If the CRS of a grid geometry is undefined, it is assumed the same than other grid geometries.
+     * If the CRS of a grid geometry is undefined, it is assumed the same as other grid geometries.
      *
      * @param  items  the grid geometries for which to compute a common grid geometry.
      * @throws IllegalGridGeometryException if the specified item is not compatible with the reference grid geometry.

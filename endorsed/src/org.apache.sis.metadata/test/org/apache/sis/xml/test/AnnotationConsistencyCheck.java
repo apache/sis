@@ -917,10 +917,10 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                     fail(e.toString());
                     continue;
                 }
-                assertEquals("The setter method must be declared in the same class than the " +
+                assertEquals("The setter method must be declared in the same class as the " +
                              "getter method - not in a parent class, to avoid issues with JAXB.",
                              getter.getDeclaringClass(), setter.getDeclaringClass());
-                assertEquals("The setter parameter type shall be the same than the getter return type.",
+                assertEquals("The setter parameter type shall be the same as the getter return type.",
                              getter.getReturnType(), TestUtilities.getSingleton(setter.getParameterTypes()));
                 element = getter.getAnnotation(XmlElement.class);
                 assertEquals("Expected @XmlElement XOR @XmlElementRef.", (element == null),

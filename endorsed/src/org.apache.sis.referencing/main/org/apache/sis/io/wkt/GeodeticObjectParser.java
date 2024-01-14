@@ -115,7 +115,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * The names of the 7 parameters in a {@code TOWGS84[…]} element.
      * Those names are derived from the <cite>Well Known Text</cite> (WKT) version 1 specification.
-     * They are not the same than the {@link org.apache.sis.referencing.datum.BursaWolfParameters}
+     * They are not the same as the {@link org.apache.sis.referencing.datum.BursaWolfParameters}
      * field names, which are derived from the EPSG database.
      */
     private static final String[] ToWGS84 = {"dx", "dy", "dz", "ex", "ey", "ez", "ppm"};
@@ -1641,7 +1641,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (!isWKT1 && !isBaseCRS) {
             /*
              * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
-             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way as
              * what we do for ProjectedCRS parameters, in the hope to be consistent.
              *
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
@@ -1826,7 +1826,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (!isWKT1 && csType == null) {
             /*
              * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
-             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way as
              * what we do for ProjectedCRS parameters, in the hope to be consistent.
              *
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
@@ -1926,7 +1926,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (!isWKT1 && !isBaseCRS) {
             /*
              * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
-             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way as
              * what we do for ProjectedCRS parameters, in the hope to be consistent.
              *
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
@@ -2007,7 +2007,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (!isBaseCRS) {
             /*
              * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
-             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way as
              * what we do for ProjectedCRS parameters, in the hope to be consistent.
              *
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
@@ -2068,7 +2068,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (!isBaseCRS) {
             /*
              * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
-             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way as
              * what we do for ProjectedCRS parameters, in the hope to be consistent.
              *
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)

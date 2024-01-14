@@ -673,7 +673,7 @@ public class ImageProcessor implements Cloneable {
      * the {@code areaOfInterest} argument filters the <cite>coverage domain</cite> while
      * the {@code sampleFilters} argument filters the <cite>coverage range</cite>.
      * Another connection with OGC/ISO standards is that {@link DoubleUnaryOperator} in this context
-     * does the same work than {@linkplain SampleDimension#getTransferFunction() transfer function}.
+     * does the same work as {@linkplain SampleDimension#getTransferFunction() transfer function}.
      * It can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.
      *
      * <h4>Properties used</h4>
@@ -713,7 +713,7 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns an image with the same sample values than the given image, but with its color ramp stretched between
+     * Returns an image with the same sample values as the given image, but with its color ramp stretched between
      * specified or inferred bounds. For example, in a gray scale image, pixels with the minimum value will be black
      * and pixels with the maximum value will be white. This operation is a kind of <cite>tone mapping</cite>,
      * a technique used in image processing to map one set of colors to another. The mapping applied by this method
@@ -839,10 +839,10 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Selects a subset of bands in the given image. This method can also be used for changing band order
-     * or repeating the same band from the source image. If the specified {@code bands} are the same than
+     * or repeating the same band from the source image. If the specified {@code bands} are the same as
      * the source image bands in the same order, then {@code source} is returned directly.
      *
-     * <p>This method returns an image sharing the same data buffer than the source image;
+     * <p>This method returns an image sharing the same data buffer as the source image;
      * pixel values are not copied. Consequently, changes in the source image are reflected
      * immediately in the returned image.</p>
      *
@@ -891,7 +891,7 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Aggregates in a single image the specified bands of a sequence of source images, in order.
-     * This method performs the same work than {@link #aggregateBands(RenderedImage...)},
+     * This method performs the same work as {@link #aggregateBands(RenderedImage...)},
      * but with the possibility to specify the bands to retain in each source image.
      * The {@code bandsPerSource} argument specifies the bands to select in each source image.
      * That array can be {@code null} for selecting all bands in all source images,
@@ -981,7 +981,7 @@ public class ImageProcessor implements Cloneable {
     /**
      * Returns an image with sample values converted by the given functions. The results can be stored as
      * {@code byte}, {@code short}, {@code int}, {@code float} or {@code double} values, not necessarily
-     * the same type than the source values. If the result values are stored as integers, then they are
+     * the same type as the source values. If the result values are stored as integers, then they are
      * {@linkplain Math#round(double) rounded to nearest integers} and clamped in the valid range of the
      * target integer type.
      *
@@ -1436,7 +1436,7 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns an image processor with the same configuration than this processor.
+     * Returns an image processor with the same configuration as this processor.
      *
      * @return a clone of this image processor.
      */

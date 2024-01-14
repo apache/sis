@@ -89,7 +89,7 @@ final class LookupInfo {
     /**
      * Maps method names to the name of columns in the database table corresponding to the current
      * {@linkplain #getMetadataType() metadata type}. The values in the returned map must be the
-     * same than the keys in the map returned by {@link MetadataSource#asValueMap(Object)}.
+     * same as the keys in the map returned by {@link MetadataSource#asValueMap(Object)}.
      *
      * @throws ClassCastException if the metadata object type does not extend a metadata interface
      *         of the expected package.

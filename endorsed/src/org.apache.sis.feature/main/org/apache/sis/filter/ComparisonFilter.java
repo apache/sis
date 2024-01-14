@@ -377,7 +377,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
                  * java.sql.Date and java.sql.Time cannot be converted to Instant because a part
                  * of their coordinates on the timeline is undefined.  For example in the case of
                  * java.sql.Date the hours, minutes and seconds are unspecified (which is not the
-                 * same thing than assuming that those values are zero).
+                 * same thing as assuming that those values are zero).
                  */
             }
         } else if (value instanceof Calendar) {

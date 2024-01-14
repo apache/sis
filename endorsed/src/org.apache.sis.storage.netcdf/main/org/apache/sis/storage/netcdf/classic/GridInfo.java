@@ -74,7 +74,7 @@ final class GridInfo extends Grid {
     }
 
     /**
-     * Returns {@code this} if the dimensions in this grid appear in the same order than in the given array,
+     * Returns {@code this} if the dimensions in this grid appear in the same order as in the given array,
      * or {@code null} otherwise. Current implementation does not apply the dimension reordering documented
      * in parent class because reordering should not be needed for this SIS implementation of netCDF reader.
      * Reordering is more needed for the implementation based on UCAR library.
@@ -163,7 +163,7 @@ next:       for (final String name : axisNames) {
      * <p>In this method, the words "domain" and "range" are used in the netCDF sense: they are the input
      * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
      *
-     * <p>The domain of all axes is often the same than the domain of the variable, but not necessarily.
+     * <p>The domain of all axes is often the same as the domain of the variable, but not necessarily.
      * In particular, the relationship is not straightforward when the coordinate system contains
      * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
      *

@@ -161,7 +161,7 @@ class AffineMatrix extends MatrixSIS implements Serializable, CloneAccess {
 
         /**
          * Returns all matrix elements in row-major order.
-         * Note that this is not the same order than {@link AffineTransform} constructor.
+         * Note that this is not the same order as {@link AffineTransform} constructor.
          * Zero values <em>shall</em> be null.
          */
         @Override

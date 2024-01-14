@@ -724,7 +724,7 @@ public final class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Tests the same CRS than {@link #testProjectedWithGradUnits()}, but from a WKT 2 definition
+     * Tests the same CRS as {@link #testProjectedWithGradUnits()}, but from a WKT 2 definition
      * (except for inclusion of accented characters).
      *
      * @throws ParseException if the parsing failed.

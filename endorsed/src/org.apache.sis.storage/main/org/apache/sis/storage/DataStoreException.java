@@ -155,7 +155,7 @@ public class DataStoreException extends Exception implements LocalizedException 
 
     /**
      * Returns a localized version of the exception message, typically for final user.
-     * This is often the same message than the one returned by {@link #getMessage()},
+     * This is often the same message as the one returned by {@link #getMessage()},
      * but may in some occasions be different if {@link DataStore#setLocale(Locale)}
      * has been invoked with a different locale.
      *

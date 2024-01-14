@@ -151,7 +151,7 @@ final class SampleRangeFormat extends RangeFormat {
         } else if (value instanceof Range<?>) {
             if (value instanceof MeasurementRange<?>) {
                 /*
-                 * Probably the same range than the one to be formatted in the "Measure" column.
+                 * Probably the same range as the one to be formatted in the "Measure" column.
                  * Format it in the same way (same number of fraction digits) but without units.
                  */
                 return formatMeasure(new NumberRange<>((MeasurementRange<?>) value));

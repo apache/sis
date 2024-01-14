@@ -469,7 +469,7 @@ public abstract class MatrixTestCase extends TestCase {
             final Number offset = (i >= 30)           ? nextNonZeroRandom() : null;
             /*
              * Apply the scale and offset on the affine transform, which we use as the reference
-             * implementation. The scale and offset must be applied in the exact same order than
+             * implementation. The scale and offset must be applied in the exact same order as
              * the order documented in MatrixSIS.concatenate(…) javadoc.
              */
             final int srcDim = (i & 1);
@@ -495,7 +495,7 @@ public abstract class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Asserts that the given matrix has approximately the same coefficients than the given affine transform.
+     * Asserts that the given matrix has approximately the same coefficients as the given affine transform.
      */
     private static void assertCoefficientsEqual(final AffineTransform at, final MatrixSIS matrix) {
         assertEqualsRelative("m20",        0,                  matrix, 2, 0);

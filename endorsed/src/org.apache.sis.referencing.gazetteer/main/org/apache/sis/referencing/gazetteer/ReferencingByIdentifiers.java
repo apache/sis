@@ -123,7 +123,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
 
     /**
      * Creates a reference system from the given properties.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
      *

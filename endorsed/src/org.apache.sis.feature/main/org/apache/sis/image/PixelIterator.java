@@ -162,7 +162,7 @@ public class PixelIterator {
      * then the window will need to fetch some values on neighbor tiles (i.e. the window is overlapping
      * two or more tiles).
      *
-     * <p>This is initialized by {@link #fetchTile()} to the same values than {@link #currentUpperX} and
+     * <p>This is initialized by {@link #fetchTile()} to the same values as {@link #currentUpperX} and
      * {@link #currentUpperY} but without clipping to the area of interest. We want to keep the flexibility
      * to overwrite with other coordinate system in future versions, if useful for {@link Window} performance.
      * Consequently, those values should not be used in other context than {@link #fetchValues(Window, Object)}.</p>
@@ -492,7 +492,7 @@ public class PixelIterator {
          * The two rasters must use the same sample model and have the same bounds.
          *
          * @param  input    the raster which contains the sample values to read.
-         * @param  output   the raster where to write the sample values. Can be the same than {@code input}.
+         * @param  output   the raster where to write the sample values. Can be the same as {@code input}.
          * @return a new writable iterator.
          */
         public WritablePixelIterator createWritable(final Raster input, final WritableRaster output) {
@@ -511,7 +511,7 @@ public class PixelIterator {
          * The two images must use the same sample model and have the same bounds.
          *
          * @param  input    the image which contains the sample values to read.
-         * @param  output   the image where to write the sample values. Can be the same than {@code input}.
+         * @param  output   the image where to write the sample values. Can be the same as {@code input}.
          * @return a new writable iterator.
          */
         public WritablePixelIterator createWritable(RenderedImage input, final WritableRenderedImage output) {
@@ -751,7 +751,7 @@ public class PixelIterator {
     /**
      * Moves the iterator to the next pixel. A pixel iterator is initially positioned before the first pixel.
      * The first call to {@code next()} makes the first pixel the current one; the second call makes the second
-     * pixel the current one, <i>etc.</i> The second pixel is not necessarily on the same row than the first one;
+     * pixel the current one, <i>etc.</i> The second pixel is not necessarily on the same row as the first one;
      * iteration order is implementation dependent.
      *
      * <p>When a call to {@code next()} returns {@code false}, the iterator is positioned after the last pixel.
@@ -832,7 +832,7 @@ public class PixelIterator {
     }
 
     /**
-     * Returns whether given position is on the same row and same tile than current (x,y) position.
+     * Returns whether given position is on the same row and same tile as current (x,y) position.
      * This method is provided as a complement to {@link #changedRowOrTile()}.
      */
     final boolean isSameRowAndTile(final int px, final int py) {
@@ -905,12 +905,12 @@ public class PixelIterator {
 
     /**
      * Fetches from the writable image a tile for the current {@link #tileX} and {@link #tileY} coordinates.
-     * If the writable tile is the same tile than the one used for read operation, then that tile should be
+     * If the writable tile is the same tile as the one used for read operation, then that tile should be
      * returned. This method is for {@link #fetchTile()} internal usage only and should be implemented by
      * {@link WritablePixelIterator} only.
      *
      * @return a tile that can be used for <em>read</em> operation, or {@code null} if none.
-     *         This value shall be non-null only if the tile to write is the same than the tile to read.
+     *         This value shall be non-null only if the tile to write is the same as the tile to read.
      */
     Raster fetchWritableTile() {
         return null;
@@ -1500,7 +1500,7 @@ public class PixelIterator {
 
     /**
      * Restores the iterator to the start position. After this method has been invoked,
-     * the iterator is in the same state than after construction.
+     * the iterator is in the same state as after construction.
      */
     public void rewind() {
         releaseTile();                  // Release current writable raster, if any.

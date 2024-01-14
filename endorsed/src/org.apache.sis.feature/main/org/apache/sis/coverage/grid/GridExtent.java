@@ -305,7 +305,7 @@ public class GridExtent implements Serializable, LenientComparable {
 
     /**
      * Constructs a one-dimensional grid extent set to the specified coordinates.
-     * This convenience constructor does the same work than the constructor for the
+     * This convenience constructor does the same work as the constructor for the
      * {@linkplain #GridExtent(org.opengis.metadata.spatial.DimensionNameType[], long[], long[], boolean) general case}.
      * It is provided as a convenience for {@linkplain #GridExtent(GridExtent, GridExtent) appending a single dimension}
      * to an existing grid.
@@ -411,7 +411,7 @@ public class GridExtent implements Serializable, LenientComparable {
 
     /**
      * Suggests a grid dimension name for the given coordinate system axis.
-     * Note that grid axes are not necessarily in the same order than CRS axes.
+     * Note that grid axes are not necessarily in the same order as CRS axes.
      * This method may be used when the caller knows which CRS axis will be associated to a grid axis.
      *
      * @param  axis  the coordinate system axis for which to get a suggested grid dimension name.
@@ -610,7 +610,7 @@ public class GridExtent implements Serializable, LenientComparable {
             /*
              * If chunk size has been specified, snap the coordinates to a multiple of that size.
              * The new extent will be clipped with `enclosing` (if non-null) in next step.
-             * Note: formulas used here are the same than in `forChunkSize(…)` method.
+             * Note: formulas used here are the same as in `forChunkSize(…)` method.
              */
             if (chunkSize != null && i < chunkSize.length) {
                 final int s = chunkSize[i];
@@ -641,7 +641,7 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
-     * Creates a new grid extent with the same axes than the given extent, but different coordinates.
+     * Creates a new grid extent with the same axes as the given extent, but different coordinates.
      * This constructor does not invoke {@link #validateCoordinates()}; we presume that the caller's
      * computation is correct.
      *
@@ -1933,7 +1933,7 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
-     * Ensures that the given grid extent has the same number of dimensions and the same axes than this grid extent.
+     * Ensures that the given grid extent has the same number of dimensions and the same axes as this grid extent.
      * Only axis names that are specified in both extents are compared. Unspecified names are interpreted as unknown,
      * which are conservatively interpreted as a match.
      *
@@ -1960,7 +1960,7 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
-     * Returns whether this grid extent has the same size than the given extent.
+     * Returns whether this grid extent has the same size as the given extent.
      * If the given extent is {@code null} or has a different number of dimensions,
      * then this method returns {@code false}.
      *

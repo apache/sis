@@ -624,7 +624,7 @@ final class GridMapping {
             }
         }
         /*
-         * Perform the same substitution than above, but in the "grid to CRS" transform. Note that the "grid to CRS"
+         * Perform the same substitution as above, but in the "grid to CRS" transform. Note that the "grid to CRS"
          * is usually not specified, so the block performing substitution will rarely be executed. If executed, then
          * then we need to perform selection in target dimensions (not source dimensions) because the first affected
          * coordinate computed above is in CRS dimension, which is the target of "grid to CRS" transform.

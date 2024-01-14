@@ -157,7 +157,7 @@ public abstract class Geometries<G> implements Serializable {
     }
 
     /**
-     * Returns a factory backed by the same implementation than the given type.
+     * Returns a factory backed by the same implementation as the given type.
      * If the given type is not recognized, then this method returns {@code null}.
      *
      * @param  type  the type for which to get a geometry factory.

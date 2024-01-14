@@ -143,7 +143,7 @@ public final class ColorModelBuilder {
 
     /**
      * The sample dimension for values after conversion, or {@code null} if not yet computed.
-     * May be the same than {@link #source} or {@code source.forConvertedValues(true)} if one
+     * May be the same as {@link #source} or {@code source.forConvertedValues(true)} if one
      * of those values is suitable, or a new sample dimension created by {@link #compact()}.
      *
      * <p>This sample dimension should not be returned to the user because it may not contain meaningful values.
@@ -388,7 +388,7 @@ public final class ColorModelBuilder {
 
     /**
      * Applies colors on the given range of values.
-     * This method does the same work than {@link #initialize(double, double, int)},
+     * This method does the same work as {@link #initialize(double, double, int)},
      * but is preferred to the latter when the sample values are known to be integer values.
      *
      * @param  minimum  minimum value, inclusive.
@@ -476,7 +476,7 @@ public final class ColorModelBuilder {
      * The {@link SampleDimension#getTransferFunction()} returns the conversion from original ranges
      * to ranges of pixel values in the colorized image.
      *
-     * <p>There is two outputs: the {@link #target} sample dimension, and modifications done in-place in the
+     * <p>There are two outputs: the {@link #target} sample dimension, and modifications done in-place in the
      * {@link #entries} array. For each {@link ColorsForRange} instance, the {@link ColorsForRange#sampleRange}
      * range is replaced by range of indexed colors. In addition {@code entries} elements may be reordered.</p>
      *

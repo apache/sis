@@ -54,7 +54,7 @@ final class GridWrapper extends Grid {
 
     /**
      * Dimensions of the grid in netCDF order (reverse of "natural" order).
-     * This is the same content than {@code netcdfCS.getDomain()} but potentially in a different order.
+     * This is the same content as {@code netcdfCS.getDomain()} but potentially in a different order.
      * Reordering is needed when the order of dimensions in a variable does not match the order of dimensions in the grid.
      * There is no such mismatch with Apache SIS implementation of netCDF reader, but those mismatches sometimes happen with
      * the wrappers around UCAR library where the following methods may return lists with elements in different order:
@@ -109,7 +109,7 @@ final class GridWrapper extends Grid {
     }
 
     /**
-     * Creates a new grid geometry with the same coordinate system than the given parent
+     * Creates a new grid geometry with the same coordinate system as the given parent
      * but dimensions in a different order. This is used for building coordinate systems
      * with axis order matching the order of dimensions in variables.
      */
@@ -121,7 +121,7 @@ final class GridWrapper extends Grid {
     }
 
     /**
-     * Returns a localization grid having the same dimensions than this grid but in a different order.
+     * Returns a localization grid having the same dimensions as this grid but in a different order.
      * This method is invoked by {@link VariableWrapper#findGrid} when the localization grids created
      * by {@link DecoderWrapper} are not sufficient and must be tailored for a particular variable.
      * Returns {@code null} if this grid contains a dimension not in the given list.
@@ -159,7 +159,7 @@ final class GridWrapper extends Grid {
 
     /**
      * Returns the grid to use for the given variable. This method is needed because the order of dimensions declared
-     * in the {@link CoordinateSystem} may not be the same order than the dimensions of the given variable.
+     * in the {@link CoordinateSystem} may not be the same order as the dimensions of the given variable.
      *
      * @param  variable  the variable for which to get its grid.
      * @param  systems   the coordinate systems of the given variable.
@@ -236,7 +236,7 @@ next:       for (final String name : axisNames) {
      * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
      *
      * <p>The domain of all axes (or the {@linkplain CoordinateSystem#getDomain() coordinate system domain})
-     * is often the same than the domain of the variable, but not necessarily.
+     * is often the same as the domain of the variable, but not necessarily.
      * In particular, the relationship is not straightforward when the coordinate system contains instances
      * of {@link CoordinateAxis2D}.</p>
      *

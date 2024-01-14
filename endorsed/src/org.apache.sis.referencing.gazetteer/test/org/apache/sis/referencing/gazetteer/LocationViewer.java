@@ -79,7 +79,7 @@ public final class LocationViewer extends JPanel {
                 break;
             }
             /*
-             * Crossing the anti-meridian. There is two columns of cells: on the west side and on the east side.
+             * Crossing the anti-meridian. There are two columns of cells: on the west side and on the east side.
              */
             case 3: {
                 final GeneralEnvelope ge = new GeneralEnvelope(CommonCRS.defaultGeographic());

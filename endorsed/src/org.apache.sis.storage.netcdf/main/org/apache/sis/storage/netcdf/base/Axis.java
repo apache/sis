@@ -415,7 +415,7 @@ public final class Axis extends NamedElement {
      * Returns the {@link #gridSizes} value at the given index, making sure it is representable as a
      * signed integer value. This method is invoked by operations not designed for unsigned integers.
      *
-     * @param  i  index of the desired dimension, in the same order than {@link #gridDimensionIndices}.
+     * @param  i  index of the desired dimension, in the same order as {@link #gridDimensionIndices}.
      * @throws ArithmeticException if the size cannot be represented as a signed 32 bits integer.
      */
     private int getSize(final int i) {
@@ -925,7 +925,7 @@ public final class Axis extends NamedElement {
      * Compares this axis with the given object for equality.
      *
      * @param  other  the other object to compare with this axis.
-     * @return whether the other object describes the same axis than this object.
+     * @return whether the other object describes the same axis as this object.
      */
     @Override
     public boolean equals(final Object other) {

@@ -273,7 +273,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     private transient Map<Object,Object> sharedValues;
 
     /**
-     * A formatter using the same symbols than the {@linkplain #parser}.
+     * A formatter using the same symbols as the {@linkplain #parser}.
      * Will be created by the {@link #format(Object, Appendable)} method when first needed.
      */
     private transient Formatter formatter;

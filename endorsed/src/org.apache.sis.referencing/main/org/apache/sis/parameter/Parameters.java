@@ -137,7 +137,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * unmodifiable, parameter group instance.
      *
      * @param  parameters  the parameters to make unmodifiable, or {@code null}.
-     * @return an unmodifiable group with the same parameters than the given group,
+     * @return an unmodifiable group with the same parameters as the given group,
      *         or {@code null} if the given argument was null.
      *
      * @see DefaultParameterValue#unmodifiable(ParameterValue)
@@ -269,7 +269,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
         if (parameter != null) {
             final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
             final Class<?> actual = descriptor.getValueClass();
-            if (!valueClass.equals(actual)) {       // Same comment than cast(ParameterDescriptor).
+            if (!valueClass.equals(actual)) {       // Same comment as cast(ParameterDescriptor).
                 throw new ClassCastException(Resources.format(Resources.Keys.IllegalParameterType_2,
                         Verifier.getDisplayName(descriptor), actual));
             }
@@ -468,7 +468,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
 
     /**
      * Returns the parameter value for the specified operation parameter.
-     * This method tries to do the same work than {@link #parameter(String)} but without
+     * This method tries to do the same work as {@link #parameter(String)} but without
      * instantiating optional parameters if that parameter was not already instantiated.
      *
      * <h4>Performance note</h4>
@@ -599,7 +599,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
 
     /**
      * Returns the value of the parameter identified by the given descriptor, or throws an exception if none.
-     * The default implementation performs the same work than {@link #getValue(ParameterDescriptor)} and verifies
+     * The default implementation performs the same work as {@link #getValue(ParameterDescriptor)} and verifies
      * that the returned value is non-null.
      *
      * @param  <T>        the type of the parameter value.
@@ -837,7 +837,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *     }
      *
      * where {@code name} is a {@code parameter} {@linkplain DefaultParameterDescriptor#getName() name}
-     * or {@linkplain DefaultParameterDescriptor#getAlias() alias} chosen by the same algorithm than
+     * or {@linkplain DefaultParameterDescriptor#getAlias() alias} chosen by the same algorithm as
      * {@link #getValue(ParameterDescriptor)}.
      *
      * @param  <T>        the type of the parameter value.

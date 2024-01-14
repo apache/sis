@@ -427,7 +427,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      *
      * @param  parent  the parent to add.
      * @throws IllegalStateException if this location type already have a parent of the same name.
-     * @throws IllegalArgumentException if the given parent already have a child of the same name than this location type.
+     * @throws IllegalArgumentException if the given parent already have a child of the same name as this location type.
      */
     public void addParent(final ModifiableLocationType parent) {
         ArgumentChecks.ensureNonNull("parent", parent);

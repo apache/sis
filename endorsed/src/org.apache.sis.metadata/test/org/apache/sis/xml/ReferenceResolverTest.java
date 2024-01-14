@@ -54,7 +54,7 @@ public final class ReferenceResolverTest extends TestUsingFile {
         final Citation citation = data.getCitation();
         DefaultCitationTest.verifyUnmarshalledCitation(citation);
         /*
-         * The fragment should reference the exact same object than the one in the citation.
+         * The fragment should reference the exact same object as the one in the citation.
          */
         final var parent  = citation.getCitedResponsibleParties().iterator().next();
         final var reusing = getSingleton(data.getPointOfContacts());

@@ -316,7 +316,7 @@ public final class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
-     * Same than {@link #testNameCollision()}, but resolving collisions with usage of names
+     * Same as {@link #testNameCollision()}, but resolving collisions with usage of names
      * of the form {@code "head:tip"}.
      */
     @Test

@@ -144,7 +144,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
     private final Loader loader;
 
     /**
-     * The slices of this coverage, in the same order than {@link GridSliceLocator#sliceLows}.
+     * The slices of this coverage, in the same order as {@link GridSliceLocator#sliceLows}.
      * Array elements shall be instances of {@link GridCoverage} or {@link GridCoverageResource}.
      * Each slice is not necessarily 1 cell tick; larger slices are accepted.
      * The length of this array shall be at least 2. Shall be read-only.

@@ -76,7 +76,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
     }
 
     /**
-     * Creates a new logical operator of the same kind than this operator.
+     * Creates a new logical operator of the same kind as this operator.
      *
      * @param  op  operands of the new operator.
      * @return the new operator.
@@ -132,7 +132,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
             super(operand1, operand2);
         }
 
-        /** Creates a new logical operator of the same kind than this operator. */
+        /** Creates a new logical operator of the same kind as this operator. */
         @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<R>> op) {
             return new And<>(op);
         }
@@ -183,7 +183,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
             super(operand1, operand2);
         }
 
-        /** Creates a new logical operator of the same kind than this operator. */
+        /** Creates a new logical operator of the same kind as this operator. */
         @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<R>> op) {
             return new Or<>(op);
         }

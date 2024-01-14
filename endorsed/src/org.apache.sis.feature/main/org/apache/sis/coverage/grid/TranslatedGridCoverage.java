@@ -23,7 +23,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
 
 
 /**
- * A grid coverage with the same data than the source coverage,
+ * A grid coverage with the same data as the source coverage,
  * with only a translation applied on grid coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -38,8 +38,8 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
 
     /**
      * Constructs a new grid coverage which will delegate the rendering operation to the given source.
-     * This coverage will take the same sample dimensions than the source.
-     * The {@code domain} size must be the same than the source grid geometry size.
+     * This coverage will take the same sample dimensions as the source.
+     * The {@code domain} size must be the same as the source grid geometry size.
      *
      * @param  source       the source on which to delegate rendering operations.
      * @param  domain       the grid extent, CRS and conversion from cell indices to CRS.
@@ -52,9 +52,9 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
 
     /**
      * Returns a grid coverage which will use the {@code domain} grid geometry.
-     * This coverage will take the same sample dimensions than the source.
+     * This coverage will take the same sample dimensions as the source.
      *
-     * <p>If {@code domain} is non-null, then it should have the same size than the source grid geometry size.
+     * <p>If {@code domain} is non-null, then it should have the same size as the source grid geometry size.
      * If this is not the case, then this method returns {@code null}.</p>
      *
      * @param  source       the source on which to delegate rendering operations.

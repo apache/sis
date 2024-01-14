@@ -188,7 +188,7 @@ public final class Assertions extends Static {
     }
 
     /**
-     * Verifies that the given stream produces the same values than the given iterator, in same order.
+     * Verifies that the given stream produces the same values as the given iterator, in same order.
      * This method assumes that the given stream is sequential.
      *
      * @param  <E>       the type of values to test.
@@ -215,7 +215,7 @@ public final class Assertions extends Static {
     }
 
     /**
-     * Verifies that the given stream produces the same values than the given iterator, in any order.
+     * Verifies that the given stream produces the same values as the given iterator, in any order.
      * This method is designed for use with parallel streams, but works with sequential streams too.
      *
      * @param  <E>       the type of values to test.

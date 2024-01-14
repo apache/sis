@@ -242,7 +242,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      *
      * <h4>Example 2</h4>
      * if this {@code InstallationScriptProvider} instance rather gets the SQL scripts from resources bundled
-     * in the same JAR files than and in the same package, then this method can be implemented as below:
+     * in the same JAR files as and in the same package, then this method can be implemented as below:
      *
      * {@snippet lang="java" :
      *      protected InputStream openStream(String name) {

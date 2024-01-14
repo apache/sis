@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Indicates that the value of a property is computed from values of other properties.
  * This annotation can be applied on public getter methods. All dependent properties
- * must be in the same class than the annotated method. Transitive dependencies do not
+ * must be in the same class as the annotated method. Transitive dependencies do not
  * need to be declared, but the dependency graph shall not contain cycle.
  *
  * <h2>Example</h2>

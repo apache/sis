@@ -23,7 +23,7 @@ package org.apache.sis.util.resources;
 public class Vocabulary_en extends Vocabulary {
     /**
      * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
+     * the resource file of the same name as this class.
      */
     public Vocabulary_en() {
     }

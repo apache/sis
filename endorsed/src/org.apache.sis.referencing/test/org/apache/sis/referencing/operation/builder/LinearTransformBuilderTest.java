@@ -126,7 +126,7 @@ public final class LinearTransformBuilderTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testExplicitSource2D()}, but using the
+     * Same test as {@link #testExplicitSource2D()}, but using the
      * {@link LinearTransformBuilder#LinearTransformBuilder(int...)} constructor.
      *
      * @throws FactoryException if the transform cannot be created.

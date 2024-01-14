@@ -116,7 +116,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
 
     /**
      * Creates a datum from the given properties.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * Additionally, the following properties are understood by this constructor:
      *
@@ -168,7 +168,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Creates a new datum with the same values than the specified one.
+     * Creates a new datum with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *

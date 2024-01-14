@@ -411,7 +411,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * @param key
      *          the unlocalized name of the child namespace, to be used as a key in the cache.
      * @param name
-     *          the name of the child namespace, or {@code null} if same than key.
+     *          the name of the child namespace, or {@code null} if same as key.
      * @param headSeparator
      *          the separator to insert between the namespace and the
      *          {@linkplain AbstractName#head() head} of any name in that namespace.
@@ -437,7 +437,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 child = (DefaultNameSpace) existing;
                 if (!child.separator    .equals(separator) ||
                     !child.headSeparator.equals(headSeparator) ||
-                    !child.name         .equals(name))                  // Same test than equalsIgnoreParent.
+                    !child.name         .equals(name))                  // Same test as equalsIgnoreParent.
                 {
                     child = new DefaultNameSpace(this, name, headSeparator, separator);
                     /*

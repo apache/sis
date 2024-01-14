@@ -233,7 +233,7 @@ public final class IsolinesTest extends TestCase {
 
     /**
      * Tests isolines computed in a contouring grid having more than one band.
-     * The same values than {@link #testSingleCell()} are used.
+     * The same values as {@link #testSingleCell()} are used.
      *
      * @throws TransformException if a point cannot be transformed to its final coordinate space.
      */
@@ -268,7 +268,7 @@ public final class IsolinesTest extends TestCase {
 
     /**
      * Tests isolines computed in a contouring grid having more than one band.
-     * The same values than {@link #testMultiCells()} are used, but it tests a different
+     * The same values as {@link #testMultiCells()} are used, but it tests a different
      * code path because {@link Isolines} contains a special case for one-banded image.
      *
      * @throws TransformException if a point cannot be transformed to its final coordinate space.

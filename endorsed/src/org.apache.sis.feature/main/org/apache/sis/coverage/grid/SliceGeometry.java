@@ -70,7 +70,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
     /**
      * Dimensions of the slices in the CRS space, or {@code null} if not yet computed.
      * This is computed as a side-product of {@link #reduce(GridExtent, int)} method call.
-     * This is often the same dimensions than {@link #gridDimensions}, but not necessarily.
+     * This is often the same dimensions as {@link #gridDimensions}, but not necessarily.
      *
      * @see #getTargetDimensions()
      */
@@ -147,7 +147,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         /*
          * If a `gridToCRS` transform is available, retain the source dimensions specified by `gridDimensions`.
          * We work on source dimensions because they are the grid dimensions. The CRS dimensions to retain are
-         * often the same than the grid dimensions, but not necessarily. In particular the CRS may have more
+         * often the same as the grid dimensions, but not necessarily. In particular the CRS may have more
          * elements if `TransformSeparator` detected that dropping a grid dimension does not force us to drop
          * the corresponding CRS dimension, for example because it has a constant value.
          */
@@ -226,7 +226,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         /*
          * If a `sliceExtent` has been specified, the resolution may differ because the "point of interest"
          * which is by default in extent center, may now be at a different location. In such case recompute
-         * the resolution. Otherwise (same extent than original grid geometry), just copy resolution values
+         * the resolution. Otherwise (same extent as original grid geometry), just copy resolution values
          * from the original grid geometry.
          */
         if (useSubExtent || resolution == null) {
@@ -272,7 +272,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
     /**
      * Finds CRS (target) dimensions that are related to the given grid (source) dimensions.
      * This method returns an array where the number of CRS dimensions has been reduced by
-     * the same amount than the reduction in number of grid dimensions.
+     * the same amount as the reduction in number of grid dimensions.
      *
      * <p>If this method is not invoked, then {@link TransformSeparator} will retain as many target dimensions
      * as possible, which may be more than expected if a dimension that would normally be dropped is actually

@@ -236,7 +236,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *   <li>Otherwise if the given object is already an instance of {@code DefaultTypeName},
      *       then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultTypeName} instance is created
-     *       with the same values than the given name.</li>
+     *       with the same values as the given name.</li>
      * </ul>
      *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.

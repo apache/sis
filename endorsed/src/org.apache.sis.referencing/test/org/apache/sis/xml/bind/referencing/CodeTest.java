@@ -73,7 +73,7 @@ public final class CodeTest extends TestCase {
     /**
      * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:8.3:4326"} identifier.
      * This test intentionally uses an identifier with the {@code IOGP} authority instead of EPSG
-     * for the same reason than {@link #testSimple()}.
+     * for the same reason as {@link #testSimple()}.
      */
     @Test
     @DependsOnMethod("testSimple")

@@ -72,7 +72,7 @@ class MathTransformParser extends AbstractParser {
     private static final String[] UNIT_KEYWORDS = {
         WKTKeywords.Unit,   // Ignored since it does not allow us to know the quantity dimension.
         WKTKeywords.LengthUnit, WKTKeywords.AngleUnit, WKTKeywords.ScaleUnit, WKTKeywords.TimeUnit,
-        WKTKeywords.ParametricUnit  // Ignored for the same reason than "Unit".
+        WKTKeywords.ParametricUnit  // Ignored for the same reason as "Unit".
     };
 
     /**

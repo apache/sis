@@ -90,7 +90,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * Returns a vector with the same data than the given vector but encoded in a more compact way,
+     * Returns a vector with the same data as the given vector but encoded in a more compact way,
      * or {@code null} if this method cannot do better than the given {@code Vector} instance.
      * This method shall be invoked only for vector of integer values (this is not verified).
      */
@@ -133,7 +133,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * Returns a vector with the same data than the given vector but encoded in a more compact way,
+     * Returns a vector with the same data as the given vector but encoded in a more compact way,
      * or {@code null} if this method cannot do better than the given {@code Vector} instance.
      * This method shall be invoked only for vector of floating point values (this is not verified).
      */
@@ -141,7 +141,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         if (!Float.class.equals(source.getElementType())) {
             /*
              * For floating point types, verify if values are equivalent to `float` values.
-             * There is two different ways to pad extra fraction digits in `double` values:
+             * There are two different ways to pad extra fraction digits in `double` values:
              * with zero fraction digits in base 2 representation (the standard Java cast),
              * or with zero fraction digits in base 10 representation.
              */
@@ -152,7 +152,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                 return new Floats(source.floatValues());
             } while (!(Math.abs((v = source.doubleValue(i++)) - (float) v) > tolerance));    // Use `!` for accepting NaN.
             /*
-             * Same try than above loop, but now using base 10 representation.
+             * Same try as above loop, but now using base 10 representation.
              * This is a more costly computation.
              */
             i = 0;

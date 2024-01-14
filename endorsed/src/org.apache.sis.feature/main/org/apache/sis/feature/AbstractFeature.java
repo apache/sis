@@ -170,7 +170,7 @@ public abstract class AbstractFeature implements Serializable {
      * <ul>
      *   <li>It must be non-null.</li>
      *   <li>Its {@linkplain Property#getName() name} shall be the name of the property to set in this feature.</li>
-     *   <li>Its type shall be the same instance than the {@linkplain DefaultFeatureType#getProperty(String)
+     *   <li>Its type shall be the same instance as the {@linkplain DefaultFeatureType#getProperty(String)
      *       property type} defined by the feature type for the above name.
      *       In other words, the following condition shall hold:</li>
      * </ul>
@@ -592,7 +592,7 @@ public abstract class AbstractFeature implements Serializable {
 
     /**
      * Verifies the validity of the given value for the property of the given name, then returns the value to store.
-     * The returned value is usually the same than the given one, except in the case of collections.
+     * The returned value is usually the same as the given one, except in the case of collections.
      */
     final Object verifyPropertyValue(final String name, final Object value) {
         final AbstractIdentifiedType pt = type.getProperty(name);

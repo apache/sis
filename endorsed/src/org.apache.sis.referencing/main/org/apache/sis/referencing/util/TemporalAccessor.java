@@ -85,7 +85,7 @@ public final class TemporalAccessor {
 
     /**
      * Returns the lower and upper values in the given envelope. It is caller's responsibility to ensure
-     * that the envelope CRS is the same than the one used for creating this {@code TemporalAccessor}.
+     * that the envelope CRS is the same as the one used for creating this {@code TemporalAccessor}.
      *
      * @param  envelope  the envelope from which to get the start time end end time.
      * @return the start time and end time in an array of length 1 or 2, or an empty array if none.
@@ -112,7 +112,7 @@ public final class TemporalAccessor {
 
     /**
      * Returns the temporal range of given envelope. It is caller's responsibility to ensure that
-     * the envelope CRS is the same than the one used for creating this {@code TemporalAccessor}.
+     * the envelope CRS is the same as the one used for creating this {@code TemporalAccessor}.
      *
      * @param  envelope  the envelope from which to get the start time end end time.
      * @return the start time and end time.

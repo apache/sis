@@ -174,7 +174,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         /*
          * Create an image with origin between -2 and +2. We use a random image location for more
          * complete testing, but actually the tests in this class are independent of image origin.
-         * Note that grid extent origin does not need to be the same than image origin.
+         * Note that grid extent origin does not need to be the same as image origin.
          */
         final int minX = random.nextInt(5) - 2;
         final int minY = random.nextInt(5) - 2;
@@ -232,7 +232,7 @@ public final class ResampledGridCoverageTest extends TestCase {
     }
 
     /**
-     * Verifies that the given target coverage has the same pixel values than the source coverage.
+     * Verifies that the given target coverage has the same pixel values as the source coverage.
      * This method opportunistically verifies that the target {@link GridCoverage} instance has a
      * {@link GridCoverage#render(GridExtent)} implementation conforms to the specification, i.e.
      * that requesting only a sub-area results in an image where pixel coordinate (0,0) corresponds
@@ -667,7 +667,7 @@ public final class ResampledGridCoverageTest extends TestCase {
                 HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE));
         /*
          * 180°W to 180″E (the world) and 80°S to 80°N in Mercator projection.
-         * Latitude range is about the same than source grid geometry.
+         * Latitude range is about the same as source grid geometry.
          */
         final double xmin = -2.0037508342789244E7;
         final GridGeometry target = new GridGeometry(

@@ -119,7 +119,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
     }
 
     /**
-     * Creates a new converter initialized to the same handlers than the specified converter.
+     * Creates a new converter initialized to the same handlers as the specified converter.
      * The given source is usually {@link #DEFAULT}.
      *
      * @param  source  the converter from which to copy the handlers.
@@ -129,7 +129,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
     }
 
     /**
-     * Creates a new converter of the same class than {@code this} and initialized with the same data.
+     * Creates a new converter of the same class as {@code this} and initialized with the same data.
      * This method is invoked before to remove handlers for functions that are unsupported on the target
      * database software.
      *

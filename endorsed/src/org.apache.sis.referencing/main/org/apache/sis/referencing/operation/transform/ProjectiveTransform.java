@@ -79,7 +79,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     private final double[] elt;
 
     /**
-     * Same numbers than {@link #elt} excluding the denominators and with potentially extended precision.
+     * Same numbers as {@link #elt} excluding the denominators and with potentially extended precision.
      * Zero values <em>shall</em> be represented by null elements.
      */
     private final Number[] numbers;

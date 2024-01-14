@@ -206,7 +206,7 @@ final class Dispatcher implements InvocationHandler {
      * @param  info    information related to the <em>interface</em> of the metadata object for which a property
      *                 value is requested. This is used for fetching information from the {@link MetadataStandard}.
      * @param  method  the method to be invoked. The class given by {@link Method#getDeclaringClass()} is usually
-     *                 the same than the one given by {@link LookupInfo#getMetadataType()}, but not necessarily.
+     *                 the same as the one given by {@link LookupInfo#getMetadataType()}, but not necessarily.
      *                 The two classes may differ if the method is declared only in the implementation class.
      * @return the property value, or {@code null} if none.
      * @throws ReflectiveOperationException if an error occurred while querying the {@link #cache}.

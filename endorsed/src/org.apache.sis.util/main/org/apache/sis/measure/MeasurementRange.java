@@ -143,7 +143,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Constructs a range using the smallest type of {@link Number} that can hold the given values.
-     * This method performs the same work than {@link NumberRange#createBestFit NumberRange.createBestFit(…)}
+     * This method performs the same work as {@link NumberRange#createBestFit NumberRange.createBestFit(…)}
      * with an additional {@code unit} argument.
      *
      * <p>This method may return a shared instance, at implementation choice.</p>
@@ -181,7 +181,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
-     * Constructs a range with the same values than the specified range and the given unit.
+     * Constructs a range with the same values as the specified range and the given unit.
      * This is a copy constructor, with the addition of a unit of measurement.
      *
      * @param  range  the range to copy. The elements must be {@link Number} instances.
@@ -230,7 +230,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
-     * Constructs a range with the same values than the specified range, casted to the specified type.
+     * Constructs a range with the same values as the specified range, casted to the specified type.
      *
      * @param  type   the element type, usually one of {@link Byte}, {@link Short},
      *                {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
@@ -243,7 +243,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
-     * Creates a new range using the same element type and the same unit than this range.
+     * Creates a new range using the same element type and the same unit as this range.
      */
     @Override
     Range<E> create(final E minValue, final boolean isMinIncluded,
@@ -313,7 +313,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Casts the specified range to the specified type. If this class is associated to a unit of
-     * measurement, then this method convert the {@code range} unit to the same unit than this
+     * measurement, then this method convert the {@code range} unit to the same unit as this
      * instance.
      *
      * @param  type  the class to cast to. Must be one of {@link Byte}, {@link Short},

@@ -187,7 +187,7 @@ public final class Context extends MarshalContext {
     /**
      * The identifiers used for marshalled objects in the current document.
      * This is the converse of the {@link #xmlidToObject} map, used in order to identify which {@code gml:id} to use
-     * for a given object. The {@code gml:id} values to use are not necessarily the same than the values associated
+     * for a given object. The {@code gml:id} values to use are not necessarily the same as the values associated
      * to {@link IdentifierSpace#ID} if some identifiers were already used for other objects in the same XML document.
      */
     private final Map<Object,String> objectToXmlid;
@@ -434,7 +434,7 @@ public final class Context extends MarshalContext {
      * used in the same way as a context created from the public constructor.
      *
      * <p>The {@code systemId} argument is the key to use for caching the result of (un)marshalling a document
-     * in the new context. This is usually the same value than the {@link String}, {@link File} or {@link URL}
+     * in the new context. This is usually the same value as the {@link String}, {@link File} or {@link URL}
      * specified at {@code linkHandler} construction time, but as an {@link URI} or {@link String} instance.</p>
      *
      * @param  systemId     {@link URI} or {@link String} identifier of the document to (un)marshal.

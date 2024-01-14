@@ -62,7 +62,7 @@ final class ProjectionResultComparator extends NormalizedProjection {
 
     /**
      * Maximum difference allowed between spherical and elliptical formulas when comparing derivatives.
-     * Units are the same than {@link #FORWARD_TOLERANCE}.
+     * Units are the same as {@link #FORWARD_TOLERANCE}.
      */
     private static final double DERIVATIVE_TOLERANCE = FORWARD_TOLERANCE;
 
@@ -131,7 +131,7 @@ final class ProjectionResultComparator extends NormalizedProjection {
     }
 
     /**
-     * Checks if transform using {@link #tested} formulas produces the same result than the {@link #reference} formulas.
+     * Checks if transform using {@link #tested} formulas produces the same result as the {@link #reference} formulas.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -154,7 +154,7 @@ final class ProjectionResultComparator extends NormalizedProjection {
     }
 
     /**
-     * Checks if transform using {@link #tested} inverse formulas produces the same result than the
+     * Checks if transform using {@link #tested} inverse formulas produces the same result as the
      * {@link #reference} inverse formulas.
      */
     @Override

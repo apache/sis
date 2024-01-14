@@ -114,7 +114,7 @@ public abstract class GridCoverage extends BandedCoverage {
     }
 
     /**
-     * Constructs a new grid coverage with the same sample dimensions than the given source.
+     * Constructs a new grid coverage with the same sample dimensions as the given source.
      *
      * @param  source  the source from which to copy the sample dimensions.
      * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
@@ -453,7 +453,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * <ul>
      *   <li>The {@code slicePoint} has a CRS with two dimensions less than this grid coverage CRS.</li>
-     *   <li>The {@code slicePoint} has the same CRS than this grid coverage, but the two coordinates to
+     *   <li>The {@code slicePoint} has the same CRS as this grid coverage, but the two coordinates to
      *       exclude are set to {@link Double#NaN}.</li>
      * </ul>
      *
@@ -488,7 +488,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * Similar discussion applies to the {@linkplain RenderedImage#getMinY() minimum Y coordinate}.
      * The {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height} will be
      * the {@code sliceExtent} {@linkplain GridExtent#getSize(int) sizes} if this method can honor exactly the request,
-     * or otherwise may be adjusted for the same reasons than <var>x</var> and <var>y</var> location discussed above.
+     * or otherwise may be adjusted for the same reasons as <var>x</var> and <var>y</var> location discussed above.
      *
      * <p>Implementations should return a view as much as possible, without copying sample values.
      * {@code GridCoverage} subclasses can use the {@link ImageRenderer} class as a helper tool for that purpose.

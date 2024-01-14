@@ -239,7 +239,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
             /*
              * Will follow either 'branch.fallback' or 'branch.primary', depending which one
              * is the most appropriate. If none can be followed, then the result will be the
-             * same than in the 'else' block.
+             * same as in the 'else' block.
              */
             return ((FallbackConverter<S,T>) branch).merge(checked, parentTarget);
         } else {
@@ -281,7 +281,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
             } else {
                 /*
                  * If the we cannot follow any of the 'primary' and 'fallback' branch,
-                 * and if the target class of this FallbackConverter is the same than
+                 * and if the target class of this FallbackConverter is the same as
                  * the target class of the parent, then do not create. We will let the
                  * parent FallbackConverter do the creation itself in order to chain the
                  * converters in the order they have been declared.

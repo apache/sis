@@ -82,7 +82,7 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
     }
 
     /**
-     * Same than the above, but as an immutable entry. We use this implementation when the
+     * Same as the above, but as an immutable entry. We use this implementation when the
      * entry has been created on-the-fly at iteration time rather than being stored in the
      * identifier collection.
      */

@@ -266,7 +266,7 @@ public final class Types extends Static {
 
     /**
      * Returns the title of the given enumeration or code list value. Title are usually much shorter than descriptions.
-     * English titles are often the same than the {@linkplain #getCodeLabel(CodeList) code labels}.
+     * English titles are often the same as the {@linkplain #getCodeLabel(CodeList) code labels}.
      *
      * <p>The code or enumeration value given in argument to this method can be retrieved from the returned title
      * with the {@link #forCodeTitle(CharSequence)} method. See <cite>Substituting a free text by a code list</cite>
@@ -591,7 +591,7 @@ public final class Types extends Static {
 
     /**
      * Returns the code of the given type that matches the given name, or optionally returns a new one if none
-     * match the name. This method performs the same work than the GeoAPI {@code CodeList.valueOf(…)} method,
+     * match the name. This method performs the same work as the GeoAPI {@code CodeList.valueOf(…)} method,
      * except that this method is more tolerant on string comparisons when looking for an existing code:
      *
      * <ul>
@@ -795,7 +795,7 @@ public final class Types extends Static {
      * {@linkplain #toInternationalString(CharSequence) casted} in the new array.
      *
      * <p>If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
-     * if the returned array is the same instance than the one given in argument to this method.</p>
+     * if the returned array is the same instance as the one given in argument to this method.</p>
      *
      * @param  strings  the characters sequences to convert, or {@code null}.
      * @return the given array as an array of type {@code InternationalString[]},
