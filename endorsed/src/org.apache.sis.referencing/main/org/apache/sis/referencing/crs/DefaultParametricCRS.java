@@ -51,7 +51,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
@@ -124,11 +124,20 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      */
     public DefaultParametricCRS(final Map<String,?> properties,
                                 final ParametricDatum datum,
-                                final ParametricCS    cs)
+                                final ParametricCS cs)
     {
         super(properties, cs);
         ensureNonNull("datum", datum);
         this.datum = datum;
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     */
+    private DefaultParametricCRS(final DefaultParametricCRS original, final ParametricCS cs) {
+        super(original, null, cs);
+        datum = original.datum;
     }
 
     /**
@@ -212,10 +221,14 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
+     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultParametricCRS(properties, datum, (ParametricCS) cs);
+    final AbstractCRS createSameType(final CoordinateSystem cs) {
+        return new DefaultParametricCRS(this, (ParametricCS) cs);
     }
 
     /**

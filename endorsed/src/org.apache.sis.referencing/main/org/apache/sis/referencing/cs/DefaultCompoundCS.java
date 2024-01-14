@@ -50,7 +50,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @XmlTransient
@@ -102,6 +102,15 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     public DefaultCompoundCS(final Map<String,?> properties, CoordinateSystem... components) {
         super(properties, getAxes(components = clone(components)));
+        this.components = UnmodifiableArrayList.wrap(components);
+    }
+
+    /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     * This is used for the {@link #forConvention(AxesConvention)} implementation only.
+     */
+    private DefaultCompoundCS(final DefaultCompoundCS original, final CoordinateSystem[] components) {
+        super(original, null, getAxes(components), true);
         this.components = UnmodifiableArrayList.wrap(components);
     }
 
@@ -168,6 +177,39 @@ public class DefaultCompoundCS extends AbstractCS {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<CoordinateSystem> getComponents() {
         return components;          // Unmodifiable.
+    }
+
+    /**
+     * Returns a compound CS equivalent to this one but with axes rearranged according the given convention.
+     * This method reorders the axes of each individual coordinate system {@linkplain #getComponents() component}.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultCompoundCS forConvention(final AxesConvention convention) {
+        ensureNonNull("convention", convention);
+        synchronized (forConvention) {
+            DefaultCompoundCS cs = (DefaultCompoundCS) forConvention.get(convention);
+            if (cs == null) {
+                cs = (DefaultCompoundCS) forConvention.get(AxesConvention.ORIGINAL);
+                boolean changed = false;
+                final CoordinateSystem[] newComponents = new CoordinateSystem[cs.components.size()];
+                for (int i=0; i<newComponents.length; i++) {
+                    CoordinateSystem component = cs.components.get(i);
+                    AbstractCS m = castOrCopy(component);
+                    if (m != (m = m.forConvention(convention))) {
+                        component = m;
+                        changed = true;
+                    }
+                    newComponents[i] = component;
+                }
+                if (changed) {
+                    cs = new DefaultCompoundCS(cs, newComponents);
+                }
+                cs = (DefaultCompoundCS) setCached(convention, cs);
+            }
+            return cs;
+        }
     }
 
     /*

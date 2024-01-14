@@ -49,7 +49,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
@@ -127,6 +127,15 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
         super(properties, cs);
         ensureNonNull("datum", datum);
         this.datum = datum;
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     */
+    private DefaultVerticalCRS(final DefaultVerticalCRS original, final VerticalCS cs) {
+        super(original, null, cs);
+        datum = original.datum;
     }
 
     /**
@@ -210,10 +219,12 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultVerticalCRS(properties, datum, (VerticalCS) cs);
+    final AbstractCRS createSameType(final CoordinateSystem cs) {
+        return new DefaultVerticalCRS(this, (VerticalCS) cs);
     }
 
     /**

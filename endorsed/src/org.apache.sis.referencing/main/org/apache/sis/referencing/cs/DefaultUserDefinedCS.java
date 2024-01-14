@@ -43,7 +43,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @XmlType(name = "UserDefinedCSType")
@@ -53,15 +53,6 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4904091898305706316L;
-
-    /**
-     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
-     * because it does not verify the number of axes.
-     */
-    private DefaultUserDefinedCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        super(properties, axes);
-    }
 
     /**
      * Constructs a two-dimensional coordinate system from a set of properties.
@@ -128,18 +119,29 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
     }
 
     /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     */
+    private DefaultUserDefinedCS(final DefaultUserDefinedCS original, final String name,
+                                 final CoordinateSystemAxis[] axes, final boolean share)
+    {
+        super(original, name, axes, share);
+    }
+
+    /**
      * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(UserDefinedCS)
      */
-    protected DefaultUserDefinedCS(final UserDefinedCS cs) {
-        super(cs);
+    protected DefaultUserDefinedCS(final UserDefinedCS original) {
+        super(original);
     }
 
     /**
@@ -187,11 +189,11 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
         switch (axes.length) {
             case 2: // Fall through
-            case 3: return new DefaultUserDefinedCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 2);
+            case 3: return new DefaultUserDefinedCS(this, name, axes, share);
+            default: throw unexpectedDimension(axes, 2, 3);
         }
     }
 

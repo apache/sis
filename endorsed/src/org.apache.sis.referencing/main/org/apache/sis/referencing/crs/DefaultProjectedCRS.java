@@ -59,7 +59,7 @@ import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
  *
@@ -133,6 +133,14 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             throws MismatchedDimensionException
     {
         super(properties, baseCRS, conversion, derivedCS);
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     */
+    private DefaultProjectedCRS(final DefaultProjectedCRS original, final CartesianCS derivedCS) {
+        super(original, derivedCS);
     }
 
     /**
@@ -261,11 +269,12 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        final Projection conversion = super.getConversionFromBase();
-        return new DefaultProjectedCRS(properties, conversion.getSourceCRS(), conversion, (CartesianCS) cs);
+    final AbstractCRS createSameType(final CoordinateSystem cs) {
+        return new DefaultProjectedCRS(this, (CartesianCS) cs);
     }
 
     /**

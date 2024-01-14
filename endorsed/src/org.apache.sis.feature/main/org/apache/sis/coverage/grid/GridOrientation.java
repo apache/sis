@@ -231,7 +231,7 @@ public final class GridOrientation implements Serializable {
         if (variant == crsVariant) {
             return this;
         }
-        if (variant == AxesConvention.NORMALIZED) {
+        if (variant == AxesConvention.NORMALIZED || variant == AxesConvention.ORIGINAL) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, variant));
         }
         return new GridOrientation(flippedAxes, variant, canReorderGridAxis);

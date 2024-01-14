@@ -65,7 +65,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.MILLIS_PER_SECOND;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
@@ -152,6 +152,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, TimeCS)
      */
+    @SuppressWarnings("this-escape")
     public DefaultTemporalCRS(final Map<String,?> properties,
                               final TemporalDatum datum,
                               final TimeCS        cs)
@@ -159,6 +160,16 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         super(properties, cs);
         ensureNonNull("datum", datum);
         this.datum = datum;
+        initializeConverter();
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     */
+    private DefaultTemporalCRS(final DefaultTemporalCRS original, final TimeCS cs) {
+        super(original, null, cs);
+        datum = original.datum;
         initializeConverter();
     }
 
@@ -173,6 +184,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @see #castOrCopy(TemporalCRS)
      */
+    @SuppressWarnings("this-escape")
     protected DefaultTemporalCRS(final TemporalCRS crs) {
         super(crs);
         datum = crs.getDatum();
@@ -296,10 +308,12 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultTemporalCRS(properties, datum, (TimeCS) cs);
+    final AbstractCRS createSameType(final CoordinateSystem cs) {
+        return new DefaultTemporalCRS(this, (TimeCS) cs);
     }
 
     /**

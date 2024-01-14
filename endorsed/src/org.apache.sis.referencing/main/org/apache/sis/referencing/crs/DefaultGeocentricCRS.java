@@ -69,7 +69,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
  *
@@ -81,17 +81,6 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 6784642848287659827L;
-
-    /**
-     * For {@link #createSameType(Map, CoordinateSystem)} usage only.
-     * This constructor does not verify the coordinate system type.
-     */
-    private DefaultGeocentricCRS(final Map<String,?>    properties,
-                                 final GeodeticDatum    datum,
-                                 final CoordinateSystem cs)
-    {
-        super(properties, datum, cs);
-    }
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -157,6 +146,15 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
                                 final SphericalCS   cs)
     {
         super(properties, datum, cs);
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This constructor does not verify the coordinate system type.
+     */
+    private DefaultGeocentricCRS(final DefaultGeocentricCRS original, final CoordinateSystem cs) {
+        super(original, null, cs);
     }
 
     /**
@@ -228,10 +226,13 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultGeocentricCRS(properties, super.getDatum(), cs);
+    final AbstractCRS createSameType(final CoordinateSystem cs) {
+        return new DefaultGeocentricCRS(this, cs);
     }
 
     /**

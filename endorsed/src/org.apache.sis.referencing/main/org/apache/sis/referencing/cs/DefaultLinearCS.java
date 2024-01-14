@@ -49,7 +49,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @XmlType(name = "LinearCSType")
@@ -59,15 +59,6 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -6890723478287625763L;
-
-    /**
-     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
-     * because it does not verify the number of axes.
-     */
-    private DefaultLinearCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        super(properties, axes);
-    }
 
     /**
      * Constructs a coordinate system from a set of properties.
@@ -110,18 +101,29 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
     }
 
     /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     */
+    private DefaultLinearCS(final DefaultLinearCS original, final String name,
+                            final CoordinateSystemAxis[] axes, final boolean share)
+    {
+        super(original, name, axes, share);
+    }
+
+    /**
      * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(LinearCS)
      */
-    protected DefaultLinearCS(final LinearCS cs) {
-        super(cs);
+    protected DefaultLinearCS(final LinearCS original) {
+        super(original);
     }
 
     /**
@@ -188,10 +190,10 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
         switch (axes.length) {
-            case 1: return new DefaultLinearCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 1);
+            case 1: return new DefaultLinearCS(this, name, axes, share);
+            default: throw unexpectedDimension(axes, 1, 1);
         }
     }
 

@@ -19,6 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.logging.Logger;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -42,6 +43,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Utilities;
@@ -51,7 +53,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.measure.Angle;
 import static org.apache.sis.util.ArgumentChecks.*;
 
 
@@ -75,7 +76,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
@@ -106,7 +107,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6757665252533744744L;
+    private static final long serialVersionUID = 3394376886951478970L;
 
     /**
      * Return value for {@link #validateAxis(AxisDirection, Unit)}
@@ -126,11 +127,22 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
 
     /**
      * Other coordinate systems derived from this coordinate systems for other axes conventions.
-     * Created only when first needed.
+     * This map is shared by all instances derived from the same original {@code AbstractCRS} instance.
+     * It is serialized in order to preserve metadata about the original instance.
+     * All accesses to this map shall be synchronized on {@code forConvention}.
      *
      * @see #forConvention(AxesConvention)
      */
-    private transient Map<AxesConvention,AbstractCS> derived;
+    final EnumMap<AxesConvention,AbstractCS> forConvention;
+
+    /**
+     * Creates the value to assign to the {@link #forConvention} map by constructors.
+     */
+    private EnumMap<AxesConvention,AbstractCS> forConvention() {
+        var m = new EnumMap<AxesConvention,AbstractCS>(AxesConvention.class);
+        m.put(AxesConvention.ORIGINAL, this);
+        return m;
+    }
 
     /**
      * Constructs a coordinate system from a set of properties and a sequence of axes.
@@ -165,12 +177,25 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @param  properties  the properties to be given to the identified object.
      * @param  axes        the sequence of axes.
+     * @throws IllegalArgumentException if an axis has an illegal direction or an illegal unit of measurement.
      */
-    @SuppressWarnings("OverridableMethodCallInConstructor")
-    public AbstractCS(final Map<String,?> properties, CoordinateSystemAxis... axes) {
+    @SuppressWarnings({"this-escape", "OverridableMethodCallInConstructor"})
+    public AbstractCS(final Map<String,?> properties, final CoordinateSystemAxis... axes) {
         super(properties);
         ensureNonNull("axes", axes);
-        this.axes = axes = axes.clone();
+        this.axes = axes.clone();
+        validate(properties);
+        forConvention = forConvention();
+    }
+
+    /**
+     * Verifies that the coordinate system axes are non-null, then validates their directions and units of measurement.
+     * Subclasses may override for adding more verifications, for example ensuring that all axes are perpendicular.
+     *
+     * @param  properties  properties given at construction time, or {@code null} if none.
+     * @throws IllegalArgumentException if an axis has an illegal direction or an illegal unit of measurement.
+     */
+    void validate(final Map<String,?> properties) {
         for (int i=0; i<axes.length; i++) {
             final CoordinateSystemAxis axis = axes[i];
             ensureNonNullElement("axes", i, axis);
@@ -236,30 +261,22 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Ensures that all known axes are perpendicular, ignoring unknown axis directions.
-     * This method can be invoked by the constructors of coordinate systems having this requirement.
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @param  properties  properties given at construction time.
-     * @throws IllegalArgumentException if an illegal angle is found between two axes.
+     * @param  original  the original coordinate system from which to derive a new one.
+     * @param  name      name of the new coordinate system, or {@code null} to inherit.
+     * @param  axes      the new axes. This array is not cloned.
+     * @param  share     whether the new CS should use a cache shared with the original CS.
+     * @throws IllegalArgumentException if an axis has illegal unit or direction.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
      */
-    final void ensurePerpendicularAxis(final Map<String,?> properties) throws IllegalArgumentException {
-        final int dimension = getDimension();
-        for (int i=0; i<dimension; i++) {
-            final AxisDirection axis0 = getAxis(i).getDirection();
-            for (int j=i; ++j<dimension;) {
-                final AxisDirection axis1 = getAxis(j).getDirection();
-                final Angle angle = CoordinateSystems.angle(axis0, axis1);
-                /*
-                 * The angle may be null for grid directions (COLUMN_POSITIVE, COLUMN_NEGATIVE,
-                 * ROW_POSITIVE, ROW_NEGATIVE). We conservatively accept those directions even if
-                 * they are not really for Cartesian CS because we do not know the grid geometry.
-                 */
-                if (angle != null && Math.abs(angle.degrees()) != 90) {
-                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
-                            Resources.Keys.NonPerpendicularDirections_2, axis0, axis1));
-                }
-            }
-        }
+    @SuppressWarnings({"this-escape", "OverridableMethodCallInConstructor"})
+    AbstractCS(final AbstractCS original, final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+        super(original.getPropertiesWithoutIdentifiers(name));
+        this.axes = axes;
+        validate(null);
+        forConvention = share ? original.forConvention : forConvention();
     }
 
     /**
@@ -269,13 +286,16 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(CoordinateSystem)
      */
-    protected AbstractCS(final CoordinateSystem cs) {
-        super(cs);
-        axes = (cs instanceof AbstractCS) ? ((AbstractCS) cs).axes : getAxes(cs);
+    @SuppressWarnings({"this-escape", "OverridableMethodCallInConstructor"})
+    protected AbstractCS(final CoordinateSystem original) {
+        super(original);
+        axes = (original instanceof AbstractCS) ? ((AbstractCS) original).axes : getAxes(original);
+        validate(null);
+        forConvention = forConvention();
     }
 
     /**
@@ -338,6 +358,16 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
+     * Returns the properties (scope, domain of validity) except the identifiers and the EPSG namespace.
+     *
+     * @param  name  name to associate to the {@link #NAME_KEY} in the returned map, or {@code null} to inherit.
+     * @return the identified object properties without identifier.
+     */
+    final Map<String,?> getPropertiesWithoutIdentifiers(final String name) {
+        return ReferencingUtilities.getPropertiesWithoutIdentifiers(this, (name == null) ? null : Map.of(NAME_KEY, name));
+    }
+
+    /**
      * Returns the number of dimensions of this coordinate system.
      * This is the number of axes given at construction time.
      *
@@ -361,6 +391,30 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
+     * Sets the CS for the given axes convention.
+     *
+     * @param  cs  the CS to cache.
+     * @return the cached CS. May be different than the given {@code cs} if an existing instance has been found.
+     */
+    final AbstractCS setCached(final AxesConvention convention, AbstractCS cs) {
+        assert Thread.holdsLock(forConvention);
+        /*
+         * It happens often that the CRS created by RIGHT_HANDED, DISPLAY_ORIENTED and NORMALIZED are the same.
+         * Sharing the same instance not only saves memory, but can also makes future comparisons faster.
+         */
+        for (final AbstractCS existing : forConvention.values()) {
+            if (cs.equals(existing, ComparisonMode.IGNORE_METADATA)) {
+                cs = existing;
+                break;
+            }
+        }
+        if (forConvention.put(convention, cs) != null) {
+            throw new ConcurrentModificationException();    // Should never happen, unless we have a synchronization bug.
+        }
+        return cs;
+    }
+
+    /**
      * Returns a coordinate system equivalent to this one but with axes rearranged according the given convention.
      * If this coordinate system is already compatible with the given convention, then this method returns {@code this}.
      *
@@ -369,33 +423,24 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
      */
-    public synchronized AbstractCS forConvention(final AxesConvention convention) {
+    public AbstractCS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
-        if (derived == null) {
-            derived = new EnumMap<>(AxesConvention.class);
-        }
-        AbstractCS cs = derived.get(convention);
-        if (cs == null) {
-            cs = Normalizer.forConvention(this, convention);
+        synchronized (forConvention) {
+            AbstractCS cs = forConvention.get(convention);
             if (cs == null) {
-                cs = this;                                              // This coordinate system is already normalized.
-            } else if (convention != AxesConvention.POSITIVE_RANGE) {
-                cs = cs.resolveEPSG(this);
-            }
-            /*
-             * It happen often that the CRS created by RIGHT_HANDED, DISPLAY_ORIENTED and
-             * NORMALIZED are the same. If this is the case, sharing the same instance
-             * not only save memory but can also make future comparisons faster.
-             */
-            for (final AbstractCS existing : derived.values()) {
-                if (cs.equals(existing)) {
-                    cs = existing;
-                    break;
+                final AbstractCS original = forConvention.get(AxesConvention.ORIGINAL);
+                cs = Normalizer.forConvention(original, convention);
+                if (cs == null) {
+                    cs = original;          // The given coordinate system is already normalized.
+                } else if (equals(cs, ComparisonMode.IGNORE_METADATA)) {
+                    cs = this;
+                } else if (convention != AxesConvention.POSITIVE_RANGE) {
+                    cs = cs.resolveEPSG(original);
                 }
+                cs = setCached(convention, cs);
             }
-            derived.put(convention, cs);
+            return cs;
         }
-        return cs;
     }
 
     /**
@@ -406,13 +451,15 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * But if the given {@code axes} array has less elements than this coordinate system dimension, then
      * this method may return another kind of coordinate system. See {@link AxisFilter} for an example.</p>
      *
-     * @param  axes  the set of axes to give to the new coordinate system.
+     * @param  name   name of the new coordinate system.
+     * @param  axes   the set of axes to give to the new coordinate system.
+     * @param  share  whether the new CS should use a cache shared with the original CS.
      * @return a new coordinate system of the same type as {@code this}, but using the given axes.
      * @throws IllegalArgumentException if {@code axes} contains an unexpected number of axes,
      *         or if an axis has an unexpected direction or unexpected unit of measurement.
      */
-    AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new AbstractCS(properties, axes);
+    AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+        return new AbstractCS(this, name, axes, share);
     }
 
     /**
@@ -456,18 +503,19 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Convenience method for implementations of {@link #createForAxes(Map, CoordinateSystemAxis[])}
+     * Convenience method for implementations of {@code createForAxes(…)}
      * when the resulting coordinate system would have an unexpected number of dimensions.
      *
-     * @param  properties  the properties which was supposed to be given to the constructor.
-     * @param  axes        the axes which was supposed to be given to the constructor.
-     * @param  expected    the minimal expected number of dimensions (may be less than {@link #getDimension()}).
+     * @param  axes  the axes which were supposed to be given to the constructor.
+     * @param  min   minimum number of dimensions, inclusive.
+     * @param  max   maximum number of dimensions, inclusive.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
      */
-    static IllegalArgumentException unexpectedDimension(final Map<String,?> properties,
-            final CoordinateSystemAxis[] axes, final int expected)
-    {
-        return new MismatchedDimensionException(Errors.getResources(properties).getString(
-                Errors.Keys.MismatchedDimension_3, "filter(cs)", expected, axes.length));
+    static IllegalArgumentException unexpectedDimension(final CoordinateSystemAxis[] axes, final int min, final int max) {
+        final int n = axes.length;
+        final int e = (n < min) ? min : max;
+        return new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "filter(cs)", e, n));
     }
 
     /**
@@ -592,6 +640,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     AbstractCS() {
         super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
+        forConvention = forConvention();
         axes = EMPTY;
         /*
          * Coordinate system axes are mandatory for SIS working. We do not verify their presence here

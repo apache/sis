@@ -47,6 +47,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -422,6 +423,33 @@ public final class ReferencingUtilities extends Static {
         return (dimension >= 2)
                 && AxisDirection.NORTH.equals(cs.getAxis(0).getDirection())
                 && AxisDirection.EAST .equals(cs.getAxis(1).getDirection());
+    }
+
+    /**
+     * Returns the properties (scope, domain of validity) except the identifiers and the EPSG namespace.
+     * The identifiers are removed because a modified CRS is no longer conform to the authoritative definition.
+     * If the name contains a namespace (e.g. "EPSG"), this method removes that namespace for the same reason.
+     * For example, "EPSG:WGS 84" will become simply "WGS 84".
+     *
+     * @param  object     the identified object for which to get properties map.
+     * @param  overwrite  properties overwriting the inherited ones, or {@code null} if none.
+     * @return the identified object properties.
+     */
+    public static Map<String,?> getPropertiesWithoutIdentifiers(final IdentifiedObject object, final Map<String,?> overwrite) {
+        final Map<String,?> properties = IdentifiedObjects.getProperties(object, IdentifiedObject.IDENTIFIERS_KEY);
+        final Identifier name = object.getName();
+        final boolean keepName = name.getCodeSpace() == null && name.getAuthority() == null;
+        if (keepName && overwrite == null) {
+            return properties;
+        }
+        final var copy = new HashMap<String,Object>(properties);
+        if (!keepName) {
+            copy.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(null, name.getCode()));
+        }
+        if (overwrite != null) {
+            copy.putAll(overwrite);
+        }
+        return copy;
     }
 
     /**

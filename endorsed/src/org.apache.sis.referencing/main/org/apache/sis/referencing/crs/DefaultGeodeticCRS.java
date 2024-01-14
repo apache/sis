@@ -44,6 +44,9 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
+
 
 /**
  * A 2- or 3-dimensional coordinate reference system based on a geodetic datum.
@@ -105,6 +108,15 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     }
 
     /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     */
+    DefaultGeodeticCRS(final DefaultGeodeticCRS original, final Identifier id, final CoordinateSystem cs) {
+        super(original, id, cs);
+        datum = original.datum;
+    }
+
+    /**
      * Constructs a new coordinate reference system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
@@ -149,10 +161,14 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
      * This method shall be overridden by all {@code DefaultGeodeticCRS} subclasses in this package.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
+     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultGeodeticCRS(properties, datum, cs);
+    AbstractCRS createSameType(final CoordinateSystem cs) {
+        return new DefaultGeodeticCRS(this, null, cs);
     }
 
     /**

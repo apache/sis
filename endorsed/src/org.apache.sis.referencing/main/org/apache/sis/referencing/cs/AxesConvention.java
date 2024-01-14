@@ -101,7 +101,7 @@ import org.apache.sis.measure.Units;
  * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @see AbstractCS#forConvention(AxesConvention)
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
@@ -274,5 +274,15 @@ public enum AxesConvention implements AxisFilter {
      *
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */
-    POSITIVE_RANGE;
+    POSITIVE_RANGE,
+
+    /**
+     * The axis order as they were specified in the original coordinate system.
+     * The first time that a {@code forConvention(…)} method is invoked on a new coordinate system (CS),
+     * a reference to that original CS is associated to this enumeration value and can be retrieved from
+     * any derived object.
+     *
+     * @since 1.5
+     */
+    ORIGINAL;
 }

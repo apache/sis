@@ -18,7 +18,6 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import jakarta.xml.bind.annotation.XmlType;
@@ -33,8 +32,6 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -45,6 +42,7 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
+import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -82,7 +80,7 @@ import org.opengis.metadata.Identifier;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see AbstractCS
  * @see org.apache.sis.referencing.datum.AbstractDatum
@@ -105,7 +103,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7433284548909530047L;
+    private static final long serialVersionUID = -4925108294894867598L;
 
     /**
      * The coordinate system.
@@ -120,11 +118,22 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
 
     /**
      * Other coordinate reference systems computed from this CRS by the application of an axes convention.
-     * Created only when first needed.
+     * This map is shared by all instances derived from the same original {@code AbstractCRS} instance.
+     * It is serialized in order to preserve metadata about the original instance.
+     * All accesses to this map shall be synchronized on {@code forConvention}.
      *
      * @see #forConvention(AxesConvention)
      */
-    private transient Map<AxesConvention,AbstractCRS> forConvention;
+    final EnumMap<AxesConvention,AbstractCRS> forConvention;
+
+    /**
+     * Creates the value to assign to the {@link #forConvention} map by constructors.
+     */
+    private EnumMap<AxesConvention,AbstractCRS> forConvention() {
+        var m = new EnumMap<AxesConvention,AbstractCRS>(AxesConvention.class);
+        m.put(AxesConvention.ORIGINAL, this);
+        return m;
+    }
 
     /**
      * Creates a coordinate reference system from the given properties and coordinate system.
@@ -164,10 +173,27 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @param properties  the properties to be given to the coordinate reference system.
      * @param cs          the coordinate system.
      */
+    @SuppressWarnings("this-escape")
     public AbstractCRS(final Map<String,?> properties, final CoordinateSystem cs) {
         super(properties);
         ensureNonNull("cs", cs);
         coordinateSystem = cs;
+        forConvention = forConvention();
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     *
+     * @param original  the original coordinate system from which to derive a new one.
+     * @param id        new identifier for this CRS, or {@code null} if none.
+     * @param cs        coordinate system with new axis order or units of measurement.
+     *
+     * @see #createSameType(CoordinateSystem)
+     */
+    AbstractCRS(final AbstractCRS original, final Identifier id, final CoordinateSystem cs) {
+        super(ReferencingUtilities.getPropertiesWithoutIdentifiers(original, (id == null) ? null : Map.of(IDENTIFIERS_KEY, id)));
+        coordinateSystem = cs;
+        forConvention = original.forConvention;
     }
 
     /**
@@ -181,9 +207,11 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * @see #castOrCopy(CoordinateReferenceSystem)
      */
+    @SuppressWarnings("this-escape")
     protected AbstractCRS(final CoordinateReferenceSystem crs) {
         super(crs);
         coordinateSystem = crs.getCoordinateSystem();
+        forConvention = forConvention();
     }
 
     /**
@@ -278,29 +306,17 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns the existing CRS for the given convention, or {@code null} if none.
-     */
-    final AbstractCRS getCached(final AxesConvention convention) {
-        assert Thread.holdsLock(this);
-        return (forConvention != null) ? forConvention.get(convention) : null;
-    }
-
-    /**
      * Sets the CRS for the given axes convention.
      *
      * @param  crs  the CRS to cache.
      * @return the cached CRS. May be different than the given {@code crs} if an existing instance has been found.
      */
     final AbstractCRS setCached(final AxesConvention convention, AbstractCRS crs) {
-        assert Thread.holdsLock(this);
-        if (forConvention == null) {
-            forConvention = new EnumMap<>(AxesConvention.class);
-        } else if (crs != this) {
-            for (final AbstractCRS existing : forConvention.values()) {
-                if (crs.equals(existing)) {
-                    crs = existing;
-                    break;
-                }
+        assert Thread.holdsLock(forConvention);
+        for (final AbstractCRS existing : forConvention.values()) {
+            if (crs.equals(existing, ComparisonMode.IGNORE_METADATA)) {
+                crs = existing;
+                break;
             }
         }
         if (forConvention.put(convention, crs) != null) {
@@ -318,42 +334,39 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * @see AbstractCS#forConvention(AxesConvention)
      */
-    public synchronized AbstractCRS forConvention(final AxesConvention convention) {
+    public AbstractCRS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
-        AbstractCRS crs = getCached(convention);
-        if (crs == null) {
-            final AbstractCS cs = AbstractCS.castOrCopy(coordinateSystem);
-            final AbstractCS candidate = cs.forConvention(convention);
-            if (candidate == cs) {
-                crs = this;
-            } else {
-                /*
-                 * Copy properties (scope, domain of validity) except the identifier (e.g. "EPSG:4326")
-                 * because the modified CRS is no longer conform to the authoritative definition.
-                 * If name contains a namespace (e.g. "EPSG"), remove that namespace for the same reason.
-                 * For example, "EPSG:WGS 84" will become simply "WGS 84".
-                 */
-                Map<String,?> properties = IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY);
-                Identifier name = getName();
-                if (name.getCodeSpace() != null || name.getAuthority() != null) {
-                    name = new NamedIdentifier(null, name.getCode());
-                    final Map<String,Object> copy = new HashMap<>(properties);
-                    copy.put(NAME_KEY, name);
-                    properties = copy;
+        synchronized (forConvention) {
+            AbstractCRS crs = forConvention.get(convention);
+            if (crs == null) {
+                final AbstractCRS original = forConvention.get(AxesConvention.ORIGINAL);
+                final AbstractCS cs = AbstractCS.castOrCopy(original.coordinateSystem);
+                final AbstractCS candidate = cs.forConvention(convention);
+                if (candidate.equals(cs, ComparisonMode.IGNORE_METADATA)) {
+                    crs = original;
+                } else if (original != this && candidate.equals(coordinateSystem, ComparisonMode.IGNORE_METADATA)) {
+                    crs = this;
+                } else try {
+                    crs = createSameType(candidate);
+                } catch (ClassCastException e) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotCompute_1, convention), e);
                 }
-                crs = createSameType(properties, candidate);
+                crs = setCached(convention, crs);
             }
-            crs = setCached(convention, crs);
+            return crs;
         }
-        return crs;
     }
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
      * This method shall be overridden by all {@code AbstractCRS} subclasses in this package.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
+     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
-    AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new AbstractCRS(properties, cs);
+    AbstractCRS createSameType(final CoordinateSystem cs) {
+        return new AbstractCRS(this, null, cs);
     }
 
     /**
@@ -525,9 +538,10 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     AbstractCRS() {
         super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
+        forConvention = forConvention();
         /*
          * The coordinate system is mandatory for SIS working. We do not verify its presence here
-         * because the verification would have to be done in an 'afterMarshal(…)' method and throwing
+         * because the verification would have to be done in an `afterMarshal(…)` method and throwing
          * an exception in that method causes the whole unmarshalling to fail. But the SC_CRS adapter
          * does some verifications.
          */

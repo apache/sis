@@ -16,8 +16,11 @@
  */
 package org.apache.sis.referencing.cs;
 
+import java.util.Map;
 import org.opengis.referencing.cs.AffineCS;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.LinearCS;
@@ -26,6 +29,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.cs.VerticalCS;
+import org.apache.sis.referencing.util.AxisDirections;
 
 
 /**
@@ -90,5 +94,32 @@ final class SubTypes {
             return (AbstractCS) object;
         }
         return new AbstractCS(object);
+    }
+
+    /**
+     * Creates a one-dimensional coordinate system derived from the specified CS.
+     *
+     * @param  original  the two- or three-dimensional CRS from which to extract an axis.
+     * @param  name      name of the new coordinate system.
+     * @param  axes      the user-specified coordinate system axes. Only the first one will be used.
+     * @return the one-dimensional coordinate system with the specified axis.
+     */
+    static AbstractCS createOneDimensional(final AbstractCS original, final String name, final CoordinateSystemAxis[] axes) {
+        final CoordinateSystemAxis axis = axes[0];
+        final AxisDirection dir = AxisDirections.absolute(axis.getDirection());
+        final boolean isTemporal;
+        if (AxisDirection.UP.equals(dir)) {
+            isTemporal = false;
+        } else if (AxisDirection.FUTURE.equals(dir)) {          // Happen with Minkowski coordinate system.
+            isTemporal = true;
+        } else {
+            throw AbstractCS.unexpectedDimension(axes, 2, 3);
+        }
+        final Map<String,?> properties = original.getPropertiesWithoutIdentifiers(name);
+        if (isTemporal) {
+            return new DefaultTimeCS(properties, axis);
+        } else {
+            return new DefaultVerticalCS(properties, axis);
+        }
     }
 }

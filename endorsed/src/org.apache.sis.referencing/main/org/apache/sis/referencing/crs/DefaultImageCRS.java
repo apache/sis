@@ -51,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.datum.DefaultImageDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageCRS(String)
@@ -129,6 +129,15 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
         super(properties, cs);
         ensureNonNull("datum", datum);
         this.datum = datum;
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     */
+    private DefaultImageCRS(final DefaultImageCRS original, final AffineCS cs) {
+        super(original, null, cs);
+        datum = original.datum;
     }
 
     /**
@@ -211,10 +220,14 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
+     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultImageCRS(properties, datum, (AffineCS) cs);
+    final AbstractCRS createSameType(final CoordinateSystem cs) {
+        return new DefaultImageCRS(this, (AffineCS) cs);
     }
 
     /**
