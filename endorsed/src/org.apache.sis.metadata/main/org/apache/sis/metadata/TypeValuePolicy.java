@@ -49,7 +49,7 @@ public enum TypeValuePolicy {
 
     /**
      * The specialized type of a property, or type of elements if the property is a collection.
-     * This is the same type than {@link #PROPERTY_TYPE} except for the following:
+     * This is the same type as {@link #PROPERTY_TYPE} except for the following:
      *
      * <ul>
      *   <li>If the property is a collection, then the element type is the type of <em>elements</em> in that

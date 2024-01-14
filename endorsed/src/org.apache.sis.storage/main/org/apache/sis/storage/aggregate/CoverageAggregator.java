@@ -480,7 +480,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
 
     /**
      * Adds a resource whose range is the aggregation of the specified bands of a sequence of resources.
-     * This method performs the same work than {@link #addRangeAggregate(GridCoverageResource...)},
+     * This method performs the same work as {@link #addRangeAggregate(GridCoverageResource...)},
      * but with the possibility to specify the sample dimensions to retain in each source coverage.
      * The {@code bandsPerSource} argument specifies the sample dimensions to keep, in order.
      * That array can be {@code null} for selecting all sample dimensions in all source coverages,

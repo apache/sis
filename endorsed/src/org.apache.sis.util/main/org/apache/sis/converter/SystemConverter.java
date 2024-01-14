@@ -109,7 +109,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * <p>Our {@code equals(Object)} definition have the following implications regarding
      * the way to use the {@link ConverterRegistry#converters} map:</p>
      * <ul>
-     *   <li>When searching for a converter of the same class than the key (as in the
+     *   <li>When searching for a converter of the same class as the key (as in the
      *       {@link ConverterRegistry#findEquals(SystemConverter)} method), then there
      *       is no restriction on the key that can be given to the {@code Map.get(K)}
      *       method. The {@code Map} is "normal".</li>
@@ -120,7 +120,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      *
      * @param  other the object to compare with this {@code SystemConverter}.
      * @return {@code true} if the given object is a {@code ClassPair} or a converter of the
-     *         same class than {@code this}, and both have the same source and target classes.
+     *         same class as {@code this}, and both have the same source and target classes.
      */
     @Override
     public final boolean equals(final Object other) {

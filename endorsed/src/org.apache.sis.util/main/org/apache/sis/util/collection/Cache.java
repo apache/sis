@@ -159,7 +159,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
 
     /**
      * The sum of all values in the {@link #costs} map.
-     * This field shall be read and updated in the same thread than {@link #costs}.
+     * This field shall be read and updated in the same thread as {@link #costs}.
      */
     private long totalCost;
 
@@ -338,7 +338,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * <p>This method is similar to {@link #getOrCreate(Object, Callable)}, but without checked exceptions.</p>
      *
      * <h4>Example</h4>
-     * below is the same code than {@link #getOrCreate(Object, Callable)} example,
+     * below is the same code as {@link #getOrCreate(Object, Callable)} example,
      * but without the need for any checked exception handling:
      *
      * {@snippet lang="java" :

@@ -686,7 +686,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns the names of any additional internal parameters (other than {@link #eccentricity})
-     * that this projection has. The length of this array must be the same than the length of the
+     * that this projection has. The length of this array must be the same as the length of the
      * {@link #getInternalParameterValues()} array, if the latter is non-null.
      */
     String[] getInternalParameterNames() {
@@ -766,7 +766,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param  srcPts    the array containing the source point coordinates, as (<var>longitude</var>, <var>latitude</var>)
      *                   angles in <strong>radians</strong>.
      * @param  srcOff    the offset of the single coordinate tuple to be converted in the source array.
-     * @param  dstPts    the array into which the converted coordinates is returned (may be the same than {@code srcPts}).
+     * @param  dstPts    the array into which the converted coordinates is returned (may be the same as {@code srcPts}).
      *                   Coordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
      * @param  dstOff    the offset of the location of the converted coordinates that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
@@ -796,7 +796,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * @param  srcPts  the array containing the source point coordinates, as linear distance on a unit sphere or ellipse.
      * @param  srcOff  the offset of the point to be converted in the source array.
-     * @param  dstPts  the array into which the converted point coordinates is returned (may be the same than {@code srcPts}).
+     * @param  dstPts  the array into which the converted point coordinates is returned (may be the same as {@code srcPts}).
      *                 Coordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
      * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point cannot be converted.
@@ -1015,7 +1015,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Compares the given object with this transform for equivalence. The default implementation checks if
-     * {@code object} is an instance of the same class than {@code this}, then compares the eccentricity.
+     * {@code object} is an instance of the same class as {@code this}, then compares the eccentricity.
      *
      * <p>If this method returns {@code true}, then for any given identical source position, the two compared map
      * projections shall compute the same target position. Many of the {@linkplain #getContextualParameters()

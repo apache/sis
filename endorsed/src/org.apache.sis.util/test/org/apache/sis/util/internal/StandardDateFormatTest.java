@@ -143,7 +143,7 @@ public final class StandardDateFormatTest extends TestCase {
      */
     @Test
     public void testNegativeYear() throws ParseException {
-        final Date julian = new Date(-210866760000000L);            // Same epoch than CommonCRS.Temporal.JULIAN.
+        final Date julian = new Date(-210866760000000L);            // Same epoch as CommonCRS.Temporal.JULIAN.
         final String expected = "-4713-11-24T12:00:00.000";         // Proleptic Gregorian calendar, astronomical year.
         final StandardDateFormat f = new StandardDateFormat();
         assertEquals(expected, f.format(julian));

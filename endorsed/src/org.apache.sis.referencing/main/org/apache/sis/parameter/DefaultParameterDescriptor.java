@@ -258,7 +258,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     }
 
     /**
-     * Creates a new descriptor with the same values than the specified one.
+     * Creates a new descriptor with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
      * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -277,7 +277,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     }
 
     /**
-     * Returns a SIS parameter implementation with the same values than the given arbitrary implementation.
+     * Returns a SIS parameter implementation with the same values as the given arbitrary implementation.
      * If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the values of the given object.
@@ -583,7 +583,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
 
     /**
      * Invoked by {@link DefaultParameterValue} when the descriptor is set after the value at unmarshalling time.
-     * There is two scenarios in a valid GML document. The first scenario is when the descriptor is defined inside
+     * There are two scenarios in a valid GML document. The first scenario is when the descriptor is defined inside
      * the parameter value element, like below. In such case, {@link #valueClass} is defined at construction time
      * by {@link #DefaultParameterDescriptor()} because the value is before the descriptor.
      *

@@ -87,7 +87,7 @@ final class AuthalicMercator extends AuthalicConversion {
     }
 
     /**
-     * Converts a list of coordinate tuples. This method performs the same calculation than above
+     * Converts a list of coordinate tuples. This method performs the same calculation as above
      * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
      *
      * @throws TransformException if a point cannot be converted.

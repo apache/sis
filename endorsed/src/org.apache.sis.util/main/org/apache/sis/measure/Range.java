@@ -115,7 +115,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     final boolean isMinIncluded, isMaxIncluded;
 
     /**
-     * Constructs a range with the same type and the same values than the specified range.
+     * Constructs a range with the same type and the same values as the specified range.
      * This is a copy constructor.
      *
      * @param  range  the range to copy.
@@ -164,7 +164,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Creates a new range using the same element type than this range. This method will
+     * Creates a new range using the same element type as this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
      *
      * <h4>API note</h4>

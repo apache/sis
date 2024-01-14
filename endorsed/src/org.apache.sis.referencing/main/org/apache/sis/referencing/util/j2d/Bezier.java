@@ -78,7 +78,7 @@ public abstract class Bezier {
 
     /**
      * Components of α=(∂y/∂x) derivative at starting point <var>t</var>=0.
-     * Initialized and updated at the same time than {@link #x0} and {@link #y0}.
+     * Initialized and updated at the same time as {@link #x0} and {@link #y0}.
      */
     private double dx0, dy0;
 
@@ -387,7 +387,7 @@ public abstract class Bezier {
                 }
             }
             /*
-             * Same than above, but with point P₁ replaced by P₃ and t=¼ replaced by t=¾.
+             * Same as above, but with point P₁ replaced by P₃ and t=¼ replaced by t=¾.
              * The change of t value changes the coefficients in formulas below.
              */
             x = 9./64*ax + 27./64*bx + 27./64*Δx;

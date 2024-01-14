@@ -377,12 +377,12 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
-     * Creates a descriptor group with the same parameters than another group. This is a convenience constructor
-     * for operations that expect the same parameters than another operation, but perform a different process.
+     * Creates a descriptor group with the same parameters as another group. This is a convenience constructor
+     * for operations that expect the same parameters as another operation, but perform a different process.
      *
      * <h4>Example</h4>
      * The various <q>Coordinate Frame Rotation</q> variants (EPSG codes 1032, 1038 and 9607)
-     * expect the same parameters than their <q>Position Vector transformation</q> counterpart
+     * expect the same parameters as their <q>Position Vector transformation</q> counterpart
      * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.
      *
      * @param  parameters  the existing group from which to copy the parameters.

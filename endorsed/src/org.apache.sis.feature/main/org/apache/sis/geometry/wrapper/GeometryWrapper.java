@@ -90,7 +90,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * Returns the Spatial Reference System Identifier (SRID) if available.
      * The SRID is used in database such as PostGIS and is generally database-dependent.
      * This is <em>not</em> necessarily an EPSG code, even if it is a common practice
-     * to use the same numerical values than EPSG. Note that the absence of SRID does
+     * to use the same numerical values as EPSG. Note that the absence of SRID does
      * not mean that {@link #getCoordinateReferenceSystem()} would return no CRS.
      *
      * <p>Users should invoke the {@link #getCoordinateReferenceSystem()} method instead.
@@ -273,7 +273,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     /**
      * Applies a SQLMM operation on two geometries.
      * This method shall be invoked only for operations without non-geometric parameters.
-     * The second geometry is transformed to the same CRS than this geometry for conformance with SQLMM standard.
+     * The second geometry is transformed to the same CRS as this geometry for conformance with SQLMM standard.
      *
      * @param  operation  the SQLMM operation to apply.
      * @param  other      the other geometry. It is caller's responsibility to check that this value is non-null.
@@ -317,7 +317,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     /**
      * Applies a SQLMM operation on two geometries with one operation-specific argument.
      * The argument shall be non-null, unless the argument is optional.
-     * The second geometry is transformed to the same CRS than this geometry for conformance with SQLMM standard.
+     * The second geometry is transformed to the same CRS as this geometry for conformance with SQLMM standard.
      *
      * @param  operation  the SQLMM operation to apply.
      * @param  other      the other geometry. It is caller's responsibility to check that this value is non-null.
@@ -342,7 +342,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     }
 
     /**
-     * Transforms the {@code other} geometry to the same CRS than this geometry.
+     * Transforms the {@code other} geometry to the same CRS as this geometry.
      * This method should be cheap for the common case where the other geometry
      * already uses the CRS, in which case it is returned unchanged.
      *
@@ -350,7 +350,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * returns the other geometry unchanged.</p>
      *
      * @param  other  the other geometry.
-     * @return the other geometry in the same CRS than this geometry.
+     * @return the other geometry in the same CRS as this geometry.
      * @throws TransformException if the other geometry cannot be transformed.
      *         If may be because the other geometry does not define its CRS.
      */
@@ -495,7 +495,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     }
 
     /**
-     * Returns {@code true} if the given geometry use the same CRS than this geometry, or conservatively
+     * Returns {@code true} if the given geometry use the same CRS as this geometry, or conservatively
      * returns {@code false} in case of doubt. This method should perform only a cheap test; it is used
      * as a way to filter rapidly if {@link #transform(CoordinateReferenceSystem)} needs to be invoked.
      * If this method wrongly returned {@code false}, the {@code transform(…)} method will return the

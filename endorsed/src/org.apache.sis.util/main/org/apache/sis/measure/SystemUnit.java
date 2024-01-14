@@ -389,7 +389,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         if (step == unit) {
             return IdentityConverter.INSTANCE;
         }
-        // Same remark than in getConverterTo(Unit).
+        // Same remark as in getConverterTo(Unit).
         return unit.getConverterToAny(step).inverse();
     }
 

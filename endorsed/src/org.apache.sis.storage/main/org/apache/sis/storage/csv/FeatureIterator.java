@@ -144,7 +144,7 @@ class FeatureIterator implements Spliterator<Feature> {
     }
 
     /**
-     * Creates a new iterator using the same configuration than the given iterator.
+     * Creates a new iterator using the same configuration as the given iterator.
      * This constructor is for {@link #trySplit()} implementation only.
      */
     private FeatureIterator(final FeatureIterator other) {

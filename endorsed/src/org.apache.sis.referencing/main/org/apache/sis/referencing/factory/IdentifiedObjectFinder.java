@@ -132,7 +132,7 @@ public class IdentifiedObjectFinder {
 
         /**
          * Lookup based on all objects (both valid and deprecated) known to the factory.
-         * This is the same search than {@link #VALID_DATASET} except that deprecated objects
+         * This is the same search as {@link #VALID_DATASET} except that deprecated objects
          * are included in the search.
          */
         ALL_DATASET
@@ -278,7 +278,7 @@ public class IdentifiedObjectFinder {
      * then it shall wrap or copy the given set in an unmodifiable set and returns the result.
      *
      * @param  result  the search result as a modifiable set.
-     * @return a set with the same content than {@code result}.
+     * @return a set with the same content as {@code result}.
      */
     Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
         if (wrapper != null) {
@@ -294,7 +294,7 @@ public class IdentifiedObjectFinder {
      *
      * <ul>
      *   <li>If the specified object contains {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers}
-     *       associated to the same authority than the factory, then those identifiers are used for
+     *       associated to the same authority as the factory, then those identifiers are used for
      *       {@linkplain GeodeticAuthorityFactory#createObject(String) creating objects} to be tested.</li>
      *   <li>If the authority factory can create objects from their {@linkplain AbstractIdentifiedObject#getName() name}
      *       in addition of identifiers, then the name and {@linkplain AbstractIdentifiedObject#getAlias() aliases} are
@@ -556,7 +556,7 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Returns a set of authority codes that <strong>may</strong> identify the same object than the specified one.
+     * Returns a set of authority codes that <strong>may</strong> identify the same object as the specified one.
      * The returned set must contains <em>at least</em> the code of every objects that are
      * {@link ComparisonMode#APPROXIMATE approximately equal} to the specified one.
      * However, the set may conservatively contains the code for more objects if an exact search is too expensive.
@@ -568,7 +568,7 @@ public class IdentifiedObjectFinder {
      * to the specified one, then the {@code find(…)} method selects the first one in iteration order).</p>
      *
      * <h4>Default implementation</h4>
-     * The default implementation returns the same set than
+     * The default implementation returns the same set as
      * <code>{@linkplain GeodeticAuthorityFactory#getAuthorityCodes(Class) getAuthorityCodes}(type)</code>
      * where {@code type} is the interface specified at construction type.
      * Subclasses should override this method in order to return a smaller set, if they can.

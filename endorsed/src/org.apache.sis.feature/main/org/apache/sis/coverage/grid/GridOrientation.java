@@ -131,7 +131,7 @@ public final class GridOrientation implements Serializable {
      * but without altering grid axes order.
      *
      * <h4>Alternative</h4>
-     * {@code DISPLAY.canReorderGridAxis(true)} is an alternative where grid axes get the same reordering than CRS axes.
+     * {@code DISPLAY.canReorderGridAxis(true)} is an alternative where grid axes get the same reordering as CRS axes.
      * Consequently, the {@link GridExtent} may be different then the specified extent
      * but the {@code gridToCRS} transform always has the form shown in {@link #REFLECTION_Y}.
      * This alternative can be used for deriving a coordinate reference system with the

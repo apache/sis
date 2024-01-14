@@ -89,7 +89,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     }
 
     /**
-     * Creates a new data output which will write in the same channel than the given input.
+     * Creates a new data output which will write in the same channel as the given input.
      * The new instance will share the same channel and buffer than the given {@code input}.
      * Callers should not use the two {@code ChannelData} in same time for avoiding chaos.
      * Bytes will be written starting at the current position of the given input.

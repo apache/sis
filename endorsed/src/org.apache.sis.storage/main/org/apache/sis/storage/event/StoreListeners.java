@@ -763,7 +763,7 @@ public class StoreListeners implements Localized {
 
     /**
      * Unregisters a listener previously added for the given type of events.
-     * The {@code eventType} must be the exact same class than the one given to the {@code addListener(…)} method;
+     * The {@code eventType} must be the exact same class as the one given to the {@code addListener(…)} method;
      * this method does not remove listeners registered for subclasses and does not remove listeners registered in
      * parent manager.
      *

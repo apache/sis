@@ -31,7 +31,7 @@ import org.apache.sis.metadata.sql.util.SQLBuilder;
  *
  * <p>This class checks if a given identifier exists in the database. If it exists, then it searches for an unused
  * {@code "proposal-n"} identifier, where {@code "proposal"} is the given identifier and {@code "n"} is a number.
- * The algorithm in this class takes advantage of the fact that alphabetical order is not the same than numerical
+ * The algorithm in this class takes advantage of the fact that alphabetical order is not the same as numerical
  * order for scanning a slightly smaller amount of records (however the gain is significant only in special cases.
  * Generally speaking this class is not for tables having thousands of identifier beginning with the given prefix).
  * However, the selected numbers are not guaranteed to be in increasing order if there is "holes" in the sequence of
@@ -44,7 +44,7 @@ import org.apache.sis.metadata.sql.util.SQLBuilder;
  *       For example in the case of a PostgreSQL database, it requires PostgreSQL 8.0 or above with a {@code btree}
  *       index and C locale.</li>
  *   <li>The ordering of the {@code '-'} and {@code '0'} to {@code '9'} characters compared to other characters
- *       is the same than ASCII. This condition needs to hold only for those particular characters (the ordering
+ *       is the same as ASCII. This condition needs to hold only for those particular characters (the ordering
  *       between letters does not matter).</li>
  * </ul>
  *

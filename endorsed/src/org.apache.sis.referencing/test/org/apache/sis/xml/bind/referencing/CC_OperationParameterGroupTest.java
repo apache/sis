@@ -209,7 +209,7 @@ public final class CC_OperationParameterGroupTest extends TestCase {
     }
 
     /**
-     * Same verification than {@link #verifyMethodParameter(ParameterDescriptor, ParameterDescriptor)}, but stricter.
+     * Same verification as {@link #verifyMethodParameter(ParameterDescriptor, ParameterDescriptor)}, but stricter.
      *
      * @param  expected  a parameter descriptor containing the expected properties (except remarks).
      * @param  remarks   the expected remarks, or {@code null} for fetching this information from {@code expected}.

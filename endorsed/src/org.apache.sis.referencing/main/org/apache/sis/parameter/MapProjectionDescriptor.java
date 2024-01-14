@@ -102,7 +102,7 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
 
     /**
      * Returns {@code true} if the given parameter names should be considered equals.
-     * The algorithm used here shall be basically the same than the one used (indirectly)
+     * The algorithm used here shall be basically the same as the one used (indirectly)
      * by {@link DefaultParameterDescriptorGroup#descriptor(String)}.
      *
      * @see org.apache.sis.referencing.IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)

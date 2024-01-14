@@ -47,7 +47,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
 
     /**
      * Exported name of the attribute or element. Will often (but not necessarily) have
-     * the same local part than {@code event.getName()} but a different namespace.
+     * the same local part as {@code event.getName()} but a different namespace.
      */
     final QName name;
 
@@ -205,7 +205,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
      * This wrapper is used for changing the namespace and sometimes the name of the element.
      */
     static final class End extends TransformedEvent<EndElement> implements EndElement {
-        /** The namespaces, may or may not be the same than the wrapped event. */
+        /** The namespaces, may or may not be the same as the wrapped event. */
         private final List<Namespace> namespaces;
 
         /** Wraps the given event with potentially different name and namespaces. */
@@ -229,10 +229,10 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
      * The attributes may also be modified.
      */
     static class Start extends TransformedEvent<StartElement> implements StartElement {
-        /** The namespaces, may or may not be the same than the wrapped event. */
+        /** The namespaces, may or may not be the same as the wrapped event. */
         private final List<Namespace> namespaces;
 
-        /** The attributes, may or may not be the same than the wrapped event. */
+        /** The attributes, may or may not be the same as the wrapped event. */
         private final List<Attribute> attributes;
 
         /** The version to export, used for wrapping namespace context. */
@@ -291,7 +291,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
         /**
          * Returns a context mapping prefixes used in XML document to namespaces used in JAXB annotations.
          * The {@code TransformingNamespaces.Inverse.getNamespaceURI(String)} method in that context shall do
-         * the same work than {@link #getNamespaceURI(String)} in this event.
+         * the same work as {@link #getNamespaceURI(String)} in this event.
          */
         @Override
         public NamespaceContext getNamespaceContext() {

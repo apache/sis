@@ -81,7 +81,7 @@ final class ReshapedImage extends PlanarImage {
     private final int minTileX, minTileY;
 
     /**
-     * Creates a new image with the same data than the given image but located at different coordinates.
+     * Creates a new image with the same data as the given image but located at different coordinates.
      * In addition, this constructor can reduce the number of tiles.
      *
      * @param  source  the image to move.
@@ -193,7 +193,7 @@ final class ReshapedImage extends PlanarImage {
     }
 
     /**
-     * Returns a raster with the same data than the given raster but with coordinates translated
+     * Returns a raster with the same data as the given raster but with coordinates translated
      * from the coordinate system of the wrapped image to the coordinate system of this image.
      * The returned raster will have the given raster as its parent.
      */

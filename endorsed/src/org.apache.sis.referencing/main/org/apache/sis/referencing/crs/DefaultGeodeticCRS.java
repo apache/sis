@@ -86,7 +86,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
      *
      * <p>This constructor is not public because it does not verify the {@code cs} type.</p>
@@ -105,7 +105,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     }
 
     /**
-     * Constructs a new coordinate reference system with the same values than the specified one.
+     * Constructs a new coordinate reference system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -147,7 +147,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     }
 
     /**
-     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     * Returns a coordinate reference system of the same type as this CRS but with different axes.
      * This method shall be overridden by all {@code DefaultGeodeticCRS} subclasses in this package.
      */
     @Override

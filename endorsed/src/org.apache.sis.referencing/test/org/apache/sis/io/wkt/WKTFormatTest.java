@@ -321,7 +321,7 @@ public final class WKTFormatTest extends TestCase {
             "  AXIS[“N”,NORTH]]");
         /*
          * Formats using OGC identifiers. Use of OGC identifiers is implicit with Convention.WKT1, unless we
-         * set explicitly another authority. The result should be the same than the above string, except:
+         * set explicitly another authority. The result should be the same as the above string, except:
          *
          *   - The TOWGS84 parameters have been trimmed to 3 values.
          *   - The AUTHORITY elements has been inferred for the PROJECTION element.

@@ -183,7 +183,7 @@ public abstract class PRJDataStore extends URIDataStore {
 
     /**
      * Reads the content of the auxiliary file with the specified extension.
-     * This method uses the same URI than {@link #location},
+     * This method uses the same URI as {@link #location},
      * except for the extension which is replaced by the given value.
      * This method is suitable for reasonably small files.
      * An arbitrary size limit is applied for safety.
@@ -360,7 +360,7 @@ public abstract class PRJDataStore extends URIDataStore {
 
     /**
      * Creates a writer for an auxiliary file with the specified extension.
-     * This method uses the same path than {@link #location},
+     * This method uses the same path as {@link #location},
      * except for the extension which is replaced by the given value.
      *
      * @param  extension  the filename extension of the auxiliary file to write.

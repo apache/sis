@@ -232,7 +232,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     protected final MathTransform gridToCRS;
 
     /**
-     * Same conversion than {@link #gridToCRS} but from {@linkplain PixelInCell#CELL_CORNER cell corner}
+     * Same conversion as {@link #gridToCRS} but from {@linkplain PixelInCell#CELL_CORNER cell corner}
      * instead of center. This transform is preferable to {@code gridToCRS} for transforming envelopes.
      *
      * @serial This field is serialized because it may be a value specified explicitly at construction time,
@@ -302,7 +302,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Creates a new grid geometry with the same values than the given grid geometry.
+     * Creates a new grid geometry with the same values as the given grid geometry.
      * This is a copy constructor for subclasses.
      *
      * @param other  the other grid geometry to copy.
@@ -460,7 +460,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  specified  the transform specified by the user. This is not necessarily {@link #gridToCRS}.
      * @param  crs        the coordinate reference system to declare in the envelope. May be {@code null}.
-     * @param  limits     if non-null, intersect with that envelope. The CRS must be the same than {@code crs}.
+     * @param  limits     if non-null, intersect with that envelope. The CRS must be the same as {@code crs}.
      */
     private ImmutableEnvelope computeEnvelope(final MathTransform specified, final CoordinateReferenceSystem crs,
             final Envelope limits) throws TransformException
@@ -597,7 +597,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * the constructors expecting a {@link MathTransform} argument.</p>
      *
      * <h4>Dimension order</h4>
-     * The given envelope shall always declare dimensions in same order than the given extent.
+     * The given envelope shall always declare dimensions in same order as the given extent.
      * This constructor may reorder axes if {@code orientation} is (for example) {@link GridOrientation#DISPLAY},
      * but in such case this constructor will derive itself an envelope and a CRS with reordered axes.
      *
@@ -849,7 +849,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns the number of dimensions of the <em>CRS</em>. This is typically the same than the
+     * Returns the number of dimensions of the <em>CRS</em>. This is typically the same as the
      * number of {@linkplain #getDimension() grid dimensions}, but not necessarily.
      */
     final int getTargetDimension() {
@@ -1146,7 +1146,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Returns an <em>estimation</em> of the grid resolution, in units of the coordinate reference system axes.
      * The length of the returned array is the number of CRS dimensions, with {@code resolution[0]}
      * being the resolution along the first CRS axis, {@code resolution[1]} the resolution along the second CRS
-     * axis, <i>etc</i>. Note that this axis order is not necessarily the same than grid axis order.
+     * axis, <i>etc</i>. Note that this axis order is not necessarily the same as grid axis order.
      *
      * <p>If the resolution at CRS dimension <var>i</var> is not a constant factor
      * (i.e. the <code>{@linkplain #isConversionLinear(int...) isConversionLinear}(i)</code> returns {@code false}),
@@ -1236,7 +1236,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * typically the horizontal ones at indices 0 and 1. But the vertical dimension (usually at index 2)
      * is often non-linear, for example with data at 0, 5, 10, 100 and 1000 metres.
      *
-     * @param  targets  indices of CRS axes. This is not necessarily the same than indices of grid axes.
+     * @param  targets  indices of CRS axes. This is not necessarily the same as indices of grid axes.
      * @return {@code true} if the conversion from grid coordinates to "real world" coordinates is linear
      *         for all the given CRS dimension.
      */
@@ -1572,7 +1572,7 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * Returns a grid geometry with the given grid extent, which implies a new "real world" computation.
-     * The "grid to CRS" transforms and the resolution stay the same than this {@code GridGeometry}.
+     * The "grid to CRS" transforms and the resolution stay the same as this {@code GridGeometry}.
      * The "real world" envelope is recomputed for the new grid extent using the "grid to CRS" transforms.
      *
      * <p>The given extent is taken verbatim; this method does no clipping.
@@ -1605,7 +1605,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Returns a grid geometry that encompass only some dimensions of this grid geometry.
      * The specified dimensions will be copied into a new grid geometry if necessary.
      * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;
-     * they are not necessarily the same than the {@linkplain #getEnvelope() envelope} dimensions.
+     * they are not necessarily the same as the {@linkplain #getEnvelope() envelope} dimensions.
      * The given dimensions must be in strictly ascending order without duplicated values.
      * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
      *

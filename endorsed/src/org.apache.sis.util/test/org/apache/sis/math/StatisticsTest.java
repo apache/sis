@@ -118,7 +118,7 @@ public final class StatisticsTest extends TestCase {
     }
 
     /**
-     * Same than {@link #testUniform()}, but on integer values.
+     * Same as {@link #testUniform()}, but on integer values.
      * Used for testing {@link Statistics#accept(long)}.
      */
     @Test

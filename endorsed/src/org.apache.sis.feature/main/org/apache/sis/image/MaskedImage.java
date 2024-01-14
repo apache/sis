@@ -457,11 +457,11 @@ complete:   for (int border = 0; ; border++) {
 
     /**
      * Compares the given object with this image for equality. This method returns {@code true}
-     * if the given object is non-null, is an instance of the exact same class than this image,
+     * if the given object is non-null, is an instance of the exact same class as this image,
      * has equal sources, clip and fill values.
      *
      * @param  object  the object to compare with this image.
-     * @return {@code true} if the given object is an image performing the same clipping than this image.
+     * @return {@code true} if the given object is an image performing the same clipping as this image.
      */
     @Override
     public boolean equals(final Object object) {

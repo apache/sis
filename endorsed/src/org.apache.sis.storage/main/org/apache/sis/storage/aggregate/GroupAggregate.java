@@ -144,7 +144,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     }
 
     /**
-     * Creates a new resource with the same data than given resource but a different merge strategy.
+     * Creates a new resource with the same data as given resource but a different merge strategy.
      *
      * @param  source      the resource to copy.
      * @param  components  components with the new merge strategy.
@@ -160,7 +160,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     }
 
     /**
-     * Returns an aggregate with the same data than this aggregate but a different merge strategy.
+     * Returns an aggregate with the same data as this aggregate but a different merge strategy.
      * This is the implementation of {@link MergeStrategy#apply(Resource)} public method.
      */
     @Override

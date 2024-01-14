@@ -72,7 +72,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
     private final FeatureType commonType;
 
     /**
-     * Creates a new concatenated feature set with the same types than the given feature set,
+     * Creates a new concatenated feature set with the same types as the given feature set,
      * but different sources. This is used for creating {@linkplain #subset(Query) subsets}.
      */
     private ConcatenatedFeatureSet(final FeatureSet[] sources, final ConcatenatedFeatureSet original) {

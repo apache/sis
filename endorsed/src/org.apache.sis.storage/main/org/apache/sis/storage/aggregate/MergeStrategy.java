@@ -89,7 +89,7 @@ public final class MergeStrategy {
      * <div class="note"><b>Rational:</b>
      * the "smallest time outside" criterion (rule 2) is before "best centered" criterion (rule 3)
      * because of the following scenario: if a user specifies a "time of interest" (TOI) of 1 day
-     * and if there is two slices intersecting the TOI, with one slice being a raster of monthly
+     * and if there are two slices intersecting the TOI, with one slice being a raster of monthly
      * averages the other slice being a raster of daily data, we want the daily data to be selected
      * even if by coincidence the monthly averages is better centered.</div>
      *
@@ -157,7 +157,7 @@ public final class MergeStrategy {
     }
 
     /**
-     * Returns a resource with same data than specified resource but using this merge strategy.
+     * Returns a resource with same data as specified resource but using this merge strategy.
      * If the given resource is an instance created by {@link CoverageAggregator} and uses a different strategy,
      * then a new resource using this merge strategy is returned. Otherwise the given resource is returned as-is.
      * The returned resource will share the same resources and caches than the given resource.

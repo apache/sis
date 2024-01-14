@@ -37,7 +37,7 @@ import org.apache.sis.xml.IdentifierSpace;
  * marshalled in a {@code MD_Identifier} XML element. Those identifiers are also excluded from the
  * tree formatted by {@link org.apache.sis.metadata.AbstractMetadata#asTreeTable()}.
  *
- * <p>There is two kinds of non-marshalled identifiers:</p>
+ * <p>There are two kinds of non-marshalled identifiers:</p>
  *
  * <ul>
  *   <li>The XML attributes declared by ISO 19115-3 specification in the {@code gco:PropertyType}

@@ -23,7 +23,7 @@ package org.apache.sis.storage.geotiff.base;
 public class Resources_en extends Resources {
     /**
      * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
+     * the resource file of the same name as this class.
      */
     public Resources_en() {
     }

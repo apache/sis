@@ -149,7 +149,7 @@ public final class Latitude extends Angle {
 
     /**
      * Returns the given latitude value clamped to the [{@linkplain #MIN_VALUE -90} … {@linkplain #MAX_VALUE 90}]° range.
-     * If the given value is outside the latitude range, then this method replaces it by ±90° with the same sign than the
+     * If the given value is outside the latitude range, then this method replaces it by ±90° with the same sign as the
      * given φ value.
      *
      * <p>Special cases:</p>

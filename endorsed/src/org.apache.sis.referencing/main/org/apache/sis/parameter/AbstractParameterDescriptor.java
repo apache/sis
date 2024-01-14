@@ -185,7 +185,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     }
 
     /**
-     * Constructs a new parameter descriptor with the same values than the specified one.
+     * Constructs a new parameter descriptor with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
      * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *

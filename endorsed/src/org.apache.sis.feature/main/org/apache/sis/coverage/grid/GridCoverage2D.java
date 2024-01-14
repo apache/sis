@@ -180,7 +180,7 @@ public class GridCoverage2D extends GridCoverage {
      * @param  source  the coverage from which to copy grid geometry and sample dimensions.
      * @param  data    the sample values as a {@link RenderedImage}, with one band for each sample dimension.
      * @throws IllegalGridGeometryException if the image size is not consistent with the grid geometry.
-     * @throws IllegalArgumentException if the image number of bands is not the same than the number of sample dimensions.
+     * @throws IllegalArgumentException if the image number of bands is not the same as the number of sample dimensions.
      *
      * @since 1.2
      */
@@ -236,7 +236,7 @@ public class GridCoverage2D extends GridCoverage {
      *                 If {@code null}, default sample dimensions will be created with no transfer function.
      * @param  data    the sample values as a {@link RenderedImage}, with one band for each sample dimension.
      * @throws IllegalGridGeometryException if the {@code domain} does not met the above-documented conditions.
-     * @throws IllegalArgumentException if the image number of bands is not the same than the number of sample dimensions.
+     * @throws IllegalArgumentException if the image number of bands is not the same as the number of sample dimensions.
      * @throws ArithmeticException if the distance between grid location and image location exceeds the {@code long} capacity.
      *
      * @see GridCoverageBuilder
@@ -303,7 +303,7 @@ public class GridCoverage2D extends GridCoverage {
     /**
      * If the given domain does not have a {@link GridExtent}, creates a new grid geometry
      * with an extent computed from the given image bounds. The new grid will start at the
-     * same location than the image and will have the same size.
+     * same location as the image and will have the same size.
      *
      * <p>This method does nothing if the given domain already has an extent;
      * it does not verify that the extent is consistent with image size.
@@ -447,7 +447,7 @@ public class GridCoverage2D extends GridCoverage {
      * If the {@linkplain #getGridGeometry() complete geometry} is already two-dimensional,
      * then this method returns the same geometry. Otherwise it returns a geometry for the two first
      * axes having a {@linkplain GridExtent#getSize(int) size} greater than 1 in the grid envelope.
-     * Note that those axes are guaranteed to appear in the same order than in the complete geometry.
+     * Note that those axes are guaranteed to appear in the same order as in the complete geometry.
      *
      * @return the two-dimensional part of the grid geometry.
      *
@@ -516,7 +516,7 @@ public class GridCoverage2D extends GridCoverage {
         /**
          * Returns a sequence of double values for a given point in the coverage.
          * The CRS of the given point may be any coordinate reference system,
-         * or {@code null} for the same CRS than the coverage.
+         * or {@code null} for the same CRS as the coverage.
          */
         @Override
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {

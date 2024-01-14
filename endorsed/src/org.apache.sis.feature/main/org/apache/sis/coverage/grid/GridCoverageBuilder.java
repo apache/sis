@@ -206,7 +206,7 @@ public class GridCoverageBuilder {
      * ignoring the translation column).
      *
      * <h4>Axis directions</h4>
-     * By default grid indices increase in the same direction than domain coordinates.
+     * By default grid indices increase in the same direction as domain coordinates.
      * When applied to images with pixels located by (<var>column</var>, <var>row</var>) indices,
      * it means that by default row indices in the image are increasing toward up if the <var>y</var>
      * coordinates in the coverage domain (e.g. latitude values) are also increasing toward up.
@@ -393,7 +393,7 @@ public class GridCoverageBuilder {
      *
      * <p>When building coverage with a {@linkplain #setDomain(Envelope) domain specified by an envelope}
      * (i.e. with no explicit <cite>grid to CRS</cite> transform), the default {@code GridCoverageBuilder}
-     * behavior is to create a {@link GridGeometry} with grid indices increasing in the same direction than
+     * behavior is to create a {@link GridGeometry} with grid indices increasing in the same direction as
      * domain coordinates. This method allows to reverse direction for an axis.
      * The most typical usage is to reverse the direction of the <var>y</var> axis in images.</p>
      *

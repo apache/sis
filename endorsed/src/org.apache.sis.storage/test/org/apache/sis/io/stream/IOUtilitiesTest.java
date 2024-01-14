@@ -192,7 +192,7 @@ public final class IOUtilitiesTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testToFile()}, but using the UTF-8 encoding.
+     * Same test as {@link #testToFile()}, but using the UTF-8 encoding.
      *
      * @throws IOException if a URL cannot be parsed.
      */

@@ -128,7 +128,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
 
     /**
      * The coordinate reference systems in this compound CRS.
-     * May be the same reference than {@link #singles}.
+     * May be the same reference as {@link #singles}.
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at construction and unmarshalling time by {@link #setComponents(List)}</p>
@@ -144,7 +144,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
 
     /**
      * Constructs a compound CRS from the given properties and CRS.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
      *
@@ -216,7 +216,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
                 type = 1;   // Must match the number used in Resources.Keys.DuplicatedSpatialComponents_1.
             } else if (component instanceof ProjectedCRS) {
                 isProjected = 1;
-                type = 1;   // Intentionally same number than for GeographicCRS case.
+                type = 1;   // Intentionally same number as for GeographicCRS case.
             } else if (component instanceof VerticalCRS) {
                 isEllipsoidalHeight = ReferencingUtilities.isEllipsoidalHeight(((VerticalCRS) component).getDatum());
                 type = 2;   // Must match the number used in Resources.Keys.DuplicatedSpatialComponents_1.
@@ -260,7 +260,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * Constructs a new coordinate reference system with the same values than the specified one.
+     * Constructs a new coordinate reference system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -281,7 +281,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * Returns a SIS CRS implementation with the same values than the given arbitrary implementation.
+     * Returns a SIS CRS implementation with the same values as the given arbitrary implementation.
      * If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.

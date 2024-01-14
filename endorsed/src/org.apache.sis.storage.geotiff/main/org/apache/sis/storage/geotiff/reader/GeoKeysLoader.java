@@ -188,7 +188,7 @@ public class GeoKeysLoader {
                     break;
                 }
                 /*
-                 * Values of type `short` are stored in the same vector than the key directory;
+                 * Values of type `short` are stored in the same vector as the key directory;
                  * the specification does not allocate a separated vector for them. We use the
                  * `int` type if needed for allowing storage of unsigned short values.
                  */

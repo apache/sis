@@ -122,7 +122,7 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
 
     /**
      * Converts an array of coordinates.
-     * This method performs the same conversion than {@link #transform(double[], int, double[], int, boolean)},
+     * This method performs the same conversion as {@link #transform(double[], int, double[], int, boolean)},
      * but the formulas are repeated here for performance reasons.
      */
     @Override

@@ -171,7 +171,7 @@ public class ImageLayout {
             return destination;
         }
 
-        /** Returns the target sample model, which is fixed to the same than the destination image. */
+        /** Returns the target sample model, which is fixed to the same as the destination image. */
         @Override public SampleModel createCompatibleSampleModel(RenderedImage image, Rectangle bounds) {
             return destination.getSampleModel();
         }

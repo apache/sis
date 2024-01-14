@@ -268,7 +268,7 @@ abstract class AnnotatedImage extends ImageAdapter {
 
     /**
      * If the source image is the same operation for the same area of interest, returns that source.
-     * Otherwise returns {@code this} or a previous instance doing the same operation than {@code this}.
+     * Otherwise returns {@code this} or a previous instance doing the same operation as {@code this}.
      *
      * @see #equals(Object)
      */
@@ -549,7 +549,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * Subclasses should override {@link #getExtraParameter()} instead of this method.
      *
      * @param  object  the object to compare with this image.
-     * @return {@code true} if the given object is an image performing the same calculation than this image.
+     * @return {@code true} if the given object is an image performing the same calculation as this image.
      *
      * @see #getExtraParameter()
      */

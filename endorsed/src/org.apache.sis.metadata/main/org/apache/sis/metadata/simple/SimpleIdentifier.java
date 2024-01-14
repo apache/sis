@@ -154,7 +154,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
     }
 
     /**
-     * Returns {@code true} if the given object is of the same class than this
+     * Returns {@code true} if the given object is of the same class as this
      * {@code SimpleIdentifier} and has the same values.
      *
      * @param  obj  the object to compare with this {@code SimpleIdentifier} for equality.

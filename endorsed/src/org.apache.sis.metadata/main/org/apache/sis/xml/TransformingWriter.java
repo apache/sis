@@ -254,7 +254,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
             out.setPrefix(prefix, namespace);
             /*
              * The above call for `getPreferredPrefix` above is required: JAXB seems to need the prefixes
-             * for recognizing namespaces. The prefix shall be computed in the same way than `exportIfNew`.
+             * for recognizing namespaces. The prefix shall be computed in the same way as `exportIfNew`.
              * We enter in this block only for the root element, before to parse `xmlns` attributes. For
              * all other elements after the root elements, above call to `out.getPrefix(uri)` should succeed.
              */

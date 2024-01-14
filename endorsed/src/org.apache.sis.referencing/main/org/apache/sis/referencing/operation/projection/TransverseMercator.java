@@ -327,7 +327,7 @@ public class TransverseMercator extends NormalizedProjection {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     TransverseMercator(final TransverseMercator other) {
         super(null, other);
@@ -645,7 +645,7 @@ public class TransverseMercator extends NormalizedProjection {
         final double ξ = srcPts[srcOff+1];
         /*
          * Following calculation of sin_2ξ, sin_4ξ, etc. is basically a copy-and-paste of the code in transform(…).
-         * Its purpose is the same than for transform(…): reduce the amount of calls to Math.sin(double) and other
+         * Its purpose is the same as for transform(…): reduce the amount of calls to Math.sin(double) and other
          * methods.
          */
         final double sin_2ξ  = sin (2*ξ);

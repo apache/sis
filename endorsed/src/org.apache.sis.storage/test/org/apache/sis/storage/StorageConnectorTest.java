@@ -54,7 +54,7 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 @DependsOn(org.apache.sis.io.stream.ChannelImageInputStreamTest.class)
 public final class StorageConnectorTest extends TestCase {
     /**
-     * Name of the test file, in the same directory than this {@code StorageConnectorTest} file.
+     * Name of the test file, in the same directory as this {@code StorageConnectorTest} file.
      */
     private static final String FILENAME = "Any.txt";
 
@@ -351,7 +351,7 @@ public final class StorageConnectorTest extends TestCase {
 
     /**
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link ByteBuffer} type.
-     * This method uses the same test file than {@link #testGetAsDataInputFromURL()}.
+     * This method uses the same test file as {@link #testGetAsDataInputFromURL()}.
      *
      * @throws DataStoreException if an error occurred while using the storage connector.
      * @throws IOException if an error occurred while reading the test file.

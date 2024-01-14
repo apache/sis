@@ -58,7 +58,7 @@ public final class GeographicToGeocentric extends GeodeticOperation {
 
     /**
      * An Apache SIS specific parameter for the number of dimensions (2 or 3).
-     * This parameter is practically the same than {@link GeocentricAffineBetweenGeographic#DIMENSION} except:
+     * This parameter is practically the same as {@link GeocentricAffineBetweenGeographic#DIMENSION} except:
      *
      * <ul>
      *   <li>The code space is {@code "SIS"} instead of {@code "OGC"} since this parameter is not defined in OGC 01-009.</li>

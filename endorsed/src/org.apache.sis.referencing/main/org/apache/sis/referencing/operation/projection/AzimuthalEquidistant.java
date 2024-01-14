@@ -121,7 +121,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     AzimuthalEquidistant(final AzimuthalEquidistant other) {
         super(null, other);
@@ -158,7 +158,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
      *
      * @param  srcPts    source point coordinates, as (<var>longitude</var>, <var>latitude</var>) in radians.
      * @param  srcOff    the offset of the single coordinate tuple to be converted in the source array.
-     * @param  dstPts    the array into which the converted coordinates is returned (may be the same than {@code srcPts}).
+     * @param  dstPts    the array into which the converted coordinates is returned (may be the same as {@code srcPts}).
      * @param  dstOff    the offset of the location of the converted coordinates that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
@@ -212,7 +212,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
      *
      * @param  srcPts  the array containing the source point coordinates, as linear distance on a unit sphere or ellipse.
      * @param  srcOff  the offset of the point to be converted in the source array.
-     * @param  dstPts  the array into which the converted point coordinates is returned (may be the same than {@code srcPts}).
+     * @param  dstPts  the array into which the converted point coordinates is returned (may be the same as {@code srcPts}).
      * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point cannot be converted.
      */

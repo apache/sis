@@ -529,7 +529,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Returns the parameter descriptor, or {@code null} if none.
-     * This method performs the same special check than {@link #getParameterValues()}.
+     * This method performs the same special check as {@link #getParameterValues()}.
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
@@ -562,7 +562,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     {
         assert isValid();
         /*
-         * Note: If we know that the transfer dimension is the same than source
+         * Note: If we know that the transfer dimension is the same as source
          *       and target dimension, then we don't need to use an intermediate
          *       point. This optimization is done in ConcatenatedTransformDirect.
          */
@@ -761,7 +761,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                           final float [] dstPts, int dstOff, int numPts)
             throws TransformException
     {
-        // Same code than transform(float[], ..., float[], ...) but the method calls
+        // Same code as transform(float[], ..., float[], ...) but the method calls
         // are actually different because of overloading of the "transform" methods.
         assert isValid();
         if (numPts <= 0) {
@@ -804,7 +804,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             throws TransformException
     {
         /*
-         * Same code than transform(double[], ..., double[], ...) but the method calls
+         * Same code as transform(double[], ..., double[], ...) but the method calls
          * are actually different because of overloading of the "transform" methods.
          */
         assert isValid();

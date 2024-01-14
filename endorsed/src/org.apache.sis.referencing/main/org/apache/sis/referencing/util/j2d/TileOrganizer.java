@@ -283,13 +283,13 @@ public class TileOrganizer {
 
         /**
          * The translation in units of the level having finest resolution.
-         * This is the same units than for tiles at subsampling (1,1).
+         * This is the same units as for tiles at subsampling (1,1).
          */
         private final int dx, dy;
 
         /**
          * Creates a new translated transform. The translation is specified in unit of the level
-         * having finest resolution, i.e. in the same units than for tiles at subsampling (1,1).
+         * having finest resolution, i.e. in the same units as for tiles at subsampling (1,1).
          *
          * @param  subsampling  the {@linkplain Tile#getSubsampling() tile subsampling}.
          * @param  reference    the "grid to real world" transform at subsampling (1,1).

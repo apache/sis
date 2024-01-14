@@ -673,7 +673,7 @@ apply:          if (forwardChangeOfCRS == null) {
      * method returns {@code null}.
      *
      * <p>The returned array has a length equals to the number of dimensions in the target CRS.
-     * Only coordinates in dimensions without source (<var>t</var> in above example) will be used.
+     * Only coordinates in dimensions without source (<var>t</var> in the above example) will be used.
      * All other coordinate values will be ignored.</p>
      *
      * @see org.apache.sis.referencing.operation.CoordinateOperationContext#getConstantCoordinates()

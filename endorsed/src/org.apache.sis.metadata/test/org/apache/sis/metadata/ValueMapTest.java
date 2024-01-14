@@ -152,7 +152,7 @@ public final class ValueMapTest extends TestCase {
     }
 
     /**
-     * Tests the {@link ValueMap#entrySet()} method for the same metadata than {@link #testEntrySet()},
+     * Tests the {@link ValueMap#entrySet()} method for the same metadata as {@link #testEntrySet()},
      * but asking for all non-null and non-nil entries including the empty collections.
      */
     @Test
@@ -181,7 +181,7 @@ public final class ValueMapTest extends TestCase {
     }
 
     /**
-     * Tests the {@link ValueMap#entrySet()} method for the same metadata than {@link #testEntrySet()},
+     * Tests the {@link ValueMap#entrySet()} method for the same metadata as {@link #testEntrySet()},
      * but asking for all non-null entries including nil objects and the empty collections.
      */
     @Test
@@ -211,7 +211,7 @@ public final class ValueMapTest extends TestCase {
     }
 
     /**
-     * Tests the {@link ValueMap#entrySet()} method for the same metadata than {@link #testEntrySet()},
+     * Tests the {@link ValueMap#entrySet()} method for the same metadata as {@link #testEntrySet()},
      * but asking for all entries including null and empty values.
      */
     @Test

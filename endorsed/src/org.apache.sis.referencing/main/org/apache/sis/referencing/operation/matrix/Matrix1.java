@@ -93,7 +93,7 @@ public class Matrix1 extends MatrixSIS {
     }
 
     /**
-     * Creates a new matrix initialized to the same value than the specified one.
+     * Creates a new matrix initialized to the same value as the specified one.
      * The specified matrix size must be {@value #SIZE}×{@value #SIZE}.
      * This is not verified by this constructor, since it shall be verified by {@link Matrices}.
      *
@@ -240,7 +240,7 @@ public class Matrix1 extends MatrixSIS {
     /**
      * Normalizes all columns in-place.
      * For a 1×1 matrix with non-NaN value, this method sets the {@link #m00} value
-     * to +1, -1 or 0 with the same sign than the original value.
+     * to +1, -1 or 0 with the same sign as the original value.
      *
      * @return the magnitude of the column, which is the absolute value of {@link #m00}.
      */

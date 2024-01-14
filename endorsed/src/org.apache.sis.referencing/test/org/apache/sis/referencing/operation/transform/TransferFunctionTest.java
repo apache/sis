@@ -156,7 +156,7 @@ public final class TransferFunctionTest extends TestCase {
     }
 
     /**
-     * Same tests than above, but using a math transform factory.
+     * Same tests as above, but using a math transform factory.
      *
      * @throws FactoryException if the factory failed to create a transform.
      */

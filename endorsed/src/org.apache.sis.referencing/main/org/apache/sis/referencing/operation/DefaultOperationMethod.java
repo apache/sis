@@ -259,7 +259,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
 
     /**
      * Returns the properties to be given to an identified object derived from the specified one.
-     * This method returns the same properties than the supplied argument
+     * This method returns the same properties as the supplied argument
      * (as of <code>{@linkplain IdentifiedObjects#getProperties getProperties}(info)</code>),
      * except for the following:
      *
@@ -285,7 +285,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     }
 
     /**
-     * Creates a new operation method with the same values than the specified one.
+     * Creates a new operation method with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -302,7 +302,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     }
 
     /**
-     * Returns a SIS operation method implementation with the same values than the given arbitrary implementation.
+     * Returns a SIS operation method implementation with the same values as the given arbitrary implementation.
      * If the given object is {@code null}, then {@code null} is returned.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.

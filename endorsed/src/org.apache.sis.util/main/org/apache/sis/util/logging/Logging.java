@@ -201,7 +201,7 @@ public final class Logging extends Static {
      * If any of them is {@code null}, then it will be inferred from the error stack trace as described below.
      * If the {@code classe} or {@code method} arguments are null, then the originating class name and method name
      * are inferred from the given {@code error} using the first {@linkplain StackTraceElement stack trace element}
-     * for which the class name is inside a package or sub-package of the same name than the logger name.
+     * for which the class name is inside a package or sub-package of the same name as the logger name.
      *
      * <h4>Recommended usage</h4>
      * Explicit value for class and method names are preferred to automatic inference for the following reasons:

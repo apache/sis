@@ -23,7 +23,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 /**
  * The provider for <q>Coordinate Frame rotation (geog2D domain)</q> (EPSG:9607).
- * This is the same transformation than "{@link PositionVector7Param}"
+ * This is the same transformation as "{@link PositionVector7Param}"
  * except that the rotation angles have the opposite sign.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

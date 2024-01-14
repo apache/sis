@@ -263,7 +263,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Creates a new coordinate system with the same values than the specified one.
+     * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -399,7 +399,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Returns a coordinate system usually of the same type than this CS but with different axes.
+     * Returns a coordinate system usually of the same type as this CS but with different axes.
      * This method shall be overridden by all {@code AbstractCS} subclasses in this package.
      *
      * <p>This method returns a coordinate system of the same type if the number of axes is unchanged.
@@ -407,7 +407,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * this method may return another kind of coordinate system. See {@link AxisFilter} for an example.</p>
      *
      * @param  axes  the set of axes to give to the new coordinate system.
-     * @return a new coordinate system of the same type than {@code this}, but using the given axes.
+     * @return a new coordinate system of the same type as {@code this}, but using the given axes.
      * @throws IllegalArgumentException if {@code axes} contains an unexpected number of axes,
      *         or if an axis has an unexpected direction or unexpected unit of measurement.
      */

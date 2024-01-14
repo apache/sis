@@ -35,7 +35,7 @@ import org.apache.sis.test.DependsOn;
   LineAppenderTest.class})
 public final class TableAppenderTest extends AppenderTestCase {
     /**
-     * The table appender to test. May not be same instance than {@link #appender},
+     * The table appender to test. May not be same instance as {@link #appender},
      * because the super-class will wraps it in a {@link SingleCharAppendable} in
      * some occasions.
      */

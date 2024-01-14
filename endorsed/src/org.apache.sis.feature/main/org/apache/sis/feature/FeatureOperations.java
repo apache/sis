@@ -50,7 +50,7 @@ import org.opengis.filter.Expression;
  * <h2>Operation name, designation and description</h2>
  * All operations are identified by a programmatic name, but can also have a more human-readable designation
  * for Graphical User Interfaces (GUI). Those identification information are specified in a {@code Map<String,?>}.
- * The recognized entries are the same than the ones documented in {@link AbstractIdentifiedType}, augmented with
+ * The recognized entries are the same as the ones documented in {@link AbstractIdentifiedType}, augmented with
  * entries that describe the operation <em>result</em>. Those entries are summarized below:
  *
  * <table class="sis">
@@ -109,7 +109,7 @@ import org.opengis.filter.Expression;
  *
  * If no {@code "result.*"} entry is provided, then the methods in this class will use some default name, designation
  * and other information for the result type. Those defaults are operation specific; they are often, but not necessarily,
- * the same than the operation name, designation, <i>etc.</i>
+ * the same as the operation name, designation, <i>etc.</i>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -173,10 +173,10 @@ public final class FeatureOperations extends Static {
      * of two or more attribute values that uniquely identify a feature instance.
      *
      * <p>The {@code delimiter}, {@code prefix} and {@code suffix} arguments given to this method
-     * are used in the same way than {@link java.util.StringJoiner}, except for null values.
+     * are used in the same way as {@link java.util.StringJoiner}, except for null values.
      * Null prefix, suffix and property values are handled as if they were empty strings.</p>
      *
-     * <p>If the same character sequences than the given delimiter appears in a property value,
+     * <p>If the same character sequences as the given delimiter appears in a property value,
      * the {@code '\'} escape character will be inserted before that sequence.
      * If the {@code '\'} character appears in a property value, it will be doubled.</p>
      *

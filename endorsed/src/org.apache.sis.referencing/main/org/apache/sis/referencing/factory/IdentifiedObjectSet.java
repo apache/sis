@@ -212,7 +212,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *
      * <h4>Use case</h4>
      * This method is typically used together with {@link #getAuthorityCodes()} for altering the iteration order
-     * on the basis of authority codes. If the specified {@code codes} sequence contains the same elements than
+     * on the basis of authority codes. If the specified {@code codes} sequence contains the same elements as
      * the ones in the array returned by {@link #getAuthorityCodes()} but in a different order, then this method
      * just sets the new ordering.
      *
@@ -250,7 +250,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     /**
      * Ensures that this collection contains the specified object. This collection does not allow
      * multiple objects for the same {@linkplain #getAuthorityCode(IdentifiedObject) authority code}.
-     * If this collection already contains an object using the same authority code than the given object,
+     * If this collection already contains an object using the same authority code as the given object,
      * then the old object is replaced by the new one regardless of whether the objects themselves are equal or not.
      *
      * @param  object  the object to add to the set.

@@ -89,7 +89,7 @@ public final class ConverterRegistryTest extends TestCase {
 
     /**
      * Ensures that the current converters is also registered for the given target class.
-     * The given target may not be the same than the {@link ObjectConverter#getTargetClass()}.
+     * The given target may not be the same as the {@link ObjectConverter#getTargetClass()}.
      *
      * @param  targetClass  the target class to ensure that the converter is registered for.
      */
@@ -178,7 +178,7 @@ public final class ConverterRegistryTest extends TestCase {
         assertMultilinesEquals("After StringConverter.Short",
             "ConverterRegistry\n" +
             "  ├─Short         ← String\n" +
-            "  ├─Number        ← String\n" +                // Same instance than above, applied to Number target.
+            "  ├─Number        ← String\n" +                // Same instance as above, applied to Number target.
             "  │   └─Short     ← String\n" +
             "  ├─Object        ← String\n" +
             "  ├─Comparable    ← String\n" +

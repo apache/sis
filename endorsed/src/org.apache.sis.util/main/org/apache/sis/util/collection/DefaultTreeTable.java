@@ -443,7 +443,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         /**
          * Creates a new node with the given parent. The new node is added at the end of the parent
          * {@linkplain #getChildren() list of children}. The new node will be able to store values
-         * for the same columns than the parent node.
+         * for the same columns as the parent node.
          *
          * @param  parent  the parent of the new node.
          */
@@ -458,7 +458,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         /**
          * Creates a new node with the given parent. The new node is added to the parent
          * {@linkplain #getChildren() list of children} at the given index. The new node
-         * will be able to store values for the same columns than the parent node.
+         * will be able to store values for the same columns as the parent node.
          *
          * @param  parent  the parent of the new node.
          * @param  index   the index where to add the new node in the parent list of children.
@@ -743,7 +743,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             if (values != null) {
                 /*
                  * Do not use Objects.hashCode(…) because we want the result of array
-                 * containing only null elements to be the same than null array (zero).
+                 * containing only null elements to be the same as null array (zero).
                  */
                 for (int i=values.length; --i>=0;) {
                     hash = 31*hash + Objects.hashCode(values[i]);

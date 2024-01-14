@@ -148,7 +148,7 @@ final class KeyPath implements Path {
     }
 
     /**
-     * Creates a new path with the same root than the given path.
+     * Creates a new path with the same root as the given path.
      * This is used for deriving root, parent, subpath and resolving path.
      *
      * @param root         a path from which to inherit the file system and the root.
@@ -333,7 +333,7 @@ final class KeyPath implements Path {
     }
 
     /**
-     * Returns a new path with the same file system than this path.
+     * Returns a new path with the same file system as this path.
      */
     private KeyPath newPath(final String other) {
         return new KeyPath(fs, Objects.requireNonNull(other, "other"), CharSequences.EMPTY_ARRAY, false);
@@ -572,7 +572,7 @@ search:     if (key != null) {
     }
 
     /**
-     * Returns {@code true} if the given path has the same file system than this path, the same root (possibly none),
+     * Returns {@code true} if the given path has the same file system as this path, the same root (possibly none),
      * and a key which is a prefix of this path key. The prefix must be complete component name.
      * For example, {@code "foo/b"} is <em>not</em> a prefix of {@code "foo/bar"}.
      */
@@ -590,7 +590,7 @@ search:     if (key != null) {
     }
 
     /**
-     * Returns {@code true} if the given path has the same file system than this path and a key which is
+     * Returns {@code true} if the given path has the same file system as this path and a key which is
      * a suffix of this path key. The suffix must be complete component name. For example, {@code "oo/bar"}
      * is <em>not</em> a suffix of {@code "foo/bar"}.
      */

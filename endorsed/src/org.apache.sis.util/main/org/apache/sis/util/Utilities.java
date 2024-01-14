@@ -85,7 +85,7 @@ public final class Utilities extends Static {
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
      *       then transforming a set of coordinate values using one transform will produce <em>approximately</em>
-     *       the same results than transforming the same coordinates with the other transform.</li>
+     *       the same results as transforming the same coordinates with the other transform.</li>
      *
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
@@ -115,7 +115,7 @@ public final class Utilities extends Static {
      * Convenience method for testing two objects for equality using the given level of strictness.
      * If at least one of the given objects implement the {@link LenientComparable} interface, then
      * the comparison is performed using the {@link LenientComparable#equals(Object, ComparisonMode)}
-     * method. Otherwise this method performs the same work than the
+     * method. Otherwise this method performs the same work as the
      * {@link Objects#deepEquals(Object, Object)} convenience method.
      *
      * <p>If both arguments are arrays or collections, then the elements are compared recursively.</p>

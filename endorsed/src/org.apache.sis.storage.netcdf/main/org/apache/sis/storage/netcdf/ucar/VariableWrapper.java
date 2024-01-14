@@ -69,7 +69,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
     private final Variable variable;
 
     /**
-     * The variable without enhancements. May be the same instance than {@link #variable}
+     * The variable without enhancements. May be the same instance as {@link #variable}
      * if that variable was not enhanced. This field is preferred to {@code variable} for
      * fetching attribute values because the {@code "scale_factor"} and {@code "add_offset"}
      * attributes are hidden by {@link VariableEnhanced}. In order to allow metadata reader

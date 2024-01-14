@@ -378,7 +378,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
 
     /**
      * Creates a button and adds it to the given box. A listener is registered
-     * for an action having the same name than the button label.
+     * for an action having the same name as the button label.
      *
      * @param  addTo  the horizontal box where to add the button.
      * @param  label  button labels, also used as action identifier.

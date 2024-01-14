@@ -176,7 +176,7 @@ public enum IterationStrategy {
              *
              * Rearanging gives: (srcOff - dstOff) >= (1-numPts)*(srcDim - dstDim)
              */
-            d = srcDim - dstDim;                    // Must be computed in the same way than below.
+            d = srcDim - dstDim;                    // Must be computed in the same way as below.
             if (d >= 0 || delta >= Math.multiplyExact(1 - numPts, d)) {
                 return ASCENDING;
             }
@@ -192,7 +192,7 @@ public enum IterationStrategy {
             }
             /*
              * Otherwise an iteration in DESCENDING order will avoid the need for a buffer if
-             * the following relation hold (note: it is the same than the previous block with
+             * the following relation hold (note: it is the same as the previous block with
              * a different reasoning):
              *
              *     os:    source offset     (srcOff)
@@ -213,7 +213,7 @@ public enum IterationStrategy {
              * if is = (n-1), then the condition (it >= is and it <= n-1) implies that
              * it = (n-1) as well. So (ot - os)  >=  (n-1)*(ds - dt).
              */
-            d = srcDim - dstDim;            // Must be computed in the same way than above.
+            d = srcDim - dstDim;            // Must be computed in the same way as above.
             if (delta >= Math.multiplyExact(numPts - 1, d)) {
                 return DESCENDING;
             }

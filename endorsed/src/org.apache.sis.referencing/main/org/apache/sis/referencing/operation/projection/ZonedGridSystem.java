@@ -87,7 +87,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
     final double initialLongitude;
 
     /**
-     * Width of each Transverse Mercator zone, in the same units than longitude values.
+     * Width of each Transverse Mercator zone, in the same units as longitude values.
      * This is usually 6°.
      */
     final double zoneWidth;

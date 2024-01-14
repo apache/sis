@@ -243,7 +243,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * </table>
      *
      * If Bursa-Wolf parameters are specified, then the prime meridian of their
-     * {@linkplain BursaWolfParameters#getTargetDatum() target datum} shall be either the same than the
+     * {@linkplain BursaWolfParameters#getTargetDatum() target datum} shall be either the same as the
      * {@code primeMeridian} given to this constructor, or Greenwich. This restriction is for avoiding
      * ambiguity about whether the longitude rotation shall be applied before or after the datum shift.
      * If the target prime meridian is Greenwich, then the datum shift will be applied in a coordinate
@@ -278,7 +278,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Creates a new datum with the same values than the specified one.
+     * Creates a new datum with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -297,7 +297,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Returns a SIS datum implementation with the same values than the given arbitrary implementation.
+     * Returns a SIS datum implementation with the same values as the given arbitrary implementation.
      * If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.

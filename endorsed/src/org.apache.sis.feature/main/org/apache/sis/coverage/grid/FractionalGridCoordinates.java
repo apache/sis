@@ -329,7 +329,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
                 if (lower < validMin) {
                     if (margin != 0) {
                         final long t = upper + Math.subtractExact(validMin, lower);
-                        upper = (t <= validMax && t >= upper) ? t : validMax;           // Same rational than above.
+                        upper = (t <= validMax && t >= upper) ? t : validMax;           // Same rational as above.
                     }
                     lower = validMin;
                 }

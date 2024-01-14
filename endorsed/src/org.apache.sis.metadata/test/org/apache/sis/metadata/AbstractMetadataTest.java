@@ -39,7 +39,7 @@ public final class AbstractMetadataTest extends TestCase {
 
     /**
      * Tests the {@link AbstractMetadata#hashCode()} method on an object having cyclic associations.
-     * This is the same test than {@link MetadataStandardTest#testHashCodeOnCyclicMetadata()}, with
+     * This is the same test as {@link MetadataStandardTest#testHashCodeOnCyclicMetadata()}, with
      * only a different entry point.
      *
      * @see MetadataStandardTest#testHashCodeOnCyclicMetadata()

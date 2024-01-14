@@ -199,7 +199,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Constructs a new envelope with the same data than the specified envelope.
+     * Constructs a new envelope with the same data as the specified envelope.
      *
      * @param envelope  the envelope to copy.
      *
@@ -210,7 +210,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Constructs a new envelope with the same data than the specified geographic bounding box.
+     * Constructs a new envelope with the same data as the specified geographic bounding box.
      * The coordinate reference system is set to the
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).
@@ -391,7 +391,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Sets this envelope to the same coordinate values than the specified envelope.
+     * Sets this envelope to the same coordinate values as the specified envelope.
      * If the given envelope has a non-null Coordinate Reference System (CRS), then
      * the CRS of this envelope will be set to the CRS of the given envelope.
      *
@@ -888,7 +888,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     if (min1 <= max0) {intersect  = 1; coordinates[iLower] = min1;}
                     if (max1 >= min0) {intersect |= 2; coordinates[iUpper] = max1;}
                 } else {
-                    // Same than above, but with indices 0 and 1 interchanged.
+                    // Same as above, but with indices 0 and 1 interchanged.
                     // No need to set coordinate values since they would be the same.
                     if (min0 <= max1) {intersect  = 1;}
                     if (max0 >= min1) {intersect |= 2;}

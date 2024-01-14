@@ -435,7 +435,7 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
         assertValueEquals("μ",  0,   0.231633,      1E-6, false);
         assertValueEquals("α₁", 1,   TRUNCATED_α1,  1E-3,  true);               // Initial value before iteration.
         /*
-         * Following values are updated during iterations. Note that in order to get the same values than the ones
+         * Following values are updated during iterations. Note that in order to get the same values as the ones
          * published in Karney table 5, we need to truncate the α₁ initial value to the same number of digits than
          * Karney. This is done automatically if GeodesicsOnEllipsoid.STORE_LOCAL_VARIABLES is true.
          */
@@ -486,7 +486,7 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
     }
 
     /**
-     * Same test than the one defined in parent class, but with expected results modified for ellipsoidal formulas.
+     * Same test as the one defined in parent class, but with expected results modified for ellipsoidal formulas.
      * Input points are from <a href="https://en.wikipedia.org/wiki/Great-circle_navigation#Example">Wikipedia</a>.
      * Outputs were computed with GeographicLib.
      */

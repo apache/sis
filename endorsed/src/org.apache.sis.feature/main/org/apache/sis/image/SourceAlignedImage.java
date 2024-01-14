@@ -30,7 +30,7 @@ import org.apache.sis.util.Workaround;
 /**
  * An image computed from a single source and sharing the same coordinate system.
  * In addition of pixel coordinate system, images share also the same tile indices.
- * Tiles in this image have the same size than tiles in the source image.
+ * Tiles in this image have the same size as tiles in the source image.
  * See {@link ComputedImage} javadoc for more information about tile computation.
  *
  * <h2>Relationship with other classes</h2>
@@ -106,7 +106,7 @@ abstract class SourceAlignedImage extends ComputedImage {
 
     /**
      * Creates a new image with the given source and a sample model derived from the given color model.
-     * The new image will have the same tile size than the given image.
+     * The new image will have the same tile size as the given image.
      *
      * @param  source       source of this image. Shall not be null.
      * @param  colorModel   the color model of the new image.

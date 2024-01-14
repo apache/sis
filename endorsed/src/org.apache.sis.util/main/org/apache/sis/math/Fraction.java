@@ -198,7 +198,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
 
     /**
      * Returns a unique fraction instance equals to {@code this}.
-     * If this method has been invoked previously on another {@code Fraction} with the same value than {@code this},
+     * If this method has been invoked previously on another {@code Fraction} with the same value as {@code this},
      * then that previous instance is returned (provided that it has not yet been garbage collected). Otherwise this
      * method adds this fraction to the pool of fractions that may be returned in next {@code unique()} invocations,
      * then returns {@code this}.

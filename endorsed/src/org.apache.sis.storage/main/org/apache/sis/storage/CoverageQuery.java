@@ -97,7 +97,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * Number of additional cells to read on each border of the source grid coverage.
      * If non-zero, this property expands the {@linkplain #domain} to be read by an amount
      * specified in unit of cells of the image to be read. Those cells do not necessarily
-     * have the same size than the cells of <code>{@linkplain #domain}.getExtent()</code>.
+     * have the same size as the cells of <code>{@linkplain #domain}.getExtent()</code>.
      */
     private int sourceDomainExpansion;
 
@@ -315,7 +315,7 @@ next:       for (int i=0; i<rangeNames.length; i++) {
      * If no {@code domain} is specified at read time, then this is a number of cells in
      * the full image to be read from the resource. Cells are counted after subsampling,
      * e.g. cells are twice bigger if a subsampling of 2 is applied.
-     * Those cells do not necessarily have the same size than the cells
+     * Those cells do not necessarily have the same size as the cells
      * of the {@link #getSelection() domain of this query}.
      *
      * <h4>Use case</h4>

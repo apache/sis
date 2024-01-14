@@ -462,7 +462,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         /*
          * The expression is evaluated every times that the property value is requested.
          * This projection type is similar to {@link #COMPUTING}, except that the features
-         * given in calls to {@link Expression#apply(Object)} are the same instances than
+         * given in calls to {@link Expression#apply(Object)} are the same instances as
          * the ones used by {@link #STORED}.
          *
          * <div class="note"><b>Note on naming:</b>

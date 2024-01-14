@@ -649,7 +649,7 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given number of elements is between the given bounds, inclusive.
-     * This method performs the same check than {@link #ensureBetween(String, int, int, int)
+     * This method performs the same check as {@link #ensureBetween(String, int, int, int)
      * ensureBetween(…)}, but the error message is different in case of failure.
      *
      * @param  name       the name of the argument to be checked. Used only if an exception is thrown.

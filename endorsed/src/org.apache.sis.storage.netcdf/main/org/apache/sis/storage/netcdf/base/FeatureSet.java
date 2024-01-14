@@ -98,7 +98,7 @@ final class FeatureSet extends DiscreteSampling {
      * The singleton properties (for which there is only one value per feature instance), or an empty array if none.
      * In the case of trajectories, this array usually contains a single variable for the moving feature identifiers
      * ("mfIdRef"). If {@link #counts} is non-null, then the length of all {@code properties} variables shall be the
-     * same than the length of the {@link #counts} vector.
+     * same as the length of the {@link #counts} vector.
      */
     private final Variable[] properties;
 
@@ -404,7 +404,7 @@ final class FeatureSet extends DiscreteSampling {
                 continue;
             }
             /*
-             * We should have another variable of the same name than the feature dimension name.
+             * We should have another variable of the same name as the feature dimension name.
              * In SIS implementation, this variable is optional. But if present, it should have
              * the expected dimension. According CF convention that variable should also have a
              * "cf_role" attribute set to "trajectory_id", but this is not required by SIS.

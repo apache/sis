@@ -53,7 +53,7 @@ public class SQLBuilder extends Syntax {
     }
 
     /**
-     * Creates a new {@code SQLBuilder} initialized to the same metadata than the given template.
+     * Creates a new {@code SQLBuilder} initialized to the same metadata as the given template.
      *
      * @param  other  the template from which to copy metadata.
      */

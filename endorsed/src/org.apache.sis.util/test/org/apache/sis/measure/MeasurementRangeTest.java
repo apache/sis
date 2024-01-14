@@ -67,7 +67,7 @@ public final class MeasurementRangeTest extends TestCase {
     }
 
     /**
-     * Same tests than {@link #testAutoConversions()} but using the {@code *Any} methods.
+     * Same tests as {@link #testAutoConversions()} but using the {@code *Any} methods.
      */
     @Test
     public void testAutoConversionsOfAny() {

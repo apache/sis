@@ -287,7 +287,7 @@ public class Convention {
      * Returns the attribute-specified name of the dimension at the given index, or {@code null} if unspecified.
      * This is not the name of the dimension encoded in netCDF binary file format, but rather a name specified
      * by a customized attribute. This customized name can be used when the dimensions of the raster data are
-     * not the same than the dimensions of the localization grid. In such case, the names returned by this method
+     * not the same as the dimensions of the localization grid. In such case, the names returned by this method
      * are used for mapping the raster dimensions to the localization grid dimensions.
      *
      * <p>This feature is an extension to CF-conventions.</p>
@@ -550,7 +550,7 @@ public class Convention {
      *   <li>Base CRS axis order is (latitude, longitude) for increasing the chances to have a CRS identified by EPSG.</li>
      * </ul>
      *
-     * @param  node       the same node than the one given to {@link #projection(Node)}.
+     * @param  node       the same node as the one given to {@link #projection(Node)}.
      * @param  baseToCRS  conversion from (latitude, longitude) in degrees to the projected CRS.
      * @return the <cite>grid corner to CRS</cite> transform, or {@code null} if none or unknown.
      * @throws TransformException if a coordinate operation was required but failed.

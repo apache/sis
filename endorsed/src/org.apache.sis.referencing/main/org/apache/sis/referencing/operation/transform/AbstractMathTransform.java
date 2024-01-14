@@ -383,7 +383,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @param  srcPts    the array containing the source coordinates (cannot be {@code null}).
      * @param  srcOff    the offset to the point to be transformed in the source array.
-     * @param  dstPts    the array into which the transformed coordinates is returned. May be the same than {@code srcPts}.
+     * @param  dstPts    the array into which the transformed coordinates is returned. May be the same as {@code srcPts}.
      *                   May be {@code null} if only the derivative matrix is desired.
      * @param  dstOff    the offset to the location of the transformed point that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
@@ -417,7 +417,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  srcPts  the array containing the source point coordinates.
      * @param  srcOff  the offset to the first point to be transformed in the source array.
      * @param  dstPts  the array into which the transformed point coordinates are returned.
-     *                 May be the same than {@code srcPts}.
+     *                 May be the same as {@code srcPts}.
      * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point cannot be transformed. Some implementations will stop at the first failure,
@@ -529,7 +529,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  srcPts  the array containing the source point coordinates.
      * @param  srcOff  the offset to the first point to be transformed in the source array.
      * @param  dstPts  the array into which the transformed point coordinates are returned.
-     *                 May be the same than {@code srcPts}.
+     *                 May be the same as {@code srcPts}.
      * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point cannot be transformed. Some implementations will stop at the first failure,
@@ -559,7 +559,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             bufferSize = numBufferedPts * dimLargest;
         }
         /*
-         * We need to check if writing the transformed coordinates in the same array than the source
+         * We need to check if writing the transformed coordinates in the same array as the source
          * coordinates will cause an overlapping problem. However, we can consider the whole buffer as
          * if it was a single coordinate tuple with a very large dimension. Doing so increase the chances
          * that IterationStrategy.suggest(...) doesn't require us another buffer  (hint: the -1 in
@@ -693,7 +693,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             try {
                 transform(srcPts, srcOff, buffer, 0, numBufferedPts);
             } catch (TransformException exception) {
-                // Same comment than in transform(float[], ...,float[], ...)
+                // Same comment as in transform(float[], ...,float[], ...)
                 if (exception.getLastCompletedTransform() != this) {
                     throw exception;
                 } else if (failure == null) {
@@ -768,7 +768,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             try {
                 transform(buffer, 0, dstPts, dstOff, numBufferedPts);
             } catch (TransformException exception) {
-                // Same comment than in transform(float[], ...,float[], ...)
+                // Same comment as in transform(float[], ...,float[], ...)
                 if (exception.getLastCompletedTransform() != this) {
                     throw exception;
                 } else if (failure == null) {
@@ -971,7 +971,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * <p>The default implementation returns {@code true} if the following conditions are met:</p>
      * <ul>
-     *   <li>{@code object} is an instance of the same class than {@code this}. We require the
+     *   <li>{@code object} is an instance of the same class as {@code this}. We require the
      *       same class because there is no interface for the various kinds of transform.</li>
      *   <li>If the hash code value has already been {@linkplain #computeHashCode() computed} for both
      *       instances, their values are the same <i>(opportunist performance enhancement)</i>.</li>
@@ -1188,7 +1188,7 @@ public abstract class AbstractMathTransform extends FormattableObject
 
         /**
          * Compares the specified object with this inverse math transform for equality.
-         * The default implementation tests if {@code object} in an instance of the same class than {@code this},
+         * The default implementation tests if {@code object} in an instance of the same class as {@code this},
          * and if so compares their {@linkplain #inverse() inverse} {@code MathTransform}.
          *
          * @return {@inheritDoc}
@@ -1212,7 +1212,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         }
 
         /**
-         * Same work than {@link AbstractMathTransform#beforeFormat(List, int, boolean)}
+         * Same work as {@link AbstractMathTransform#beforeFormat(List, int, boolean)}
          * but with the knowledge that this transform is an inverse transform.
          */
         @Override

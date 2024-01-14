@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.function.Predicate;
@@ -58,8 +60,6 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
-import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
@@ -68,7 +68,10 @@ import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.system.Semaphores;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -235,6 +238,13 @@ class CoordinateOperationRegistry {
      * @see #findCode(CoordinateReferenceSystem)
      */
     private final Map<CoordinateReferenceSystem, List<String>> authorityCodes;
+
+    /**
+     * The locale for error messages.
+     *
+     * @todo Add a setter method, or make configurable in some way.
+     */
+    private Locale locale;
 
     /**
      * Creates a new instance for the given factory and context.
@@ -506,8 +516,9 @@ class CoordinateOperationRegistry {
                         return operations;
                     }
                 }
-            } catch (IllegalArgumentException | IncommensurableException e) {
-                String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS));
+            } catch (IllegalArgumentException | IncommensurableException | NoninvertibleTransformException e) {
+                CRSPair key = new CRSPair(sourceCRS, targetCRS);
+                String message = resources().getString(Resources.Keys.CanNotInstantiateGeodeticObject_1, key);
                 String details = e.getLocalizedMessage();
                 if (details != null) {
                     message = message + ' ' + details;
@@ -530,11 +541,12 @@ class CoordinateOperationRegistry {
      *         or {@code null} if no such operation is explicitly defined in the underlying database.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
      * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
+     * @throws NoninvertibleTransformException if a step needs to be inverted but is not invertible.
      * @throws FactoryException if an error occurred while creating the operation.
      */
     private List<CoordinateOperation> search(final CoordinateReferenceSystem sourceCRS,
                                              final CoordinateReferenceSystem targetCRS)
-            throws IllegalArgumentException, IncommensurableException, FactoryException
+            throws IncommensurableException, NoninvertibleTransformException, FactoryException
     {
         final List<String> sources = findCode(sourceCRS); if (sources.isEmpty()) return null;
         final List<String> targets = findCode(targetCRS); if (targets.isEmpty()) return null;
@@ -645,13 +657,13 @@ class CoordinateOperationRegistry {
                     operation = fromDefiningConversion((SingleOperation) operation,
                                     foundDirectOperations ? sourceCRS : targetCRS,
                                     foundDirectOperations ? targetCRS : sourceCRS);
-                    if (operation == null) {
-                        it.remove();
-                        continue;
-                    }
                 }
                 if (!foundDirectOperations) {
                     operation = inverse(operation);
+                }
+                if (operation == null) {
+                    it.remove();
+                    continue;
                 }
             } catch (NoninvertibleTransformException | MissingFactoryResourceException e) {
                 /*
@@ -691,15 +703,13 @@ class CoordinateOperationRegistry {
 
     /**
      * Creates the inverse of the given single operation.
-     * If this operation succeed, then the returned coordinate operations has the following properties:
+     * If this operation succeed, then the returned coordinate operation has the following properties:
      *
      * <ul>
      *   <li>Its {@code sourceCRS} is the {@code targetCRS} of the given operation.</li>
      *   <li>Its {@code targetCRS} is the {@code sourceCRS} of the given operation.</li>
      *   <li>Its {@code interpolationCRS} is {@code null}.</li>
-     *   <li>Its {@code MathTransform} is the
-     *       {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#inverse() inverse}
-     *       of the {@code MathTransform} of this operation.</li>
+     *   <li>Its {@code MathTransform} is the inverse of the {@code MathTransform} of the given operation.</li>
      *   <li>Its domain of validity and accuracy is the same.</li>
      * </ul>
      *
@@ -711,6 +721,10 @@ class CoordinateOperationRegistry {
      * see ISO 19111 for more information).
      */
     final CoordinateOperation inverse(final SingleOperation op) throws NoninvertibleTransformException, FactoryException {
+        CoordinateOperation inverse = AbstractCoordinateOperation.getCachedInverse(op);
+        if (inverse != null) {
+            return inverse;
+        }
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
         final MathTransform transform = op.getMathTransform().inverse();
@@ -725,7 +739,9 @@ class CoordinateOperationRegistry {
         Class<? extends CoordinateOperation> type = null;
         if (op instanceof Transformation)  type = Transformation.class;
         else if (op instanceof Conversion) type = Conversion.class;
-        return createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, type);
+        inverse = createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, type);
+        AbstractCoordinateOperation.setCachedInverse(op, inverse);
+        return inverse;
     }
 
     /**
@@ -748,19 +764,57 @@ class CoordinateOperationRegistry {
         if (SubTypes.isSingleOperation(operation)) {
             return inverse((SingleOperation) operation);
         }
-        if (operation instanceof ConcatenatedOperation) {
-            final List<? extends CoordinateOperation> operations = ((ConcatenatedOperation) operation).getOperations();
-            final CoordinateOperation[] inverted = new CoordinateOperation[operations.size()];
-            for (int i=0; i<inverted.length;) {
-                final CoordinateOperation op = inverse(operations.get(i));
-                if (op == null) {
-                    return null;
-                }
-                inverted[inverted.length - ++i] = op;
-            }
-            return factory.createConcatenatedOperation(properties(INVERSE_OPERATION), inverted);
+        CoordinateOperation inverse = AbstractCoordinateOperation.getCachedInverse(operation);
+        if (inverse != null) {
+            return inverse;
         }
-        return null;
+        if (operation instanceof ConcatenatedOperation) {
+            final CoordinateOperation[] inverted = getSteps((ConcatenatedOperation) operation, true);
+            ArraysExt.reverse(inverted);
+            final Map<String,Object> properties = properties(INVERSE_OPERATION);
+            final MathTransform transform = operation.getMathTransform();
+            if (transform != null) {
+                properties.put(DefaultConcatenatedOperation.TRANSFORM_KEY, transform.inverse());
+            }
+            inverse = factory.createConcatenatedOperation(properties, inverted);
+            AbstractCoordinateOperation.setCachedInverse(operation, inverse);
+        }
+        return inverse;
+    }
+
+    /**
+     * Returns all steps of the given concatenated operation, making sure that they are in the specified direction.
+     * This method returns an array where the source CRS of the first step is the {@code operation} source CRS, and
+     * where the target CRS of each step is the source CRS of the next step. If needed, some steps may be inverted
+     * in order to fulfill that requirement.
+     *
+     * <p>If {@code inverse} if {@code true}, then this method inverses all steps. Note however that the element
+     * order in the returned array is not inverted (this is left to the caller).</p>
+     *
+     * @param  operation  the operation for which to get the steps.
+     * @return all steps of the given concatenated operation.
+     * @throws NoninvertibleTransformException if a step needs to be inverted but is not invertible.
+     * @throws FactoryException if the operation creation failed for another reason (e.g., inconsistency found).
+     */
+    private CoordinateOperation[] getSteps(final ConcatenatedOperation operation, final boolean inverse)
+            throws NoninvertibleTransformException, FactoryException
+    {
+        final var steps = operation.getOperations().toArray(CoordinateOperation[]::new);
+        CoordinateReferenceSystem previous = operation.getSourceCRS();
+        for (int i=0; i<steps.length; i++) {
+            final CoordinateOperation step = steps[i];
+            final CoordinateReferenceSystem source = step.getSourceCRS();
+            final CoordinateReferenceSystem target = step.getTargetCRS();
+            final boolean r = DefaultConcatenatedOperation.verifyStepChaining(null, i, previous, source, target);
+            if (r != inverse) {
+                if ((steps[i] = inverse(step)) == null) {
+                    throw new NoninvertibleTransformException(resources().getString(
+                                Resources.Keys.NonInvertibleOperation_1, label(step)));
+                }
+            }
+            previous = r ? source : target;
+        }
+        return steps;
     }
 
     /**
@@ -775,12 +829,13 @@ class CoordinateOperationRegistry {
      * @return a coordinate operation for the given source and target CRS.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
      * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
+     * @throws NoninvertibleTransformException if a step needs to be inverted but is not invertible.
      * @throws FactoryException if the operation cannot be constructed.
      */
     private CoordinateOperation complete(final CoordinateOperation       operation,
                                          final CoordinateReferenceSystem sourceCRS,
                                          final CoordinateReferenceSystem targetCRS)
-            throws IllegalArgumentException, IncommensurableException, FactoryException
+            throws IncommensurableException, NoninvertibleTransformException, FactoryException
     {
         CoordinateReferenceSystem source = operation.getSourceCRS();
         CoordinateReferenceSystem target = operation.getTargetCRS();
@@ -807,7 +862,7 @@ class CoordinateOperationRegistry {
     private static MathTransform swapAndScaleAxes(final CoordinateReferenceSystem sourceCRS,
                                                   final CoordinateReferenceSystem targetCRS,
                                                   final MathTransformFactory      mtFactory)
-            throws IllegalArgumentException, IncommensurableException, FactoryException
+            throws IncommensurableException, FactoryException
     {
         /*
          * Assertion: source and target CRS must be equal, ignoring change in axis order or units.
@@ -823,7 +878,7 @@ class CoordinateOperationRegistry {
 
     /**
      * Appends or prepends the specified math transforms to the transform of the given operation.
-     * The new coordinate operation (if any) will share the same metadata than the original operation,
+     * The new coordinate operation (if any) will share the same metadata as the original operation,
      * except the authority code.
      *
      * <p>This method is used in order to change axis order when the user-specified CRS disagree
@@ -837,6 +892,7 @@ class CoordinateOperationRegistry {
      * @param  mtFactory  the math transform factory to use.
      * @return a new operation, or {@code operation} if {@code prepend} and {@code append} were nulls or identity transforms.
      * @throws IllegalArgumentException if the operation method cannot have the desired number of dimensions.
+     * @throws NoninvertibleTransformException if a step needs to be inverted but is not invertible.
      * @throws FactoryException if the operation cannot be constructed.
      */
     private CoordinateOperation transform(final CoordinateReferenceSystem sourceCRS,
@@ -845,7 +901,7 @@ class CoordinateOperationRegistry {
                                           final MathTransform             append,
                                           final CoordinateReferenceSystem targetCRS,
                                           final MathTransformFactory      mtFactory)
-            throws IllegalArgumentException, FactoryException
+            throws NoninvertibleTransformException, FactoryException
     {
         if ((prepend == null || prepend.isIdentity()) && (append == null || append.isIdentity())) {
             return operation;
@@ -857,18 +913,17 @@ class CoordinateOperationRegistry {
          * with that). Instead, prepend to the first single operation and append to the last single operation.
          */
         if (operation instanceof ConcatenatedOperation) {
-            final List<? extends CoordinateOperation> c = ((ConcatenatedOperation) operation).getOperations();
-            final CoordinateOperation[] op = c.toArray(CoordinateOperation[]::new);
-            switch (op.length) {
+            final CoordinateOperation[] steps = getSteps((ConcatenatedOperation) operation, false);
+            switch (steps.length) {
                 case 0: break;                              // Illegal, but we are paranoiac.
-                case 1: operation = op[0]; break;           // Useless ConcatenatedOperation.
+                case 1: operation = steps[0]; break;        // Useless ConcatenatedOperation.
                 default: {
-                    final int n = op.length - 1;
-                    final CoordinateOperation first = op[0];
-                    final CoordinateOperation last  = op[n];
-                    op[0] = transform(sourceCRS, prepend, first, null, first.getTargetCRS(), mtFactory);
-                    op[n] = transform(last.getSourceCRS(), null, last, append, targetCRS,    mtFactory);
-                    return factory.createConcatenatedOperation(derivedFrom(operation), op);
+                    final int n = steps.length - 1;
+                    final CoordinateOperation first = steps[0];
+                    final CoordinateOperation last  = steps[n];
+                    steps[0] = transform(sourceCRS, prepend, first, null, first.getTargetCRS(), mtFactory);
+                    steps[n] = transform(last.getSourceCRS(), null, last, append, targetCRS,    mtFactory);
+                    return factory.createConcatenatedOperation(derivedFrom(operation), steps);
                 }
             }
         }
@@ -883,7 +938,7 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * Creates a new coordinate operation with the same method than the given operation, but different CRS.
+     * Creates a new coordinate operation with the same method as the given operation, but different CRS.
      * The CRS may differ either in the number of dimensions (i.e. let the vertical coordinate pass through),
      * or in axis order (i.e. axis order in user CRS were not compliant with authority definition).
      *
@@ -901,7 +956,7 @@ class CoordinateOperationRegistry {
                                                CoordinateReferenceSystem targetCRS,
                                          final MathTransform             transform,
                                                OperationMethod           method)
-            throws IllegalArgumentException, FactoryException
+            throws FactoryException
     {
         /*
          * If the user-provided CRS are approximately equal to the coordinate operation CRS, keep the latter.
@@ -970,7 +1025,7 @@ class CoordinateOperationRegistry {
             }
         } else {
             // Should never happen because parameters are mandatory, but let be safe.
-            log(Resources.forLocale(null).getLogRecord(Level.WARNING, Resources.Keys.MissingParameterValues_1,
+            log(resources().getLogRecord(Level.WARNING, Resources.Keys.MissingParameterValues_1,
                     IdentifiedObjects.getIdentifierOrName(operation)), null);
         }
         return null;
@@ -999,17 +1054,18 @@ class CoordinateOperationRegistry {
      * @return a coordinate operation with the source and/or target coordinates made 3D,
      *         or {@code null} if this method does not know how to create the operation.
      * @throws IllegalArgumentException if the operation method cannot have the desired number of dimensions.
+     * @throws NoninvertibleTransformException if a step needs to be inverted but is not invertible.
      * @throws FactoryException if an error occurred while creating the coordinate operation.
      */
     private CoordinateOperation propagateVertical(final CoordinateReferenceSystem sourceCRS,
                                                   final CoordinateReferenceSystem targetCRS,
                                                   final CoordinateOperation operation,
                                                   final Decomposition decompose)
-            throws IllegalArgumentException, FactoryException
+            throws NoninvertibleTransformException, FactoryException
     {
         final List<CoordinateOperation> operations = new ArrayList<>();
         if (operation instanceof ConcatenatedOperation) {
-            operations.addAll(((ConcatenatedOperation) operation).getOperations());
+            operations.addAll(Arrays.asList(getSteps((ConcatenatedOperation) operation, false)));
         } else {
             operations.add(operation);
         }
@@ -1022,7 +1078,7 @@ class CoordinateOperationRegistry {
             case 0:  return null;
             case 1:  return operations.get(0);
             default: return factory.createConcatenatedOperation(derivedFrom(operation),
-                            operations.toArray(CoordinateOperation[]::new));
+                                        operations.toArray(CoordinateOperation[]::new));
         }
     }
 
@@ -1042,14 +1098,14 @@ class CoordinateOperationRegistry {
                                       final CoordinateReferenceSystem target3D,
                                       final ListIterator<CoordinateOperation> operations,
                                       final boolean forward)
-            throws IllegalArgumentException, FactoryException
+            throws FactoryException
     {
         while (forward ? operations.hasNext() : operations.hasPrevious()) {
             final CoordinateOperation op = forward ? operations.next() : operations.previous();
             /*
              * We will accept to increase the number of dimensions only for operations between geographic CRS.
-             * We do not increase the number of dimensions for operations between other kind of CRS because we
-             * would not know which value to give to the new dimension.
+             * We do not increase the number of dimensions for operations between other kinds of CRS because
+             * we would not know which value to give to the new dimension.
              */
             CoordinateReferenceSystem sourceCRS, targetCRS;
             if ( !((sourceCRS = op.getSourceCRS()) instanceof GeodeticCRS
@@ -1175,7 +1231,7 @@ class CoordinateOperationRegistry {
      *
      * <h4>Note</h4>
      * In the datum shift case, an operation version is mandatory but unknown at this time.
-     * However, we noticed that the EPSG database do not always defines a version neither.
+     * However, we noticed that the EPSG database does not always define a version neither.
      * Consequently, the Apache SIS implementation relaxes the rule requiring an operation
      * version and we do not try to provide this information here for now.
      *
@@ -1294,6 +1350,22 @@ class CoordinateOperationRegistry {
             properties.replace(IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
         }
         return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS, null, method, transform);
+    }
+
+    /**
+     * {@return the localized resources for error messages}.
+     */
+    final Resources resources() {
+        return Resources.forLocale(locale);
+    }
+
+    /**
+     * {@return a label for identifying the given object in error message}.
+     *
+     * @param object the object of identify.
+     */
+    final String label(final IdentifiedObject object) {
+        return CRSPair.label(object, locale);
     }
 
     /**

@@ -864,7 +864,7 @@ loop:   for (int i=0; ; i++) {
     @Override
     public String formatMessage(final LogRecord record) {
         /*
-         * Same work than java.util.logging.Formatter.formatMessage(LogRecord) except for the synchronization lock,
+         * Same work as java.util.logging.Formatter.formatMessage(LogRecord) except for the synchronization lock,
          * the reuse of existing MessageFormat and StringBuffer instances, and not catching formatting exceptions
          * (we want to know if our messages have a problem).
          */
@@ -947,7 +947,7 @@ loop:   for (int i=0; ; i++) {
                 }
             }
             /*
-             * If the stack trace element pointed by `logProducer` is the same one than
+             * If the stack trace element pointed by `logProducer` is the same one as
              * during the previous iteration, it is not worth to print those elements again.
              */
             int stopIndex = trace.length;

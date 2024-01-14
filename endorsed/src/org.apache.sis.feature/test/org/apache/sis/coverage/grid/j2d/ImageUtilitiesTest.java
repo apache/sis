@@ -173,7 +173,7 @@ public final class ImageUtilitiesTest extends TestCase {
         /*
          * Same as above but with sample values packed in reverse order. Note that while values
          * are packed in BGR order, the sample model is still providing the values in RGB order.
-         * For that reason, the band order below is the same than in above test.
+         * For that reason, the band order below is the same as in above test.
          */
         assertBandNamesEqual(1, BufferedImage.TYPE_INT_BGR,
                 Vocabulary.Keys.Red,

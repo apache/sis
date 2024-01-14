@@ -23,7 +23,7 @@ package org.apache.sis.util.resources;
 public class Messages_fr extends Messages {
     /**
      * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
+     * the resource file of the same name as this class.
      */
     public Messages_fr() {
     }

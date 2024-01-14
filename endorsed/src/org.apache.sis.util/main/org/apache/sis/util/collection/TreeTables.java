@@ -158,7 +158,7 @@ public final class TreeTables extends Static {
 
     /**
      * Finds the node for the given file, or creates a new node if none exists.
-     * This method performs the same work than the above variant, but working on
+     * This method performs the same work as the above variant, but working on
      * {@code File} instances rather than {@code Path}.
      *
      * @param  from    the root node from which to start the search.

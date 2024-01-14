@@ -107,7 +107,7 @@ public final class DataStoreOpener extends Task<DataStore> {
     /**
      * Key to use in the {@link CACHE}, or {@code null} if the resource should not be cached.
      * If possible, this is a {@link Path} containing the real path. If we cannot perform
-     * such conversion, then it is either {@code null} or the same object than {@link #source}.
+     * such conversion, then it is either {@code null} or the same object as {@link #source}.
      */
     private final Object key;
 

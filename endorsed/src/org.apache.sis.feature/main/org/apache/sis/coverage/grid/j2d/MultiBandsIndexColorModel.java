@@ -265,7 +265,7 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
 
     /**
      * Returns {@code true} if {@code raster} is compatible with this {@code ColorModel}.
-     * This method performs the same checks than the standard implementation except for the number of bands,
+     * This method performs the same checks as the standard implementation except for the number of bands,
      * which is required to be equal to {@link #numBands} instead of 1. The actual checks are delegated to
      * {@link #isCompatibleSampleModel(SampleModel)} instead of duplicated in this method.
      */
@@ -276,7 +276,7 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
 
     /**
      * Checks if the specified {@code SampleModel} is compatible with this {@code ColorModel}.
-     * This method performs the same checks than the standard implementation except for the number
+     * This method performs the same checks as the standard implementation except for the number
      * of bands and for not accepting {@code MultiPixelPackedSampleModel}.
      */
     @Override

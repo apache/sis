@@ -49,10 +49,10 @@ public class CloseEvent extends CascadedStoreEvent<CloseEvent> {
     }
 
     /**
-     * Creates a new event of the same type than this event but with a different source.
+     * Creates a new event of the same type as this event but with a different source.
      *
      * @param  child  the child resource for which to create the event to cascade.
-     * @return an event of the same type than this event but with the given resource.
+     * @return an event of the same type as this event but with the given resource.
      */
     @Override
     protected CloseEvent forSource(final Resource child) {

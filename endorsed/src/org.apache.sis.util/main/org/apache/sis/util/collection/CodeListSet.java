@@ -541,7 +541,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     }
 
     /**
-     * Returns a new set of the same class containing the same elements than this set.
+     * Returns a new set of the same class containing the same elements as this set.
      *
      * @return a clone of this set.
      */

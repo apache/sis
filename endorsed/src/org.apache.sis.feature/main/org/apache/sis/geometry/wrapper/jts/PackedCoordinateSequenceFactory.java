@@ -25,7 +25,7 @@ import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
 /**
  * A factory of JTS coordinate sequence storing coordinates in a single {@code float[]} or {@code double[]} array.
- * This class serves the same purpose than {@link org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory}
+ * This class serves the same purpose as {@link org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory}
  * but without caching the {@code Coordinate[]} array.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -128,7 +128,7 @@ final class Store extends URIDataStore implements FeatureSet {
 
     /**
      * The prefix used in {@code https://www.w3.org/2009/XMLSchema/XMLSchema.xsd} file.
-     * This is not the same prefix than the one specified by OGC CSV encoding, but this
+     * This is not the same prefix as the one specified by OGC CSV encoding, but this
      * implementation accepts both.
      */
     private static final String XS_PREFIX = "xs:";
@@ -464,7 +464,7 @@ final class Store extends URIDataStore implements FeatureSet {
              * In such case, use only the number of dimensions.
              */
             int dim = spatialDimensionCount;
-            if (startTime != null) dim++;           // Same criterion than in above block.
+            if (startTime != null) dim++;           // Same criterion as in above block.
             envelope = new GeneralEnvelope(dim);
         }
         /*

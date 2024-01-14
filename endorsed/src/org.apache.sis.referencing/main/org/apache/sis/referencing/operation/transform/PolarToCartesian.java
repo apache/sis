@@ -41,7 +41,7 @@ import org.apache.sis.util.internal.DoubleDouble;
  * <ul>
  *   <li><var>x</var> in the direction of θ = 0°</li>
  *   <li><var>y</var> in the direction of θ = 90°</li>
- *   <li><var>z</var> in the same direction than the source (cylindrical case only - see below)</li>
+ *   <li><var>z</var> in the same direction as the source (cylindrical case only - see below)</li>
  * </ul>
  *
  * Axis order shall match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.
@@ -116,7 +116,7 @@ final class PolarToCartesian extends CoordinateSystemTransform implements Serial
 
     /**
      * Converts an array of coordinates.
-     * This method performs the same conversion than {@link #transform(double[], int, double[], int, boolean)},
+     * This method performs the same conversion as {@link #transform(double[], int, double[], int, boolean)},
      * but the formulas are repeated here for performance reasons.
      */
     @Override

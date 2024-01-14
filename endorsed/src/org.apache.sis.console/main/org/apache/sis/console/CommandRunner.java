@@ -161,7 +161,7 @@ abstract class CommandRunner {
 
     /**
      * Creates a new sub-command with the given command-line arguments.
-     * The {@code arguments} array is the same array than the one given to the {@code main(String[])} method.
+     * The {@code arguments} array is the same array as the one given to the {@code main(String[])} method.
      * The argument at index {@code commandIndex} is the name of this command, and will be ignored except for
      * the special {@value #TEST} value which is used only at JUnit testing time.
      *

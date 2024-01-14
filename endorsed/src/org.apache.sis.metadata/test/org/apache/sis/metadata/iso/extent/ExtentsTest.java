@@ -132,7 +132,7 @@ public final class ExtentsTest extends TestCase {
 
     /**
      * Tests {@link Extents#intersection(Extent, Extent)}.
-     * This test is subject to the same limitation than {@link #testVerticalIntersection()}.
+     * This test is subject to the same limitation as {@link #testVerticalIntersection()}.
      */
     @Test
     public void testExtentIntersection() {

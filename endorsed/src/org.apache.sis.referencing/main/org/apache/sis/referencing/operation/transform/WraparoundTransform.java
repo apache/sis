@@ -151,8 +151,8 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Creates a new transform with the same parameters than the given transform.
-     * This constructor can be used by subclasses applying the same wraparound than
+     * Creates a new transform with the same parameters as the given transform.
+     * This constructor can be used by subclasses applying the same wraparound as
      * an existing transform but with a different {@link #shift(double)} implementation.
      *
      * @param  other  the other transform from which to copy the parameters.
@@ -239,7 +239,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * Replaces all {@code WraparoundTransform} instances in a chain of transform steps.
      * For each instance found in the {@linkplain MathTransforms#getSteps(MathTransform) list of transform steps},
      * the given function is invoked with the {@code WraparoundTransform} instance found. If that function returns
-     * a different instance, then this method creates a new chain of transforms with the same steps than the given
+     * a different instance, then this method creates a new chain of transforms with the same steps as the given
      * {@code transform}, except for the {@code WraparoundTransform} steps that are replaced by the steps returned
      * by the {@code replacement} function.
      *

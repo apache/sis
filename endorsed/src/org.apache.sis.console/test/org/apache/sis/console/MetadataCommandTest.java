@@ -67,7 +67,7 @@ public final class MetadataCommandTest extends TestCase {
     }
 
     /**
-     * Tests with the same file than {@link #testNetCDF()}, but producing a XML output.
+     * Tests with the same file as {@link #testNetCDF()}, but producing a XML output.
      *
      * @throws Exception if an error occurred while creating the command.
      */

@@ -194,7 +194,7 @@ import org.apache.sis.util.resources.Errors;
  * {@code "AUTO2:42001,1,-100,45"} identifies a Universal Transverse Mercator (UTM) projection
  * for a zone containing the point at (45°N, 100°W) with axes in metres.</div>
  *
- * Codes in the {@code "AUTO"} namespace are the same than codes in the {@code "AUTO2"} namespace, except that
+ * Codes in the {@code "AUTO"} namespace are the same as codes in the {@code "AUTO2"} namespace, except that
  * the {@linkplain org.apache.sis.measure.Units#valueOfEPSG(int) EPSG code} of the desired unit of measurement
  * was used instead of the unit factor.
  * The {@code "AUTO"} namespace was defined in the <cite>Web Map Service</cite> (WMS) 1.1.1 specification

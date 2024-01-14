@@ -131,7 +131,7 @@ public class Polyconic extends MeridianArcBased {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     Polyconic(final Polyconic other) {
         super(other);

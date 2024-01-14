@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Vocabulary;
 /**
  * A grid coverage which is derived from a single source coverage.
  * The default implementations of methods in this class assume that this
- * derived coverage uses the same sample dimensions than the source coverage.
+ * derived coverage uses the same sample dimensions as the source coverage.
  * If it is not the case, then some methods may need to be overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -44,7 +44,7 @@ abstract class DerivedGridCoverage extends GridCoverage {
 
     /**
      * Constructs a new grid coverage which is derived from the given source.
-     * The new grid coverage share the same sample dimensions than the source.
+     * The new grid coverage share the same sample dimensions as the source.
      *
      * @param  source  the source from which to copy the sample dimensions.
      * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
@@ -56,7 +56,7 @@ abstract class DerivedGridCoverage extends GridCoverage {
 
     /**
      * Constructs a new grid coverage which is derived from the given source.
-     * The new grid coverage share the same grid geometry than the source.
+     * The new grid coverage share the same grid geometry as the source.
      * Subclasses which use this constructor may need to override the following methods:
      * {@link #getBandType()}, {@link #evaluator()}.
      *

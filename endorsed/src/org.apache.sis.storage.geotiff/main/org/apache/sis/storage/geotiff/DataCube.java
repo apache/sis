@@ -119,7 +119,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
 
     /**
      * Returns the number of components per pixel in the image stored in GeoTIFF file.
-     * This the same value than the one returned by {@code getSampleModel().getNumBands()},
+     * This the same value as the one returned by {@code getSampleModel().getNumBands()},
      * and is also the size of the collection returned by {@link #getSampleDimensions()}.
      *
      * @see #getSampleModel()

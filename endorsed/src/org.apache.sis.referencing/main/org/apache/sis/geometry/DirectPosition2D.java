@@ -140,7 +140,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Constructs a position initialized to the same values than the specified point.
+     * Constructs a position initialized to the same values as the specified point.
      *
      * @param  position  the position to copy.
      * @throws MismatchedDimensionException if the given position is not two-dimensional.

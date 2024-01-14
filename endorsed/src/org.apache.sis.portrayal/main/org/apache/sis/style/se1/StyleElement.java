@@ -40,7 +40,7 @@ import org.opengis.filter.Literal;
 public abstract class StyleElement<R> implements Cloneable {
     /**
      * The factory to use for creating expressions and child elements.
-     * This is typically the same factory than the one used for creating this element.
+     * This is typically the same factory as the one used for creating this element.
      *
      * @see FeatureTypeStyle#FACTORY
      * @see CoverageStyle#FACTORY

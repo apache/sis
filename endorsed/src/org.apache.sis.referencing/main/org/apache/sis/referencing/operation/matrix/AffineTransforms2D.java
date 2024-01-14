@@ -100,7 +100,7 @@ public final class AffineTransforms2D extends Static {
      * Creates a 3×3 matrix from the given affine transform.
      *
      * @param  transform  the affine transform to copy as a matrix.
-     * @return a matrix containing the same terms than the given affine transform.
+     * @return a matrix containing the same terms as the given affine transform.
      */
     public static Matrix3 toMatrix(final AffineTransform transform) {
         return new Matrix3(transform.getScaleX(), transform.getShearX(), transform.getTranslateX(),
@@ -113,7 +113,7 @@ public final class AffineTransforms2D extends Static {
      * This method is the converse of {@link #castOrCopy(MathTransform)}.
      *
      * @param  transform  the affine transform to cast or copy as a {@link MathTransform}, or {@code null}.
-     * @return a {@link MathTransform} doing the same operation than the given {@link AffineTransform},
+     * @return a {@link MathTransform} doing the same operation as the given {@link AffineTransform},
      *         or {@code null} if the given transform was null.
      *
      * @see #castOrCopy(MathTransform)
@@ -144,7 +144,7 @@ public final class AffineTransforms2D extends Static {
      * @param  allowOverwrite  if {@code true}, this method is allowed to overwrite {@code shape} with the
      *                         transform result. If {@code false}, then {@code shape} is never modified.
      * @return the transform of the given shape, or {@code null} if the given shape was null.
-     *         May or may not be the same instance than the given shape.
+     *         May or may not be the same instance as the given shape.
      *
      * @see AffineTransform#createTransformedShape(Shape)
      */

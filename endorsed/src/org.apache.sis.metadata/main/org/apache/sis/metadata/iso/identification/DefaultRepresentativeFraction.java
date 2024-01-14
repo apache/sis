@@ -138,7 +138,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
+     * Returns a SIS metadata implementation with the same values as the given arbitrary
      * implementation. If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is
      * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
@@ -347,7 +347,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     // --------------------------------------------------------------------------------------
     // Code below this point is basically a copy-and-paste of ISOMetadata, with some edition.
-    // The JAXB attributes defined here shall be the same than the ISOMetadata ones.
+    // The JAXB attributes defined here shall be the same as the ISOMetadata ones.
     // --------------------------------------------------------------------------------------
 
     /**

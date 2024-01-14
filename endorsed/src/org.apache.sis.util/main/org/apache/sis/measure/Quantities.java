@@ -127,7 +127,7 @@ public final class Quantities extends Static {
             if (type != null) {
                 return DerivedScalar.Fallback.factory(value, unit, system, c, type);
             } else {
-                @SuppressWarnings("unchecked")  // Same reason than for `new Scalar(…)`.
+                @SuppressWarnings("unchecked")  // Same reason as for `new Scalar(…)`.
                 final Q quantity = (Q) new DerivedScalar<>(value, unit, system, c);
                 return quantity;
             }

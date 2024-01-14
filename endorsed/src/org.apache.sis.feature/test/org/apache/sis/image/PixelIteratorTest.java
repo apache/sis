@@ -1345,7 +1345,7 @@ public class PixelIteratorTest extends TestCase {
 
     /**
      * Tests write operations in a single raster.
-     * The destination image is the same than the source image.
+     * The destination image is the same as the source image.
      */
     @Test
     @DependsOnMethod("testOnRasterSubArea")
@@ -1356,7 +1356,7 @@ public class PixelIteratorTest extends TestCase {
 
     /**
      * Tests write operations in a single tile of an image.
-     * The destination image is the same than the source image.
+     * The destination image is the same as the source image.
      */
     @Test
     @DependsOnMethod({"testOnWritableRaster", "testOnTileSubArea"})
@@ -1367,7 +1367,7 @@ public class PixelIteratorTest extends TestCase {
 
     /**
      * Tests write operations in a tiled image.
-     * The destination image is the same than the source image.
+     * The destination image is the same as the source image.
      */
     @Test
     @DependsOnMethod({"testOnWritableTile", "testOnImageSubArea"})

@@ -27,7 +27,7 @@ import org.opengis.util.InternationalString;
  * Locale-dependent resources for error messages.
  *
  * <h2>Argument order convention</h2>
- * This resource bundle applies the same convention than JUnit: for every {@code format(…)} method,
+ * This resource bundle applies the same convention as JUnit: for every {@code format(…)} method,
  * the first arguments provide information about the context in which the error occurred (e.g. the
  * name of a method argument or the range of valid values), while the erroneous values that caused
  * the error are last. Note that being the last programmatic parameter does not means that the value
@@ -1090,7 +1090,7 @@ public class Errors extends IndexedResourceBundle {
 
     /**
      * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
+     * the resource file of the same name as this class.
      */
     public Errors() {
     }
@@ -1098,7 +1098,7 @@ public class Errors extends IndexedResourceBundle {
     /**
      * Opens the binary file containing the localized resources to load.
      * This method delegates to {@link Class#getResourceAsStream(String)},
-     * but this delegation must be done from the same module than the one
+     * but this delegation must be done from the same module as the one
      * that provides the binary file.
      */
     @Override

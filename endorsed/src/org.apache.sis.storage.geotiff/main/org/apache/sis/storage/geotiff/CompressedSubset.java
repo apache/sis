@@ -38,7 +38,7 @@ import org.apache.sis.image.DataType;
 final class CompressedSubset extends DataSubset {
     /**
      * Number of sample values to skip for moving to the next row of a tile in the GeoTIFF file.
-     * This is not necessarily the same scanline stride than for the tiles created by this class.
+     * This is not necessarily the same scanline stride as for the tiles created by this class.
      */
     private final long scanlineStride;
 

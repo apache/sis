@@ -71,7 +71,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * to the standard {@code Map.entrySet().iterator()}:
      * <ul>
      *   <li>The {@link #next()} method checks if there is more element and moves to the next one in a single step.
-     *       This is exactly the same approach than {@link java.sql.ResultSet#next()}.</li>
+     *       This is exactly the same approach as {@link java.sql.ResultSet#next()}.</li>
      *   <li>Entry elements are returned by the {@link #getKey()} and {@link #getValue()} methods
      *       instead of creating new {@code Map.Element} on each iterator.</li>
      * </ul>
@@ -431,7 +431,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
                 return (it != null) ? new Keys<>(it) : Collections.emptyIterator();
             }
 
-            /** Overridden for the same reason than {@link AbstractMap#equals(Object). */
+            /** Overridden for the same reason as {@link AbstractMap#equals(Object). */
             @Override public boolean equals(final Object object) {
                 if (object == this) {
                     return true;
@@ -513,7 +513,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
                 return (it != null) ? new Entries<>(it) : Collections.emptyIterator();
             }
 
-            /** Overridden for the same reason than {@link AbstractMap#equals(Object). */
+            /** Overridden for the same reason as {@link AbstractMap#equals(Object). */
             @Override public boolean equals(final Object object) {
                 if (object == this) {
                     return true;

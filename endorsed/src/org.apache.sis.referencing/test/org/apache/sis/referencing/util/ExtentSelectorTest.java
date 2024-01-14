@@ -95,7 +95,7 @@ public final class ExtentSelectorTest extends TestCase {
     public void testTemporal() {
         assertBestEquals(time(1000, 2000, true), 2,
                          time(1500, 2000, true),
-                         time(1300, 1800, false),       // Same duration than above, but better centered.
+                         time(1300, 1800, false),       // Same duration as above, but better centered.
                          time(1400, 1600, true));       // Well centered but intersection is small.
     }
 

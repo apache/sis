@@ -37,7 +37,7 @@ import org.apache.sis.util.Debug;
  * <a href="https://doi.org/10.1007/s00190-012-0578-z">Algorithms for geodesics</a>, SRI International.
  * </blockquote>
  *
- * The following symbols are used with the same meaning than in Karney's article,
+ * The following symbols are used with the same meaning as in Karney's article,
  * except λ₁₂ which is represented by ∆λ:
  *
  * <ul>
@@ -400,7 +400,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          *                     (                            38081/61440⋅ε⁶)⋅sin(6θ)             // C′₁₆
          *
          * For performance and simplicity, we rewrite the equations using trigonometric identities
-         * using the same technic than the one documented above in sphericalToEllipsoidalAngle(σ).
+         * using the same technic as the one documented above in sphericalToEllipsoidalAngle(σ).
          */
         final double ε2 = ε*ε;
         final double ε3 = ε*ε2;

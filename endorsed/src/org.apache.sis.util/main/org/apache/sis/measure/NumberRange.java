@@ -436,7 +436,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  <N>    the type of elements in the given range.
      * @param  range  the range to cast or copy.
-     * @return the same range than {@code range} as a {@code NumberRange} object.
+     * @return the same range as {@code range} as a {@code NumberRange} object.
      */
     public static <N extends Number & Comparable<? super N>> NumberRange<N> castOrCopy(final Range<N> range) {
         if (range instanceof NumberRange<?>) {
@@ -448,7 +448,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs a range with the same type and the same values than the specified range.
+     * Constructs a range with the same type and the same values as the specified range.
      * This is a copy constructor.
      *
      * @param range the range to copy. The elements must be {@link Number} instances.
@@ -492,7 +492,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs a range with the same values than the specified range, casted to the specified type.
+     * Constructs a range with the same values as the specified range, casted to the specified type.
      *
      * @param  type   the element type, usually one of {@link Byte}, {@link Short},
      *                {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
@@ -507,7 +507,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Creates a new range using the same element type than this range. This method will
+     * Creates a new range using the same element type as this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
      */
     @Override
@@ -519,7 +519,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Casts the specified range to the specified type.  If this class is associated to a unit of measurement,
-     * then this method converts the {@code range} unit to the same unit than this instance.
+     * then this method converts the {@code range} unit to the same unit as this instance.
      * This method is overridden by {@link MeasurementRange} only in the way described above.
      *
      * @param  type  the class to cast to. Must be one of {@link Byte}, {@link Short},
@@ -727,7 +727,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     /**
      * Returns {@code true} if this range contains the given value.
      * This method converts {@code this} or the given argument to the widest numeric type,
-     * then performs the same work than {@link #contains(Comparable)}.
+     * then performs the same work as {@link #contains(Comparable)}.
      *
      * @param  value  the value to check for inclusion in this range, or {@code null}.
      * @return {@code true} if the given value is non-null and included in this range.

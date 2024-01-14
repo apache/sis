@@ -60,14 +60,14 @@ import org.opengis.coverage.grid.SequenceType;
 public class WritablePixelIterator extends PixelIterator implements Closeable {
     /**
      * The image where pixels will be written, or {@code null} if the image is read-only.
-     * The destination image may or may not be the same instance than the source {@link #image}.
+     * The destination image may or may not be the same instance as the source {@link #image}.
      * However, the sample model, the minimal X and Y values and the tile grid must be the same.
      */
     private final WritableRenderedImage destination;
 
     /**
      * The current tile where pixels will be written, or {@code null} if no write operation is under way.
-     * It may or may not be the same instance than {@link #currentRaster}.
+     * It may or may not be the same instance as {@link #currentRaster}.
      *
      * @see WritableRenderedImage#getWritableTile(int, int)
      * @see WritableRenderedImage#releaseWritableTile(int, int)

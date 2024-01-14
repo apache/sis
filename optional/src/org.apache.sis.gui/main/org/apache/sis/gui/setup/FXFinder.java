@@ -105,7 +105,7 @@ public final class FXFinder {
 
     /**
      * The JavaFX directory validated by {@code FXFinder}, or {@code null} if the directory is invalid.
-     * May be the same file than {@link #specified}, but not necessarily; it may be a subdirectory.
+     * May be the same file as {@link #specified}, but not necessarily; it may be a subdirectory.
      */
     private File validated;
 

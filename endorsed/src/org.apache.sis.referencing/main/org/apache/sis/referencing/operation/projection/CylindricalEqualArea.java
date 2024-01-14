@@ -186,7 +186,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     CylindricalEqualArea(final CylindricalEqualArea other) {
         super(other);
@@ -241,7 +241,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
     }
 
     /**
-     * Converts a list of coordinate tuples. This method performs the same calculation than above
+     * Converts a list of coordinate tuples. This method performs the same calculation as above
      * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
      *
      * @throws TransformException if a point cannot be converted.
@@ -255,7 +255,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
         } else {
             /*
              * Override the super-class method only as an optimization in the special case where the target coordinates
-             * are written at the same locations than the source coordinates. In such case, we can take advantage of
+             * are written at the same locations as the source coordinates. In such case, we can take advantage of
              * the fact that the λ values are not modified by the normalized Cylindrical Equal Area projection.
              */
             dstOff--;

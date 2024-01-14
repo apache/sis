@@ -82,7 +82,7 @@ compare:        for (final Object oe : (Bag) other) {
 
     /**
      * Returns a hash code value for this bag, ignoring element order.
-     * This method computes hash code in the same way than {@link java.util.Set}.
+     * This method computes hash code in the same way as {@link java.util.Set}.
      *
      * @return a hash code value.
      */

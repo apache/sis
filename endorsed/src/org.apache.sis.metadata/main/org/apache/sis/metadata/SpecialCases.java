@@ -44,7 +44,7 @@ final class SpecialCases extends PropertyAccessor {
      *                         the value returned by {@link MetadataStandard#findInterface(CacheKey)}.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
      * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
-     *                         This is the same than {@code implementation} unless a custom implementation is used.
+     *                         This is the same as {@code implementation} unless a custom implementation is used.
      */
     SpecialCases(final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
         super(type, implementation, standardImpl);

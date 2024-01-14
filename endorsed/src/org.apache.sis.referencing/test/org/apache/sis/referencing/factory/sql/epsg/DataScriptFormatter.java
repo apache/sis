@@ -312,7 +312,7 @@ public final class DataScriptFormatter extends ScriptRunner {
         if (line.startsWith(INSERT_INTO)) {
             int valuesStart = line.indexOf(VALUES, INSERT_INTO.length());
             if (valuesStart < 0) {
-                throw new SQLException("This simple program wants VALUES on the same line than INSERT INTO.");
+                throw new SQLException("This simple program wants VALUES on the same line as INSERT INTO.");
             }
             final String table = CharSequences.trimWhitespaces(line, INSERT_INTO.length(), valuesStart).toString();
             booleanColumnIndices = booleanColumnIndicesForTables.getOrDefault(table, ArraysExt.EMPTY_INT);

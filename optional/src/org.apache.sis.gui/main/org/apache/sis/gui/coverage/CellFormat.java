@@ -286,7 +286,7 @@ final class CellFormat extends SimpleStringProperty {
             final int  integer = tile.getSample(x, y, b);
             final double value = integer;
             if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                // The `format` method invoked here is not the same than in `double` case.
+                // The `format` method invoked here is not the same as in `double` case.
                 lastValueAsText = cellFormat.format(integer, buffer, formatField).toString();
                 lastValue = value;
             }

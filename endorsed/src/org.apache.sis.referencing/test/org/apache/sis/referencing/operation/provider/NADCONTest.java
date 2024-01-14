@@ -177,7 +177,7 @@ public final class NADCONTest extends DatumShiftTestCase {
         vector[1] *= cellSize * GridLoader.DEGREES_TO_SECONDS;
         assertArrayEquals("interpolateInCell", expected, vector, 0.5E-5);
 
-        // Same test than above, but let DatumShiftGrid do the conversions for us.
+        // Same test as above, but let DatumShiftGrid do the conversions for us.
         expected[0] /= GridLoader.DEGREES_TO_SECONDS;
         expected[1] /= GridLoader.DEGREES_TO_SECONDS;
         assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position), ANGULAR_TOLERANCE);

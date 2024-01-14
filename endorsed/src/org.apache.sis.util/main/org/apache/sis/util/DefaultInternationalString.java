@@ -164,7 +164,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * @return the set of locales.
      *
      * @todo Current implementation does not return a synchronized set. We should synchronize
-     *       on the same lock than the one used for accessing the internal locale map.
+     *       on the same lock as the one used for accessing the internal locale map.
      */
     public synchronized Set<Locale> getLocales() {
         Set<Locale> locales = localeSet;

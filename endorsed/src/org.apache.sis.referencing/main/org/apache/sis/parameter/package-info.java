@@ -20,7 +20,7 @@
  * An explanation for this package is provided in the {@linkplain org.opengis.parameter OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * <p>There is three categories of classes in this package:</p>
+ * <p>There are three categories of classes in this package:</p>
  * <ul>
  *   <li><b>Parameter descriptors</b> are immutable types that describes the parameters needed by an operation or a
  *     process. Descriptors contain information like parameter name, optionality, repeatability and value type, but

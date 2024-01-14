@@ -38,7 +38,7 @@ import org.opengis.coverage.CannotEvaluateException;
 
 /**
  * Decorates a {@link GridCoverage} in order to convert sample values on the fly.
- * There is two strategies about when to convert sample values:
+ * There are two strategies about when to convert sample values:
  *
  * <ul>
  *   <li>In calls to {@link #render(GridExtent)}, sample values are converted when first needed
@@ -84,7 +84,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
     private final boolean isUSerDefined;
 
     /**
-     * Creates a new coverage with the same grid geometry than the given coverage but converted sample dimensions.
+     * Creates a new coverage with the same grid geometry as the given coverage but converted sample dimensions.
      *
      * @param  source       the coverage containing source values.
      * @param  range        the sample dimensions to assign to the converted grid coverage.

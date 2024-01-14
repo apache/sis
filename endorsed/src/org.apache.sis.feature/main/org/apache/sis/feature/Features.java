@@ -323,7 +323,7 @@ public final class Features extends Static {
         if (feature != null) {
             /*
              * Delegate to AbstractFeature.quality() if possible because the user may have overridden the method.
-             * Otherwise fallback on the same code than AbstractFeature.quality() default implementation.
+             * Otherwise fallback on the same code as AbstractFeature.quality() default implementation.
              */
             final DataQuality quality;
             if (feature instanceof AbstractFeature) {

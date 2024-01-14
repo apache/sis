@@ -227,7 +227,7 @@ public final class ParameterFormatTest extends TestCase {
 
     /**
      * Tests {@link ParameterFormat#format(Object, Appendable)} for values with {@code ContentLevel.DETAILED}.
-     * The same comments than {@link #testFormatBriefValues()} apply, except that the column of obligation is
+     * The same comments as {@link #testFormatBriefValues()} apply, except that the column of obligation is
      * still shown.
      */
     @Test

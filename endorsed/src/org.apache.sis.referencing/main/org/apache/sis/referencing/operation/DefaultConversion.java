@@ -93,7 +93,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
 
     /**
      * Creates a coordinate conversion from the given properties.
-     * The properties given in argument follow the same rules than for the
+     * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -169,7 +169,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}
      * construction time.
      *
-     * <p>The {@code properties} map given in argument follows the same rules than for the
+     * <p>The {@code properties} map given in argument follows the same rules as for the
      * {@linkplain #DefaultConversion(Map, CoordinateReferenceSystem, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, OperationMethod, MathTransform) above constructor}.</p>
      *
@@ -212,7 +212,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Constructs a new conversion with the same values than the specified one, together with the
+     * Constructs a new conversion with the same values as the specified one, together with the
      * specified source and target CRS. While the source conversion can be an arbitrary one,
      * it is typically a defining conversion.
      *
@@ -298,7 +298,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Creates a new coordinate operation with the same values than the specified one.
+     * Creates a new coordinate operation with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -384,7 +384,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
-     * @throws MismatchedDatumException if the given CRS do not use the same datum than the source and target CRS
+     * @throws MismatchedDatumException if the given CRS do not use the same datum as the source and target CRS
      *         of this conversion.
      * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
      *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
@@ -400,7 +400,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         /*
-         * Conceptual consistency check: verify that the new CRS use the same datum than the previous ones,
+         * Conceptual consistency check: verify that the new CRS use the same datum as the previous ones,
          * since the purpose of this method is not to apply datum changes. Datum changes are the purpose of
          * a dedicated kind of operations, namely Transformation.
          */

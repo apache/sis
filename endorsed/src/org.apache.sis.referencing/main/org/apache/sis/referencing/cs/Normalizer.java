@@ -285,7 +285,7 @@ final class Normalizer implements Comparable<Normalizer> {
         /*
          * Get the axes to retain, without normalizing them yet. We keep a list of
          * axes before normalization in order to detect which axes have been reused
-         * and whether reused axes are in the same order than before.
+         * and whether reused axes are in the same order as before.
          */
         final CoordinateSystemAxis[] oldAxes = new CoordinateSystemAxis[dimension];
         int n = 0;
@@ -355,7 +355,7 @@ final class Normalizer implements Comparable<Normalizer> {
             }
         }
         /*
-         * Create a new coordinate system of the same type than the given one, but with the given axes.
+         * Create a new coordinate system of the same type as the given one, but with the given axes.
          * We need to change the Coordinate System name, since it is likely to not be valid anymore.
          */
         final AbstractCS impl = castOrCopy(cs);
@@ -372,7 +372,7 @@ final class Normalizer implements Comparable<Normalizer> {
     }
 
     /**
-     * Returns a coordinate system with the same axes than the given CS, except that the wraparound axes
+     * Returns a coordinate system with the same axes as the given CS, except that the wraparound axes
      * are shifted to a range of positive values. This method can be used in order to shift between the
      * [-180 … +180]° and [0 … 360]° ranges of longitude values.
      *
@@ -412,7 +412,7 @@ final class Normalizer implements Comparable<Normalizer> {
     }
 
     /**
-     * Returns a new axis with the same properties than the given axis except the identifiers which are omitted,
+     * Returns a new axis with the same properties as the given axis except the identifiers which are omitted,
      * and the minimum and maximum values which are set to the given values.
      */
     private static CoordinateSystemAxis forRange(final CoordinateSystemAxis axis, final double min, final double max) {

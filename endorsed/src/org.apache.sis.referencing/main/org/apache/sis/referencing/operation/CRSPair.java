@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Locale;
 import java.util.Objects;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -77,11 +78,15 @@ final class CRSPair {
     }
 
     /**
-     * Returns the name of the GeoAPI interface implemented by the specified object. In the GeographicCRS
-     * or EllipsoidalCS cases, the trailing CRS or CS suffix is replaced by the number of dimensions
-     * (e.g. "Geographic3D").
+     * Returns the name of the GeoAPI interface implemented by the specified object, followed by the object name.
+     * In the GeographicCRS or EllipsoidalCS cases, the trailing CRS or CS suffix is replaced by the number of
+     * dimensions (e.g. "Geographic3D").
+     *
+     * @param  object  the object for which to get a label.
+     * @param  locale  the locale for the object name, or {@code null}.
+     * @return a label for the specified object.
      */
-    static String label(final IdentifiedObject object) {
+    static String label(final IdentifiedObject object, final Locale locale) {
         if (object == null) {
             return null;
         }
@@ -98,7 +103,7 @@ final class CRSPair {
                 label = sb.append(((CoordinateSystem) cs).getDimension()).append('D').toString();
             }
         }
-        String name = IdentifiedObjects.getDisplayName(object, null);
+        String name = IdentifiedObjects.getDisplayName(object, locale);
         if (name != null) {
             int i = 30;                                         // Arbitrary length threshold.
             if (name.length() >= i) {
@@ -119,6 +124,6 @@ final class CRSPair {
      */
     @Override
     public String toString() {
-        return label(sourceCRS) + " ⟶ " + label(targetCRS);
+        return label(sourceCRS, null) + " ⟶ " + label(targetCRS, null);
     }
 }

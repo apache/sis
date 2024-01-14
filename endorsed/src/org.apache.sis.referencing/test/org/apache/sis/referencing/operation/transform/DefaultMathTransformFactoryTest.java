@@ -128,7 +128,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
         assertInstanceOf("Affine",               Affine.class,      affine);
         assertInstanceOf("Mercator (variant A)", Mercator1SP.class, mercator);
 
-        // Same than above, using EPSG code and alias.
+        // Same as above, using EPSG code and alias.
         assertSame("EPSG:9624",    affine,   factory.getOperationMethod("EPSG:9624"));
         assertSame("EPSG:9804",    mercator, factory.getOperationMethod("EPSG:9804"));
         assertSame("Mercator_1SP", mercator, factory.getOperationMethod("Mercator_1SP"));

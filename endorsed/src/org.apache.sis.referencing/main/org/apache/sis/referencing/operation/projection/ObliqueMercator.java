@@ -227,7 +227,7 @@ public class ObliqueMercator extends ConformalProjection {
              *      E  =  [D ± √(D² - 1)]⋅(t₀^B)        — =H in EPSG formulas
              *      H  =  t₁^B                          — where t is the tsfn function with φ = φ₁
              *      L  =  t₂^B                          — where t is the tsfn function with φ = φ₂
-             *      F  =  E/H                           — not the same F than from EPSG guidance notes.
+             *      F  =  E/H                           — not the same F as from EPSG guidance notes.
              *      G  = (F - 1/F) / 2
              *      J  = (E² - L⋅H) / (E² + L⋅H)
              *      P  = (L - H) / (L + H)

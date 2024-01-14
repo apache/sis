@@ -252,7 +252,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Returns the person or party responsible for maintenance of the namespace.
-     * The organization's abbreviation is often the same than this identifier
+     * The organization's abbreviation is often the same as this identifier
      * {@linkplain #getCodeSpace() code space}, but not necessarily.
      *
      * @return person or party responsible for maintenance of the namespace, or {@code null} if not available.

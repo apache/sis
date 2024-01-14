@@ -588,7 +588,7 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
 
     /**
      * Copies all expressions that are in the given list.
-     * The returned list has the same length than the given list.
+     * The returned list has the same length as the given list.
      * If all copied expressions are equal to the original expressions and {@link #forceNew} is {@code false},
      * then this method returns {@code null} for telling that filter or expression does not need to be created.
      *
@@ -616,7 +616,7 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
 
     /**
      * Copies all filters that are in the given list.
-     * The returned list has the same length than the given list.
+     * The returned list has the same length as the given list.
      * If all copied filters are equal to the original filters and {@link #forceNew} is {@code false},
      * then this method returns {@code null} for telling that filter does not need to be created.
      *

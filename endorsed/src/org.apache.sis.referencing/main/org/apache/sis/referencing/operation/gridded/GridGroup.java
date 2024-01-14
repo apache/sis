@@ -188,7 +188,7 @@ public final class GridGroup<C extends Quantity<C>, T extends Quantity<T>> exten
     }
 
     /**
-     * Creates a new grid sharing the same data than an existing grid.
+     * Creates a new grid sharing the same data as an existing grid.
      * This constructor is for {@link #setData(Object[])} usage only.
      */
     private GridGroup(final GridGroup<C,T> other, final LoadedGrid<C,T>[] data) {
@@ -198,9 +198,9 @@ public final class GridGroup<C extends Quantity<C>, T extends Quantity<T>> exten
     }
 
     /**
-     * Returns a new grid with the same geometry than this grid but different data arrays.
+     * Returns a new grid with the same geometry as this grid but different data arrays.
      * This method is invoked by {@link #useSharedData()} when it detects that a newly created
-     * grid uses the same data than an existing grid. The {@code other} object is the old grid,
+     * grid uses the same data as an existing grid. The {@code other} object is the old grid,
      * so we can share existing data.
      */
     @Override

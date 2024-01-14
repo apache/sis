@@ -583,7 +583,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *   <li>If this envelope does not have any wraparound behavior, then this method returns {@code this}
      *       in an array of length 1. This envelope is <strong>not</strong> cloned.</li>
      *   <li>If this envelope crosses the <cite>anti-meridian</cite> (a.k.a. <cite>date line</cite>)
-     *       then this method returns two separated envelopes covering the same area than this envelopes.
+     *       then this method returns two separated envelopes covering the same area as this envelopes.
      *   <li>While uncommon, the envelope could theoretically crosses the limit of other axis having
      *       wraparound range meaning. If wraparounds occur along <var>n</var> axes, then this method
      *       may return 2ⁿ separated simple envelopes.
@@ -819,7 +819,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * <blockquote><pre>{@linkplain #contains(Envelope, boolean) contains}(envelope, <b>true</b>)</pre></blockquote>
      *
      * <h4>Preconditions</h4>
-     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * This method assumes that the specified envelope uses the same CRS as this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
@@ -849,7 +849,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * envelope, then this method returns {@code true} only if {@code edgesInclusive}
      * is {@code true}.
      *
-     * <p>This method is subject to the same preconditions than {@link #contains(Envelope)},
+     * <p>This method is subject to the same preconditions as {@link #contains(Envelope)},
      * and handles envelopes crossing the anti-meridian in the same way.</p>
      *
      * @param  envelope        the envelope to test for inclusion.
@@ -949,7 +949,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * <blockquote><pre>{@linkplain #intersects(Envelope, boolean) intersects}(envelope, <b>false</b>)</pre></blockquote>
      *
      * <h4>Preconditions</h4>
-     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * This method assumes that the specified envelope uses the same CRS as this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
@@ -983,7 +983,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *       <em>or</em> touch each other.</li>
      * </ul>
      *
-     * This method is subject to the same preconditions than {@link #intersects(Envelope)},
+     * This method is subject to the same preconditions as {@link #intersects(Envelope)},
      * and handles envelopes crossing the anti-meridian in the same way.
      *
      * @param  envelope  the envelope to test for intersection.
@@ -1144,7 +1144,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * with equals coordinates and {@linkplain #getCoordinateReferenceSystem() CRS}.
      *
      * <h4>Implementation note</h4>
-     * This implementation requires that the provided {@code object} argument is of the same class than this envelope.
+     * This implementation requires that the provided {@code object} argument is of the same class as this envelope.
      * We do not relax this rule since not every implementations in the SIS code base follow the same contract.
      *
      * @param  object  the object to compare with this envelope.

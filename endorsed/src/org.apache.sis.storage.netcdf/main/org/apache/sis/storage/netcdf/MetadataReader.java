@@ -442,7 +442,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         /*
          * The "individual" name may actually be an institution name, either because a "*_type" attribute
-         * said so or because the "individual" name is the same than the institution name. In such cases,
+         * said so or because the "individual" name is the same as the institution name. In such cases,
          * reorganize the names in order to avoid duplication.
          */
         if (organisationName == null) {

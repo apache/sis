@@ -50,7 +50,7 @@
  *       or {@code "gpkg_content"} (from GeoPackage) tables for a default list of feature tables.</li>
  *   <li>Current implementation does not yet map geometric objects (e.g. PostGIS types).</li>
  *   <li>If a parent feature contains association to other features, those other features are created
- *       at the same time than the parent feature (no lazy instantiation yet).</li>
+ *       at the same time as the parent feature (no lazy instantiation yet).</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)

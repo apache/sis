@@ -32,15 +32,18 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
+import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.DefinitionURI;
+import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+import org.apache.sis.pending.jdk.JDK21;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.metadata.internal.NameToIdentifier;
@@ -48,7 +51,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
-import static org.apache.sis.util.internal.CollectionsExt.nonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
@@ -126,7 +128,7 @@ public final class IdentifiedObjects extends Static {
 
     /**
      * Returns every object names and aliases according the given authority. This method performs
-     * the same work than {@link #getName(IdentifiedObject, Citation)}, except that it does not
+     * the same work as {@link #getName(IdentifiedObject, Citation)}, except that it does not
      * stop at the first match. This method is useful in the rare cases where the same authority
      * declares more than one name, and all those names are of interest.
      *
@@ -472,7 +474,15 @@ public final class IdentifiedObjects extends Static {
         if (object instanceof CompoundCRS) {
             components = CRS.getSingleComponents((CompoundCRS) object);
         } else if (object instanceof ConcatenatedOperation) {
-            components = ((ConcatenatedOperation) object).getOperations();
+            final var cop = (ConcatenatedOperation) object;
+            final List<? extends CoordinateOperation> steps = cop.getOperations();
+            if (equalsIgnoreMetadata(cop.getSourceCRS(), JDK21.getFirst(steps).getSourceCRS()) &&
+                equalsIgnoreMetadata(cop.getTargetCRS(), JDK21.getLast (steps).getTargetCRS()))
+            {
+                components = steps;
+            } else {
+                return null;
+            }
         } else {
             return null;
         }
@@ -590,7 +600,7 @@ public final class IdentifiedObjects extends Static {
      *
      * <h4>Example 1: be lenient regarding axis order</h4>
      * By default, {@code lookup(…)} methods require that objects in the dataset have their axes in the
-     * same order than the given object. For relaxing this condition, one can use the following Java code.
+     * same order as the given object. For relaxing this condition, one can use the following Java code.
      * This example assumes that at most one object from the dataset will match the given object.
      * If more than one object may match, then the call to {@code findSingleton(…)} should be replaced
      * by {@code find(…)}.

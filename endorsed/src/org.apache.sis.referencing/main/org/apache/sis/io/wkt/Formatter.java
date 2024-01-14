@@ -128,7 +128,7 @@ public class Formatter implements Localized {
 
     /**
      * The locale for the localization of international strings.
-     * This is not the same than {@link Symbols#getLocale()}.
+     * This is not the same as {@link Symbols#getLocale()}.
      *
      * @see #errorLocale
      */
@@ -198,7 +198,7 @@ public class Formatter implements Localized {
      * The contextual units for writing lengths, angles or other type of measurements.
      * A unit not present in this map means that the "natural" unit of the WKT element shall be used.
      * This value is set for example by {@code "GEOGCS"}, which force its enclosing {@code "PRIMEM"}
-     * to take the same units than itself.
+     * to take the same units as itself.
      *
      * @see #addContextualUnit(Unit)
      * @see #toContextualUnit(Unit)
@@ -768,7 +768,7 @@ public class Formatter implements Localized {
      *
      * <p>The {@code ID[<name>,<code>,…]} element is normally written only for the root element
      * (unless the convention is {@code INTERNAL}), but there is various exceptions to this rule.
-     * If formatted, the {@code ID} element will be by default on the same line than the enclosing
+     * If formatted, the {@code ID} element will be by default on the same line as the enclosing
      * element (e.g. {@code SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]}). Other example:</p>
      *
      * {@snippet lang="wkt" :
@@ -1275,7 +1275,7 @@ public class Formatter implements Localized {
         /*
          * If the rows are going to be formatted on many lines, then we will need to put some margin before each row.
          * If the first row starts on its own line, then the margin will be the usual indentation. But if the first
-         * row starts on the same line than previous elements (or the keyword of this element, e.g. "BOX["), then we
+         * row starts on the same line as previous elements (or the keyword of this element, e.g. "BOX["), then we
          * will need a different amount of spaces if we want to have the numbers properly aligned.
          */
         final int numRows = rows.length;
@@ -1319,7 +1319,7 @@ public class Formatter implements Localized {
             formattedNumberMarks[j] = marks;
             for (int i=0; i<numCols; i++) {
                 if (i != 0) buffer.append(Symbols.NUMBER_SEPARATOR);
-                if (i < fractionDigits.length) {                    // Otherwise, same than previous number.
+                if (i < fractionDigits.length) {                    // Otherwise, same as previous number.
                     final int f = fractionDigits[i];
                     numberFormat.setMaximumFractionDigits(f);
                     numberFormat.setMinimumFractionDigits(f);

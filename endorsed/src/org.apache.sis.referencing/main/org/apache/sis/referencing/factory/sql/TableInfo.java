@@ -91,7 +91,7 @@ final class TableInfo {
                                 TimeCS.class,           ParametricCS.class,       AffineCS.class},
                 new String[]   {WKTKeywords.Cartesian,  WKTKeywords.ellipsoidal,  WKTKeywords.vertical,  WKTKeywords.linear,
                                 WKTKeywords.spherical,  WKTKeywords.polar,        WKTKeywords.cylindrical,
-                                WKTKeywords.temporal,   WKTKeywords.parametric,   WKTKeywords.affine},      // Same comment than in the CRS case above.
+                                WKTKeywords.temporal,   WKTKeywords.parametric,   WKTKeywords.affine},      // Same comment as in the CRS case above.
                 null),
 
         new TableInfo(CoordinateSystemAxis.class,
@@ -109,7 +109,7 @@ final class TableInfo {
                 new Class<?>[] { GeodeticDatum.class,  VerticalDatum.class,   EngineeringDatum.class,
                                  TemporalDatum.class,  ParametricDatum.class},
                 new String[]   {"geodetic",           "vertical",            "engineering",
-                                "temporal",           "parametric"},         // Same comment than in the CRS case above.
+                                "temporal",           "parametric"},         // Same comment as in the CRS case above.
                 null),
 
         ELLIPSOID = new TableInfo(Ellipsoid.class,

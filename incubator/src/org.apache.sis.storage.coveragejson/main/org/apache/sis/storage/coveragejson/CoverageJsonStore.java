@@ -64,7 +64,7 @@ public class CoverageJsonStore extends DataStore implements WritableAggregate {
     private final URI location;
 
     /**
-     * Same value than {@link #location} but as a path, or {@code null} if none.
+     * Same value as {@link #location} but as a path, or {@code null} if none.
      * Stored separately because conversion from path to URI back to path is not
      * looseness (relative paths become absolutes).
      */

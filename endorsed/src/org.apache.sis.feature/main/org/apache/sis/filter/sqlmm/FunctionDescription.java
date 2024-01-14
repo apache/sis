@@ -253,7 +253,7 @@ final class FunctionDescription implements AvailableFunction, Serializable {
          *
          * @param  obj   the object to test for equality.
          * @param  mode  the strictness level of the comparison.
-         * @return whether the given object describes the same argument than this.
+         * @return whether the given object describes the same argument as this.
          */
         @Override
         public boolean equals(final Object obj, final ComparisonMode mode) {
@@ -305,7 +305,7 @@ final class FunctionDescription implements AvailableFunction, Serializable {
      * Tests whether the given object is equal to this function description.
      *
      * @param  obj  the object to test for equality.
-     * @return whether the given object describes the same function than this.
+     * @return whether the given object describes the same function as this.
      */
     @Override
     public boolean equals(final Object obj) {

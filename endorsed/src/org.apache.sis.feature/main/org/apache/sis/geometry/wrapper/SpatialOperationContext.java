@@ -314,7 +314,7 @@ select: if (commonCRS == null) {
             /*
              * If the target CRS uses (latitude, longitude) coordinates and the requested units
              * are metres (or compatible linear units), apply a map projection. We will use the
-             * same datum than `targetCRS` for avoiding datum shift.
+             * same datum as `targetCRS` for avoiding datum shift.
              */
             if (Units.isLinear(systemUnit) && targetCRS instanceof GeographicCRS) {
                 return Projector.instance().create((GeographicCRS) targetCRS, geometry.getCentroid(), geometryCRS);

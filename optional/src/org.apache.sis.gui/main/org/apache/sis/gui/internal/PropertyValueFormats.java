@@ -86,7 +86,7 @@ public class PropertyValueFormats extends CompoundFormat<Object> {
     }
 
     /**
-     * Formats a single value. This method does the same work than the inherited
+     * Formats a single value. This method does the same work as the inherited
      * {@link #format(Object)} final method but in a more efficient way.
      *
      * @param  value            the value to format.

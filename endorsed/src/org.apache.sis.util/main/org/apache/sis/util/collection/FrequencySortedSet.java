@@ -332,7 +332,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
         }
 
         /**
-         * Returns the comparator, which is the same than {@link FrequencySortedSet#comparator()}.
+         * Returns the comparator, which is the same as {@link FrequencySortedSet#comparator()}.
          */
         @Override
         public Comparator<E> comparator() {

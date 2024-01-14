@@ -61,7 +61,7 @@ final class ResourceItem extends TreeItem<Resource> {
     String label;
 
     /**
-     * Whether this node is in process of loading data. There is two kinds of loading:
+     * Whether this node is in process of loading data. There are two kinds of loading:
      * <ul>
      *   <li>The {@link Resource} itself, in which case {@link #getValue()} is null.</li>
      *   <li>The resource {@link #title}, in which case {@link #getValue()} has a valid value.</li>

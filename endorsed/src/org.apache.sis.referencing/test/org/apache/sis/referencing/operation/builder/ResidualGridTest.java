@@ -87,7 +87,7 @@ public final class ResidualGridTest extends TestCase {
 
     /**
      * Tests {@link ResidualGrid#interpolateAt(double...)} without interpolation.
-     * This test checks the same values than {@link #testGetCellValue()}.
+     * This test checks the same values as {@link #testGetCellValue()}.
      *
      * @throws TransformException if an error occurred while transforming a coordinate.
      */

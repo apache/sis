@@ -107,7 +107,7 @@ final class Writer extends IOBase implements Flushable {
     /**
      * Common number of tags which will be written. This amount is for tiled grayscale images with no metadata
      * and no statistics. For stripped images, there is one less tag. For RGB images, there is one more tag.
-     * For color maps, there is two more tags. This number is only a hint for avoiding the need to update
+     * For color maps, there are two more tags. This number is only a hint for avoiding the need to update
      * this information if the number appears to be right.
      */
     static final int COMMON_NUMBER_OF_TAGS = 16;

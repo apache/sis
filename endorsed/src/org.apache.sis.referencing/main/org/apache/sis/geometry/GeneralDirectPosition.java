@@ -129,7 +129,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     }
 
     /**
-     * Constructs a position initialized to the same values than the specified point.
+     * Constructs a position initialized to the same values as the specified point.
      * This is a copy constructor.
      *
      * @param point  the position to copy.

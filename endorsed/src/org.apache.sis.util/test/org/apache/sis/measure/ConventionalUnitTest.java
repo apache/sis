@@ -124,7 +124,7 @@ public final class ConventionalUnitTest extends TestCase {
     }
 
     /**
-     * Tests the same methods than {@link #testTransformFundamentalUnit()}, but applied on other system units than the
+     * Tests the same methods as {@link #testTransformFundamentalUnit()}, but applied on other system units than the
      * fundamental ones. All tested methods are implemented by calls to {@link SystemUnit#transform(UnitConverter)}.
      *
      * @see <a href="https://en.wikipedia.org/wiki/SI_derived_unit">Derived units on Wikipedia</a>

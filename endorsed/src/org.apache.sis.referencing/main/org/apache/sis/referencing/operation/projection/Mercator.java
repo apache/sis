@@ -92,7 +92,7 @@ public class Mercator extends ConformalProjection {
     /**
      * Variants of Mercator projection. Those variants modify the way the projections are constructed
      * (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
-     * Those variants are not exactly the same than variants A, B and C used by EPSG, but they are related.
+     * Those variants are not exactly the same as variants A, B and C used by EPSG, but they are related.
      *
      * <p>We do not provide such codes in public API because they duplicate the functionality of
      * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
@@ -326,7 +326,7 @@ public class Mercator extends ConformalProjection {
     }
 
     /**
-     * Creates a new projection initialized to the same parameters than the given one.
+     * Creates a new projection initialized to the same parameters as the given one.
      */
     Mercator(final Mercator other) {
         super(other);
@@ -426,7 +426,7 @@ subst:  if (variant.spherical || eccentricity == 0) {
     }
 
     /**
-     * Converts a list of coordinate tuples. This method performs the same calculation than above
+     * Converts a list of coordinate tuples. This method performs the same calculation as above
      * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
      *
      * @throws TransformException if a point cannot be converted.
@@ -441,7 +441,7 @@ subst:  if (variant.spherical || eccentricity == 0) {
         } else {
             /*
              * Override the super-class method only as an optimization in the special case where the target coordinates
-             * are written at the same locations than the source coordinates. In such case, we can take advantage of
+             * are written at the same locations as the source coordinates. In such case, we can take advantage of
              * the fact that the λ values are not modified by the normalized Mercator projection.
              */
             dstOff--;

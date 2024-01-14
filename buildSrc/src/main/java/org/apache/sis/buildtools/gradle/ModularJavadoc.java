@@ -88,7 +88,7 @@ final class ModularJavadoc extends Conventions {
         options.addStringOption("-module-source-path", ModularCompilation.getModuleSourcePath(project, false));
         options.addStringOption("-add-modules", String.join(",", context.getModuleNames()));
         /*
-         * Same workaround than for the compiler task.
+         * Same workaround as for the compiler task.
          */
         options.modulePath(options.getClasspath());
         options.setClasspath(List.of());

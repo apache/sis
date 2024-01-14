@@ -233,7 +233,7 @@ public class CoordinateOperationContext implements Serializable {
      * <p>If this method returns {@code null} (which is the default), then the {@link CoordinateOperationFinder} caller
      * will throw an {@link org.opengis.referencing.operation.OperationNotFoundException}. Otherwise the returned array
      * should have a length equals to the number of dimensions in the full (usually compound) target CRS.
-     * Only coordinate values in dimensions without source (the <var>t</var> dimension in above example) will be used.
+     * Only coordinate values in dimensions without source (the <var>t</var> dimension in the above example) will be used.
      * All other coordinate values will be ignored.
      *
      * @return coordinate values to take as constants for the specified target component, or {@code null} if none.

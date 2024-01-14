@@ -84,7 +84,7 @@ public class MultiResolutionCoverageLoader {
 
     /**
      * Squares of resolution at each pyramid level, from finest (smaller numbers) to coarsest (largest numbers).
-     * This is same same order than {@link GridCoverageResource#getResolutions()}. For a given level, the array
+     * This is same same order as {@link GridCoverageResource#getResolutions()}. For a given level, the array
      * {@code resolutionSquared[level]} gives the squares of the resolution for each CRS dimension.
      */
     private final double[][] resolutionSquared;

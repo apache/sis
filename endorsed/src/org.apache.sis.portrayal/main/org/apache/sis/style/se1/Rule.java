@@ -365,7 +365,7 @@ public class Rule<R> extends StyleElement<R> {
      * An {@linkplain Double#POSITIVE_INFINITY infinite} value indicates that there is no maximum.
      *
      * <h4>Relationship with real world lengths</h4>
-     * The same discussion than {@link #getMinScaleDenominator()} applies also to the maximum scale value.
+     * The same discussion as {@link #getMinScaleDenominator()} applies also to the maximum scale value.
      *
      * @return maximum scale value, exclusive.
      */

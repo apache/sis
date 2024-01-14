@@ -38,7 +38,7 @@ import org.apache.sis.measure.NumberRange;
 
 
 /**
- * An image with the same sample values than the wrapped image but a different color model.
+ * An image with the same sample values as the wrapped image but a different color model.
  * The only interesting member method is {@link #getColorModel()}, which returns the model
  * specified at construction time. All other non-trivial methods are static helper methods
  * for {@link ImageProcessor}, defined here for reducing {@link ImageProcessor} size.
@@ -79,7 +79,7 @@ final class RecoloredImage extends ImageAdapter {
     }
 
     /**
-     * Returns a recolored image with the same colors than the given image.
+     * Returns a recolored image with the same colors as the given image.
      * This method may return an existing ancestor if one is found with the desired color model.
      *
      * @param  source   the image to wrap.
@@ -139,7 +139,7 @@ final class RecoloredImage extends ImageAdapter {
     }
 
     /**
-     * Returns an image with the same sample values than the given image, but with its color ramp stretched
+     * Returns an image with the same sample values as the given image, but with its color ramp stretched
      * between specified or inferred bounds. The mapping applied by this method is conceptually a linear
      * transform applied on sample values before they are mapped to their colors.
      *

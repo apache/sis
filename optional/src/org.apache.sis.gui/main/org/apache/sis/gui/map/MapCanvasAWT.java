@@ -97,7 +97,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * This buffered image will contain only the visible region of the map;
      * it may be a zoom over a small region.
      *
-     * <p>This buffered image contains the same data than the {@linkplain #image} of this canvas.
+     * <p>This buffered image contains the same data as the {@linkplain #image} of this canvas.
      * Those two images will share the same data array (no copy) and the same coordinate system.</p>
      *
      * <h4>Restriction</h4>
@@ -126,7 +126,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
 
     /**
      * Wraps {@link #buffer} data array for use by JavaFX images. This is the mechanism used
-     * by JavaFX 13+ for allowing {@link #image} to share the same data than {@link #buffer}.
+     * by JavaFX 13+ for allowing {@link #image} to share the same data as {@link #buffer}.
      * The same wrapper can be used for many {@link WritableImage} instances (e.g. thumbnails).
      *
      * <h4>Invariants</h4>
@@ -330,7 +330,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * It may be because the map has new content, or because the viewed region moved or
      * has been zoomed.
      *
-     * <p>There is two possible situations:</p>
+     * <p>There are two possible situations:</p>
      * <ul class="verbose">
      *   <li>If the current buffers are not suitable, then we clear everything related to Java2D buffered images.
      *     Those resources will be recreated from scratch in background thread. There is no need for double-buffering
@@ -605,7 +605,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
             }
         }
 
-        /** Clears the image in the same way than failure. Defined for safety but should not happen. */
+        /** Clears the image in the same way as failure. Defined for safety but should not happen. */
         @Override protected void cancelled() {failed();}
 
         /**

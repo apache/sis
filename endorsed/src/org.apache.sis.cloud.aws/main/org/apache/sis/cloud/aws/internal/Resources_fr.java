@@ -23,7 +23,7 @@ package org.apache.sis.cloud.aws.internal;
 public class Resources_fr extends Resources {
     /**
      * Constructs a new resource bundle loading data from
-     * the resource file of the same name than this class.
+     * the resource file of the same name as this class.
      */
     public Resources_fr() {
     }

@@ -180,7 +180,7 @@ public abstract class FormattableObject implements Printable {
             formatter = new Formatter();
         }
         /*
-         * Apply the same setting than in 'WKTFormat.updateFormatter(…)'
+         * Apply the same setting as in 'WKTFormat.updateFormatter(…)'
          * when KeywordCase and KeywordStyle have their default values.
          */
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,

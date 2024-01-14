@@ -118,7 +118,7 @@ public class StyleFactory<R> {
     }
 
     /**
-     * Creates a new style factory with the same literals than the given factory.
+     * Creates a new style factory with the same literals as the given factory.
      * This constructor shall not be public because it assumes that all literals
      * are implementations that ignore the type {@code <R>} of data to style,
      * in which case the unchecked cast is safe.

@@ -79,7 +79,7 @@ public final class PolarStereographicTest extends MapProjectionTestCase {
 
     /**
      * Verifies the consistency between spherical and elliptical formulas in the North pole.
-     * This is the same formulas than the South case, but with the sign of some coefficients negated.
+     * This is the same formulas as the South case, but with the sign of some coefficients negated.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.

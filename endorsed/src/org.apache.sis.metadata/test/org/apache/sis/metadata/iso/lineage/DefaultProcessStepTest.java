@@ -64,7 +64,7 @@ public final class DefaultProcessStepTest extends TestUsingFile {
 
     /**
      * Tests the (un)marshalling of a metadata in legacy ISO 19139:2007 document.
-     * This test uses the same metadata than {@link #testXML()}.
+     * This test uses the same metadata as {@link #testXML()}.
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */

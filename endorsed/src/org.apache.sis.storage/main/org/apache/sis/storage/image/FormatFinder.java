@@ -60,7 +60,7 @@ final class FormatFinder implements AutoCloseable {
 
     /**
      * The {@link #connector} object to keep open if we successfully created a {@link WorldFileStore}.
-     * This is often the same object than {@link #storage} but may be different if an {@link ImageInputStream}
+     * This is often the same object as {@link #storage} but may be different if an {@link ImageInputStream}
      * has been created from the storage object.
      *
      * <p>This value is {@code null} until successful instantiation of image reader or writer.

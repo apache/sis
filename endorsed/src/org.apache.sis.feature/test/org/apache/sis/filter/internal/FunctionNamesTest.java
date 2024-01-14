@@ -50,7 +50,7 @@ public final class FunctionNamesTest extends TestCase {
     }
 
     /**
-     * Verifies that each field has the same name than its value.
+     * Verifies that each field has the same name as its value.
      *
      * @throws IllegalAccessException should never happen.
      */

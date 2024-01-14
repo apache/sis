@@ -120,7 +120,7 @@ public class CitationConstant extends SimpleCitation {
 
     /**
      * The name by which this citation is known to {@link Citations#fromName(String)}.
-     * Often the same than the abbreviation that {@link CitationConstant} uses as the title.
+     * Often the same as the abbreviation that {@link CitationConstant} uses as the title.
      * If this {@code CitationConstant} is a {@link Authority} subtype, then this is also
      * the authority namespace.
      */

@@ -164,12 +164,12 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
-     * Constructs a group with the same parameters than another group. This is a convenience constructor for
-     * operations that expect the same parameters than another operation, but perform a different process.
+     * Constructs a group with the same parameters as another group. This is a convenience constructor for
+     * operations that expect the same parameters as another operation, but perform a different process.
      *
      * <h4>Example</h4>
      * The various <q>Coordinate Frame Rotation</q> variants (EPSG codes 1032, 1038 and 9607)
-     * expect the same parameters than their <q>Position Vector transformation</q> counterpart
+     * expect the same parameters as their <q>Position Vector transformation</q> counterpart
      * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.
      *
      * @param properties  the properties to be given to the new parameter group.
@@ -221,7 +221,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
-     * Creates a new descriptor with the same values than the specified one.
+     * Creates a new descriptor with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
      * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
@@ -288,7 +288,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
-     * Returns a SIS group implementation with the same values than the given arbitrary implementation.
+     * Returns a SIS group implementation with the same values as the given arbitrary implementation.
      * If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the values of the given object.

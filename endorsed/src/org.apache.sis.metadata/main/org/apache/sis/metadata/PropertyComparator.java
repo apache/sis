@@ -89,7 +89,7 @@ final class PropertyComparator implements Comparator<Method> {
      *
      * @param implementation  the implementation class, or the interface if the implementation class is unknown.
      * @param standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
-     *                        This is the same than {@code implementation} unless a custom implementation is used.
+     *                        This is the same as {@code implementation} unless a custom implementation is used.
      */
     PropertyComparator(Class<?> implementation, final Class<?> standardImpl) {
         order = new HashMap<>();

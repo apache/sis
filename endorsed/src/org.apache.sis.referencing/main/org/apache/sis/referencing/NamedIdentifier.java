@@ -388,7 +388,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
 
     /**
      * The last element in the sequence of {@linkplain #getParsedNames() parsed names}.
-     * By default, this is the same value than the {@linkplain #getCode() code} provided as a local name.
+     * By default, this is the same value as the {@linkplain #getCode() code} provided as a local name.
      *
      * @return the last element in the list of {@linkplain #getParsedNames() parsed names}.
      *
@@ -401,7 +401,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
 
     /**
      * Returns the first element in the sequence of {@linkplain #getParsedNames() parsed names}.
-     * By default, this is the same value than the {@linkplain #getCodeSpace() code space} provided as a local name.
+     * By default, this is the same value as the {@linkplain #getCodeSpace() code space} provided as a local name.
      *
      * @return the first element in the list of {@linkplain #getParsedNames() parsed names}.
      *
@@ -415,7 +415,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
 
     /**
      * Returns the scope (name space) in which this name is local.
-     * By default, this is the same value than the {@link #getAuthority() authority} provided as a name space.
+     * By default, this is the same value as the {@link #getAuthority() authority} provided as a name space.
      *
      * @see #head()
      * @see #getAuthority()

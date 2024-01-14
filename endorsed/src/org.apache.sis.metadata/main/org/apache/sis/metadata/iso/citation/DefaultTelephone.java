@@ -215,7 +215,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * For implementation of {@link #getVoices()} and {@link #getFacsimiles()} deprecated methods.
      * Shall be the telephones list of the enclosing {@link DefaultContact} object.
      *
-     * <p>This field references the same collection than {@link DefaultContact#phones} when possible.
+     * <p>This field references the same collection as {@link DefaultContact#phones} when possible.
      * Note that the link between this collection and {@code DefaultContact.phones} is broken when
      * {@link DefaultContact} is copied by {@link org.apache.sis.metadata.MetadataCopier}, since the
      * {@code Cloner.clone(Object)} method creates a new (unmodifiable) collection.</p>

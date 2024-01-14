@@ -52,7 +52,7 @@ final class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Dimensionle
     /**
      * Index of the first point in {@link #samplePoints()} which contains a fractional part.
      * Those points need a different tolerance threshold because the interpolations performed
-     * by {@link DatumShiftGrid} is not the same than the formula used in this test class.
+     * by {@link DatumShiftGrid} is not the same as the formula used in this test class.
      *
      * @see #samplePoints()
      */

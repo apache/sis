@@ -61,7 +61,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
 
     /**
      * The {@linkplain #method} augmented with one pass through dimension.
-     * May be the same instance than {@link #method} if that method is already 3D.
+     * May be the same instance as {@link #method} if that method is already 3D.
      *
      * <div class="note"><b>Note:</b> if {@link #method} is "Polar to Cartesian",
      * then {@code method3D} is "Cylindrical to Cartesian".</div>
