@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -38,6 +40,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 
@@ -182,12 +185,87 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     }
 
     /**
-     * Implementation of {@link DefaultMathTransformFactory#createCoordinateSystemChange(CoordinateSystem,
-     * CoordinateSystem, Ellipsoid)}, defined here for reducing the {@code DefaultMathTransformFactory}
-     * weight in the common case where the conversions handled by this class are not needed.
+     * Adds the components of the given coordinate system in the specified list.
+     * This method may invoke itself recursively if there is nested compound CS.
+     * The returned list is always a copy and can be safely modified.
      */
-    static MathTransform create(final MathTransformFactory factory, final CoordinateSystem source,
-            final CoordinateSystem target, final ThreadLocal<OperationMethod> lastMethod) throws FactoryException
+    private static void getComponents(final CoordinateSystem cs, final List<CoordinateSystem> addTo) {
+        if (cs instanceof DefaultCompoundCS) {
+            addTo.addAll(((DefaultCompoundCS) cs).getComponents());
+        } else {
+            addTo.add(cs);
+        }
+    }
+
+    /**
+     * Implementation of {@code createCoordinateSystemChange(…)}, defined here for reducing the
+     * {@link DefaultMathTransformFactory} weight in the common case where the conversions handled
+     * by this class are not needed.
+     *
+     * @todo Handle the case where coordinate system components are not in the same order.
+     *
+     * @param  factory     the factory to use for creating math transforms.
+     * @param  source      the source coordinate system.
+     * @param  target      the target coordinate system.
+     * @param  lastMethod  where to set the coordinate operation method used.
+     * @return the transform from the given source CS to the given target CS.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    static MathTransform create(final MathTransformFactory factory,
+                                final CoordinateSystem source,
+                                final CoordinateSystem target,
+                                final ThreadLocal<OperationMethod> lastMethod)
+            throws FactoryException
+    {
+        final var sources = new ArrayList<CoordinateSystem>(3); getComponents(source, sources);
+        final var targets = new ArrayList<CoordinateSystem>(3); getComponents(target, targets);
+        final int count   = sources.size();
+        /*
+         * Current implementation expects the same number of components, in the same order
+         * and with the same number of dimensions in each component. A future version will
+         * need to improve on that.
+         */
+        MathTransform result = null;
+        if (count == targets.size()) {
+            final int dimension = source.getDimension();
+            int firstAffectedCoordinate = 0;
+            for (int i=0; i<count; i++) {
+                final CoordinateSystem s = sources.get(i);
+                final CoordinateSystem t = targets.get(i);
+                final int sd = s.getDimension();
+                if (t.getDimension() != sd) {
+                    result = null;
+                    break;
+                }
+                final MathTransform subTransform = factory.createPassThroughTransform(
+                        firstAffectedCoordinate,
+                        single(factory, s, t, lastMethod),
+                        dimension - (firstAffectedCoordinate + sd));
+                if (result == null) {
+                    result = subTransform;
+                } else {
+                    result = factory.createConcatenatedTransform(result, subTransform);
+                }
+                firstAffectedCoordinate += sd;
+            }
+        }
+        // If we couldn't process components separately, try with the compound CS as a whole.
+        if (result == null) {
+            result = single(factory, source, target, lastMethod);
+        }
+        return result;
+    }
+
+    /**
+     * Implementation of {@code create(…)} for a single component.
+     * This implementation performs can handle changes of coordinate system type between
+     * {@link CartesianCS}, {@link SphericalCS}, {@link CylindricalCS} and {@link PolarCS}.
+     */
+    private static MathTransform single(final MathTransformFactory factory,
+                                        final CoordinateSystem source,
+                                        final CoordinateSystem target,
+                                        final ThreadLocal<OperationMethod> lastMethod)
+            throws FactoryException
     {
         int passthrough = 0;
         CoordinateSystemTransform kernel = null;

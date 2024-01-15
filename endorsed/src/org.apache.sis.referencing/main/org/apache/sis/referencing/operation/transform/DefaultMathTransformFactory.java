@@ -163,7 +163,7 @@ import org.apache.sis.util.resources.Errors;
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @version 1.4
+ * @version 1.5
  *
  * @see MathTransformProvider
  * @see AbstractMathTransform
@@ -729,7 +729,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * </ul>
          *
          * This method is invoked by {@link DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, Context)}.
-         * Users an override this method if they need to customize the normalization process.
+         * Users can override this method if they need to customize the normalization process.
          *
          * @param  role  whether the normalization or denormalization matrix is desired.
          * @return the requested matrix, or {@code null} if this {@code Context} has no information about the coordinate system.
@@ -1296,7 +1296,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientations.
      *
      * <h4>Controlling the normalization process</h4>
-     * Users who need a different normalized space than the default one way find more convenient to
+     * Users who need a different normalized space than the default one may find more convenient to
      * override the {@link Context#getMatrix Context.getMatrix(ContextualParameters.MatrixRole)} method.
      *
      * @param  parameterized  a transform for normalized input and output coordinates.
