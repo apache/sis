@@ -364,7 +364,7 @@ final class Normalizer implements Comparable<Normalizer> {
         final AbstractCS impl = castOrCopy(cs);
         final var buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getInterface().getSimpleName());
         final String name = AxisDirections.appendTo(buffer, newAxes);
-        return impl.createForAxes(name, newAxes, changes instanceof AxesConvention);
+        return impl.createForAxes(name, newAxes);
     }
 
     /**
@@ -386,11 +386,10 @@ final class Normalizer implements Comparable<Normalizer> {
      * of -60° still locate the same point in the old and the new coordinate system. But the preferred way to
      * locate that point become the 300° value if the longitude range has been shifted to positive values.</p>
      *
-     * @param  cs     the coordinate system to shift.
-     * @param  share  whether the new CS should use a cache shared with the original CS.
+     * @param  cs  the coordinate system to shift.
      * @return a coordinate system using the given kind of longitude range, or {@code null} if no change is needed.
      */
-    private static AbstractCS shiftAxisRange(final CoordinateSystem cs, final boolean share) {
+    private static AbstractCS shiftAxisRange(final CoordinateSystem cs) {
         boolean changed = false;
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
         for (int i=0; i<axes.length; i++) {
@@ -414,7 +413,7 @@ final class Normalizer implements Comparable<Normalizer> {
         if (!changed) {
             return null;
         }
-        return castOrCopy(cs).createForAxes(null, axes, share);
+        return castOrCopy(cs).createForAxes(null, axes);
     }
 
     /**
@@ -454,7 +453,7 @@ final class Normalizer implements Comparable<Normalizer> {
             case NORMALIZED:       // Fall through
             case DISPLAY_ORIENTED: return normalize(cs, convention, true);
             case RIGHT_HANDED:     return normalize(cs, null, true);
-            case POSITIVE_RANGE:   return shiftAxisRange(cs, true);
+            case POSITIVE_RANGE:   return shiftAxisRange(cs);
             default: throw new AssertionError(convention);
         }
     }

@@ -137,10 +137,13 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
 
     /**
      * Creates the value to assign to the {@link #forConvention} map by constructors.
+     *
+     * @param  original  the coordinate system to declare as the original one.
+     * @return map to assign to the {@link #forConvention} field.
      */
-    private EnumMap<AxesConvention,AbstractCS> forConvention() {
+    private static EnumMap<AxesConvention,AbstractCS> forConvention(final AbstractCS original) {
         var m = new EnumMap<AxesConvention,AbstractCS>(AxesConvention.class);
-        m.put(AxesConvention.ORIGINAL, this);
+        m.put(AxesConvention.ORIGINAL, original);
         return m;
     }
 
@@ -185,7 +188,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         ensureNonNull("axes", axes);
         this.axes = axes.clone();
         validate(properties);
-        forConvention = forConvention();
+        forConvention = forConvention(this);
     }
 
     /**
@@ -266,17 +269,16 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param  original  the original coordinate system from which to derive a new one.
      * @param  name      name of the new coordinate system, or {@code null} to inherit.
      * @param  axes      the new axes. This array is not cloned.
-     * @param  share     whether the new CS should use a cache shared with the original CS.
      * @throws IllegalArgumentException if an axis has illegal unit or direction.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    @SuppressWarnings({"this-escape", "OverridableMethodCallInConstructor"})
-    AbstractCS(final AbstractCS original, final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    @SuppressWarnings("OverridableMethodCallInConstructor")
+    AbstractCS(final AbstractCS original, final String name, final CoordinateSystemAxis[] axes) {
         super(original.getPropertiesWithoutIdentifiers(name));
         this.axes = axes;
         validate(null);
-        forConvention = share ? original.forConvention : forConvention();
+        forConvention = hasSameAxes(original) ? original.forConvention : forConvention(original);
     }
 
     /**
@@ -295,7 +297,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         super(original);
         axes = (original instanceof AbstractCS) ? ((AbstractCS) original).axes : getAxes(original);
         validate(null);
-        forConvention = forConvention();
+        forConvention = forConvention(this);
     }
 
     /**
@@ -391,6 +393,41 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
+     * {@return whether this coordinate system has the same axes than the specified CS, ignoring axis order}.
+     * If true, then the two coordinate systems have the same number of dimensions and the same set of axes.
+     * Axis instances are compared by the identity operator ({@code ==}), not by {@code equals(Object)}.
+     *
+     * <h4>Purpose</h4>
+     * This method can be invoked after a call to {@link #forConvention(AxesConvention)} for checking if that
+     * method changed only the axis order, with no change to axis directions, axis ranges or units of measurement.
+     *
+     * @param  other  the other coordinate system to compare with this CS.
+     *
+     * @since 1.5
+     */
+    public final boolean hasSameAxes(final CoordinateSystem other) {
+        if (other.getDimension() != axes.length) {
+            return false;
+        }
+        /*
+         * Need an unconditional copy of the axes of the other coordinate system, because the array will be modified.
+         * The implementation is okay for small arrays, but would be inefficient if the number of axes was very large.
+         */
+        final CoordinateSystemAxis[] copy = getAxes(other);
+        int n = copy.length;
+next:   for (final CoordinateSystemAxis axis : axes) {
+            for (int i=0; i<n; i++) {
+                if (axis == copy[i]) {
+                    System.arraycopy(copy, i+1, copy, i, --n - i);
+                    continue next;
+                }
+            }
+            return false;
+        }
+        return n == 0;
+    }
+
+    /**
      * Sets the CS for the given axes convention.
      *
      * @param  cs  the CS to cache.
@@ -428,14 +465,11 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         synchronized (forConvention) {
             AbstractCS cs = forConvention.get(convention);
             if (cs == null) {
-                final AbstractCS original = forConvention.get(AxesConvention.ORIGINAL);
-                cs = Normalizer.forConvention(original, convention);
+                cs = Normalizer.forConvention(this, convention);
                 if (cs == null) {
-                    cs = original;          // The given coordinate system is already normalized.
-                } else if (equals(cs, ComparisonMode.IGNORE_METADATA)) {
-                    cs = this;
+                    cs = this;          // This coordinate system is already normalized.
                 } else if (convention != AxesConvention.POSITIVE_RANGE) {
-                    cs = cs.resolveEPSG(original);
+                    cs = cs.resolveEPSG(this);
                 }
                 cs = setCached(convention, cs);
             }
@@ -453,13 +487,12 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @param  name   name of the new coordinate system.
      * @param  axes   the set of axes to give to the new coordinate system.
-     * @param  share  whether the new CS should use a cache shared with the original CS.
      * @return a new coordinate system of the same type as {@code this}, but using the given axes.
      * @throws IllegalArgumentException if {@code axes} contains an unexpected number of axes,
      *         or if an axis has an unexpected direction or unexpected unit of measurement.
      */
-    AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
-        return new AbstractCS(this, name, axes, share);
+    AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
+        return new AbstractCS(this, name, axes);
     }
 
     /**
@@ -510,7 +543,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param  min   minimum number of dimensions, inclusive.
      * @param  max   maximum number of dimensions, inclusive.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
     static IllegalArgumentException unexpectedDimension(final CoordinateSystemAxis[] axes, final int min, final int max) {
         final int n = axes.length;
@@ -638,9 +671,10 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * <strong>This is not a valid object.</strong> This constructor is strictly reserved
      * to JAXB, which will assign values to the fields using reflection.
      */
+    @SuppressWarnings("this-escape")
     AbstractCS() {
         super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
-        forConvention = forConvention();
+        forConvention = forConvention(this);
         axes = EMPTY;
         /*
          * Coordinate system axes are mandatory for SIS working. We do not verify their presence here
@@ -654,8 +688,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Invoked by JAXB at marshalling time.
      */
     @XmlElement(name = "axis")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private CoordinateSystemAxis[] getAxis() {
-        return getAxes(this);                           // Give a chance to users to override getAxis(int).
+        return axes;
     }
 
     /**

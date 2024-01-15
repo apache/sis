@@ -30,7 +30,7 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -142,15 +142,15 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
                                  final CoordinateSystem cs)
     {
         super(properties, cs);
-        ensureNonNull("datum", datum);
         this.datum = datum;
+        ArgumentChecks.ensureNonNull("datum", datum);
     }
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    private DefaultEngineeringCRS(final DefaultEngineeringCRS original, final CoordinateSystem cs) {
+    private DefaultEngineeringCRS(final DefaultEngineeringCRS original, final AbstractCS cs) {
         super(original, null, cs);
         datum = original.datum;
     }
@@ -230,7 +230,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * @return new CRS of the same type and datum than this CRS, but with the given axes.
      */
     @Override
-    final AbstractCRS createSameType(final CoordinateSystem cs) {
+    final AbstractCRS createSameType(final AbstractCS cs) {
         return new DefaultEngineeringCRS(this, cs);
     }
 

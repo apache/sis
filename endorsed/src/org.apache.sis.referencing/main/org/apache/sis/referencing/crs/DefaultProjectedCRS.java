@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.WKTKeywords;
@@ -38,7 +39,6 @@ import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
 
 
 /**
@@ -137,9 +137,9 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    private DefaultProjectedCRS(final DefaultProjectedCRS original, final CartesianCS derivedCS) {
+    private DefaultProjectedCRS(final DefaultProjectedCRS original, final AbstractCS derivedCS) {
         super(original, derivedCS);
     }
 
@@ -269,12 +269,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
-     *
-     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final CoordinateSystem cs) {
-        return new DefaultProjectedCRS(this, (CartesianCS) cs);
+    final AbstractCRS createSameType(final AbstractCS cs) {
+        return new DefaultProjectedCRS(this, cs);
     }
 
     /**
@@ -388,7 +386,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
          * format is part of an enclosing ProjectedCRS and will adapt accordingly.
          */
         formatter.newLine();
-        formatter.append(toFormattable(baseCRS));
+        formatter.append(WKTUtilities.toFormattable(baseCRS));
         formatter.newLine();
         final ExplicitParameters p = new ExplicitParameters(this, WKTKeywords.Conversion);
         final boolean isBaseCRS;

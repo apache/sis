@@ -32,16 +32,16 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.metadata.internal.ImplementationHelper;
-import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
-import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -128,10 +128,13 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
 
     /**
      * Creates the value to assign to the {@link #forConvention} map by constructors.
+     *
+     * @param  original  the coordinate system to declare as the original one.
+     * @return map to assign to the {@link #forConvention} field.
      */
-    private EnumMap<AxesConvention,AbstractCRS> forConvention() {
+    private static EnumMap<AxesConvention,AbstractCRS> forConvention(final AbstractCRS original) {
         var m = new EnumMap<AxesConvention,AbstractCRS>(AxesConvention.class);
-        m.put(AxesConvention.ORIGINAL, this);
+        m.put(AxesConvention.ORIGINAL, original);
         return m;
     }
 
@@ -176,9 +179,9 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @SuppressWarnings("this-escape")
     public AbstractCRS(final Map<String,?> properties, final CoordinateSystem cs) {
         super(properties);
-        ensureNonNull("cs", cs);
+        ArgumentChecks.ensureNonNull("cs", cs);
         coordinateSystem = cs;
-        forConvention = forConvention();
+        forConvention = forConvention(this);
     }
 
     /**
@@ -188,12 +191,12 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @param id        new identifier for this CRS, or {@code null} if none.
      * @param cs        coordinate system with new axis order or units of measurement.
      *
-     * @see #createSameType(CoordinateSystem)
+     * @see #createSameType(AbstractCS)
      */
-    AbstractCRS(final AbstractCRS original, final Identifier id, final CoordinateSystem cs) {
+    AbstractCRS(final AbstractCRS original, final Identifier id, final AbstractCS cs) {
         super(ReferencingUtilities.getPropertiesWithoutIdentifiers(original, (id == null) ? null : Map.of(IDENTIFIERS_KEY, id)));
         coordinateSystem = cs;
-        forConvention = original.forConvention;
+        forConvention = cs.hasSameAxes(original.coordinateSystem) ? original.forConvention : forConvention(original);
     }
 
     /**
@@ -211,7 +214,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     protected AbstractCRS(final CoordinateReferenceSystem crs) {
         super(crs);
         coordinateSystem = crs.getCoordinateSystem();
-        forConvention = forConvention();
+        forConvention = forConvention(this);
     }
 
     /**
@@ -335,19 +338,17 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @see AbstractCS#forConvention(AxesConvention)
      */
     public AbstractCRS forConvention(final AxesConvention convention) {
-        ensureNonNull("convention", convention);
+        ArgumentChecks.ensureNonNull("convention", convention);
         synchronized (forConvention) {
             AbstractCRS crs = forConvention.get(convention);
             if (crs == null) {
-                final AbstractCRS original = forConvention.get(AxesConvention.ORIGINAL);
-                final AbstractCS cs = AbstractCS.castOrCopy(original.coordinateSystem);
+                final AbstractCS cs = AbstractCS.castOrCopy(coordinateSystem);
                 final AbstractCS candidate = cs.forConvention(convention);
                 if (candidate.equals(cs, ComparisonMode.IGNORE_METADATA)) {
-                    crs = original;
-                } else if (original != this && candidate.equals(coordinateSystem, ComparisonMode.IGNORE_METADATA)) {
                     crs = this;
                 } else try {
                     crs = createSameType(candidate);
+                    crs.getCoordinateSystem();          // Throws ClassCastException if the CS type is invalid.
                 } catch (ClassCastException e) {
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotCompute_1, convention), e);
                 }
@@ -363,9 +364,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * @param  cs  the coordinate system with new axes.
      * @return new CRS of the same type and datum than this CRS, but with the given axes.
-     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
-    AbstractCRS createSameType(final CoordinateSystem cs) {
+    AbstractCRS createSameType(final AbstractCS cs) {
         return new AbstractCRS(this, null, cs);
     }
 
@@ -393,8 +393,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                            Objects.equals(coordinateSystem, that.coordinateSystem);
                 }
                 default: {
-                    return deepEquals(datum, (object instanceof SingleCRS) ? ((SingleCRS) object).getDatum() : null, mode) &&
-                           deepEquals(getCoordinateSystem(), ((CoordinateReferenceSystem) object).getCoordinateSystem(), mode);
+                    return Utilities.deepEquals(datum, (object instanceof SingleCRS) ? ((SingleCRS) object).getDatum() : null, mode) &&
+                           Utilities.deepEquals(getCoordinateSystem(), ((CoordinateReferenceSystem) object).getCoordinateSystem(), mode);
                 }
             }
         }
@@ -440,7 +440,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     protected String formatTo(final Formatter formatter) {
         final String keyword = super.formatTo(formatter);
         formatter.newLine();
-        formatter.append(toFormattable(getDatum()));
+        formatter.append(WKTUtilities.toFormattable(getDatum()));
         formatter.newLine();
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;
@@ -494,19 +494,22 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                 formatter.setInvalidWKT(this, null);
             }
         } else {
-            formatter.append(toFormattable(cs));    // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
+            // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(WKTUtilities.toFormattable(cs));
             formatter.indent(+1);
         }
         if (!isWKT1 || formatter.getConvention() != Convention.WKT1_IGNORE_AXES) {
-            if (cs != null) {                       // Should never be null, except sometimes temporarily during construction.
+            // Should never be null, except sometimes temporarily during construction.
+            if (cs != null) {
                 final int dimension = cs.getDimension();
                 for (int i=0; i<dimension; i++) {
                     formatter.newLine();
-                    formatter.append(toFormattable(cs.getAxis(i)));
+                    formatter.append(WKTUtilities.toFormattable(cs.getAxis(i)));
                 }
             }
         }
-        if (!isWKT1) {                              // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
+        // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
+        if (!isWKT1) {
             formatter.newLine();
             formatter.append(unit);
             formatter.indent(-1);
@@ -538,7 +541,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     AbstractCRS() {
         super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
-        forConvention = forConvention();
+        forConvention = forConvention(this);
         /*
          * The coordinate system is mandatory for SIS working. We do not verify its presence here
          * because the verification would have to be done in an `afterMarshal(…)` method and throwing

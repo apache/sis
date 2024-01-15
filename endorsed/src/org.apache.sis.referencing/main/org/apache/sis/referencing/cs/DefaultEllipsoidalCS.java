@@ -129,12 +129,10 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     /**
      * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    private DefaultEllipsoidalCS(final DefaultEllipsoidalCS original, final String name,
-                                 final CoordinateSystemAxis[] axes, final boolean share)
-    {
-        super(original, name, axes, share);
+    private DefaultEllipsoidalCS(DefaultEllipsoidalCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -239,11 +237,11 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
             case 1: return SubTypes.createOneDimensional(this, name, axes);
             case 2: // Fall through
-            case 3: return new DefaultEllipsoidalCS(this, name, axes, share);
+            case 3: return new DefaultEllipsoidalCS(this, name, axes);
             default: throw unexpectedDimension(axes, 1, 3);
         }
     }

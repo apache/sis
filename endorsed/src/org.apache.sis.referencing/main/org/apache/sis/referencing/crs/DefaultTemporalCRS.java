@@ -28,18 +28,18 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.UnitConverter;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLIS_PER_SECOND;
 
@@ -158,16 +158,16 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
                               final TimeCS        cs)
     {
         super(properties, cs);
-        ensureNonNull("datum", datum);
         this.datum = datum;
+        ArgumentChecks.ensureNonNull("datum", datum);
         initializeConverter();
     }
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    private DefaultTemporalCRS(final DefaultTemporalCRS original, final TimeCS cs) {
+    private DefaultTemporalCRS(final DefaultTemporalCRS original, final AbstractCS cs) {
         super(original, null, cs);
         datum = original.datum;
         initializeConverter();
@@ -308,12 +308,10 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
-     *
-     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final CoordinateSystem cs) {
-        return new DefaultTemporalCRS(this, (TimeCS) cs);
+    final AbstractCRS createSameType(final AbstractCS cs) {
+        return new DefaultTemporalCRS(this, cs);
     }
 
     /**

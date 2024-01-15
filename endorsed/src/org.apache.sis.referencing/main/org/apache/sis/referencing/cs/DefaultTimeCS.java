@@ -106,12 +106,10 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
     /**
      * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    private DefaultTimeCS(final DefaultTimeCS original, final String name,
-                          final CoordinateSystemAxis[] axes, final boolean share)
-    {
-        super(original, name, axes, share);
+    private DefaultTimeCS(DefaultTimeCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -191,9 +189,9 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
-            case 1: return new DefaultTimeCS(this, name, axes, share);
+            case 1: return new DefaultTimeCS(this, name, axes);
             default: throw unexpectedDimension(axes, 1, 1);
         }
     }

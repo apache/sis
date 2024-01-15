@@ -29,6 +29,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.resources.Errors;
@@ -158,9 +159,9 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    private DefaultGeographicCRS(final DefaultGeographicCRS original, final Identifier id, final EllipsoidalCS cs) {
+    private DefaultGeographicCRS(final DefaultGeographicCRS original, final Identifier id, final AbstractCS cs) {
         super(original, id, cs);
     }
 
@@ -252,10 +253,9 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *
      * @param  cs  the coordinate system with new axes.
      * @return new CRS of the same type and datum than this CRS, but with the given axes.
-     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final CoordinateSystem cs) {
+    final AbstractCRS createSameType(final AbstractCS cs) {
         Identifier id = null;
         final CoordinateSystemAxis axis = cs.getAxis(0);
         if (axis.getMinimumValue() == Longitude.MIN_VALUE &&
@@ -273,7 +273,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
                 }
             }
         }
-        return new DefaultGeographicCRS(this, id, (EllipsoidalCS) cs);
+        return new DefaultGeographicCRS(this, id, cs);
     }
 
     /**

@@ -20,16 +20,16 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -125,15 +125,15 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
                               final VerticalCS    cs)
     {
         super(properties, cs);
-        ensureNonNull("datum", datum);
         this.datum = datum;
+        ArgumentChecks.ensureNonNull("datum", datum);
     }
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    private DefaultVerticalCRS(final DefaultVerticalCRS original, final VerticalCS cs) {
+    private DefaultVerticalCRS(final DefaultVerticalCRS original, final AbstractCS cs) {
         super(original, null, cs);
         datum = original.datum;
     }
@@ -219,12 +219,10 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
-     *
-     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    final AbstractCRS createSameType(final CoordinateSystem cs) {
-        return new DefaultVerticalCRS(this, (VerticalCS) cs);
+    final AbstractCRS createSameType(final AbstractCS cs) {
+        return new DefaultVerticalCRS(this, cs);
     }
 
     /**

@@ -128,12 +128,10 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     /**
      * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    DefaultAffineCS(final DefaultAffineCS original, final String name,
-                    final CoordinateSystemAxis[] axes, final boolean share)
-    {
-        super(original, name, axes, share);
+    DefaultAffineCS(DefaultAffineCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -221,10 +219,10 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * This method shall be overridden by all {@code AffineCS} subclasses in this package.
      */
     @Override
-    AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
             case 2: // Fall through
-            case 3: return new DefaultAffineCS(this, name, axes, share);
+            case 3: return new DefaultAffineCS(this, name, axes);
             default: throw unexpectedDimension(axes, 2, 3);
         }
     }

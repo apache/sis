@@ -137,12 +137,10 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     /**
      * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    DefaultCartesianCS(final DefaultCartesianCS original, final String name,
-                       final CoordinateSystemAxis[] axes, final boolean share)
-    {
-        super(original, name, axes, share);
+    private DefaultCartesianCS(DefaultCartesianCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -234,11 +232,11 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
             case 1: return SubTypes.createOneDimensional(this, name, axes);
             case 2: // Fall through
-            case 3: return new DefaultCartesianCS(this, name, axes, share);
+            case 3: return new DefaultCartesianCS(this, name, axes);
             default: throw unexpectedDimension(axes, 1, 3);
         }
     }

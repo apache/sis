@@ -137,12 +137,10 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
     /**
      * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    private DefaultSphericalCS(final DefaultSphericalCS original, final String name,
-                               final CoordinateSystemAxis[] axes, final boolean share)
-    {
-        super(original, name, axes, share);
+    private DefaultSphericalCS(DefaultSphericalCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -222,7 +220,7 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
             case 2: {
                 final Map<String,?> properties = getPropertiesWithoutIdentifiers(name);
@@ -232,7 +230,7 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
                     return new DefaultSphericalCS(properties, axes[0], axes[1]);
                 }
             }
-            case 3: return new DefaultSphericalCS(this, name, axes, share);
+            case 3: return new DefaultSphericalCS(this, name, axes);
             default: throw unexpectedDimension(axes, 2, 3);
         }
     }

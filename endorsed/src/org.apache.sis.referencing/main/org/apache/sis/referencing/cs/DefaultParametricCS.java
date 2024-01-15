@@ -104,12 +104,10 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
     /**
      * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    private DefaultParametricCS(final DefaultParametricCS original, final String name,
-                                final CoordinateSystemAxis[] axes, final boolean share)
-    {
-        super(original, name, axes, share);
+    private DefaultParametricCS(DefaultParametricCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -172,9 +170,9 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
-            case 1: return new DefaultParametricCS(this, name, axes, share);
+            case 1: return new DefaultParametricCS(this, name, axes);
             default: throw unexpectedDimension(axes, 1, 1);
         }
     }

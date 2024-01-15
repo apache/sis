@@ -33,6 +33,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.WKTKeywords;
@@ -109,9 +110,9 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    DefaultGeodeticCRS(final DefaultGeodeticCRS original, final Identifier id, final CoordinateSystem cs) {
+    DefaultGeodeticCRS(final DefaultGeodeticCRS original, final Identifier id, final AbstractCS cs) {
         super(original, id, cs);
         datum = original.datum;
     }
@@ -164,10 +165,9 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      *
      * @param  cs  the coordinate system with new axes.
      * @return new CRS of the same type and datum than this CRS, but with the given axes.
-     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    AbstractCRS createSameType(final CoordinateSystem cs) {
+    AbstractCRS createSameType(final AbstractCS cs) {
         return new DefaultGeodeticCRS(this, null, cs);
     }
 

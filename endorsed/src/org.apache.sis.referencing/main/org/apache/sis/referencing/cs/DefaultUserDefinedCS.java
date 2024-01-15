@@ -121,12 +121,10 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
     /**
      * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    private DefaultUserDefinedCS(final DefaultUserDefinedCS original, final String name,
-                                 final CoordinateSystemAxis[] axes, final boolean share)
-    {
-        super(original, name, axes, share);
+    private DefaultUserDefinedCS(DefaultUserDefinedCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -189,10 +187,10 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
             case 2: // Fall through
-            case 3: return new DefaultUserDefinedCS(this, name, axes, share);
+            case 3: return new DefaultUserDefinedCS(this, name, axes);
             default: throw unexpectedDimension(axes, 2, 3);
         }
     }

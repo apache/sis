@@ -20,12 +20,12 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
-import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.io.wkt.Formatter;
 
 
 /**
@@ -150,10 +150,10 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      * This constructor does not verify the coordinate system type.
      */
-    private DefaultGeocentricCRS(final DefaultGeocentricCRS original, final CoordinateSystem cs) {
+    private DefaultGeocentricCRS(final DefaultGeocentricCRS original, final AbstractCS cs) {
         super(original, null, cs);
     }
 
@@ -231,7 +231,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @return new CRS of the same type and datum than this CRS, but with the given axes.
      */
     @Override
-    final AbstractCRS createSameType(final CoordinateSystem cs) {
+    final AbstractCRS createSameType(final AbstractCS cs) {
         return new DefaultGeocentricCRS(this, cs);
     }
 

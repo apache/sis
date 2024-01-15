@@ -45,6 +45,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.xml.bind.referencing.SC_SingleCRS;
@@ -173,9 +174,9 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    DefaultDerivedCRS(final DefaultDerivedCRS original, final CoordinateSystem derivedCS) {
+    DefaultDerivedCRS(final DefaultDerivedCRS original, final AbstractCS derivedCS) {
         super(original, derivedCS);
     }
 
@@ -479,10 +480,9 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *
      * @param  cs  the coordinate system with new axes.
      * @return new CRS of the same type and datum than this CRS, but with the given axes.
-     * @throws ClassCastException if the type of the given coordinate system is invalid.
      */
     @Override
-    AbstractCRS createSameType(final CoordinateSystem derivedCS) {
+    AbstractCRS createSameType(final AbstractCS derivedCS) {
         return new DefaultDerivedCRS(this, derivedCS);
     }
 
@@ -639,7 +639,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
-        private Geodetic(final Geodetic original, final CoordinateSystem derivedCS) {
+        private Geodetic(final Geodetic original, final AbstractCS derivedCS) {
             super(original, derivedCS);
         }
 
@@ -661,7 +661,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final CoordinateSystem derivedCS) {
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
             return new Geodetic(this, derivedCS);
         }
 
@@ -690,7 +690,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
-        private Vertical(final Vertical original, final VerticalCS derivedCS) {
+        private Vertical(final Vertical original, final AbstractCS derivedCS) {
             super(original, derivedCS);
         }
 
@@ -717,8 +717,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final CoordinateSystem derivedCS) {
-            return new Vertical(this, (VerticalCS) derivedCS);
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
+            return new Vertical(this, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type. */
@@ -746,7 +746,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
-        private Temporal(final Temporal original, final TimeCS derivedCS) {
+        private Temporal(final Temporal original, final AbstractCS derivedCS) {
             super(original, derivedCS);
         }
 
@@ -773,8 +773,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final CoordinateSystem derivedCS) {
-            return new Temporal(this, (TimeCS) derivedCS);
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
+            return new Temporal(this, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type. */
@@ -802,7 +802,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
-        private Parametric(final Parametric original, final ParametricCS derivedCS) {
+        private Parametric(final Parametric original, final AbstractCS derivedCS) {
             super(original, derivedCS);
         }
 
@@ -829,8 +829,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final CoordinateSystem derivedCS) {
-            return new Parametric(this, (ParametricCS) derivedCS);
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
+            return new Parametric(this, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type. */
@@ -861,7 +861,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
-        private Engineering(final Engineering original, final CoordinateSystem derivedCS) {
+        private Engineering(final Engineering original, final AbstractCS derivedCS) {
             super(original, derivedCS);
         }
 
@@ -883,7 +883,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final CoordinateSystem derivedCS) {
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
             return new Engineering(this, derivedCS);
         }
 

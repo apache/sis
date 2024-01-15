@@ -37,6 +37,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.util.WKTKeywords;
@@ -242,7 +243,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * @param  components  the CRS components, usually singles but not necessarily.
      * @return the coordinate system for the given components.
      */
-    private static CoordinateSystem createCoordinateSystem(final Map<String,?> properties,
+    private static AbstractCS createCoordinateSystem(final Map<String,?> properties,
             final CoordinateReferenceSystem[] components)
     {
         ArgumentChecks.ensureNonNull("components", components);
@@ -495,10 +496,10 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         synchronized (forConvention) {
             DefaultCompoundCRS crs = (DefaultCompoundCRS) forConvention.get(convention);
             if (crs == null) {
-                crs = (DefaultCompoundCRS) forConvention.get(AxesConvention.ORIGINAL);
+                crs = this;
                 boolean changed = false;
                 final boolean reorderCRS = convention.ordinal() <= AxesConvention.DISPLAY_ORIENTED.ordinal();
-                final List<? extends CoordinateReferenceSystem> elements = reorderCRS ? crs.singles : crs.components;
+                final List<? extends CoordinateReferenceSystem> elements = reorderCRS ? singles : components;
                 final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[elements.size()];
                 for (int i=0; i<newComponents.length; i++) {
                     CoordinateReferenceSystem component = elements.get(i);
@@ -525,7 +526,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Should never be invoked since we override {@link AbstractCRS#forConvention(AxesConvention)}.
      */
     @Override
-    final AbstractCRS createSameType(final CoordinateSystem cs) {
+    final AbstractCRS createSameType(final AbstractCS cs) {
         throw new AssertionError();
     }
 

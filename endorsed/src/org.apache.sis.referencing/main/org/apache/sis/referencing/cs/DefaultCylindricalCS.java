@@ -112,12 +112,10 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
     /**
      * Creates a new CS derived from the specified one, but with different axis order or unit.
      *
-     * @see #createForAxes(String, CoordinateSystemAxis[], boolean)
+     * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    private DefaultCylindricalCS(final DefaultCylindricalCS original, final String name,
-                                 final CoordinateSystemAxis[] axes, final boolean share)
-    {
-        super(original, name, axes, share);
+    private DefaultCylindricalCS(DefaultCylindricalCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -199,10 +197,10 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes, final boolean share) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
             case 2: return new DefaultPolarCS(getPropertiesWithoutIdentifiers(name), axes[0], axes[1]);
-            case 3: return new DefaultCylindricalCS(this, name, axes, share);
+            case 3: return new DefaultCylindricalCS(this, name, axes);
             default: throw unexpectedDimension(axes, 2, 3);
         }
     }

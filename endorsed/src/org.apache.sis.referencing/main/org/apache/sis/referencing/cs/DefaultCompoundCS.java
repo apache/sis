@@ -18,16 +18,15 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
-import static java.util.Collections.singletonMap;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.util.Utilities.deepEquals;
 
 
 /**
@@ -110,7 +109,7 @@ public class DefaultCompoundCS extends AbstractCS {
      * This is used for the {@link #forConvention(AxesConvention)} implementation only.
      */
     private DefaultCompoundCS(final DefaultCompoundCS original, final CoordinateSystem[] components) {
-        super(original, null, getAxes(components), true);
+        super(original, null, getAxes(components));
         this.components = UnmodifiableArrayList.wrap(components);
     }
 
@@ -132,7 +131,7 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @Workaround(library="JDK", version="1.7")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
-        super(singletonMap(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
+        super(Map.of(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
         this.components = UnmodifiableArrayList.wrap(components);
     }
 
@@ -140,10 +139,10 @@ public class DefaultCompoundCS extends AbstractCS {
      * Returns a clone of the given array, making sure that it contains only non-null elements.
      */
     private static CoordinateSystem[] clone(CoordinateSystem[] components) {
-        ensureNonNull("components", components);
+        ArgumentChecks.ensureNonNull("components", components);
         components = components.clone();
         for (int i=0; i<components.length; i++) {
-            ensureNonNullElement("components", i, components[i]);
+            ArgumentChecks.ensureNonNullElement("components", i, components[i]);
         }
         return components;
     }
@@ -187,15 +186,15 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @Override
     public DefaultCompoundCS forConvention(final AxesConvention convention) {
-        ensureNonNull("convention", convention);
+        ArgumentChecks.ensureNonNull("convention", convention);
         synchronized (forConvention) {
             DefaultCompoundCS cs = (DefaultCompoundCS) forConvention.get(convention);
             if (cs == null) {
-                cs = (DefaultCompoundCS) forConvention.get(AxesConvention.ORIGINAL);
+                cs = this;
                 boolean changed = false;
-                final CoordinateSystem[] newComponents = new CoordinateSystem[cs.components.size()];
+                final CoordinateSystem[] newComponents = new CoordinateSystem[components.size()];
                 for (int i=0; i<newComponents.length; i++) {
-                    CoordinateSystem component = cs.components.get(i);
+                    CoordinateSystem component = components.get(i);
                     AbstractCS m = castOrCopy(component);
                     if (m != (m = m.forConvention(convention))) {
                         component = m;
@@ -236,6 +235,6 @@ public class DefaultCompoundCS extends AbstractCS {
         if (!(object instanceof DefaultCompoundCS && super.equals(object, mode))) {
             return false;
         }
-        return deepEquals(components, ((DefaultCompoundCS) object).components, mode);
+        return Utilities.deepEquals(components, ((DefaultCompoundCS) object).components, mode);
     }
 }

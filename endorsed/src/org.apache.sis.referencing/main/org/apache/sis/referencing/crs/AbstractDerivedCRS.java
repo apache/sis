@@ -34,16 +34,17 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.GeodeticException;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.xml.bind.referencing.CC_Conversion;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.xml.bind.referencing.CC_Conversion;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.system.Semaphores;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.Utilities.deepEquals;
 
 
 /**
@@ -108,9 +109,9 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
 
     /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(CoordinateSystem)} method only.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    AbstractDerivedCRS(final AbstractDerivedCRS<C> original, final CoordinateSystem derivedCS) {
+    AbstractDerivedCRS(final AbstractDerivedCRS<C> original, final AbstractCS derivedCS) {
         super(original, null, derivedCS);
         final Conversion conversion = original.conversionFromBase;
         conversionFromBase = createConversionFromBase(null, (SingleCRS) conversion.getSourceCRS(), conversion);
@@ -237,9 +238,10 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
             if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                 return true;
             } else try {
-                return deepEquals(strict ? conversionFromBase : getConversionFromBase(),
-                                  strict ? ((AbstractDerivedCRS) object).conversionFromBase
-                                         :  ((GeneralDerivedCRS) object).getConversionFromBase(), mode);
+                return Utilities.deepEquals(
+                        strict ? conversionFromBase : getConversionFromBase(),
+                        strict ? ((AbstractDerivedCRS) object).conversionFromBase
+                               :  ((GeneralDerivedCRS) object).getConversionFromBase(), mode);
             } finally {
                 Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
             }
