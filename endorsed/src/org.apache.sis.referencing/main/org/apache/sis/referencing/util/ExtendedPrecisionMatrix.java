@@ -55,6 +55,33 @@ public interface ExtendedPrecisionMatrix extends Matrix {
     }
 
     /**
+     * {@return an extended-precision view of the given matrix}.
+     * The returned matrix should be assumed read-only.
+     *
+     * @param m  the matrix to cast or wrap.
+     *
+     * @see org.apache.sis.referencing.operation.matrix.MatrixSIS#asExtendedPrecision(Matrix)
+     */
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    static ExtendedPrecisionMatrix castOrWrap(final Matrix m) {
+        if (m == null || m instanceof ExtendedPrecisionMatrix) {
+            return (ExtendedPrecisionMatrix) m;
+        }
+        return new ExtendedPrecisionMatrix() {
+            @Override public Number getElementOrNull(int j, int i) {
+                final double v = m.getElement(j, i);
+                return (v != 0) ? v : null;
+            }
+
+            @Override public double getElement(int j, int i) {return m.getElement(j, i);}
+            @Override public int    getNumRow()              {return m.getNumRow();}
+            @Override public int    getNumCol()              {return m.getNumCol();}
+            @Override public String toString()               {return m.toString();}
+            @Override public Matrix clone()                  {return m.clone();}
+        };
+    }
+
+    /**
      * Returns all matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      * Zero values <em>shall</em> be null.

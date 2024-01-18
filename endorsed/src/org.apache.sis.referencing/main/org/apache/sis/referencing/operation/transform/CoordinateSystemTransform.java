@@ -32,16 +32,20 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.util.WKTUtilities;
-import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.util.WKTUtilities;
+import org.apache.sis.referencing.util.CoordinateOperations;
+import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.util.MathTransformsOrFactory;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.internal.Constants;
 
 
 /**
@@ -53,8 +57,26 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 abstract class CoordinateSystemTransform extends AbstractMathTransform {
     /**
      * Number of input and output dimensions.
+     *
+     * @see #getSourceDimensions()
+     * @see #getTargetDimensions()
      */
     private final int dimension;
+
+    /**
+     * Index of dimensions having linear units in the coordinate system identified by {@link #angularIsInput}.
+     * This is used for optimizing the concatenation of this transform by an affine transform.
+     *
+     * @see #tryConcatenate(boolean, MathTransform, MathTransformFactory)
+     */
+    private final int[] linearDimensions;
+
+    /**
+     * Whether the coordinate system having some angular units is the input coordinate system.
+     * If {@code false}, then the coordinate system having some angular units is the output CS.
+     * That coordinate system may also have linear units identified by {@link #linearDimensions}.
+     */
+    private final boolean angularIsInput;
 
     /**
      * An operation method that describe this coordinate system conversion.
@@ -100,11 +122,15 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * Subclasses may need to invoke {@link ContextualParameters#normalizeGeographicInputs(double)}
      * or {@link ContextualParameters#denormalizeGeographicOutputs(double)} after this constructor.
      */
-    CoordinateSystemTransform(final String method, final String method3D, final int dimension) {
-        this.dimension = dimension;
-        this.method    = method(method);
-        this.method3D  = (method3D != null) ? method(method3D) : this.method;
-        this.context   = new ContextualParameters(this.method.getParameters(), dimension, dimension);
+    CoordinateSystemTransform(final String method, final String method3D, final int dimension,
+                              final int[] linearDimensions, final boolean angularIsInput)
+    {
+        this.dimension        = dimension;
+        this.linearDimensions = linearDimensions;
+        this.angularIsInput   = angularIsInput;
+        this.method           = method(method);
+        this.method3D         = (method3D != null) ? method(method3D) : this.method;
+        this.context          = new ContextualParameters(this.method.getParameters(), dimension, dimension);
     }
 
     /**
@@ -182,6 +208,58 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     @Override
     protected final ContextualParameters getContextualParameters() {
         return context;
+    }
+
+    /**
+     * Optimizes concatenation by transferring scale factors from the Cartesian CS side to the spherical,
+     * cylindrical or polar CS side. The rational is that the affine transform on the latter side will be
+     * needed anyway for the conversions between radians and degrees.
+     */
+    @Override
+    protected final MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
+                                                 final MathTransformFactory factory) throws FactoryException
+    {
+concat: if (applyOtherFirst != angularIsInput) {
+            final ExtendedPrecisionMatrix linear = ExtendedPrecisionMatrix.castOrWrap(MathTransforms.getMatrix(other));
+            if (linear != null) {
+                final int n = linear.getNumRow();
+                if (n == linear.getNumCol()) {
+                    Number scale = null;
+                    for (int j=0; j<n; j++) {
+                        for (int i=0; i<n; i++) {
+                            final Number e = linear.getElementOrNull(j,i);
+                            if ((e == null) == (i == j)) break concat;          // Abort if matrix is not diagonal.
+                            if (e != null) {
+                                if (i < n-1) {
+                                    if (scale == null) scale = e;
+                                    else if (!scale.equals(e)) break concat;    // Abort if non-uniform scale.
+                                } else if (e.doubleValue() != 1) break concat;  // Abort if transform is not affine.
+                            }
+                        }
+                    }
+                    /*
+                     * The transform is affine and applies an uniform scale in all dimensions.
+                     * Replace it by the same scale in all output dimensions having a linear unit.
+                     *
+                     */
+                    if (scale != null) {
+                        final MatrixSIS angular = Matrices.createIdentity(n);
+                        for (int j : linearDimensions) {
+                            angular.setNumber(j, j, scale);
+                        }
+                        final var w = MathTransformsOrFactory.wrap(factory);
+                        MathTransform step1 = w.linear(angular);
+                        MathTransform step2 = this;
+                        if (applyOtherFirst) {
+                            step2 = step1;
+                            step1 = this;
+                        }
+                        return w.concatenate(step1, step2);
+                    }
+                }
+            }
+        }
+        return super.tryConcatenate(applyOtherFirst, other, factory);
     }
 
     /**

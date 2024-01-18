@@ -889,8 +889,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * <p>The default implementation returns the identity transform if the other transform is the inverse
      * of this transform, or returns {@code null} otherwise. This method is ought to be overridden
      * by subclasses capable of concatenating some combination of transforms in a special way.
-     * {@link LinearTransform} implementations do not need to override this method since matrix multiplications
-     * will be handled automatically, and this method does not need to handle the {@link #isIdentity()} case.</p>
+     * {@link LinearTransform} implementations do not need to override this method because matrix multiplications
+     * will be handled automatically. This method does not need to handle the {@link #isIdentity()} case neither.</p>
      *
      * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
      *                          {@code false} if the transformation order is {@code this} followed by {@code other}.

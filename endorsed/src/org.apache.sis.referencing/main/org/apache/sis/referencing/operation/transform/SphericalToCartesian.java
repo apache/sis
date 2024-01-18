@@ -76,7 +76,7 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
      * Input coordinates are in radians.
      */
     private SphericalToCartesian() {
-        super("Spherical to Cartesian", null, 3);
+        super("Spherical to Cartesian", null, 3, new int[] {2}, true);
         context.normalizeGeographicInputs(0);                   // Convert (θ,Ω) from degrees to radians.
     }
 

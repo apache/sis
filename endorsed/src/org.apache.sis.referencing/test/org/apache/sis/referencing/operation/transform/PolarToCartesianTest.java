@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import static java.lang.StrictMath.*;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.MathTransformFactory;
 
 // Test dependencies
 import org.junit.Test;
@@ -85,13 +84,6 @@ public final class PolarToCartesianTest extends TransformTestCase {
     }
 
     /**
-     * Returns the factory to use for testing purpose.
-     */
-    static MathTransformFactory factory() {
-        return DefaultMathTransformFactory.provider();
-    }
-
-    /**
      * Tests coordinate conversions in the polar case.
      *
      * @throws FactoryException if the transform cannot be created.
@@ -99,7 +91,7 @@ public final class PolarToCartesianTest extends TransformTestCase {
      */
     @Test
     public void testConversion() throws FactoryException, TransformException {
-        transform = PolarToCartesian.INSTANCE.completeTransform(factory());
+        transform = PolarToCartesian.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         tolerance = 1E-12;
         final double[][] data = testData(false);
         verifyTransform(data[0], data[1]);
@@ -114,7 +106,7 @@ public final class PolarToCartesianTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testConversion")
     public void testCylindricalConversion() throws FactoryException, TransformException {
-        transform = PolarToCartesian.INSTANCE.passthrough(factory());
+        transform = PolarToCartesian.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         tolerance = 1E-12;
         final double[][] data = testData(true);
         verifyTransform(data[0], data[1]);
@@ -129,7 +121,7 @@ public final class PolarToCartesianTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testConversion")
     public void testDerivative() throws FactoryException, TransformException {
-        transform = PolarToCartesian.INSTANCE.completeTransform(factory());
+        transform = PolarToCartesian.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6};
         tolerance = 1E-7;
         verifyDerivative(100, 60);
@@ -144,7 +136,7 @@ public final class PolarToCartesianTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testDerivative")
     public void testCylindricalDerivative() throws FactoryException, TransformException {
-        transform = PolarToCartesian.INSTANCE.passthrough(factory());
+        transform = PolarToCartesian.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyDerivative(100, 60, 25);
@@ -159,7 +151,7 @@ public final class PolarToCartesianTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testDerivative")
     public void testConsistency() throws FactoryException, TransformException {
-        transform = PolarToCartesian.INSTANCE.completeTransform(factory());
+        transform = PolarToCartesian.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6};
         tolerance = 1E-7;
         verifyInDomain(new double[] {  0, -180},      // Minimal coordinates
@@ -177,7 +169,7 @@ public final class PolarToCartesianTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testCylindricalDerivative")
     public void testCylindricalConsistency() throws FactoryException, TransformException {
-        transform = PolarToCartesian.INSTANCE.passthrough(factory());
+        transform = PolarToCartesian.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyInDomain(new double[] {  0, -180, -100},      // Minimal coordinates
