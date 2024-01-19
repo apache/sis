@@ -30,7 +30,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.util.MathTransformsOrFactory;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.util.ArgumentChecks;
@@ -270,14 +269,14 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             if (subLower == 0 && subUpper == subDim) {
                 step = subTransform;
             } else {
-                // Restriction below apply only if the `subTransform` cannot be used as a whole.
+                // Restriction below applies only if the `subTransform` cannot be used as a whole.
                 ArgumentChecks.ensureDimensionsMatch("subTransform", subDim, subDim, subTransform);
                 sep.addSourceDimensionRange(subLower, subUpper);
                 sep.addTargetDimensionRange(subLower, subUpper);
                 step = sep.separate();
             }
-            step   = sep.factory.passThrough(lower, step, resultDim - upper);
-            result = sep.factory.concatenate(result, step);
+            step   = sep.factory.createPassThroughTransform(lower, step, resultDim - upper);
+            result = sep.factory.createConcatenatedTransform(result, step);
             sep.clear();
             subLower = subUpper;
         }
@@ -719,7 +718,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                     }
                 }
                 if (element != (i == j ? 1 : 0)) {
-                    // Found a dimension which perform some scaling or translation.
+                    // Found a dimension performing some scaling or translation outside the sub-transform.
                     return null;
                 }
             }
@@ -728,7 +727,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Concatenates or pre-concatenates in an optimized way this transform with the given transform, if possible.
+     * Concatenates or pre-concatenates in an optimized way this transform with a neighbor, if possible.
      * This method applies the following special cases:
      *
      * <ul>
@@ -737,153 +736,168 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      *  <li>If the other transform discards some dimensions, verify if we still need a {@code PassThroughTransform}.</li>
      * </ul>
      *
-     * @return the simplified transform, or {@code null} if no such optimization is available.
+     * @param  context  information about the neighbor transforms, and the object where to set the result.
      * @throws FactoryException if an error occurred while combining the transforms.
      *
-     * @since 1.0
+     * @since 1.5
      */
     @Override
-    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other, final MathTransformFactory factory)
-            throws FactoryException
-    {
-        final MathTransformsOrFactory proxy = MathTransformsOrFactory.wrap(factory);
-        if (other instanceof PassThroughTransform) {
-            final PassThroughTransform opt = (PassThroughTransform) other;
-            if (opt.firstAffectedCoordinate == firstAffectedCoordinate && opt.numTrailingCoordinates == numTrailingCoordinates) {
-                final MathTransform sub = proxy.concatenate(applyOtherFirst, subTransform, opt.subTransform);
-                return proxy.passThrough(firstAffectedCoordinate, sub, numTrailingCoordinates);
+    protected void tryConcatenate(final Joiner context) throws FactoryException {
+        int relativeIndex = -1;     // Note: algorithm below needs to test (before, after) in that order.
+        MathTransform other;        // The transform immediately before or after, this transform.
+        Matrix m;                   // The matrix of `other`, or null if `other` is non-linear.
+        do {
+            other = context.getTransform(relativeIndex).orElse(null);
+            if (other instanceof PassThroughTransform) {
+                final PassThroughTransform opt = (PassThroughTransform) other;
+                if (opt.firstAffectedCoordinate == firstAffectedCoordinate && opt.numTrailingCoordinates == numTrailingCoordinates) {
+                    MathTransform tr = context.concatenate(subTransform, opt.subTransform, relativeIndex < 0);
+                    tr = context.factory.createPassThroughTransform(firstAffectedCoordinate, tr, numTrailingCoordinates);
+                    context.replace(relativeIndex, tr);
+                    return;
+                }
             }
-        }
-        final Matrix m = MathTransforms.getMatrix(other);
-        if (m != null) {
             /*
              * If the other transform is a linear transform and all passthrough coordinates are unchanged by the matrix,
              * we can move the matrix inside the passthrough transform. It reduces the number of dimension on which the
              * linear transform operate, and gives a chance for another optimization in the concatenation between that
              * linear transform and the sub-transform.
              */
-            final Matrix sub = toSubMatrix(applyOtherFirst, m);
-            if (sub != null) {
-                MathTransform tr = proxy.linear(sub);
-                tr = proxy.concatenate(applyOtherFirst, subTransform, tr);
-                return proxy.passThrough(firstAffectedCoordinate, tr, numTrailingCoordinates);
+            m = MathTransforms.getMatrix(other);
+            if (m != null) {
+                final Matrix sub = toSubMatrix(relativeIndex < 0, m);
+                if (sub != null) {
+                    MathTransform tr = context.factory.createAffineTransform(sub);
+                    tr = context.concatenate(subTransform, tr, relativeIndex < 0);
+                    tr = context.factory.createPassThroughTransform(firstAffectedCoordinate, tr, numTrailingCoordinates);
+                    context.replace(relativeIndex, tr);
+                    return;
+                }
             }
+        } while ((relativeIndex = -relativeIndex) >= 0);
+        /*
+         * The remaining code in this method shall be executed only for the transform AFTER this transform.
+         * The `other` and `m` variables, if non-null, have the values that we need because of the order in
+         * which above loop was executed.
+         */
+        if (m == null) {
             /*
-             * If this PassThroughTransform is followed by a matrix discarding some dimensions, identify which dimensions
-             * are discarded. If all dimensions computed by the sub-transform are discarded, then we no longer need it.
-             * If some pass-through dimensions are discarded, then we can reduce the number of pass-through dimensions.
+             * Do not invoke `super.tryConcatenate(context)`. We do not want to test if this transform
+             * is the inverse of the `other` transform because this check is costly and unnecessary.
+             * If the two transforms were the inverse of each other, then the concatenation of
+             * `this.subTransform` with `other.subTransform` done at the beginning of this method
+             * would have produced the identity transform already.
              */
-            if (!applyOtherFirst) {
-                final int dimension = m.getNumCol() - 1;            // Number of source dimensions (ignore translations column).
-                if (dimension <= Long.SIZE) {                       // Because retained dimensions stored as a mask on 64 bits.
-                    long retainedDimensions = 0;
-                    final int numRows = m.getNumRow();              // Number of target dimensions + 1.
-                    for (int i=0; i<dimension; i++) {
-                        for (int j=0; j<numRows; j++) {
-                            if (m.getElement(j,i) != 0) {
-                                retainedDimensions |= (1L << i);    // Found a source dimension which is required by target dimension.
-                                break;
-                            }
-                        }
-                    }
-                    /*
-                     * Verify if matrix discards the sub-transform. If it does not, then we need to keep all the sub-transform
-                     * dimensions (discarding them is a "all or nothing" operation). Other dimensions (leading and trailing)
-                     * can be keep or discarded on a case-by-case basis.
-                     */
-                    final long    fullTransformMask = maskLowBits(dimension);
-                    final long    subTransformMask  = maskLowBits(subTransform.getTargetDimensions()) << firstAffectedCoordinate;
-                    final boolean keepSubTransform  = (retainedDimensions & subTransformMask) != 0;
-                    if (keepSubTransform) {
-                        retainedDimensions |= subTransformMask;           // Ensure that we keep all sub-transform dimensions.
-                    }
-                    if (retainedDimensions != fullTransformMask) {
-                        final int change = subTransform.getSourceDimensions() - subTransform.getTargetDimensions();
-                        if (change == 0 && !keepSubTransform) {
-                            return other;                                 // Shortcut avoiding creation of new MathTransforms.
-                        }
-                        /*
-                         * We enter in this block if some dimensions can be discarded. We want to discard them before
-                         * the PassThroughTransform instead of after. The matrix for that purpose will be computed later.
-                         * Before that, the loop below modifies a copy of the `other` matrix as if those dimensions were
-                         * already removed.
-                         */
-                        MatrixSIS reduced = MatrixSIS.castOrCopy(m);
-                        long columnsToRemove = ~retainedDimensions & fullTransformMask;       // Cannot be 0 at this point.
-                        do {
-                            final int lower = Long.numberOfTrailingZeros(columnsToRemove);
-                            final int upper = Long.numberOfTrailingZeros(~(columnsToRemove | maskLowBits(lower)));
-                            reduced = reduced.removeColumns(lower, upper);
-                            columnsToRemove &= ~maskLowBits(upper);
-                            columnsToRemove >>>= (upper - lower);
-                        } while (columnsToRemove != 0);
-                        /*
-                         * Expands the `retainedDimensions` bitmask into a list of indices of dimensions to keep.   However
-                         * those indices are for dimensions to keep after the PassThroughTransform.  Because we rather want
-                         * indices for dimensions to keep before the PassThroughTransform, we need to adjust for difference
-                         * in number of dimensions. This change is represented by the `change` integer computed above.
-                         * We apply two strategies:
-                         *
-                         *    1) If we keep the sub-transform, then the loop while surely sees the `firstAffectedCoordinate`
-                         *       dimension since we ensured that we keep all sub-transform dimensions. When it happens, we
-                         *       add or remove bits at that point for the dimensionality changes.
-                         *
-                         *    2) If we do not keep the sub-transform, then code inside `if (dim == firstAffectedCoordinate)`
-                         *       should not have been executed. Instead, we will adjust the indices after the loop.
-                         */
-                        final long leadPassThroughMask = maskLowBits(firstAffectedCoordinate);
-                        final int numKeepAfter  = Long.bitCount(retainedDimensions & ~(leadPassThroughMask | subTransformMask));
-                        final int numKeepBefore = Long.bitCount(retainedDimensions & leadPassThroughMask);
-                        final int[] indices = new int[Long.bitCount(retainedDimensions) + change];
-                        for (int i=0; i<indices.length; i++) {
-                            int dim = Long.numberOfTrailingZeros(retainedDimensions);
-                            if (dim == firstAffectedCoordinate) {
-                                if (change < 0) {
-                                    retainedDimensions >>>= -change;                        // Discard dimensions to skip.
-                                    retainedDimensions &= ~leadPassThroughMask;             // Clear previous dimension flags.
-                                } else {
-                                    retainedDimensions <<= change;                          // Add dimensions.
-                                    retainedDimensions |= maskLowBits(change) << dim;       // Set flags for new dimensions.
-                                }
-                            }
-                            retainedDimensions &= ~(1L << dim);
-                            indices[i] = dim;
-                        }
-                        if (!keepSubTransform) {
-                            for (int i=indices.length; --i >= 0;) {
-                                final int dim = indices[i];
-                                if (dim <= firstAffectedCoordinate) break;
-                                indices[i] = dim - change;
-                            }
-                        }
-                        /*
-                         * Concatenate:
-                         *   1) An affine transform discarding some dimensions (no other operation).
-                         *   2) The passthrough transform with less input and output dimensions.
-                         *   3) The `other` transform with less input dimensions.
-                         */
-                        MathTransform tr = proxy.linear(Matrices.createDimensionSelect(dimension + change, indices));
-                        if (keepSubTransform) {
-                            tr = proxy.concatenate(tr, proxy.passThrough(numKeepBefore, subTransform, numKeepAfter));
-                        }
-                        tr = proxy.concatenate(tr, proxy.linear(reduced));
-                        return tr;
-                    }
+            return;
+        }
+        /*
+         * If this PassThroughTransform is followed by a matrix discarding some dimensions, identify which dimensions
+         * are discarded. If all dimensions computed by the sub-transform are discarded, then we no longer need it.
+         * If some pass-through dimensions are discarded, then we can reduce the number of pass-through dimensions.
+         */
+        final int dimension = m.getNumCol() - 1;        // Number of source dimensions (ignore translations column).
+        if (dimension > Long.SIZE) return;              // Because retained dimensions stored as a mask on 64 bits.
+        long retainedDimensions = 0;
+        final int numRows = m.getNumRow();              // Number of target dimensions + 1.
+        for (int i=0; i<dimension; i++) {
+            for (int j=0; j<numRows; j++) {
+                if (m.getElement(j,i) != 0) {
+                    retainedDimensions |= (1L << i);    // Found a source dimension which is required by target dimension.
+                    break;
                 }
             }
         }
         /*
-         * Do not invoke super.tryConcatenate(applyOtherFirst, other, factory); we do not want to test if this transform
-         * is the inverse of the other transform as it is costly and unnecessary.  If it was the case, the concatenation
-         * of `this.subTransform` with `other.subTransform` done at the beginning of this method would have produced the
-         * identity transform already.
+         * Verify if matrix discards the sub-transform. If it does not, then we need to keep all the sub-transform
+         * dimensions (discarding them is a "all or nothing" operation). Other dimensions (leading and trailing)
+         * can be keep or discarded on a case-by-case basis.
          */
-        return null;
+        final long    fullTransformMask = maskLowBits(dimension);
+        final long    subTransformMask  = maskLowBits(subTransform.getTargetDimensions()) << firstAffectedCoordinate;
+        final boolean keepSubTransform  = (retainedDimensions & subTransformMask) != 0;
+        if (keepSubTransform) {
+            retainedDimensions |= subTransformMask;           // Ensure that we keep all sub-transform dimensions.
+        }
+        if (retainedDimensions == fullTransformMask) {
+            return;                                           // Nothing to change.
+        }
+        final int change = subTransform.getSourceDimensions() - subTransform.getTargetDimensions();
+        if (change == 0 && !keepSubTransform) {
+            context.replace(relativeIndex, other);      // Shortcut avoiding creation of new MathTransforms.
+            return;
+        }
+        /*
+         * We enter in this block if some dimensions can be discarded. We want to discard them before
+         * the PassThroughTransform instead of after. The matrix for that purpose will be computed later.
+         * Before that, the loop below modifies a copy of the `other` matrix as if those dimensions were
+         * already removed.
+         */
+        MatrixSIS reduced = MatrixSIS.castOrCopy(m);
+        long columnsToRemove = ~retainedDimensions & fullTransformMask;       // Cannot be 0 at this point.
+        do {
+            final int lower = Long.numberOfTrailingZeros(columnsToRemove);
+            final int upper = Long.numberOfTrailingZeros(~(columnsToRemove | maskLowBits(lower)));
+            reduced = reduced.removeColumns(lower, upper);
+            columnsToRemove &= ~maskLowBits(upper);
+            columnsToRemove >>>= (upper - lower);
+        } while (columnsToRemove != 0);
+        /*
+         * Expands the `retainedDimensions` bitmask into a list of indices of dimensions to keep.   However
+         * those indices are for dimensions to keep after the PassThroughTransform.  Because we rather want
+         * indices for dimensions to keep before the PassThroughTransform, we need to adjust for difference
+         * in number of dimensions. This change is represented by the `change` integer computed above.
+         * We apply two strategies:
+         *
+         *    1) If we keep the sub-transform, then the loop while surely sees the `firstAffectedCoordinate`
+         *       dimension since we ensured that we keep all sub-transform dimensions. When it happens, we
+         *       add or remove bits at that point for the dimensionality changes.
+         *
+         *    2) If we do not keep the sub-transform, then code inside `if (dim == firstAffectedCoordinate)`
+         *       should not have been executed. Instead, we will adjust the indices after the loop.
+         */
+        final long leadPassThroughMask = maskLowBits(firstAffectedCoordinate);
+        final int numKeepAfter  = Long.bitCount(retainedDimensions & ~(leadPassThroughMask | subTransformMask));
+        final int numKeepBefore = Long.bitCount(retainedDimensions & leadPassThroughMask);
+        final int[] indices = new int[Long.bitCount(retainedDimensions) + change];
+        for (int i=0; i<indices.length; i++) {
+            int dim = Long.numberOfTrailingZeros(retainedDimensions);
+            if (dim == firstAffectedCoordinate) {
+                if (change < 0) {
+                    retainedDimensions >>>= -change;                        // Discard dimensions to skip.
+                    retainedDimensions &= ~leadPassThroughMask;             // Clear previous dimension flags.
+                } else {
+                    retainedDimensions <<= change;                          // Add dimensions.
+                    retainedDimensions |= maskLowBits(change) << dim;       // Set flags for new dimensions.
+                }
+            }
+            retainedDimensions &= ~(1L << dim);
+            indices[i] = dim;
+        }
+        if (!keepSubTransform) {
+            for (int i=indices.length; --i >= 0;) {
+                final int dim = indices[i];
+                if (dim <= firstAffectedCoordinate) break;
+                indices[i] = dim - change;
+            }
+        }
+        /*
+         * Concatenate:
+         *   1) An affine transform discarding some dimensions (no other operation).
+         *   2) The passthrough transform with less input and output dimensions.
+         *   3) The `other` transform with less input dimensions.
+         */
+        MathTransform tr = context.factory.createAffineTransform(Matrices.createDimensionSelect(dimension + change, indices));
+        if (keepSubTransform) {
+            tr = context.factory.createConcatenatedTransform(tr,
+                    context.factory.createPassThroughTransform(numKeepBefore, subTransform, numKeepAfter));
+        }
+        tr = context.factory.createConcatenatedTransform(tr, context.factory.createAffineTransform(reduced));
+        context.replace(relativeIndex, tr);
     }
 
     /**
      * Returns a mask for the {@code n} lowest bits. This is a convenience method for a frequently
-     * used operation in {@link #tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
+     * used operation in {@link #tryConcatenate(Joiner)}.
      */
     private static long maskLowBits(final int n) {
         return Numerics.bitmask(n) - 1;

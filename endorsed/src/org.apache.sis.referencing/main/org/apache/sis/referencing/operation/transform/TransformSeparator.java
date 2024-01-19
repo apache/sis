@@ -23,7 +23,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.util.MathTransformsOrFactory;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -94,7 +94,7 @@ public class TransformSeparator {
     /**
      * The factory to use for creating new math transforms.
      */
-    final MathTransformsOrFactory factory;
+    final MathTransformFactory factory;
 
     /**
      * Whether {@link #separate()} is allowed to add new dimensions in {@link #sourceDimensions}
@@ -123,7 +123,7 @@ public class TransformSeparator {
     public TransformSeparator(final MathTransform transform, final MathTransformFactory factory) {
         ArgumentChecks.ensureNonNull("transform", transform);
         this.transform = transform;
-        this.factory   = MathTransformsOrFactory.wrap(factory);
+        this.factory   = ReferencingUtilities.nonNull(factory);
     }
 
     /**
@@ -544,7 +544,7 @@ public class TransformSeparator {
             final ConcatenatedTransform ctr = (ConcatenatedTransform) step;
             final MathTransform step1 = filterSourceDimensions(ctr.transform1, dimensions);
             final MathTransform step2 = filterSourceDimensions(ctr.transform2, targetDimensions);
-            return factory.concatenate(step1, step2);
+            return factory.createConcatenatedTransform(step1, step2);
             // Keep the `targetDimensions` computed by the last step.
         }
         /*
@@ -606,7 +606,7 @@ public class TransformSeparator {
             if (containsAll(dimensions, lower, subLower) && containsAll(dimensions, subUpper, upper)) {
                 final int offset = subDimensions[0];
                 assert containsAll(subDimensions, offset, offset + subDimensions.length) : offset;
-                return factory.passThrough(offset + subLower - lower, subTransform, Math.max(0, upper - subUpper));
+                return factory.createPassThroughTransform(offset + subLower - lower, subTransform, Math.max(0, upper - subUpper));
             }
         }
         /*
@@ -664,7 +664,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                     return MathTransforms.identity(0);
                 }
                 elements = ArraysExt.resize(elements, startOfRow);
-                return factory.linear(Matrices.create(startOfRow / numFilteredColumns, numFilteredColumns, elements));
+                return factory.createAffineTransform(Matrices.create(startOfRow / numFilteredColumns, numFilteredColumns, elements));
             }
             /*
              * In an affine transform, the last row is not supposed to have dependency to any source dimension.
@@ -740,7 +740,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
             matrix.setElement(j, i, 1);
         }
         matrix.setElement(dimensions.length, numTgt, 1);
-        return factory.concatenate(step, factory.linear(matrix));
+        return factory.createConcatenatedTransform(step, factory.createAffineTransform(matrix));
     }
 
     /**
@@ -752,8 +752,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
      * <p>This method can process only linear transforms (potentially indirectly through a concatenated transform).
      * Actually it would be possible to also process pass-through transform followed by a linear transform, but this
      * case should have been optimized during transform concatenation. If it is not the case, consider improving the
-     * {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)} method instead of
-     * this one.</p>
+     * {@link PassThroughTransform#tryConcatenate(AbstractMathTransform.Joiner)} method instead of this one.</p>
      *
      * @param  head      the first transform of a transformation chain.
      * @param  required  sources to keep even if not necessary, or {@code null} if none.

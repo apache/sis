@@ -547,6 +547,19 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns the given factory instance if non-null, or a default instance otherwise.
+     *
+     * @param  factory  the factory, which may be {@code null}.
+     * @return the instance to use.
+     */
+    public static MathTransformFactory nonNull(MathTransformFactory factory) {
+        if (factory == null) {
+            factory = DefaultMathTransformFactory.provider().caching(false);
+        }
+        return factory;
+    }
+
+    /**
      * Creates a context with source and target ellipsoids and coordinate systems inferred from the given CRS.
      * The ellipsoids will be non-null only if the given CRS is geodetic (geographic or geocentric).
      *

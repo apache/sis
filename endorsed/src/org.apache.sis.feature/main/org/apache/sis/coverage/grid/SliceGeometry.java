@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.util.DirectPositionView;
-import org.apache.sis.referencing.util.MathTransformsOrFactory;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Numerics;
@@ -77,7 +77,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
     private int[] crsDimensions;
 
     /**
-     * Factory to use for creating new transforms, or {@code null} for default.
+     * Factory to use for creating new transforms.
      */
     private final MathTransformFactory factory;
 
@@ -87,6 +87,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
      * @param  geometry        the grid geometry for which the transform is desired.
      * @param  sliceExtent     the requested extent, or {@code null} for the whole coverage.
      * @param  gridDimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
+     * @param  factory         factory to use for creating new transforms, or {@code null} for default.
      */
     SliceGeometry(final GridGeometry geometry, final GridExtent sliceExtent,
                   final int[] gridDimensions, final MathTransformFactory factory)
@@ -94,7 +95,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         this.geometry       = geometry;
         this.sliceExtent    = sliceExtent;
         this.gridDimensions = gridDimensions;
-        this.factory        = factory;
+        this.factory        = ReferencingUtilities.nonNull(factory);
     }
 
     /**
@@ -249,10 +250,9 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
                     offset[i] = extent.getLow(gridDimensions[i]);
                 }
                 final LinearTransform translation = MathTransforms.translation(offset);
-                final MathTransformsOrFactory f = MathTransformsOrFactory.wrap(factory);
                 if (gridToCRS != null) {
-                    gridToCRS   = f.concatenate(translation, gridToCRS);
-                    cornerToCRS = f.concatenate(translation, cornerToCRS);
+                    gridToCRS   = factory.createConcatenatedTransform(translation, gridToCRS);
+                    cornerToCRS = factory.createConcatenatedTransform(translation, cornerToCRS);
                 }
             }
             extent = relativeExtent;

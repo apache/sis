@@ -42,7 +42,6 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
-import org.apache.sis.referencing.util.MathTransformsOrFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.internal.Constants;
@@ -64,19 +63,24 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     private final int dimension;
 
     /**
-     * Index of dimensions having linear units in the coordinate system identified by {@link #angularIsInput}.
+     * Index of dimensions having linear units in the coordinate system identified by {@code -linearTransformPosition}.
      * This is used for optimizing the concatenation of this transform by an affine transform.
      *
-     * @see #tryConcatenate(boolean, MathTransform, MathTransformFactory)
+     * @see #tryConcatenate(Joiner)
      */
     private final int[] linearDimensions;
 
     /**
-     * Whether the coordinate system having some angular units is the input coordinate system.
-     * If {@code false}, then the coordinate system having some angular units is the output CS.
-     * That coordinate system may also have linear units identified by {@link #linearDimensions}.
+     * Relative index of the affine transform doing conversion of linear coordinates.
+     * If the inputs of this transform are linear coordinate values in a Cartesian coordinate system,
+     * then this field shall be -1. If the above-cited linear coordinates are rather in the outputs,
+     * then this field shall be +1.
+     *
+     * <p>The transform at the relative index {@code -linearTransformPosition} should be a mix
+     * of angular and linear coordinate values. The coordinates at the positions identified by
+     * {@link #linearDimensions} are linear values, and all other coordinates are angular values.
      */
-    private final boolean angularIsInput;
+    private final byte linearTransformPosition;
 
     /**
      * An operation method that describe this coordinate system conversion.
@@ -123,14 +127,14 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * or {@link ContextualParameters#denormalizeGeographicOutputs(double)} after this constructor.
      */
     CoordinateSystemTransform(final String method, final String method3D, final int dimension,
-                              final int[] linearDimensions, final boolean angularIsInput)
+                              final int[] linearDimensions, final byte linearTransformPosition)
     {
-        this.dimension        = dimension;
+        this.dimension = dimension;
         this.linearDimensions = linearDimensions;
-        this.angularIsInput   = angularIsInput;
-        this.method           = method(method);
-        this.method3D         = (method3D != null) ? method(method3D) : this.method;
-        this.context          = new ContextualParameters(this.method.getParameters(), dimension, dimension);
+        this.linearTransformPosition = linearTransformPosition;
+        this.method = method(method);
+        this.method3D = (method3D != null) ? method(method3D) : this.method;
+        this.context = new ContextualParameters(this.method.getParameters(), dimension, dimension);
     }
 
     /**
@@ -216,11 +220,11 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * needed anyway for the conversions between radians and degrees.
      */
     @Override
-    protected final MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-                                                 final MathTransformFactory factory) throws FactoryException
-    {
-concat: if (applyOtherFirst != angularIsInput) {
-            final ExtendedPrecisionMatrix linear = ExtendedPrecisionMatrix.castOrWrap(MathTransforms.getMatrix(other));
+    protected final void tryConcatenate(final Joiner info) throws FactoryException {
+        // Do nothing if there is no linear transform for angular values.
+concat: if (info.isLinear(-linearTransformPosition, true)) {
+            final var linear = ExtendedPrecisionMatrix.castOrWrap(MathTransforms.getMatrix(
+                                    info.getTransform(linearTransformPosition).orElse(null)));
             if (linear != null) {
                 final int n = linear.getNumRow();
                 if (n == linear.getNumCol()) {
@@ -240,26 +244,21 @@ concat: if (applyOtherFirst != angularIsInput) {
                     /*
                      * The transform is affine and applies an uniform scale in all dimensions.
                      * Replace it by the same scale in all output dimensions having a linear unit.
-                     *
                      */
                     if (scale != null) {
-                        final MatrixSIS angular = Matrices.createIdentity(n);
+                        final MatrixSIS angular = Matrices.create(n, n, ExtendedPrecisionMatrix.CREATE_IDENTITY);
                         for (int j : linearDimensions) {
                             angular.setNumber(j, j, scale);
                         }
-                        final var w = MathTransformsOrFactory.wrap(factory);
-                        MathTransform step1 = w.linear(angular);
-                        MathTransform step2 = this;
-                        if (applyOtherFirst) {
-                            step2 = step1;
-                            step1 = this;
-                        }
-                        return w.concatenate(step1, step2);
+                        MathTransform t = info.factory.createAffineTransform(angular);
+                        t = info.concatenate(t, this, linearTransformPosition < 0);
+                        info.replace(linearTransformPosition, t);
+                        return;
                     }
                 }
             }
         }
-        return super.tryConcatenate(applyOtherFirst, other, factory);
+        super.tryConcatenate(info);
     }
 
     /**

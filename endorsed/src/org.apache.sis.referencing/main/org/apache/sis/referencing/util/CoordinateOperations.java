@@ -86,7 +86,7 @@ public final class CoordinateOperations extends Static {
     public static final ThreadLocal<Supplier<double[]>> CONSTANT_COORDINATES = new ThreadLocal<>();
 
     /**
-     * Cached values or {@link #wrapAroundChanges wrapAroundChanges(…)}, created when first needed.
+     * Cached values of {@link #wrapAroundChanges wrapAroundChanges(…)}, created when first needed.
      * Indices are bit masks computed by {@link #changes changes(…)}. Since the most common "wrap around" axes
      * are longitude at dimension 0 or 1, and some measurement of time (in climatology) at dimension 2 or 3,
      * then the most likely values are (binary digits):

@@ -19,7 +19,6 @@ package org.apache.sis.coverage.internal;
 import java.util.Arrays;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
@@ -163,34 +162,37 @@ public abstract class CompoundTransform extends AbstractMathTransform {
      * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
      */
     @Override
-    protected final MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-                                                 final MathTransformFactory factory) throws FactoryException
-    {
-build:  if (other instanceof CompoundTransform) {
-            final MathTransform[] components = components();
-            final MathTransform[] toConcatenate = ((CompoundTransform) other).components();
-            final int n = components.length;
-            if (toConcatenate.length == n) {
-                final MathTransform[] concatenated = new MathTransform1D[n];
-                for (int i=0; i<n; i++) {
-                    MathTransform c1 = components[i];
-                    MathTransform c2 = toConcatenate[i];
-                    if (applyOtherFirst) {
-                        c1 = c2;
-                        c2 = components[i];
+    protected final void tryConcatenate(final Joiner context) throws FactoryException {
+        int relativeIndex = +1;
+search: do {
+            final MathTransform other = context.getTransform(relativeIndex).orElse(null);
+            if (other instanceof CompoundTransform) {
+                final MathTransform[] components = components();
+                final MathTransform[] toConcatenate = ((CompoundTransform) other).components();
+                final int n = components.length;
+                if (toConcatenate.length == n) {
+                    final MathTransform[] concatenated = new MathTransform1D[n];
+                    for (int i=0; i<n; i++) {
+                        MathTransform c1 = components[i];
+                        MathTransform c2 = toConcatenate[i];
+                        if (relativeIndex < 0) {
+                            c1 = c2;
+                            c2 = components[i];
+                        }
+                        if (c1.getTargetDimensions() != c2.getSourceDimensions()) {
+                            /*
+                             * TODO: if c1 or c2 are linear transforms, we could take sub-matrices.
+                             */
+                            continue search;
+                        }
+                        concatenated[i] = context.factory.createConcatenatedTransform(c1, c2);
                     }
-                    if (c1.getTargetDimensions() != c2.getSourceDimensions()) {
-                        /*
-                         * TODO: if c1 or c2 are linear transforms, we could take sub-matrices.
-                         */
-                        break build;
-                    }
-                    concatenated[i] = factory.createConcatenatedTransform(c1, c2);
+                    context.replace(relativeIndex, create(concatenated));
+                    return;
                 }
-                return create(concatenated);
             }
-        }
-        return super.tryConcatenate(applyOtherFirst, other, factory);
+        } while ((relativeIndex = -relativeIndex) < 0);
+        super.tryConcatenate(context);
     }
 
     /**

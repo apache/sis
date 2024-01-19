@@ -20,7 +20,6 @@ import java.io.Serializable;
 import javax.measure.UnitConverter;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.internal.Resources;
@@ -125,19 +124,20 @@ final class UnitConversion extends AbstractMathTransform1D implements Serializab
 
     /**
      * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
-     *
-     * @return the math transforms combined in an optimized way, or {@code null} if no such optimization is available.
      */
     @Override
-    protected MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
-            throws FactoryException
-    {
-        if (other instanceof UnitConversion) {
-            final var that = (UnitConversion) other;
-            return create(applyOtherFirst
-                    ? that.converter.concatenate(this.converter)
-                    : this.converter.concatenate(that.converter));
-        }
-        return super.tryConcatenate(applyOtherFirst, other, factory);
+    protected void tryConcatenate(final Joiner context) throws FactoryException {
+        int relativeIndex = +1;
+        do {
+            final MathTransform other = context.getTransform(relativeIndex).orElse(null);
+            if (other instanceof UnitConversion) {
+                final var that = (UnitConversion) other;
+                context.replace(relativeIndex, create(relativeIndex < 0
+                        ? that.converter.concatenate(this.converter)
+                        : this.converter.concatenate(that.converter)));
+                return;
+            }
+        } while ((relativeIndex = -relativeIndex) < 0);
+        super.tryConcatenate(context);
     }
 }

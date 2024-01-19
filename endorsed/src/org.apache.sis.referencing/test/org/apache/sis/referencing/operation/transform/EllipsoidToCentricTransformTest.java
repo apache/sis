@@ -32,8 +32,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -242,7 +241,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
     }
 
     /**
-     * Tests {@link EllipsoidToCentricTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
+     * Tests {@link EllipsoidToCentricTransform#tryConcatenate(AbstractMathTransform.Joiner)}.
      * The test creates <q>Geographic 3D to 2D conversion</q>, <q>Geographic/Geocentric conversions</q>
      * and <q>Geocentric translation</q> transforms, then concatenate them.
      *
@@ -259,25 +258,30 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         final Iterator<MathTransform> it = MathTransforms.getSteps(transform).iterator();
         MathTransform step;
 
-        assertInstanceOf("Degrees to radians", LinearTransform.class, step = it.next());
-        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
-        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
+        // Degrees to radians
+        assertInstanceOf(LinearTransform.class, step = it.next());
+        assertEquals(2, step.getSourceDimensions());
+        assertEquals(2, step.getTargetDimensions());
 
-        assertInstanceOf("Ellipsoid to geocentric", EllipsoidToCentricTransform.class, step = it.next());
-        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
-        assertEquals("tourceDimensions", 3, step.getTargetDimensions());
+        // Ellipsoid to geocentric
+        assertInstanceOf(EllipsoidToCentricTransform.class, step = it.next());
+        assertEquals(2, step.getSourceDimensions());
+        assertEquals(3, step.getTargetDimensions());
 
-        assertInstanceOf("Datum shift", LinearTransform.class, step = it.next());
-        assertEquals("sourceDimensions", 3, step.getSourceDimensions());
-        assertEquals("tourceDimensions", 3, step.getTargetDimensions());
+        // Datum shift
+        assertInstanceOf(LinearTransform.class, step = it.next());
+        assertEquals(3, step.getSourceDimensions());
+        assertEquals(3, step.getTargetDimensions());
 
-        assertInstanceOf("Geocentric to ellipsoid", AbstractMathTransform.Inverse.class, step = it.next());
-        assertEquals("sourceDimensions", 3, step.getSourceDimensions());
-        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
+        // Geocentric to ellipsoid
+        assertInstanceOf(AbstractMathTransform.Inverse.class, step = it.next());
+        assertEquals(3, step.getSourceDimensions());
+        assertEquals(2, step.getTargetDimensions());
 
-        assertInstanceOf("Degrees to radians", LinearTransform.class, step = it.next());
-        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
-        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
+        // Radians to degrees
+        assertInstanceOf(LinearTransform.class, step = it.next());
+        assertEquals(2, step.getSourceDimensions());
+        assertEquals(2, step.getTargetDimensions());
     }
 
     /**
