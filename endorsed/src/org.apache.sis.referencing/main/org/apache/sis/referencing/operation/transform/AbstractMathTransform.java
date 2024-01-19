@@ -1067,23 +1067,6 @@ public abstract class AbstractMathTransform extends FormattableObject
         }
 
         /**
-         * Concatenates the two given transforms, swapping their order if {@code swap} is {@code true}.
-         *
-         * @param  first   the first math transform.
-         * @param  second  the second math transform.
-         * @param  swap    whether the given transforms should be swapped.
-         * @return the concatenated transform.
-         * @throws FactoryException if the factory cannot perform the concatenation.
-         */
-        MathTransform concatenate(MathTransform first, MathTransform second, boolean swap) throws FactoryException {
-            if (swap) {
-                return factory.createConcatenatedTransform(second, first);
-            } else {
-                return factory.createConcatenatedTransform(first, second);
-            }
-        }
-
-        /**
          * Requests to replace the enclosing transform and neighbor transforms by the given transform.
          * The {@code bound} argument specifies which neighbors are replaced by the specified transform:
          *
@@ -1099,6 +1082,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          *
          * This method can be invoked only once per {@code Joiner} instance.
          *
+         * @param  bound          relative index of first (if negative) or last (if positive) transform to replace.
          * @param  concatenation  the transform to use instead of the enclosing and neighbor ones.
          * @throws IllegalStateException if a {@code replace(…)} method has already been invoked.
          */

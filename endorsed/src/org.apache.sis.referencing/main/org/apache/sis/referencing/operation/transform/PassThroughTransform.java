@@ -727,6 +727,24 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
+     * Concatenates the sub-transform with the given transform.
+     *
+     * @param  context        information about the neighbor transforms, and the object where to set the result.
+     * @param  relativeIndex  index of the transform to replace, relatively to this transform.
+     * @param  other          the other transform to concatenate with {@link #subTransform}.
+     */
+    private void concatenateSubTransform(final Joiner context, final int relativeIndex, MathTransform other) throws FactoryException {
+        MathTransform first = subTransform;
+        if (relativeIndex < 0) {
+            first = other;
+            other = subTransform;
+        }
+        other = context.factory.createConcatenatedTransform(first, other);
+        other = context.factory.createPassThroughTransform(firstAffectedCoordinate, other, numTrailingCoordinates);
+        context.replace(relativeIndex, other);
+    }
+
+    /**
      * Concatenates or pre-concatenates in an optimized way this transform with a neighbor, if possible.
      * This method applies the following special cases:
      *
@@ -751,9 +769,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             if (other instanceof PassThroughTransform) {
                 final PassThroughTransform opt = (PassThroughTransform) other;
                 if (opt.firstAffectedCoordinate == firstAffectedCoordinate && opt.numTrailingCoordinates == numTrailingCoordinates) {
-                    MathTransform tr = context.concatenate(subTransform, opt.subTransform, relativeIndex < 0);
-                    tr = context.factory.createPassThroughTransform(firstAffectedCoordinate, tr, numTrailingCoordinates);
-                    context.replace(relativeIndex, tr);
+                    concatenateSubTransform(context, relativeIndex, opt.subTransform);
                     return;
                 }
             }
@@ -767,10 +783,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             if (m != null) {
                 final Matrix sub = toSubMatrix(relativeIndex < 0, m);
                 if (sub != null) {
-                    MathTransform tr = context.factory.createAffineTransform(sub);
-                    tr = context.concatenate(subTransform, tr, relativeIndex < 0);
-                    tr = context.factory.createPassThroughTransform(firstAffectedCoordinate, tr, numTrailingCoordinates);
-                    context.replace(relativeIndex, tr);
+                    concatenateSubTransform(context, relativeIndex, context.factory.createAffineTransform(sub));
                     return;
                 }
             }

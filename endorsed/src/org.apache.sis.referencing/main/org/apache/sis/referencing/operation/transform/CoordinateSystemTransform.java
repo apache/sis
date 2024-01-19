@@ -250,9 +250,14 @@ concat: if (info.isLinear(-linearTransformPosition, true)) {
                         for (int j : linearDimensions) {
                             angular.setNumber(j, j, scale);
                         }
-                        MathTransform t = info.factory.createAffineTransform(angular);
-                        t = info.concatenate(t, this, linearTransformPosition < 0);
-                        info.replace(linearTransformPosition, t);
+                        MathTransform first = info.factory.createAffineTransform(angular);
+                        MathTransform other = this;
+                        if (linearTransformPosition < 0) {
+                            other = first;
+                            first = this;
+                        }
+                        first = info.factory.createConcatenatedTransform(first, other);
+                        info.replace(linearTransformPosition, first);
                         return;
                     }
                 }

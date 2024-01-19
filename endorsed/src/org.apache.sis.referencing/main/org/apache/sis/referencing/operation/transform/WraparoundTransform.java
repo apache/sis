@@ -472,7 +472,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
                     final Matrix remaining = remaining(applyOtherFirst, move, middle);
                     final WraparoundTransform redim = redim(applyOtherFirst, remaining);
                     if (redim != null) {
-                        step1    = context.concatenate(move, redim, applyOtherFirst);
+                        step1    = concatenate(context, move, redim, applyOtherFirst);
                         middle   = remaining;
                         modified = true;
                     }
@@ -490,7 +490,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
                         final Matrix remaining = remaining(!applyOtherFirst, move, middle);
                         redim = redim.redim(!applyOtherFirst, remaining);
                         if (redim != null) {
-                            step2    = context.concatenate(redim, move, applyOtherFirst);
+                            step2    = concatenate(context, redim, move, applyOtherFirst);
                             middle   = remaining;
                             modified = true;
                         }
@@ -521,8 +521,8 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
                 if (modified) {
                     MathTransform tr = context.factory.createAffineTransform(middle);
                     if (tr.getClass() != middleTr.getClass()) {               // See above comment for rational.
-                        tr = context.concatenate(tr, step2, applyOtherFirst);
-                        tr = context.concatenate(step1, tr, applyOtherFirst);
+                        tr = concatenate(context, tr, step2, applyOtherFirst);
+                        tr = concatenate(context, step1, tr, applyOtherFirst);
                         if (applyOtherFirst) {
                             for (int i = count-2; --i >= 0;) {
                                 tr = context.factory.createConcatenatedTransform(steps.get(i), tr);
@@ -615,6 +615,24 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         final Matrix change = MathTransforms.getMatrix(move.inverse());
         return reverse ? Matrices.multiply(change, middle)
                        : Matrices.multiply(middle, change);
+    }
+
+    /**
+     * Concatenates the two given transforms, swapping their order if {@code swap} is {@code true}.
+     *
+     * @param  first   the first math transform.
+     * @param  second  the second math transform.
+     * @param  swap    whether the given transforms should be swapped.
+     * @return the concatenated transform.
+     * @throws FactoryException if the factory cannot perform the concatenation.
+     */
+    private static MathTransform concatenate(Joiner context, MathTransform first, MathTransform second, boolean swap) throws FactoryException {
+        if (swap) {
+            var t = first;
+            first = second;
+            second = t;
+        }
+        return context.factory.createConcatenatedTransform(first, second);
     }
 
     /**
