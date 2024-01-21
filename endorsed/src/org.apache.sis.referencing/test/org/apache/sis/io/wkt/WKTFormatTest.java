@@ -447,8 +447,7 @@ public final class WKTFormatTest extends TestCase {
         /*
          * Verify that FormattableObject.toWKT() reports that the WKT is invalid.
          */
-        UnformattableObjectException e;
-        e = assertThrows(UnformattableObjectException.class, () -> pm.toWKT());
+        var e = assertThrows(UnformattableObjectException.class, () -> pm.toWKT());
         assertMessageContains(e, "$name");
         /*
          * Verify that the WKT is still parseable despite the warning.

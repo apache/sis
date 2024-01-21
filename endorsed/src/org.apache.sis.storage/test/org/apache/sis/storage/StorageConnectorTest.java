@@ -417,7 +417,7 @@ public final class StorageConnectorTest extends TestCase {
         assertNull   (connector.getStorageAs(URI.class));
         assertNull   (connector.getStorageAs(String.class));
 
-        UnconvertibleObjectException exception = assertThrows(UnconvertibleObjectException.class,
+        var exception = assertThrows(UnconvertibleObjectException.class,
                 () -> connector.getStorageAs(Float.class), "Should not accept Float.class");
         assertMessageContains(exception, "Float");
         connector.closeAllExcept(null);
@@ -452,7 +452,7 @@ public final class StorageConnectorTest extends TestCase {
         final StorageConnector connector = create(false);
         final InputStream stream = connector.commit(InputStream.class, "Test");
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        var exception = assertThrows(IllegalStateException.class,
                 () -> connector.getStorageAs(ByteBuffer.class), "Connector should be closed.");
         assertMessageContains(exception);
         assertExpectedBytes(stream);
