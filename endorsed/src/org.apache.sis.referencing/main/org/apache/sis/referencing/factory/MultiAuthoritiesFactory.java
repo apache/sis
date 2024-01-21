@@ -145,7 +145,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * do not need to be thread-safe. See constructor Javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  *
