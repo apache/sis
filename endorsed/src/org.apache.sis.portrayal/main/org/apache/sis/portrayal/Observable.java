@@ -31,15 +31,11 @@ import org.apache.sis.util.ArraysExt;
  * This base class does not need to be public; its methods will appear as if
  * they were defined directly in sub-classes.
  *
- * @todo Consider replacing the use of {@link PropertyChangeListener} by a new listener interface
- *       defined in this package. The reason is because {@link PropertyChangeListener} is defined
- *       in the {@code java.desktop} module, for which the future after 2026 is not clear at this
- *       state. It would also allow to add information not currently provided to current listener,
- *       like the index of the element modified in a list.
- *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-abstract class Observable {
+public abstract class Observable {
     /**
      * The logger for portrayal.
      */
@@ -54,9 +50,9 @@ abstract class Observable {
     private Map<String,PropertyChangeListener[]> listeners;
 
     /**
-     * Only used by classes in this package.
+     * Creates a new instance.
      */
-    Observable() {
+    protected Observable() {
     }
 
     /**

@@ -22,6 +22,8 @@ package org.apache.sis.style;
  * See package description for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
 public interface Style {
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.map;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.AbstractList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -31,6 +30,9 @@ import org.apache.sis.measure.NumberRange;
 public abstract class NotifiedList<T> extends AbstractList<T> {
 
     private final CopyOnWriteArrayList<T> parent = new CopyOnWriteArrayList<>();
+
+    public NotifiedList() {
+    }
 
     @Override
     public T get(int index) {

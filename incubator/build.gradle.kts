@@ -47,6 +47,7 @@ dependencies {
     api(files("../endorsed/build/classes/java/main/org.apache.sis.referencing"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.feature"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage"))
+    api(files("../endorsed/build/classes/java/main/org.apache.sis.portrayal"))
 
     // Test dependencies
     testImplementation(tests.geoapi)
@@ -87,6 +88,7 @@ tasks.compileTestJava {
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,org.junit.jupiter.api,junit")
     }
+    addExportForTests(options.compilerArgs)
 }
 
 /*
@@ -100,10 +102,40 @@ fun addRead(args : MutableList<String>, module : String, dependencies : String) 
 }
 
 /*
+ * Adds a JVM argument for making an internal package accessible to another module.
+ * This is for making internal packages accessible to JUnit or to some test classes
+ * defined in other modules.
+ */
+fun addExport(args : MutableList<String>, module : String, pkg : String, consumers : String) {
+    args.add("--add-exports")
+    args.add(module + '/' + pkg + '=' + consumers)
+}
+
+/*
+ * Add compiler and runtime options for patching the Apache SIS main modules with the test classes.
+ * The same options are required for both compiling and executing the tests.
+ */
+fun addExportForTests(args : MutableList<String>) {
+    /*
+     * Some test classes need access to more internal packages than requested by the main classes.
+     * The following lines may need to be edited when export statements are added or removed in a
+     * module-info.java file of main source code, or when a test class starts using or stop using
+     * an internal API.
+     */
+    // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
+    addExport(args, "org.apache.sis.feature",           "org.apache.sis.geometry.wrapper.jts",
+                    "org.apache.sis.portrayal.map")
+
+    addExport(args, "org.apache.sis.storage",           "org.apache.sis.storage.base",
+                    "org.apache.sis.portrayal.map")
+}
+
+/*
  * Discover and execute JUnit-based tests.
  */
 tasks.test {
     val args = mutableListOf("-enableassertions")
+    addExportForTests(args)
     setAllJvmArgs(args)
     testLogging {
         events("FAILED", "STANDARD_OUT", "STANDARD_ERROR")
@@ -138,6 +170,18 @@ publishing {
             pom {
                 name        = "Apache SIS Shapefile storage"
                 description = "Read and write files in the Shapefile format."
+            }
+        }
+        create<MavenPublication>("portrayal.map") {
+            var module = "org.apache.sis.portrayal.map"
+            groupId    = "org.apache.sis.core"
+            artifactId = "sis-portrayal-map"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS portrayal"
+                description = "Symbology and map representations, together with a rendering engine for display."
             }
         }
         create<MavenPublication>("webapp") {

@@ -15,17 +15,14 @@
  * limitations under the License.
  */
 
-
 /**
- * Symbology and map representations, together with a rendering engine for display.
- * This package is currently in early draft stage.
- *
- * <h2>Synchronization</h2>
- * Unless otherwise specified, classes in this package are not thread-safe.
- * Synchronization, if desired, must be done by the caller.
+ * Raster imagery and geometry features.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.1
  */
-package org.apache.sis.portrayal;
+module org.apache.sis.portrayal.map {
+    requires transitive org.apache.sis.portrayal;
+    requires static org.locationtech.jts;
+
+    exports org.apache.sis.map;
+}

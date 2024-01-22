@@ -16,7 +16,6 @@
  */
 package org.apache.sis.map;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;

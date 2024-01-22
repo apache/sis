@@ -16,14 +16,15 @@
  */
 package org.apache.sis.map;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.util.Set;
-import java.util.HashSet;
-import org.opengis.filter.ValueReference;
+import org.opengis.feature.Feature;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * Collects all properties used in style elements.
+ * Produced by the portrayal engines when an exception occurred.
+ * Exception presentations are placed in the Stream of presentation leaving
+ * the user the choice to log, ignore or stop rendering as needed.
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
@@ -31,28 +32,31 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  */
-final class PropertyNameCollector extends SymbologyVisitor {
-    /**
-     * All value references found.
-     *
-     * @see ValueReference#getXPath()
-     */
-    final Set<String> references;
+public class ExceptionPresentation extends Presentation {
+
+    private final Exception exception;
 
     /**
-     * Creates a new collector.
+     * @param exception not null.
      */
-    PropertyNameCollector() {
-        references = new HashSet<>();
+    public ExceptionPresentation(Exception exception) {
+        ArgumentChecks.ensureNonNull("exception", exception);
+        this.exception = exception;
     }
 
     /**
-     * Invoked for each value reference found.
+     * @param exception not null.
      */
-    @Override
-    protected void visitProperty(final ValueReference<?,?> expression) {
-        if (expression != null) {
-            references.add(expression.getXPath());
-        }
+    public ExceptionPresentation(MapLayer layer, Resource resource, Feature candidate, Exception exception) {
+        super(layer,resource, candidate);
+        ArgumentChecks.ensureNonNull("exception", exception);
+        this.exception = exception;
+    }
+
+    /**
+     * @return exception, never null
+     */
+    public Exception getException() {
+        return exception;
     }
 }

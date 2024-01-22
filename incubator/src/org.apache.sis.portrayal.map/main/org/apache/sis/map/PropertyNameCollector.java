@@ -14,18 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.map;
+
+import java.util.Set;
+import java.util.HashSet;
+import org.opengis.filter.ValueReference;
 
 
 /**
- * Symbology and map representations, together with a rendering engine for display.
- * This package is currently in early draft stage.
+ * Collects all properties used in style elements.
  *
- * <h2>Synchronization</h2>
- * Unless otherwise specified, classes in this package are not thread-safe.
- * Synchronization, if desired, must be done by the caller.
+ * <p>
+ * NOTE: this class is a first draft subject to modifications.
+ * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
- * @since   1.1
  */
-package org.apache.sis.portrayal;
+final class PropertyNameCollector extends SymbologyVisitor {
+    /**
+     * All value references found.
+     *
+     * @see ValueReference#getXPath()
+     */
+    final Set<String> references;
+
+    /**
+     * Creates a new collector.
+     */
+    PropertyNameCollector() {
+        references = new HashSet<>();
+    }
+
+    /**
+     * Invoked for each value reference found.
+     */
+    @Override
+    protected void visitProperty(final ValueReference<?,?> expression) {
+        if (expression != null) {
+            references.add(expression.getXPath());
+        }
+    }
+}

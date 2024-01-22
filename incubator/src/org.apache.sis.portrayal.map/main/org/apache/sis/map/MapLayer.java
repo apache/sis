@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.portrayal;
+package org.apache.sis.map;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Objects;
 import java.util.Optional;
 import org.opengis.coverage.Coverage;

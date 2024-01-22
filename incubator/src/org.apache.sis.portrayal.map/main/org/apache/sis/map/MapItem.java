@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.portrayal;
+package org.apache.sis.map;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +24,7 @@ import java.util.Optional;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.InternationalString;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.portrayal.Observable;
 
 
 /**
@@ -49,8 +49,6 @@ import org.apache.sis.storage.DataStoreException;
  *       of layers and not a tree of arbitrary objects.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   1.2
  */
 public abstract class MapItem extends Observable {
     /**
