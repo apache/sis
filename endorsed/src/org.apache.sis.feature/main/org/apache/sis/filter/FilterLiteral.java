@@ -16,7 +16,6 @@
  */
 package org.apache.sis.filter;
 
-// Specific to the main branch:
 import java.util.List;
 import java.util.Collections;
 import java.io.Serializable;

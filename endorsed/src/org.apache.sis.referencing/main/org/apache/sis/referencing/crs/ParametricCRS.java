@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.crs;
 
-// Specific to the main branch:
 import org.opengis.referencing.crs.SingleCRS;
 
 

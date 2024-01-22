@@ -16,7 +16,6 @@
  */
 package org.apache.sis.pending.geoapi.filter;
 
-// Specific to the main branch:
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.apache.sis.filter.internal.FunctionNames;

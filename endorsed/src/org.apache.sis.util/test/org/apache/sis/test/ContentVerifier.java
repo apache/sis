@@ -16,8 +16,9 @@
  */
 package org.apache.sis.test;
 
-// Specific to the main branch:
 import org.opengis.metadata.Metadata;
+
+// Test dependencies
 import static org.junit.Assume.assumeTrue;
 
 

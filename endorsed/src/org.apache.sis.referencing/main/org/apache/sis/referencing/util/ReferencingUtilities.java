@@ -30,7 +30,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.Datum;
@@ -59,6 +58,9 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.xml.NilObject;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

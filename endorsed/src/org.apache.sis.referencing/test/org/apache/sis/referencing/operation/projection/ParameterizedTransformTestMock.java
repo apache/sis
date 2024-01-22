@@ -16,8 +16,9 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-// Specific to the main branch:
 import org.opengis.referencing.operation.MathTransformFactory;
+
+// Test dependencies
 import static org.junit.Assume.*;
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 

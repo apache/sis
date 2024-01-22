@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
-// Specific to the main branch:
 import java.util.List;
 import java.util.Map;
 import java.util.IdentityHashMap;
