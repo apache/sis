@@ -297,8 +297,7 @@ public final class GridExtentTest extends TestCase {
         assertSame(extent.intersect(domain), extent);
 
         final GridExtent disjoint = domain.translate(0, 1000);
-        DisjointExtentException exception;
-        exception = assertThrows(DisjointExtentException.class, () -> extent.intersect(disjoint));
+        var exception = assertThrows(DisjointExtentException.class, () -> extent.intersect(disjoint));
         assertMessageContains(exception);
     }
 
@@ -326,8 +325,7 @@ public final class GridExtentTest extends TestCase {
                 new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.TRACK, DimensionNameType.TIME},
                 new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
 
-        IllegalArgumentException exception;
-        exception = assertThrows(IllegalArgumentException.class, () -> domain.intersect(other));
+        var exception = assertThrows(IllegalArgumentException.class, () -> domain.intersect(other));
         assertMessageContains(exception);
     }
 
@@ -371,8 +369,7 @@ public final class GridExtentTest extends TestCase {
          * change in future SIS version).
          */
         slicePoint.setOrdinate(0, 900);
-        PointOutsideCoverageException exception;
-        exception = assertThrows(PointOutsideCoverageException.class, () -> extent.slice(slicePoint, new int[] {1, 2}));
+        var exception = assertThrows(PointOutsideCoverageException.class, () -> extent.slice(slicePoint, new int[] {1, 2}));
         assertMessageContains(exception, "(900, 47)");         // See above comment.
     }
 
@@ -388,8 +385,7 @@ public final class GridExtentTest extends TestCase {
         assertSubspaceEquals(extent, 0,1,2  );
         assertSubspaceEquals(extent, 0,1,2,3);
 
-        SubspaceNotSpecifiedException exception;
-        exception = assertThrows(SubspaceNotSpecifiedException.class, () -> extent.getSubspaceDimensions(1));
+        var exception = assertThrows(SubspaceNotSpecifiedException.class, () -> extent.getSubspaceDimensions(1));
         assertMessageContains(exception);
     }
 

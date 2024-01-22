@@ -110,8 +110,7 @@ public final class XLinkTest extends TestCase {
         link.freeze();
         assertEquals(hashCode, link.hashCode(), "hashCode");
 
-        UnsupportedOperationException exception;
-        exception = assertThrows(UnsupportedOperationException.class, () -> link.setType(null), "The XLink should be unmodifiable.");
+        var exception = assertThrows(UnsupportedOperationException.class, () -> link.setType(null), "The XLink should be unmodifiable.");
         assertMessageContains(exception, "XLink");
     }
 
@@ -148,8 +147,7 @@ public final class XLinkTest extends TestCase {
          * Now freezes the XLink and ensures that it is really immutable.
          */
         link.freeze();
-        UnsupportedOperationException e;
-        e = assertThrows(UnsupportedOperationException.class, () -> link.setHRef(null));
+        var e = assertThrows(UnsupportedOperationException.class, () -> link.setHRef(null));
         assertMessageContains(e, "XLink");
     }
 

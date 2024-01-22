@@ -176,9 +176,6 @@ fun addExportForTests(args : MutableList<String>) {
     addExport(args, "org.apache.sis.feature",           "org.apache.sis.geometry.wrapper.jts",
                     "org.apache.sis.storage.sql," +
                     "org.apache.sis.portrayal")
-
-    addExport(args, "org.apache.sis.storage",           "org.apache.sis.storage.base",
-                    "org.apache.sis.portrayal")
 }
 
 /*

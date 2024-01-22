@@ -31,9 +31,10 @@ import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.CalculationType;
@@ -68,20 +69,13 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
     @Test
     public void testIllegalArgument() {
         final MathTransform subTransform = MathTransforms.identity(1);
-        try {
-            MathTransforms.passThrough(-1, subTransform, 0);
-            fail("An illegal argument should have been detected");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("firstAffectedCoordinate"));
-        }
-        try {
-            MathTransforms.passThrough(0, subTransform, -1);
-            fail("An illegal argument should have been detected");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("numTrailingCoordinates"));
-        }
+        IllegalArgumentException e;
+
+        e = assertThrows(IllegalArgumentException.class, () -> MathTransforms.passThrough(-1, subTransform, 0));
+        assertMessageContains(e, "firstAffectedCoordinate");
+
+        e = assertThrows(IllegalArgumentException.class, () -> MathTransforms.passThrough(0, subTransform, -1));
+        assertMessageContains(e, "numTrailingCoordinates");
     }
 
     /**
@@ -167,15 +161,13 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
                 final int numAdditionalOrdinates = firstAffectedCoordinate + numTrailingCoordinates;
                 transform = MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
                 if (numAdditionalOrdinates == 0) {
-                    assertSame("Failed to recognize that no passthrough was needed.", subTransform, transform);
+                    assertSame(subTransform, transform, "Failed to recognize that no passthrough was needed.");
                     continue;
                 }
                 assertNotSame(subTransform, transform);
-                assertTrue   ("Wrong transform class.", expectedClass.isInstance(transform));
-                assertEquals ("Wrong number of source dimensions.",
-                        subTransform.getSourceDimensions() + numAdditionalOrdinates, transform.getSourceDimensions());
-                assertEquals ("Wrong number of target dimensions.",
-                        subTransform.getTargetDimensions() + numAdditionalOrdinates, transform.getTargetDimensions());
+                assertInstanceOf(expectedClass, transform);
+                assertEquals(subTransform.getSourceDimensions() + numAdditionalOrdinates, transform.getSourceDimensions());
+                assertEquals(subTransform.getTargetDimensions() + numAdditionalOrdinates, transform.getTargetDimensions());
                 verifyTransform(subTransform, firstAffectedCoordinate);
             }
         }
@@ -250,7 +242,7 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
          */
         final float[] sourceAsFloat = ArraysExt.copyAsFloats(passthroughData);
         final float[] targetAsFloat = verifyConsistency(sourceAsFloat);
-        assertEquals("Unexpected length of transformed array.", expectedData.length, targetAsFloat.length);
+        assertEquals(expectedData.length, targetAsFloat.length, "Unexpected length of transformed array.");
         /*
          * We use a relatively high tolerance threshold because result are
          * computed using inputs stored as float values.
@@ -264,50 +256,59 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
-     * This tests creates a non-linear transform of 6→7 dimensions, then applies a filter keeping only
-     * target dimensions 1, 4 and 6 (corresponding to source dimensions 1 and 5).
+     * Tests {@link PassThroughTransform#tryConcatenate(AbstractMathTransform.Joiner)}.
+     * This tests creates a non-linear transform of 6→7 dimensions, then applies a filter
+     * keeping only target dimensions 1, 4 and 6 (corresponding to source dimensions 1 and 5).
      *
      * @throws FactoryException if an error occurred while combining the transforms.
      */
     @Test
     public void testTryConcatenate() throws FactoryException {
-        PassThroughTransform ps = new PassThroughTransform(2, new PseudoTransform(2, 3), 2);
-        MathTransform c = ps.tryConcatenate(false, MathTransforms.linear(Matrices.create(4, 8, new double[] {
+        Matrix m = Matrices.create(4, 8, new double[] {
                 0, 1, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 1, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 1, 0,
-                0, 0, 0, 0, 0, 0, 0, 1})), null);
+                0, 0, 0, 0, 0, 0, 0, 1});
+
+        final var ps      = new PassThroughTransform(2, new PseudoTransform(2, 3), 2);
+        final var factory = DefaultMathTransformFactory.provider().caching(false);
+        final var context = new AbstractMathTransform.Joiner(List.of(ps, MathTransforms.linear(m)), 0, factory);
+        ps.tryConcatenate(context);
+        MathTransform c = context.replacement;
 
         final List<MathTransform> steps = MathTransforms.getSteps(c);
-        assertEquals("Number of steps", 3, steps.size());
+        assertEquals(3, steps.size());
         /*
          * We need to remove source dimensions 0, 2, 3 and 4. We cannot remove dimensions 2 and 3 before
          * pass-through because they are used by the sub-transform. It leaves us dimensions 0 and 4 which
          * can be removed here.
          */
-        assertMatrixEquals("Expected removal of dimensions 0 and 4 before pass-through", Matrices.create(5, 7, new double[] {
+        m = Matrices.create(5, 7, new double[] {
                 0, 1, 0, 0, 0, 0, 0,
                 0, 0, 1, 0, 0, 0, 0,
                 0, 0, 0, 1, 0, 0, 0,
                 0, 0, 0, 0, 0, 1, 0,
-                0, 0, 0, 0, 0, 0, 1}), MathTransforms.getMatrix(steps.get(0)), null);
+                0, 0, 0, 0, 0, 0, 1});
+        assertMatrixEquals("Expected removal of dimensions 0 and 4 before pass-through",
+                           m, MathTransforms.getMatrix(steps.get(0)), null);
         /*
          * The number of pass-through dimensions have decreased from 2 to 1 on both sides of the sub-transform.
          */
         final PassThroughTransform reduced = (PassThroughTransform) steps.get(1);
-        assertEquals("firstAffectedCoordinate", 1, reduced.firstAffectedCoordinate);
-        assertEquals("numTrailingCoordinates",  1, reduced.numTrailingCoordinates);
-        assertSame  ("subTransform", ps.subTransform, reduced.subTransform);
+        assertEquals(1, reduced.firstAffectedCoordinate);
+        assertEquals(1, reduced.numTrailingCoordinates);
+        assertSame(ps.subTransform, reduced.subTransform);
         /*
          * We still have to remove source dimensions 2 and 3. Since we removed dimension 0 in previous step,
          * the indices of dimensions to removed have shifted to 1 and 2.
          */
-        assertMatrixEquals("Expected removal of dimensions 1 and 2 after pass-through", Matrices.create(4, 6, new double[] {
+        m = Matrices.create(4, 6, new double[] {
                 1, 0, 0, 0, 0, 0,
                 0, 0, 0, 1, 0, 0,
                 0, 0, 0, 0, 1, 0,
-                0, 0, 0, 0, 0, 1}), MathTransforms.getMatrix(steps.get(2)), null);
+                0, 0, 0, 0, 0, 1});
+        assertMatrixEquals("Expected removal of dimensions 1 and 2 after pass-through",
+                           m, MathTransforms.getMatrix(steps.get(2)), null);
     }
 
     /**

@@ -33,12 +33,12 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -67,54 +67,43 @@ public final class TransformSeparatorTest extends TestCase {
     @Test
     public void testArgumentChecks() {
         final TransformSeparator s = new TransformSeparator(MathTransforms.identity(8));
-        try {
-            s.getSourceDimensions();
-            fail("Shall not return unspecified dimensions.");
-        } catch (IllegalStateException e) {
-            // This is the expected exception.
-        }
-        try {
-            s.getTargetDimensions();
-            fail("Shall not return unspecified dimensions.");
-        } catch (IllegalStateException e) {
-            // This is the expected exception.
-        }
+        RuntimeException e;
+        /*
+         * Shall not return unspecified dimensions.
+         */
+        e = assertThrows(IllegalStateException.class, () -> s.getSourceDimensions());
+        assertMessageContains(e);
+
+        e = assertThrows(IllegalStateException.class, () -> s.getTargetDimensions());
+        assertMessageContains(e);
+        /*
+         * Shall not accept non-increasing values. While the values tested below are
+         * in increasing order in each method call, they are not in increasing order
+         * when taking in account the previous call.
+         */
         s.addSourceDimensionRange(1, 4);
         s.addTargetDimensions(0, 3, 4);
-        assertArrayEquals("sourceDimensions", new int[] {1, 2, 3}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0, 3, 4}, s.getTargetDimensions());
-        try {
-            s.addSourceDimensions(3, 4, 5);
-            fail("Shall not accept non-increasing value.");
-        } catch (IllegalArgumentException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("dimensions[0]"));
-        }
-        try {
-            s.addTargetDimensionRange(3, 5);
-            fail("Shall not accept non-increasing value.");
-        } catch (IllegalArgumentException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("lower"));
-        }
+        assertArrayEquals(new int[] {1, 2, 3}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 3, 4}, s.getTargetDimensions());
+
+        e = assertThrows(IllegalArgumentException.class, () -> s.addSourceDimensions(3, 4, 5));
+        assertMessageContains(e, "dimensions[0]");
+
+        e = assertThrows(IllegalArgumentException.class, () -> s.addTargetDimensionRange(3, 5));
+        assertMessageContains(e, "lower");
+        /*
+         * Shall not accept values out of range.
+         */
         s.addSourceDimensions(4, 6);
         s.addTargetDimensionRange(6, 8);
-        assertArrayEquals("sourceDimensions", new int[] {1, 2, 3, 4, 6}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0, 3, 4, 6, 7}, s.getTargetDimensions());
-        try {
-            s.addSourceDimensions(8);
-            fail("Shall not accept value out of range.");
-        } catch (IllegalArgumentException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("dimensions[0]"));
-        }
-        try {
-            s.addTargetDimensions(3, 8);
-            fail("Shall not accept value out of range.");
-        } catch (IllegalArgumentException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("dimensions[0]"));
-        }
+        assertArrayEquals(new int[] {1, 2, 3, 4, 6}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 3, 4, 6, 7}, s.getTargetDimensions());
+
+        e = assertThrows(IllegalArgumentException.class, () -> s.addSourceDimensions(8));
+        assertMessageContains(e, "dimensions[0]");
+
+        e = assertThrows(IllegalArgumentException.class, () -> s.addTargetDimensions(3, 8));
+        assertMessageContains(e, "dimensions[0]");
     }
 
     /**
@@ -134,9 +123,9 @@ public final class TransformSeparatorTest extends TestCase {
         /*
          * Trivial case: no dimension specified, we should get the transform unchanged.
          */
-        assertSame("transform", s.transform, s.separate());
-        assertArrayEquals("sourceDimensions", new int[] {0, 1, 2}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0, 1, 2}, s.getTargetDimensions());
+        assertSame(s.transform, s.separate());
+        assertArrayEquals(new int[] {0, 1, 2}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 1, 2}, s.getTargetDimensions());
         /*
          * Filter only target dimensions. This is the easiest non-trivial case since we just
          * need to drop some rows. There is no analysis to perform on the matrix values.
@@ -150,8 +139,8 @@ public final class TransformSeparatorTest extends TestCase {
         s.addTargetDimensions(0, 2);
         s.addSourceDimensionRange(0, 3);
         assertMatrixEquals("transform", matrix, ((LinearTransform) s.separate()).getMatrix(), STRICT);
-        assertArrayEquals("sourceDimensions", new int[] {0, 1, 2}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0, 2},    s.getTargetDimensions());
+        assertArrayEquals(new int[] {0, 1, 2}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 2},    s.getTargetDimensions());
         /*
          * Filter only source dimensions. Do not specify any target dimensions for now.
          * TransformSeparator needs to examine the matrix values and drop all target dimensions
@@ -164,8 +153,8 @@ public final class TransformSeparatorTest extends TestCase {
         s.clear();
         s.addSourceDimensions(1, 2);
         assertMatrixEquals("transform", matrix, ((LinearTransform) s.separate()).getMatrix(), STRICT);
-        assertArrayEquals("sourceDimensions", new int[] {1, 2}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {1},    s.getTargetDimensions());
+        assertArrayEquals(new int[] {1, 2}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {1},    s.getTargetDimensions());
         /*
          * Filter both source and target dimensions. Source dimensions 0 and 2 allow the target dimensions 0 and 2
          * (target dimension 1 is discarded because it depends on source dimension 1).  Then the target dimensions
@@ -179,8 +168,8 @@ public final class TransformSeparatorTest extends TestCase {
         s.addSourceDimensions(0, 2);
         s.addTargetDimensions(0);
         assertMatrixEquals("transform", matrix, ((LinearTransform) s.separate()).getMatrix(), STRICT);
-        assertArrayEquals("sourceDimensions", new int[] {0, 2}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0},    s.getTargetDimensions());
+        assertArrayEquals(new int[] {0, 2}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0},    s.getTargetDimensions());
         /*
          * Try again, but with the addition of a target dimension that TransformSeparator cannot keep.
          * It shall cause an exception to be thrown.
@@ -203,8 +192,8 @@ public final class TransformSeparatorTest extends TestCase {
             0, 0, 0, 1
         });
         assertMatrixEquals("transform", matrix, ((LinearTransform) s.separate()).getMatrix(), STRICT);
-        assertArrayEquals("sourceDimensions", new int[] {0, 1, 2}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0, 1},    s.getTargetDimensions());
+        assertArrayEquals(new int[] {0, 1, 2}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 1},    s.getTargetDimensions());
     }
 
     /**
@@ -235,8 +224,8 @@ public final class TransformSeparatorTest extends TestCase {
             0, 0, 1);
 
         tr = s.separate();
-        assertArrayEquals("sourceDimensions", new int[] {0, 1}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0, 1}, s.getTargetDimensions());
+        assertArrayEquals(new int[] {0, 1}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 1}, s.getTargetDimensions());
         assertMatrixEquals("transform", matrix, ((LinearTransform) tr).getMatrix(), STRICT);
         /*
          * Below is the less intuitive case. When asking for the first two dimensions, we usually expect the
@@ -253,8 +242,8 @@ public final class TransformSeparatorTest extends TestCase {
             0, 0, 1});
 
         tr = s.separate();
-        assertArrayEquals("sourceDimensions", new int[] {0, 1   }, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0, 1, 2}, s.getTargetDimensions());
+        assertArrayEquals(new int[] {0, 1   }, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 1, 2}, s.getTargetDimensions());
         assertMatrixEquals("transform", matrix, ((LinearTransform) tr).getMatrix(), STRICT);
     }
 
@@ -295,9 +284,9 @@ public final class TransformSeparatorTest extends TestCase {
         s.addSourceDimensions(0, 1);
         s.addTargetDimensions(0, 1);
         final Iterator<MathTransform> it = MathTransforms.getSteps(s.separate()).iterator();
-        assertInstanceOf("normalize",   LinearTransform.class,             it.next());
-        assertInstanceOf("transform",   EllipsoidToCentricTransform.class, it.next());
-        assertInstanceOf("denormalize", LinearTransform.class,             it.next());
+        assertInstanceOf(LinearTransform.class,             it.next(), "normalize");
+        assertInstanceOf(EllipsoidToCentricTransform.class, it.next(), "transform");
+        assertInstanceOf(LinearTransform.class,             it.next(), "denormalize");
         assertFalse(it.hasNext());
     }
 
@@ -319,9 +308,9 @@ public final class TransformSeparatorTest extends TestCase {
         /*
          * Trivial case: no dimension specified, we should get the transform unchanged.
          */
-        assertSame("transform", s.transform, s.separate());
-        assertArrayEquals("sourceDimensions", new int[] {0, 1, 2, 3, 4, 5, 6},    s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {0, 1, 2, 3, 4, 5, 6, 7}, s.getTargetDimensions());
+        assertSame(s.transform, s.separate());
+        assertArrayEquals(new int[] {0, 1, 2, 3, 4, 5, 6},    s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 1, 2, 3, 4, 5, 6, 7}, s.getTargetDimensions());
         /*
          * Filter only target dimensions. If the requested indices overlap the pass-through transform,
          * TransformSeparator will just concatenate a matrix after the transform for dropping dimensions.
@@ -336,8 +325,8 @@ public final class TransformSeparatorTest extends TestCase {
         s.addTargetDimensions(1, 2, 7);
         s.addSourceDimensionRange(0, 7);
         MathTransform result = s.separate();
-        assertArrayEquals("sourceDimensions", new int[] {0, 1, 2, 3, 4, 5, 6}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {1, 2, 7}, s.getTargetDimensions());
+        assertArrayEquals(new int[] {0, 1, 2, 3, 4, 5, 6}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {1, 2, 7}, s.getTargetDimensions());
         final Random random = TestUtilities.createRandomNumberGenerator();
         compare(s.transform, MathTransforms.linear(expected), result, random);
         /*
@@ -354,9 +343,9 @@ public final class TransformSeparatorTest extends TestCase {
         s.addTargetDimensions(1, 5, 7);
         s.addSourceDimensionRange(0, 7);
         result = s.separate();
-        assertArrayEquals ("sourceDimensions", new int[] {0, 1, 2, 3, 4, 5, 6}, s.getSourceDimensions());
-        assertArrayEquals ("targetDimensions", new int[] {1, 5, 7}, s.getTargetDimensions());
-        assertInstanceOf  ("separate()", LinearTransform.class, result);
+        assertArrayEquals (new int[] {0, 1, 2, 3, 4, 5, 6}, s.getSourceDimensions());
+        assertArrayEquals (new int[] {1, 5, 7}, s.getTargetDimensions());
+        assertInstanceOf  (LinearTransform.class, result);
         assertMatrixEquals("separate().transform2", expected, ((LinearTransform) result).getMatrix(), STRICT);
         /*
          * Filter source dimensions. If we ask only for dimensions not in the pass-through transform,
@@ -370,9 +359,9 @@ public final class TransformSeparatorTest extends TestCase {
         s.clear();
         s.addSourceDimensions(0, 6);
         result = s.separate();
-        assertArrayEquals ("sourceDimensions", new int[] {0, 6}, s.getSourceDimensions());
-        assertArrayEquals ("targetDimensions", new int[] {0, 7}, s.getTargetDimensions());
-        assertInstanceOf  ("separate()", LinearTransform.class, result);
+        assertArrayEquals (new int[] {0, 6}, s.getSourceDimensions());
+        assertArrayEquals (new int[] {0, 7}, s.getTargetDimensions());
+        assertInstanceOf  (LinearTransform.class, result);
         assertMatrixEquals("separate().transform2", expected, ((LinearTransform) result).getMatrix(), STRICT);
         /*
          * Filter source dimensions, now with overlapping in the pass-through transform.
@@ -381,19 +370,19 @@ public final class TransformSeparatorTest extends TestCase {
         s.clear();
         s.addSourceDimensions(1, 2, 3, 4, 5);
         result = s.separate();
-        assertArrayEquals("sourceDimensions", new int[] {1, 2, 3, 4, 5}, s.getSourceDimensions());
-        assertArrayEquals("targetDimensions", new int[] {1, 2, 3, 4, 5, 6}, s.getTargetDimensions());
-        assertInstanceOf ("separate()", PassThroughTransform.class, result);
-        assertSame  ("subTransform",  nonLinear, ((PassThroughTransform) result).subTransform);
-        assertEquals("firstAffectedCoordinate", 1, ((PassThroughTransform) result).firstAffectedCoordinate);
-        assertEquals("numTrailingCoordinates",  2, ((PassThroughTransform) result).numTrailingCoordinates);
+        assertArrayEquals(new int[] {1, 2, 3, 4, 5}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {1, 2, 3, 4, 5, 6}, s.getTargetDimensions());
+        assertInstanceOf (PassThroughTransform.class, result);
+        assertSame  (nonLinear, ((PassThroughTransform) result).subTransform);
+        assertEquals(1, ((PassThroughTransform) result).firstAffectedCoordinate);
+        assertEquals(2, ((PassThroughTransform) result).numTrailingCoordinates);
     }
 
     /**
      * Compares coordinate computed by a reference with coordinates computed by the transform to test.
      * We use this method when we cannot easily analyze the {@link MathTransform} created by the test
      * case, for example because it may have been rearranged in arbitrary ways for optimization purpose
-     * (e.g. {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}).
+     * (e.g. {@link PassThroughTransform#tryConcatenate(AbstractMathTransform.Joiner)}).
      *
      * @param  tr1     first half of the transform to use as a reference.
      * @param  tr2     second half of the transform to use as a reference.
@@ -441,16 +430,16 @@ public final class TransformSeparatorTest extends TestCase {
                            MathTransforms.getMatrix(sep.separate()), STRICT);
         sep.clear();
         sep.addSourceDimensionRange(2, 5);
-        assertSame("subTransform", nonLinear, sep.separate());
+        assertSame(nonLinear, sep.separate());
 
         sep.clear();
         sep.addSourceDimensionRange(1, 5);
         MathTransform mt = sep.separate();
-        assertInstanceOf("separate()", PassThroughTransform.class, mt);
+        assertInstanceOf(PassThroughTransform.class, mt);
         final PassThroughTransform ps = ((PassThroughTransform) mt);
-        assertEquals("firstAffectedCoordinate", 1, ps.firstAffectedCoordinate);
-        assertEquals("numTrailingCoordinates",  0, ps.numTrailingCoordinates);
-        assertSame  ("subTransform",    nonLinear, ps.subTransform);
+        assertEquals(1, ps.firstAffectedCoordinate);
+        assertEquals(0, ps.numTrailingCoordinates);
+        assertSame(nonLinear, ps.subTransform);
     }
 
     /**
@@ -469,7 +458,7 @@ public final class TransformSeparatorTest extends TestCase {
         final TransformSeparator sep = new TransformSeparator(passthrough2);
         sep.addSourceDimensionRange(3, 7);
         MathTransform mt = sep.separate();
-        assertInstanceOf("separate()", ConcatenatedTransform.class, mt);
+        assertInstanceOf(ConcatenatedTransform.class, mt);
         assertMatrixEquals("Leading passthrough dimensions", Matrices.create(5, 5, new double[] {
             3, 0, 0, 0, 0,
             0, 2, 0, 0, 0,
@@ -478,11 +467,11 @@ public final class TransformSeparatorTest extends TestCase {
             0, 0, 0, 0, 1}), MathTransforms.getMatrix(((ConcatenatedTransform) mt).transform1), STRICT);
 
         mt = ((ConcatenatedTransform) mt).transform2;
-        assertInstanceOf("subTransform", PassThroughTransform.class, mt);
+        assertInstanceOf(PassThroughTransform.class, mt);
         final PassThroughTransform ps = ((PassThroughTransform) mt);
-        assertEquals("firstAffectedCoordinate", 1, ps.firstAffectedCoordinate);
-        assertEquals("numTrailingCoordinates",  0, ps.numTrailingCoordinates);
-        assertSame  ("subTransform",    nonLinear, ps.subTransform);
+        assertEquals(1, ps.firstAffectedCoordinate);
+        assertEquals(0, ps.numTrailingCoordinates);
+        assertSame(nonLinear, ps.subTransform);
     }
 
     /**
@@ -502,7 +491,7 @@ public final class TransformSeparatorTest extends TestCase {
          */
         TransformSeparator s = new TransformSeparator(tr);
         s.addSourceDimensionRange(0, tr.getSourceDimensions());
-        assertSame("No source dimensions should be trimmed if not requested.", tr, s.separate());
+        assertSame(tr, s.separate(), "No source dimensions should be trimmed if not requested.");
         assertArrayEquals(new int[] {0, 1, 2}, s.getSourceDimensions());
         assertArrayEquals(new int[] {0, 1   }, s.getTargetDimensions());
         /*
@@ -514,7 +503,7 @@ public final class TransformSeparatorTest extends TestCase {
             0,   0,     1);
         s.clear();
         MathTransform reduced = s.separate();
-        assertNotEquals("separate()", tr, reduced);
+        assertNotEquals(tr, reduced);
         assertArrayEquals(new int[] {0, 1}, s.getSourceDimensions());
         assertArrayEquals(new int[] {0, 1}, s.getTargetDimensions());
         assertMatrixEquals("separate()", expected, MathTransforms.getMatrix(reduced), STRICT);
@@ -528,7 +517,7 @@ public final class TransformSeparatorTest extends TestCase {
 
         s = new TransformSeparator(tr);
         reduced = s.separate();
-        assertNotEquals("separate()", tr, reduced);
+        assertNotEquals(tr, reduced);
         assertArrayEquals(new int[] {1, 2}, s.getSourceDimensions());
         assertArrayEquals(new int[] {0, 1}, s.getTargetDimensions());
         assertMatrixEquals("separate()", new Matrix3(

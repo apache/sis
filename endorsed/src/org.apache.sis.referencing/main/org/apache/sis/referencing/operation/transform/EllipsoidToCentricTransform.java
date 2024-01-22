@@ -95,7 +95,7 @@ import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetw
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.7
  */
 public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
@@ -921,29 +921,27 @@ next:   while (--numPts >= 0) {
          * </ul>
          */
         @Override
-        protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-                final MathTransformFactory factory) throws FactoryException
-        {
-            if (!applyOtherFirst && forward.withHeight && other instanceof LinearTransform && other.getTargetDimensions() == 2) {
-                /*
-                 * Found a 3×4 matrix after this transform. We can reduce to a 3×3 matrix only if no dimension
-                 * use the column that we are about to drop (i.e. all coefficients in that column are zero).
-                 */
-                Matrix matrix = ((LinearTransform) other).getMatrix();
-                if (matrix.getElement(0,2) == 0 &&
-                    matrix.getElement(1,2) == 0 &&
-                    matrix.getElement(2,2) == 0)
-                {
-                    matrix = MatrixSIS.castOrCopy(matrix).removeColumns(2, 3);
-                    final MathTransform tr2D = forward.create2D().inverse();
-                    if (factory != null) {
-                        return factory.createConcatenatedTransform(tr2D, factory.createAffineTransform(matrix));
-                    } else {
-                        return ConcatenatedTransform.create(tr2D, MathTransforms.linear(matrix), factory);
+        protected void tryConcatenate(final Joiner context) throws FactoryException {
+            if (forward.withHeight) {
+                Matrix matrix = MathTransforms.getMatrix(context.getTransform(+1).orElse(null));
+                if (matrix != null && matrix.getNumRow() == 3) {
+                    /*
+                     * Found a 3×4 matrix after this transform. We can reduce to a 3×3 matrix only if no dimension
+                     * use the column that we are about to drop (i.e. all coefficients in that column are zero).
+                     */
+                    if (matrix.getElement(0,2) == 0 &&
+                        matrix.getElement(1,2) == 0 &&
+                        matrix.getElement(2,2) == 0)
+                    {
+                        matrix = MatrixSIS.castOrCopy(matrix).removeColumns(2, 3);
+                        final MathTransform tr2D = forward.create2D().inverse();
+                        MathTransform next = context.factory.createAffineTransform(matrix);
+                        context.replace(+1, context.factory.createConcatenatedTransform(tr2D, next));
+                        return;
                     }
                 }
             }
-            return super.tryConcatenate(applyOtherFirst, other, factory);
+            super.tryConcatenate(context);
         }
 
         /**
@@ -1000,33 +998,32 @@ next:   while (--numPts >= 0) {
      *       instead of a transform based on a matrix of size 4×3.</li>
      * </ul>
      *
-     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
+     * @param  context  information about the neighbor transforms, and the object where to set the result.
      * @throws FactoryException if an error occurred while combining the transforms.
      */
     @Override
-    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-            final MathTransformFactory factory) throws FactoryException
-    {
-        if (applyOtherFirst && withHeight && other instanceof LinearTransform && other.getSourceDimensions() == 2) {
-            /*
-             * Found a 4×3 matrix before this transform. We can reduce to a 3×3 matrix only if the row that we are
-             * about to drop unconditionally set the height to zero (i.e. all coefficients in that row are zero).
-             */
-            Matrix matrix = ((LinearTransform) other).getMatrix();
-            if (matrix.getElement(2,0) == 0 &&
-                matrix.getElement(2,1) == 0 &&
-                matrix.getElement(2,2) == 0)
-            {
-                matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);
-                final MathTransform tr2D = create2D();
-                if (factory != null) {
-                    return factory.createConcatenatedTransform(factory.createAffineTransform(matrix), tr2D);
-                } else {
-                    return ConcatenatedTransform.create(MathTransforms.linear(matrix), tr2D, factory);
+    protected void tryConcatenate(final Joiner context) throws FactoryException {
+        if (withHeight) {
+            final MathTransform other = context.getTransform(-1).orElse(null);
+            if (other instanceof LinearTransform && other.getSourceDimensions() == 2) {
+                /*
+                 * Found a 4×3 matrix before this transform. We can reduce to a 3×3 matrix only if the row that we are
+                 * about to drop unconditionally set the height to zero (i.e. all coefficients in that row are zero).
+                 */
+                Matrix matrix = ((LinearTransform) other).getMatrix();
+                if (matrix.getElement(2,0) == 0 &&
+                    matrix.getElement(2,1) == 0 &&
+                    matrix.getElement(2,2) == 0)
+                {
+                    matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);
+                    final MathTransform tr2D = create2D();
+                    MathTransform next = context.factory.createAffineTransform(matrix);
+                    context.replace(-1, context.factory.createConcatenatedTransform(next, tr2D));
+                    return;
                 }
             }
         }
-        return super.tryConcatenate(applyOtherFirst, other, factory);
+        super.tryConcatenate(context);
     }
 
     /**

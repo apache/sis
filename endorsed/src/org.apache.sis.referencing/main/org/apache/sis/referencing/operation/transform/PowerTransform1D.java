@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.io.Serializable;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Numerics;
@@ -30,8 +29,8 @@ import org.apache.sis.util.internal.Numerics;
  * needs of the {@link ExponentialTransform1D#concatenateLog(LogarithmicTransform1D, boolean)}.
  * Future version may expand on that.
  *
- * <p>Before to make this class public (if we do), we need to revisit the class name, define parameters
- * and improve the {@link #tryConcatenate(boolean, MathTransform, MathTransformFactory)} method.</p>
+ * <p>Before to make this class public (if we do), we need to revisit the class name,
+ * define parameters and improve the {@link #tryConcatenate(Joiner)} method.</p>
  *
  * <h2>Serialization</h2>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -167,23 +166,20 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
 
     /**
      * Concatenates in an optimized way a {@link MathTransform} {@code other} to this {@code MathTransform}.
-     *
-     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this},
-     *                          or {@code false} if the transformation order is {@code this} followed by {@code other}.
-     * @param  other            the other math transform to (pre-)concatenate with this transform.
-     * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
-    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-            final MathTransformFactory factory) throws FactoryException
-    {
-        if (other instanceof PowerTransform1D) {
-            // Valid for both concatenation and pre-concatenation.
-            return create(power + ((PowerTransform1D) other).power);
-        }
+    protected void tryConcatenate(final Joiner context) throws FactoryException {
+        int relativeIndex = +1;
+        do {
+            final MathTransform other = context.getTransform(relativeIndex).orElse(null);
+            if (other instanceof PowerTransform1D) {
+                // Valid for both concatenation and pre-concatenation.
+                context.replace(relativeIndex, create(power + ((PowerTransform1D) other).power));
+                return;
+            }
+        } while ((relativeIndex = -relativeIndex) < 0);
         // TODO: more optimization could go here for logarithmic and exponential cases.
-        return super.tryConcatenate(applyOtherFirst, other, factory);
+        super.tryConcatenate(context);
     }
 
     /**

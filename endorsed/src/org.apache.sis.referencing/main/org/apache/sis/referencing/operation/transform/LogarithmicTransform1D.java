@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.io.Serializable;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -107,36 +106,36 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Concatenates in an optimized way a {@link MathTransform} {@code other} to this
-     * {@code MathTransform}. This implementation can optimize some concatenation with
-     * {@link LinearTransform1D} and {@link ExponentialTransform1D}.
-     *
-     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
-     *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
-     * @param  other            the other math transform to (pre-)concatenate with this transform.
-     * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
+     * Concatenates in an optimized way a neighbor math transform with this transform.
+     * This implementation does special cases for {@link LinearTransform1D} and {@link ExponentialTransform1D}.
      */
     @Override
-    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-            final MathTransformFactory factory) throws FactoryException
-    {
-        if (other instanceof LinearTransform1D) {
-            final LinearTransform1D linear = (LinearTransform1D) other;
-            if (applyOtherFirst) {
-                if (linear.offset == 0 && linear.scale > 0) {
-                    return create(base(), transform(linear.scale));
+    protected void tryConcatenate(final Joiner context) throws FactoryException {
+        MathTransform concatenation = null;
+        int relativeIndex = +1;
+        do {
+            final MathTransform other = context.getTransform(relativeIndex).orElse(null);
+            if (other instanceof LinearTransform1D) {
+                final LinearTransform1D linear = (LinearTransform1D) other;
+                if (relativeIndex < 0) {
+                    if (linear.offset == 0 && linear.scale > 0) {
+                        concatenation = create(base(), transform(linear.scale));
+                    }
+                } else {
+                    final double newBase = pow(1 / linear.scale);
+                    if (!Double.isNaN(newBase)) {
+                        concatenation = create(newBase, linear.transform(offset()));
+                    }
                 }
-            } else {
-                final double newBase = pow(1 / linear.scale);
-                if (!Double.isNaN(newBase)) {
-                    return create(newBase, linear.transform(offset()));
-                }
+            } else if (other instanceof ExponentialTransform1D) {
+                concatenation = ((ExponentialTransform1D) other).concatenateLog(this, -relativeIndex);
             }
-        } else if (other instanceof ExponentialTransform1D) {
-            return ((ExponentialTransform1D) other).concatenateLog(this, !applyOtherFirst);
-        }
-        return super.tryConcatenate(applyOtherFirst, other, factory);
+            if (concatenation != null) {
+                context.replace(relativeIndex, concatenation);
+                return;
+            }
+        } while ((relativeIndex = -relativeIndex) < 0);
+        super.tryConcatenate(context);
     }
 
     /**

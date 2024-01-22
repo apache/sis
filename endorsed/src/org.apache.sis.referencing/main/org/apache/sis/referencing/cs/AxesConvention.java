@@ -77,7 +77,7 @@ import org.apache.sis.measure.Units;
  * <h2>Note on axis order</h2>
  * The axis order is specified by the authority (typically a national agency) defining the Coordinate Reference System
  * (CRS). The order depends on the CRS type and the country defining the CRS. In the case of geographic CRS, the
- * (<var>latitude</var>, <var>longitude</var>) axis order is widely used by geographers and pilotes for centuries.
+ * (<var>latitude</var>, <var>longitude</var>) axis order is widely used by geographers and pilots for centuries.
  * However, software developers tend to consistently use the (<var>x</var>,<var>y</var>) order for every kind of CRS.
  * Those different practices resulted in contradictory definitions of axis order for almost every CRS of kind
  * {@code GeographicCRS}, for some {@code ProjectedCRS} in the South hemisphere (South Africa, Australia, <i>etc.</i>)
@@ -101,7 +101,7 @@ import org.apache.sis.measure.Units;
  * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @see AbstractCS#forConvention(AxesConvention)
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
@@ -255,9 +255,8 @@ public enum AxesConvention implements AxisFilter {
     RIGHT_HANDED,
 
     /**
-     * Axes having a <cite>wraparound</cite>
-     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning() range meaning} are
-     * shifted to their ranges of positive values. The units of measurement and range period (difference between
+     * Axes having a <cite>wraparound</cite> range meaning are shifted to their ranges of positive values.
+     * The units of measurement and range period (difference between
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMaximumValue() maximum} and
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMinimumValue() minimum value})
      * are unchanged.
@@ -272,7 +271,18 @@ public enum AxesConvention implements AxisFilter {
      * may need to move on the right side of the East hemisphere ([180 … 360]°).
      * Some geometries may need to be separated in two parts, and others may need to be merged.</p>
      *
+     * @see org.opengis.referencing.cs.CoordinateSystemAxis#getRangeMeaning()
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */
-    POSITIVE_RANGE;
+    POSITIVE_RANGE,
+
+    /**
+     * The axis order as they were specified in the original coordinate system.
+     * The first time that a {@code forConvention(…)} method is invoked on a new coordinate system (CS),
+     * a reference to that original CS is associated to this enumeration value and can be retrieved from
+     * any derived object.
+     *
+     * @since 1.5
+     */
+    ORIGINAL;
 }

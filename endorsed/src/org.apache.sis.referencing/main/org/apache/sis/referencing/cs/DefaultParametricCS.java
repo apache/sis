@@ -45,7 +45,7 @@ import org.opengis.referencing.cs.ParametricCS;
  * constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
@@ -60,15 +60,6 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -5588239024582484514L;
-
-    /**
-     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
-     * because it does not verify the number of axes.
-     */
-    private DefaultParametricCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        super(properties, axes);
-    }
 
     /**
      * Constructs a coordinate system from a set of properties.
@@ -111,18 +102,27 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
     }
 
     /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[])
+     */
+    private DefaultParametricCS(DefaultParametricCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
+    }
+
+    /**
      * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(ParametricCS)
      */
-    protected DefaultParametricCS(final ParametricCS cs) {
-        super(cs);
+    protected DefaultParametricCS(final ParametricCS original) {
+        super(original);
     }
 
     /**
@@ -170,10 +170,10 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
-            case 1: return new DefaultParametricCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 1);
+            case 1: return new DefaultParametricCS(this, name, axes);
+            default: throw unexpectedDimension(axes, 1, 1);
         }
     }
 

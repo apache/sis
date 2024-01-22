@@ -64,7 +64,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.7
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
@@ -1265,7 +1265,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Trims the namespace, if present. For example if this factory is an EPSG authority factory
      * and the specified code start with the {@code "EPSG:"} prefix, then the prefix is removed.
-     * Otherwise, the string is returned unchanged (except for leading and trailing spaces).
+     * Otherwise, the string is returned unchanged except for leading and trailing spaces which
+     * are removed, together with {@link Character#isIdentifierIgnorable(int) ignorable characters}.
      *
      * @param  code  the code to trim.
      * @return the code with the namespace part removed if that part matched one of the values given by
@@ -1273,7 +1274,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @since 0.8
      */
-    protected final String trimNamespace(final String code) {
+    protected final String trimNamespace(String code) {
+        code = CharSequences.trimIgnorables(code).toString();
         int s = code.indexOf(Constants.DEFAULT_SEPARATOR);
         if (s >= 0) {
             final int end   = CharSequences.skipTrailingWhitespaces(code, 0, s);

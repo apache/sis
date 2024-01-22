@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.io.Serializable;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Numerics;
@@ -211,51 +210,51 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     }
 
     /**
-     * Concatenates in an optimized way a {@link MathTransform} {@code other} to this
-     * {@code MathTransform}. This implementation can optimize some concatenation with
-     * {@link LinearTransform1D} and {@link LogarithmicTransform1D}.
-     *
-     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
-     *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
-     * @param  other            the other math transform to (pre-)concatenate with this transform.
-     * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
+     * Concatenates in an optimized way a neighbor math transform with this transform.
+     * This implementation does special cases for {@link LinearTransform1D} and {@link LogarithmicTransform1D}.
      */
     @Override
-    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-            final MathTransformFactory factory) throws FactoryException
-    {
-        if (other instanceof LinearTransform) {
-            final LinearTransform1D linear = (LinearTransform1D) other;
-            if (applyOtherFirst) {
-                final double newBase  = Math.pow(base, linear.scale);
-                final double newScale = Math.pow(base, linear.offset) * scale;
-                if (!Double.isNaN(newBase) && !Double.isNaN(newScale)) {
-                    return create(newBase, newScale);
+    protected void tryConcatenate(final Joiner context) throws FactoryException {
+        MathTransform concatenation = null;
+        int relativeIndex = +1;
+        do {
+            final MathTransform other = context.getTransform(relativeIndex).orElse(null);
+            if (other instanceof LinearTransform1D) {
+                final LinearTransform1D linear = (LinearTransform1D) other;
+                if (relativeIndex < 0) {
+                    final double newBase  = Math.pow(base, linear.scale);
+                    final double newScale = Math.pow(base, linear.offset) * scale;
+                    if (!Double.isNaN(newBase) && !Double.isNaN(newScale)) {
+                        concatenation = create(newBase, newScale);
+                    }
+                } else {
+                    if (linear.offset == 0) {
+                        concatenation = create(base, scale * linear.scale);
+                    }
                 }
-            } else {
-                if (linear.offset == 0) {
-                    return create(base, scale * linear.scale);
-                }
+            } else if (other instanceof LogarithmicTransform1D) {
+                concatenation = concatenateLog((LogarithmicTransform1D) other, relativeIndex);
             }
-        } else if (other instanceof LogarithmicTransform1D) {
-            return concatenateLog((LogarithmicTransform1D) other, applyOtherFirst);
-        }
-        return super.tryConcatenate(applyOtherFirst, other, factory);
+            if (concatenation != null) {
+                context.replace(relativeIndex, concatenation);
+                return;
+            }
+        } while ((relativeIndex = -relativeIndex) < 0);
+        super.tryConcatenate(context);
     }
 
     /**
      * Concatenates in an optimized way a {@link LogarithmicTransform1D} {@code other}
      * to this {@code ExponentialTransform1D}.
      *
-     * @param  other            the math transform to apply.
-     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
-     *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  other          the math transform to apply.
+     * @param  relativeIndex  -1 if the transformation order is {@code other} followed by {@code this}, or
+     *                        +1 if the transformation order is {@code this} followed by {@code other}.
      * @return the combined math transform, or {@code null} if no optimized combined transform is available.
      */
-    final MathTransform concatenateLog(final LogarithmicTransform1D other, final boolean applyOtherFirst) {
+    final MathTransform concatenateLog(final LogarithmicTransform1D other, final int relativeIndex) {
         final double newScale = lnBase / other.lnBase();
-        if (applyOtherFirst) {
+        if (relativeIndex < 0) {
             return MathTransforms.concatenate(PowerTransform1D.create(newScale),
                     LinearTransform1D.create(scale * Math.pow(base, other.offset()), null));
         } else {

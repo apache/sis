@@ -16,7 +16,6 @@
  */
 package org.apache.sis.map;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -59,24 +58,20 @@ import org.apache.sis.style.se1.Symbology;
 import org.apache.sis.style.se1.StyleFactory;
 import org.apache.sis.style.se1.Symbolizer;
 import org.apache.sis.style.se1.SemanticType;
-import org.apache.sis.portrayal.MapItem;
-import org.apache.sis.portrayal.MapLayer;
-import org.apache.sis.portrayal.MapLayers;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.util.iso.Names;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.apache.sis.test.TestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class SEPortrayerTest extends TestCase {
+public class SEPortrayerTest {
     /**
      * The factory to use for creating style elements.
      */

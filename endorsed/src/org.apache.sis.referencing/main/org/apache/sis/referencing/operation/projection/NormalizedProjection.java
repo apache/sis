@@ -17,12 +17,10 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.logging.Logger;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import static java.lang.Math.*;
@@ -36,7 +34,6 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.CharSequences;
@@ -46,8 +43,6 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
@@ -57,11 +52,9 @@ import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.system.Modules;
-import org.apache.sis.system.Loggers;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -890,110 +883,27 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         }
 
         /**
-         * Concatenates or pre-concatenates in an optimized way this projection with the given transform, if possible.
-         * If no optimization is available, returns {@code null}.
+         * Concatenates in an optimized way this reverse projection with its neighbor, if possible.
+         * This method delegates to {@link #tryInverseConcatenate(Joiner)}.
          */
         @Override
-        protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-                final MathTransformFactory factory) throws FactoryException
-        {
-            final Matrix m = getMiddleMatrix(this, other, applyOtherFirst);
-            if (m != null) {
-                /*
-                 * 'projectedSpace' values:
-                 *   - false if applyOtherFirst == false since we have (reverse projection) → (affine) → (projection).
-                 *   - true  if applyOtherFirst == true  since we have (projection) → (affine) → (reverse projection).
-                 */
-                return forward.tryConcatenate(applyOtherFirst, m, factory);
+        protected void tryConcatenate(final Joiner context) throws FactoryException {
+            if (!forward.tryInverseConcatenate(context)) {
+                super.tryConcatenate(context);
             }
-            return super.tryConcatenate(applyOtherFirst, other, factory);
         }
     }
 
     /**
-     * Concatenates or pre-concatenates in an optimized way this projection with the given transform, if possible.
-     * If transforms are concatenated in a (reverse projection) → (affine) → (projection) sequence where the
-     * (projection) and (reverse projection) steps are the {@linkplain #inverse() inverse} of each other,
-     * then in some particular case the sequence can be replaced by a single affine transform.
-     * If no such simplification is possible, this method returns {@code null}.
+     * Concatenates in an optimized way this projection with its neighbor, if possible.
+     * This method returns whether or not an optimization has been done.
      *
-     * @return the simplified (usually affine) transform, or {@code null} if no such optimization is available.
+     * @param  context  information about the neighbor transforms, and the object where to set the result.
      * @throws FactoryException if an error occurred while combining the transforms.
+     * @return whether or not an optimization has been done.
      */
-    @Override
-    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
-            final MathTransformFactory factory) throws FactoryException
-    {
-        final Matrix m = getMiddleMatrix(this, other, applyOtherFirst);
-        if (m != null) {
-            /*
-             * 'projectedSpace' values:
-             *   - false if applyOtherFirst == true  since we have (reverse projection) → (affine) → (projection).
-             *   - true  if applyOtherFirst == false since we have (projection) → (affine) → (reverse projection).
-             */
-            return tryConcatenate(!applyOtherFirst, m, factory);
-        }
-        return super.tryConcatenate(applyOtherFirst, other, factory);
-    }
-
-    /**
-     * Returns the concatenation of (inverse) → (affine) → (this) transforms, or {@code null} if none.
-     * The affine transform is applied in the geographic space with angular values in radians.
-     *
-     * <p>Above description is for the usual case where {@code projectedSpace} is {@code false}.
-     * If {@code true} (should be unusual), then the affine transform is rather applied in the
-     * projected space and the sequence to concatenate is (this) → (affine) → (inverse).</p>
-     *
-     * <p>Default implementation returns {@code null}. Subclasses should override if applicable.</p>
-     *
-     * @param  projectedSpace  {@code true} if affine transform is applied in projected instead of geographic space.
-     * @param  affine          the affine transform in the middle of (inverse) → (affine) → (this) transform sequence.
-     * @param  factory         the factory to use for creating new transform, or {@code null}.
-     * @return the optimized concatenation, or {@code null} if none.
-     */
-    MathTransform tryConcatenate(boolean projectedSpace, Matrix affine, MathTransformFactory factory)
-            throws FactoryException
-    {
-        return null;
-    }
-
-    /**
-     * If a sequence of 3 transforms are (reverse projection) → (affine) → (projection) where
-     * the (projection) and (reverse projection) steps are the inverse of each other, returns
-     * the matrix of the affine transform step. Otherwise returns {@code null}. This method
-     * accepts also (projection) → (affine) → (reverse projection) sequence, but such sequences
-     * should be much more unusual.
-     *
-     * @param  projection       either {@link NormalizedProjection} or {@link Inverse}.
-     * @param  other            the arbitrary transforms to be concatenated with the given projection.
-     * @param  applyOtherFirst  whether {@code other} is concatenated before {@code projection} or the converse.
-     * @return the 3×3 matrix of the affine transform step, or {@code null} if none.
-     */
-    private static Matrix getMiddleMatrix(final AbstractMathTransform projection, final MathTransform other,
-            final boolean applyOtherFirst)
-    {
-        final List<MathTransform> steps = MathTransforms.getSteps(other);
-        if (steps.size() == 2) {
-            final int oi = applyOtherFirst ? 0 : 1;
-            final MathTransform inverse = steps.get(oi);
-            if (inverse instanceof Inverse || inverse instanceof NormalizedProjection) try {
-                /*
-                 * In principle the equality check below should be sufficient. But above `instanceof` checks
-                 * are added for avoiding potentially costly calls to `inverse()` in other implementations.
-                 */
-                if (projection.equals(inverse.inverse(), ComparisonMode.IGNORE_METADATA)) {
-                    final Matrix m = MathTransforms.getMatrix(steps.get(oi ^ 1));
-                    if (Matrices.isAffine(m) && m.getNumRow() == DIMENSION+1 && m.getNumCol() == DIMENSION+1) {
-                        return m;
-                    }
-                }
-            } catch (NoninvertibleTransformException e) {
-                final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);   // Defined in base class but field is inaccessible.
-                final Class<?> caller = (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass();
-                Logging.recoverableException(LOGGER, caller, "tryConcatenate", e);
-            }
-        }
-        return null;
+    boolean tryInverseConcatenate(Joiner context) throws FactoryException {
+        return false;
     }
 
     /**
@@ -1053,8 +963,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             }
             case IGNORE_METADATA: {
                 /*
-                 * There is no need to compare both 'eccentricity' and 'eccentricitySquared' since the former
-                 * is computed from the latter. We are better to compare 'eccentricitySquared' since it is the
+                 * There is no need to compare both `eccentricity` and `eccentricitySquared` since the former
+                 * is computed from the latter. We are better to compare `eccentricitySquared` since it is the
                  * original value from which the other value is derived.
                  */
                 if (!Numerics.equals(eccentricitySquared, that.eccentricitySquared)) {

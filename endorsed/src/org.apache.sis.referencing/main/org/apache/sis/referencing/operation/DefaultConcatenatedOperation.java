@@ -38,6 +38,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.referencing.util.CoordinateOperations;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -170,8 +171,16 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
         final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
         final CoordinateReferenceSystem crs = initialize(properties, operations, flattened, mtFactory,
                 sourceCRS, (sourceCRS == null), (coordinateOperationAccuracy == null));
+
         if (targetCRS == null) {
             targetCRS = crs;
+        } else if (mtFactory instanceof DefaultMathTransformFactory) {
+            final var dmf = (DefaultMathTransformFactory) mtFactory;
+            final MathTransform t = dmf.createCoordinateSystemChange(
+                    crs.getCoordinateSystem(),
+                    targetCRS.getCoordinateSystem(),
+                    ReferencingUtilities.getEllipsoid(crs));
+            transform = dmf.createConcatenatedTransform(transform, t);
         }
         /*
          * At this point we should have flattened.size() >= 2, except if some operations
@@ -308,7 +317,10 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 }
             }
         }
-        verifyStepChaining(properties, operations.length, target, targetCRS, null);
+        if (!(mtFactory instanceof DefaultMathTransformFactory)) {
+            verifyStepChaining(properties, operations.length, target, targetCRS, null);
+            // Else verification will be done by the caller.
+        }
         return previous;
     }
 

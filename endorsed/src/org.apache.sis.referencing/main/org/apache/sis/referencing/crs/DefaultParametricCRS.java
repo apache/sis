@@ -20,13 +20,12 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.referencing.crs.AbstractCRS.isBaseCRS;
+import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.cs.ParametricCS;
@@ -51,7 +50,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
@@ -124,11 +123,20 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      */
     public DefaultParametricCRS(final Map<String,?> properties,
                                 final ParametricDatum datum,
-                                final ParametricCS    cs)
+                                final ParametricCS cs)
     {
         super(properties, cs);
-        ensureNonNull("datum", datum);
         this.datum = datum;
+        ArgumentChecks.ensureNonNull("datum", datum);
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
+     */
+    private DefaultParametricCRS(final DefaultParametricCRS original, final AbstractCS cs) {
+        super(original, null, cs);
+        datum = original.datum;
     }
 
     /**
@@ -212,10 +220,13 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultParametricCRS(properties, datum, (ParametricCS) cs);
+    final AbstractCRS createSameType(final AbstractCS cs) {
+        return new DefaultParametricCRS(this, cs);
     }
 
     /**

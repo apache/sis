@@ -53,7 +53,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createSphericalCS(String)
  *
@@ -66,15 +66,6 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 196295996465774477L;
-
-    /**
-     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
-     * because it does not verify the number of axes.
-     */
-    private DefaultSphericalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        super(properties, axes);
-    }
 
     /**
      * Constructs a three-dimensional coordinate system from a set of properties.
@@ -144,18 +135,27 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
     }
 
     /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[])
+     */
+    private DefaultSphericalCS(DefaultSphericalCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
+    }
+
+    /**
      * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(SphericalCS)
      */
-    protected DefaultSphericalCS(final SphericalCS cs) {
-        super(cs);
+    protected DefaultSphericalCS(final SphericalCS original) {
+        super(original);
     }
 
     /**
@@ -220,17 +220,18 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    @SuppressWarnings("fallthrough")
-    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
             case 2: {
+                final Map<String,?> properties = getPropertiesWithoutIdentifiers(name);
                 if (Units.isLinear(axes[0].getUnit()) || Units.isLinear(axes[1].getUnit())) {
-                    return new DefaultPolarCS(properties, axes);
+                    return new DefaultPolarCS(properties, axes[0], axes[1]);
+                } else {
+                    return new DefaultSphericalCS(properties, axes[0], axes[1]);
                 }
-                // Fall through
             }
-            case 3: return new DefaultSphericalCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 2);
+            case 3: return new DefaultSphericalCS(this, name, axes);
+            default: throw unexpectedDimension(axes, 2, 3);
         }
     }
 

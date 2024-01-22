@@ -65,7 +65,7 @@ final class CartesianToPolar extends CoordinateSystemTransform implements Serial
      * Output coordinates are in radians.
      */
     private CartesianToPolar() {
-        super("Cartesian to polar", "Cartesian to cylindrical", 2);
+        super("Cartesian to polar", "Cartesian to cylindrical", 2, new int[1], (byte) -1);
         context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION)
                .convertAfter(1, DoubleDouble.RADIANS_TO_DEGREES, null);
     }

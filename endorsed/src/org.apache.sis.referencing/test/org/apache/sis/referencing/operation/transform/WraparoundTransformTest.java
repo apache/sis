@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Map;
 import java.util.List;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.WraparoundApplicator;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
@@ -29,7 +28,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -75,14 +74,14 @@ public final class WraparoundTransformTest extends TestCase {
             45, -100 + 360, 90,             // Wraparound shall be applied.
             60,  -80,       70,             // No wraparound because already in [-90 … 270]° range.
             12,  300 - 360, 33              // Wraparound in opposite direction.
-        }, targets, STRICT);
+        }, targets);
 
         inverse.transform(sources, 0, targets, 0, 3);
         assertArrayEquals(new double[] {
             45, -100 + 360, 90,             // Wraparound shall be applied.
             60,  -80 + 360, 70,             // Idem.
             12,  300,       33,             // No wraparound because already in [ 20 … 380]° range.
-        }, targets, STRICT);
+        }, targets);
     }
 
     /**
@@ -138,13 +137,13 @@ public final class WraparoundTransformTest extends TestCase {
              6, 260,
             18, 160,
             27, 200,
-             9,  40}, pts, STRICT);
+             9,  40}, pts);
     }
 
     /**
      * Tests wraparound on two axes. We expect two instances of {@link WraparoundTransform} without linear
      * transform between them. The absence of separation between the two {@link WraparoundTransform}s is an
-     * indirect test of {@link WraparoundTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
+     * indirect test of {@link WraparoundTransform#tryConcatenate(AbstractMathTransform.Joiner)}.
      *
      * @throws TransformException if a coordinate cannot be computed.
      */

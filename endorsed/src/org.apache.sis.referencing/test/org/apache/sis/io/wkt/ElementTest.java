@@ -173,7 +173,7 @@ public final class ElementTest extends TestCase {
          * Tests error message.
          */
         final Element next = parse("B[6.5]");
-        ParseException e = assertThrows(ParseException.class, () -> next.pullInteger("forth"));
+        var e = assertThrows(ParseException.class, () -> next.pullInteger("forth"));
         assertEquals("Text “6.5” cannot be parsed as an object of type ‘Integer’.", e.getLocalizedMessage());
     }
 
@@ -212,7 +212,7 @@ public final class ElementTest extends TestCase {
          * Tests error message.
          */
         final Element next = parse("ConformanceResult[falseX]");
-        ParseException e = assertThrows(ParseException.class, () -> next.pullBoolean("pass"));
+        var e = assertThrows(ParseException.class, () -> next.pullBoolean("pass"));
         assertEquals("Missing a “pass” component in “ConformanceResult”.", e.getLocalizedMessage());
     }
 
@@ -243,7 +243,7 @@ public final class ElementTest extends TestCase {
     @Test
     public void testClose() throws ParseException {
         final Element element = parse("A[\"B\", \"C\"]");
-        ParseException e = assertThrows(ParseException.class, () -> element.close(null));
+        var e = assertThrows(ParseException.class, () -> element.close(null));
         assertEquals("Unexpected value “B” in “A” element.", e.getLocalizedMessage());
     }
 

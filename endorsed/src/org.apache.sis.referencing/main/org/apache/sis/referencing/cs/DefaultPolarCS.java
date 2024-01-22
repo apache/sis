@@ -48,7 +48,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultCylindricalCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPolarCS(String)
@@ -62,15 +62,6 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 3960197260975470951L;
-
-    /**
-     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
-     * because it does not verify the number of axes.
-     */
-    DefaultPolarCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        super(properties, axes);
-    }
 
     /**
      * Constructs a two-dimensional coordinate system from a set of properties.
@@ -117,18 +108,27 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
     }
 
     /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[])
+     */
+    private DefaultPolarCS(DefaultPolarCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
+    }
+
+    /**
      * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(PolarCS)
      */
-    protected DefaultPolarCS(final PolarCS cs) {
-        super(cs);
+    protected DefaultPolarCS(final PolarCS original) {
+        super(original);
     }
 
     /**
@@ -195,10 +195,10 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
-            case 2: return new DefaultPolarCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 2);
+            case 2: return new DefaultPolarCS(this, name, axes);
+            default: throw unexpectedDimension(axes, 2, 2);
         }
     }
 

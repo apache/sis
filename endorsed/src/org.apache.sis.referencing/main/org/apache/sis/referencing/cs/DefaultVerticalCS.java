@@ -58,7 +58,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
@@ -73,15 +73,6 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 1201155778896630499L;
-
-    /**
-     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
-     * because it does not verify the number of axes.
-     */
-    DefaultVerticalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        super(properties, axes);
-    }
 
     /**
      * Constructs a coordinate system from a set of properties.
@@ -124,18 +115,27 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
     }
 
     /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[])
+     */
+    private DefaultVerticalCS(DefaultVerticalCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
+    }
+
+    /**
      * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(VerticalCS)
      */
-    protected DefaultVerticalCS(final VerticalCS cs) {
-        super(cs);
+    protected DefaultVerticalCS(final VerticalCS original) {
+        super(original);
     }
 
     /**
@@ -205,10 +205,10 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
-            case 1: return new DefaultVerticalCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 1);
+            case 1: return new DefaultVerticalCS(this, name, axes);
+            default: throw unexpectedDimension(axes, 1, 1);
         }
     }
 

@@ -993,6 +993,72 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
+     * Returns a text with ignorable characters in Unicode identifier removed. While valid in identifiers,
+     * those {@linkplain Character#isIdentifierIgnorable(int) ignorable characters} are often non-displayed.
+     * An example of ignorable character is the zero-width space.
+     *
+     * <h4>Relationship with XML</h4>
+     * Unlike Unicode identifiers, ignorable characters are invalid in XML identifiers.
+     * This restriction avoids, for example, homograph attacks in domain name.
+     * So this method can be used for converting an Unicode identifier to an XML identifier,
+     * except for the characters listed below. Those characters are non-ignorable
+     * (so not removed by this method), but nevertheless invalid in XML identifiers.
+     * <ul>
+     *   <li>{@code µ} (U+00B5) — micro</li>
+     *   <li>{@code ª} (U+00AA) — feminine ordinal indicator</li>
+     *   <li>{@code º} (U+00BA) — masculine ordinal indicator</li>
+     *   <li>{@code ⁔} (U+2054) — inverted undertie</li>
+     * </ul>
+     *
+     * @param  text  the text from which to remove ignorable characters, or {@code null}.
+     * @return text with ignorable characters removed, or {@code null} if the given text was null.
+     *
+     * @see Character#isIdentifierIgnorable(int)
+     *
+     * @since 1.5
+     */
+    public static CharSequence trimIgnorables(final CharSequence text) {
+        if (text != null) {
+            /*
+             * First perform a quick check to see if there is any ignorable characters.
+             * We make this check because there is usually no such characters,
+             * so we will avoid the StringBuilder creation in the vast majority of times.
+             *
+             * Note that 'µ' and its friends are not ignorable, so we do not remove them.
+             * This method is aimed for `getUnicodeIdentifier`, not `getXmlIdentifier`.
+             */
+            final int length = text.length();
+            for (int i=0; i<length;) {
+                int c = codePointAt(text, i);
+                int n = Character.charCount(c);
+                if (Character.isIdentifierIgnorable(c)) {
+                    /*
+                     * Found an ignorable character. Create the buffer and copy non-ignorable characters.
+                     * Following algorithm is inefficient, since we fill the buffer character-by-character
+                     * (a more efficient approach would be to perform bulk appends). However, we presume
+                     * that this block will be rarely executed, so it is not worth to optimize it.
+                     */
+                    final StringBuilder buffer = new StringBuilder(length - n).append(text, 0, i);
+                    while ((i += n) < length) {
+                        c = codePointAt(text, i);
+                        n = Character.charCount(c);
+                        if (!Character.isIdentifierIgnorable(c)) {
+                            buffer.appendCodePoint(c);
+                        }
+                    }
+                    /*
+                     * No need to verify if the buffer is empty, because ignorable
+                     * characters are not legal Unicode identifier start.
+                     */
+                    return buffer.toString();
+                }
+                i += n;
+            }
+        }
+        return text;
+    }
+
+    /**
      * Trims the fractional part of the given formatted number, provided that it doesn't change
      * the value. This method assumes that the number is formatted in the US locale, typically
      * by the {@link Double#toString(double)} method.

@@ -37,7 +37,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.util.WKTKeywords;
@@ -112,7 +112,7 @@ import org.opengis.referencing.crs.ParametricCRS;
  * SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)
  *
@@ -131,7 +131,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * May be the same reference as {@link #singles}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at construction and unmarshalling time by {@link #setComponents(List)}</p>
+     * This field is set at construction time by {@link #setComponents(Map, List)} and at
+     * unmarshalling time by {@link #setXMLComponents(CoordinateReferenceSystem[])}.</p>
      */
     @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private List<? extends CoordinateReferenceSystem> components;
@@ -187,15 +188,16 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     public DefaultCompoundCRS(final Map<String,?> properties, final CoordinateReferenceSystem... components) {
         super(properties, createCoordinateSystem(properties, components));
-        setComponents(Arrays.asList(components));
-        /*
-         * 'singles' is computed by the above method call. Now verify that we do not have an ellipsoidal
-         * height with a geographic or projected CRS (see https://issues.apache.org/jira/browse/SIS-303).
-         * Note that this is already be done if the given array does not contain nested CompoundCRS.
-         */
-        if (singles != this.components) {
-            verify(properties, singles.toArray(SingleCRS[]::new));
-        }
+        setComponents(properties, Arrays.asList(components));
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #forConvention(AxesConvention)} method only.
+     */
+    private DefaultCompoundCRS(final DefaultCompoundCRS original, final CoordinateReferenceSystem[] components) {
+        super(original, null, createCoordinateSystem(null, components));
+        setComponents(null, Arrays.asList(components));
     }
 
     /**
@@ -241,7 +243,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * @param  components  the CRS components, usually singles but not necessarily.
      * @return the coordinate system for the given components.
      */
-    private static CoordinateSystem createCoordinateSystem(final Map<String,?> properties,
+    private static AbstractCS createCoordinateSystem(final Map<String,?> properties,
             final CoordinateReferenceSystem[] components)
     {
         ArgumentChecks.ensureNonNull("components", components);
@@ -276,7 +278,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             this.components = that.components;
             this.singles    = that.singles;
         } else {
-            setComponents(crs.getComponents());
+            setComponents(null, crs.getComponents());
         }
     }
 
@@ -337,13 +339,21 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Computes the {@link #components} and {@link #singles} fields from the given CRS list.
      * If the two lists have the same content, then the two fields will reference the same list.
      *
+     * @param  properties  properties of the compound CRS to construct, or {@code null} if unknown.
+     * @param  elements    components to set for the CRS.
+     *
      * @see #getComponents()
      */
-    private void setComponents(final List<? extends CoordinateReferenceSystem> crs) {
-        if (setSingleComponents(crs)) {
+    private void setComponents(final Map<String,?> properties, final List<? extends CoordinateReferenceSystem> elements) {
+        if (setSingleComponents(elements)) {
             components = singles;                           // Shares the same list.
         } else {
-            components = UnmodifiableArrayList.wrap(crs.toArray(CoordinateReferenceSystem[]::new));
+            components = UnmodifiableArrayList.wrap(elements.toArray(CoordinateReferenceSystem[]::new));
+            /*
+             * Verify that we do not have an ellipsoidal height with a geographic or projected CRS.
+             * https://issues.apache.org/jira/browse/SIS-303
+             */
+            verify(properties, singles.toArray(SingleCRS[]::new));
         }
     }
 
@@ -372,9 +382,9 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @see #getSingleComponents()
      */
-    private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> crs) {
-        final List<SingleCRS> flattened = new ArrayList<>(crs.size());
-        final boolean identical = ReferencingUtilities.getSingleComponents(crs, flattened);
+    private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> elements) {
+        final List<SingleCRS> flattened = new ArrayList<>(elements.size());
+        final boolean identical = ReferencingUtilities.getSingleComponents(elements, flattened);
         singles = UnmodifiableArrayList.wrap(flattened.toArray(SingleCRS[]::new));
         return identical;
     }
@@ -389,6 +399,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @SuppressWarnings("unchecked")
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final List<? extends CoordinateReferenceSystem> components = this.components;
         if (components instanceof CheckedContainer<?>) {
             final Class<?> type = ((CheckedContainer<?>) components).getElementType();
@@ -471,49 +482,51 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>If the given convention is {@link AxesConvention#DISPLAY_ORIENTED} or
-     * {@link AxesConvention#NORMALIZED}, then this method will also reorder the components
-     * with horizontal CRS (geodetic or projected) first, then vertical CRS, then temporal CRS.</p>
+     * Returns a compound CRS equivalent to this one but with axes rearranged according the given convention.
+     * This method first reorders the axes of each individual CRS {@linkplain #getComponents() component}.
+     * Then, if the given convention is {@link AxesConvention#DISPLAY_ORIENTED} or {@link AxesConvention#NORMALIZED},
+     * this method will also reorder the components with horizontal CRS (geodetic or projected) first,
+     * then vertical CRS, then temporal CRS.
      *
      * @return {@inheritDoc}
      */
     @Override
-    public synchronized DefaultCompoundCRS forConvention(final AxesConvention convention) {
+    public DefaultCompoundCRS forConvention(final AxesConvention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
-        DefaultCompoundCRS crs = (DefaultCompoundCRS) getCached(convention);
-        if (crs == null) {
-            crs = this;
-            boolean changed = false;
-            final boolean reorderCRS = convention.ordinal() <= AxesConvention.DISPLAY_ORIENTED.ordinal();
-            final List<? extends CoordinateReferenceSystem> components = reorderCRS ? singles : this.components;
-            final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[components.size()];
-            for (int i=0; i<newComponents.length; i++) {
-                CoordinateReferenceSystem component = components.get(i);
-                AbstractCRS m = castOrCopy(component);
-                if (m != (m = m.forConvention(convention))) {
-                    component = m;
-                    changed = true;
+        synchronized (forConvention) {
+            DefaultCompoundCRS crs = (DefaultCompoundCRS) forConvention.get(convention);
+            if (crs == null) {
+                crs = this;
+                boolean changed = false;
+                final boolean reorderCRS = convention.ordinal() <= AxesConvention.DISPLAY_ORIENTED.ordinal();
+                final List<? extends CoordinateReferenceSystem> elements = reorderCRS ? singles : components;
+                final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[elements.size()];
+                for (int i=0; i<newComponents.length; i++) {
+                    CoordinateReferenceSystem component = elements.get(i);
+                    AbstractCRS m = castOrCopy(component);
+                    if (m != (m = m.forConvention(convention))) {
+                        component = m;
+                        changed = true;
+                    }
+                    newComponents[i] = component;
                 }
-                newComponents[i] = component;
-            }
-            if (changed) {
-                if (reorderCRS) {
-                    Arrays.sort(newComponents, SubTypes.BY_TYPE);   // This array typically has less than 4 elements.
+                if (changed) {
+                    if (reorderCRS) {
+                        Arrays.sort(newComponents, SubTypes.BY_TYPE);   // This array typically has less than 4 elements.
+                    }
+                    crs = new DefaultCompoundCRS(crs, newComponents);
                 }
-                crs = new DefaultCompoundCRS(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), newComponents);
+                crs = (DefaultCompoundCRS) setCached(convention, crs);
             }
-            crs = (DefaultCompoundCRS) setCached(convention, crs);
+            return crs;
         }
-        return crs;
     }
 
     /**
      * Should never be invoked since we override {@link AbstractCRS#forConvention(AxesConvention)}.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+    final AbstractCRS createSameType(final AbstractCS cs) {
         throw new AssertionError();
     }
 
@@ -577,19 +590,19 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
         final Convention convention = formatter.getConvention();
-        final List<? extends CoordinateReferenceSystem> crs;
+        final List<? extends CoordinateReferenceSystem> elements;
         final boolean isStandardCompliant;
         final boolean isWKT1 = convention.majorVersion() == 1;
         if (isWKT1 || convention == Convention.INTERNAL) {
-            crs = getComponents();
+            elements = getComponents();
             isStandardCompliant = true;                     // WKT 1 does not put any restriction.
         } else {
-            crs = getSingleComponents();
-            isStandardCompliant = isStandardCompliant(crs);
+            elements = getSingleComponents();
+            isStandardCompliant = isStandardCompliant(elements);
         }
-        for (final CoordinateReferenceSystem element : crs) {
+        for (final CoordinateReferenceSystem component : elements) {
             formatter.newLine();
-            formatter.append(WKTUtilities.toFormattable(element));
+            formatter.append(WKTUtilities.toFormattable(component));
         }
         formatter.newLine();                                // For writing the ID[…] element on its own line.
         if (!isStandardCompliant) {
@@ -624,7 +637,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         singles    = List.of();
         /*
          * At least one component CRS is mandatory for SIS working. We do not verify their presence here
-         * because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * because the verification would have to be done in an `afterMarshal(…)` method and throwing an
          * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does
          * some verifications (indirectly, by testing for coordinate system existence).
          */
@@ -652,8 +665,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Invoked by JAXB for setting the components of this compound CRS.
      */
-    private void setXMLComponents(final CoordinateReferenceSystem[] crs) {
-        components = setSingleComponents(Arrays.asList(crs)) ? singles : UnmodifiableArrayList.wrap(crs);
-        setCoordinateSystem("coordinateSystem", createCoordinateSystem(null, crs));
+    private void setXMLComponents(final CoordinateReferenceSystem[] elements) {
+        components = setSingleComponents(Arrays.asList(elements)) ? singles : UnmodifiableArrayList.wrap(elements);
+        setCoordinateSystem("coordinateSystem", createCoordinateSystem(null, elements));
     }
 }

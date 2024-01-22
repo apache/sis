@@ -353,7 +353,7 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
         /*
          * Verify that we have no remaining marks, and finally compare stream content.
          */
-        IOException exception = assertThrows(IOException.class, () -> testedStream.reset());
+        var exception = assertThrows(IOException.class, () -> testedStream.reset());
         assertMessageContains(exception);
         assertStreamContentEquals();
     }

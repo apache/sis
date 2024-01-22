@@ -20,17 +20,17 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.datum.ImageDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -51,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.datum.DefaultImageDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageCRS(String)
@@ -127,8 +127,17 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
                            final AffineCS      cs)
     {
         super(properties, cs);
-        ensureNonNull("datum", datum);
         this.datum = datum;
+        ArgumentChecks.ensureNonNull("datum", datum);
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
+     */
+    private DefaultImageCRS(final DefaultImageCRS original, final AbstractCS cs) {
+        super(original, null, cs);
+        datum = original.datum;
     }
 
     /**
@@ -211,10 +220,13 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultImageCRS(properties, datum, (AffineCS) cs);
+    final AbstractCRS createSameType(final AbstractCS cs) {
+        return new DefaultImageCRS(this, cs);
     }
 
     /**

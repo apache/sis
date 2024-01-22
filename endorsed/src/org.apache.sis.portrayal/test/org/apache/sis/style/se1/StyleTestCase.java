@@ -21,8 +21,7 @@ import java.util.Optional;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -113,7 +112,7 @@ abstract class StyleTestCase extends TestCase {
      * @param  actual    the expression from which to test the value.
      */
     static <E> void assertLiteralEquals(final E expected, final Expression<?, ? extends E> actual) {
-        assertInstanceOf("expression", Literal.class, actual);
+        assertInstanceOf(Literal.class, actual);
         assertEquals(expected, actual.apply(null));
     }
 }

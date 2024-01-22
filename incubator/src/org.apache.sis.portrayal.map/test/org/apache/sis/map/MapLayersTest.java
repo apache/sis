@@ -14,24 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.portrayal;
+package org.apache.sis.map;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.sis.map.ListChangeEvent;
 import org.apache.sis.measure.NumberRange;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.apache.sis.test.TestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
  *
  * @author  Johann Sorel (Geomatys)
  */
-public final class MapLayersTest extends TestCase {
+public final class MapLayersTest {
     /**
      * Creates a new test case.
      */

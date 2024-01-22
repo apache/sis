@@ -50,7 +50,7 @@ public final class CartesianToPolarTest extends TransformTestCase {
      */
     @Test
     public void testConversion() throws FactoryException, TransformException {
-        transform = CartesianToPolar.INSTANCE.completeTransform(PolarToCartesianTest.factory());
+        transform = CartesianToPolar.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         tolerance = 1E-12;
         final double[][] data = PolarToCartesianTest.testData(false);
         verifyTransform(data[1], data[0]);
@@ -65,7 +65,7 @@ public final class CartesianToPolarTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testConversion")
     public void testCylindricalConversion() throws FactoryException, TransformException {
-        transform = CartesianToPolar.INSTANCE.passthrough(PolarToCartesianTest.factory());
+        transform = CartesianToPolar.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         tolerance = 1E-12;
         final double[][] data = PolarToCartesianTest.testData(true);
         verifyTransform(data[1], data[0]);
@@ -80,7 +80,7 @@ public final class CartesianToPolarTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testConversion")
     public void testDerivative() throws FactoryException, TransformException {
-        transform = CartesianToPolar.INSTANCE.completeTransform(PolarToCartesianTest.factory());
+        transform = CartesianToPolar.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6};
         tolerance = 1E-7;
         verifyDerivative(30, 60);
@@ -95,7 +95,7 @@ public final class CartesianToPolarTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testDerivative")
     public void testCylindricalDerivative() throws FactoryException, TransformException {
-        transform = CartesianToPolar.INSTANCE.passthrough(PolarToCartesianTest.factory());
+        transform = CartesianToPolar.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyDerivative(30, 60, 100);
@@ -110,7 +110,7 @@ public final class CartesianToPolarTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testDerivative")
     public void testConsistency() throws FactoryException, TransformException {
-        transform = CartesianToPolar.INSTANCE.completeTransform(PolarToCartesianTest.factory());
+        transform = CartesianToPolar.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6};
         tolerance = 2E-7;
         verifyInDomain(new double[] {-100, -100},      // Minimal coordinates
@@ -128,7 +128,7 @@ public final class CartesianToPolarTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testCylindricalDerivative")
     public void testCylindricalConsistency() throws FactoryException, TransformException {
-        transform = CartesianToPolar.INSTANCE.passthrough(PolarToCartesianTest.factory());
+        transform = CartesianToPolar.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 2E-7;
         verifyInDomain(new double[] {-100, -100, -100},      // Minimal coordinates

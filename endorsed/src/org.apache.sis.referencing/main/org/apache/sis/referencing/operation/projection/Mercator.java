@@ -40,7 +40,7 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
@@ -602,27 +602,52 @@ subst:  if (variant.spherical || eccentricity == 0) {
     }
 
     /**
-     * Invoked when {@link #tryConcatenate(boolean, MathTransform, MathTransformFactory)} detected a
-     * (inverse) → (affine) → (this) transforms sequence. If the affine transform in the middle does
-     * not change the latitude value, then we can take advantage of the fact that longitude conversion
-     * is linear.
+     * Concatenates in an optimized way the reverse projection with its neighbor, if possible.
+     * This optimization is symmetrical to the optimization done for the forward projection case.
+     *
+     * @param  context  information about the neighbor transforms, and the object where to set the result.
+     * @throws FactoryException if an error occurred while combining the transforms.
+     * @return whether or not an optimization has been done.
      */
     @Override
-    final MathTransform tryConcatenate(boolean projectedSpace, Matrix affine, MathTransformFactory factory)
-            throws FactoryException
-    {
-        /*
-         * Verify that the latitude row is an identity conversion except for the sign which is allowed to change
-         * (but no scale and no translation are allowed).  Ignore the longitude row because it just pass through
-         * this Mercator projection with no impact on any calculation.
-         */
-        if (affine.getElement(1,0) == 0 && affine.getElement(1, DIMENSION) == 0 && Math.abs(affine.getElement(1,1)) == 1) {
-            if (factory != null) {
-                return factory.createAffineTransform(affine);
-            } else {
-                return MathTransforms.linear(affine);
+    final boolean tryInverseConcatenate(Joiner context) throws FactoryException {
+        int relativeIndex = +1;
+        do {
+            final Matrix m = context.getMiddleMatrix(relativeIndex).orElse(null);
+            /*
+             * Verify that the latitude row is an identity conversion except for the sign which is allowed to change
+             * (but no scale and no translation are allowed). Ignore the longitude row because it just passes through
+             * this Mercator projection with no impact on any calculation.
+             */
+            if (m != null
+                    && Matrices.isAffine(m)
+                    && m.getNumRow() == DIMENSION+1
+                    && m.getNumCol() == DIMENSION+1
+                    && m.getElement(1, 0) == 0
+                    && m.getElement(1, DIMENSION) == 0
+                    && Math.abs(m.getElement(1,1)) == 1)
+            {
+                context.replace(relativeIndex, context.factory.createAffineTransform(m));
+                return true;
             }
+        } while ((relativeIndex = -relativeIndex) < 0);
+        return false;
+    }
+
+    /**
+     * Concatenates in an optimized way this projection with its neighbor, if possible.
+     * If the transforms are concatenated in a (projection) → (affine) → (reverse projection) sequence
+     * where the (projection) and (reverse projection) steps are the {@linkplain #inverse() inverse}
+     * of each other, and if the affine transform in the middle does not change the latitude value,
+     * then we can take advantage of the fact that longitude conversion is linear.
+     *
+     * @param  context  information about the neighbor transforms, and the object where to set the result.
+     * @throws FactoryException if an error occurred while combining the transforms.
+     */
+    @Override
+    protected final void tryConcatenate(final Joiner context) throws FactoryException {
+        if (!tryInverseConcatenate(context)) {
+            super.tryConcatenate(context);
         }
-        return super.tryConcatenate(projectedSpace, affine, factory);
     }
 }
