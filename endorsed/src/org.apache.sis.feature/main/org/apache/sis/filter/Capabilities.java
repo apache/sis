@@ -16,7 +16,6 @@
  */
 package org.apache.sis.filter;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
 import java.util.Set;
 import java.util.Collection;

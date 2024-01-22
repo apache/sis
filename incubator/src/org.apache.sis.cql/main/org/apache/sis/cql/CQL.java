@@ -16,7 +16,6 @@
  */
 package org.apache.sis.cql;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Duration;
 import java.time.Period;
 import java.util.List;

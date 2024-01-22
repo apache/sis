@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.maintenance;
 
-// Specific to the main and geoapi-3.1 branches:
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.feature.type.FeatureType;
 import org.apache.sis.xml.bind.gco.GO_CharacterString;

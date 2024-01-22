@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso;
 
-// Specific to the main and geoapi-3.1 branches:
 import java.net.URI;
 import java.net.URISyntaxException;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;

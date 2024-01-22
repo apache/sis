@@ -20,6 +20,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.measure.NumberRange;
+
+// Test dependencies
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

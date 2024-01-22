@@ -16,7 +16,6 @@
  */
 package org.apache.sis.cql;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Instant;
 import java.text.ParseException;
 import org.locationtech.jts.geom.Coordinate;
@@ -28,6 +27,8 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
 import org.junit.Test;
 import org.junit.Ignore;
 import static org.junit.Assert.*;

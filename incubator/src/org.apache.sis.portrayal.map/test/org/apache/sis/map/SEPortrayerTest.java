@@ -63,6 +63,8 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.util.iso.Names;
+
+// Test dependencies
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

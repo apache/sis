@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -41,6 +40,8 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
+
+// Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.xml.test;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
@@ -46,6 +45,8 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.system.Modules;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
+
+// Test dependencies
 import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
 
 
