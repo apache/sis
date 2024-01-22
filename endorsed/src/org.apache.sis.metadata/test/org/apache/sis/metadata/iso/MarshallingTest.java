@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso;
 
-// Specific to the geoapi-4.0 branch:
 import java.util.Date;
 import java.util.Locale;
 import java.util.List;
@@ -65,6 +64,8 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.metadata.xml.TestUsingFile;
+
+// Test dependencies
 import org.junit.Test;
 import static org.junit.Assert.*;
 

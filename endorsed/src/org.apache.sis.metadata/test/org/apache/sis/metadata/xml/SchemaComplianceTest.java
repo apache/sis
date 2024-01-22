@@ -16,11 +16,12 @@
  */
 package org.apache.sis.metadata.xml;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.nio.file.Path;
 import java.nio.file.Files;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.system.DataDirectory;
+
+// Test dependencies
 import org.junit.Test;
 import static org.junit.Assume.*;
 import org.apache.sis.test.TestCase;

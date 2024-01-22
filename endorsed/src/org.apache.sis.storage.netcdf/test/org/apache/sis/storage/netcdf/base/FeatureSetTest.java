@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.netcdf.base;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.util.Iterator;
@@ -36,6 +35,8 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+
+// Test dependencies
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.opengis.test.dataset.TestData;

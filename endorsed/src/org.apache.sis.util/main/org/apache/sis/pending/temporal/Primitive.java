@@ -16,7 +16,6 @@
  */
 package org.apache.sis.pending.temporal;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Duration;
 import org.opengis.temporal.RelativePosition;
 import org.opengis.temporal.TemporalGeometricPrimitive;

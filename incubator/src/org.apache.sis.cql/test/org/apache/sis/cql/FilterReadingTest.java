@@ -16,7 +16,6 @@
  */
 package org.apache.sis.cql;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
@@ -40,6 +39,8 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
+
+// Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.opengis.test.Assert.*;

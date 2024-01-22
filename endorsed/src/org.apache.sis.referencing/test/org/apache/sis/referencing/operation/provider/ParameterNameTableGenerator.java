@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -38,6 +37,8 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
+
+// Test dependencies
 import static org.junit.Assert.*;
 import org.apache.sis.test.ProjectDirectories;
 

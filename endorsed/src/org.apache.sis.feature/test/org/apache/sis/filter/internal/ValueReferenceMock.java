@@ -16,7 +16,6 @@
  */
 package org.apache.sis.filter.internal;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Map;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ValueReference;

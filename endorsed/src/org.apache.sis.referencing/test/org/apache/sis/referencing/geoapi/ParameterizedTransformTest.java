@@ -16,12 +16,13 @@
  */
 package org.apache.sis.referencing.geoapi;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+
+// Test dependencies
 import org.junit.After;
 import org.junit.Test;
 import static org.opengis.test.Assert.assertInstanceOf;

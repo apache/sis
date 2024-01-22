@@ -16,7 +16,6 @@
  */
 package org.apache.sis.cql;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Instant;
 import java.time.Duration;
 import java.time.Period;
@@ -37,6 +36,8 @@ import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
+
+// Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;

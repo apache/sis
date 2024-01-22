@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.report;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
@@ -58,6 +57,8 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
+
+// Test dependencies
 import static org.junit.Assert.*;
 import org.opengis.test.report.AuthorityCodesReport;
 
