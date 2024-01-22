@@ -21,7 +21,7 @@ import java.beans.PropertyChangeListener;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.measure.NumberRange;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
