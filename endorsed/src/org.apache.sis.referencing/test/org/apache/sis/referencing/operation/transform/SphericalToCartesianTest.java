@@ -16,13 +16,16 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.List;
 import static java.lang.StrictMath.*;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.MathTransformFactory;
 
 // Test dependencies
 import org.junit.Test;
+import org.junit.Before;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 
@@ -38,6 +41,11 @@ public final class SphericalToCartesianTest extends TransformTestCase {
      */
     public SphericalToCartesianTest() {
     }
+
+    /**
+     * Tolerance factor for verifying the conversion results.
+     */
+    static final double TOLERANCE = 1E-12;
 
     /**
      * Returns coordinate tuples in spherical coordinates and their equivalent in Cartesian coordinates.
@@ -76,22 +84,33 @@ public final class SphericalToCartesianTest extends TransformTestCase {
     }
 
     /**
-     * Returns the factory to use for testing purpose.
+     * Multiples all elements of the given array by the given scale factor.
+     * This is used when the test data are modified for testing concatenation.
      */
-    static MathTransformFactory factory() {
-        return DefaultMathTransformFactory.provider();
+    static void multiply(final double[] data, final double scale) {
+        for (int i=0; i<data.length; i++) {
+            data[i] *= scale;
+        }
+    }
+
+    /**
+     * Creates the transform instance to test.
+     *
+     * @throws FactoryException if the transform cannot be created.
+     */
+    @Before
+    public void createInstance() throws FactoryException {
+        transform = SphericalToCartesian.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
     }
 
     /**
      * Tests coordinate conversions.
      *
-     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    public void testConversion() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform(factory());
-        tolerance = 1E-12;
+    public void testConversion() throws TransformException {
+        tolerance = TOLERANCE;
         final double[][] data = testData();
         verifyTransform(data[0], data[1]);
     }
@@ -99,12 +118,10 @@ public final class SphericalToCartesianTest extends TransformTestCase {
     /**
      * Tests calculation of a transform derivative.
      *
-     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    public void testDerivative() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform(factory());
+    public void testDerivative() throws TransformException {
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyDerivative(30, 60, 100);
@@ -113,18 +130,37 @@ public final class SphericalToCartesianTest extends TransformTestCase {
     /**
      * Tests calculation of a transform derivative.
      *
-     * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     @DependsOnMethod({"testConversion", "testDerivative"})
-    public void testConsistency() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform(factory());
+    public void testConsistency() throws TransformException {
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyInDomain(new double[] {-180, -90,   0},       // Minimal coordinates
                        new double[] {+180, +90, 100},       // Maximal coordinates
                        new int[]    {  10,  10,  10},
                        TestUtilities.createRandomNumberGenerator());
+    }
+
+    /**
+     * Tests concatenation.
+     *
+     * @throws TransformException if a coordinate cannot be transformed.
+     */
+    @Test
+    @DependsOnMethod("testConversion")
+    public void testConcatenation() throws TransformException {
+        final double scale = 1000;
+        transform = MathTransforms.concatenate(transform, MathTransforms.scale(scale, scale, scale));
+        List<MathTransform> steps = MathTransforms.getSteps(transform);
+        assertEquals(2, steps.size());
+        assertTrue(steps.get(0) instanceof LinearTransform);
+        assertSame(SphericalToCartesian.INSTANCE, steps.get(1));
+
+        double[][] data = testData();
+        multiply(data[1], scale);
+        tolerance = TOLERANCE * scale;
+        verifyTransform(data[0], data[1]);
     }
 }

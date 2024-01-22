@@ -33,7 +33,7 @@
  * and units between two coordinate systems, or filtering axes.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/coordinateSystems.xsd",

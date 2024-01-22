@@ -48,7 +48,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoidalCS(String)
  *
@@ -61,16 +61,6 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -1452492488902329211L;
-
-    /**
-     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
-     * because it does not verify the number of axes.
-     */
-    private DefaultEllipsoidalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        super(properties, axes);
-        validateAxes(properties);
-    }
 
     /**
      * Constructs a two-dimensional coordinate system from a set of properties.
@@ -114,7 +104,6 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
                                 final CoordinateSystemAxis axis1)
     {
         super(properties, axis0, axis1);
-        validateAxes(properties);
     }
 
     /**
@@ -135,7 +124,15 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
                                 final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
-        validateAxes(properties);
+    }
+
+    /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[])
+     */
+    private DefaultEllipsoidalCS(DefaultEllipsoidalCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -145,12 +142,12 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(EllipsoidalCS)
      */
-    protected DefaultEllipsoidalCS(final EllipsoidalCS cs) {
-        super(cs);
+    protected DefaultEllipsoidalCS(final EllipsoidalCS original) {
+        super(original);
     }
 
     /**
@@ -196,7 +193,9 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      *
      * @param  properties  the properties given at construction time.
      */
-    private void validateAxes(final Map<String,?> properties) {
+    @Override
+    final void validate(final Map<String,?> properties) {
+        super.validate(properties);
         int i = super.getDimension();
         int n = i - 2;                      // Number of vertical axes allowed.
         while (--i >= 0) {
@@ -238,12 +237,12 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
-            case 1: return new DefaultVerticalCS(properties, axes);
+            case 1: return SubTypes.createOneDimensional(this, name, axes);
             case 2: // Fall through
-            case 3: return new DefaultEllipsoidalCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 1);
+            case 3: return new DefaultEllipsoidalCS(this, name, axes);
+            default: throw unexpectedDimension(axes, 1, 3);
         }
     }
 

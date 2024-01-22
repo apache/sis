@@ -51,7 +51,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @XmlType(name = "AffineCSType")
@@ -61,14 +61,6 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 7977674229369042440L;
-
-    /**
-     * Constructs a coordinate system of arbitrary dimension. This constructor is
-     * not public because {@code AffineCS} are restricted to 2 and 3 dimensions.
-     */
-    DefaultAffineCS(final Map<String,?> properties, final CoordinateSystemAxis[] axis) {
-        super(properties, axis);
-    }
 
     /**
      * Constructs a two-dimensional coordinate system from a set of properties.
@@ -134,18 +126,27 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     }
 
     /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[])
+     */
+    DefaultAffineCS(DefaultAffineCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
+    }
+
+    /**
      * Creates a new coordinate system with the same values as the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(AffineCS)
      */
-    protected DefaultAffineCS(final AffineCS cs) {
-        super(cs);
+    protected DefaultAffineCS(final AffineCS original) {
+        super(original);
     }
 
     /**
@@ -218,11 +219,11 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * This method shall be overridden by all {@code AffineCS} subclasses in this package.
      */
     @Override
-    AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
             case 2: // Fall through
-            case 3: return new DefaultAffineCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 2);
+            case 3: return new DefaultAffineCS(this, name, axes);
+            default: throw unexpectedDimension(axes, 2, 3);
         }
     }
 

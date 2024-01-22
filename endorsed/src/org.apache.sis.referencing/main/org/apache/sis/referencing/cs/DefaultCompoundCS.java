@@ -18,16 +18,15 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
-import static java.util.Collections.singletonMap;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
-import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.util.Utilities.deepEquals;
 
 
 /**
@@ -50,7 +49,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @XmlTransient
@@ -106,6 +105,15 @@ public class DefaultCompoundCS extends AbstractCS {
     }
 
     /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     * This is used for the {@link #forConvention(AxesConvention)} implementation only.
+     */
+    private DefaultCompoundCS(final DefaultCompoundCS original, final CoordinateSystem[] components) {
+        super(original, null, getAxes(components));
+        this.components = UnmodifiableArrayList.wrap(components);
+    }
+
+    /**
      * Constructs a compound coordinate system from a sequence of coordinate systems.
      * A default name for this CS will be inferred from the names of all specified CS.
      *
@@ -123,7 +131,7 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @Workaround(library="JDK", version="1.7")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
-        super(singletonMap(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
+        super(Map.of(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
         this.components = UnmodifiableArrayList.wrap(components);
     }
 
@@ -131,10 +139,10 @@ public class DefaultCompoundCS extends AbstractCS {
      * Returns a clone of the given array, making sure that it contains only non-null elements.
      */
     private static CoordinateSystem[] clone(CoordinateSystem[] components) {
-        ensureNonNull("components", components);
+        ArgumentChecks.ensureNonNull("components", components);
         components = components.clone();
         for (int i=0; i<components.length; i++) {
-            ensureNonNullElement("components", i, components[i]);
+            ArgumentChecks.ensureNonNullElement("components", i, components[i]);
         }
         return components;
     }
@@ -170,6 +178,39 @@ public class DefaultCompoundCS extends AbstractCS {
         return components;          // Unmodifiable.
     }
 
+    /**
+     * Returns a compound CS equivalent to this one but with axes rearranged according the given convention.
+     * This method reorders the axes of each individual coordinate system {@linkplain #getComponents() component}.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultCompoundCS forConvention(final AxesConvention convention) {
+        ArgumentChecks.ensureNonNull("convention", convention);
+        synchronized (forConvention) {
+            DefaultCompoundCS cs = (DefaultCompoundCS) forConvention.get(convention);
+            if (cs == null) {
+                cs = this;
+                boolean changed = false;
+                final CoordinateSystem[] newComponents = new CoordinateSystem[components.size()];
+                for (int i=0; i<newComponents.length; i++) {
+                    CoordinateSystem component = components.get(i);
+                    AbstractCS m = castOrCopy(component);
+                    if (m != (m = m.forConvention(convention))) {
+                        component = m;
+                        changed = true;
+                    }
+                    newComponents[i] = component;
+                }
+                if (changed) {
+                    cs = new DefaultCompoundCS(cs, newComponents);
+                }
+                cs = (DefaultCompoundCS) setCached(convention, cs);
+            }
+            return cs;
+        }
+    }
+
     /*
      * Do not override createForAxes(…) and forConvention(…) because we cannot create a new DefaultCompoundCS
      * without knownledge of the CoordinateSystem components to give to it. It would be possible to recursively
@@ -194,6 +235,6 @@ public class DefaultCompoundCS extends AbstractCS {
         if (!(object instanceof DefaultCompoundCS && super.equals(object, mode))) {
             return false;
         }
-        return deepEquals(components, ((DefaultCompoundCS) object).components, mode);
+        return Utilities.deepEquals(components, ((DefaultCompoundCS) object).components, mode);
     }
 }

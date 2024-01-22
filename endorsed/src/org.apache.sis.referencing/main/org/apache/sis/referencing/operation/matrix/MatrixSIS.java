@@ -145,6 +145,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
 
     /**
      * Returns the given matrix as an extended precision matrix.
+     *
+     * @see ExtendedPrecisionMatrix#castOrWrap(Matrix)
      */
     static ExtendedPrecisionMatrix asExtendedPrecision(final Matrix matrix) {
         if (matrix instanceof UnmodifiableMatrix) {

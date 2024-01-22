@@ -74,10 +74,10 @@ public final class DefaultPolarCSTest extends TestCase {
                 radius);
 
         DefaultPolarCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
-        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Right-handed", normalized,
-                AxisDirections.CLOCKWISE,                       // Interchanged (r,θ) order for making right handed.
+                AxisDirections.CLOCKWISE,
                 AxisDirection.SOUTH);
+        assertSame(cs, normalized);
 
         normalized = cs.forConvention(AxesConvention.NORMALIZED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);

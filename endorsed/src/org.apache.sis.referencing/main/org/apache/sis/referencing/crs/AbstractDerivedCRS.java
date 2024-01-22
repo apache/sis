@@ -34,22 +34,21 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.GeodeticException;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.xml.bind.referencing.CC_Conversion;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.xml.bind.referencing.CC_Conversion;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.system.Semaphores;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.Utilities.deepEquals;
 
 
 /**
- * A coordinate reference system that is defined by its coordinate
- * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} from another CRS
- * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
+ * A coordinate reference system that is defined by its coordinate conversion from another CRS.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  *
@@ -109,6 +108,16 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     }
 
     /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
+     */
+    AbstractDerivedCRS(final AbstractDerivedCRS<C> original, final AbstractCS derivedCS) {
+        super(original, null, derivedCS);
+        final Conversion conversion = original.conversionFromBase;
+        conversionFromBase = createConversionFromBase(null, (SingleCRS) conversion.getSourceCRS(), conversion);
+    }
+
+    /**
      * For {@link DefaultDerivedCRS#DefaultDerivedCRS(Map, SingleCRS, CoordinateReferenceSystem, OperationMethod,
      * MathTransform, CoordinateSystem)} constructor only (<strong>not legal for {@code ProjectedCRS}</strong>).
      */
@@ -150,7 +159,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * (through {@link DefaultConversion}) the {@link #getCoordinateSystem()} method on {@code this}.
      * Consequently, this method shall be invoked only after the construction of this {@code AbstractDerivedCRS}
      * instance is advanced enough for allowing the {@code getCoordinateSystem()} method to execute.
-     * Subclasses may consider to make the {@code getCoordinateSystem()} method final for better guarantees.</p>
+     * Subclasses should make their {@code getCoordinateSystem()} method final for better guarantees.</p>
      */
     private C createConversionFromBase(final Map<String,?> properties, final SingleCRS baseCRS, final Conversion conversion) {
         MathTransformFactory factory = null;
@@ -229,9 +238,10 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
             if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                 return true;
             } else try {
-                return deepEquals(strict ? conversionFromBase : getConversionFromBase(),
-                                  strict ? ((AbstractDerivedCRS) object).conversionFromBase
-                                         :  ((GeneralDerivedCRS) object).getConversionFromBase(), mode);
+                return Utilities.deepEquals(
+                        strict ? conversionFromBase : getConversionFromBase(),
+                        strict ? ((AbstractDerivedCRS) object).conversionFromBase
+                               :  ((GeneralDerivedCRS) object).getConversionFromBase(), mode);
             } finally {
                 Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
             }

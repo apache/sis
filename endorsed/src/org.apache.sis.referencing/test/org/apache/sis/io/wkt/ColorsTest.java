@@ -66,8 +66,7 @@ public final class ColorsTest extends TestCase {
      */
     @Test
     public void testImmutability() {
-        UnsupportedOperationException e;
-        e = assertThrows(UnsupportedOperationException.class, () -> Colors.DEFAULT.setName(ElementKind.METHOD, "blue"));
+        var e = assertThrows(UnsupportedOperationException.class, () -> Colors.DEFAULT.setName(ElementKind.METHOD, "blue"));
         assertMessageContains(e, "Colors");
     }
 

@@ -30,7 +30,7 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -60,7 +60,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)
@@ -138,12 +138,21 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
      */
     public DefaultEngineeringCRS(final Map<String,?> properties,
-                                 final EngineeringDatum   datum,
-                                 final CoordinateSystem      cs)
+                                 final EngineeringDatum datum,
+                                 final CoordinateSystem cs)
     {
         super(properties, cs);
-        ensureNonNull("datum", datum);
         this.datum = datum;
+        ArgumentChecks.ensureNonNull("datum", datum);
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
+     */
+    private DefaultEngineeringCRS(final DefaultEngineeringCRS original, final AbstractCS cs) {
+        super(original, null, cs);
+        datum = original.datum;
     }
 
     /**
@@ -216,10 +225,13 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
-        return new DefaultEngineeringCRS(properties, datum, cs);
+    final AbstractCRS createSameType(final AbstractCS cs) {
+        return new DefaultEngineeringCRS(this, cs);
     }
 
     /**

@@ -20,8 +20,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.ValueReference;
@@ -62,7 +61,7 @@ public final class SymbolizerTest extends StyleTestCase {
         final var cdt = factory.createLineSymbolizer();
 
         // Check default
-        assertInstanceOf("geometry", ValueReference.class, cdt.getGeometry());
+        assertInstanceOf(ValueReference.class, cdt.getGeometry());
 
         // Check get/set
         cdt.setGeometry(literal(8));

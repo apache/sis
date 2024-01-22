@@ -19,8 +19,11 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.measure.Angle;
 
 
 /**
@@ -53,7 +56,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCartesianCS(String)
  *
@@ -66,15 +69,6 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -6182037957705712945L;
-
-    /**
-     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
-     * because it does not verify the number of axes.
-     */
-    private DefaultCartesianCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        super(properties, axes);
-    }
 
     /**
      * Constructs a two-dimensional coordinate system from a set of properties.
@@ -118,7 +112,6 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
                               final CoordinateSystemAxis axis1)
     {
         super(properties, axis0, axis1);
-        ensurePerpendicularAxis(properties);
     }
 
     /**
@@ -139,7 +132,15 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
                               final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
-        ensurePerpendicularAxis(properties);
+    }
+
+    /**
+     * Creates a new CS derived from the specified one, but with different axis order or unit.
+     *
+     * @see #createForAxes(String, CoordinateSystemAxis[])
+     */
+    private DefaultCartesianCS(DefaultCartesianCS original, String name, CoordinateSystemAxis[] axes) {
+        super(original, name, axes);
     }
 
     /**
@@ -149,13 +150,12 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  cs  the coordinate system to copy.
+     * @param  original  the coordinate system to copy.
      *
      * @see #castOrCopy(CartesianCS)
      */
-    protected DefaultCartesianCS(final CartesianCS cs) {
-        super(cs);
-        ensurePerpendicularAxis(null);
+    protected DefaultCartesianCS(final CartesianCS original) {
+        super(original);
     }
 
     /**
@@ -171,6 +171,35 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     public static DefaultCartesianCS castOrCopy(final CartesianCS object) {
         return (object == null) || (object instanceof DefaultCartesianCS)
                 ? (DefaultCartesianCS) object : new DefaultCartesianCS(object);
+    }
+
+    /**
+     * Ensures that all known axes are perpendicular, ignoring unknown axis directions.
+     * This method can be invoked by the constructors of coordinate systems having this requirement.
+     *
+     * @param  properties  properties given at construction time, or {@code null} if none.
+     * @throws IllegalArgumentException if an illegal angle is found between two axes.
+     */
+    @Override
+    final void validate(final Map<String,?> properties) {
+        super.validate(properties);
+        final int dimension = getDimension();
+        for (int i=0; i<dimension; i++) {
+            final AxisDirection axis0 = getAxis(i).getDirection();
+            for (int j=i; ++j < dimension;) {
+                final AxisDirection axis1 = getAxis(j).getDirection();
+                final Angle angle = CoordinateSystems.angle(axis0, axis1);
+                /*
+                 * The angle may be null for grid directions (COLUMN_POSITIVE, COLUMN_NEGATIVE,
+                 * ROW_POSITIVE, ROW_NEGATIVE). We conservatively accept those directions even if
+                 * they are not really for Cartesian CS because we do not know the grid geometry.
+                 */
+                if (angle != null && Math.abs(angle.degrees()) != 90) {
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                            Resources.Keys.NonPerpendicularDirections_2, axis0, axis1));
+                }
+            }
+        }
     }
 
     /**
@@ -203,12 +232,12 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
-            case 1: return new DefaultVerticalCS(properties, axes);
+            case 1: return SubTypes.createOneDimensional(this, name, axes);
             case 2: // Fall through
-            case 3: return new DefaultCartesianCS(properties, axes);
-            default: throw unexpectedDimension(properties, axes, 2);
+            case 3: return new DefaultCartesianCS(this, name, axes);
+            default: throw unexpectedDimension(axes, 1, 3);
         }
     }
 

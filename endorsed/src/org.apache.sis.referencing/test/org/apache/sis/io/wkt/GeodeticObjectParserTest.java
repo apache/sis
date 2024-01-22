@@ -1183,8 +1183,7 @@ public final class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     public void testIncompatibleUnits() {
-        ParseException exception;
-        exception = assertThrows(ParseException.class, () -> parse(GeographicCRS.class,
+        var exception = assertThrows(ParseException.class, () -> parse(GeographicCRS.class,
                     "GEOGCS[“NAD83”,\n" +
                     "  DATUM[“North American Datum 1983”,\n" +
                     "    SPHEROID[“GRS 1980”, 6378137.0, 298.257222]],\n" +

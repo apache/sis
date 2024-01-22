@@ -18,7 +18,7 @@ package org.apache.sis.style.se1;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;

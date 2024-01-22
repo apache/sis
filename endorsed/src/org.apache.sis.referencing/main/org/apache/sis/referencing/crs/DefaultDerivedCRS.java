@@ -45,6 +45,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.xml.bind.referencing.SC_SingleCRS;
@@ -93,7 +94,7 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createDerivedCRS(String)
  *
@@ -168,6 +169,14 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             throws MismatchedDimensionException
     {
         super(properties, baseCRS, conversion, derivedCS);
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
+     */
+    DefaultDerivedCRS(final DefaultDerivedCRS original, final AbstractCS derivedCS) {
+        super(original, derivedCS);
     }
 
     /**
@@ -467,11 +476,13 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
      */
     @Override
-    AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
-        final Conversion conversionFromBase = super.getConversionFromBase();
-        return new DefaultDerivedCRS(properties, (SingleCRS) conversionFromBase.getSourceCRS(), conversionFromBase, derivedCS);
+    AbstractCRS createSameType(final AbstractCS derivedCS) {
+        return new DefaultDerivedCRS(this, derivedCS);
     }
 
     /**
@@ -626,6 +637,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             super(other);
         }
 
+        /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
+        private Geodetic(final Geodetic original, final AbstractCS derivedCS) {
+            super(original, derivedCS);
+        }
+
         /** Creates a new geodetic CRS from the given properties. */
         Geodetic(Map<String,?> properties, GeodeticCRS baseCRS, Conversion conversion, CoordinateSystem derivedCS) {
             super(properties, baseCRS, conversion, derivedCS);
@@ -644,10 +660,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
-            final Conversion conversionFromBase = getConversionFromBase();
-            return new Geodetic(properties, (GeodeticCRS) conversionFromBase.getSourceCRS(),
-                    conversionFromBase, derivedCS);
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
+            return new Geodetic(this, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type. */
@@ -674,6 +688,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             super(other);
         }
 
+        /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
+        private Vertical(final Vertical original, final AbstractCS derivedCS) {
+            super(original, derivedCS);
+        }
+
         /** Creates a new vertical CRS from the given properties. */
         Vertical(Map<String,?> properties, VerticalCRS baseCRS, Conversion conversion, VerticalCS derivedCS) {
             super(properties, baseCRS, conversion, derivedCS);
@@ -697,10 +716,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
-            final Conversion conversionFromBase = getConversionFromBase();
-            return new Vertical(properties, (VerticalCRS) conversionFromBase.getSourceCRS(),
-                    conversionFromBase, (VerticalCS) derivedCS);
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
+            return new Vertical(this, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type. */
@@ -727,6 +744,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             super(other);
         }
 
+        /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
+        private Temporal(final Temporal original, final AbstractCS derivedCS) {
+            super(original, derivedCS);
+        }
+
         /** Creates a new temporal CRS from the given properties. */
         Temporal(Map<String,?> properties, TemporalCRS baseCRS, Conversion conversion, TimeCS derivedCS) {
             super(properties, baseCRS, conversion, derivedCS);
@@ -750,10 +772,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
-            final Conversion conversionFromBase = getConversionFromBase();
-            return new Temporal(properties, (TemporalCRS) conversionFromBase.getSourceCRS(),
-                    conversionFromBase, (TimeCS) derivedCS);
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
+            return new Temporal(this, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type. */
@@ -780,6 +800,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             super(other);
         }
 
+        /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
+        private Parametric(final Parametric original, final AbstractCS derivedCS) {
+            super(original, derivedCS);
+        }
+
         /** Creates a new parametric CRS from the given properties. */
         Parametric(Map<String,?> properties, ParametricCRS baseCRS, Conversion conversion, DefaultParametricCS derivedCS) {
             super(properties, baseCRS, conversion, derivedCS);
@@ -803,10 +828,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
-            final Conversion conversionFromBase = getConversionFromBase();
-            return new Parametric(properties, (ParametricCRS) conversionFromBase.getSourceCRS(),
-                    conversionFromBase, (DefaultParametricCS) derivedCS);
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
+            return new Parametric(this, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type. */
@@ -836,6 +859,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             super(other);
         }
 
+        /** Creates a new CRS derived from the specified one, but with different axis order or unit. */
+        private Engineering(final Engineering original, final AbstractCS derivedCS) {
+            super(original, derivedCS);
+        }
+
         /** Creates a new engineering CRS from the given properties. */
         Engineering(Map<String,?> properties, EngineeringCRS baseCRS, Conversion conversion, CoordinateSystem derivedCS) {
             super(properties, baseCRS, conversion, derivedCS);
@@ -854,9 +882,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
-        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
-            final Conversion conversionFromBase = getConversionFromBase();
-            return new Engineering(properties, (EngineeringCRS) conversionFromBase.getSourceCRS(), conversionFromBase, derivedCS);
+        @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
+            return new Engineering(this, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type. */

@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -30,6 +29,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.resources.Errors;
@@ -85,7 +85,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)
  *
@@ -155,6 +155,14 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
                                 final EllipsoidalCS cs)
     {
         super(properties, datum, cs);
+    }
+
+    /**
+     * Creates a new CRS derived from the specified one, but with different axis order or unit.
+     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
+     */
+    private DefaultGeographicCRS(final DefaultGeographicCRS original, final ReferenceIdentifier id, final AbstractCS cs) {
+        super(original, id, cs);
     }
 
     /**
@@ -242,9 +250,13 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * EPSG:4269 or EPSG:4326, then this method magically add the CRS:27, CRS:83 or CRS:84 identifier.
      * Without this special case, the normal behavior would be no identifier. The expected behavior is
      * that {@code CommonCRS.WGS84.normalizedGeographic()} returns a CRS having the "CRS:84" identifier.
+     *
+     * @param  cs  the coordinate system with new axes.
+     * @return new CRS of the same type and datum than this CRS, but with the given axes.
      */
     @Override
-    final AbstractCRS createSameType(Map<String,?> properties, final CoordinateSystem cs) {
+    final AbstractCRS createSameType(final AbstractCS cs) {
+        ReferenceIdentifier id = null;
         final CoordinateSystemAxis axis = cs.getAxis(0);
         if (axis.getMinimumValue() == Longitude.MIN_VALUE &&
             axis.getMaximumValue() == Longitude.MAX_VALUE)    // For excluding the AxesConvention.POSITIVE_RANGE case.
@@ -253,16 +265,15 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
                 if (EPSG.equals(identifier.getCodeSpace())) try {
                     final int i = Arrays.binarySearch(EPSG_CODES, Short.parseShort(identifier.getCode()));
                     if (i >= 0) {
-                        final Map<String,Object> c = new HashMap<>(properties);
-                        c.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.WMS, CRS, Short.toString(CRS_CODES[i])));
-                        properties = c;
+                        id = new ImmutableIdentifier(Citations.WMS, CRS, Short.toString(CRS_CODES[i]));
+                        break;
                     }
                 } catch (NumberFormatException e) {
                     // Okay to igore, because it is not the purpose of this method to disallow non-numeric codes.
                 }
             }
         }
-        return new DefaultGeographicCRS(properties, super.getDatum(), (EllipsoidalCS) cs);
+        return new DefaultGeographicCRS(this, id, cs);
     }
 
     /**

@@ -271,7 +271,8 @@ public final class DefinitionURI {
      * @param  uri  the URI to parse.
      * @return the parse result, or {@code null} if the given URI is not recognized.
      */
-    public static DefinitionURI parse(final String uri) {
+    public static DefinitionURI parse(String uri) {
+        uri = CharSequences.trimIgnorables(uri).toString();
         return parse(uri, false, -1, uri.length());
     }
 

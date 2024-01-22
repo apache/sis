@@ -854,17 +854,8 @@ public final class Citations extends Static {
      * Those characters are illegal in XML identifiers, and should therefore be removed if the Unicode identifier
      * may also be used as XML identifier.
      *
-     * <p>If non-null, the result is suitable for use as a XML identifier except for a few uncommon characters.</p>
-     *
-     * <h4>Compatibility note</h4>
-     * the following characters are invalid in XML identifiers. However, since they are valid in Unicode identifiers,
-     * they could be included in the string returned by this method:
-     * <ul>
-     *   <li>{@code µ}</li>
-     *   <li>{@code ª} (feminine ordinal indicator)</li>
-     *   <li>{@code º} (masculine ordinal indicator)</li>
-     *   <li>{@code ⁔}</li>
-     * </ul>
+     * <p>If non-null, the result is suitable for use as a XML identifier except for a few uncommon characters.
+     * See {@link CharSequences#trimIgnorables(CharSequence)} for more information.</p>
      *
      * @param  citation  the citation for which to infer the code space, or {@code null}.
      * @return a non-empty code space for the given citation without leading or trailing whitespaces,
@@ -876,55 +867,8 @@ public final class Citations extends Static {
         if (citation instanceof IdentifierSpace<?>) {
             return ((IdentifierSpace<?>) citation).getName();
         } else {
-            return removeIgnorableCharacters(Identifiers.getIdentifier(citation, true));
+            CharSequence cs = CharSequences.trimIgnorables(Identifiers.getIdentifier(citation, true));
+            return (cs != null) ? cs.toString() : null;
         }
-    }
-
-    /**
-     * Removes characters that are ignorable according Unicode specification.
-     *
-     * @param  identifier  the character sequence from which to remove ignorable characters, or {@code null}.
-     * @return a character sequence with ignorable character removed. May be the same instance as the given argument.
-     */
-    private static String removeIgnorableCharacters(final String identifier) {
-        if (identifier != null) {
-            /*
-             * First perform a quick check to see if there is any ignorable characters.
-             * We make this check because those characters are valid according Unicode
-             * but not according XML. However, there is usually no such characters, so
-             * we will avoid the StringBuilder creation in the vast majority of times.
-             *
-             * Note that 'µ' and its friends are not ignorable, so we do not remove them.
-             * This method is aimed for "getUnicodeIdentifier", not "getXmlIdentifier".
-             */
-            final int length = identifier.length();
-            for (int i=0; i<length;) {
-                int c = identifier.codePointAt(i);
-                int n = Character.charCount(c);
-                if (Character.isIdentifierIgnorable(c)) {
-                    /*
-                     * Found an ignorable character. Create the buffer and copy non-ignorable characters.
-                     * Following algorithm is inefficient, since we fill the buffer character-by-character
-                     * (a more efficient approach would be to perform bulk appends). However, we presume
-                     * that this block will be rarely executed, so it is not worth to optimize it.
-                     */
-                    final StringBuilder buffer = new StringBuilder(length - n).append(identifier, 0, i);
-                    while ((i += n) < length) {
-                        c = identifier.codePointAt(i);
-                        n = Character.charCount(c);
-                        if (!Character.isIdentifierIgnorable(c)) {
-                            buffer.appendCodePoint(c);
-                        }
-                    }
-                    /*
-                     * No need to verify if the buffer is empty, because ignorable
-                     * characters are not legal Unicode identifier start.
-                     */
-                    return buffer.toString();
-                }
-                i += n;
-            }
-        }
-        return identifier;
     }
 }

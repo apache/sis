@@ -135,7 +135,7 @@ public final class CommandRunnerTest extends TestCase {
     public void testMissingOptionValue() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief"); // Should not comply.
         assertEquals(Option.BRIEF, getSingleton(c.options.keySet()));
-        InvalidOptionException exception = assertThrows(InvalidOptionException.class,
+        var exception = assertThrows(InvalidOptionException.class,
                 () -> new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief", "--locale"));
         assertMessageContains(exception, "locale");
     }
@@ -147,7 +147,7 @@ public final class CommandRunnerTest extends TestCase {
      */
     @Test
     public void testUnexpectedOption() throws InvalidOptionException {
-        InvalidOptionException exception = assertThrows(InvalidOptionException.class,
+        var exception = assertThrows(InvalidOptionException.class,
                 () -> new Dummy(EnumSet.of(Option.HELP, Option.BRIEF), CommandRunner.TEST, "--brief", "--verbose", "--help"));
         assertMessageContains(exception, "verbose");
     }

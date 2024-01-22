@@ -20,14 +20,14 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.2
  */
 module org.apache.sis.portrayal {
     requires transitive org.apache.sis.storage;
     requires jakarta.xml.bind;
-    requires static org.locationtech.jts;
 
+    exports org.apache.sis.style;
     exports org.apache.sis.portrayal;
 
     exports org.apache.sis.map.coverage to

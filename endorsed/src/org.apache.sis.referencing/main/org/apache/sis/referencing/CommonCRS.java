@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.time.Instant;
-import static java.util.Collections.singletonMap;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.metadata.Identifier;
@@ -1919,7 +1918,7 @@ public enum CommonCRS {
          *   <tr><th>Unit:</th> <td>{@link Units#UNITY}</td></tr>
          * </table></blockquote>
          */
-        GRID(new DefaultEngineeringDatum(singletonMap(EngineeringDatum.NAME_KEY, "Cell indices"))),
+        GRID(new DefaultEngineeringDatum(Map.of(EngineeringDatum.NAME_KEY, "Cell indices"))),
 
         /**
          * A single-dimensional coordinate system for time in seconds since an unknown epoch.
@@ -1936,7 +1935,7 @@ public enum CommonCRS {
          *
          * @see Temporal
          */
-        TIME(new DefaultEngineeringDatum(singletonMap(EngineeringDatum.NAME_KEY, "Time")));
+        TIME(new DefaultEngineeringDatum(Map.of(EngineeringDatum.NAME_KEY, "Time")));
 
         /**
          * The datum.
@@ -1964,7 +1963,7 @@ public enum CommonCRS {
             if (crs == null) {
                 final String x, y;
                 final AxisDirection dx, dy;
-                final Map<String,Object> pcs = singletonMap(CartesianCS.NAME_KEY, datum.getName());
+                final Map<String,Object> pcs = Map.of(CartesianCS.NAME_KEY, datum.getName());
                 final Map<String,Object> properties = new HashMap<>(pcs);
                 CoordinateSystem cs = null;
                 switch (this) {
@@ -1988,15 +1987,15 @@ public enum CommonCRS {
                         x  = y  = "t";
                         dx = dy = AxisDirection.FUTURE;
                         cs = new DefaultTimeCS(pcs, new DefaultCoordinateSystemAxis(
-                                singletonMap(TimeCS.NAME_KEY, x), x, dx, Units.SECOND));
+                                Map.of(TimeCS.NAME_KEY, x), x, dx, Units.SECOND));
                         break;
                     }
                     default: throw new AssertionError(this);
                 }
                 if (cs == null) {
                     cs = new DefaultCartesianCS(pcs,
-                            new DefaultCoordinateSystemAxis(singletonMap(CartesianCS.NAME_KEY, x), x, dx, Units.PIXEL),
-                            new DefaultCoordinateSystemAxis(singletonMap(CartesianCS.NAME_KEY, y), y, dy, Units.PIXEL));
+                            new DefaultCoordinateSystemAxis(Map.of(CartesianCS.NAME_KEY, x), x, dx, Units.PIXEL),
+                            new DefaultCoordinateSystemAxis(Map.of(CartesianCS.NAME_KEY, y), y, dy, Units.PIXEL));
                 }
                 crs = new DefaultEngineeringCRS(properties, datum, cs);
             }

@@ -113,9 +113,15 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * In such case, we will split the name into the components names to be stored in an array at indices
      * given by {@code GCRS}, {@code DATUM}, {@code ELLIPSOID} and {@code PRIMEM}.
+     *
+     * <h4>Implementation note:</h4>
+     * {@link #PRIMEM} must be the first element and {@link #GCRS} must be the last one.
+     * The {@link #getOrDefault(String[], int)} implementation depends on this assumption.
+     *
+     * @see #splitName(String)
+     * @see #getOrDefault(String[], int)
      */
     static final int PRIMEM = 0, ELLIPSOID = 1, DATUM = 2, GCRS = 3;
-    // PRIMEM must be first and GCRS must be last.
 
     /**
      * Keys that may be used in the value associated to {@link GeoKeys#GeodeticCitation}.
@@ -997,7 +1003,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     }
 
     /**
-     * Returns the name at the given index if non-null. If that name is null, search for a name in a sister element
+     * Returns the name at the given index if non-null. If that name is null, searches for a name in a sister element
      * (e.g. the datum name or the geographic CRS name). If none is found, returns {@code null}.
      */
     private static String getOrDefault(final String[] names, int component) {

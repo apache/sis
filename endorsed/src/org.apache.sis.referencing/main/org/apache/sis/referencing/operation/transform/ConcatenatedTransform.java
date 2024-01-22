@@ -38,6 +38,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
@@ -60,7 +61,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  *
- * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
+ * @see MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
  */
 class ConcatenatedTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -99,8 +100,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Constructs a concatenated transform. This constructor is for subclasses only.
-     * To create a concatenated transform, use the {@link #create(MathTransform, MathTransform, MathTransformFactory)}
-     * factory method instead.
+     * To create a concatenated transform, use the {@link #create create(…)} method instead.
      *
      * @param  transform1  the first math transform.
      * @param  transform2  the second math transform.
@@ -190,7 +190,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
      */
     private static MathTransform tryOptimized(final MathTransform tr1, final MathTransform tr2,
-            final MathTransformFactory factory) throws FactoryException
+                                              MathTransformFactory factory) throws FactoryException
     {
         /*
          * Trivial - but actually essential!! - check for the identity cases.
@@ -208,6 +208,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         MathTransform shortest = null;
         boolean inverseCaseTested = false;
         if (tr1 instanceof AbstractMathTransform) {
+            // TODO: after removal of the deprecated method, invoke `tryConcatenate(Joiner)` only once.
             final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
             inverseCaseTested = true;
             if (optimized != null) {
@@ -242,6 +243,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * If both transforms use matrix, then we can create
          * a single transform using the concatenated matrix.
          */
+        factory = ReferencingUtilities.nonNull(factory);
         final MathTransform concatenated = multiply(tr1, tr2, factory);
         if (concatenated instanceof AbstractLinearTransform) {
             /*
@@ -282,7 +284,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Returns a transform resulting from the multiplication of the matrices of given transforms.
      * If the given transforms does not provide matrix, then this method returns {@code null}.
      *
-     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @param  factory  wrapper for the factory which is (indirectly) invoking this method.
      */
     private static MathTransform multiply(final MathTransform tr1, final MathTransform tr2,
             final MathTransformFactory factory) throws FactoryException
@@ -302,11 +304,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                  * Apache SIS performs matrix operations using double-double arithmetic in the hope to get exact
                  * results at the `double` accuracy, which avoid the need for a tolerance threshold.
                  */
-                if (factory != null) {
-                    return factory.createAffineTransform(matrix);
-                } else {
-                    return MathTransforms.linear(matrix);
-                }
+                return factory.createAffineTransform(matrix);
             }
         }
         // No optimized case found.
@@ -911,29 +909,35 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *   Instead of : tr1 → tr2 → other
      *   Try:         tr1 → (tr2 → other)          where (…) denote an optimized concatenation.</pre>
      *
-     * @return the simplified transform, or {@code null} if no such optimization is available.
      * @throws FactoryException if an error occurred while combining the transforms.
      */
     @Override
-    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other, final MathTransformFactory factory)
-            throws FactoryException
-    {
-        if (applyOtherFirst) {
-            final MathTransform candidate = tryOptimized(other, transform1, factory);
-            if (candidate != null) {
-                return create(candidate, transform2, factory);
+    protected void tryConcatenate(final Joiner context) throws FactoryException {
+        int relativeIndex = +1;
+        do {
+            MathTransform step1 = transform2;     // In the first iteration, we will try to concatenate after this.
+            MathTransform step2 = context.getTransform(relativeIndex).orElse(null);
+            if (step2 != null) {
+                if (relativeIndex < 0) {
+                    step1 = step2;
+                    step2 = transform1;           // In the second iteration, we will try to concatenate before this.
+                }
+                step2 = tryOptimized(step1, step2, context.factory);
+                if (step2 != null) {
+                    step1 = transform1;           // In the first iteration, keep this and replace after.
+                    if (relativeIndex < 0) {
+                        step1 = step2;
+                        step2 = transform2;       // In the second iteration, keep this and replace before.
+                    }
+                    context.replace(relativeIndex, create(step1, step2, context.factory));
+                    return;
+                }
             }
-        } else {
-            final MathTransform candidate = tryOptimized(transform2, other, factory);
-            if (candidate != null) {
-                return create(transform1, candidate, factory);
-            }
-        }
+        } while ((relativeIndex = -relativeIndex) < 0);
         /*
-         * Do not invoke `super.tryConcatenate(applyOtherFirst, other, factory)`; the test of whether
-         * `this` is the inverse of `other` has been done indirectly by the calls to `tryOptimized(…)`.
+         * Do not invoke `super.tryConcatenate(context)`. The test of whether `this` is the
+         * inverse of `other` has been done indirectly by the calls to `tryOptimized(…)`.
          */
-        return null;
     }
 
     /**

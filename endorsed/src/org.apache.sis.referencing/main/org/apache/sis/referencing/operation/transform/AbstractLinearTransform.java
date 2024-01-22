@@ -21,10 +21,7 @@ import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Resources;
@@ -127,20 +124,6 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
     @Override
     public int getNumCol() {
         return getSourceDimensions() + 1;
-    }
-
-    /**
-     * Returns an identity transform if this transform is the inverse of the given transform.
-     * If this method is unsure, it conservatively returns {@code null}.
-     */
-    @Override
-    protected final MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
-            throws FactoryException
-    {
-        if (other instanceof LinearTransform) {
-            return super.tryConcatenate(applyOtherFirst, other, factory);
-        }
-        return null;        // No need to compute the inverse if the other transform is not linear.
     }
 
     /**

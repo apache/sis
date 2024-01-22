@@ -78,7 +78,7 @@ final class PolarToCartesian extends CoordinateSystemTransform implements Serial
      * Input coordinates are in radians.
      */
     private PolarToCartesian() {
-        super("Polar to Cartesian", "Cylindrical to Cartesian", 2);
+        super("Polar to Cartesian", "Cylindrical to Cartesian", 2, new int[1], (byte) +1);
         context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION)
                .convertBefore(1, DoubleDouble.DEGREES_TO_RADIANS, null);
     }

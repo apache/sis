@@ -41,8 +41,7 @@ import org.apache.sis.util.Utilities;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -51,6 +50,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -90,9 +90,9 @@ public final class CRSTest extends TestCase {
      */
     private static void verifyForCode(final SingleCRS expected, final String code) throws FactoryException {
         final CoordinateReferenceSystem actual = CRS.forCode(code);
-        assertTrue(code, Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue(Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG), code);
         if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            assertSame(code, expected, actual);
+            assertSame(expected, actual, code);
         }
     }
 
@@ -152,11 +152,14 @@ public final class CRSTest extends TestCase {
      * Tests {@link CRS#forCode(String)} with temporal CRS codes.
      *
      * @throws FactoryException if a CRS cannot be constructed.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-490">SIS-490</a>
      */
     @Test
     public void testForTemporalCode() throws FactoryException {
         verifyForCode(CommonCRS.Temporal.JULIAN.crs(), "OGC:JulianDate");
         verifyForCode(CommonCRS.Temporal.UNIX.crs(),   "OGC:UnixTime");
+        verifyForCode(CommonCRS.Temporal.JULIAN.crs(), "urn:ogc:def:crs:OGC::JulianDate");
         verifyForCode(CommonCRS.Temporal.TRUNCATED_JULIAN.crs(),
                       "http://www.opengis.net/gml/srs/crs.xml#TruncatedJulianDate");
     }
@@ -168,12 +171,8 @@ public final class CRSTest extends TestCase {
      */
     @Test
     public void testForInvalidCode() throws FactoryException {
-        try {
-            CRS.forCode("EPSG:4");
-            fail("Should not find EPSG:4");
-        } catch (NoSuchAuthorityCodeException e) {
-            assertEquals("4", e.getAuthorityCode());
-        }
+        var e = assertThrows(NoSuchAuthorityCodeException.class, () -> CRS.forCode("EPSG:4"));
+        assertEquals("4", e.getAuthorityCode());
     }
 
     /**
@@ -183,7 +182,7 @@ public final class CRSTest extends TestCase {
         final List<SingleCRS> components = CRS.getSingleComponents(CRS.forCode(code));
         final int count = Math.min(components.size(), expected.length);
         for (int i=0; i<count; i++) {
-            assertTrue(String.valueOf(i), Utilities.deepEquals(expected[i], components.get(i), ComparisonMode.DEBUG));
+            assertTrue(Utilities.deepEquals(expected[i], components.get(i), ComparisonMode.DEBUG), String.valueOf(i));
         }
         assertEquals(expected.length, components.size());
     }
@@ -219,7 +218,7 @@ public final class CRSTest extends TestCase {
                 "GEOGCS[\"GCS WGS 1984\","
                 + "DATUM[\"WGS 1984\",SPHEROID[\"WGS 1984\",6378137,298.257223563]],"
                 + "PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]");
-        assertInstanceOf("GEOGCS", DefaultGeographicCRS.class, crs);
+        assertInstanceOf(DefaultGeographicCRS.class, crs);
         assertEquals("GCS WGS 1984", crs.getName().getCode());
     }
 
@@ -230,15 +229,12 @@ public final class CRSTest extends TestCase {
      */
     @Test
     public void testFromInvalidWKT() throws FactoryException {
-        try {
-            CRS.fromWKT("PROJCS[\"Foo\", GEOGCS[\"Foo\", DATUM[\"Foo\", SPHEROID[\"Sphere\", 6371000, 0]], " +
-                        "UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"I do not exist\"], " +
-                        "UNIT[\"MEtre\", 1]]");
-            fail("Expected NoSuchIdentifierException");
-        } catch (NoSuchIdentifierException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("I do not exist"));
-        }
+        var e = assertThrows(NoSuchIdentifierException.class, () ->
+                CRS.fromWKT("PROJCS[\"Foo\", GEOGCS[\"Foo\", DATUM[\"Foo\", SPHEROID[\"Sphere\", 6371000, 0]], " +
+                            "UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"I do not exist\"], " +
+                            "UNIT[\"MEtre\", 1]]"));
+
+        assertMessageContains(e, "I do not exist");
     }
 
     /**
@@ -271,49 +267,43 @@ public final class CRSTest extends TestCase {
         final ProjectedCRS[] overlappingCRS = Arrays.copyOf(crs, 3);        // Exclude the last CRS only.
         /*
          * Test between the 3 overlapping CRS without region of interest. We expect the CRS having a domain
-         * of validity large enough for all CRS; this is the second CRS created in above 'switch' statement.
+         * of validity large enough for all CRS; this is the second CRS created in above `switch` statement.
          */
-        assertSame("Expected CRS with widest domain of validity.", crs[1],
-                   CRS.suggestCommonTarget(null, overlappingCRS));
+        assertSame(crs[1], CRS.suggestCommonTarget(null, overlappingCRS));
         /*
          * If we specify a smaller region of interest, we should get the CRS having the smallest domain of validity that
          * cover the ROI. Following lines gradually increase the ROI size and verify that we get CRS for larger domain.
          */
         final DefaultGeographicBoundingBox regionOfInterest = new DefaultGeographicBoundingBox(-1, +1, 2.1, 2.9);
-        assertSame("Expected best fit for [2.1 … 2.9]°N", crs[2],
-                   CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));
+        assertSame(crs[2], CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));      // Best fit for [2.1 … 2.9]°N
 
         regionOfInterest.setNorthBoundLatitude(3.1);
-        assertSame("Expected best fit for [2.1 … 3.1]°N", crs[0],
-                   CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));
+        assertSame(crs[0], CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));      // Best fit for [2.1 … 3.1]°N
 
         regionOfInterest.setSouthBoundLatitude(1.9);
-        assertSame("Expected best fit for [1.9 … 3.1]°N", crs[1],
-                   CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));
+        assertSame(crs[1], CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));      // Best fit for [1.9 … 3.1]°N
         /*
          * All above tests returned one of the CRS in the given array. Test now a case where none of those CRS
          * have a domain of validity wide enough, so suggestCommonTarget(…) need to search among the base CRS.
+         * We expect a GeodeticCRS since none of the ProjectedCRS have a domain of validity wide enough.
          */
-        assertSame("Expected a GeodeticCRS since none of the ProjectedCRS have a domain of validity wide enough.",
-                   crs[0].getBaseCRS(), CRS.suggestCommonTarget(null, crs));
+        assertSame(crs[0].getBaseCRS(), CRS.suggestCommonTarget(null, crs));
         /*
          * With the same domain of validity than above, suggestCommonTarget(…) should not need to fallback on the
          * base CRS anymore.
          */
-        assertSame("Expected best fit for [1.9 … 3.1]°N", crs[1],
-                   CRS.suggestCommonTarget(regionOfInterest, crs));
-
+        assertSame(crs[1], CRS.suggestCommonTarget(regionOfInterest, crs));         // Best fit for [1.9 … 3.1]°N
         final ProjectedCRS utm13N = CommonCRS.WGS84.universal(20, 13);
         final ProjectedCRS utm42S = CommonCRS.WGS84.universal(-2, 42);
-        assertSame("CRS suggestion should fallback on common base geographic system when possible.",
-                CommonCRS.WGS84.geographic(), CRS.suggestCommonTarget(null, utm13N, utm42S));
 
-        assertNotNull("Disjoint systems should return a geographic suggestion when possible",
-                CRS.suggestCommonTarget(null,
-                        CommonCRS.WGS84.universal(-7,  19),
-                        CommonCRS.NAD27.universal(20, -101),
-                        CommonCRS.NAD27.universal(18, -20)
-                )
+        // CRS suggestion should fallback on common base geographic system when possible.
+        assertSame(CommonCRS.WGS84.geographic(), CRS.suggestCommonTarget(null, utm13N, utm42S));
+
+        // Disjoint systems should return a geographic suggestion when possible.
+        assertNotNull(CRS.suggestCommonTarget(null,
+                CommonCRS.WGS84.universal(-7,  19),
+                CommonCRS.NAD27.universal(20, -101),
+                CommonCRS.NAD27.universal(18, -20))
         );
     }
 
@@ -386,14 +376,14 @@ public final class CRSTest extends TestCase {
     @Test
     public void testComponentsOfProjectedCRS() {
         final ProjectedCRS volumetric = HardCodedConversions.mercator3D();
-        assertFalse("isHorizontalCRS", CRS.isHorizontalCRS(volumetric));
-        assertNull("getTemporalComponent", CRS.getTemporalComponent(volumetric));
-        assertNull("getVerticalComponent", CRS.getVerticalComponent(volumetric, false));
+        assertFalse(CRS.isHorizontalCRS(volumetric));
+        assertNull(CRS.getTemporalComponent(volumetric));
+        assertNull(CRS.getVerticalComponent(volumetric, false));
         assertEqualsIgnoreMetadata(HardCodedCRS.ELLIPSOIDAL_HEIGHT, CRS.getVerticalComponent(volumetric, true));
         final SingleCRS horizontal = CRS.getHorizontalComponent(volumetric);
-        assertInstanceOf("getHorizontalComponent", ProjectedCRS.class, horizontal);
-        assertEquals("dimension", 2, horizontal.getCoordinateSystem().getDimension());
-        assertTrue("isHorizontalCRS", CRS.isHorizontalCRS(horizontal));
+        assertInstanceOf(ProjectedCRS.class, horizontal);
+        assertEquals(2, horizontal.getCoordinateSystem().getDimension());
+        assertTrue(CRS.isHorizontalCRS(horizontal));
     }
 
     /**
@@ -402,8 +392,8 @@ public final class CRSTest extends TestCase {
     @Test
     public void testGetComponentAt() {
         testGetComponentAt(
-                null,                                 // Null because our CRS has no component for the 'x' axis alone.
-                null,                                 // Null because our CRS has no component for the 'y' axis alone.
+                null,                                 // Null because our CRS has no component for the `x` axis alone.
+                null,                                 // Null because our CRS has no component for the `y` axis alone.
                 HardCodedCRS.GRAVITY_RELATED_HEIGHT,
                 HardCodedCRS.TIME,
                 HardCodedCRS.WGS84,
@@ -414,8 +404,8 @@ public final class CRSTest extends TestCase {
          * Now test again, but with a more hierarchical structure: ((x,y,z),t)
          */
         testGetComponentAt(
-                null,                                 // Null because our CRS has no component for the 'x' axis alone.
-                null,                                 // Null because our CRS has no component for the 'y' axis alone.
+                null,                                 // Null because our CRS has no component for the `x` axis alone.
+                null,                                 // Null because our CRS has no component for the `y` axis alone.
                 HardCodedCRS.GRAVITY_RELATED_HEIGHT,
                 HardCodedCRS.TIME,
                 HardCodedCRS.WGS84,
@@ -473,13 +463,8 @@ public final class CRSTest extends TestCase {
      */
     @Test
     public void testCompound() throws FactoryException {
-        try {
-            CRS.compound();
-            fail("Should not accept empty array.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("components"));
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> CRS.compound());
+        assertMessageContains(e, "components");
         assertSame(HardCodedCRS.WGS84, CRS.compound(HardCodedCRS.WGS84));
         assertEqualsIgnoreMetadata(HardCodedCRS.WGS84_3D, CRS.compound(HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT));
     }
@@ -498,29 +483,29 @@ public final class CRSTest extends TestCase {
             final CoordinateReferenceSystem xyz,
             final CoordinateReferenceSystem xyzt)
     {
-        assertSame("[0…4]", xyzt, CRS.getComponentAt(xyzt, 0, 4));
-        assertSame("[0…3]", xyz,  CRS.getComponentAt(xyzt, 0, 3));
-        assertSame("[0…2]", xy,   CRS.getComponentAt(xyzt, 0, 2));
-        assertSame("[0…1]", x,    CRS.getComponentAt(xyzt, 0, 1));
-        assertSame("[1…2]", y,    CRS.getComponentAt(xyzt, 1, 2));
-        assertSame("[2…3]", z,    CRS.getComponentAt(xyzt, 2, 3));
-        assertSame("[3…4]", t,    CRS.getComponentAt(xyzt, 3, 4));
-        assertNull("[1…3]",       CRS.getComponentAt(xyzt, 1, 3));
-        assertNull("[1…4]",       CRS.getComponentAt(xyzt, 1, 4));
-        assertNull("[2…4]",       CRS.getComponentAt(xyzt, 2, 4));
-        assertNull("[4…4]",       CRS.getComponentAt(xyzt, 4, 4));
+        assertSame(xyzt, CRS.getComponentAt(xyzt, 0, 4));
+        assertSame(xyz,  CRS.getComponentAt(xyzt, 0, 3));
+        assertSame(xy,   CRS.getComponentAt(xyzt, 0, 2));
+        assertSame(x,    CRS.getComponentAt(xyzt, 0, 1));
+        assertSame(y,    CRS.getComponentAt(xyzt, 1, 2));
+        assertSame(z,    CRS.getComponentAt(xyzt, 2, 3));
+        assertSame(t,    CRS.getComponentAt(xyzt, 3, 4));
+        assertNull(      CRS.getComponentAt(xyzt, 1, 3));
+        assertNull(      CRS.getComponentAt(xyzt, 1, 4));
+        assertNull(      CRS.getComponentAt(xyzt, 2, 4));
+        assertNull(      CRS.getComponentAt(xyzt, 4, 4));
 
         if (xyz != null) {
-            assertSame("[0…3]", xyz, CRS.getComponentAt(xyz, 0, 3));
-            assertSame("[0…2]", xy,  CRS.getComponentAt(xyz, 0, 2));
-            assertSame("[0…1]", x,   CRS.getComponentAt(xyz, 0, 1));
-            assertSame("[1…2]", y,   CRS.getComponentAt(xyz, 1, 2));
-            assertSame("[2…3]", z,   CRS.getComponentAt(xyz, 2, 3));
+            assertSame(xyz, CRS.getComponentAt(xyz, 0, 3));
+            assertSame(xy,  CRS.getComponentAt(xyz, 0, 2));
+            assertSame(x,   CRS.getComponentAt(xyz, 0, 1));
+            assertSame(y,   CRS.getComponentAt(xyz, 1, 2));
+            assertSame(z,   CRS.getComponentAt(xyz, 2, 3));
         }
         if (xy != null) {
-            assertSame("[0…2]", xy, CRS.getComponentAt(xy, 0, 2));
-            assertSame("[0…1]", x,  CRS.getComponentAt(xy, 0, 1));
-            assertSame("[1…2]", y,  CRS.getComponentAt(xy, 1, 2));
+            assertSame(xy, CRS.getComponentAt(xy, 0, 2));
+            assertSame(x,  CRS.getComponentAt(xy, 0, 1));
+            assertSame(y,  CRS.getComponentAt(xy, 1, 2));
         }
     }
 
@@ -529,8 +514,8 @@ public final class CRSTest extends TestCase {
      */
     @Test
     public void testGetGreenwichLongitude() {
-        assertEquals(0,          CRS.getGreenwichLongitude(HardCodedCRS.WGS84), STRICT);
-        assertEquals(2.33722917, CRS.getGreenwichLongitude(HardCodedCRS.NTF),   1E-12);
+        assertEquals(0,          CRS.getGreenwichLongitude(HardCodedCRS.WGS84));
+        assertEquals(2.33722917, CRS.getGreenwichLongitude(HardCodedCRS.NTF), 1E-12);
     }
 
     /**

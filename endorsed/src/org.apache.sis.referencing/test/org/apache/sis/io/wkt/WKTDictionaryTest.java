@@ -108,8 +108,7 @@ public final class WKTDictionaryTest extends TestCase {
         /*
          * Test non-existing CRS.
          */
-        NoSuchAuthorityCodeException exception;
-        exception = assertThrows(NoSuchAuthorityCodeException.class, () -> factory.createGeographicCRS("84"));
+        var exception = assertThrows(NoSuchAuthorityCodeException.class, () -> factory.createGeographicCRS("84"));
         assertMessageContains(exception, "84");
     }
 
@@ -379,8 +378,7 @@ public final class WKTDictionaryTest extends TestCase {
         /*
          * Test non-existent code.
          */
-        FactoryException exception;
-        exception = assertThrows(FactoryException.class, () -> factory.createGeographicCRS("21"));
+        var exception = assertThrows(FactoryException.class, () -> factory.createGeographicCRS("21"));
         assertMessageContains(exception, "21");
     }
 }

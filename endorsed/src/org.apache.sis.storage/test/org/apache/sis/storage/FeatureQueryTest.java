@@ -415,7 +415,7 @@ public final class FeatureQueryTest extends TestCase {
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
                             virtualProjection(ff.property("valueMissing", Integer.class), "renamed1"));
 
-        DataStoreContentException exception = assertThrows(DataStoreContentException.class, this::executeAndGetFirst);
+        var exception = assertThrows(DataStoreContentException.class, this::executeAndGetFirst);
         assertMessageContains(exception);
     }
 }

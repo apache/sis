@@ -77,7 +77,8 @@ public final class RewindableLineReaderTest extends TestCase {
         final RewindableLineReader old = reader;
         reader = reader.rewind();                       // Should be a new instance, but this is not mandatory.
         if (reader != old) {
-            assertThrows(IOException.class, () -> old.read());
+            var e = assertThrows(IOException.class, () -> old.read());
+            assertNotNull(e.getMessage());
         }
         assertEquals('A', reader.read());
         assertEquals('B', reader.read());

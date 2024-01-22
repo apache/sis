@@ -50,8 +50,7 @@ module org.apache.sis.feature {
     exports org.apache.sis.filter.internal to
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
-            org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
-            org.apache.sis.portrayal;
+            org.apache.sis.storage.shapefile;       // In the "incubator" sub-project.
 
     exports org.apache.sis.feature.internal to
             org.apache.sis.storage,
