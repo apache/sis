@@ -101,9 +101,9 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
             return;
         }
         final Path root = Path.of(args[0]);
-        final var geoapi4 = new ReorganizeImports(root.resolve("geoapi-4.0"), 0);
-        final var geoapi3 = new ReorganizeImports(root.resolve("geoapi-3.1"), 1);
-        final var main    = new ReorganizeImports(root.resolve("main"), 2);
+        final var geoapi4 = new ReorganizeImports(root.resolve("geoapi-4.0"), null);
+        final var geoapi3 = new ReorganizeImports(root.resolve("geoapi-3.1"), geoapi4);
+        final var main    = new ReorganizeImports(root.resolve("main"), geoapi3);
         final String[] branchNames = compareUsages(geoapi4, geoapi3, main);
         geoapi4.rewrite(branchNames);
         geoapi3.rewrite(branchNames);
@@ -185,16 +185,28 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
     private final Map<Path,Source> sources;
 
     /**
+     * Masks telling in which branches a file is present.
+     * This map is shared by all branches.
+     */
+    private final Map<Path,Integer> branchesOfFiles;
+
+    /**
      * Creates a new import reorganizer.
      *
-     * @param  root     root directory of the project for which to reorganize imports.
-     * @param  ordinal  a sequential number identifying the branch of the source.
+     * @param  root      root directory of the project for which to reorganize imports.
+     * @param  upstream  the branch which is merged in this branch.
      * @throws IOException if an error occurred while reading a file.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    private ReorganizeImports(final Path root, final int ordinal) throws IOException {
+    private ReorganizeImports(final Path root, final ReorganizeImports upstream) throws IOException {
         this.root = root;
-        bitmask = 1 << ordinal;
+        if (upstream == null) {
+            bitmask = 1;
+            branchesOfFiles = new HashMap<>();
+        } else {
+            bitmask = upstream.bitmask << 1;
+            branchesOfFiles = upstream.branchesOfFiles;
+        }
         sources = new LinkedHashMap<>();
         Files.walkFileTree(root, this);
     }
@@ -228,9 +240,11 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         if (file.getFileName().toString().endsWith(".java")) {
             final var source = new Source(Files.readAllLines(file), bitmask);
             if (!source.isEmpty()) {
-                if (sources.put(root.relativize(file), source) != null) {
+                final Path relative = root.relativize(file);
+                if (sources.put(relative, source) != null) {
                     throw new IOException("Duplicated file: " + file);
                 }
+                branchesOfFiles.merge(relative, bitmask, (oldValue, value) -> oldValue | value);
             }
         }
         return FileVisitResult.CONTINUE;
@@ -464,8 +478,9 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
          *
          * @param dest         where to write the lines of source code.
          * @param branchNames  names of each branch.
+         * @param bitmask      bitmask of branches to consider.
          */
-        final void writeTo(final List<String> dest, final String[] branchNames) {
+        final void writeTo(final List<String> dest, final String[] branchNames, int bitmask) {
             /*
              * Copyright header and "package" statement.
              */
@@ -479,7 +494,6 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
             boolean needHeader    = false;      // Whether to write a comment like "// Specific to main branch:".
             boolean isTestImports = false;      // Whether at least one import of a test class was found.
             final var buffer = new StringBuilder(80);
-            int bitmask = (1 << branchNames.length) - 1;
             while (bitmask > 0) {
                 final Iterator<Map.Entry<String,Integer>> it = imports.entrySet().iterator();
                 while (it.hasNext()) {
@@ -567,7 +581,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
 
     /**
      * Compares the import statements between all branches.
-     * A flag is set of each statement for remembering which branches use it.
+     * A flag is associated to each import statement for remembering which branches use it.
      *
      * <h4>Performance note</h4>
      * Current implementation is not efficient because for each equal key,
@@ -585,7 +599,9 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                     final Map<Path,Source> sources = organizer.sources;
                     other.sources.forEach((path, osrc) -> {
                         final Source source = sources.get(path);
-                        if (source != null) source.updateUsageFlags(osrc);
+                        if (source != null) {
+                            source.updateUsageFlags(osrc);
+                        }
                     });
                 }
             }
@@ -603,11 +619,13 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
      * @throws IOException if an error occurred while writing a file.
      */
     private void rewrite(final String[] branchNames) throws IOException {
+        final Integer bitmask = (1 << branchNames.length) - 1;
         final var lines = new ArrayList<String>();
         for (final Map.Entry<Path,Source> entry : sources.entrySet()) {
-            entry.getValue().writeTo(lines, branchNames);
+            final Path relative = entry.getKey();
+            entry.getValue().writeTo(lines, branchNames, branchesOfFiles.getOrDefault(relative, bitmask));
             lines.replaceAll(ReorganizeImports::removeExtraneousSpaces);
-            Files.write(root.resolve(entry.getKey()), lines, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(root.resolve(relative), lines, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
             lines.clear();
         }
     }
