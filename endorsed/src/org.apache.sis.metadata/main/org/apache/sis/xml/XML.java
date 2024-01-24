@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -47,6 +48,7 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.SystemListener;
+import org.apache.sis.xml.util.URISource;
 import org.apache.sis.xml.bind.TypeRegistration;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -615,11 +617,8 @@ public final class XML extends Static {
     public static Object unmarshal(final Path input) throws JAXBException {
         ensureNonNull("input", input);
         final Object object;
-        try (InputStream in = Files.newInputStream(input, StandardOpenOption.READ)) {
-            final MarshallerPool pool = getPool();
-            final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-            object = unmarshaller.unmarshal(in);
-            pool.recycle(unmarshaller);
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(input, StandardOpenOption.READ))) {
+            object = unmarshal(URISource.create(in, input.toUri()), null);
         } catch (IOException e) {
             throw new JAXBException(Errors.format(Errors.Keys.CanNotRead_1, input), e);
         }

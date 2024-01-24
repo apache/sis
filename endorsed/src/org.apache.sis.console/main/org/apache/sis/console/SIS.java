@@ -596,11 +596,18 @@ public final class SIS extends Static {
      * <ul>
      *   <li>{@code --sourceCRS}: the coordinate reference system of input points.</li>
      *   <li>{@code --targetCRS}: the coordinate reference system of output points.</li>
+     *   <li>{@code --operation}: the coordinate operation from source CRS to target CRS.</li>
      * </ul>
      *
-     * Arguments other than options are files, usually as character strings but can also be
+     * The {@code --operation} parameter is optional.
+     * If provided, then the {@code --sourceCRS} and {@code --targetCRS} parameters become optional.
+     * If the operation is specified together with the source and/or target CRS, then the operation
+     * is used in the middle and conversions from/to the specified CRS are concatenated before/after
+     * the specified operation.
+     *
+     * <p>Arguments other than options are files, usually as character strings, but can also be
      * {@link java.io.File}, {@link java.nio.file.Path} or {@link java.net.URL} for example.
-     * Usage example:
+     * Usage example:</p>
      *
      * {@snippet lang="java" :
      *     SIS.TRANSFORM.sourceCRS("EPSG:3395").targetCRS("EPSG:4326").run("data.txt");

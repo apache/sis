@@ -29,7 +29,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.wkt.FirstKeywordPeek;
 
 
@@ -64,7 +64,7 @@ public class LandsatStoreProvider extends DataStoreProvider {
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(NAME);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreProvider.descriptor(NAME);
 
     /**
      * The object to use for verifying if the first keyword is the expected one.

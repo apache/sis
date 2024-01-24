@@ -50,6 +50,7 @@ import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.CharSequences;
@@ -282,6 +283,7 @@ public class WorldFileStore extends PRJDataStore {
      * does not support the locale, the reader's default locale will be used.
      */
     private void configureReader() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ImageReader reader = this.reader;
         try {
             reader.setLocale(listeners.getLocale());
@@ -371,7 +373,7 @@ loop:   for (int convention=0;; convention++) {
      * @throws DataStoreException if the file content cannot be parsed.
      */
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
-        final AuxiliaryContent content = readAuxiliaryFile(wld);
+        final AuxiliaryContent content = readAuxiliaryFile(wld, false);
         if (content == null) {
             listeners.warning(cannotReadAuxiliaryFile(wld));
             return null;
@@ -422,11 +424,12 @@ loop:   for (int convention=0;; convention++) {
      * @return the requested names, or an empty array if none or unknown.
      */
     public String[] getImageFormat(final boolean asMimeType) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ImageReader reader = this.reader;
         if (reader != null) {
-            final ImageReaderSpi provider = reader.getOriginatingProvider();
-            if (provider != null) {
-                final String[] names = asMimeType ? provider.getMIMETypes() : provider.getFormatNames();
+            final ImageReaderSpi p = reader.getOriginatingProvider();
+            if (p != null) {
+                final String[] names = asMimeType ? p.getMIMETypes() : p.getFormatNames();
                 if (names != null) {
                     return names;
                 }
@@ -463,6 +466,7 @@ loop:   for (int convention=0;; convention++) {
      */
     final GridGeometry getGridGeometry(final int index) throws IOException, DataStoreException {
         assert Thread.holdsLock(this);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ImageReader reader = reader();
         if (gridGeometry == null) {
             final AffineTransform2D gridToCRS;
@@ -533,7 +537,7 @@ loop:   for (int convention=0;; convention++) {
                 builder.addExtent(gridGeometry.getEnvelope(), listeners);
             }
             mergeAuxiliaryMetadata(builder);
-            addTitleOrIdentifier(builder);
+            builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();
         } catch (IOException e) {

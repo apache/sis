@@ -44,7 +44,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
@@ -98,7 +98,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(NAME);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreProvider.descriptor(NAME);
 
     /**
      * The name of the {@link ucar.nc2.NetcdfFile} class, which is {@value}.

@@ -16,25 +16,18 @@
  */
 package org.apache.sis.storage.base;
 
-import java.net.URL;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownServiceException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Optional;
-import java.util.TimeZone;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -43,11 +36,9 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.wkt.StoreFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -61,48 +52,23 @@ import org.apache.sis.util.resources.Vocabulary;
 /**
  * A data store for a file or URI accompanied by an auxiliary file of the same name with {@code .prj} extension.
  * If the auxiliary file is absent, {@link OptionKey#DEFAULT_CRS} is used as a fallback.
- * The WKT 1 variant used for parsing the {@code "*.prj"} file is the variant used by "World Files" and GDAL;
- * this is not the standard specified by OGC 01-009 (they differ in there interpretation of units of measurement).
+ * The default WKT 1 variant used for parsing the {@code "*.prj"} file is the variant used by "World Files" and GDAL.
+ * This is not the standard specified by OGC 01-009 (they differ in there interpretation of units of measurement).
+ * This implementation accepts also WKT 2 (in which case the WKT 1 convention is ignored) and GML.
  *
- * <p>It is still possible to create a data store with a {@link java.nio.channels.ReadableByteChannel},
- * {@link java.io.InputStream} or {@link java.io.Reader}, in which case the {@linkplain #location} will
- * be null and the CRS defined by the {@code OptionKey} will be used.</p>
+ * <p>The URI can be null if the only available storage is a {@link java.nio.channels.ReadableByteChannel},
+ * {@link java.io.InputStream} or {@link java.io.Reader}. In such case, the CRS should be specified by the
+ * {@link OptionKey#DEFAULT_CRS}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public abstract class PRJDataStore extends URIDataStore {
-    /**
-     * Maximal length (in bytes) of auxiliary files. This is an arbitrary restriction, we could let
-     * the buffer growth indefinitely instead. But a large auxiliary file is probably an error and
-     * we do not want an {@link OutOfMemoryError} because of that.
-     */
-    private static final int MAXIMAL_LENGTH = 64 * 1024;
-
     /**
      * The filename extension of {@code "*.prj"} files.
      *
      * @see #getComponentFiles()
      */
     protected static final String PRJ = "prj";
-
-    /**
-     * Character encoding in {@code *.prj} or other auxiliary files,
-     * or {@code null} for the JVM default (usually UTF-8).
-     */
-    protected final Charset encoding;
-
-    /**
-     * The locale for texts in {@code *.prj} or other auxiliary files,
-     * or {@code null} for {@link Locale#ROOT} (usually English).
-     * This locale is <strong>not</strong> used for parsing numbers or dates.
-     */
-    private final Locale locale;
-
-    /**
-     * Timezone for dates in {@code *.prj} or other auxiliary files,
-     * or {@code null} for UTC.
-     */
-    private final TimeZone timezone;
 
     /**
      * The coordinate reference system. This is initialized on the value provided by {@link OptionKey#DEFAULT_CRS}
@@ -128,10 +94,18 @@ public abstract class PRJDataStore extends URIDataStore {
      */
     protected PRJDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        crs      = connector.getOption(OptionKey.DEFAULT_CRS);
-        encoding = connector.getOption(OptionKey.ENCODING);
-        locale   = connector.getOption(OptionKey.LOCALE);       // For `InternationalString`, not for numbers.
-        timezone = connector.getOption(OptionKey.TIMEZONE);
+        crs = connector.getOption(OptionKey.DEFAULT_CRS);
+    }
+
+    /**
+     * {@return the convention to use for parsing the PRJ file if Well-Known Text 1 is used}.
+     * Unfortunately, many formats use the ambiguous conventions from the very first specification,
+     * and ignore the clarifications done by OGC 01-009. In such case, we have to tell the WKT parser
+     * that the ambiguous conventions are used. This method can be overridden if the subclass has a way
+     * to know which WKT 1 conventions are used.
+     */
+    protected Convention getConvention() {
+        return Convention.WKT1_COMMON_UNITS;
     }
 
     /**
@@ -144,188 +118,59 @@ public abstract class PRJDataStore extends URIDataStore {
      * @throws DataStoreException if an error occurred while reading the file.
      */
     protected final void readPRJ() throws DataStoreException {
+        readWKT(CoordinateReferenceSystem.class, PRJ).ifPresent((result) -> crs = result);
+    }
+
+    /**
+     * Reads an auxiliary file in WKT or GML format. Standard PRJ files use WKT only,
+     * but the GML format is also accepted by this method as an extension specific to Apache SIS.
+     *
+     * @param  type       base class or interface of the object to read.
+     * @param  extension  extension of the file to read (usually {@link #PRJ}), or {@code null} for the main file.
+     * @return the parsed object, or an empty value if the file does not exist.
+     * @throws DataStoreException if an error occurred while reading the file.
+     */
+    protected final <T> Optional<T> readWKT(final Class<T> type, final String extension) throws DataStoreException {
         Exception cause = null, suppressed = null;
         try {
-            final AuxiliaryContent content = readAuxiliaryFile(PRJ);
+            final AuxiliaryContent content = readAuxiliaryFile(extension, true);
             if (content == null) {
-                listeners.warning(cannotReadAuxiliaryFile(PRJ));
-                return;
+                listeners.warning(cannotReadAuxiliaryFile(extension));
+                return Optional.empty();
+            }
+            if (content.source != null) {
+                // ClassCastException handled by `catch` statement below.
+                return Optional.of(type.cast(readXML(content.source)));
             }
             final String wkt = content.toString();
-            final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
-            format.setConvention(Convention.WKT1_COMMON_UNITS);         // Ignored if the format is WKT 2.
+            final StoreFormat format = new StoreFormat(dataLocale, timezone, null, listeners);
+            format.setConvention(getConvention());          // Ignored if the format is WKT 2.
             try {
                 format.setSourceFile(content.getURI());
             } catch (URISyntaxException e) {
                 suppressed = e;
             }
             final ParsePosition pos = new ParsePosition(0);
-            crs = (CoordinateReferenceSystem) format.parse(wkt, pos);
-            if (crs != null) {
+            // ClassCastException handled by `catch` statement below.
+            final T result = type.cast(format.parse(wkt, pos));
+            if (result != null) {
                 /*
                  * Some characters may exist after the WKT definition. For example, we sometimes see the CRS
                  * defined twice: as a WKT on the first line, followed by key-value pairs on next lines.
-                 * Current Apache SIS implementation ignores the characters after WKT.
+                 * Current Apache SIS implementation ignores all characters after the WKT.
                  */
-                format.validate(crs);
-                return;
+                format.validate(result);
+                return Optional.of(result);
             }
         } catch (NoSuchFileException | FileNotFoundException e) {
-            listeners.warning(cannotReadAuxiliaryFile(PRJ), e);
-            return;
-        } catch (IOException | ParseException | ClassCastException e) {
+            listeners.warning(cannotReadAuxiliaryFile(extension), e);
+            return Optional.empty();
+        } catch (IOException | ParseException | JAXBException | ClassCastException e) {
             cause = e;
         }
-        final var e = new DataStoreReferencingException(cannotReadAuxiliaryFile(PRJ), cause);
+        final var e = new DataStoreReferencingException(cannotReadAuxiliaryFile(extension), cause);
         if (suppressed != null) e.addSuppressed(suppressed);
         throw e;
-    }
-
-    /**
-     * Reads the content of the auxiliary file with the specified extension.
-     * This method uses the same URI as {@link #location},
-     * except for the extension which is replaced by the given value.
-     * This method is suitable for reasonably small files.
-     * An arbitrary size limit is applied for safety.
-     *
-     * @param  extension    the filename extension of the auxiliary file to open.
-     * @return the file content together with the source, or {@code null} if none. Should be short-lived.
-     * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
-     * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
-     * @throws IOException if another error occurred while opening the stream.
-     * @throws DataStoreException if the auxiliary file content seems too large.
-     */
-    protected final AuxiliaryContent readAuxiliaryFile(final String extension) throws IOException, DataStoreException {
-        /*
-         * Try to open the stream using the storage type (Path or URL) closest to the type
-         * given at construction time. We do that because those two types cannot open the
-         * same streams. For example, Path does not open HTTP or FTP connections by default,
-         * and URL does not open S3 files in current implementation.
-         */
-        final InputStream stream;
-        Path path = locationAsPath;
-        final Object source;                    // In case an error message is produced.
-        if (path != null) {
-            final String base = getBaseFilename(path);
-            path   = path.resolveSibling(base.concat(extension));
-            stream = Files.newInputStream(path);
-            source = path;
-        } else try {
-            final URI uri = IOUtilities.toAuxiliaryURI(location, extension, true);
-            if (uri == null) {
-                return null;
-            }
-            final URL url = uri.toURL();
-            stream = url.openStream();
-            source = url;
-        } catch (URISyntaxException e) {
-            throw new DataStoreException(cannotReadAuxiliaryFile(extension), e);
-        }
-        /*
-         * Reads the auxiliary file fully, with an arbitrary size limit.
-         */
-        try (InputStreamReader reader = (encoding != null)
-                ? new InputStreamReader(stream, encoding)
-                : new InputStreamReader(stream))
-        {
-            char[] buffer = new char[1024];
-            int offset = 0, count;
-            while ((count = reader.read(buffer, offset, buffer.length - offset)) >= 0) {
-                offset += count;
-                if (offset >= buffer.length) {
-                    if (offset >= MAXIMAL_LENGTH) {
-                        throw new DataStoreContentException(Resources.forLocale(listeners.getLocale())
-                                .getString(Resources.Keys.AuxiliaryFileTooLarge_1, IOUtilities.filename(source)));
-                    }
-                    buffer = Arrays.copyOf(buffer, offset*2);
-                }
-            }
-            return new AuxiliaryContent(source, buffer, 0, offset);
-        }
-    }
-
-    /**
-     * Content of a file read by {@link #readAuxiliaryFile(String)}.
-     * This is used as a workaround for not being able to return multiple values from a single method.
-     * Instances of this class should be short lived, because they hold larger arrays than necessary.
-     */
-    protected static final class AuxiliaryContent implements CharSequence {
-        /** {@link Path} or {@link URL} that have been read. */
-        private final Object source;
-
-        /** The textual content of the auxiliary file. */
-        private final char[] buffer;
-
-        /** Index of the first valid character in {@link #buffer}. */
-        private final int offset;
-
-        /** Number of valid characters in {@link #buffer}. */
-        private final int length;
-
-        /** Wraps (without copying) the given array as the content of an auxiliary file. */
-        private AuxiliaryContent(final Object source, final char[] buffer, final int offset, final int length) {
-            this.source = source;
-            this.buffer = buffer;
-            this.offset = offset;
-            this.length = length;
-        }
-
-        /**
-         * Returns the filename (without path) of the auxiliary file.
-         * This information is mainly for producing error messages.
-         *
-         * @return name of the auxiliary file that have been read.
-         */
-        public String getFilename() {
-            return IOUtilities.filename(source);
-        }
-
-        /**
-         * Returns the source as an URI if possible.
-         *
-         * @return the source as an URI, or {@code null} if none.
-         * @throws URISyntaxException if the URI cannot be parsed.
-         */
-        public URI getURI() throws URISyntaxException {
-            return IOUtilities.toURI(source);
-        }
-
-        /**
-         * Returns the number of valid characters in this sequence.
-         */
-        @Override
-        public int length() {
-            return length;
-        }
-
-        /**
-         * Returns the character at the given index. For performance reasons this method does not check index bounds.
-         * The behavior of this method is undefined if the given index is not smaller than {@link #length()}.
-         * We skip bounds check because this class should be used for Apache SIS internal purposes only.
-         */
-        @Override
-        public char charAt(final int index) {
-            return buffer[offset + index];
-        }
-
-        /**
-         * Returns a sub-sequence of this auxiliary file content. For performance reasons this method does not
-         * perform bound checks. The behavior of this method is undefined if arguments are out of bounds.
-         * We skip bounds check because this class should be used for Apache SIS internal purposes only.
-         */
-        @Override
-        public CharSequence subSequence(final int start, final int end) {
-            return new AuxiliaryContent(source, buffer, offset + start, end - start);
-        }
-
-        /**
-         * Copies this auxiliary file content in a {@link String}.
-         * This method does not cache the result; caller should invoke at most once.
-         */
-        @Override
-        public String toString() {
-            return new String(buffer, offset, length);
-        }
     }
 
     /**
@@ -346,7 +191,7 @@ public abstract class PRJDataStore extends URIDataStore {
             if (crs == null) {
                 deleteAuxiliaryFile(PRJ);
             } else try (BufferedWriter out = writeAuxiliaryFile(PRJ)) {
-                final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
+                final StoreFormat format = new StoreFormat(dataLocale, timezone, null, listeners);
                 // Keep the default "WKT 2" format (see method javadoc).
                 format.format(crs, out);
                 out.newLine();
@@ -355,48 +200,6 @@ public abstract class PRJDataStore extends URIDataStore {
             Object identifier = getIdentifier().orElse(null);
             if (identifier == null) identifier = Classes.getShortClassName(this);
             throw new DataStoreException(Resources.format(Resources.Keys.CanNotWriteResource_1, identifier), e);
-        }
-    }
-
-    /**
-     * Creates a writer for an auxiliary file with the specified extension.
-     * This method uses the same path as {@link #location},
-     * except for the extension which is replaced by the given value.
-     *
-     * @param  extension  the filename extension of the auxiliary file to write.
-     * @return a stream opened on the specified file.
-     * @throws UnknownServiceException if no {@link Path} or {@link java.net.URI} is available.
-     * @throws DataStoreException if the auxiliary file cannot be created.
-     * @throws IOException if another error occurred while opening the stream.
-     */
-    protected final BufferedWriter writeAuxiliaryFile(final String extension)
-            throws IOException, DataStoreException
-    {
-        final Path[] paths = super.getComponentFiles();
-        if (paths.length == 0) {
-            throw new UnknownServiceException();
-        }
-        Path path = paths[0];
-        final String base = getBaseFilename(path);
-        path = path.resolveSibling(base.concat(extension));
-        return (encoding != null)
-                ? Files.newBufferedWriter(path, encoding)
-                : Files.newBufferedWriter(path);
-    }
-
-    /**
-     * Deletes the auxiliary file with the given extension if it exists.
-     * If the auxiliary file does not exist, then this method does nothing.
-     *
-     * @param  extension  the filename extension of the auxiliary file to delete.
-     * @throws DataStoreException if the auxiliary file is not on a supported file system.
-     * @throws IOException if an error occurred while deleting the file.
-     */
-    protected final void deleteAuxiliaryFile(final String extension) throws DataStoreException, IOException {
-        for (Path path : super.getComponentFiles()) {
-            final String base = getBaseFilename(path);
-            path = path.resolveSibling(base.concat(extension));
-            Files.deleteIfExists(path);
         }
     }
 
@@ -448,29 +251,15 @@ public abstract class PRJDataStore extends URIDataStore {
     }
 
     /**
-     * Returns the filename of the given path without the file suffix.
-     * The returned string always ends in {@code '.'}, making it ready
-     * for concatenation of a new suffix.
-     */
-    private static String getBaseFilename(final Path path) {
-        final String base = path.getFileName().toString();
-        final int s = base.lastIndexOf(IOUtilities.EXTENSION_SEPARATOR);
-        return (s >= 0) ? base.substring(0, s+1) : base + IOUtilities.EXTENSION_SEPARATOR;
-    }
-
-    /**
      * Returns the parameters used to open this data store.
      *
      * @return parameters used for opening this {@code DataStore}.
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        final ParameterValueGroup pg = parameters(provider, location);
-        if (pg != null) {
-            pg.parameter(Provider.CRS_NAME).setValue(crs);
-            return Optional.of(pg);
-        }
-        return Optional.empty();
+        final Optional<ParameterValueGroup> op = super.getOpenParameters();
+        op.ifPresent((pg) -> pg.parameter(Provider.CRS_NAME).setValue(crs));
+        return op;
     }
 
     /**
@@ -478,7 +267,7 @@ public abstract class PRJDataStore extends URIDataStore {
      *
      * @author  Martin Desruisseaux (Geomatys)
      */
-    public abstract static class Provider extends URIDataStore.Provider {
+    public abstract static class Provider extends URIDataStoreProvider {
         /**
          * Name of the {@link #DEFAULT_CRS} parameter.
          */

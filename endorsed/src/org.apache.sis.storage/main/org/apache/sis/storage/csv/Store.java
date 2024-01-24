@@ -643,7 +643,7 @@ final class Store extends URIDataStore implements FeatureSet {
             builder.addExtent(envelope, listeners);
             builder.addFeatureType(featureType, -1);
             mergeAuxiliaryMetadata(builder);
-            addTitleOrIdentifier(builder);
+            builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();
         }

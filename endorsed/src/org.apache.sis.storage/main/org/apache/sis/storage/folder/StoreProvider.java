@@ -45,7 +45,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.StoreUtilities;
@@ -106,12 +106,12 @@ public final class StoreProvider extends DataStoreProvider {
         final ParameterDescriptor<Path> location;
         final ParameterBuilder builder = new ParameterBuilder();
         final InternationalString remark = Resources.formatInternational(Resources.Keys.UsedOnlyIfNotEncoded);
-        ENCODING   = annotate(builder, URIDataStore.Provider.ENCODING, remark);
+        ENCODING   = annotate(builder, URIDataStoreProvider.ENCODING, remark);
         LOCALE     = builder.addName("locale"  ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocale  )).setRemarks(remark).create(Locale.class,   null);
         TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(TimeZone.class, null);
         FORMAT     = builder.addName("format"  ).setDescription(Resources.formatInternational(Resources.Keys.DirectoryContentFormatName)).create(String.class, null);
-        location   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
-        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT, URIDataStore.Provider.CREATE_PARAM);
+        location   = new ParameterBuilder(URIDataStoreProvider.LOCATION_PARAM).create(Path.class, null);
+        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT, URIDataStoreProvider.CREATE_PARAM);
     }
 
     /**
@@ -276,13 +276,13 @@ public final class StoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
-        final StorageConnector connector = URIDataStore.Provider.connector(this, parameters);
+        final StorageConnector connector = URIDataStoreProvider.connector(this, parameters);
         final Parameters pg = Parameters.castOrWrap(parameters);
         connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));
         connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
         connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
         final EnumSet<StandardOpenOption> options = EnumSet.of(StandardOpenOption.WRITE);
-        if (Boolean.TRUE.equals(pg.getValue(URIDataStore.Provider.CREATE_PARAM))) {
+        if (Boolean.TRUE.equals(pg.getValue(URIDataStoreProvider.CREATE_PARAM))) {
             options.add(StandardOpenOption.CREATE);
         }
         return open(connector, pg.getValue(FORMAT), options);

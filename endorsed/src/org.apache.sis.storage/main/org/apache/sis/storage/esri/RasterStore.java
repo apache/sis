@@ -172,7 +172,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
             }
         }
         mergeAuxiliaryMetadata(builder);
-        addTitleOrIdentifier(builder);
+        builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
         builder.setISOStandards(false);
         metadata = builder.buildAndFreeze();
     }
@@ -209,7 +209,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         }
         int count = 0;
         long[] indexAndColors = ArraysExt.EMPTY_LONG;       // Index in highest 32 bits, ARGB in lowest 32 bits.
-        for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(CLR))) {
+        for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(CLR, false))) {
             final int end   = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
             final int start = CharSequences.skipLeadingWhitespaces(line, 0, end);
             if (start < end && Character.isDigit(Character.codePointAt(line, start))) {
@@ -280,7 +280,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
             throws DataStoreException, IOException
     {
         final Statistics[] stats = new Statistics[sm.getNumBands()];
-        for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(STX))) {
+        for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(STX, false))) {
             final int end   = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
             final int start = CharSequences.skipLeadingWhitespaces(line, 0, end);
             if (start < end && Character.isDigit(Character.codePointAt(line, start))) {

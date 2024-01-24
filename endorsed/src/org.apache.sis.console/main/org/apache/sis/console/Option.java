@@ -38,6 +38,12 @@ enum Option {
     TARGET_CRS(true),
 
     /**
+     * The Coordinate Operation to apply on data.
+     * This option can be used as an alternative to the {@link #SOURCE_CRS} and {@link #TARGET_CRS} pair.
+     */
+    OPERATION(true),
+
+    /**
      * Relative path to an auxiliary metadata file.
      */
     METADATA(true),

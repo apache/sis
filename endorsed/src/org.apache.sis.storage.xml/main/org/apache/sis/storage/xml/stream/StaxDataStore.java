@@ -338,7 +338,7 @@ public abstract class StaxDataStore extends URIDataStore {
          */
         @Override
         public boolean isLoggable(final LogRecord warning) {
-            warning.setLoggerName(null);        // For allowing `listeners` to select a logger name.
+            warning.setLoggerName(null);        // For allowing `listeners` to use the provider's logger name.
             listeners.warning(warning);
             return false;
         }

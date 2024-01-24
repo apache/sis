@@ -41,6 +41,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
@@ -241,6 +242,7 @@ final class RawRasterStore extends RasterStore {
      */
     @Override
     public synchronized List<SampleDimension> getSampleDimensions() throws DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ChannelDataInput input = this.input;
         List<SampleDimension> sampleDimensions = super.getSampleDimensions();
         if (sampleDimensions == null) try {
@@ -335,6 +337,7 @@ final class RawRasterStore extends RasterStore {
      */
     private void readHeader() throws IOException, DataStoreException {
         assert Thread.holdsLock(this);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ChannelDataInput input = this.input;
         if (input == null) {
             throw new DataStoreClosedException(canNotRead());
@@ -355,7 +358,7 @@ final class RawRasterStore extends RasterStore {
         int     geomask        = 0;   // Mask telling whether ulxmap, ulymap, xdim, ydim were specified (in that order).
         RawRasterLayout layout = RawRasterLayout.BIL;
         ByteOrder byteOrder    = ByteOrder.nativeOrder();
-        final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR);
+        final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR, false);
         if (header == null) {
             throw new DataStoreException(cannotReadAuxiliaryFile(RawRasterStoreProvider.HDR));
         }

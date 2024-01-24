@@ -30,7 +30,7 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -91,7 +91,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
         final var builder     = new ParameterBuilder();
         final var modifiers   = builder.addName(MODIFIERS).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Options)).create(FormatModifier[].class, null);
         final var compression = builder.addName(COMPRESSION).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Compression)).create(Compression.class, null);
-        OPEN_DESCRIPTOR = builder.addName(Constants.GEOTIFF).createGroup(URIDataStore.Provider.LOCATION_PARAM, modifiers, compression);
+        OPEN_DESCRIPTOR = builder.addName(Constants.GEOTIFF).createGroup(URIDataStoreProvider.LOCATION_PARAM, modifiers, compression);
     }
 
     /**
@@ -162,7 +162,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        if (URIDataStore.Provider.isWritable(connector, false)) {
+        if (URIDataStoreProvider.isWritable(connector, false)) {
             return new WritableStore(this, connector);
         }
         return new GeoTiffStore(this, connector);

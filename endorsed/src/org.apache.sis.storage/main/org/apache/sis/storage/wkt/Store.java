@@ -184,7 +184,7 @@ final class Store extends URIDataStore {
                 mergeAuxiliaryMetadata(builder);
             } else {
                 mergeAuxiliaryMetadata(builder);
-                addTitleOrIdentifier(builder);
+                builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             }
             metadata = builder.buildAndFreeze();
         }

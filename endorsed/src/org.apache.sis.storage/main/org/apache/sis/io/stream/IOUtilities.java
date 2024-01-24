@@ -206,8 +206,8 @@ public final class IOUtilities extends Static {
      */
     public static String toString(final Object path) {
         /*
-         * For the following types, the string that we want can be obtained only by toString(),
-         * or the class is final so we know that the toString(à behavior cannot be changed.
+         * For the following types, the string that we want can be obtained only by `toString()`,
+         * or the class is final so we know that the `toString()` behavior cannot be changed.
          */
         if (path instanceof CharSequence || path instanceof Path || path instanceof URL || path instanceof URI) {
             return path.toString();

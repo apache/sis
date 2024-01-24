@@ -67,6 +67,7 @@ public final class URISource extends StreamSource {
      */
     private URISource(final InputStream input, final URI source) {
         super(input);
+        // SystemId will be computed only if requested.
         document = source.normalize();
         fragment = null;
     }
@@ -78,7 +79,7 @@ public final class URISource extends StreamSource {
      * @param  source  URL of the XML document, or {@code null} if none.
      * @return the given input stream as a source.
      */
-    static StreamSource create(final InputStream input, final URI source) {
+    public static StreamSource create(final InputStream input, final URI source) {
         if (source != null) {
             return new URISource(input, source);
         } else {
@@ -87,7 +88,7 @@ public final class URISource extends StreamSource {
     }
 
     /**
-     * If this source if defined only by URI (no input stream), returns that URI.
+     * If this source is defined only by URI (no input stream), returns that URI.
      * Otherwise returns {@code null}.
      *
      * @return the URI, or {@code null} if not applicable for reading the document.
