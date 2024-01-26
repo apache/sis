@@ -43,7 +43,7 @@ public final class WordWrapWithLineSeparatorTest extends WordWrapTest {
     @Before
     @Override
     public void createLineAppender() {
-        appender = new LineAppender(new LineAppender(appender, "\r", false), 10, false);
+        appender = new LineAppender(new LineAppender(appender, "\r", false), WordWrapTest.LINE_LENGTH, false);
     }
 
     /**

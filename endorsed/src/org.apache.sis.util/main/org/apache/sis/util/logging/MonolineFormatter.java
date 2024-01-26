@@ -792,7 +792,7 @@ loop:   for (int i=0; ; i++) {
              * Now for the message part, we need to use the LineAppender in order to replace EOL
              * and tabulations.
              */
-            writer.setMaximalLineLength(maximalLength);
+            writer.setMaximalLineLength(Math.max(maximalLength - margin - 3, 10));
             writer.setCurrentLineLength(X364.lengthOfPlain(buffer, 0, buffer.length()));
             try {
                 if (message != null) {

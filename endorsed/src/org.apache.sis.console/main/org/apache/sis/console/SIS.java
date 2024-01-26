@@ -626,7 +626,7 @@ public final class SIS extends Static {
         Transform() {super("transform");}
 
         /**
-         * Sets Coordinate Reference System of input data.
+         * Sets the Coordinate Reference System of input data.
          *
          * @param  value  the EPSG code, WKT or file from which to get the CRS.
          * @return a new builder or {@code this}, for method call chaining.
@@ -636,13 +636,23 @@ public final class SIS extends Static {
         }
 
         /**
-         * Sets Coordinate Reference System of output data.
+         * Sets the Coordinate Reference System of output data.
          *
          * @param  value  the EPSG code, WKT or file from which to get the CRS.
          * @return a new builder or {@code this}, for method call chaining.
          */
         public Transform targetCRS(Object value) {
             return set(Option.TARGET_CRS, value);
+        }
+
+        /**
+         * Sets the Coordinate Operation to use.
+         *
+         * @param  value  the EPSG code, WKT or file from which to get the coordinate operation.
+         * @return a new builder or {@code this}, for method call chaining.
+         */
+        public Transform operation(Object value) {
+            return set(Option.OPERATION, value);
         }
 
         /**

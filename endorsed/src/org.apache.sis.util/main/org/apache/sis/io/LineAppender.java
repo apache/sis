@@ -379,7 +379,6 @@ public class LineAppender extends Appender implements Flushable {
      *
      * @throws IOException if an I/O error occurs.
      */
-    @SuppressWarnings("fallthrough")
     private void write(final int c) throws IOException {
         /*
          * If the character to write is a EOL sequence, then:
@@ -410,10 +409,10 @@ public class LineAppender extends Appender implements Flushable {
         /*
          * If the character to write is a whitespace, then write any pending characters from
          * the buffer to the underlying appendable since we know that those characters didn't
-         * exceeded the line length limit.
+         * exceed the line length limit.
          *
          * We use `Character.isWhitespace(…)` instead of `Character.isSpaceChar(…)` because
-         * the former returns `true` tabulations (which we want), and returns `false`
+         * the former returns `true` for tabulations (which we want), and returns `false`
          * for non-breaking spaces (which we also want).
          */
         if (Character.isWhitespace(c)) {
@@ -460,48 +459,95 @@ public class LineAppender extends Appender implements Flushable {
         }
         /*
          * The remaining of this method is executed only if we exceeded the maximal line length.
-         * First, search for the hyphen character, if any. If we find one and if it is preceeded
-         * by a letter, split there. The "letter before" condition is a way to avoid to split at
-         * the minus sign of negative numbers like "-99", assuming that the minus sign is preceeded
-         * by a space. We cannot look at the character after since we may not know it yet.
+         * First, search for a dash character (hyphen) for splitting the line after it. If we do
+         * not find a dash character, as a fallback split on any non-letter or digit characters
+         * except the punctuation starts.
          */
-        if (++codePointCount > maximalLineLength) {
-searchHyp:  for (int i=buffer.length(); i>0;) {
-                final int b = buffer.codePointBefore(i);
-                final int n = Character.charCount(b);
-                switch (b) {
-                    case '-': {
-                        if (i>=n && !Character.isLetter(buffer.codePointBefore(i-n))) {
-                            break;                      // Continue searching previous characters.
-                        }
-                        // fall through
-                    }
-                    case Characters.HYPHEN:
-                    case Characters.SOFT_HYPHEN: {
-                        transfer(i);
-                        break searchHyp;
-                    }
-                }
-                i -= n;
+        if (++codePointCount < maximalLineLength) {
+            return;
+        }
+        int splitAt = buffer.length();          // Where to separate the line as two lines.
+        int fallback = splitAt;                 // Fallback to use if we could not find a value for `splitAt`.
+        boolean hasFallback = false;            // Whether the `fallback` value has been defined.
+split:  for (;;) {
+            if (splitAt <= 0) {
+                splitAt = fallback;
+                break;
             }
-            /*
-             * At this point, all the remaining content of the buffer must move on the next line.
-             * Skip the leading whitespaces on the new line.
-             */
-            writeLineSeparator();
-            final int length = buffer.length();
-            for (int i=0; i<length;) {
-                final int s = buffer.codePointAt(i);
-                if (!Character.isWhitespace(s)) {
-                    buffer.delete(0, i);
+            int b = buffer.codePointBefore(splitAt);
+            int n = Character.charCount(b);
+            switch (Character.getType(b)) {
+                case Character.UPPERCASE_LETTER:
+                case Character.LOWERCASE_LETTER:
+                case Character.TITLECASE_LETTER:
+                case Character.MODIFIER_LETTER:
+                case Character.OTHER_LETTER:
+                case Character.DECIMAL_DIGIT_NUMBER:
+                case Character.INITIAL_QUOTE_PUNCTUATION:
+                case Character.START_PUNCTUATION: break;            // Do nothing (search another character).
+                case Character.PARAGRAPH_SEPARATOR:
+                case Character.SPACE_SEPARATOR:
+                case Character.LINE_SEPARATOR:
+                case Character.CONTROL: {
+                    /*
+                     * Split the line before a space (except no-break space) and discard trailing spaces.
+                     * The `isWhitespace(b)` check is necessary for excluding the no-break spaces.
+                     */
+                    final int end = splitAt;
+                    while (Character.isWhitespace(b)) {
+                        if ((splitAt -= n) <= 0) break;
+                        b = buffer.codePointBefore(splitAt);
+                        n = Character.charCount(b);
+                    }
+                    if (splitAt == end) break;                      // No-break space. Search another character.
+                    buffer.delete(splitAt, end);
+                    break split;                                    // Split here (before the space character).
+                }
+                /*
+                 * Split the line after a dash character.
+                 * The "letter before" condition is a way to avoid splitting at the minus sign
+                 * of negative numbers, assuming that the minus sign is preceeded by a space.
+                 * We cannot look at the character after because it may not be in the buffer yet.
+                 */
+                case Character.DASH_PUNCTUATION: {
+                    if (b == '-') {
+                        b = splitAt - n;
+                        if (b > 0 && !Character.isLetter(buffer.codePointBefore(b))) {
+                            break;      // Continue the search in previous characters.
+                        }
+                    }
+                    break split;        // Split here (after the dash character).
+                }
+                /*
+                 * Soft hyphen are not in the dash category, so they need to be checked here.
+                 * Replace soft-hyphen by ordinary (visible) hyphen since the hyphen is used.
+                 */
+                case Character.FORMAT: {
+                    if (b == Characters.SOFT_HYPHEN) {
+                        buffer.setCharAt(splitAt - n, Characters.HYPHEN);
+                        break split;    // Split here (after the dash character).
+                    }
+                    break;              // Do nothing (search another character).
+                }
+                /*
+                 * All other categories (e.g. punctuations) may be used as a split point
+                 * if no better location is found.
+                 */
+                default: {
+                    if (!hasFallback && b != '<') {
+                        hasFallback = true;
+                        fallback = splitAt;
+                    }
                     break;
                 }
-                i += Character.charCount(s);
             }
-            printableLength = buffer.length();
-            codePointCount  = buffer.codePointCount(0, printableLength);
-            onLineBegin(true);
+            splitAt -= n;
         }
+        transfer(splitAt);
+        writeLineSeparator();
+        printableLength = buffer.length();          // Remaining characters will be on next line.
+        codePointCount  = buffer.codePointCount(0, printableLength);
+        onLineBegin(true);
     }
 
     /**

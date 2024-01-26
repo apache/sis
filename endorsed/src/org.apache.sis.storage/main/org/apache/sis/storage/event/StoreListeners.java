@@ -626,6 +626,7 @@ public class StoreListeners implements Localized {
     public <E extends StoreEvent> boolean fire(final Class<E> eventType, final E event) {
         ArgumentChecks.ensureNonNull("event", event);
         ArgumentChecks.ensureNonNull("eventType", eventType);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Set<Class<? extends StoreEvent>> permittedEventTypes = this.permittedEventTypes;
         if (permittedEventTypes != null && !permittedEventTypes.contains(eventType)) {
             throw illegalEventType(eventType);

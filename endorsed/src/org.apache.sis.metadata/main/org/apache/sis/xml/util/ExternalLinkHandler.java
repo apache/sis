@@ -185,7 +185,6 @@ public class ExternalLinkHandler {
      * @param  cause  the exception that occurred while trying to process the document.
      */
     public static void warningOccured(final Object href, final Exception cause) {
-        Context.warningOccured(Context.current(), ReferenceResolver.class, "resolve", cause, true);
         Context.warningOccured(Context.current(), Level.WARNING, ReferenceResolver.class, "resolve",
                                cause, Errors.class, Errors.Keys.CanNotRead_1, href);
     }
