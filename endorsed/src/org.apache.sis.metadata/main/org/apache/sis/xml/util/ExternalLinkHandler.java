@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Level;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLInputFactory;
@@ -181,12 +180,11 @@ public class ExternalLinkHandler {
      * The latter assumption is valid if {@code ReferenceResolver.resolve(…)} is the only
      * code invoking, directly or indirectly, this {@code warning(…)} method.
      *
-     * @param  href   the URI that cannot be parsed.
-     * @param  cause  the exception that occurred while trying to process the document.
+     * @param  href  the URI that cannot be parsed.
+     * @param  cause the exception that occurred while trying to process the document.
      */
     public static void warningOccured(final Object href, final Exception cause) {
-        Context.warningOccured(Context.current(), Level.WARNING, ReferenceResolver.class, "resolve",
-                               cause, Errors.class, Errors.Keys.CanNotRead_1, href);
+        new ExceptionSimplifier(href, cause).report(Context.current(), ReferenceResolver.class, "resolve");
     }
 
     /**

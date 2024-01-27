@@ -31,6 +31,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.internal.CollectionsExt;
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
@@ -404,7 +405,7 @@ final class Element {
      * @return the exception to be thrown.
      */
     final ParseException parseFailed(final Exception cause) {
-        return new UnparsableObjectException(errorLocale, Errors.Keys.ErrorIn_2,
+        return new UnparsableObjectException(errorLocale, Resources.Keys.CannotParseElement_2,
                 new String[] {keyword, Exceptions.getLocalizedMessage(cause, errorLocale)}, offset).initCause(cause);
     }
 

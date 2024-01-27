@@ -118,7 +118,18 @@ public final class Context extends MarshalContext {
     private static final ThreadLocal<Context> CURRENT = new ThreadLocal<>();
 
     /**
+     * A sentinel value meaning that unmarshalling of a document was already attempted before and failed.
+     * This is used for documents referenced from a larger document using {@code xlink:href}.
+     *
+     * @see #getExternalObjectForID(Object, String)
+     * @see #cacheDocument(Object, Object)
+     */
+    public static final Object INVALID_OBJECT = Void.TYPE;
+
+    /**
      * The logger to use for warnings that are specific to XML.
+     *
+     * @see #warningOccured(Context, Level, Class, String, Throwable, Class, short, Object...)
      */
     public static final Logger LOGGER = Logger.getLogger(Loggers.XML);
 
@@ -180,6 +191,10 @@ public final class Context extends MarshalContext {
      * At marhalling time, this map is used for avoiding duplicated identifiers in the same XML document.
      * At unmarshalling time, this is used for getting a previously unmarshalled object from its identifier.
      *
+     * <p>By convention, the {@code null} key is associated to the whole document. This convention is used if
+     * the document being unmarshalled is part of a larger document and was referenced by {@code xlink:href}.
+     * In such case, this map is also a value of the {@link #documentToXmlids} map.</p>
+     *
      * @see #getObjectForID(Context, String)
      */
     private final Map<String,Object> xmlidToObject;
@@ -202,8 +217,10 @@ public final class Context extends MarshalContext {
      * from a file or an URL, {@code systemId} should be the value of {@link java.net.URI#toASCIIString()} for
      * consistency with {@link javax.xml.transform.stream.StreamSource}.  However, URI instances are preferred
      * in this map because the {@link URI#equals(Object)} method applies some rules regarding case-sensitivity
-     * that {@link String#equals(Object)} cannot know. Values of the map are the {@link #xmlidToObject} maps of
-     * the corresponding document. By convention, the object associated to the null key is the whole document.</p>
+     * that {@link String#equals(Object)} cannot know.</p>
+     *
+     * <p>Values of this map are the {@link #xmlidToObject} maps of the corresponding document.
+     * See {@link #xmlidToObject} for a description of the meaning of those maps.</p>
      */
     private final Map<Object, Map<String,Object>> documentToXmlids;
 
@@ -219,6 +236,8 @@ public final class Context extends MarshalContext {
 
     /**
      * The object to inform about warnings, or {@code null} if none.
+     *
+     * @see org.apache.sis.xml.XML#WARNING_FILTER
      */
     private final Filter logFilter;
 
@@ -679,12 +698,20 @@ public final class Context extends MarshalContext {
      * By convention, a null {@code id} returns the whole document.</p>
      *
      * @param  systemId  document identifier (without the fragment part) as an {@link URI} or a {@link String}.
-     * @param  id        the fragment part of the URI identifying the object to get.
-     * @return the object associated to the given identifier, or {@code null} if none.
+     * @param  fragment  the fragment part of the URI, or {@code null} for the whole document.
+     * @return the object associated to the given identifier, or {@code null} if none,
+     *         or {@link #INVALID_OBJECT} if a parsing was previously attempted and failed.
      */
-    public final Object getExternalObjectForID(final Object systemId, final String id) {
+    public final Object getExternalObjectForID(final Object systemId, final String fragment) {
         final Map<String,Object> cache = documentToXmlids.get(systemId);
-        return (cache != null) ? cache.get(id) : null;
+        if (cache == null) {
+            return null;
+        }
+        final Object value = cache.get(fragment);
+        if (value == null && cache.get(null) == INVALID_OBJECT) {
+            return INVALID_OBJECT;
+        }
+        return value;
     }
 
     /**
@@ -693,7 +720,7 @@ public final class Context extends MarshalContext {
      * The fragment part is obtained by {@link #getExternalObjectForID(Object, String)}.
      *
      * @param  systemId  document identifier (without the fragment part) as an {@link URI} or a {@link String}.
-     * @param  document  the document to cache.
+     * @param  document  the document to cache, or {@link #INVALID_OBJECT} for recording a failure to read the document.
      */
     public final void cacheDocument(final Object systemId, final Object document) {
         final Map<String, Object> cache = documentToXmlids.get(systemId);
@@ -766,7 +793,7 @@ public final class Context extends MarshalContext {
 
     /**
      * Sends a warning to the warning listener if there is one, or logs the warning otherwise.
-     * In the latter case, this method logs to the given logger.
+     * In the latter case, this method logs to {@link #LOGGER}.
      *
      * <p>If the given {@code resources} is {@code null}, then this method will build the log
      * message from the {@code exception}.</p>
@@ -776,7 +803,7 @@ public final class Context extends MarshalContext {
      * @param  classe     the class to declare as the warning source.
      * @param  method     the name of the method to declare as the warning source.
      * @param  exception  the exception thrown, or {@code null} if none.
-     * @param  resources  either {@code Errors.class}, {@code Messages.class} or {@code null} for the exception message.
+     * @param  resources  either {@code Errors.class} or {@code Messages.class}, or {@code null} for the exception message.
      * @param  key        the resource keys as one of the constants defined in the {@code Keys} inner class.
      * @param  arguments  the arguments to be given to {@code MessageFormat} for formatting the log message.
      */
@@ -837,7 +864,7 @@ public final class Context extends MarshalContext {
 
     /**
      * Convenience method for sending a warning for the given exception.
-     * The logger will be {@code "org.apache.sis.xml"}.
+     * The log message will be the message of the given exception.
      *
      * @param  context    the current context, or {@code null} if none.
      * @param  classe     the class to declare as the warning source.

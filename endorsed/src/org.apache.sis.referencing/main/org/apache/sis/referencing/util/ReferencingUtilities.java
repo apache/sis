@@ -19,6 +19,7 @@ package org.apache.sis.referencing.util;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
@@ -220,6 +221,7 @@ public final class ReferencingUtilities extends Static {
      * @param  addTo   where to add the single CRS in order to obtain a flat view of {@code source}.
      * @return {@code true} if this method found only single CRS in {@code source}, in which case {@code addTo}
      *         got the same content (assuming that {@code addTo} was empty prior this method call).
+     * @throws NoSuchElementException if a CRS component is missing.
      * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
      *
      * @see org.apache.sis.referencing.CRS#getSingleComponents(CoordinateReferenceSystem)
@@ -243,10 +245,11 @@ public final class ReferencingUtilities extends Static {
                 final String message;
                 if (candidate instanceof NilObject) {
                     message = Errors.format(Errors.Keys.NilObject_1, Identifiers.getNilReason((NilObject) candidate));
+                    throw new NoSuchElementException(message);
                 } else {
                     message = Errors.format(Errors.Keys.NestedElementNotAllowed_1, getInterface(candidate));
+                    throw new ClassCastException(message);
                 }
-                throw new ClassCastException(message);
             }
         }
         return sameContent;

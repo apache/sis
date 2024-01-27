@@ -154,9 +154,19 @@ public class Errors extends IndexedResourceBundle {
         public static final short CanNotRead_1 = 12;
 
         /**
+         * Cannot read “{0}” at line {1}, column {2}.
+         */
+        public static final short CanNotRead_3 = 34;
+
+        /**
          * Cannot represent “{1}” in a strictly standard-compliant {0} format.
          */
         public static final short CanNotRepresentInFormat_2 = 13;
+
+        /**
+         * Cannot resolve “{0}” as an absolute path.
+         */
+        public static final short CanNotResolveAsAbsolutePath_1 = 205;
 
         /**
          * Cannot set a value for parameter “{0}”.
@@ -287,11 +297,6 @@ public class Errors extends IndexedResourceBundle {
          * An error occurred in file “{0}” at line {1}.
          */
         public static final short ErrorInFileAtLine_2 = 33;
-
-        /**
-         * Error in “{0}”: {1}
-         */
-        public static final short ErrorIn_2 = 34;
 
         /**
          * A size of {1} elements is excessive for the “{0}” list.

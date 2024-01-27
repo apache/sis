@@ -51,6 +51,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.util.URISource;
+import org.apache.sis.xml.util.ExceptionSimplifier;
 
 
 /**
@@ -328,31 +329,35 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @param  builder  where to merge the metadata.
      */
     protected final void mergeAuxiliaryMetadata(final MetadataBuilder builder) {
+        Object spec = null;         // Used only for formatting error message.
         Object metadata = null;
-        Exception error = null;
         try {
             final URI source;
             final InputStream input;
             final Path path = getMetadataPath();
             if (path != null) {
+                spec   = path;
                 source = path.toUri();
                 input  = open(path);
             } else {
                 source = getMetadataURI();
                 if (source == null) return;
+                spec  = source;
                 input = source.toURL().openStream();
             }
             metadata = readXML(input, source);
         } catch (URISyntaxException | IOException e) {
-            error = e;
+            listeners.warning(cannotReadAuxiliaryFile("xml"), e);
         } catch (JAXBException e) {
-            final Throwable cause = e.getCause();
-            error = (cause instanceof IOException) ? (Exception) cause : e;
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                listeners.warning(cannotReadAuxiliaryFile("xml"), (Exception) cause);
+            } else {
+                listeners.warning(new ExceptionSimplifier(spec, e).record(URIDataStore.class, "mergeAuxiliaryMetadata"));
+            }
         }
         if (metadata != null) {
             builder.mergeMetadata(metadata, getLocale());
-        } else if (error != null) {
-            listeners.warning(cannotReadAuxiliaryFile("xml"), error);
         }
     }
 
@@ -384,7 +389,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
         java.util.logging.Filter handler = (record) -> {
             record.setLoggerName(null);        // For allowing `listeners` to use the provider's logger name.
             listeners.warning(record);
-            return true;
+            return false;
         };
         // Cannot use Map.of(…) because it does not accept null values.
         Map<String,Object> properties = new HashMap<>(8);

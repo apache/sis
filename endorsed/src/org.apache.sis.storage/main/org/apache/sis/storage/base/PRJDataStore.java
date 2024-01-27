@@ -47,6 +47,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.xml.util.ExceptionSimplifier;
 
 
 /**
@@ -138,9 +139,12 @@ public abstract class PRJDataStore extends URIDataStore {
                 listeners.warning(cannotReadAuxiliaryFile(extension));
                 return Optional.empty();
             }
-            if (content.source != null) {
+            if (content.source != null) try {
                 // ClassCastException handled by `catch` statement below.
                 return Optional.of(type.cast(readXML(content.source)));
+            } catch (JAXBException e) {
+                var s = new ExceptionSimplifier(content.getFilename(), e);
+                throw new DataStoreException(s.getMessage(getLocale()), s.exception);
             }
             final String wkt = content.toString();
             final StoreFormat format = new StoreFormat(dataLocale, timezone, null, listeners);
@@ -165,7 +169,7 @@ public abstract class PRJDataStore extends URIDataStore {
         } catch (NoSuchFileException | FileNotFoundException e) {
             listeners.warning(cannotReadAuxiliaryFile(extension), e);
             return Optional.empty();
-        } catch (IOException | ParseException | JAXBException | ClassCastException e) {
+        } catch (IOException | ParseException | ClassCastException e) {
             cause = e;
         }
         final var e = new DataStoreReferencingException(cannotReadAuxiliaryFile(extension), cause);
