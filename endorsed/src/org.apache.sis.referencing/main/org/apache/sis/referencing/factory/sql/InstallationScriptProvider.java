@@ -320,7 +320,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                                 final String part = resources[FIRST_FILE + i];
                                 if (name.contains(part)) {
                                     if (found[i] != null) {
-                                        log(Errors.getResources(locale)
+                                        log(Errors.forLocale(locale)
                                                   .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedFileReference_1, part));
                                         return;   // Stop the search because of duplicated file.
                                     }

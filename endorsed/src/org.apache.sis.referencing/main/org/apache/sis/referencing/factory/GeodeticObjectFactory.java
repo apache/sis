@@ -311,7 +311,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             final Level level = Semaphores.query(Semaphores.FINER_OBJECT_CREATION_LOGS) ? Level.FINER : Level.FINE;
             if (LOGGER.isLoggable(level)) {
                 final String id = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(c, null));
-                final LogRecord record = Messages.getResources(null).getLogRecord(level,
+                final LogRecord record = Messages.forLocale(null).getLogRecord(level,
                         (id != null) ? Messages.Keys.CreatedIdentifiedObject_3
                                      : Messages.Keys.CreatedNamedObject_2,
                         c.getInterface(), c.getName().getCode(), id);
@@ -1612,7 +1612,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         if (object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;
         } else {
-            throw new FactoryException(Errors.getResources(defaultProperties).getString(
+            throw new FactoryException(Errors.forProperties(defaultProperties).getString(
                     Errors.Keys.IllegalClass_2, CoordinateReferenceSystem.class, object.getClass()));
         }
     }
@@ -1708,7 +1708,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         if (object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;
         } else {
-            throw new FactoryException(Errors.getResources(defaultProperties).getString(
+            throw new FactoryException(Errors.forProperties(defaultProperties).getString(
                     Errors.Keys.IllegalClass_2, CoordinateReferenceSystem.class, object.getClass()));
         }
     }

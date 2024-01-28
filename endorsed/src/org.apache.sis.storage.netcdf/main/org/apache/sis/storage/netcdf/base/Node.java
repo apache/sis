@@ -276,7 +276,7 @@ public abstract class Node extends NamedElement {
      * @return the resources for error messages using the locales specified to the decoder.
      */
     final Errors errors() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**

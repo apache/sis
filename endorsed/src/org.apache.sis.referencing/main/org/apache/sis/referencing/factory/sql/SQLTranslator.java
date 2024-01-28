@@ -388,7 +388,7 @@ public class SQLTranslator implements Function<String,String> {
      * Returns the error message for the exception to throw if the EPSG tables are not found and we cannot create them.
      */
     static String tableNotFound(final Locale locale) {
-        return Errors.getResources(locale).getString(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]);
+        return Errors.forLocale(locale).getString(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]);
     }
 
     /**

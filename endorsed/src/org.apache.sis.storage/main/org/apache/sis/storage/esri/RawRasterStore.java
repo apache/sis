@@ -263,7 +263,7 @@ final class RawRasterStore extends RasterStore {
      * Returns localized resources for warnings an error messages.
      */
     private Errors errors() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**
@@ -286,7 +286,7 @@ final class RawRasterStore extends RasterStore {
      */
     private void ignoredProperty(final String keyword, final int value) {
         if (value != 0) {
-            listeners.warning(Messages.getResources(getLocale()).getString(Messages.Keys.IgnoredPropertyValue_1, keyword));
+            listeners.warning(Messages.forLocale(getLocale()).getString(Messages.Keys.IgnoredPropertyValue_1, keyword));
         }
     }
 

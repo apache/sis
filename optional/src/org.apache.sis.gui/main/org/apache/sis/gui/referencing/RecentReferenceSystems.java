@@ -1037,7 +1037,7 @@ next:       for (int i=0; i<count; i++) {
         ArgumentChecks.ensureNonNull("action", action);
         final List<ReferenceSystem> main = getReferenceSystems(filtered);
         final List<DerivedCRS> derived = (filtered) ? null : cellIndiceSystems;
-        final Menu menu = new Menu(Vocabulary.getResources(locale).getString(Vocabulary.Keys.ReferenceSystem));
+        final Menu menu = new Menu(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.ReferenceSystem));
         final MenuSync property = new MenuSync(main, !filtered, derived, menu, new SelectionListener(action));
         menu.getProperties().put(SELECTED_ITEM_KEY, property);
         controlValues.add(property);

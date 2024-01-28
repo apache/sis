@@ -80,7 +80,7 @@ final class SystemMonitor implements EventHandler<WindowEvent> {
      */
     static Stage create(final Stage parent, final Locale locale) {
         final Resources  resources  = Resources.forLocale(locale);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         final FileAccessView files = new FileAccessView(resources, vocabulary);
         final LogViewer logging = new LogViewer();
         logging.systemLogs.set(true);

@@ -394,7 +394,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 try {
                     text = Strings.trimOrNull(Types.toString(factory.getDescriptionText(code.code), locale));
                     if (text == null) {
-                        text = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
+                        text = Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed);
                     }
                 } catch (FactoryException e) {
                     errorOccurred(e);
@@ -477,7 +477,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
             final Throwable e = getException();
             errorOccurred(e);
             if (loadCodes) {
-                final Code code = new Code(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Errors));
+                final Code code = new Code(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Errors));
                 String message = Exceptions.getLocalizedMessage(e, locale);
                 if (message == null) {
                     message = e.getClass().getSimpleName();

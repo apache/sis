@@ -299,7 +299,7 @@ public final class DataStoreOpener extends Task<DataStore> {
                 LogHandler.loadingStop(logID);
             }
         }
-        return Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
+        return Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed);
     }
 
     /**

@@ -147,7 +147,7 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
      * @return the string with a message for missing values.
      */
     final String noResultString() {
-        return Vocabulary.getResources(getJavaLocale()).getString(Vocabulary.Keys.NotKnown);
+        return Vocabulary.forLocale(getJavaLocale()).getString(Vocabulary.Keys.NotKnown);
     }
 
     /**

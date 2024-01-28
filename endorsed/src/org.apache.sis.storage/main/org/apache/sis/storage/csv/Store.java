@@ -820,7 +820,7 @@ final class Store extends URIDataStore implements FeatureSet {
      * Returns the resources to use for producing error messages.
      */
     private Errors errors() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**

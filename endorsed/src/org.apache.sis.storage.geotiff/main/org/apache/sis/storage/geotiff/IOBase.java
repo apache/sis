@@ -69,7 +69,7 @@ abstract class IOBase implements Closeable {
      * {@return the resources to use for formatting error messages}.
      */
     final Errors errors() {
-        return Errors.getResources(store.getLocale());
+        return Errors.forLocale(store.getLocale());
     }
 
     /**

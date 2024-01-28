@@ -108,7 +108,7 @@ final class ResourceCell extends TreeCell<Resource> {
                 if (text == null) {
                     if (resource != null) {
                         // We have the resource, we only failed to fetch its name.
-                        text = Vocabulary.getResources(tree.locale).getString(Vocabulary.Keys.Unnamed);
+                        text = Vocabulary.forLocale(tree.locale).getString(Vocabulary.Keys.Unnamed);
                     } else {
                         // More serious error (no resource), show exception message.
                         text = Strings.trimOrNull(Exceptions.getLocalizedMessage(error, tree.locale));

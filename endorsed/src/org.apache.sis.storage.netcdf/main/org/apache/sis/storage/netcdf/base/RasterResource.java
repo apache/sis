@@ -721,7 +721,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
          * Provide to `Raster` all information needed for building a `RenderedImage` when requested.
          */
         if (imageBuffer == null) {
-            throw new DataStoreContentException(Errors.getResources(listeners.getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
+            throw new DataStoreContentException(Errors.forLocale(listeners.getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
         final Variable main = data[visibleBand];
         final Raster raster = new Raster(targetDomain, UnmodifiableArrayList.wrap(bands), imageBuffer,

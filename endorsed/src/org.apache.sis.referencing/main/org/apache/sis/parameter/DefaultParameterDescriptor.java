@@ -215,12 +215,12 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
             }
             final Class<?> elementType = valueDomain.getElementType();
             if (elementType != componentType) {
-                throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                         Errors.Keys.IllegalArgumentClass_2, "valueDomain",
                         "Range<" + Classes.getShortName(elementType) + '>'));
             }
             if (valueDomain.isEmpty()) {
-                throw new IllegalArgumentException(Errors.getResources(properties)
+                throw new IllegalArgumentException(Errors.forProperties(properties)
                         .getString(Errors.Keys.IllegalRange_2, valueDomain.getMinValue(), valueDomain.getMaxValue()));
             }
         }

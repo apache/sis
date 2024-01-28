@@ -353,7 +353,7 @@ public final class ChannelDecoder extends Decoder {
      * @return the localized error resource bundle.
      */
     final Errors errors() {
-        return Errors.getResources(listeners.getLocale());
+        return Errors.forLocale(listeners.getLocale());
     }
 
     /**

@@ -1670,7 +1670,7 @@ search:         for (int j=domain(); --j >= 0;) {
      */
     final String appendTo(final StringBuilder buffer, final Class<?> caller, final Locale locale, final short resultKey) throws IOException {
         final String lineSeparator = System.lineSeparator();
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         buffer.append(Classes.getShortName(caller)).append('[').append(numPoints).append(" points");
         if (gridSize != null) {
             String separator = " on ";

@@ -672,13 +672,13 @@ public class Formatter implements Localized {
         final int stackDepth = enclosingElements.size();
         for (int i=stackDepth; --i >= 0;) {
             if (enclosingElements.get(i) == object) {
-                throw new IllegalStateException(Errors.getResources(errorLocale)
+                throw new IllegalStateException(Errors.forLocale(errorLocale)
                             .getString(Errors.Keys.CircularReference));
             }
         }
         enclosingElements.add(object);
         if (hasContextualUnit < 0) {                            // Test if leftmost bit is set to 1.
-            throw new IllegalStateException(Errors.getResources(errorLocale)
+            throw new IllegalStateException(Errors.forLocale(errorLocale)
                         .getString(Errors.Keys.TreeDepthExceedsMaximum));
         }
         hasContextualUnit <<= 1;

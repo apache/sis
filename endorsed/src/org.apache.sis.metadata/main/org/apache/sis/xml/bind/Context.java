@@ -816,9 +816,9 @@ public final class Context extends MarshalContext {
         if (resources != null) {
             final IndexedResourceBundle bundle;
             if (resources == Errors.class) {
-                bundle = Errors.getResources(locale);
+                bundle = Errors.forLocale(locale);
             } else if (resources == Messages.class) {
-                bundle = Messages.getResources(locale);
+                bundle = Messages.forLocale(locale);
             } else {
                 throw new IllegalArgumentException(String.valueOf(resources));
             }

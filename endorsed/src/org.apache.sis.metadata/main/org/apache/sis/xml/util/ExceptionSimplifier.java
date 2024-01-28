@@ -108,7 +108,7 @@ public final class ExceptionSimplifier {
      */
     public String getMessage(final Locale locale) {
         if (errorKey != 0) {
-            return Errors.getResources(locale).getString(errorKey, errorValues);
+            return Errors.forLocale(locale).getString(errorKey, errorValues);
         } else {
             return exception.getMessage();
         }
@@ -137,7 +137,7 @@ public final class ExceptionSimplifier {
     public LogRecord record(final Class<?> classe, final String method) {
         final LogRecord record;
         if (errorKey != 0) {
-            record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING, errorKey, errorValues);
+            record = Errors.forLocale(null).getLogRecord(Level.WARNING, errorKey, errorValues);
         } else {
             record = new LogRecord(Level.WARNING, exception.getMessage());
         }

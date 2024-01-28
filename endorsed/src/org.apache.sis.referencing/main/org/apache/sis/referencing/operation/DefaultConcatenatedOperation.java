@@ -142,7 +142,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
         super(properties);
         ArgumentChecks.ensureNonNull("operations", operations);
         if (operations.length < 2) {
-            throw new InvalidGeodeticParameterException(Errors.getResources(properties).getString(
+            throw new InvalidGeodeticParameterException(Errors.forProperties(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));
         }
         transform = Containers.property(properties, TRANSFORM_KEY, MathTransform.class);

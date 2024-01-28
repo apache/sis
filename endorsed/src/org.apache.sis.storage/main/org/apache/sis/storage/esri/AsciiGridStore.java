@@ -350,7 +350,7 @@ cellsize:       if (value != null) {
      * @return the message to use in the exception to be thrown or the warning to be logged.
      */
     private String messageForProperty(final short rk, final String key) {
-        return Errors.getResources(getLocale()).getString(rk, input.input.filename, key);
+        return Errors.forLocale(getLocale()).getString(rk, input.input.filename, key);
     }
 
     /**

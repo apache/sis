@@ -1401,7 +1401,7 @@ public class GridDerivation {
             TreeTable.Node section = root.newChild();
             section.setValue(column, "Intersection");
             try {
-                baseExtent.appendTo(buffer, Vocabulary.getResources(locale));
+                baseExtent.appendTo(buffer, Vocabulary.forLocale(locale));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

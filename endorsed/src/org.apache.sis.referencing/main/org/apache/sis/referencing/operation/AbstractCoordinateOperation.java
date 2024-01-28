@@ -365,7 +365,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     expected += interpDim;
                 }
                 if (crs != null && actual != expected) {
-                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                             Errors.Keys.MismatchedTransformDimension_4, super.getName().getCode(),
                             isTarget, expected, actual));
                 }

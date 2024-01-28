@@ -533,7 +533,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      */
     protected final String cannotReadAuxiliaryFile(final String extension) {
         if (extension == null) {
-            return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, location);
+            return Errors.forLocale(getLocale()).getString(Errors.Keys.CanNotRead_1, location);
         }
         return Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotReadAuxiliaryFile_1, extension);
     }

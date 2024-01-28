@@ -21,7 +21,6 @@ import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.Locale;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import java.io.IOException;
@@ -2089,7 +2088,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public String toString() {
         final StringBuilder out = new StringBuilder(256);
         try {
-            appendTo(out, Vocabulary.getResources((Locale) null));
+            appendTo(out, Vocabulary.forLocale(null));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

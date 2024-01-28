@@ -371,7 +371,7 @@ public abstract class Builder<B extends Builder<B>> {
                 return false;
             }
             if (properties.get(IdentifiedObject.NAME_KEY) != null) {
-                throw new IllegalStateException(Errors.getResources(properties)
+                throw new IllegalStateException(Errors.forProperties(properties)
                         .getString(Errors.Keys.ValueAlreadyDefined_1, key));
             }
             properties.put(key, value);

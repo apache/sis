@@ -142,7 +142,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                             }
                         }
                         if (object == null) {
-                            throw new FactoryException(Errors.getResources(getJavaLocale()).getString(Errors.Keys.UnspecifiedCRS));
+                            throw new FactoryException(Errors.forLocale(getJavaLocale()).getString(Errors.Keys.UnspecifiedCRS));
                         }
                     }
                 }
@@ -311,13 +311,13 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                             } else {
                                 actual = Classes.getClass(object);
                             }
-                            return Errors.getResources(getJavaLocale()).getString(Errors.Keys.UnexpectedTypeForReference_3,
+                            return Errors.forLocale(getJavaLocale()).getString(Errors.Keys.UnexpectedTypeForReference_3,
                                     codeOrPath, CoordinateReferenceSystem.class, actual);
                         }
                         if (dimension >= 1 && dimension <= cs.getDimension()) {
                             axis = cs.getAxis(dimension - 1);
                         } else {
-                            return Errors.getResources(getJavaLocale()).getString(Errors.Keys.IndexOutOfBounds_1, dimension);
+                            return Errors.forLocale(getJavaLocale()).getString(Errors.Keys.IndexOutOfBounds_1, dimension);
                         }
                     }
                     final String unit = axis.getUnit().toString();
@@ -346,7 +346,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
         if (object == null || object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;
         }
-        throw new FactoryException(Errors.getResources(getJavaLocale()).getString(
+        throw new FactoryException(Errors.forLocale(getJavaLocale()).getString(
                 Errors.Keys.UnexpectedTypeForReference_3, codeOrPath,
                 CoordinateReferenceSystem.class, Classes.getClass(object)));
     }

@@ -515,7 +515,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                     final InternationalString i18n = authority.getTitle();
                     if (i18n != null) return i18n.toString(locale);
                 }
-                return Vocabulary.getResources(locale).getString(Vocabulary.Keys.Untitled);
+                return Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Untitled);
             }
             // More cases may be added in future SIS versions.
         }

@@ -169,7 +169,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         try {
             return DefaultConversion.castOrCopy(conversion).specialize(getConversionType(), baseCRS, this, factory);
         } catch (FactoryException e) {
-            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+            throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                     Errors.Keys.IllegalArgumentValue_2, "conversion", conversion.getName()), e);
         }
     }

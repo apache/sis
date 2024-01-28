@@ -17,7 +17,6 @@
 package org.apache.sis.gui.controls;
 
 import java.util.Objects;
-import java.util.Locale;
 import java.math.BigDecimal;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -467,7 +466,7 @@ increment:  while (decimal.compareTo(r.maximum) <= 0) {
          * This is invoked the first time that {@link ValueColorMapper#rangeEditor} is needed.
          */
         static Dialog<Range> createDialog(final FormatApplicator<Number> textConverter, final Node owner) {
-            final Vocabulary  vocabulary   = Vocabulary.getResources((Locale) null);
+            final Vocabulary  vocabulary   = Vocabulary.forLocale(null);
             final TextField   minimum      = new TextField();
             final TextField   maximum      = new TextField();
             final TextField   interval     = new TextField();

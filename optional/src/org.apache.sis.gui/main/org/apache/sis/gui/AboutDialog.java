@@ -47,7 +47,7 @@ final class AboutDialog {
      */
     static void show() {
         final Resources  localized  = Resources.getInstance();
-        final Vocabulary vocabulary = Vocabulary.getResources(localized.getLocale());
+        final Vocabulary vocabulary = Vocabulary.forLocale(localized.getLocale());
         final Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(localized.getString(Resources.Keys.About));
         alert.setHeaderText(vocabulary.getString(Vocabulary.Keys.Version_2,

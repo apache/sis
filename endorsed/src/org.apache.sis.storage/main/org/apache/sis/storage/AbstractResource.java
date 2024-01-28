@@ -247,7 +247,7 @@ public abstract class AbstractResource implements Resource {
      */
     final String createExceptionMessage(final String filename, Envelope request) {
         final Locale locale = listeners.getLocale();
-        String message = Errors.getResources(locale).getString(Errors.Keys.CanNotRead_1, filename);
+        String message = Errors.forLocale(locale).getString(Errors.Keys.CanNotRead_1, filename);
         if (request != null) try {
             Envelope envelope = getEnvelope().orElse(null);
             if (envelope != null) {

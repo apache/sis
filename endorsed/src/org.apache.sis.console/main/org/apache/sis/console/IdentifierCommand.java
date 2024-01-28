@@ -241,7 +241,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
         states.remove(State.VALID);
         if (!states.isEmpty()) {
             out.println();
-            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Legend, out);
+            Vocabulary.forLocale(locale).appendLabel(Vocabulary.Keys.Legend, out);
             out.println();
             final ResourceBundle resources = ResourceBundle.getBundle("org.apache.sis.console.IdentifierState", locale);
             for (final State state : states) {

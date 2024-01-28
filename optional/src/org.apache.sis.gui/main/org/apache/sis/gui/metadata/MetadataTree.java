@@ -198,7 +198,7 @@ check:      if (data != null) {
         if (controller != null) {
             vocabulary = controller.vocabulary;
         } else {
-            vocabulary = Vocabulary.getResources((Locale) null);
+            vocabulary = Vocabulary.forLocale(null);
         }
         formatter       = new Formatter(vocabulary.getLocale());
         contentProperty = new ContentProperty(this);

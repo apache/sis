@@ -149,7 +149,7 @@ public final class Exceptions extends Static {
                     previousLines.add(message);
                     if (buffer.length() != 0) {
                         if (resources == null) {
-                            resources = Vocabulary.getResources(locale);
+                            resources = Vocabulary.forLocale(locale);
                         }
                         buffer.append(System.lineSeparator())
                               .append(resources.getString(Vocabulary.Keys.CausedBy_1, cause.getClass()))

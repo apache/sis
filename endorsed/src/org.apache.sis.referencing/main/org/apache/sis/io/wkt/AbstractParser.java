@@ -264,7 +264,7 @@ abstract class AbstractParser implements Parser {
         }
         final CharSequence unparsed = CharSequences.token(wkt, position.getIndex());
         if (unparsed.length() != 0) {
-            throw new FactoryException(Errors.getResources(errorLocale).getString(
+            throw new FactoryException(Errors.forLocale(errorLocale).getString(
                         Errors.Keys.UnexpectedCharactersAfter_2,
                         CharSequences.token(wkt, 0) + "[…]", unparsed));
         }

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.image;
 
-import java.util.Locale;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.WeakHashMap;
@@ -375,7 +374,7 @@ abstract class AnnotatedImage extends ImageAdapter {
                         if (report == null) {
                             errors = report = new ErrorHandler.Report();
                         }
-                        report.add(null, e, () -> Errors.getResources((Locale) null)
+                        report.add(null, e, () -> Errors.forLocale(null)
                                 .getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property));
                     }
                 } finally {

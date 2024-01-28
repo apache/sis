@@ -830,7 +830,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     out.append(getTreeSymbols(true, isLast[i]));
                 }
                 final Locale locale = getDisplayLocale();
-                out.append(treeBlank).append('(').append(Vocabulary.getResources(locale)
+                out.append(treeBlank).append('(').append(Vocabulary.forLocale(locale)
                    .getString(Vocabulary.Keys.CycleOmitted).toLowerCase(locale))
                    .append(')').append(lineSeparator);
             }

@@ -72,7 +72,7 @@ final class AxisName {
         if (name != null) {
             for (final AxisName keyword : KEYWORDS) {
                 if (keyword.pattern.matcher(name).matches()) {
-                    return Vocabulary.getResources(locale).getString(keyword.word);
+                    return Vocabulary.forLocale(locale).getString(keyword.word);
                 }
             }
         }

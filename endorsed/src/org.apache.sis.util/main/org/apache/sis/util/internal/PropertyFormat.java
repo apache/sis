@@ -102,7 +102,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
         } else if (value instanceof ControlledVocabulary) {
             text = MetadataServices.getInstance().getCodeTitle((ControlledVocabulary) value, getLocale());
         } else if (value instanceof Boolean) {
-            text = Vocabulary.getResources(getLocale()).getString((Boolean) value ? Vocabulary.Keys.True : Vocabulary.Keys.False);
+            text = Vocabulary.forLocale(getLocale()).getString((Boolean) value ? Vocabulary.Keys.True : Vocabulary.Keys.False);
         } else if (value instanceof Enum<?>) {
             text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
         } else if (value instanceof Type) {
@@ -233,6 +233,6 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
                 return;
             }
         }
-        append('(').append(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed)).append(')');
+        append('(').append(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed)).append(')');
     }
 }

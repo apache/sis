@@ -1178,7 +1178,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Convenience methods for resources for error message in the locale given by {@link #getLocale()}.
      */
     final Errors errors() {
-        return Errors.getResources(getErrorLocale());
+        return Errors.forLocale(getErrorLocale());
     }
 
     /**

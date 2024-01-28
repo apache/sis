@@ -412,7 +412,7 @@ loop:   for (int convention=0;; convention++) {
      * Returns the localized resources for producing error messages.
      */
     private Errors errors() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**

@@ -302,7 +302,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     private void validate(final Map<String,?> properties) {
         if (Strings.isNullOrEmpty(code)) {
             boolean missing = (code == null) || (properties != null && properties.get(CODE_KEY) == null);
-            throw new IllegalArgumentException(Errors.getResources(properties)
+            throw new IllegalArgumentException(Errors.forProperties(properties)
                     .getString(missing ? Errors.Keys.MissingValueForProperty_1
                                        : Errors.Keys.EmptyProperty_1, CODE_KEY));
         }
@@ -314,7 +314,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     private static IllegalArgumentException illegalPropertyType(
             final Map<String,?> properties, final String key, final Object value)
     {
-        return new IllegalArgumentException(Errors.getResources(properties)
+        return new IllegalArgumentException(Errors.forProperties(properties)
                 .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 

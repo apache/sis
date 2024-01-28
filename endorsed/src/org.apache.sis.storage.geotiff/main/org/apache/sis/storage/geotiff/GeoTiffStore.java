@@ -772,7 +772,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * Returns the error resources in the current locale.
      */
     private Errors errors() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**

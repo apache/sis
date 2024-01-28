@@ -167,7 +167,7 @@ final class TransformCommand extends FormattedOutputCommand {
      */
     TransformCommand(final int commandIndex, final Object[] args) throws InvalidOptionException {
         super(commandIndex, args, options(), OutputFormat.WKT, OutputFormat.TEXT);
-        resources = Vocabulary.getResources(locale);
+        resources = Vocabulary.forLocale(locale);
     }
 
     /**
@@ -719,7 +719,7 @@ final class TransformCommand extends FormattedOutputCommand {
                 }
                 if (!inside) {
                     out.print(",    ");
-                    printQuotedText(Errors.getResources(locale).getString(Errors.Keys.OutsideDomainOfValidity), 0, X364.FOREGROUND_RED);
+                    printQuotedText(Errors.forLocale(locale).getString(Errors.Keys.OutsideDomainOfValidity), 0, X364.FOREGROUND_RED);
                 }
             }
             out.println();

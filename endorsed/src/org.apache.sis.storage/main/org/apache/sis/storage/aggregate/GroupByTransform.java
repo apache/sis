@@ -83,7 +83,7 @@ final class GroupByTransform extends Group<GridSlice> {
      */
     @Override
     final String createName(final Locale locale) {
-        final Vocabulary    v = Vocabulary.getResources(locale);
+        final Vocabulary    v = Vocabulary.forLocale(locale);
         final StringBuffer  b = new StringBuffer(v.getLabel(Vocabulary.Keys.Resolution));
         final NumberFormat  f = NumberFormat.getIntegerInstance(v.getLocale());
         final FieldPosition p = new FieldPosition(0);

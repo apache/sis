@@ -280,7 +280,7 @@ public final class WKTUtilities extends Static {
         if (name == null) {
             name = IdentifiedObjects.getName(object, null);
             if (name == null) {
-                name = Vocabulary.getResources(formatter.getLocale()).getString(Vocabulary.Keys.Unnamed);
+                name = Vocabulary.forLocale(formatter.getLocale()).getString(Vocabulary.Keys.Unnamed);
             }
         }
         formatter.append(name, (type != null) ? type : ElementKind.NAME);

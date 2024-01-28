@@ -93,7 +93,7 @@ final class CoverageControls extends ViewAndControls {
         super(owner);
         final Locale     locale     = owner.getLocale();
         final Resources  resources  = Resources.forLocale(locale);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
 
         view = new CoverageCanvas(this, locale);
         view.setBackground(Color.BLACK);

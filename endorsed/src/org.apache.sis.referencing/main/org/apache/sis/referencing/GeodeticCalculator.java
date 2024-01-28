@@ -1220,7 +1220,7 @@ public class GeodeticCalculator {
     public String toString() {
         final StringBuilder buffer        = new StringBuilder();
         final Locale        locale        = Locale.getDefault();
-        final Vocabulary    resources     = Vocabulary.getResources(locale);
+        final Vocabulary    resources     = Vocabulary.forLocale(locale);
         final String        lineSeparator = System.lineSeparator();
         final CoordinateReferenceSystem crs = getPositionCRS();
         try {

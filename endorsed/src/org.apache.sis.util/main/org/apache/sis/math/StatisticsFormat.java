@@ -305,7 +305,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             case 2: horizontalLine = '═'; separator += "║ "; break;
         }
         final TableAppender table = new TableAppender(toAppendTo, separator);
-        final Vocabulary resources = Vocabulary.getResources(headerLocale);
+        final Vocabulary resources = Vocabulary.forLocale(headerLocale);
         /*
          * If there is a header for at least one statistics, write the full headers row.
          */

@@ -1832,7 +1832,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         final TreeTable tree = new DefaultTreeTable(TableColumn.VALUE_AS_TEXT);
         final TreeTable.Node root = tree.getRoot();
         root.setValue(TableColumn.VALUE_AS_TEXT, Classes.getShortClassName(this));
-        formatTo(locale, Vocabulary.getResources(locale), bitmask, root);
+        formatTo(locale, Vocabulary.forLocale(locale), bitmask, root);
         return tree;
     }
 

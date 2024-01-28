@@ -74,7 +74,7 @@ public enum Capability {
      * only and may change without notice in any future Apache SIS version.</p>
      *
      * @param  locale     the locale of the strings to return. Cannot be null.
-     * @param  resources  the {@code Vocabulary.getResources(locale)} value.
+     * @param  resources  the {@code Vocabulary.forLocale(locale)} value.
      * @return localized string representations of the capabilities of all data store providers.
      */
     public static String[] providers(final Locale locale, final Vocabulary resources) {

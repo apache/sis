@@ -1241,6 +1241,6 @@ public class Canvas extends Observable implements Localized {
      * Returns the resources bundle for error messages in the locale of this canvas.
      */
     private Errors errors() {
-        return Errors.getResources(locale);
+        return Errors.forLocale(locale);
     }
 }

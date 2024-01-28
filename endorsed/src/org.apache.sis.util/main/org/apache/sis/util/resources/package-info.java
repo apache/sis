@@ -48,11 +48,11 @@
  *
  * <h2>Usage</h2>
  * All {@link org.apache.sis.util.resources.IndexedResourceBundle} subclasses
- * provide a {@code getResources(Locale)} static method.
+ * provide a {@code forLocale(Locale)} static method.
  * It can be used for fetching localized strings as below:
  *
  * {@snippet lang="java" :
- *     String text = TheBundle.getResources(locale).getString(key, optionalArguments);
+ *     String text = TheBundle.forLocale(locale).getString(key, optionalArguments);
  *     }
  *
  * For convenience, all {@code IndexedResourceBundle} subclasses provide also various {@code format(int, …)} static

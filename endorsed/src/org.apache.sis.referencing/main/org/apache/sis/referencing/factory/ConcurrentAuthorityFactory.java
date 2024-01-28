@@ -493,7 +493,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 }
                 final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
                 final Double duration = time / (double) StandardDateFormat.NANOS_PER_SECOND;
-                final Messages resources = Messages.getResources(null);
+                final Messages resources = Messages.forLocale(null);
                 final LogRecord record;
                 if (code != null) {
                     record = resources.getLogRecord(level, Messages.Keys.CreateDurationFromIdentifier_3, type, code, duration);

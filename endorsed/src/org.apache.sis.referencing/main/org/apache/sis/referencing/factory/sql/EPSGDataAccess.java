@@ -1068,7 +1068,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             }
         }
         if (replacedBy == null) {
-            replacedBy = '(' + Vocabulary.getResources(locale).getString(Vocabulary.Keys.None).toLowerCase(locale) + ')';
+            replacedBy = '(' + Vocabulary.forLocale(locale).getString(Vocabulary.Keys.None).toLowerCase(locale) + ')';
         } else {
             replacedBy = replacedBy.toString();
         }
@@ -3215,7 +3215,7 @@ next:                   while (r.next()) {
      * Minor shortcut for fetching the error resources.
      */
     private Errors error() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**

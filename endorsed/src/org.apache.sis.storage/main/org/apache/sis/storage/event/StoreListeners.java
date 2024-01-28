@@ -364,7 +364,7 @@ public class StoreListeners implements Localized {
                 }
             }
         }
-        return Vocabulary.getResources(getLocale()).getString(Vocabulary.Keys.Unnamed);
+        return Vocabulary.forLocale(getLocale()).getString(Vocabulary.Keys.Unnamed);
     }
 
     /**
