@@ -193,7 +193,7 @@ public class ReferenceResolver {
         } else try {
             /*
              * URI to an external document. If a `javax.xml.stream.XMLResolver` property was set on the unmarshaller,
-             * use the user-supplied `URIResolver`. If there is no URI resolver or the URI resolver can not resolve,
+             * use the user supplied `URIResolver`. If there is no URI resolver or the URI resolver cannot resolve,
              * fallback on the Apache SIS `ExternalLinkHandler` implementation. The latter is the usual case.
              */
             final ExternalLinkHandler handler = Context.linkHandler(c);

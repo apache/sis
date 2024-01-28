@@ -48,7 +48,7 @@ ProjectedCRS["South_Pole_Stereographic",
 
 
 #
-# Dummy CRS using the same code than ESRI::102021 but
+# Dummy CRS using the same code as ESRI::102021 but
 # different code space and versions. Used for testing
 # resolution of code collisions.
 #

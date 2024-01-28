@@ -72,7 +72,7 @@ import org.apache.sis.util.logging.Logging;
  * {@link #intValue()} or {@link #doubleValue()} methods. But other types of parameter values are possible
  * and can be handled by the more generic {@link #getValue()} and {@link #setValue(Object)} methods.
  * All {@code xxxValue()} methods in this class are convenience methods converting the value from {@code Object}
- * to some commonly used types. Those types are specified in ISO 19111 as an union of attributes, listed below with
+ * to some commonly used types. Those types are specified in ISO 19111 as a union of attributes, listed below with
  * the corresponding getter and setter methods:
  *
  * <table class="sis">

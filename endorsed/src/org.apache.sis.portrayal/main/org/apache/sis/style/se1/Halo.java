@@ -42,7 +42,7 @@ import org.opengis.filter.Expression;
 @XmlRootElement(name = "Halo")
 public class Halo<R> extends StyleElement<R> {
     /**
-     * Radius (in pixels) of the  the halo around the text, or {@code null} for the default value.
+     * Radius (in pixels) of the halo around the text, or {@code null} for the default value.
      *
      * @see #getRadius()
      * @see #setRadius(Expression)
@@ -93,7 +93,7 @@ public class Halo<R> extends StyleElement<R> {
      * It extends the area to the outside edge of glyphs and the inside edge of "holes" in the glyphs.
      * Negative values are not allowed.
      *
-     * @return radius (in pixels) of the  the halo around the text.
+     * @return radius (in pixels) of the halo around the text.
      */
     public Expression<R, ? extends Number> getRadius() {
         return defaultToOne(radius);

@@ -284,7 +284,7 @@ public final class Strings extends Static {
      *
      * @param  delimiter  the separator to insert between lines.
      * @param  text       the multi-lines text to convert to single line, or {@code null}.
-     * @return the        the text on a single line text, or {@code null} if none.
+     * @return the text on a single line text, or {@code null} if none.
      */
     public static String singleLine(final String delimiter, final CharSequence text) {
         if (text != null) {
