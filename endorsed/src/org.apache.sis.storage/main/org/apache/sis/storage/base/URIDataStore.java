@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.BufferedWriter;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -49,6 +51,7 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.util.URISource;
 import org.apache.sis.xml.util.ExceptionSimplifier;
@@ -325,10 +328,12 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * If an auxiliary metadata file has been specified, merges that file to the given metadata.
      * This step should be done only after the data store added its own metadata.
      * Failure to load auxiliary metadata are only a warning.
+     * If a warning is logged, declared source will be the {@code getMetadata()} method of the given class.
      *
+     * @param  caller   the source class to declare if a warning is logged.
      * @param  builder  where to merge the metadata.
      */
-    protected final void mergeAuxiliaryMetadata(final MetadataBuilder builder) {
+    protected final void mergeAuxiliaryMetadata(final Class<? extends DataStore> caller, final MetadataBuilder builder) {
         Object spec = null;         // Used only for formatting error message.
         Object metadata = null;
         try {
@@ -347,11 +352,11 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
             }
             metadata = readXML(input, source);
         } catch (URISyntaxException | IOException e) {
-            listeners.warning(cannotReadAuxiliaryFile("xml"), e);
+            cannotReadAuxiliaryFile(caller, "getMetadata", "xml", e, true);
         } catch (JAXBException e) {
             Throwable cause = e.getCause();
             if (cause instanceof IOException) {
-                listeners.warning(cannotReadAuxiliaryFile("xml"), (Exception) cause);
+                cannotReadAuxiliaryFile(caller, "getMetadata", "xml", (Exception) cause, true);
             } else {
                 listeners.warning(new ExceptionSimplifier(spec, e).record(URIDataStore.class, "mergeAuxiliaryMetadata"));
             }
@@ -526,10 +531,30 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      *
      * @param  extension  file extension (without leading dot) of the auxiliary file, or null for the main file.
      */
-    protected final String cannotReadAuxiliaryFile(String extension) {
+    protected final String cannotReadAuxiliaryFile(final String extension) {
         if (extension == null) {
-            extension = IOUtilities.extension(location);
+            return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, location);
         }
         return Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotReadAuxiliaryFile_1, extension);
+    }
+
+    /**
+     * Logs an error message saying that an auxiliary file cannot be read.
+     *
+     * @param  classe     the class to report as the source of the warning to log.
+     * @param  method     the method to report as the source of the warning to log.
+     * @param  extension  file extension (without leading dot) of the auxiliary file.
+     * @param  cause      the reason why the auxiliary file cannot be read.
+     * @param  warning    {@code true} for logging at warning level, or {@code false} for fine level.
+     */
+    protected final void cannotReadAuxiliaryFile(final Class<? extends DataStore> classe, final String method,
+            final String extension, final Exception cause, final boolean warning)
+    {
+        final LogRecord record = Resources.forLocale(getLocale())
+                .getLogRecord(warning ? Level.WARNING : Level.FINE, Resources.Keys.CanNotReadAuxiliaryFile_1, extension);
+        record.setSourceClassName(classe.getCanonicalName());
+        record.setSourceMethodName(method);
+        record.setThrown(cause);
+        listeners.warning(record);      // Logger name will be inferred by this method.
     }
 }

@@ -440,7 +440,7 @@ final class RawRasterStore extends RasterStore {
                 throw missingProperty(header, keyword);
             }
         }
-        readPRJ();
+        readPRJ(RawRasterStore.class, "getGridGeometry");
         final GridGeometry gg = new GridGeometry(new GridExtent(ncols, nrows), CELL_ANCHOR,
                 new AffineTransform2D(xdim, 0, 0, -ydim, ulxmap, ulymap), crs);
         /*

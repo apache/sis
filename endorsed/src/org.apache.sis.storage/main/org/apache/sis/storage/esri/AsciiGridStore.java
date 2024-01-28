@@ -321,7 +321,7 @@ cellsize:       if (value != null) {
              * Read the auxiliary PRJ file after we finished parsing the header file.
              * A future version could skip this step if we add a non-standard "CRS" property in the header.
              */
-            readPRJ();
+            readPRJ(AsciiGridStore.class, "getGridGeometry");
             gridGeometry = new GridGeometry(new GridExtent(width, height), anchor, MathTransforms.linear(gridToCRS), crs);
             /*
              * If there is any unprocessed properties, log a warning about them.

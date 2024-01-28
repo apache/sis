@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Locale;
-import java.util.logging.Level;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.file.NoSuchFileException;
@@ -171,7 +170,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 builder.addNewBand(band);
             }
         }
-        mergeAuxiliaryMetadata(builder);
+        mergeAuxiliaryMetadata(RasterStore.class, builder);
         builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
         builder.setISOStandards(false);
         metadata = builder.buildAndFreeze();
@@ -334,7 +333,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         try {
             stats = readStatistics(name, sm);
         } catch (IOException | NumberFormatException e) {
-            canNotReadAuxiliaryFile(STX, e);
+            cannotReadAuxiliaryFile(STX, e);
         }
         /*
          * Build the sample dimensions and the color model.
@@ -403,7 +402,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                     try {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
                     } catch (IOException | NumberFormatException e) {
-                        canNotReadAuxiliaryFile(CLR, e);
+                        cannotReadAuxiliaryFile(CLR, e);
                     }
                     if (colorModel == null) {
                         colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);
@@ -421,12 +420,9 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * @param  suffix     suffix of the auxiliary file.
      * @param  exception  error that occurred while reading the auxiliary file.
      */
-    private void canNotReadAuxiliaryFile(final String suffix, final Exception exception) {
-        Level level = Level.WARNING;
-        if (exception instanceof NoSuchFileException || exception instanceof FileNotFoundException) {
-            level = Level.FINE;
-        }
-        listeners.warning(level, cannotReadAuxiliaryFile(suffix), exception);
+    private void cannotReadAuxiliaryFile(final String suffix, final Exception exception) {
+        boolean warning = !(exception instanceof NoSuchFileException || exception instanceof FileNotFoundException);
+        cannotReadAuxiliaryFile(RasterStore.class, "loadBandDescriptions", suffix, exception, warning);
     }
 
     /**

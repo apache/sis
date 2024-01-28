@@ -207,7 +207,7 @@ final class Store extends URIDataStore implements Filter {
                 final MetadataBuilder builder = new MetadataBuilder();
                 builder.addReferenceSystem((ReferenceSystem) object);
                 builder.addTitle(getDisplayName());
-                mergeAuxiliaryMetadata(builder);
+                mergeAuxiliaryMetadata(Store.class, builder);
                 metadata = builder.buildAndFreeze();
             }
         }

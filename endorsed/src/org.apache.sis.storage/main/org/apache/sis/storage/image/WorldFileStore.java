@@ -359,7 +359,7 @@ loop:   for (int convention=0;; convention++) {
             }
         }
         if (warning != null) {
-            listeners.warning(cannotReadAuxiliaryFile(preferred), warning);
+            cannotReadAuxiliaryFile(WorldFileStore.class, "getGridGeometry", preferred, warning, true);
         }
         return null;
     }
@@ -375,7 +375,7 @@ loop:   for (int convention=0;; convention++) {
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
         final AuxiliaryContent content = readAuxiliaryFile(wld, false);
         if (content == null) {
-            listeners.warning(cannotReadAuxiliaryFile(wld));
+            cannotReadAuxiliaryFile(WorldFileStore.class, "getGridGeometry", wld, null, true);
             return null;
         }
         final String         filename = content.getFilename();
@@ -473,7 +473,7 @@ loop:   for (int convention=0;; convention++) {
             width     = reader.getWidth (MAIN_IMAGE);
             height    = reader.getHeight(MAIN_IMAGE);
             gridToCRS = readWorldFile();
-            readPRJ();
+            readPRJ(WorldFileStore.class, "getGridGeometry");
             gridGeometry = new GridGeometry(new GridExtent(width, height), CELL_ANCHOR, gridToCRS, crs);
         }
         if (index != MAIN_IMAGE) {
@@ -536,7 +536,7 @@ loop:   for (int convention=0;; convention++) {
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
                 builder.addExtent(gridGeometry.getEnvelope(), listeners);
             }
-            mergeAuxiliaryMetadata(builder);
+            mergeAuxiliaryMetadata(WorldFileStore.class, builder);
             builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();

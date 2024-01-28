@@ -116,27 +116,33 @@ public abstract class PRJDataStore extends URIDataStore {
      * <p>This method does not verify if it has been invoked multiple time.
      * Caller should track whether the data store has been initialized.</p>
      *
+     * @param  caller  the class to report as the warning source if a log record is created.
+     * @param  method  the method to report as the warning source if a log record is created.
      * @throws DataStoreException if an error occurred while reading the file.
      */
-    protected final void readPRJ() throws DataStoreException {
-        readWKT(CoordinateReferenceSystem.class, PRJ).ifPresent((result) -> crs = result);
+    protected final void readPRJ(final Class<? extends DataStore> caller, final String method) throws DataStoreException {
+        readWKT(caller, method, CoordinateReferenceSystem.class, PRJ).ifPresent((result) -> crs = result);
     }
 
     /**
      * Reads an auxiliary file in WKT or GML format. Standard PRJ files use WKT only,
      * but the GML format is also accepted by this method as an extension specific to Apache SIS.
      *
+     * @param  caller     the class to report as the warning source if a log record is created.
+     * @param  method     the method to report as the warning source if a log record is created.
      * @param  type       base class or interface of the object to read.
      * @param  extension  extension of the file to read (usually {@link #PRJ}), or {@code null} for the main file.
      * @return the parsed object, or an empty value if the file does not exist.
      * @throws DataStoreException if an error occurred while reading the file.
      */
-    protected final <T> Optional<T> readWKT(final Class<T> type, final String extension) throws DataStoreException {
+    protected final <T> Optional<T> readWKT(final Class<? extends DataStore> caller, final String method,
+            final Class<T> type, final String extension) throws DataStoreException
+    {
         Exception cause = null, suppressed = null;
         try {
             final AuxiliaryContent content = readAuxiliaryFile(extension, true);
             if (content == null) {
-                listeners.warning(cannotReadAuxiliaryFile(extension));
+                cannotReadAuxiliaryFile(caller, method, extension, null, true);
                 return Optional.empty();
             }
             if (content.source != null) try {
@@ -163,11 +169,11 @@ public abstract class PRJDataStore extends URIDataStore {
                  * defined twice: as a WKT on the first line, followed by key-value pairs on next lines.
                  * Current Apache SIS implementation ignores all characters after the WKT.
                  */
-                format.validate(result);
+                format.validate(null, caller, method, result);
                 return Optional.of(result);
             }
         } catch (NoSuchFileException | FileNotFoundException e) {
-            listeners.warning(cannotReadAuxiliaryFile(extension), e);
+            cannotReadAuxiliaryFile(caller, method, extension, e, true);
             return Optional.empty();
         } catch (IOException | ParseException | ClassCastException e) {
             cause = e;

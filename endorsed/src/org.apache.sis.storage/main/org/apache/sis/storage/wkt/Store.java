@@ -145,7 +145,7 @@ final class Store extends URIDataStore {
                 final Object obj = parser.parse(wkt, pos);
                 objects.add(obj);
                 pos.setIndex(CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length()));
-                parser.validate(obj);
+                parser.validate(null, Store.class, "getMetadata", obj);
             } while (pos.getIndex() < wkt.length());
         } catch (ParseException e) {
             throw new DataStoreContentException(getLocale(), StoreProvider.NAME, getDisplayName(), in).initCause(e);
@@ -181,9 +181,9 @@ final class Store extends URIDataStore {
             }
             if (count == 1) {                   // Set the citation title only if non-ambiguous.
                 builder.addTitle(name);
-                mergeAuxiliaryMetadata(builder);
+                mergeAuxiliaryMetadata(Store.class, builder);
             } else {
-                mergeAuxiliaryMetadata(builder);
+                mergeAuxiliaryMetadata(Store.class, builder);
                 builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             }
             metadata = builder.buildAndFreeze();

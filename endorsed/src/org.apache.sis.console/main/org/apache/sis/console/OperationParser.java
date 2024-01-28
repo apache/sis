@@ -46,7 +46,7 @@ final class OperationParser extends PRJDataStore {
      * @throws DataStoreException if an error occurred while reading the file.
      */
     final Optional<CoordinateOperation> read() throws DataStoreException {
-        return readWKT(CoordinateOperation.class, null);
+        return readWKT(OperationParser.class, "read", CoordinateOperation.class, null);
     }
 
     /**

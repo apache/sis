@@ -109,7 +109,7 @@ public final class StoreFormat extends WKTFormat {
             for (final String ct : wkt) {
                 if (ct != null) {
                     final Object crs = parseObject(ct);
-                    validate(crs);
+                    validate(Loggers.WKT, listeners.getSource().getClass(), "getMetadata", crs);
                     components[n++] = (CoordinateReferenceSystem) crs;
                 }
             }
@@ -129,21 +129,33 @@ public final class StoreFormat extends WKTFormat {
      * so often in practice that we are better to check and warn users.
      *
      * <p>This method does not need to be invoked after {@code parseGeometry(…)} or {@code parseCRS(…)}
-     * since it is already done.</p>
+     * because above-cited methods already invoke this method.</p>
      *
+     * @param  logger  name of the logger where to send warnings, or {@code null} for the provider's logger.
+     * @param  caller  the class to report as the warning source if a log record is created.
+     * @param  method  the method to report as the warning source if a log record is created.
      * @param  parsed  the object parsed from WKT, or {@code null} if none.
      */
-    public void validate(final Object parsed) {
+    public void validate(final String logger, final Class<?> caller, final String method, final Object parsed) {
         final Warnings warnings = getWarnings();
         if (warnings != null) {
-            log(new LogRecord(Level.WARNING, warnings.toString()));
+            final var record = new LogRecord(Level.WARNING, warnings.toString());
+            record.setSourceClassName(caller.getCanonicalName());
+            record.setSourceMethodName(method);
+            record.setLoggerName(logger);
+            listeners.warning(record);
         }
         if (parsed instanceof CoordinateReferenceSystem) try {
             final DefinitionVerifier v = DefinitionVerifier.withAuthority(
                     (CoordinateReferenceSystem) parsed, null, false, getLocale());
             if (v != null) {
-                final LogRecord warning = v.warning(false);
-                if (warning != null) log(warning);
+                final LogRecord record = v.warning(false);
+                if (record != null) {
+                    record.setSourceClassName(caller.getCanonicalName());
+                    record.setSourceMethodName(method);
+                    record.setLoggerName(logger);
+                    listeners.warning(record);
+                }
             }
         } catch (FactoryException e) {
             listeners.warning(e);
@@ -152,20 +164,13 @@ public final class StoreFormat extends WKTFormat {
 
     /**
      * Reports a warning for a WKT that cannot be read. This method should be invoked only when the CRS
-     * cannot be created at all; it should not be invoked if the CRS has been created with some warnings.
+     * cannot be created at all. It should not be invoked if the CRS has been created with some warnings.
+     * This method pretends that the warning come from {@code getMetadata()} method, which is the public
+     * facade for the parsing method.
      */
     private void log(final Exception e) {
-        listeners.warning(Resources.forLocale(listeners.getLocale())
-                .getString(Resources.Keys.CanNotReadCRS_WKT_1, listeners.getSourceName()), e);
-    }
-
-    /**
-     * Reports a warning in the {@code "org.apache.sis.io.wkt"} logger. This method pretends that the
-     * warning come from {@code getMetadata()} method, which is the public facade for the parsing method.
-     *
-     * @param  record  the warning to report.
-     */
-    private void log(final LogRecord record) {
+        final LogRecord record = Resources.forLocale(listeners.getLocale())
+                .getLogRecord(Level.WARNING, Resources.Keys.CanNotReadCRS_WKT_1, listeners.getSourceName());
         record.setSourceClassName(listeners.getSource().getClass().getName());
         record.setSourceMethodName("getMetadata");
         record.setLoggerName(Loggers.WKT);
