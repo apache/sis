@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.function.BiPredicate;
 import java.awt.Shape;
 import java.awt.geom.Area;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -195,6 +196,14 @@ add:    for (;;) {
             }
         }
         return ShapeUtilities.toPrimitive(path);
+    }
+
+    /**
+     * @return shape copy.
+     */
+    @Override
+    public Shape toJava2D() {
+        return new GeneralPath(geometry);
     }
 
     /**

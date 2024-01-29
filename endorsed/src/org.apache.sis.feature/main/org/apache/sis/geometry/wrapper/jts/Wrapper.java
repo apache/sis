@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometry.wrapper.jts;
 
+import java.awt.Shape;
+import java.awt.geom.GeneralPath;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -63,6 +65,7 @@ import org.apache.sis.filter.sqlmm.SQLMM;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -725,6 +728,28 @@ add:    for (Geometry next = geometry;;) {
              */
             throw new TransformException(e);
         }
+    }
+
+    /**
+     * Transforms this geometry using the given transform.
+     * If the transform is {@code null}, then the geometry is returned unchanged.
+     * The geometry CRS remains unchanged.
+     *
+     * @param  transform  the math transform to apply, or {@code null}.
+     * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
+     * @throws TransformException if the geometry cannot be transformed.
+     */
+    @Override
+    public GeometryWrapper transform(final MathTransform transform) throws TransformException {
+        return rewrap(JTS.transform(geometry, transform));
+    }
+
+    /**
+     * @return GeneralPath from current JTS Geometry.
+     */
+    @Override
+    public Shape toJava2D() {
+        return new GeneralPath(JTS.asShape(geometry));
     }
 
     /**
