@@ -94,7 +94,7 @@ final class InfoCommand extends FormattedOutputCommand {
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(DataStoreException.class);
         }
-        final var tf = new TreeTableFormat(locale, timezone);
+        final var tf = new TreeTableFormat(locale, getTimeZone());
         tf.format(tree, out);
         return 0;
     }
@@ -133,7 +133,7 @@ final class InfoCommand extends FormattedOutputCommand {
                         final TableColumn<? super String> column)
     {
         target.setValue(column, Vocabulary.forLocale(locale).getString(Vocabulary.Keys.SampleDimensions));
-        final var rf = new RangeFormat(locale, timezone);
+        final var rf = new RangeFormat(locale, getTimeZone());
         final var sb = new StringBuffer();
         for (SampleDimension band : bands) {
             band = band.forConvertedValues(true);

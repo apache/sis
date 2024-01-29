@@ -77,7 +77,7 @@ public final class WKTFormatTest extends TestCase {
      */
     @Test
     public void testParse() throws ParseException {
-        format = new WKTFormat(null, null);
+        format = new WKTFormat();
         final VerticalCRS crs = (VerticalCRS) format.parseObject(
                 "VERT_CS[“Gravity-related height”,\n" +
                 "  VERT_DATUM[“Mean Sea Level”, 2005],\n" +
@@ -96,7 +96,7 @@ public final class WKTFormatTest extends TestCase {
      */
     @Test
     public void testConsistencyOfWKT1() throws ParseException {
-        format = new WKTFormat(null, null);
+        format = new WKTFormat();
         format.setConvention(Convention.WKT1);
         parser = format;
         testConsistency();
@@ -112,9 +112,9 @@ public final class WKTFormatTest extends TestCase {
     @Test
     @DependsOnMethod("testConsistencyOfWKT1")
     public void testConsistencyOfWKT1_WithCommonUnits() throws ParseException {
-        format = new WKTFormat(null, null);
+        format = new WKTFormat();
         format.setConvention(Convention.WKT1_COMMON_UNITS);
-        parser = new WKTFormat(null, null);
+        parser = new WKTFormat();
         parser.setConvention(Convention.WKT1);
         testConsistency();
         testConsistencyWithDenormalizedBaseCRS();
@@ -129,7 +129,7 @@ public final class WKTFormatTest extends TestCase {
     @Test
     @DependsOnMethod("testConsistencyOfWKT1")
     public void testConsistencyOfWKT2() throws ParseException {
-        format = new WKTFormat(null, null);
+        format = new WKTFormat();
         format.setConvention(Convention.WKT2);
         parser = format;
         testConsistency();
@@ -144,7 +144,7 @@ public final class WKTFormatTest extends TestCase {
     @Test
     @DependsOnMethod("testConsistencyOfWKT2")
     public void testConsistencyOfWKT2_Simplified() throws ParseException {
-        format = new WKTFormat(null, null);
+        format = new WKTFormat();
         format.setConvention(Convention.WKT2_SIMPLIFIED);
         parser = format;
         testConsistency();
@@ -249,7 +249,7 @@ public final class WKTFormatTest extends TestCase {
     public void testConsistencyOfGeogTran() throws ParseException {
         final Symbols symbols = new Symbols(Symbols.SQUARE_BRACKETS);
         symbols.setPairedQuotes("“”", "\"\"");
-        format = new WKTFormat(null, null);
+        format = new WKTFormat();
         format.setConvention(Convention.WKT1_IGNORE_AXES);
         format.setNameAuthority(Citations.ESRI);
         format.setSymbols(symbols);
@@ -299,7 +299,7 @@ public final class WKTFormatTest extends TestCase {
     public void testVariousConventions() throws ParseException {
         final Symbols symbols = new Symbols(Symbols.SQUARE_BRACKETS);
         symbols.setPairedQuotes("“”");
-        parser = format = new WKTFormat(null, null);
+        parser = format = new WKTFormat();
         format.setSymbols(symbols);
         final DefaultProjectedCRS crs = (DefaultProjectedCRS) parser.parseObject(
             "PROJCS[“OSGB 1936 / British National Grid”,\n" +
@@ -463,7 +463,7 @@ public final class WKTFormatTest extends TestCase {
      */
     @Test
     public void testFragments() throws ParseException {
-        format = new WKTFormat(null, null);
+        format = new WKTFormat();
         format.addFragment("deg",    "UNIT[“degree”, 0.0174532925199433]");
         format.addFragment("Bessel", "SPHEROID[“Bessel 1841”, 6377397.155, 299.1528128, AUTHORITY[“EPSG”,“7004”]]");
         format.addFragment("Tokyo",  "DATUM[“Tokyo”, $Bessel]");
@@ -493,7 +493,7 @@ public final class WKTFormatTest extends TestCase {
     public void testSourceFile() throws Exception {
         final var source  = new URI("test/wkt.prj");
         final var factory = new MathTransformFactoryMock("Mercator");
-        format = new WKTFormat(null, null);
+        format = new WKTFormat();
         format.setSourceFile(source);
         format.setFactory(MathTransformFactory.class, factory);
         final Parameterized mt = assertInstanceOf(Parameterized.class, format.parseObject(

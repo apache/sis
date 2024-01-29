@@ -65,7 +65,7 @@ public final class Assertions extends Static {
      * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
      * for easier readability of {@link String} constants in Java code.
      */
-    private static final WKTFormat WKT_FORMAT = new WKTFormat(null, null);
+    private static final WKTFormat WKT_FORMAT = new WKTFormat();
     static {
         final Symbols s = new Symbols(Symbols.SQUARE_BRACKETS);
         s.setPairedQuotes("“”", "\"\"");

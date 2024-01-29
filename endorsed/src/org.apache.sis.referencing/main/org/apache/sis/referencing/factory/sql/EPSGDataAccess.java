@@ -1733,8 +1733,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate));
                         }
                         if (dateFormat == null) {
-                            dateFormat = new StandardDateFormat();
-                            dateFormat.setCalendar(getCalendar());          // Use UTC timezone.
+                            dateFormat = new StandardDateFormat();      // Default to UTC timezone.
                         }
                         try {
                             originDate = dateFormat.parse(anchor);

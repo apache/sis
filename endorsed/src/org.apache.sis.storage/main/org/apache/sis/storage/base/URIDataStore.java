@@ -96,7 +96,8 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
 
     /**
      * User-specified locale for textual content, or {@code null} for {@link Locale#ROOT} (usually English).
-     * This locale is usually <strong>not</strong> used for parsing numbers or dates.
+     * This locale is usually for {@link org.opengis.util.InternationalString} localization rather than for
+     * parsing numbers or dates, but the exact interpretation is at subclasses choice.
      * Subclasses may replace this value by a value read from the data file.
      */
     protected Locale dataLocale;

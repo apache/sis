@@ -18,9 +18,9 @@ package org.apache.sis.console;
 
 import java.util.Locale;
 import java.util.EnumSet;
+import java.util.function.Predicate;
 import java.io.Console;
 import java.io.IOException;
-import java.util.function.Predicate;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
@@ -221,7 +221,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object,
                         (object instanceof Metadata) ? Metadata.class : null,
                         ValueExistencePolicy.COMPACT);
-                final var tf = new TreeTableFormat(locale, timezone);
+                final var tf = new TreeTableFormat(locale, getTimeZone());
                 tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 tf.setNodeFilter(getNodeFilter());
                 tf.format(tree, out);

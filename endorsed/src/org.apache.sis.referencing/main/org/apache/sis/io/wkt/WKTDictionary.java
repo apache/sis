@@ -414,7 +414,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         definitions = new HashMap<>();
         codeCaches  = new HashMap<>();
         codespaces  = new FrequencySortedSet<>(true);
-        parser      = new WKTFormat(null, null);
+        parser      = new WKTFormat();
         lock        = new ReentrantReadWriteLock();
         authorities = (authority != null) ? null : new FrequencySortedSet<>(true);
         this.authority = authority;

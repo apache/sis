@@ -475,6 +475,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
          * documented in this method javadoc. But actually it is not, since the call to
          * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Locale locale = getLocale(Locale.Category.FORMAT);
         if (Number.class.isAssignableFrom(valueType)) {
             if (Locale.ROOT.equals(locale)) {
