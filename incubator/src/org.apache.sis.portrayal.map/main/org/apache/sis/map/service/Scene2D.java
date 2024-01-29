@@ -16,28 +16,39 @@
  */
 package org.apache.sis.map.service;
 
-import org.apache.sis.style.se1.Symbolizer;
+import java.awt.Graphics2D;
+import java.util.logging.Logger;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.util.ArgumentChecks;
 
 /**
+ * Holds the rendering properties.
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface SymbolizerPainterDescription<T extends Symbolizer> {
+public final class Scene2D {
+
+    public static final Logger LOGGER = Logger.getLogger("org.apache.sis.internal.renderer");
 
     /**
-     * @return The symbolizer class handle by this renderer.
+     * The rendering grid geometry.
      */
-    Class<T> getSymbolizerClass();
-
+    public final GridGeometry grid;
     /**
-     * Create a renderer fixed for a symbol and a context.
-     *
-     * @param symbol : cached symbolizer
-     * @param context : rendering context
-     * @return SymbolizerRenderer or null if symbol is never visible.
+     * Graphics to render into.
+     * When modified by renderers, it must be reset accordingly.
      */
-    SymbolizerPainter createRenderer(T symbol);
+    public final Graphics2D graphics;
 
-    //TODO Glyph methods for legend
+    public Scene2D(GridGeometry grid, Graphics2D graphics) {
+        ArgumentChecks.ensureNonNull("grid", grid);
+        ArgumentChecks.ensureNonNull("graphics", graphics);
+        this.grid = grid;
+        this.graphics = graphics;
+    }
+
+    public Graphics2D getGraphics() {
+        return graphics;
+    }
 
 }

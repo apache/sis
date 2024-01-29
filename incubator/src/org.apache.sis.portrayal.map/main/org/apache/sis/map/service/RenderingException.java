@@ -16,24 +16,22 @@
  */
 package org.apache.sis.map.service;
 
-import java.awt.Graphics2D;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.map.MapLayer;
-import org.apache.sis.style.se1.Symbolizer;
-
 /**
+ * Exception that may be thrown by a portraying operation.
  *
  * @author Johann Sorel (Geomatys)
  */
-final class PointSymbolizerPainter extends SymbolizerPainter {
+public final class RenderingException extends Exception {
 
-    public PointSymbolizerPainter(Symbolizer<?> symbolizer) {
-        super(symbolizer);
+    public RenderingException(String message) {
+        super(message);
     }
 
-    @Override
-    public void paint(Graphics2D g, GridGeometry gridGeometry, MapLayer layer) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public RenderingException(Throwable cause) {
+        super(cause);
     }
 
+    public RenderingException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

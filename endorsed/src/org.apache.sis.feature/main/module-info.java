@@ -70,6 +70,7 @@ module org.apache.sis.feature {
             org.apache.sis.gui;                     // In the "optional" sub-project.
 
     exports org.apache.sis.geometry.wrapper.jts to
+            org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
             org.apache.sis.cql;                     // In the "incubator" sub-project.
 
     exports org.apache.sis.coverage.internal to

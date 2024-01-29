@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.map.service;
-
-import java.awt.Graphics2D;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.map.MapLayer;
-import org.apache.sis.style.se1.Symbolizer;
+package org.apache.sis.map.service.se1;
 
 /**
+ * Subclassed by symbolizer who have resource caches.
+ * This could contain images or models.
+ * The cache instance may be shared by multiple {@link SymbolizerToScene2D} instances
+ * using method {@link SymbolizerToScene2D#sharedCache(org.apache.sis.internal.renderer.SymbolizerCache) }.
  *
  * @author Johann Sorel (Geomatys)
  */
-final class RasterSymbolizerPainter extends SymbolizerPainter {
-
-    public RasterSymbolizerPainter(Symbolizer<?> symbolizer) {
-        super(symbolizer);
-    }
-
-    @Override
-    public void paint(Graphics2D g, GridGeometry gridGeometry, MapLayer layer) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+public abstract class SymbolizerCache {
 
 }

@@ -16,10 +16,10 @@
  */
 package org.apache.sis.map.service;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import org.apache.sis.coverage.grid.GridGeometry;
+import java.awt.Shape;
+import java.util.stream.Stream;
 import org.apache.sis.map.MapLayer;
+import org.apache.sis.map.Presentation;
 import org.apache.sis.style.Style;
 
 /**
@@ -30,6 +30,8 @@ public interface StylePainter {
 
     Class<? extends Style> getStyleClass();
 
-    void paint(Graphics2D g, BufferedImage image, GridGeometry gridGeometry, MapLayer layer);
+    void paint(Scene2D scene, MapLayer layer);
+
+    Stream<Presentation> intersects(Scene2D scene, MapLayer layer, Shape mask);
 
 }
