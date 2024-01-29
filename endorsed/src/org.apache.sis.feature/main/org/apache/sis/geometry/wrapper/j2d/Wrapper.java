@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.function.BiPredicate;
 import java.awt.Shape;
 import java.awt.geom.Area;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -199,11 +198,12 @@ add:    for (;;) {
     }
 
     /**
-     * @return shape copy.
+     * {@return directly the underlying Java2D geometry}. This method does not copy the shape.
+     * Caller should not modify the returned shape (by casting to an implementation class).
      */
     @Override
     public Shape toJava2D() {
-        return new GeneralPath(geometry);
+        return geometry;
     }
 
     /**

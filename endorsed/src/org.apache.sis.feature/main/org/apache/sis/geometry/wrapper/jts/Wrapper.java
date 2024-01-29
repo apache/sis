@@ -17,7 +17,6 @@
 package org.apache.sis.geometry.wrapper.jts;
 
 import java.awt.Shape;
-import java.awt.geom.GeneralPath;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -733,7 +732,7 @@ add:    for (Geometry next = geometry;;) {
     /**
      * Transforms this geometry using the given transform.
      * If the transform is {@code null}, then the geometry is returned unchanged.
-     * The geometry CRS remains unchanged.
+     * Otherwise, a new geometry is returned without CRS.
      *
      * @param  transform  the math transform to apply, or {@code null}.
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
@@ -745,11 +744,14 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * @return GeneralPath from current JTS Geometry.
+     * Returns a view over the JTS geometry as a Java2D shape. Changes in the JTS geometry
+     * after this method call may be reflected in the returned shape in an unspecified way.
+     *
+     * @return a view over the geometry as a Java2D shape.
      */
     @Override
     public Shape toJava2D() {
-        return new GeneralPath(JTS.asShape(geometry));
+        return JTS.asShape(geometry);
     }
 
     /**
