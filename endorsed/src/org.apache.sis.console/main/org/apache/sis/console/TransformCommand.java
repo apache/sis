@@ -119,7 +119,7 @@ final class TransformCommand extends FormattedOutputCommand {
     private CoordinateOperation operation;
 
     /**
-     * The user-supplied or inferred source and target CRS. They are not necessarily the source and target CRS of
+     * The user supplied or inferred source and target CRS. They are not necessarily the source and target CRS of
      * the transform to apply on coordinate tuples, because they need to be swapped if {@link #inverse} is true.
      *
      * @see #getEffectiveCRS(boolean)

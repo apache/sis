@@ -107,7 +107,7 @@ final class MultiSourceLayout extends ImageLayout {
      * Whether to use the preferred tile size exactly as specified, without trying to compute a better size.
      * This field may be {@code true} if the tiles of the destination image are at exact same location as
      * the tiles of a source image having the preferred tile size. In such case, keeping the same size will
-     * reduce the amount of tiles requested in that source image.
+     * reduce the number of tiles requested in that source image.
      */
     private final boolean exactTileSize;
 

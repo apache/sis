@@ -209,7 +209,7 @@ public final class DataScriptFormatter extends ScriptRunner {
         final String before;        // String that must exist before the value to replace, or null if none.
         final String oldValue;      // The old value to replace.
         final String newValue;      // The new value.
-        switch (upper - lower) {    // Optimization for reducing the amount of comparison.
+        switch (upper - lower) {    // Optimization for reducing the number of comparisons.
             default: return;
             case 10: {
                 table    = "epsg_deprecation";

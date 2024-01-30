@@ -43,7 +43,7 @@ public final class DripByteChannel implements ReadableByteChannel {
     private final Random random;
 
     /**
-     * Minimal (inclusive) and maximal (exclusive) amount of bytes to read.
+     * Minimal (inclusive) and maximal (exclusive) number of bytes to read.
      */
     private final int lower, upper;
 
@@ -62,8 +62,8 @@ public final class DripByteChannel implements ReadableByteChannel {
      *
      * @param data    the data to provide.
      * @param random  the random number generator to use for determining how many bytes to return.
-     * @param lower   minimal amount of bytes to read, inclusive.
-     * @param upper   maximal amount of bytes to read, exclusive.
+     * @param lower   minimal number of bytes to read, inclusive.
+     * @param upper   maximal number of bytes to read, exclusive.
      */
     public DripByteChannel(final byte[] data, final Random random, final int lower, final int upper) {
         this.data    = data;

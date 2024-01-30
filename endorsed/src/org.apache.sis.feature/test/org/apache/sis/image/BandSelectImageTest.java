@@ -71,7 +71,7 @@ public final class BandSelectImageTest extends TestCase {
     }
 
     /**
-     * Creates a dummy image for testing purpose. This image will contain the given amount of bands.
+     * Creates a dummy image for testing purpose. This image will contain the given number of bands.
      * One band contains deterministic values and all other bands contain random values.
      * The image is assigned to {@link #bufferedImage} and {@link #image} fields.
      *

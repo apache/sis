@@ -258,7 +258,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * The generated name should be identical to EPSG name, but we use the generated one anyway
      * (rather than the one provided by EPSG) in order to make sure that we create a single
      * {@link AxisDirection} for a given direction; we avoid potential differences like lower
-     * versus upper cases, amount of white space, <i>etc</i>.
+     * versus upper cases, number of white space, <i>etc</i>.
      */
     @Override
     public String toString() {

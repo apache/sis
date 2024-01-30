@@ -585,7 +585,7 @@ public class TransformSeparator {
             }
             /*
              * There is at least one dimension to separate in the sub-transform. Perform this separation and get
-             * the list of target dimensions. We need to offset the target dimensions by the amount of leading
+             * the list of target dimensions. We need to offset the target dimensions by the number of leading
              * dimensions once the separation is done, in order to translate from the sub-transform's dimension
              * numbering to the transform's numbering.
              */

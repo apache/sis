@@ -221,7 +221,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * <h4>Tip</h4>
          * The table formatted by default may be quite large.
          * It is recommended to invoke {@link ParameterFormat#setPreferredCodespaces(String[])}
-         * before to format in order to reduce the amount of columns to display.
+         * before to format in order to reduce the number of columns to display.
          */
         NAME_SUMMARY
     }

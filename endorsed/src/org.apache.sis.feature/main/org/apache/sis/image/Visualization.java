@@ -326,7 +326,7 @@ final class Visualization extends ResampledImage {
             if (!initialized) {
                 /*
                  * If none of above `ColorModelBuilder` configurations worked, use statistics in last resort.
-                 * We do that after we reduced the image to a single band in order to reduce the amount of calculations.
+                 * We do that after we reduced the image to a single band in order to reduce the amount of calculation.
                  */
                 final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(visibleSD);
                 final Statistics statistics = processor.valueOfStatistics(source, null, sampleFilters)[VISIBLE_BAND];

@@ -486,7 +486,7 @@ public final class ImageUtilities extends Static {
             }
             if (hasSameSize) {
                 /*
-                 * Need more checks if at least one band uses the same amount of bits:
+                 * Need more checks if at least one band uses the same number of bits:
                  *   - Conversion from `int` to `float` can loose significant digits.
                  *   - Conversion from signed short to unsigned short (or conversely) can change values.
                  */

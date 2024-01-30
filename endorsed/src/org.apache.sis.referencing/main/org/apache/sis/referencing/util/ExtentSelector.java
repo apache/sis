@@ -265,7 +265,7 @@ public final class ExtentSelector<T> {
 
     /**
      * Sets the temporal granularity of the Time of Interest (TOI). If non-null, intersections with TOI
-     * will be rounded to an integer amount of this granularity. This is useful if data are expected at
+     * will be rounded to an integer number of this granularity. This is useful if data are expected at
      * an approximately regular interval (for example one remote sensing image per day) and we want to
      * ignore slight variations in the temporal extent declared for each image.
      *
@@ -286,7 +286,7 @@ public final class ExtentSelector<T> {
     }
 
     /**
-     * Returns the given duration rounded to the nearest integer amount of temporal granularity.
+     * Returns the given duration rounded to the nearest integer number of temporal granularity.
      * If no granularity has been specified, then this method returns the given duration unmodified.
      */
     private Duration round(Duration duration) {

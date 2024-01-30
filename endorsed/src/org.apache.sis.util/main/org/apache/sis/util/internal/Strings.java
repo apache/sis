@@ -386,7 +386,7 @@ public final class Strings extends Static {
             for (int i=0,n=0; i<length; i += n) {
                 if (--precision < 0) {
                     /*
-                     * Found the amount of characters to keep. The `n` variable can be
+                     * Found the number of characters to keep. The `n` variable can be
                      * zero only if precision == 0, in which case the string is empty.
                      */
                     if (n == 0) {

@@ -535,7 +535,7 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Suggests an amount of fraction digits for formatting in base 10 numbers of the given accuracy.
+     * Suggests an number of fraction digits for formatting in base 10 numbers of the given accuracy.
      * This method uses heuristic rules that may change in any future SIS version:
      *
      * <ul>
@@ -551,7 +551,7 @@ public final class Numerics extends Static {
      * should be used instead in order to honor the user request exactly as specified.
      *
      * @param  ulp  the accuracy.
-     * @return suggested amount of fraction digits for the given precision. Always positive.
+     * @return suggested number of fraction digits for the given precision. Always positive.
      *
      * @see DecimalFunctions#fractionDigitsForDelta(double, boolean)
      */
@@ -560,14 +560,14 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Suggests an amount of fraction digits for the given values, ignoring NaN and infinities.
+     * Suggests an number of fraction digits for the given values, ignoring NaN and infinities.
      * This method uses heuristic rules that may change in any future SIS version.
      * Current implementation returns a value which avoid printing "garbage" digits
      * with highest numbers, at the cost of loosing significant digits on smallest numbers.
      * An arbitrary limit is set to 16 digits, which is the number of digits for {@code Math.ulp(1.0)}}.
      *
-     * @param  values  the values for which to get suggested amount of fraction digits.
-     * @return suggested amount of fraction digits for the given values. Always positive.
+     * @param  values  the values for which to get suggested number of fraction digits.
+     * @return suggested number of fraction digits for the given values. Always positive.
      */
     public static int suggestFractionDigits(final double... values) {
         double ulp = 0;
@@ -583,7 +583,7 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Suggests an amount of fraction digits for data having the given statistics.
+     * Suggests an number of fraction digits for data having the given statistics.
      * This method uses heuristic rules that may be modified in any future SIS version.
      *
      * @param  stats  statistics on the data to format.

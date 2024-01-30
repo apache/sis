@@ -83,7 +83,7 @@ public final class Affine extends AbstractProvider {
 
     /**
      * The maximal number of dimensions to be cached. Descriptors having more than
-     * this amount of dimensions will be recreated every time they are requested.
+     * this number of dimensions will be recreated every time they are requested.
      */
     private static final int MAX_CACHED_DIMENSION = 6;
 

@@ -579,7 +579,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             }
         }
 
-        /** Increments the size by the given amount of images. */
+        /** Increments the size by the given number of images. */
         final void incrementSize(final int n) {
             synchronized (GeoTiffStore.this) {
                 if (size >= 0) {

@@ -130,7 +130,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * A pool of shared {@link DimensionNameType} arrays. We use a pool
-     * because a small amount of arrays is shared by most grid extents.
+     * because a small number of arrays is shared by most grid extents.
      */
     private static final WeakValueHashMap<DimensionNameType[],DimensionNameType[]> POOL = new WeakValueHashMap<>(DimensionNameType[].class);
 
@@ -460,8 +460,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
      * @param  rounding            controls behavior of rounding from floating point values to integers.
      * @param  clipping            how to clip this extent to the enclosing extent. Ignored if {@code enclosing} is null.
-     * @param  margin              if non-null, expands the extent by that amount of cells on each envelope dimension.
-     * @param  chunkSize           if non-null, make the grid extent spanning an integer amount of chunks (tiles).
+     * @param  margin              if non-null, expands the extent by that number of cells on each envelope dimension.
+     * @param  chunkSize           if non-null, make the grid extent spanning an integer number of chunks (tiles).
      * @param  enclosing           if the new grid is a sub-grid of a larger grid, that larger grid. Otherwise {@code null}.
      * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
      *                             The length of this array shall be equal to the {@code envelope} dimension.
@@ -1319,9 +1319,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     /**
      * If the envelope contains some NaN values, tries to replace them by constant values inferred from the math transform.
      * We must use the {@link MathTransform} specified by the user ({@code gridToCRS}), not necessarily {@code cornerToCRS},
-     * because inferring a {@code cornerToCRS} by translating a {@code centerToCRS} by 0.5 cell increase the amount of NaN
+     * because inferring a {@code cornerToCRS} by translating a {@code centerToCRS} by 0.5 cell increase the number of NaN
      * values in the matrix. For giving a chance to {@link TransformSeparator} to perform its work,
-     * we need the minimal amount of NaN values.
+     * we need the minimal number of NaN values.
      *
      * @param  envelope   the envelope to complete if empty.
      * @param  gridToCRS  the transform specified by user.
@@ -1521,7 +1521,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a grid extent expanded by the given amount of cells on both sides along each dimension.
+     * Returns a grid extent expanded by the given number of cells on both sides along each dimension.
      * This method adds the given margins to the {@linkplain #getHigh(int) high coordinates}
      * and subtracts the same margins from the {@linkplain #getLow(int) low coordinates}.
      * If a negative margin is supplied, the extent size decreases accordingly.
@@ -1531,7 +1531,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is shorter, missing values default to 0 (i.e. sizes in unspecified dimensions are unchanged).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  margins  amount of cells to add or subtract on both sides for each dimension.
+     * @param  margins  number of cells to add or subtract on both sides for each dimension.
      * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
      * @throws ArithmeticException if expanding this extent by the given margins overflows {@code long} capacity.
      *
@@ -1555,7 +1555,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a grid extent expanded by the minimal amount of cells needed for covering an integer amount of chunks.
+     * Returns a grid extent expanded by the minimal number of cells needed for covering an integer number of chunks.
      * The grid coordinates (0, 0, …) locate the corner of a chunk.
      *
      * <h4>Number of arguments</h4>
@@ -1638,7 +1638,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Creates a new grid extent subsampled by the given amount of cells along each grid dimensions.
+     * Creates a new grid extent subsampled by the given number of cells along each grid dimensions.
      * This method divides {@linkplain #getLow(int) low coordinates} and {@linkplain #getSize(int) grid sizes}
      * by the given periods, rounding toward zero. The {@linkplain #getHigh(int) high coordinates} are adjusted
      * accordingly (this is often equivalent to dividing high coordinates by the periods too, but a difference
@@ -1694,7 +1694,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Creates a new grid extent upsampled by the given amount of cells along each grid dimensions.
+     * Creates a new grid extent upsampled by the given number of cells along each grid dimensions.
      * This method multiplies {@linkplain #getLow(int) low} and {@linkplain #getHigh(int) high} coordinates
      * by the given periods.
      *
@@ -1835,9 +1835,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns an extent translated by the given amount of cells compared to this extent.
+     * Returns an extent translated by the given number of cells compared to this extent.
      * The returned extent has the same {@linkplain #getSize(int) size} than this extent,
-     * i.e. both low and high grid coordinates are displaced by the same amount of cells.
+     * i.e. both low and high grid coordinates are displaced by the same number of cells.
      *
      * <h4>Example</h4>
      * For an extent (x: [0…10], y: [2…4], z: [0…1]) and a translation {-2, 2},
@@ -1906,7 +1906,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Returns the intersection of this grid extent with the given grid extent.
-     * The given extent shall have the same number of dimensions than this extent.
+     * The given extent shall have the same number of dimensions as this extent.
      * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
      * be the same in all dimensions, ignoring types that are absent.
      *
@@ -1924,7 +1924,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Returns the union of this grid extent with the given grid extent.
-     * The given extent shall have the same number of dimensions than this extent.
+     * The given extent shall have the same number of dimensions as this extent.
      * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
      * be the same in all dimensions, ignoring types that are absent.
      *

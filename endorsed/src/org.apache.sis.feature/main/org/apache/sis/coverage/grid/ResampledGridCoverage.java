@@ -345,7 +345,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
              * toward right, and the second column gives the displacement when moving one cell toward up (positive y).
              * More columns may exist in 3D, 4D, etc. cases. We retain only the magnitudes of those vectors, in order
              * to build new vectors with directions parallel with target grid axes. There is one magnitude value for
-             * each target CRS dimension. If there is more target grid dimensions than the amount of magnitude values
+             * each target CRS dimension. If there is more target grid dimensions than the number of magnitude values
              * (unusual, but not forbidden), some grid dimensions will be ignored provided that their size is 1
              * (otherwise a SubspaceNotSpecifiedException is thrown).
              */

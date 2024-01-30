@@ -228,8 +228,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         t %= MILLIS_PER_SECOND;
         if (t != 0) {
             /*
-             * The origin is usually an integer amount of days or hours. It rarely has a fractional amount of seconds.
-             * If it happens anyway, put the fractional amount of seconds in the converter instead of adding another
+             * The origin is usually an integer number of days or hours. It rarely has a fractional number of seconds.
+             * If it happens anyway, put the fractional number of seconds in the converter instead of adding another
              * field in this class for such very rare situation. Accuracy should be okay since the offset is small.
              */
             UnitConverter c = Units.converter(null, Fraction.valueOf(t, MILLIS_PER_SECOND));

@@ -1462,7 +1462,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Creates a new grid geometry upsampled by the given amount of cells along each grid dimensions.
+     * Creates a new grid geometry upsampled by the given number of cells along each grid dimensions.
      * This method multiplies {@linkplain GridExtent#getLow(int) low} and {@linkplain GridExtent#getHigh(int) high}
      * coordinates by the given periods, then scales the {@link #getGridToCRS(PixelInCell) grid to CRS} transform
      * for compensating the grid change.
@@ -1525,9 +1525,9 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Translates grid coordinates by the given amount of cells without changing "real world" coordinates.
+     * Translates grid coordinates by the given number of cells without changing "real world" coordinates.
      * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
-     * i.e. both low and high grid coordinates are displaced by the same amount of cells.
+     * i.e. both low and high grid coordinates are displaced by the same number of cells.
      * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
      * "real world" coordinates.
      *

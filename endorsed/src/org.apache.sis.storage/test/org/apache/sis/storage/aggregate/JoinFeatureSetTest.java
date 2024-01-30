@@ -181,7 +181,7 @@ public final class JoinFeatureSetTest extends TestCase {
                 assertEquals("att3", join, c2.getProperty("att3").getValue());
                 assertEquals("att4", att4, c2.getProperty("att4").getValue());
             }
-            assertEquals("Unexpected amount of features.", 4, count);
+            assertEquals("Unexpected number of features.", 4, count);
         }
     }
 
@@ -291,7 +291,7 @@ public final class JoinFeatureSetTest extends TestCase {
             assertEquals("str51", nl, foundStr51);
             assertEquals("str60", nr, foundStr60);
             assertEquals("str61", nr, foundStr61);
-            assertEquals("Unexpected amount of features.", 6, count);
+            assertEquals("Unexpected number of features.", 6, count);
         }
     }
 

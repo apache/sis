@@ -363,7 +363,7 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
     /**
      * A range of bytes determined from the background thread and to be consumed in the JavaFX thread.
      * This range can be updated as long as it has not been consumed. Those modifications reduce the
-     * amount of events to be consumed by the JavaFX thread.
+     * number of events to be consumed by the JavaFX thread.
      */
     private final class NextAddRange implements Runnable {
         /** Whether the range of bytes has been read, written or cached. */

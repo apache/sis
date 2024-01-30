@@ -242,7 +242,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     private transient int length;
 
     /**
-     * The amount of modifications applied on the range {@linkplain #array}.
+     * The number of modifications applied on the range {@linkplain #array}.
      * Used for checking concurrent modifications.
      */
      private transient int modCount;

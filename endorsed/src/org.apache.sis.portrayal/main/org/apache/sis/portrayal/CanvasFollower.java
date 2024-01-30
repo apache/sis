@@ -209,7 +209,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * Returns whether this instance is following changes in "real world" coordinates.
      * If {@code true} (the default value), then changes applied on the {@linkplain #source} canvas
      * and converted into changes to apply on the {@link #target} canvas in such a way that the two
-     * canvas got the same translations in real world units. It may result in a different amount of
+     * canvas got the same translations in real world units. It may result in a different number of
      * pixels is the two canvas have different zoom level, or a different direction if a canvas is
      * rotated relatively to the other canvas.
      *

@@ -87,7 +87,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * The same {@code MetadataStandard} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses shall make sure that any overridden methods remain safe to call
  * from multiple threads, because the same {@code MetadataStandard} instances are typically referenced
- * by a large amount of {@link ModifiableMetadata}.
+ * by a large number of {@link ModifiableMetadata} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5

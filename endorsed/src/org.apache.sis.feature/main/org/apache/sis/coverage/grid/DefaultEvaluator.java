@@ -313,7 +313,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
     /**
      * Sets whether to return {@code null} instead of throwing an exception if a point is outside coverage bounds.
      * The default value is {@code false}. Setting this flag to {@code true} may improve performances if the caller
-     * expects that many points will be outside coverage bounds, since it reduces the amount of exceptions to be
+     * expects that many points will be outside coverage bounds, since it reduces the number of exceptions to be
      * created.
      *
      * @param  flag  whether {@link #apply(DirectPosition)} should use {@code null} return value instead of
@@ -510,7 +510,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
                     if (period > 0) {
                         /*
                          * Compute the shift that was necessary for moving the point inside the grid,
-                         * then round that shift to an integer amount of periods. Modify the original
+                         * then round that shift to an integer number of periods. Modify the original
                          * coordinate by applying that modified translation.
                          */
                         final int oi = i + s;                       // Index of original coordinates.

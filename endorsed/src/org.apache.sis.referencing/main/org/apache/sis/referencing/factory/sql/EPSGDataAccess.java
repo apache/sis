@@ -138,11 +138,11 @@ import org.opengis.metadata.Identifier;
  * If such an ambiguity is found, an exception will be thrown.
  *
  * <h2>Life cycle and caching</h2>
- * {@code EPSGDataAccess} instances should be short-lived since they may hold a significant amount of JDBC resources.
+ * {@code EPSGDataAccess} instances should be short-lived since they may hold a significant amount of JDBC resource.
  * {@code EPSGDataAccess} instances are created on the fly by {@link EPSGFactory} and closed after a relatively short
  * {@linkplain EPSGFactory#getTimeout timeout}.
  * In addition {@code EPSGFactory} caches the most recently created objects, which reduce greatly
- * the amount of {@code EPSGDataAccess} instantiations (and consequently the amount of database accesses)
+ * the number of {@code EPSGDataAccess} instantiations (and consequently the number of database accesses)
  * in the common case where only a few EPSG codes are used by an application.
  * {@code EPSGDataAccess.createFoo(String)} methods do not cache by themselves and query the database on every invocation.
  *

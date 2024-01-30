@@ -268,7 +268,7 @@ public abstract class Inflater implements Closeable {
     }
 
     /**
-     * Reads the given amount of sample values without storing them.
+     * Reads the given number of sample values without storing them.
      * The given value is in units of sample values, not in bytes.
      *
      * <h4>Case of multi-pixels packed image</h4>

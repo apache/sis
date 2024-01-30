@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
 
 /**
  * A code list containing more than 64 elements. This implementation can be used by tests
- * that requires a large amount of code list elements.
+ * that requires a large number of code list elements.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

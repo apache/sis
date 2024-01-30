@@ -41,7 +41,7 @@ public class PathBuilder {
     private double[] coordinates;
 
     /**
-     * Number of valid coordinates. This is twice the amount of points.
+     * Number of valid coordinates. This is twice the number of points.
      */
     private int size;
 

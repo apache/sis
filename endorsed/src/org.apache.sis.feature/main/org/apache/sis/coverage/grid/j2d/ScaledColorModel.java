@@ -26,7 +26,7 @@ import org.apache.sis.feature.internal.Resources;
 /**
  * A color model for use with {@link ScaledColorSpace} (gray scale image with missing values).
  * This color model is slightly more efficient than the default {@link ComponentColorModel} by
- * reducing the amount of object allocations, made possible by the knowledge that we use only
+ * reducing the number of object allocations, made possible by the knowledge that we use only
  * one sample value and returns only one color component (the gray).
  * In addition, this class renders the {@link Float#NaN} values as transparent.
  *

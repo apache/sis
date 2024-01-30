@@ -1611,7 +1611,7 @@ public class MetadataBuilder {
 
         /**
          * Implementation of {@link MetadataBuilder#parseLegalNotice(String)}, provided here for reducing
-         * the amount of class loading in the common case where there is no legal notice to parse.
+         * the number of class loading in the common case where there is no legal notice to parse.
          */
         static void parse(final String notice, final DefaultLegalConstraints constraints) {
             final int length = notice.length();

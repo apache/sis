@@ -1658,7 +1658,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * but is sub-optimal if this method is extensively used in a multi-thread environment.
      * Furthermore, this method offers no control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions}
      * in use and on the handling of {@linkplain org.apache.sis.io.wkt.Warnings warnings}.
-     * Applications which need to parse a large amount of WKT strings should consider to use
+     * Applications which need to parse a large number of WKT strings should consider to use
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
      * @param  wkt  coordinate system encoded in Well-Known Text format (version 1 or 2).

@@ -142,7 +142,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
                  * the equals(Object) method to return `true` for `DefaultLocalName` that would
                  * otherwise be considered different.
                  *
-                 * In order to reduce the amount of objects created, we retain the full
+                 * In order to reduce the number of objects created, we retain the full
                  * InternationalString in the `asString` field, which is NOT considered
                  * by equals(Object). This is the value returned by toInternationalString().
                  */

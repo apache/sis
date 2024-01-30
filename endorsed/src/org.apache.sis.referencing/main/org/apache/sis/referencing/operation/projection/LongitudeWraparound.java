@@ -51,7 +51,7 @@ import org.apache.sis.measure.Longitude;
  * In order to avoid wraparound operations as much as possible, we test only the bound where anti-meridian
  * problem may happen; no wraparound will be applied for the opposite bound. Furthermore, we add or subtract
  * 360° only once. Even if the point did many turns around the Earth, the 360° shift will still be applied
- * at most once. The desire to apply the minimal amount of shifts is the reason why we do not use
+ * at most once. The desire to apply the minimal number of shifts is the reason why we do not use
  * {@link Math#IEEEremainder(double, double)}.
  *
  * <h2>When to use</h2>

@@ -222,7 +222,7 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
      * This method is invoked for building an editor in {@link #showControlButton()} or for
      * rendering the {@link ColorRamp} in the table.
      *
-     * @param  adjust  amount of space (in pixels) to add on the right size.
+     * @param  adjust  number of spaces (in pixels) to add on the right size.
      *                 Can be a negative number for removing space.
      * @return graphic to draw in a table cell or combo box cell.
      *

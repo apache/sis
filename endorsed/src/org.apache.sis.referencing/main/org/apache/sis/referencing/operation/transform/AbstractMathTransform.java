@@ -108,7 +108,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     static final int MAXIMUM_BUFFER_SIZE = 512;
 
     /**
-     * Maximum amount of {@link TransformException} to catch while transforming a block of
+     * Maximum number of {@link TransformException}s to catch while transforming a block of
      * {@value #MAXIMUM_BUFFER_SIZE} coordinate values in an array. The default implementation of
      * {@code transform} methods set un-transformable coordinates to {@linkplain Double#NaN NaN}
      * before to let the exception propagate. However if more then {@value} exceptions occur in
@@ -469,7 +469,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         /*
          * Now apply the coordinate transformation, invoking the user-overrideable method
          * for each individual point. In case of failure, we will set the coordinates to NaN
-         * and continue with other points, up to some maximal amount of failures.
+         * and continue with other points, up to some maximal number of failures.
          */
         TransformException failure = null;
         int failureCount = 0;                           // Count coordinates, not coordinate tuples.

@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * An alternative to {@link java.util.AbstractMap java.util.AbstractMap} using different implementation strategies.
  * Instead of providing default method implementations on top of {@link #entrySet()}, this base class uses more
  * often the {@link #get(Object)} method with the assumption that the map cannot contain null values, or use a
- * special-purpose {@link #entryIterator()} which can reduce the amount of object creations.
+ * special-purpose {@link #entryIterator()} which can reduce the number of object creations.
  *
  * <p><strong>This base class is for Apache SIS internal purpose only. Do not use!</strong>
  * This class is less robust than the JDK one (e.g. does not accept null values), forces subclasses to implement

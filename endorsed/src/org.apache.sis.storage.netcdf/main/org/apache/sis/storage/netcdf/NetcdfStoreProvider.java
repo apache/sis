@@ -225,8 +225,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         /*
          * If we failed to check using the embedded decoder, tries using the UCAR library.
          * The UCAR library is an optional dependency. If that library is present and the
-         * input is a String, then the following code may trigs a large amount of classes
-         * loading.
+         * input is a String, then the following code may trigs the loading of a large
+         * number of classes.
          *
          * Note that the UCAR library expects a String argument, not a File, because it
          * has special cases for "file:", "http:", "nodods:" and "slurp:" protocols.

@@ -362,7 +362,7 @@ public class XLink implements Serializable {
             if ((undefined & candidate.mandatory) != 0) {
                 continue;
             }
-            // Select the type requerying the smallest amount of fields.
+            // Select the type requerying the smallest number of fields.
             final int n = Integer.bitCount(undefined & candidate.fieldMask);
             if (n < min) {
                 min = n;

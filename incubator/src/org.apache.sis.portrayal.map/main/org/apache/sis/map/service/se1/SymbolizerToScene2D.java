@@ -112,7 +112,7 @@ public abstract class SymbolizerToScene2D<S extends Symbolizer> {
      * @param state not null
      * @param symbolizer not null
      * @return may be null if no Spi support this symbolizer.
-     * @throws RenderingException if the symbolizer is incorrectly defined or some assets can not be resolved.
+     * @throws RenderingException if the symbolizer is incorrectly defined or some assets cannot be resolved.
      */
     public static SymbolizerToScene2D<?> create(Scene2D state, Symbolizer<?> symbolizer) throws RenderingException {
         ArgumentChecks.ensureNonNull("symbolizer", symbolizer);
@@ -125,7 +125,7 @@ public abstract class SymbolizerToScene2D<S extends Symbolizer> {
      *
      * @param symbolizer not null
      * @return may be null if no Spi support this symbolizer.
-     * @throws RenderingException if the symbolizer is incorrectly defined or some assets can not be resolved.
+     * @throws RenderingException if the symbolizer is incorrectly defined or some assets cannot be resolved.
      */
     public static SymbolizerCache createCache(Symbolizer symbolizer) throws RenderingException {
         for (SymbolizerToScene2D.Spi spi : SPIS) {

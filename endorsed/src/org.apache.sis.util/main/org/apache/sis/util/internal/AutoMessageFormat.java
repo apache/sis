@@ -32,7 +32,7 @@ import java.text.MessageFormat;
 public final class AutoMessageFormat extends MessageFormat {
     /**
      * Formats that may need to be configured before to write a value, or {@code null} if none.
-     * May contain null elements. This information is used for adjusting the amount of fraction digits.
+     * May contain null elements. This information is used for adjusting the number of fraction digits.
      */
     private transient NumberFormat[] formatsToConfigure;
 

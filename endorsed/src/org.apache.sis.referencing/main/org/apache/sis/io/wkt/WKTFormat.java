@@ -201,7 +201,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     private Transliterator transliterator;
 
     /**
-     * The amount of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
+     * The number of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
      * The same value is also stored in the {@linkplain #formatter}.
      * It appears here for serialization purpose.
      */

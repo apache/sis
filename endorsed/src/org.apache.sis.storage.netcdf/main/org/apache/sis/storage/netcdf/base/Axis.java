@@ -783,7 +783,7 @@ public final class Axis extends NamedElement {
         }
         /*
          * Found two axes for the same set of dimensions, which implies that they have the same
-         * shape (width and height) unless the two axes ignored a different amount of NaN values.
+         * shape (width and height) unless the two axes ignored a different number of NaN values.
          * Negative width and height means that their actual values overflow the `int` capacity,
          * which we cannot process here.
          */

@@ -111,7 +111,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * Sets the approximate area of cells or pixels to include in the subset.
      * This convenience method creates a grid geometry containing only the given envelope.
      * Note that the given envelope is approximate:
-     * Coverages may expand the envelope to an integer amount of tiles.
+     * Coverages may expand the envelope to an integer number of tiles.
      *
      * <p>If a {@linkplain #setAxisSelection(Function) dimensionality reduction} is applied,
      * the specified envelope can be either the full envelope (with all dimensions)
@@ -130,7 +130,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
 
     /**
      * Sets the desired grid extent and resolution. The given domain is approximate:
-     * Coverages may use a different resolution and expand the envelope to an integer amount of tiles.
+     * Coverages may use a different resolution and expand the envelope to an integer number of tiles.
      *
      * <p>If a {@linkplain #setAxisSelection(Function) dimensionality reduction} is applied,
      * the specified domain can be either the full domain (with all dimensions) or a domain

@@ -91,7 +91,7 @@ public enum WraparoundMethod {
     /**
      * Make geometries contiguous by possibly shifting upper corner outside the coordinate system domain.
      * If a {@linkplain GeneralEnvelope#normalize() normalized envelope} crosses the anti-meridian
-     * (upper longitude value {@literal <} lower value), then an integer amount of cycles (360°)
+     * (upper longitude value {@literal <} lower value), then an integer number of cycles (360°)
      * will be added to the upper longitude value until we get {@code upper > lower}.
      * This will usually result in an upper corner value outside the [−180 … +180]° longitude range.
      *
@@ -108,7 +108,7 @@ public enum WraparoundMethod {
     /**
      * Make geometries contiguous by possibly shifting lower corner outside the coordinate system domain.
      * If a {@linkplain GeneralEnvelope#normalize() normalized envelope} crosses the anti-meridian
-     * (lower longitude value {@literal >} upper value), then an integer amount of cycles (360°)
+     * (lower longitude value {@literal >} upper value), then an integer number of cycles (360°)
      * will be subtracted from the lower longitude value until we get {@code lower < upper}.
      * This will usually result in a lower corner value outside the [−180 … +180]° longitude range.
      *

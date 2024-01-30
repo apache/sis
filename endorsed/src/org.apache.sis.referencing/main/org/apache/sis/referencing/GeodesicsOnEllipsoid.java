@@ -966,7 +966,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          *
          * The code below combines ℯsinφ terms otherwise. Note that we could also use product-to-sum
          * identities for rewriting the  tan(¼π + ½φ₂) / tan(¼π + ½φ₁)  expression as  (a + b) / (a - b)
-         * where  a = cos((φ₂+φ₁)/2)  and  b = sin((φ₂-φ₁)/2), but the amount of trigonometric method calls
+         * where  a = cos((φ₂+φ₁)/2)  and  b = sin((φ₂-φ₁)/2), but the number of trigonometric method calls
          * would be about the same and result may be less accurate.
          */
         final double eccentricity = sqrt(eccentricitySquared);      // TODO: avoid computing on each invocation.

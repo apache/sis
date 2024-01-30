@@ -589,7 +589,7 @@ public class RecentReferenceSystems {
             /*
              * Search for duplicated values after we finished filtering. This block is inefficient
              * (execution time of O(N²)) but it should not be an issue if this list is short (e.g.
-             * 20 elements). We cut the list if we reach the maximal amount of systems to keep.
+             * 20 elements). We cut the list if we reach the maximal number of systems to keep.
              */
             for (int i=0,j; i < (j=systemsOrCodes.size()); i++) {
                 if (i >= RecentChoices.MAXIMUM_REFERENCE_SYSTEMS) {

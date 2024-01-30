@@ -124,7 +124,7 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
  */
 public abstract class ComputedImage extends PlanarImage implements Disposable {
     /**
-     * The property for declaring the amount of additional source pixels needed on each side of a destination pixel.
+     * The property for declaring the number of additional source pixels needed on each side of a destination pixel.
      * This property can be used for calculations that require only a fixed rectangular source region around a source
      * pixel in order to compute each destination pixel. A given destination pixel (<var>x</var>, <var>y</var>) may be
      * computed from the neighborhood of source pixels beginning at

@@ -66,7 +66,7 @@ public abstract class Query implements QueryExpression {
      *
      * <p>The given envelope is approximate.
      * Features may test intersections using only bounding boxes instead of full geometries.
-     * Coverages may expand the envelope to an integer amount of tiles.</p>
+     * Coverages may expand the envelope to an integer number of tiles.</p>
      *
      * @param  domain  the approximate area of interest, or {@code null} if none.
      *

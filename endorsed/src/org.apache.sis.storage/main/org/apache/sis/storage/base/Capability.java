@@ -67,7 +67,7 @@ public enum Capability {
 
     /**
      * Lists the capabilities of all data stores together with their name.
-     * The returned array is twice the amount of providers, with the capabilities
+     * The returned array is twice the number of providers, with the capabilities
      * at even indices and the format name at odd indices.
      *
      * <p>This method is for internal usage by {@link org.apache.sis.setup.About}

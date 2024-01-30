@@ -82,7 +82,7 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
     /**
      * A margin in number of bits for determining if an error term should be considered as zero.
      * When computing <var>a</var> - <var>b</var> as a double-double (106 significand bits) value,
-     * if the amount of non-zero significand bits is equal or lower than {@code ZERO_THRESHOLD+1},
+     * if the number of non-zero significand bits is equal or lower than {@code ZERO_THRESHOLD+1},
      * consider the result as zero.
      */
     @Configuration

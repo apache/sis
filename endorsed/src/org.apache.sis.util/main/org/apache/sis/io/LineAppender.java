@@ -361,7 +361,7 @@ public class LineAppender extends Appender implements Flushable {
     }
 
     /**
-     * Writes the given amount of characters from the {@linkplain #buffer},
+     * Writes the given number of characters from the {@linkplain #buffer},
      * then removes those characters from the buffer. This method does not
      * adjust {@link #printableLength}; it is caller responsibility to do so.
      */

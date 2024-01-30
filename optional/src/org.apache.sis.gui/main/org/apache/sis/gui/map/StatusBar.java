@@ -574,7 +574,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * <h4>Limitations</h4>
      * Current implementation accepts only zero or one {@code MapCanvas}. A future implementation
-     * may accept a larger amount of canvas for tracking many views with a single status bar
+     * may accept a larger number of canvas for tracking many views with a single status bar
      * (for example images over the same area but at different times).
      *
      * @param  canvas  the canvas that this status bar is tracking.

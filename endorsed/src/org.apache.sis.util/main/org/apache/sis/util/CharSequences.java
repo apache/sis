@@ -454,7 +454,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * {@code text.length()} is returned. If this method reaches the beginning of
      * {@code text} while searching backward, then 0 is returned.</p>
      *
-     * @param  text       the string in which to skip a determined amount of lines.
+     * @param  text       the string in which to skip a determined number of lines.
      * @param  numLines   the number of lines to skip. Can be positive, zero or negative.
      * @param  fromIndex  index at which to start the search, from 0 to {@code text.length()} inclusive.
      * @return index of the first character after the last skipped line.
@@ -487,7 +487,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             // Execute the forward code below for skipping the "end of line" characters.
         }
         /*
-         * Skips forward the given amount of lines.
+         * Skips forward the given number of lines.
          */
         while (--numLines >= 0) {
             char c;

@@ -481,7 +481,7 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * Translates the buffer by the given amount of bytes.
+     * Translates the buffer by the given number of bytes.
      * Callers should subtract the same amount from the buffer position.
      *
      * @param  count  number of bytes to add to {@link #bufferOffset}.

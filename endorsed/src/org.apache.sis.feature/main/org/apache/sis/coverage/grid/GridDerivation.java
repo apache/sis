@@ -107,7 +107,7 @@ public class GridDerivation {
     private GridClippingMode clipping;
 
     /**
-     * If non-null, the extent will be expanded by that amount of cells on each grid dimension.
+     * If non-null, the extent will be expanded by that number of cells on each grid dimension.
      * This array is non-null only if at least one non-zero margin has been specified. Trailing
      * zero values are omitted (consequently this array may be shorter than {@link GridExtent}
      * number of dimensions).
@@ -281,7 +281,7 @@ public class GridDerivation {
     }
 
     /**
-     * Specifies an amount of cells by which to expand {@code GridExtent} after rounding.
+     * Specifies an number of cells by which to expand {@code GridExtent} after rounding.
      * This setting modifies computations performed by the following methods:
      * <ul>
      *   <li>{@link #subgrid(GridGeometry)}</li>
@@ -322,7 +322,7 @@ public class GridDerivation {
 
     /**
      * Specifies the size of tiles or chunks in the base grid geometry. If a chunk size is specified,
-     * then the grid extent computed by {@link #build()} will span an integer amount of chunks.
+     * then the grid extent computed by {@link #build()} will span an integer number of chunks.
      * The grid coordinates (0, 0, …) locate the corner of a chunk.
      *
      * <p>This property operates on the same methods as the {@linkplain #margin(int...) margin}.
@@ -1302,7 +1302,7 @@ public class GridDerivation {
             /*
              * If the coverage is divided in tiles (or "chunk" in n-dimensional case), we want the subsampling
              * to be a divisor of tile size. In the special case where the subsampling is larger than tile size,
-             * we can remove an integer amount of tiles because tiles can be fully skipped at read time.
+             * we can remove an integer number of tiles because tiles can be fully skipped at read time.
              */
             final int size = chunkSize[dimension];
             final int r = subsampling % size;       // Reduced subsampling (with integer amont of tiles removed).

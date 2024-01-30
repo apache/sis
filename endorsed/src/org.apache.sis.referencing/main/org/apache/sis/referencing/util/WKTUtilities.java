@@ -354,11 +354,11 @@ public final class WKTUtilities extends Static {
     }
 
     /**
-     * Suggests an amount of fraction digits to use for formatting numbers in each column of the given matrix.
+     * Suggests an number of fraction digits to use for formatting numbers in each column of the given matrix.
      * The number of fraction digits may be negative if we could round the numbers to 10, 100, <i>etc</i>.
      *
      * @param  rows  the matrix rows. It is not required that each row has the same length.
-     * @return suggested amount of fraction digits as an array as long as the longest row.
+     * @return suggested number of fraction digits as an array as long as the longest row.
      *
      * @see org.apache.sis.referencing.operation.matrix.Matrices#toString(Matrix)
      */
@@ -391,12 +391,12 @@ public final class WKTUtilities extends Static {
     }
 
     /**
-     * Suggests an amount of fraction digits to use for formatting numbers in each column of the given sequence
+     * Suggests an number of fraction digits to use for formatting numbers in each column of the given sequence
      * of points. The number of fraction digits may be negative if we could round the numbers to 10, <i>etc</i>.
      *
      * @param  crs     the coordinate reference system for each points, or {@code null} if unknown.
      * @param  points  the sequence of points. It is not required that each point has the same dimension.
-     * @return suggested amount of fraction digits as an array as long as the longest row.
+     * @return suggested number of fraction digits as an array as long as the longest row.
      */
     public static int[] suggestFractionDigits(final CoordinateReferenceSystem crs, final Vector[] points) {
         final int[] fractionDigits = suggestFractionDigits(points);

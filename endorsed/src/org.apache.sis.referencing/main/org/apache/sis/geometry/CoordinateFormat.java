@@ -1605,7 +1605,7 @@ skipSep:    if (i != 0) {
                 }
                 /*
                  * No separator found. If no CRS was specified (in which case we don't know how many coordinates
-                 * were expected), then stop parsing and return whatever amount of coordinates we got. Otherwise
+                 * were expected), then stop parsing and return whatever number of coordinates we got. Otherwise
                  * (another coordinate was expected) consider we have a too short string or unexpected characters.
                  */
                 if (formats == null) {

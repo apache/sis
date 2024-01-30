@@ -56,7 +56,7 @@ final class GeometryCoordinateTransform extends GeometryTransform {
 
     /**
      * Transforms the given sequence of coordinate tuples, producing a new sequence of tuples.
-     * This method tries to transform coordinates in batches, in order to reduce the amount of
+     * This method tries to transform coordinates in batches, in order to reduce the number of
      * calls to {@link MathTransform#transform(double[], int, double[], int, int)}.
      *
      * @param  sequence   sequence of coordinate tuples to transform.

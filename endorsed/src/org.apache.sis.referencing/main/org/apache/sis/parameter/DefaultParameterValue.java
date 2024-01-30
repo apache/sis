@@ -672,7 +672,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     @Override
     public void setValue(Object newValue) throws InvalidParameterValueException {
         /*
-         * Try to convert the value only for a limited amount of types. In particular we want to allow conversions
+         * Try to convert the value only for a limited number of types. In particular we want to allow conversions
          * between java.io.File and java.nio.file.Path for easier transition between JDK6 and JDK7. We do not want
          * to allow too many conversions for reducing the risk of unexpected behavior.  If we fail to convert, try
          * to set the value anyway since the user may have redefined the `setValue(Object, Unit)` method.
